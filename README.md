@@ -1,8 +1,10 @@
 [![WTT logo](docs/wtt-logo.png)](https://www.wundermanthompson.com)
 
+<!--
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/aem-migrator)](https://github.com/wttech/aem-migrator/releases)
 [![GitHub All Releases](https://img.shields.io/github/downloads/wttech/aem-migrator/total)](https://github.com/wttech/aem-migrator/releases)
 [![Check](https://github.com/wttech/aem-migrator/workflows/Check/badge.svg)](https://github.com/wttech/aem-migrator/actions/workflows/check.yml)
+-->
 [![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
 
 <!--
