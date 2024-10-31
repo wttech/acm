@@ -67,10 +67,10 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
-            <groupId>com.adobe.aem</groupId>
-            <artifactId>uber-jar</artifactId>
-            <scope>compile</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.adobe.aem</groupId>-->
+<!--            <artifactId>uber-jar</artifactId>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
     </dependencies>
 </project>

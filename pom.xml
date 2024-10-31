@@ -638,10 +638,16 @@ Bundle-DocURL:
                 <scope>test</scope>
             </dependency>
             <!-- Adobe AEM Dependencies -->
+<!--            <dependency>-->
+<!--                <groupId>com.adobe.aem</groupId>-->
+<!--                <artifactId>uber-jar</artifactId>-->
+<!--                <version>6.5.6</version>-->
+<!--                <scope>provided</scope>-->
+<!--            </dependency>-->
             <dependency>
-                <groupId>com.adobe.aem</groupId>
-                <artifactId>uber-jar</artifactId>
-                <version>6.5.6</version>
+                <artifactId>org.apache.sling.api</artifactId>
+                <version>2.18.4</version>
+                <groupId>org.apache.sling</groupId>
                 <scope>provided</scope>
             </dependency>
             <!-- Apache Sling Dependencies -->
