@@ -5,9 +5,14 @@ import com.wttech.aem.migrator.core.instance.HealthChecker;
 import com.wttech.aem.migrator.core.script.Queue;
 import com.wttech.aem.migrator.core.script.Script;
 import com.wttech.aem.migrator.core.script.ScriptRepository;
+
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.Packaging;
 import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
 import org.apache.jackrabbit.vault.packaging.events.PackageEventListener;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -15,6 +20,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  * TODO watch for AEM package installations containing migrator scripts TODO add to the queue all scripts from the
@@ -31,13 +39,25 @@ public class PackageListener implements PackageEventListener {
     @Reference
     private HealthChecker healthChecker;
 
+    @Reference
+    private Packaging packaging;
+
     @Override
     public void onPackageEvent(PackageEvent packageEvent) {
         LOG.info("Detected package installation event: {}", packageEvent);
 
-        if (PackageEvent.Type.INSTALL.equals(packageEvent.getType())) {
+        if (!PackageEvent.Type.INSTALL.equals(packageEvent.getType())) {
             return;
         }
+
+        ResourceResolver resourceResolver = null; // TODO get resource resolver
+        Session session = resourceResolver.adaptTo(Session.class);
+
+        Calendar installTimeBefore = readLastUnpacked(packageEvent.getId(), session);
+        // TODO wait for the package to be fully installed
+        Calendar installTimeAfter = readLastUnpacked(packageEvent.getId(), session);
+
+
 
         /*
         var pkgPid = packageEvent.getId().getName();
@@ -64,6 +84,15 @@ public class PackageListener implements PackageEventListener {
             }
         }
         */
+    }
+
+    private Calendar readLastUnpacked(PackageId pid, Session session) {
+        try (var pkg = packaging.getPackageManager(session).open(pid)) {
+            return pkg.getDefinition().getLastUnpacked();
+        } catch (RepositoryException e) {
+            LOG.error("Error while opening package '{}'", packageEvent.getId(), e);
+            return null;
+        }
     }
 
     private List<Script> lookupScriptsFromPackage(String pkgPid) {
