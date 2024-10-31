@@ -8,11 +8,11 @@ import com.wttech.aem.migrator.core.script.ScriptRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.jackrabbit.vault.packaging.events.PackageEvent;
+import org.apache.jackrabbit.vault.packaging.events.PackageEventListener;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
  * TODO watch for AEM package installations containing migrator scripts TODO add to the queue all scripts from the
  * package TODO delay adding as as long as the package is being installed (check instance health)
  */
-@Component(immediate = true, service = EventHandler.class)
-public class PackageListener implements EventHandler {
+@Component(immediate = true, service = PackageEventListener.class)
+public class PackageListener implements PackageEventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(PackageListener.class);
 
@@ -32,10 +32,29 @@ public class PackageListener implements EventHandler {
     private HealthChecker healthChecker;
 
     @Override
-    public void handleEvent(Event event) {
+    public void onPackageEvent(PackageEvent packageEvent) {
+        LOG.info("Detected package installation event: {}", packageEvent);
+
+        if (PackageEvent.Type.INSTALL.equals(packageEvent.getType())) {
+            return;
+        }
+
+        /*
+        var pkgPid = packageEvent.getId().getName();
+        LOG.info("Detected package PID '{}'", pkgPid);
+
+        var scripts = lookupScriptsFromPackage(pkgPid);
+        if (scripts.isEmpty()) {
+            LOG.debug("No migration scripts found in package '{}'", pkgPid);
+            return;
+        }
+
+        LOG.info("Found {} scripts in package '{}'", scripts.size(), pkgPid);
+        */
+
+        /* TODO ...
         while (!healthChecker.isHealthy()) {
             try {
-                var pkgPid = event.getProperty("pid").toString();
                 for (var script : lookupScriptsFromPackage(pkgPid)) {
                     queueScript(script);
                 }
@@ -44,6 +63,7 @@ public class PackageListener implements EventHandler {
                 LOG.error("Error while waiting for instance to become healthy", e);
             }
         }
+        */
     }
 
     private List<Script> lookupScriptsFromPackage(String pkgPid) {

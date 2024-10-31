@@ -221,6 +221,12 @@ Private-Package: net.datafaker.*,com.mifmif.common.regex.*,dk.brics.automaton.*
             <groupId>org.apache.commons</groupId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <artifactId>org.apache.jackrabbit.vault</artifactId>
+            <version>3.2.8</version>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Custom Dependencies -->
 

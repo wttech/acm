@@ -80,6 +80,12 @@ tasks:
     cmds:
       - task: provision:repl-agent-publish
       - task: provision:crx
+      - task: provision:osgi-search-plugin
+
+  provision:osgi-search-plugin:
+    desc: install OSGi Search Web Console Plugin
+    internal: true
+    cmd: sh aemw osgi bundle install --url "https://github.com/neva-dev/felix-search-webconsole-plugin/releases/download/2.0.0/search-webconsole-plugin-2.0.0.jar"
 
   provision:repl-agent-publish:
     desc: configure replication agent on AEM author instance
