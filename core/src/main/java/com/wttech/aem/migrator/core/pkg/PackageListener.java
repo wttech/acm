@@ -53,11 +53,9 @@ public class PackageListener implements PackageEventListener {
         ResourceResolver resourceResolver = null; // TODO get resource resolver
         Session session = resourceResolver.adaptTo(Session.class);
 
-        Calendar installTimeBefore = readLastUnpacked(packageEvent.getId(), session);
+        Calendar installTimeBefore = readLastUnpacked(packageEvent, session);
         // TODO wait for the package to be fully installed
-        Calendar installTimeAfter = readLastUnpacked(packageEvent.getId(), session);
-
-
+        Calendar installTimeAfter = readLastUnpacked(packageEvent, session);
 
         /*
         var pkgPid = packageEvent.getId().getName();
@@ -86,7 +84,8 @@ public class PackageListener implements PackageEventListener {
         */
     }
 
-    private Calendar readLastUnpacked(PackageId pid, Session session) {
+    private Calendar readLastUnpacked(PackageEvent packageEvent, Session session) {
+        PackageId pid = packageEvent.getId();
         try (var pkg = packaging.getPackageManager(session).open(pid)) {
             return pkg.getDefinition().getLastUnpacked();
         } catch (RepositoryException e) {
