@@ -4,10 +4,24 @@ import {
     defaultTheme, Flex,
     Footer,
     Grid, Link,
-    Provider, TextArea,
+    Provider,
     View
 } from '@adobe/react-spectrum';
 import { AppLink } from './AppLink';
+
+import Editor from '@monaco-editor/react';
+
+import groovyScript from './script.groovy';
+import { loader } from '@monaco-editor/react';
+
+// Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
+loader.config({
+    paths: {
+        vs: process.env.NODE_ENV === 'production' ? '/js/monaco-editor' : '/node_modules/monaco-editor/min/vs',
+    },
+});
+
+// read script.example.groovy as string
 
 function App() {
     return (
@@ -46,13 +60,12 @@ function App() {
                                 <Route path="/console" element={
                                     <div>
                                         <h2>Console</h2>
-                                        <p>View console output here.</p>
-
-                                        <Flex gap="size-150" wrap>
-                                            <TextArea
-                                                label="Notes"
-                                                defaultValue="This is on a wait list" />
-                                        </Flex>
+                                        <p>Write your Groovy script here.</p>
+                                        <Editor theme="vs-dark"
+                                            defaultValue={groovyScript}
+                                            height="480px"
+                                            language="java"
+                                        />
                                     </div>
                                 } />
                             </Routes>
