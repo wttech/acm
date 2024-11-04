@@ -31,6 +31,7 @@
         <module>ui.apps.structure</module>
         <module>ui.config</module>
         <module>ui.content</module>
+        <module>ui.frontend</module>
     </modules>
     <properties>
         <aem.host>localhost</aem.host>
@@ -113,7 +114,7 @@
                 <plugin>
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
-                    <version>${frontend-maven-plugin.version}</version>
+                    <version>1.13.3</version>
                     <configuration>
                         <nodeVersion>v16.17.0</nodeVersion>
                         <npmVersion>8.15.0</npmVersion>

@@ -1,8 +1,6 @@
 ### Project-specific
 
-ui.content/src/main/content/jcr_root/content/dam/migrator/generated
-!ui.content/src/main/content/jcr_root/content/dam/migrator/generated/.content.xml
-
+ui.apps/src/main/content/jcr_root/apps/migrator/spa
 /var
 
 # Created by https://www.gitignore.io/api/eclipse,java,maven

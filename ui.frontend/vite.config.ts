@@ -20,5 +20,9 @@ export default defineConfig({
         'src',
       ],
     }
+  },
+  build: {
+    outDir: '../ui.apps/src/main/content/jcr_root/apps/migrator/spa',
+    emptyOutDir: true,
   }
 });
