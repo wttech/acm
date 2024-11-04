@@ -97,16 +97,21 @@ function App() {
                                     </Flex>
                                 } />
                                 <Route path="/console" element={
-                                    <Flex direction="column" gap="size-300">
+                                    <Flex direction="column" gap="size-200">
                                         <View>
                                             <Heading>Console</Heading>
                                             <p>Write your Groovy script here.</p>
                                         </View>
-                                        <Editor theme="vs-dark"
-                                                defaultValue={groovyScript}
-                                                height="480px"
-                                                language="java"
-                                        />
+                                        <View borderWidth="thin"
+                                                borderColor="dark"
+                                                borderRadius="medium"
+                                                padding="size-100">
+                                            <Editor theme="vs-dark"
+                                                    defaultValue={groovyScript}
+                                                    height="480px"
+                                                    language="java"
+                                            />
+                                        </View>
                                         <ButtonGroup>
                                             <Button variant="secondary"><Spellcheck/><Text>Check syntax</Text></Button>
                                             <Button variant="accent"><Gears/><Text>Execute</Text></Button>
