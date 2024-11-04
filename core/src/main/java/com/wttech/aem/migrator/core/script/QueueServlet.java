@@ -22,7 +22,7 @@ public class QueueServlet extends SlingSafeMethodsServlet {
     private static final String PATH_PARAM = "path";
 
     @Reference
-    private Queue queue;
+    private ExecutionQueue queue;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

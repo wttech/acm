@@ -12,15 +12,15 @@ import org.slf4j.LoggerFactory;
 
 @Component(
         immediate = true,
-        service = {Queue.class, JobConsumer.class},
-        property = {JobConsumer.PROPERTY_TOPICS + "=" + Queue.TOPIC})
-public class Queue implements JobConsumer {
+        service = {ExecutionQueue.class, JobConsumer.class},
+        property = {JobConsumer.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
+public class ExecutionQueue implements JobConsumer {
 
     // TODO add osgi config with proper queue configuration:
     // https://sling.apache.org/documentation/bundles/apache-sling-eventing-and-job-handling.html#queue-configurations
-    public static final String TOPIC = "com/wttech/aem/migrator/queue";
+    public static final String TOPIC = "com/wttech/aem/migrator/ExecutionQueue";
 
-    private static final Logger LOG = LoggerFactory.getLogger(Queue.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
 
     @Reference
     private JobManager jobManager;

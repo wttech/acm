@@ -13,7 +13,7 @@
 </p>
 -->
 
-Tool for providing sample data for AEM applications in a simple and flexible way.
+Tool for migrating content and managing permissions for AEM applications in a simple and flexible way.
 
 Simply [install](#installation) ready-to-use CRX package on AEM instance and start migrating!
 

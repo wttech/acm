@@ -25,7 +25,7 @@
     </parent>
     <artifactId>migrator.core</artifactId>
     <name>AEM Migrator - Core</name>
-    <description>Core bundle for AEM Migrator (tool for providing sample data)</description>
+    <description>Core bundle for AEM Migrator (tool for migrating content and managing permissions)</description>
     <properties>
         <skipFormat>false</skipFormat>
     </properties>
