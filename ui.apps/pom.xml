@@ -119,6 +119,7 @@
             <groupId>com.wttech.aem.migrator</groupId>
             <artifactId>migrator.ui.frontend</artifactId>
             <version>${project.version}</version>
+            <type>pom</type>
         </dependency>
 
         <dependency>

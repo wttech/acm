@@ -22,7 +22,7 @@ import Spellcheck from "@spectrum-icons/workflow/Spellcheck";
 // Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
 loader.config({
     paths: {
-        vs: process.env.NODE_ENV === 'production' ? '/js/monaco-editor' : '/node_modules/monaco-editor/min/vs',
+        vs: process.env.NODE_ENV === 'production' ? 'js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs',
     },
 });
 
