@@ -1,3 +1,8 @@
+### Project-specific
+
+ui.content/src/main/content/jcr_root/content/dam/migrator/generated
+!ui.content/src/main/content/jcr_root/content/dam/migrator/generated/.content.xml
+
 # Created by https://www.gitignore.io/api/eclipse,java,maven
 
 ### Eclipse ###
@@ -134,15 +139,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
-
-
-
-# AEM Compose
-aem/home/
-.task/
-.env
-.env.*
-
 
 # AEM Compose
 aem/home/
