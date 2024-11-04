@@ -3,6 +3,8 @@
 ui.content/src/main/content/jcr_root/content/dam/migrator/generated
 !ui.content/src/main/content/jcr_root/content/dam/migrator/generated/.content.xml
 
+/var
+
 # Created by https://www.gitignore.io/api/eclipse,java,maven
 
 ### Eclipse ###
