@@ -1,8 +1,12 @@
-package com.wttech.aem.migrator.core.script;
+package com.wttech.aem.migrator.core.api;
 
+import static com.wttech.aem.migrator.core.util.ServletUtils.*;
+import static javax.servlet.http.HttpServletResponse.*;
+
+import com.wttech.aem.migrator.core.script.Executor;
+import com.wttech.aem.migrator.core.script.ScriptRepository;
 import java.io.IOException;
 import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -33,21 +37,22 @@ public class ExecutorServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        response.sendError(HttpServletResponse.SC_OK, "This is executor servlet!");
+        response.sendError(SC_OK, "This is executor servlet!");
     }
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        var path = request.getParameter(PATH_PARAM);
+        var path = stringParam(request, PATH_PARAM);
 
         try {
             var script = new ScriptRepository(request.getResourceResolver())
                     .read(path)
                     .orElse(null);
             if (script == null) {
-                response.sendError(
-                        HttpServletResponse.SC_BAD_REQUEST,
-                        String.format("Script '%s' to be executed not found", path));
+                respondJson(
+                        response,
+                        new Result(SC_BAD_REQUEST, String.format("Script '%s' to be executed not found", path)));
+                ;
                 return;
             }
 
@@ -56,10 +61,10 @@ public class ExecutorServlet extends SlingAllMethodsServlet {
             // TODO should this servlet also save execution in history?
             // history.save(execution)
 
-            response.getWriter().write("Execution result: " + execution.toString());
+            respondJson(response, new Result(SC_OK, "Execution result: " + execution.toString()));
         } catch (Exception e) {
             LOG.error("Cannot execute script at path '{}'", path, e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            respondJson(response, new Result(SC_INTERNAL_SERVER_ERROR, e.getMessage()));
         }
     }
 }
