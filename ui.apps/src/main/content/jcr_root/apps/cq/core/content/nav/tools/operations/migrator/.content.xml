@@ -4,6 +4,5 @@
     jcr:title="Migrator"
     jcr:description="Migrate content and manage permissions via Groovy Scripts"
     icon="gears"
-    href="/apps/migrator/spa"
-    id="migrator"
-    target="_blank"/>
+    href="/apps/migrator/gui.html"
+    id="migrator"/>
