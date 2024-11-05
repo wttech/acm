@@ -2,7 +2,6 @@ import './App.css'
 import {HashRouter} from 'react-router-dom'
 import {
     defaultTheme,
-    Grid,
     Provider,
     View
 } from '@adobe/react-spectrum';
@@ -19,27 +18,19 @@ loader.config({
 
 function App() {
     return (
-        <Provider theme={defaultTheme} colorScheme={"light"}>
+        <Provider theme={defaultTheme} colorScheme={"light"} height="100vh">
             <HashRouter>
-                <Grid
-                    areas={[
-                        'header  header',
-                        'content content',
-                        'footer  footer'
-                    ]}
-                    columns={['1fr', '3fr']}
-                    rows={['size-1000', 'auto', 'size-1000']}
-                    height={'100vh'}>
-                    <View gridArea="header" padding="size-200" backgroundColor="gray-200" height="size-400">
+                <View padding="size-100">
+                    <View backgroundColor="default" height="size-600" paddingX="size-200" borderBottomWidth="thin" borderBottomColor="light">
                         <Header/>
                     </View>
-                    <View gridArea="content" padding="size-200">
+                    <View padding="size-200">
                         <Content/>
                     </View>
-                    <View gridArea="footer" padding="size-200">
+                    <View padding="size-200">
                         <Footer/>
                     </View>
-                </Grid>
+                </View>
             </HashRouter>
         </Provider>
     )

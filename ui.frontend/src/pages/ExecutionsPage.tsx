@@ -1,41 +1,24 @@
-import {Cell, Column, Flex, Heading, Row, TableBody, TableHeader, TableView, View} from "@adobe/react-spectrum";
+import {Cell, Column, Flex, Row, TableBody, TableHeader, TableView} from "@adobe/react-spectrum";
 
 const ScriptsPage = () => {
     return (
         <Flex direction="column">
-            <View>
-                <Heading>Executions</Heading>
-                <p>Review your migration scripts executions.</p>
-            </View>
             <TableView
                 aria-label="Example table with static contents"
-                selectionMode="multiple"
+                selectionMode="none"
             >
                 <TableHeader>
                     <Column>Name</Column>
-                    <Column>Type</Column>
-                    <Column align="end">Date Modified</Column>
+                    <Column>Executed At</Column>
                 </TableHeader>
                 <TableBody>
                     <Row>
-                        <Cell>Games</Cell>
-                        <Cell>File folder</Cell>
-                        <Cell>6/7/2020</Cell>
+                        <Cell>migrate.text-component.groovy</Cell>
+                        <Cell>2024-11-05 13:32:23</Cell>
                     </Row>
                     <Row>
-                        <Cell>Program Files</Cell>
-                        <Cell>File folder</Cell>
-                        <Cell>4/7/2021</Cell>
-                    </Row>
-                    <Row>
-                        <Cell>bootmgr</Cell>
-                        <Cell>System file</Cell>
-                        <Cell>11/20/2010</Cell>
-                    </Row>
-                    <Row>
-                        <Cell>log.txt</Cell>
-                        <Cell>Text Document</Cell>
-                        <Cell>1/18/2016</Cell>
+                        <Cell>permissions.everyone.groovy</Cell>
+                        <Cell>2024-10-03 20:12:55</Cell>
                     </Row>
                 </TableBody>
             </TableView>
