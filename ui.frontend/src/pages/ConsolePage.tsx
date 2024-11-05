@@ -18,7 +18,7 @@ const ConsolePage = () => {
                   padding="size-100">
                 <Editor theme="vs-dark"
                         defaultValue={ConsoleScript}
-                        height="480px"
+                        height="50vh"
                         language="java"
                 />
             </View>

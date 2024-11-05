@@ -3,14 +3,16 @@ import { HashRouter } from 'react-router-dom'
 import {
     defaultTheme, Flex,
     Footer,
-    Grid, Link,
+    Grid, Link, Text,
     Provider,
-    View
+    View, Button
 } from '@adobe/react-spectrum';
 import { AppLink } from './AppLink';
 
 import { loader } from '@monaco-editor/react';
 import AppRoutes from "./AppRoutes.tsx";
+import Draft from "@spectrum-icons/workflow/Draft";
+import FileCode from "@spectrum-icons/workflow/FileCode";
 
 // Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
 loader.config({
@@ -32,13 +34,19 @@ function App() {
                     columns={['1fr', '3fr']}
                     rows={['size-1000', 'auto', 'size-1000']}
                     height={'100vh'}>
-                    <View gridArea="header" padding="size-200">
-                        <Flex direction="row" gap="size-200">
+                    <View gridArea="header" padding="size-200" backgroundColor="static-gray-700">
+                        <Flex wrap gap="size-200">
                             <AppLink to="/console">
-                                Console
+                                <Button variant="primary" staticColor="white" style="outline">
+                                    <Draft/>
+                                    <Text>Console</Text>
+                                </Button>
                             </AppLink>
                             <AppLink to="/scripts">
-                                Scripts
+                                <Button variant="primary" staticColor="white" style="outline">
+                                    <FileCode/>
+                                    <Text>Scripts</Text>
+                                </Button>
                             </AppLink>
                         </Flex>
                     </View>
