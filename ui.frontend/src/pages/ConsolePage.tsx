@@ -33,7 +33,7 @@ const ConsolePage = () => {
                                   padding="size-50">
                                 <Editor theme="vs-dark"
                                         defaultValue={ConsoleCode}
-                                        height="70vh"
+                                        height="60vh"
                                         language="java"
                                 />
                             </View>
@@ -53,7 +53,7 @@ const ConsolePage = () => {
                                   padding="size-50">
                                 <Editor theme="vs-dark"
                                         value={ConsoleOutput}
-                                        height="70vh"
+                                        height="60vh"
                                         language="java"
                                         options={{readOnly: true}}
                                 />
