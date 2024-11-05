@@ -30,7 +30,7 @@ function App() {
                     columns={['1fr', '3fr']}
                     rows={['size-1000', 'auto', 'size-1000']}
                     height={'100vh'}>
-                    <View gridArea="header" padding="size-200" backgroundColor="gray-400">
+                    <View gridArea="header" padding="size-200" backgroundColor="gray-200" height="size-400">
                         <Header/>
                     </View>
                     <View gridArea="content" padding="size-200">
