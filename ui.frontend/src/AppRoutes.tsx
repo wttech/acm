@@ -1,7 +1,7 @@
 import { Route, Navigate } from 'react-router-dom'
 
-import ScriptsPage from "./ScriptsPage.tsx";
-import ConsolePage from "./ConsolePage.tsx";
+import ScriptsPage from "./pages/ScriptsPage.tsx";
+import ConsolePage from "./pages/ConsolePage.tsx";
 
 import { Routes } from 'react-router-dom';
 

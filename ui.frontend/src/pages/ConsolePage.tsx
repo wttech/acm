@@ -1,6 +1,6 @@
 import {Button, ButtonGroup, Flex, Heading, View, Text} from "@adobe/react-spectrum";
 import Editor from "@monaco-editor/react";
-import groovyScript from "./script.groovy.ts";
+import ConsoleScript from "./ConsoleScript.groovy";
 import Spellcheck from "@spectrum-icons/workflow/Spellcheck";
 import Gears from "@spectrum-icons/workflow/Gears";
 
@@ -17,7 +17,7 @@ const ConsolePage = () => {
                   borderRadius="medium"
                   padding="size-100">
                 <Editor theme="vs-dark"
-                        defaultValue={groovyScript}
+                        defaultValue={ConsoleScript}
                         height="480px"
                         language="java"
                 />
