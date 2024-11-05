@@ -16,9 +16,9 @@ const ConsolePage = () => {
                   borderColor="dark"
                   borderRadius="medium"
                   padding="size-100">
-                <Editor theme="light"
+                <Editor theme="vs-dark"
                         defaultValue={ConsoleScript}
-                        height="50vh"
+                        height="60vh"
                         language="java"
                 />
             </View>
