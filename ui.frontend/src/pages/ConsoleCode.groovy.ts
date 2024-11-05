@@ -4,7 +4,11 @@ boolean shouldMigrate() {
 }
 
 void doMigrate() {
+    println "Migrating..."
+
     def foo = resourceResolver.getResource("/content/foo")
     // migrate foo
+    
+    println "Migration done"
 }
 `.trim()
