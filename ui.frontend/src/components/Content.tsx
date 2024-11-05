@@ -1,11 +1,11 @@
 import { Route, Navigate } from 'react-router-dom'
 
-import ScriptsPage from "./pages/ScriptsPage.tsx";
-import ConsolePage from "./pages/ConsolePage.tsx";
+import ScriptsPage from "../pages/ScriptsPage";
+import ConsolePage from "../pages/ConsolePage";
 
 import { Routes } from 'react-router-dom';
 
-const AppRoutes = () => {
+const Content = () => {
     return (
         <Routes>
             <Route path="/" element={<Navigate to="/console" />} />
@@ -15,4 +15,4 @@ const AppRoutes = () => {
     );
 };
 
-export default AppRoutes;
+export default Content;

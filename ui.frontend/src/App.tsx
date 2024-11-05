@@ -1,24 +1,20 @@
 import './App.css'
-import { HashRouter } from 'react-router-dom'
+import {HashRouter} from 'react-router-dom'
 import {
-    defaultTheme, Flex,
-    Footer,
-    Grid, Link, Text,
+    defaultTheme,
+    Grid,
     Provider,
-    View, Button
+    View
 } from '@adobe/react-spectrum';
-import { AppLink } from './AppLink';
 
 import { loader } from '@monaco-editor/react';
-import AppRoutes from "./AppRoutes.tsx";
-import Draft from "@spectrum-icons/workflow/Draft";
-import FileCode from "@spectrum-icons/workflow/FileCode";
+import Content from "./components/Content";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 // Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
 loader.config({
-    paths: {
-        vs: process.env.NODE_ENV === 'production' ? '/apps/migrator/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs',
-    },
+    paths: {vs: process.env.NODE_ENV === 'production' ? '/apps/migrator/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs'},
 });
 
 function App() {
@@ -35,29 +31,13 @@ function App() {
                     rows={['size-1000', 'auto', 'size-1000']}
                     height={'100vh'}>
                     <View gridArea="header" padding="size-200" backgroundColor="static-gray-700">
-                        <Flex wrap gap="size-200">
-                            <AppLink to="/console">
-                                <Button variant="primary" staticColor="white" style="outline">
-                                    <Draft/>
-                                    <Text>Console</Text>
-                                </Button>
-                            </AppLink>
-                            <AppLink to="/scripts">
-                                <Button variant="primary" staticColor="white" style="outline">
-                                    <FileCode/>
-                                    <Text>Scripts</Text>
-                                </Button>
-                            </AppLink>
-                        </Flex>
+                        <Header/>
                     </View>
                     <View gridArea="content" padding="size-200">
-                        <AppRoutes/>
+                        <Content/>
                     </View>
                     <View gridArea="footer" padding="size-200">
-                        <Footer>
-                            <Link href="https://vml.com" target="_blank">VML Enterprise
-                            Solutions</Link> &copy; All rights reserved.
-                        </Footer>
+                        <Footer/>
                     </View>
                 </Grid>
             </HashRouter>
