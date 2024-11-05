@@ -7,6 +7,7 @@ import Gears from "@spectrum-icons/workflow/Gears";
 import FileCode from "@spectrum-icons/workflow/FileCode";
 import Print from "@spectrum-icons/workflow/Print";
 import Copy from "@spectrum-icons/workflow/Copy";
+import Cancel from "@spectrum-icons/workflow/Cancel";
 
 const ConsolePage = () => {
 
@@ -25,7 +26,8 @@ const ConsolePage = () => {
                                 <Button variant="accent"><Gears/><Text>Execute</Text></Button>
                                 <Button variant="secondary" style="fill"><Spellcheck/><Text>Check syntax</Text></Button>
                             </ButtonGroup>
-                            <View borderWidth="thin"
+                            <View backgroundColor="gray-800"
+                                  borderWidth="thin"
                                   borderColor="dark"
                                   borderRadius="medium"
                                   padding="size-50">
@@ -41,9 +43,14 @@ const ConsolePage = () => {
                     <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <ButtonGroup>
-                                <Button variant="accent"><Copy/><Text>Copy</Text></Button>
+                                <Button variant="negative" isDisabled={false}><Cancel/><Text>Abort</Text></Button>
+                                <Button variant="secondary"><Copy/><Text>Copy</Text></Button>
                             </ButtonGroup>
-                            <View borderWidth="thin">
+                            <View backgroundColor="gray-800"
+                                  borderWidth="thin"
+                                  borderColor="dark"
+                                  borderRadius="medium"
+                                  padding="size-50">
                                 <Editor theme="vs-dark"
                                         value={ConsoleOutput}
                                         height="70vh"

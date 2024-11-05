@@ -20,14 +20,14 @@ function App() {
     return (
         <Provider theme={defaultTheme} colorScheme={"light"} height="100vh">
             <HashRouter>
-                <View padding="size-100">
-                    <View backgroundColor="default" height="size-600" paddingX="size-200" borderBottomWidth="thin" borderBottomColor="light">
+                <View padding="size-200">
+                    <View marginBottom="size-200">
                         <Header/>
                     </View>
-                    <View padding="size-200">
+                    <View marginY="size-200">
                         <Content/>
                     </View>
-                    <View padding="size-200">
+                    <View marginTop="size-200">
                         <Footer/>
                     </View>
                 </View>

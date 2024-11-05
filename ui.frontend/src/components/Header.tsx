@@ -9,7 +9,7 @@ const Header = () => {
     const location = useLocation();
 
     return (
-        <Flex wrap gap="size-200">
+        <Flex justifyContent="center" gap="size-100">
             <AppLink to="/console">
                 <Button variant={location.pathname === '/console' ? 'accent' : 'primary'} style="outline">
                     <Draft/>
