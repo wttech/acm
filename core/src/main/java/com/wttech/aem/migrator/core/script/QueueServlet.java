@@ -5,7 +5,7 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
-import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
+import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -14,8 +14,15 @@ import org.slf4j.LoggerFactory;
 @Component(
         immediate = true,
         service = Servlet.class,
-        property = {"sling.servlet.methods=POST", "sling.servlet.paths=/bin/migrator/script/queue"})
-public class QueueServlet extends SlingSafeMethodsServlet {
+        property = {
+            "sling.servlet.methods=GET",
+            "sling.servlet.methods=POST",
+            "sling.servlet.extensions=json",
+            "sling.servlet.resourceTypes=" + QueueServlet.RT
+        })
+public class QueueServlet extends SlingAllMethodsServlet {
+
+    public static final String RT = "migrator/api/queue";
 
     private static final Logger LOG = LoggerFactory.getLogger(QueueServlet.class);
 
@@ -26,6 +33,11 @@ public class QueueServlet extends SlingSafeMethodsServlet {
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_OK, "This is queue servlet!");
+    }
+
+    @Override
+    protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         var path = request.getParameter(PATH_PARAM);
 
         try {

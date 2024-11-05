@@ -14,8 +14,15 @@ import org.slf4j.LoggerFactory;
 @Component(
         immediate = true,
         service = Servlet.class,
-        property = {"sling.servlet.methods=POST", "sling.servlet.paths=/bin/migrator/script/executor"})
+        property = {
+            "sling.servlet.methods=GET",
+            "sling.servlet.methods=POST",
+            "sling.servlet.extensions=json",
+            "sling.servlet.resourceTypes=" + ExecutorServlet.RT
+        })
 public class ExecutorServlet extends SlingAllMethodsServlet {
+
+    public static final String RT = "migrator/api/executor";
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorServlet.class);
 
@@ -23,6 +30,11 @@ public class ExecutorServlet extends SlingAllMethodsServlet {
 
     @Reference
     private Executor executor;
+
+    @Override
+    protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_OK, "This is executor servlet!");
+    }
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
