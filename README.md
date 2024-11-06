@@ -48,9 +48,9 @@ There are two ways to install AEM Migrator on your AEM instances:
 
 ## Compatibility
 
-| AEM Migrator | AEM        | Java | Groovy |
-|--------------|------------|------|--------|
-| 1.0.0        | 6.5, cloud | 11   | 4.x    |
+| AEM Migrator | AEM        | Java  | Groovy |
+|--------------|------------|-------|--------|
+| 1.0.0        | 6.5, cloud | 8, 11 | 4.x    |
 
 Note that AEM Migrator is using Groovy scripts concept. However it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
 AEM Migrator tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
