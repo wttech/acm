@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
         service = Servlet.class,
         property = {
             ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
-            // TODO ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
             ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
             ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + QueueServlet.RT
         })

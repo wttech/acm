@@ -27,7 +27,8 @@ export default defineConfig({
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq) => {
-            proxyReq.setHeader('Authorization', `Basic ${Buffer.from('admin:admin').toString('base64')}`);
+            proxyReq.setHeader('Authorization', `Basic ${btoa('admin:admin')}`);
+            proxyReq.setHeader('User-Agent', 'curl/8.7.1'); // trick AEM's filter 'com.adobe.granite.csrf.impl.CSRFFilter'
           });
         }
       }

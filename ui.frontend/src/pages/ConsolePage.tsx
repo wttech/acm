@@ -16,16 +16,17 @@ const ConsolePage = () => {
     const onExecute = () => {
         fetch('/apps/migrator/api/executor.json', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            body: JSON.stringify({
+                path: '/conf/migrator/acme/hello-world.groovy'
+            })
         }).then(response => {
-            if (response.ok) {
-                ToastQueue.positive('Script executed successfully', {timeout: 5000});
-                return response.json();
-            } else {
-                ToastQueue.negative('Script cannot be executed properly!', {timeout: 5000});
-            }
+            return response.json();
+        }).then(responseData => {
+            console.log('Response:', responseData);
+            ToastQueue.positive('Script executed successfully', {timeout: 5000});
+        }).catch(error => {
+            console.error('Error:', error);
+            ToastQueue.negative('Script cannot be executed properly!', {timeout: 5000});
         });
     }
 

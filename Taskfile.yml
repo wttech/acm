@@ -144,9 +144,14 @@ tasks:
       - task: deploy:min
       - sh aemw package deploy --file 'ui.content/target/migrator.ui.content-*.zip'
 
+  develop:core:
+    desc: build & deploy core OSGi bundle to instances
+    cmds:
+      - (cd core && mvn clean package)
+      - sh aemw osgi bundle install --file 'core/target/migrator.core-*.jar'
+
   develop:content:
     desc: build & deploy content AEM package to instances
-    deps: [ build ]
     cmds:
       - (cd ui.content && mvn clean package)
       - sh aemw package deploy --file 'ui.content/target/migrator.ui.content-*.zip'
