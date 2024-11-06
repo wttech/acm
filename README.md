@@ -17,6 +17,14 @@ Tool for migrating content and managing permissions for AEM applications in a si
 
 Simply [install](#installation) ready-to-use CRX package on AEM instance and start migrating!
 
+<p>
+  <img src="docs/screenshot-console-code.png" alt="AEM Migrator - Console Code (Screenshot)" width="480"/>
+</p>
+
+<p>
+  <img src="docs/screenshot-console-output.png" alt="AEM Migrator - Console Output (Screenshot)" width="480"/>
+</p>
+
 Main concepts of AEM Migrator tool are:
 
 * **Simplicity**
