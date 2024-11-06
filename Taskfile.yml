@@ -156,3 +156,8 @@ tasks:
       - (cd ui.content && mvn clean package)
       - sh aemw package deploy --file 'ui.content/target/migrator.ui.content-*.zip'
 
+  develop:frontend:
+    desc: build & deploy frontend to instances
+    cmds:
+      - (cd ui.frontend && npm install && npm run build)
+      - sh aemw content push --dir 'ui.apps/src/main/content/jcr_root/apps/migrator/spa'

@@ -1,7 +1,21 @@
-import { defineConfig } from 'vite';
+import {defineConfig, HttpProxy} from 'vite';
 import react from '@vitejs/plugin-react';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import path from 'path';
+import {ClientRequest} from "node:http";
+
+function serverProxyConfig() {
+  return {
+    target: 'http://localhost:4502',
+    changeOrigin: true,
+    configure: (proxy: HttpProxy.Server) => {
+      proxy.on('proxyReq', (proxyReq: ClientRequest) => {
+        proxyReq.setHeader('Authorization', `Basic ${btoa('admin:admin')}`);
+        // proxyReq.setHeader('User-Agent', 'curl/8.7.1'); // use it to trick AEM's CSRF Filter
+      });
+    }
+  };
+}
 
 export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? '/apps/migrator/spa/' : '/',
@@ -22,16 +36,8 @@ export default defineConfig({
       ],
     },
     proxy: {
-      '/apps/migrator/api': {
-        target: 'http://localhost:4502',
-        changeOrigin: true,
-        configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            proxyReq.setHeader('Authorization', `Basic ${btoa('admin:admin')}`);
-            proxyReq.setHeader('User-Agent', 'curl/8.7.1'); // trick AEM's filter 'com.adobe.granite.csrf.impl.CSRFFilter'
-          });
-        }
-      }
+      '/apps/migrator/api': serverProxyConfig(),
+      '/libs/granite/csrf/token.json': serverProxyConfig()
     }
   },
   build: {

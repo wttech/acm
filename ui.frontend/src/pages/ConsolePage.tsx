@@ -13,12 +13,21 @@ import {ToastQueue} from '@react-spectrum/toast'
 
 const ConsolePage = () => {
 
-    const onExecute = () => {
+    async function getCsrfToken() {
+        const response = await fetch('/libs/granite/csrf/token.json');
+        const json = await response.json();
+        return json.token;
+    }
+
+    const onExecute = async () => {
         fetch('/apps/migrator/api/executor.json', {
             method: 'POST',
             body: JSON.stringify({
                 path: '/conf/migrator/acme/hello-world.groovy'
-            })
+            }),
+            headers: {
+                'CSRF-Token': await getCsrfToken()
+            }
         }).then(response => {
             return response.json();
         }).then(responseData => {
