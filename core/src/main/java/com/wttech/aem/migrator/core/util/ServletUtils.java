@@ -1,5 +1,6 @@
 package com.wttech.aem.migrator.core.util;
 
+import com.wttech.aem.migrator.core.api.Result;
 import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -15,8 +16,16 @@ public final class ServletUtils {
         return StringUtils.trimToNull(request.getParameter(name));
     }
 
+    public static void respondJson(SlingHttpServletResponse response, Result result) throws IOException {
+        response.setStatus(result.getStatus());
+        respondJson(response, (Object) result);
+    }
+
     public static void respondJson(SlingHttpServletResponse response, Object data) throws IOException {
+        if (data instanceof Result) {
+            response.setStatus(((Result) data).getStatus());
+        }
         response.setContentType(JsonUtils.APPLICATION_JSON_UTF8);
-        JsonUtils.writeJson(response.getWriter(), data);
+        JsonUtils.writeJson(response.getOutputStream(), data);
     }
 }

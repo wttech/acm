@@ -1,20 +1,25 @@
 package com.wttech.aem.migrator.core.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import java.io.IOException;
-import java.io.Writer;
+import java.io.OutputStream;
 
 public final class JsonUtils {
 
     public static final String APPLICATION_JSON_UTF8 = "application/json; charset=utf-8";
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    public static final ObjectMapper MAPPER = new ObjectMapper();
+
+    public static final ObjectWriter COMPACT_WRITER = MAPPER.writer();
+
+    // public static final ObjectWriter PRETTY_WRITER = MAPPER.writerWithDefaultPrettyPrinter();
 
     private JsonUtils() {
         // intentionally empty
     }
 
-    public static void writeJson(Writer writer, Object data) throws IOException {
-        OBJECT_MAPPER.writeValue(writer, data);
+    public static void writeJson(OutputStream outputStream, Object data) throws IOException {
+        COMPACT_WRITER.writeValue(outputStream, data);
     }
 }

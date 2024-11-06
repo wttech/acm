@@ -52,7 +52,6 @@ public class ExecutorServlet extends SlingAllMethodsServlet {
             if (script == null) {
                 respondJson(
                         response, new Result(SC_BAD_REQUEST, String.format("Script at path '%s' not found!", path)));
-                ;
                 return;
             }
 

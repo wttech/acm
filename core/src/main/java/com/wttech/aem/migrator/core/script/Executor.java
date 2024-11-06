@@ -5,7 +5,6 @@ import com.wttech.aem.migrator.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -61,8 +60,8 @@ public class Executor {
         }
     }
 
-    private Duration calculateDuration(long startTime) {
-        return Duration.ofMillis(System.currentTimeMillis() - startTime);
+    private long calculateDuration(long startTime) {
+        return System.currentTimeMillis() - startTime;
     }
 
     private GroovyShell createShell(Executable executable, ExecutionOptions options) {

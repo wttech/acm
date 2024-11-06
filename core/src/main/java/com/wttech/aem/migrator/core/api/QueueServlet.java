@@ -1,7 +1,6 @@
 package com.wttech.aem.migrator.core.api;
 
 import static com.wttech.aem.migrator.core.util.ServletUtils.*;
-import static com.wttech.aem.migrator.core.util.ServletUtils.respondJson;
 import static javax.servlet.http.HttpServletResponse.*;
 
 import com.wttech.aem.migrator.core.script.ExecutionQueue;

@@ -1,7 +1,6 @@
 package com.wttech.aem.migrator.core.script;
 
 import java.io.Serializable;
-import java.time.Duration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -11,13 +10,13 @@ public class Execution implements Serializable {
 
     private final Status status;
 
-    private final Duration duration;
+    private final long duration;
 
     private final String output;
 
     private final Exception exception;
 
-    public Execution(Executable executable, Status status, Duration duration, String output, Exception exception) {
+    public Execution(Executable executable, Status status, long duration, String output, Exception exception) {
         this.executable = executable;
         this.status = status;
         this.duration = duration;
@@ -33,7 +32,7 @@ public class Execution implements Serializable {
         return status;
     }
 
-    public Duration getDuration() {
+    public long getDuration() {
         return duration;
     }
 

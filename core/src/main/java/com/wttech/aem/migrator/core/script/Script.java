@@ -1,5 +1,6 @@
 package com.wttech.aem.migrator.core.script;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.migrator.core.MigratorException;
 import com.wttech.aem.migrator.core.util.JcrUtils;
 import java.io.IOException;
@@ -31,6 +32,7 @@ public class Script implements Executable {
         }
     }
 
+    @JsonIgnore
     public String getPath() {
         return resource.getPath();
     }

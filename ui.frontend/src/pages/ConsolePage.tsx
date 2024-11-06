@@ -10,44 +10,24 @@ import Copy from "@spectrum-icons/workflow/Copy";
 import Cancel from "@spectrum-icons/workflow/Cancel";
 
 import {ToastQueue} from '@react-spectrum/toast'
+import {toastRequest} from "../utils/api.ts";
 
 const ConsolePage = () => {
 
-    // https://experienceleague.adobe.com/en/docs/experience-manager-learn/cloud-service/developing/advanced/csrf-protection
-    async function getCsrfToken() {
-        const response = await fetch('/libs/granite/csrf/token.json');
-        const json = await response.json();
-        return json.token;
-    }
-
     const onExecute = async () => {
-        fetch('/apps/migrator/api/executor.json', {
-            method: 'POST',
-            body: JSON.stringify({
-                path: '/conf/migrator/acme/hello-world.groovy'
-            }),
-            headers: {
-                'CSRF-Token': await getCsrfToken()
-            }
-        }).then(response => {
-            return response.json();
-        }).then(responseData => {
-            console.log('Response:', responseData);
-            ToastQueue.positive('Script executed successfully', {timeout: 5000});
-        }).catch(error => {
-            console.error('Error:', error);
-            ToastQueue.negative('Script cannot be executed properly!', {timeout: 5000});
+        const scriptPath = '/conf/migrator/acme/hello-world.groovy';
+        await toastRequest({
+            operation: 'Script execution',
+            url: `/apps/migrator/api/executor.json?scriptPath=${encodeURIComponent(scriptPath)}`,
+            method: 'post',
         });
     }
-
     const onAbort = () => {
         ToastQueue.neutral('Abort to be implemented!', {timeout: 5000});
     }
-
     const onCheckSyntax = () => {
         ToastQueue.neutral('Check syntax to be implemented!', {timeout: 5000});
     }
-
     const onCopyOutput = () => {
         ToastQueue.neutral('Copy output to be implemented!', {timeout: 5000});
     }

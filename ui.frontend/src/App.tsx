@@ -8,15 +8,9 @@ import {
 
 import {ToastContainer} from '@react-spectrum/toast'
 
-import { loader } from '@monaco-editor/react';
 import Content from "./components/Content";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-
-// Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
-loader.config({
-    paths: {vs: process.env.NODE_ENV === 'production' ? '/apps/migrator/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs'},
-});
 
 function App() {
     return (
