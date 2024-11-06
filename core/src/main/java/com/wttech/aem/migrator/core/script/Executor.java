@@ -20,6 +20,12 @@ import org.slf4j.LoggerFactory;
 @Component(immediate = true, service = Executor.class)
 public class Executor {
 
+    private static final String BINDING_RESOURCE_RESOLVER = "resourceResolver";
+
+    private static final String BINDING_OUT = "out";
+
+    private static final String BINDING_LOG = "log";
+
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
 
@@ -40,13 +46,22 @@ public class Executor {
         var startTime = System.currentTimeMillis();
 
         try {
-            shell.evaluate(executable.getContent());
+            var content = composeContent(executable);
+            shell.evaluate(content);
             return new Execution(
                     executable, Execution.Status.SUCCESS, calculateDuration(startTime), output.toString(), null);
         } catch (Exception e) {
             return new Execution(
                     executable, Execution.Status.FAILURE, calculateDuration(startTime), output.toString(), e);
         }
+    }
+
+    private String composeContent(Executable executable) throws MigratorException {
+        var builder = new StringBuilder();
+        builder.append("System.setOut(new java.io.PrintStream(" + BINDING_OUT
+                + ", true, java.nio.charset.StandardCharsets.UTF_8));\n");
+        builder.append(executable.getContent());
+        return builder.toString();
     }
 
     private void duplicateOutput(ExecutionOptions options, StringBuilder output) {
@@ -66,9 +81,9 @@ public class Executor {
 
     private GroovyShell createShell(Executable executable, ExecutionOptions options) {
         var binding = new Binding();
-        binding.setVariable("resourceResolver", options.getResourceResolver());
-        binding.setVariable("log", createLogger(executable));
-        binding.setVariable("out", options.getOutputStream());
+        binding.setVariable(BINDING_RESOURCE_RESOLVER, options.getResourceResolver());
+        binding.setVariable(BINDING_LOG, createLogger(executable));
+        binding.setVariable(BINDING_OUT, options.getOutputStream());
 
         var compilerConfiguration = new CompilerConfiguration();
         ImportCustomizer importCustomizer = new ImportCustomizer();

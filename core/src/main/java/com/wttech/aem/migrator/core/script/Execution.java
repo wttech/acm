@@ -36,6 +36,14 @@ public class Execution implements Serializable {
         return duration;
     }
 
+    public String getOutput() {
+        return output;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
     public String toString() {
         return new ToStringBuilder(this)
                 .append("executable", executable)
