@@ -13,6 +13,7 @@ import {ToastQueue} from '@react-spectrum/toast'
 
 const ConsolePage = () => {
 
+    // https://experienceleague.adobe.com/en/docs/experience-manager-learn/cloud-service/developing/advanced/csrf-protection
     async function getCsrfToken() {
         const response = await fetch('/libs/granite/csrf/token.json');
         const json = await response.json();
