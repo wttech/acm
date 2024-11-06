@@ -8,9 +8,16 @@ public class Result implements Serializable {
 
     private final String message;
 
-    public Result(int status, String message) {
+    private final Object data;
+
+    public Result(int status, String message, Object data) {
         this.status = status;
         this.message = message;
+        this.data = data;
+    }
+
+    public Result(int status, String message) {
+        this(status, message, null);
     }
 
     public int getStatus() {
@@ -19,5 +26,9 @@ public class Result implements Serializable {
 
     public String getMessage() {
         return message;
+    }
+
+    public Object getData() {
+        return data;
     }
 }

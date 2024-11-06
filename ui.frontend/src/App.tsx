@@ -3,8 +3,10 @@ import {HashRouter} from 'react-router-dom'
 import {
     defaultTheme,
     Provider,
-    View
+    View,
 } from '@adobe/react-spectrum';
+
+import {ToastContainer} from '@react-spectrum/toast'
 
 import { loader } from '@monaco-editor/react';
 import Content from "./components/Content";
@@ -32,6 +34,7 @@ function App() {
                     </View>
                 </View>
             </HashRouter>
+            <ToastContainer/>
         </Provider>
     )
 }

@@ -142,4 +142,12 @@ tasks:
     cmds:
       - sh aemw package deploy --url 'https://github.com/orbinson/aem-groovy-console/releases/download/19.0.5/aem-groovy-console-all-19.0.5.zip'
       - task: deploy:min
-#      - sh aemw package deploy --file 'ui.content/target/migrator.ui.content-*.zip'
+      - sh aemw package deploy --file 'ui.content/target/migrator.ui.content-*.zip'
+
+  develop:content:
+    desc: build & deploy content AEM package to instances
+    deps: [ build ]
+    cmds:
+      - (cd ui.content && mvn clean package)
+      - sh aemw package deploy --file 'ui.content/target/migrator.ui.content-*.zip'
+

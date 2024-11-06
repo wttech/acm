@@ -9,6 +9,7 @@ import java.io.IOException;
 import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.servlets.ServletResolverConstants;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -19,10 +20,10 @@ import org.slf4j.LoggerFactory;
         immediate = true,
         service = Servlet.class,
         property = {
-            "sling.servlet.methods=GET",
-            "sling.servlet.methods=POST",
-            "sling.servlet.extensions=json",
-            "sling.servlet.resourceTypes=" + ExecutorServlet.RT
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
+            // TODO ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+            ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
+            ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ExecutorServlet.RT
         })
 public class ExecutorServlet extends SlingAllMethodsServlet {
 
@@ -30,19 +31,19 @@ public class ExecutorServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorServlet.class);
 
-    private static final String PATH_PARAM = "path";
+    private static final String SCRIPT_PATH_PARAM = "scriptPath";
 
     @Reference
     private Executor executor;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        response.sendError(SC_OK, "This is executor servlet!");
+        respondJson(response, new Result(SC_OK, "This is executor servlet!"));
     }
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        var path = stringParam(request, PATH_PARAM);
+        var path = stringParam(request, SCRIPT_PATH_PARAM);
 
         try {
             var script = new ScriptRepository(request.getResourceResolver())
@@ -50,8 +51,7 @@ public class ExecutorServlet extends SlingAllMethodsServlet {
                     .orElse(null);
             if (script == null) {
                 respondJson(
-                        response,
-                        new Result(SC_BAD_REQUEST, String.format("Script '%s' to be executed not found", path)));
+                        response, new Result(SC_BAD_REQUEST, String.format("Script at path '%s' not found!", path)));
                 ;
                 return;
             }
@@ -61,10 +61,16 @@ public class ExecutorServlet extends SlingAllMethodsServlet {
             // TODO should this servlet also save execution in history?
             // history.save(execution)
 
-            respondJson(response, new Result(SC_OK, "Execution result: " + execution.toString()));
+            respondJson(
+                    response,
+                    new Result(SC_OK, String.format("Script at path '%s' executed successfully", path), execution));
         } catch (Exception e) {
             LOG.error("Cannot execute script at path '{}'", path, e);
-            respondJson(response, new Result(SC_INTERNAL_SERVER_ERROR, e.getMessage()));
+            respondJson(
+                    response,
+                    new Result(
+                            SC_INTERNAL_SERVER_ERROR,
+                            String.format("Script at path '%s' cannot be executed. Error: %s", path, e.getMessage())));
         }
     }
 }

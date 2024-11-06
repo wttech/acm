@@ -12,6 +12,7 @@
   "dependencies": {
     "@adobe/react-spectrum": "^3.37.1",
     "@monaco-editor/react": "^4.6.0",
+    "@react-spectrum/toast": "^3.0.0-beta.16",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.2.1"

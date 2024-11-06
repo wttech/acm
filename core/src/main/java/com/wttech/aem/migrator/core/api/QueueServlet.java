@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.servlets.ServletResolverConstants;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -20,10 +21,10 @@ import org.slf4j.LoggerFactory;
         immediate = true,
         service = Servlet.class,
         property = {
-            "sling.servlet.methods=GET",
-            "sling.servlet.methods=POST",
-            "sling.servlet.extensions=json",
-            "sling.servlet.resourceTypes=" + QueueServlet.RT
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
+            // TODO ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+            ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
+            ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + QueueServlet.RT
         })
 public class QueueServlet extends SlingAllMethodsServlet {
 

@@ -9,12 +9,41 @@ import Print from "@spectrum-icons/workflow/Print";
 import Copy from "@spectrum-icons/workflow/Copy";
 import Cancel from "@spectrum-icons/workflow/Cancel";
 
+import {ToastQueue} from '@react-spectrum/toast'
+
 const ConsolePage = () => {
+
+    const onExecute = () => {
+        fetch('/apps/migrator/api/executor.json', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then(response => {
+            if (response.ok) {
+                ToastQueue.positive('Script executed successfully', {timeout: 5000});
+                return response.json();
+            } else {
+                ToastQueue.negative('Script cannot be executed properly!', {timeout: 5000});
+            }
+        });
+    }
+
+    const onAbort = () => {
+        ToastQueue.neutral('Abort to be implemented!', {timeout: 5000});
+    }
+
+    const onCheckSyntax = () => {
+        ToastQueue.neutral('Check syntax to be implemented!', {timeout: 5000});
+    }
+
+    const onCopyOutput = () => {
+        ToastQueue.neutral('Copy output to be implemented!', {timeout: 5000});
+    }
 
     return (
         <Flex direction="column" gap="size-200">
-
-            <Tabs aria-label="History of Ancient Rome">
+            <Tabs>
                 <TabList>
                     <Item key="code"><FileCode/><Text>Code</Text></Item>
                     <Item key="output"><Print/><Text>Output</Text></Item>
@@ -23,8 +52,8 @@ const ConsolePage = () => {
                     <Item key="code">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <ButtonGroup>
-                                <Button variant="accent"><Gears/><Text>Execute</Text></Button>
-                                <Button variant="secondary" style="fill"><Spellcheck/><Text>Check syntax</Text></Button>
+                                <Button variant="accent" onPress={onExecute}><Gears/><Text>Execute</Text></Button>
+                                <Button variant="secondary" onPress={onCheckSyntax} style="fill"><Spellcheck/><Text>Check syntax</Text></Button>
                             </ButtonGroup>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"
@@ -43,8 +72,8 @@ const ConsolePage = () => {
                     <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <ButtonGroup>
-                                <Button variant="negative" isDisabled={false}><Cancel/><Text>Abort</Text></Button>
-                                <Button variant="secondary"><Copy/><Text>Copy</Text></Button>
+                                <Button variant="negative" isDisabled={false} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
+                                <Button variant="secondary" onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
                             </ButtonGroup>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"

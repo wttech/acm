@@ -20,6 +20,17 @@ export default defineConfig({
         'node_modules',
         'src',
       ],
+    },
+    proxy: {
+      '/apps/migrator/api': {
+        target: 'http://localhost:4502',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('Authorization', `Basic ${Buffer.from('admin:admin').toString('base64')}`);
+          });
+        }
+      }
     }
   },
   build: {
