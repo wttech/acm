@@ -18,7 +18,7 @@ const ConsolePage = () => {
         const scriptPath = '/conf/migrator/acme/hello-world.groovy';
         await toastRequest({
             operation: 'Script execution',
-            url: `/apps/migrator/api/executor.json?scriptPath=${encodeURIComponent(scriptPath)}`,
+            url: `/apps/migrator/api/execute-script.json?path=${encodeURIComponent(scriptPath)}`,
             method: 'post',
         });
     }

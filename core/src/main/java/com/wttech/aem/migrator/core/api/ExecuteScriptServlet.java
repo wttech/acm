@@ -23,15 +23,15 @@ import org.slf4j.LoggerFactory;
             ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
             ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
             ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
-            ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ExecutorServlet.RT
+            ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ExecuteScriptServlet.RT
         })
-public class ExecutorServlet extends SlingAllMethodsServlet {
+public class ExecuteScriptServlet extends SlingAllMethodsServlet {
 
-    public static final String RT = "migrator/api/executor";
+    public static final String RT = "migrator/api/execute-script";
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExecutorServlet.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExecuteScriptServlet.class);
 
-    private static final String SCRIPT_PATH_PARAM = "scriptPath";
+    private static final String PATH_PARAM = "path";
 
     @Reference
     private Executor executor;
@@ -43,7 +43,7 @@ public class ExecutorServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        var path = stringParam(request, SCRIPT_PATH_PARAM);
+        var path = stringParam(request, PATH_PARAM);
 
         try {
             var script = new ScriptRepository(request.getResourceResolver())
