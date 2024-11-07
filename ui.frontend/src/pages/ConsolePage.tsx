@@ -14,11 +14,13 @@ import {useState} from "react";
 
 const ConsolePage = () => {
     const [selectedTab, setSelectedTab] = useState<string>('code');
+    const [executing, setExecuting] = useState<boolean>(false);
     const [code, setCode] = useState<string | undefined>(ConsoleCode);
     const [output, setOutput] = useState<string | undefined>('');
 
     const onExecute = async () => {
-        await toastRequest({
+        setExecuting(true);
+        toastRequest({
             operation: 'Script execution',
             url: `/apps/migrator/api/execute-code.json`,
             method: 'post',
@@ -27,11 +29,12 @@ const ConsolePage = () => {
                     id: 'console',
                     content: code,
                 }
-            },
-            onSuccess: (response) => {
-                setSelectedTab('output');
-                setOutput(response.data.data.output);
             }
+        }).then((response: any) => {
+            setSelectedTab('output');
+            setOutput(response.data.data.output);
+        }).finally(() => {
+            setExecuting(false);
         });
     }
     const onAbort = () => {
@@ -55,7 +58,7 @@ const ConsolePage = () => {
                     <Item key="code">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <ButtonGroup>
-                                <Button variant="accent" onPress={onExecute}><Gears/><Text>Execute</Text></Button>
+                                <Button variant="accent" onPress={onExecute} isPending={executing}><Gears/><Text>Execute</Text></Button>
                                 <Button variant="secondary" onPress={onCheckSyntax} style="fill"><Spellcheck/><Text>Check syntax</Text></Button>
                             </ButtonGroup>
                             <View backgroundColor="gray-800"

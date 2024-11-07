@@ -3,9 +3,7 @@ import {ToastQueue} from "@react-spectrum/toast";
 
 type ToastRequestConfig = AxiosRequestConfig & {
     operation: string,
-    timeout?: number,
-    onSuccess?: (response: any) => void,
-    onFailure?: (error: any) => void,
+    timeout?: number
 }
 
 export async function toastRequest(config: ToastRequestConfig) {
@@ -18,11 +16,10 @@ export async function toastRequest(config: ToastRequestConfig) {
             } else {
                 ToastQueue.positive(`${config.operation} succeeded!`, {timeout: toastTimeout});
             }
+            return response;
         } else {
             ToastQueue.negative(`${config.operation} failed!`, {timeout: toastTimeout});
-        }
-        if (config.onSuccess) {
-            config.onSuccess(response);
+            throw new Error(`${config.operation} failed!`);
         }
     } catch (error: any) {
         console.error(`${config.operation} error!`, error);
@@ -31,8 +28,6 @@ export async function toastRequest(config: ToastRequestConfig) {
         } else {
             ToastQueue.negative(`${config.operation} failed!`, {timeout: toastTimeout});
         }
-        if (config.onFailure) {
-            config.onFailure(error);
-        }
+        throw error;
     }
 }
