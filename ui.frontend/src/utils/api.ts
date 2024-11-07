@@ -31,3 +31,21 @@ export async function toastRequest(config: ToastRequestConfig) {
         throw error;
     }
 }
+
+export async function apiRequest(config: ToastRequestConfig) {
+    try {
+        const response = await axios(config);
+        if (response.status >= 200 && response.status < 300) {
+            return response;
+        } else {
+            throw new Error(`${config.operation} failed!`);
+        }
+    } catch (error: any) {
+        console.error(`${config.operation} error!`, error);
+        if (error.response && error.response.data && error.response.data.message) {
+            throw new Error(error.response.data.message);
+        } else {
+            throw new Error(`${config.operation} failed!`);
+        }
+    }
+}

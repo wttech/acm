@@ -10,7 +10,7 @@ import Cancel from "@spectrum-icons/workflow/Cancel";
 import Bug from "@spectrum-icons/workflow/Bug";
 
 import {ToastQueue} from '@react-spectrum/toast'
-import {toastRequest} from "../utils/api.ts";
+import {apiRequest, toastRequest} from "../utils/api.ts";
 import {useState} from "react";
 
 const ConsolePage = () => {
@@ -22,7 +22,7 @@ const ConsolePage = () => {
 
     const onExecute = async () => {
         setExecuting(true);
-        toastRequest({
+        apiRequest({
             operation: 'Script execution',
             url: `/apps/migrator/api/execute-code.json`,
             method: 'post',
@@ -33,12 +33,17 @@ const ConsolePage = () => {
                 }
             }
         }).then((response: any) => {
-            setOutput(response.data.data.output);
-            setError(response.data.data.error);
+            const responseData = response.data;
+            const execution = responseData.data;
 
-            if (response.data.data.error) {
+            setOutput(execution.output);
+            setError(execution.error);
+
+            if (execution.error) {
+                ToastQueue.negative('Code execution failed!', {timeout: 3000});
                 setSelectedTab('error');
             } else {
+                ToastQueue.positive('Code execution succeeded!', {timeout: 3000});
                 setSelectedTab('output');
             }
         }).finally(() => {
