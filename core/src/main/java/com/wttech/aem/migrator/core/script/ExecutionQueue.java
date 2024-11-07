@@ -32,12 +32,12 @@ public class ExecutionQueue implements JobConsumer {
     private Executor executor;
 
     public void add(Executable executable) throws MigratorException {
-        jobManager.addJob(TOPIC, QueueExecutable.toJobProps(executable));
+        jobManager.addJob(TOPIC, Code.toJobProps(executable));
     }
 
     @Override
     public JobResult process(Job job) {
-        var executable = QueueExecutable.fromJob(job);
+        var executable = Code.fromJob(job);
         if (healthChecker.isHealthy()) {
             LOG.warn("Cancelling execution '{}' - instance is not healthy", executable);
             return JobResult.CANCEL;

@@ -6,14 +6,17 @@ import java.util.Map;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.sling.event.jobs.Job;
 
-/** Represents an executable script (some version of it pushed onto the queue). */
-public class QueueExecutable implements Executable {
+public class Code implements Executable {
 
-    private final String id;
+    private String id;
 
-    private final String content;
+    private String content;
 
-    public QueueExecutable(String id, String content) {
+    public Code() {
+        // for deserialization
+    }
+
+    public Code(String id, String content) {
         this.id = id;
         this.content = content;
     }
@@ -26,7 +29,7 @@ public class QueueExecutable implements Executable {
     }
 
     public static Executable fromJob(Job job) {
-        return new QueueExecutable(job.getProperty("content", String.class), job.getProperty("id", String.class));
+        return new Code(job.getProperty("content", String.class), job.getProperty("id", String.class));
     }
 
     public String getId() {

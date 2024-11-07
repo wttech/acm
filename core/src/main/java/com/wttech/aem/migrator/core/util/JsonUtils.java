@@ -3,6 +3,7 @@ package com.wttech.aem.migrator.core.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 public final class JsonUtils {
@@ -17,6 +18,10 @@ public final class JsonUtils {
 
     private JsonUtils() {
         // intentionally empty
+    }
+
+    public static <T> T readJson(InputStream inputStream, Class<T> clazz) throws IOException {
+        return MAPPER.readValue(inputStream, clazz);
     }
 
     public static void writeJson(OutputStream outputStream, Object data) throws IOException {

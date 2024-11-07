@@ -19,6 +19,12 @@ const ConsolePage = () => {
             operation: 'Script execution',
             url: `/apps/migrator/api/execute-code.json`,
             method: 'post',
+            data: {
+                code: {
+                    id: 'console',
+                    content: ConsoleCode,
+                }
+            }
         });
     }
     const onAbort = () => {
