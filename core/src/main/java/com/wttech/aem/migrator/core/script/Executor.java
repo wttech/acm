@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 @Component(immediate = true, service = Executor.class)
 public class Executor {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
+
     private static final String BINDING_RESOURCE_RESOLVER = "resourceResolver";
 
     private static final String BINDING_OUT = "out";
@@ -38,19 +40,20 @@ public class Executor {
         }
     }
 
-    public Execution execute(Executable executable, ExecutionOptions options) {
+    public Execution execute(Executable executable, ExecutionOptions options) throws MigratorException {
         var output = new StringBuilder();
         duplicateOutput(options, output);
 
         var shell = createShell(executable, options);
+        var content = composeContent(executable);
         var startTime = System.currentTimeMillis();
 
         try {
-            var content = composeContent(executable);
             shell.evaluate(content);
             return new Execution(
                     executable, Execution.Status.SUCCESS, calculateDuration(startTime), output.toString(), null);
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            LOG.debug("Execution of '{}' failed! Content:\n\n{}\n\n", executable.getId(), executable.getContent(), e);
             return new Execution(
                     executable, Execution.Status.FAILURE, calculateDuration(startTime), output.toString(), e);
         }

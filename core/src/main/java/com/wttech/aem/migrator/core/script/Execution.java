@@ -17,28 +17,28 @@ public class Execution implements Serializable {
 
     private final String error;
 
-    public Execution(Executable executable, Status status, long duration, String output, Exception exception) {
+    public Execution(Executable executable, Status status, long duration, String output, Throwable throwable) {
         this.executable = executable;
         this.status = status;
         this.duration = duration;
         this.output = output;
-        this.error = composeError(exception);
+        this.error = composeError(throwable);
     }
 
-    private String composeError(Exception exception) {
+    private String composeError(Throwable throwable) {
         var builder = new StringBuilder();
-        if (exception != null) {
+        if (throwable != null) {
             builder.append("Exception:\n");
-            builder.append(exception.getMessage()).append("\n");
-            for (var stackTraceElement : exception.getStackTrace()) {
+            builder.append(throwable.getMessage()).append("\n");
+            for (var stackTraceElement : throwable.getStackTrace()) {
                 builder.append(stackTraceElement).append("\n");
             }
 
             builder.append("Root cause:\n");
-            for (var stackTraceElement : ExceptionUtils.getRootCauseStackTrace(exception)) {
+            for (var stackTraceElement : ExceptionUtils.getRootCauseStackTrace(throwable)) {
                 builder.append(stackTraceElement).append("\n");
             }
-            builder.append(StringUtils.join(ExceptionUtils.getRootCauseStackTrace(exception), "\n"))
+            builder.append(StringUtils.join(ExceptionUtils.getRootCauseStackTrace(throwable), "\n"))
                     .append("\n");
         }
         return builder.toString();

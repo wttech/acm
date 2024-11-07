@@ -10,7 +10,7 @@ import Cancel from "@spectrum-icons/workflow/Cancel";
 import Bug from "@spectrum-icons/workflow/Bug";
 
 import {ToastQueue} from '@react-spectrum/toast'
-import {apiRequest, toastRequest} from "../utils/api.ts";
+import {apiRequest} from "../utils/api.ts";
 import {useState} from "react";
 
 const ConsolePage = () => {
@@ -46,6 +46,10 @@ const ConsolePage = () => {
                 ToastQueue.positive('Code execution succeeded!', {timeout: 3000});
                 setSelectedTab('output');
             }
+        }).catch(() => {
+            setOutput('');
+            setError('');
+            ToastQueue.negative('Code execution error!', {timeout: 3000});
         }).finally(() => {
             setExecuting(false);
         });
@@ -84,10 +88,10 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                    value={code}
-                                    onChange={setCode}
-                                    height="60vh"
-                                    language="java"
+                                        value={code}
+                                        onChange={setCode}
+                                        height="60vh"
+                                        language="java"
                                 />
                             </View>
                         </Flex>
@@ -104,9 +108,9 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                    value={output}
-                                    height="60vh"
-                                    options={{readOnly: true}}
+                                        value={output}
+                                        height="60vh"
+                                        options={{readOnly: true}}
                                 />
                             </View>
                         </Flex>
@@ -122,13 +126,13 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                    value={error}
-                                    height="60vh"
-                                    options={{readOnly: true}}
+                                        value={error}
+                                        height="60vh"
+                                        options={{readOnly: true}}
                                 />
                             </View>
                         </Flex>
-                </Item>
+                    </Item>
                 </TabPanels>
             </Tabs>
         </Flex>
