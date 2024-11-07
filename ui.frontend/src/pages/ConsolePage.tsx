@@ -1,7 +1,6 @@
 import {Button, ButtonGroup, Flex, View, Text, Tabs, TabList, Item, TabPanels} from "@adobe/react-spectrum";
 import Editor from "@monaco-editor/react";
 import ConsoleCode from "./ConsoleCode.groovy";
-import ConsoleOutput from "./ConsoleOutput.txt";
 import Spellcheck from "@spectrum-icons/workflow/Spellcheck";
 import Gears from "@spectrum-icons/workflow/Gears";
 import FileCode from "@spectrum-icons/workflow/FileCode";
@@ -11,8 +10,11 @@ import Cancel from "@spectrum-icons/workflow/Cancel";
 
 import {ToastQueue} from '@react-spectrum/toast'
 import {toastRequest} from "../utils/api.ts";
+import {useState} from "react";
 
 const ConsolePage = () => {
+    const [code, setCode] = useState(ConsoleCode);
+    const [output, setOutput] = useState('');
 
     const onExecute = async () => {
         await toastRequest({
@@ -22,8 +24,11 @@ const ConsolePage = () => {
             data: {
                 code: {
                     id: 'console',
-                    content: ConsoleCode,
+                    content: code,
                 }
+            },
+            onSuccess: (response) => {
+                setOutput(response.data.data.output);
             }
         });
     }
@@ -57,7 +62,8 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        defaultValue={ConsoleCode}
+                                        value={code}
+                                        onChange={setCode}
                                         height="60vh"
                                         language="java"
                                 />
@@ -77,7 +83,7 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        value={ConsoleOutput}
+                                        value={output}
                                         height="60vh"
                                         language="java"
                                         options={{readOnly: true}}
