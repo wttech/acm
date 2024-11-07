@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
         immediate = true,
         service = Servlet.class,
         property = {
-            ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
             ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
             ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
             ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ExecuteScriptServlet.RT
@@ -35,11 +34,6 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
 
     @Reference
     private Executor executor;
-
-    @Override
-    protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        respondJson(response, new Result(SC_OK, "This is executor servlet!"));
-    }
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
