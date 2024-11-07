@@ -13,8 +13,9 @@ import {toastRequest} from "../utils/api.ts";
 import {useState} from "react";
 
 const ConsolePage = () => {
-    const [code, setCode] = useState(ConsoleCode);
-    const [output, setOutput] = useState('');
+    const [selectedTab, setSelectedTab] = useState<string>('code');
+    const [code, setCode] = useState<string | undefined>(ConsoleCode);
+    const [output, setOutput] = useState<string | undefined>('');
 
     const onExecute = async () => {
         await toastRequest({
@@ -28,6 +29,7 @@ const ConsolePage = () => {
                 }
             },
             onSuccess: (response) => {
+                setSelectedTab('output');
                 setOutput(response.data.data.output);
             }
         });
@@ -44,7 +46,7 @@ const ConsolePage = () => {
 
     return (
         <Flex direction="column" gap="size-200">
-            <Tabs>
+            <Tabs selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as string)}>
                 <TabList>
                     <Item key="code"><FileCode/><Text>Code</Text></Item>
                     <Item key="output"><Print/><Text>Output</Text></Item>
