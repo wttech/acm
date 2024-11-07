@@ -7,6 +7,7 @@ import FileCode from "@spectrum-icons/workflow/FileCode";
 import Print from "@spectrum-icons/workflow/Print";
 import Copy from "@spectrum-icons/workflow/Copy";
 import Cancel from "@spectrum-icons/workflow/Cancel";
+import Bug from "@spectrum-icons/workflow/Bug";
 
 import {ToastQueue} from '@react-spectrum/toast'
 import {toastRequest} from "../utils/api.ts";
@@ -17,6 +18,7 @@ const ConsolePage = () => {
     const [executing, setExecuting] = useState<boolean>(false);
     const [code, setCode] = useState<string | undefined>(ConsoleCode);
     const [output, setOutput] = useState<string | undefined>('');
+    const [error, setError] = useState<string | undefined>('');
 
     const onExecute = async () => {
         setExecuting(true);
@@ -31,8 +33,14 @@ const ConsolePage = () => {
                 }
             }
         }).then((response: any) => {
-            setSelectedTab('output');
             setOutput(response.data.data.output);
+            setError(response.data.data.error);
+
+            if (response.data.data.error) {
+                setSelectedTab('error');
+            } else {
+                setSelectedTab('output');
+            }
         }).finally(() => {
             setExecuting(false);
         });
@@ -46,6 +54,9 @@ const ConsolePage = () => {
     const onCopyOutput = () => {
         ToastQueue.neutral('Copy output to be implemented!', {timeout: 5000});
     }
+    const onCopyError = () => {
+        ToastQueue.neutral('Copy error to be implemented!', {timeout: 5000});
+    }
 
     return (
         <Flex direction="column" gap="size-200">
@@ -53,6 +64,7 @@ const ConsolePage = () => {
                 <TabList>
                     <Item key="code"><FileCode/><Text>Code</Text></Item>
                     <Item key="output"><Print/><Text>Output</Text></Item>
+                    <Item key="error"><Bug/><Text>Error</Text></Item>
                 </TabList>
                 <TabPanels>
                     <Item key="code">
@@ -67,14 +79,13 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        value={code}
-                                        onChange={setCode}
-                                        height="60vh"
-                                        language="java"
+                                    value={code}
+                                    onChange={setCode}
+                                    height="60vh"
+                                    language="java"
                                 />
                             </View>
                         </Flex>
-
                     </Item>
                     <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100">
@@ -88,14 +99,31 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        value={output}
-                                        height="60vh"
-                                        language="java"
-                                        options={{readOnly: true}}
+                                    value={output}
+                                    height="60vh"
+                                    options={{readOnly: true}}
                                 />
                             </View>
                         </Flex>
                     </Item>
+                    <Item key="error">
+                        <Flex direction="column" gap="size-200" marginY="size-100">
+                            <ButtonGroup>
+                                <Button variant="secondary" onPress={onCopyError}><Copy/><Text>Copy</Text></Button>
+                            </ButtonGroup>
+                            <View backgroundColor="gray-800"
+                                  borderWidth="thin"
+                                  borderColor="dark"
+                                  borderRadius="medium"
+                                  padding="size-50">
+                                <Editor theme="vs-dark"
+                                    value={error}
+                                    height="60vh"
+                                    options={{readOnly: true}}
+                                />
+                            </View>
+                        </Flex>
+                </Item>
                 </TabPanels>
             </Tabs>
         </Flex>
