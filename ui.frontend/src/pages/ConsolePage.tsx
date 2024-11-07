@@ -16,6 +16,7 @@ import {useState} from "react";
 const ConsolePage = () => {
     const [selectedTab, setSelectedTab] = useState<string>('code');
     const [executing, setExecuting] = useState<boolean>(false);
+    const [parsing, setParsing] = useState<boolean>(false);
     const [code, setCode] = useState<string | undefined>(ConsoleCode);
     const [output, setOutput] = useState<string | undefined>('');
     const [error, setError] = useState<string | undefined>('');
@@ -27,6 +28,7 @@ const ConsolePage = () => {
             url: `/apps/migrator/api/execute-code.json`,
             method: 'post',
             data: {
+                mode: 'evaluate',
                 code: {
                     id: 'console',
                     content: code,
@@ -57,8 +59,39 @@ const ConsolePage = () => {
     const onAbort = () => {
         ToastQueue.neutral('Abort to be implemented!', {timeout: 5000});
     }
-    const onCheckSyntax = () => {
-        ToastQueue.neutral('Check syntax to be implemented!', {timeout: 5000});
+    const onParse = () => {
+        setParsing(true);
+        apiRequest({
+            operation: 'Script parsing',
+            url: `/apps/migrator/api/execute-code.json`,
+            method: 'post',
+            data: {
+                mode: 'parse',
+                code: {
+                    id: 'console',
+                    content: code,
+                }
+            }
+        }).then((response: any) => {
+            const responseData = response.data;
+            const execution = responseData.data;
+
+            setOutput(execution.output);
+            setError(execution.error);
+
+            if (execution.error) {
+                ToastQueue.negative('Code parsing failed!', {timeout: 3000});
+                setSelectedTab('error');
+            } else {
+                ToastQueue.positive('Code parsing succeeded!', {timeout: 3000});
+            }
+        }).catch(() => {
+            setOutput('');
+            setError('');
+            ToastQueue.negative('Code parsing error!', {timeout: 3000});
+        }).finally(() => {
+            setParsing(false);
+        });
     }
     const onCopyOutput = () => {
         ToastQueue.neutral('Copy output to be implemented!', {timeout: 5000});
@@ -80,7 +113,7 @@ const ConsolePage = () => {
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <ButtonGroup>
                                 <Button variant="accent" onPress={onExecute} isPending={executing}><Gears/><Text>Execute</Text></Button>
-                                <Button variant="secondary" onPress={onCheckSyntax} style="fill"><Spellcheck/><Text>Check syntax</Text></Button>
+                                <Button variant="secondary" onPress={onParse} isPending={parsing} style="fill"><Spellcheck/><Text>Parse</Text></Button>
                             </ButtonGroup>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"

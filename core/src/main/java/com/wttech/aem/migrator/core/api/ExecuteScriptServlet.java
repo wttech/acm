@@ -3,6 +3,7 @@ package com.wttech.aem.migrator.core.api;
 import static com.wttech.aem.migrator.core.util.ServletUtils.*;
 import static javax.servlet.http.HttpServletResponse.*;
 
+import com.wttech.aem.migrator.core.script.ExecutionOptions;
 import com.wttech.aem.migrator.core.script.Executor;
 import com.wttech.aem.migrator.core.script.ScriptRepository;
 import java.io.IOException;
@@ -49,7 +50,8 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            var execution = executor.execute(script);
+            var options = new ExecutionOptions(request.getResourceResolver());
+            var execution = executor.execute(script, options);
 
             // TODO should this servlet also save execution in history?
             // history.save(execution)

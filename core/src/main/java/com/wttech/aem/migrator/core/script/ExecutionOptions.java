@@ -7,11 +7,12 @@ public class ExecutionOptions {
 
     private ResourceResolver resourceResolver;
 
-    private OutputStream outputStream;
+    private OutputStream outputStream = null;
 
-    public ExecutionOptions(ResourceResolver resourceResolver, OutputStream outputStream) {
+    private ExecutionMode mode = ExecutionMode.EVALUATE;
+
+    public ExecutionOptions(ResourceResolver resourceResolver) {
         this.resourceResolver = resourceResolver;
-        this.outputStream = outputStream;
     }
 
     public ResourceResolver getResourceResolver() {
@@ -28,5 +29,13 @@ public class ExecutionOptions {
 
     public void setOutputStream(OutputStream outputStream) {
         this.outputStream = outputStream;
+    }
+
+    public ExecutionMode getMode() {
+        return mode;
+    }
+
+    public void setMode(ExecutionMode mode) {
+        this.mode = mode;
     }
 }

@@ -33,7 +33,7 @@ public class Executor {
 
     public Execution execute(Executable executable) throws MigratorException {
         try (var resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
-            return execute(executable, new ExecutionOptions(resourceResolver, null));
+            return execute(executable, new ExecutionOptions(resourceResolver));
         } catch (LoginException e) {
             throw new MigratorException(
                     String.format("Failed to access repository while executing '%s'", executable.getId()), e);
@@ -49,7 +49,14 @@ public class Executor {
         var startTime = System.currentTimeMillis();
 
         try {
-            shell.evaluate(content);
+            switch (options.getMode()) {
+                case PARSE:
+                    shell.parse(content);
+                    break;
+                case EVALUATE:
+                    shell.evaluate(content);
+                    break;
+            }
             return new Execution(
                     executable, Execution.Status.SUCCESS, calculateDuration(startTime), output.toString(), null);
         } catch (Throwable e) {

@@ -3,6 +3,8 @@ package com.wttech.aem.migrator.core.api;
 import static com.wttech.aem.migrator.core.util.ServletUtils.respondJson;
 import static javax.servlet.http.HttpServletResponse.*;
 
+import com.wttech.aem.migrator.core.script.ExecutionMode;
+import com.wttech.aem.migrator.core.script.ExecutionOptions;
 import com.wttech.aem.migrator.core.script.Executor;
 import com.wttech.aem.migrator.core.util.JsonUtils;
 import java.io.IOException;
@@ -43,9 +45,19 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
             }
 
             var code = input.getCode();
+            var options = new ExecutionOptions(request.getResourceResolver());
+
+            var mode = ExecutionMode.of(input.getMode()).orElse(null);
+            if (mode == null) {
+                respondJson(
+                        response,
+                        new Result(SC_BAD_REQUEST, String.format("Execution mode '%s' is not supported!", mode)));
+                return;
+            }
+            options.setMode(mode);
 
             try {
-                var execution = executor.execute(code);
+                var execution = executor.execute(code, options);
 
                 // TODO should this servlet also save execution in history?
                 // history.save(execution)
