@@ -93,6 +93,7 @@ const ConsolePage = () => {
             setParsing(false);
         });
     }
+
     const onCopyOutput = () => {
         ToastQueue.neutral('Copy output to be implemented!', {timeout: 5000});
     }
@@ -124,7 +125,7 @@ const ConsolePage = () => {
                                         value={code}
                                         onChange={setCode}
                                         height="60vh"
-                                        language="java"
+                                        language="groovy"
                                 />
                             </View>
                         </Flex>
