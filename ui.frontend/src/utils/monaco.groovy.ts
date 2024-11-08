@@ -12,15 +12,7 @@ export function registerGroovyLanguage(monaco: Monaco) {
     const groovyLanguageConfiguration = { ...javaLanguageConfiguration };
     const groovyLanguage = { ...javaLanguage };
 
-    // Add Groovy-specific keywords
-    groovyLanguage.keywords.push(
-        "as", "def", "in", "trait", "with", "println", "print", "groovy"
-    );
-
-    // Add Groovy-specific operators
-    groovyLanguage.operators.push(
-        "?.", "?:", "*.", "->", "==~", "=~"
-    );
+    // TODO ... groovy-specific stuff goes here
 
     // Register the Groovy language using the modified configuration and tokenizer
     monaco.languages.register({ id: 'groovy' });
