@@ -8,8 +8,22 @@ export function registerGroovyLanguage(monaco: Monaco) {
         return;
     }
 
-    // Register the Groovy language using Java's configuration and tokenizer
+    // Clone the Java language configuration and tokenizer
+    const groovyLanguageConfiguration = { ...javaLanguageConfiguration };
+    const groovyLanguage = { ...javaLanguage };
+
+    // Add Groovy-specific keywords
+    groovyLanguage.keywords.push(
+        "as", "def", "in", "trait", "with", "println", "print", "groovy"
+    );
+
+    // Add Groovy-specific operators
+    groovyLanguage.operators.push(
+        "?.", "?:", "*.", "->", "==~", "=~"
+    );
+
+    // Register the Groovy language using the modified configuration and tokenizer
     monaco.languages.register({ id: 'groovy' });
-    monaco.languages.setMonarchTokensProvider('groovy', javaLanguage);
-    monaco.languages.setLanguageConfiguration('groovy', javaLanguageConfiguration);
+    monaco.languages.setMonarchTokensProvider('groovy', groovyLanguage);
+    monaco.languages.setLanguageConfiguration('groovy', groovyLanguageConfiguration);
 }
