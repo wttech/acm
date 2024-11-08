@@ -12,6 +12,7 @@ import Bug from "@spectrum-icons/workflow/Bug";
 import {ToastQueue} from '@react-spectrum/toast'
 import {apiRequest} from "../utils/api.ts";
 import {useState} from "react";
+import {registerGroovyLanguage} from "../utils/monaco.groovy.ts";
 
 const ConsolePage = () => {
     const [selectedTab, setSelectedTab] = useState<string>('code');
@@ -93,6 +94,7 @@ const ConsolePage = () => {
             setParsing(false);
         });
     }
+
     const onCopyOutput = () => {
         ToastQueue.neutral('Copy output to be implemented!', {timeout: 5000});
     }
@@ -121,10 +123,11 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        value={code}
-                                        onChange={setCode}
-                                        height="60vh"
-                                        language="java"
+                                    value={code}
+                                    onChange={setCode}
+                                    height="60vh"
+                                    language="groovy"
+                                    beforeMount={registerGroovyLanguage}
                                 />
                             </View>
                         </Flex>
