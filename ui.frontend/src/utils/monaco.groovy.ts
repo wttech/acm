@@ -12,7 +12,37 @@ export function registerGroovyLanguage(monaco: Monaco) {
     const groovyLanguageConfiguration = { ...javaLanguageConfiguration };
     const groovyLanguage = { ...javaLanguage };
 
-    // TODO ... groovy-specific stuff goes here
+    // Add Groovy-specific keywords
+    const groovyKeywords = ['def', 'as', 'in', 'trait', 'with'];
+    groovyLanguage.keywords = [...(groovyLanguage.keywords || []), ...groovyKeywords];
+
+    // Extend the tokenizer with Groovy-specific features
+    groovyLanguage.tokenizer = {
+        ...groovyLanguage.tokenizer,
+        root: [
+            ...(groovyLanguage.tokenizer.root || []),
+
+            // Support for GStrings (interpolated strings)
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
+            [/"/, { token: 'string.quote', bracket: '@open', next: '@gstring' }],
+
+            // Groovy closures
+            [/\{/, { token: 'delimiter.curly', next: '@closure' }]
+        ],
+
+        gstring: [
+            [/\$\{[^}]+\}/, 'variable'],
+            [/[^\\"]+/, 'string'],
+            [/\\./, 'string.escape'],
+            [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+        ],
+
+        closure: [
+            [/[^\{\}]+/, ''],
+            [/\{/, 'delimiter.curly', '@push'],
+            [/\}/, 'delimiter.curly', '@pop']
+        ]
+    };
 
     // Register the Groovy language using the modified configuration and tokenizer
     monaco.languages.register({ id: 'groovy' });
