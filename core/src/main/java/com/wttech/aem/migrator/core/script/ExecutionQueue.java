@@ -2,6 +2,7 @@ package com.wttech.aem.migrator.core.script;
 
 import com.wttech.aem.migrator.core.MigratorException;
 import com.wttech.aem.migrator.core.instance.HealthChecker;
+import java.util.Optional;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.event.jobs.consumer.JobConsumer;
@@ -31,8 +32,12 @@ public class ExecutionQueue implements JobConsumer {
     @Reference
     private Executor executor;
 
-    public void add(Executable executable) throws MigratorException {
-        jobManager.addJob(TOPIC, Code.toJobProps(executable));
+    public Optional<ExecutionJob> add(Executable executable) throws MigratorException {
+        var job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
+        if (job == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name()));
     }
 
     @Override
@@ -51,5 +56,20 @@ public class ExecutionQueue implements JobConsumer {
         }
         LOG.info("Executed '{}'", executable);
         return JobResult.OK;
+    }
+
+    public Optional<ExecutionJob> find(String jobId) {
+        var job = jobManager.getJobById(jobId);
+        if (job == null) {
+            return Optional.empty();
+        }
+
+        // TODO read output from job properties (?) / or in-memory storage
+
+        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name()));
+    }
+
+    public boolean remove(String jobId) {
+        return jobManager.removeJobById(jobId);
     }
 }
