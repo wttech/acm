@@ -8,7 +8,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
-import org.apache.sling.event.jobs.consumer.JobConsumer;
+import org.apache.sling.event.jobs.consumer.JobExecutionContext;
+import org.apache.sling.event.jobs.consumer.JobExecutionResult;
+import org.apache.sling.event.jobs.consumer.JobExecutor;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -18,12 +20,10 @@ import org.slf4j.LoggerFactory;
 
 @Component(
         immediate = true,
-        service = {ExecutionQueue.class, JobConsumer.class},
-        property = {JobConsumer.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
-public class ExecutionQueue implements JobConsumer {
+        service = {ExecutionQueue.class, JobExecutor.class},
+        property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
+public class ExecutionQueue implements JobExecutor {
 
-    // TODO add osgi config with proper queue configuration:
-    // https://sling.apache.org/documentation/bundles/apache-sling-eventing-and-job-handling.html#queue-configurations
     public static final String TOPIC = "com/wttech/aem/migrator/ExecutionQueue";
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
@@ -60,11 +60,11 @@ public class ExecutionQueue implements JobConsumer {
     }
 
     @Override
-    public JobResult process(Job job) {
+    public JobExecutionResult process(Job job, JobExecutionContext context) {
         var executable = Code.fromJob(job);
         if (!healthChecker.isHealthy()) {
-            LOG.warn("Cancelling execution '{}' - instance is not healthy", executable);
-            return JobResult.CANCEL;
+            LOG.warn("Failing execution '{}' - instance is not healthy.", executable);
+            return context.result().failed();
         }
         LOG.info("Executing asynchronously '{}'", executable);
         Future<?> future = executorService.submit(() -> {
@@ -76,31 +76,29 @@ public class ExecutionQueue implements JobConsumer {
         });
 
         while (!future.isDone()) {
-            if (job.getJobState() == Job.JobState.STOPPED
-                    || Thread.currentThread().isInterrupted()) {
+            if (context.isStopped() || Thread.currentThread().isInterrupted()) {
                 future.cancel(true);
                 LOG.info("Job '{}' was cancelled", executable);
-                return JobResult.CANCEL;
+                return context.result().cancelled();
             }
             try {
                 Thread.sleep(1000); // TODO make this configurable
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 LOG.info("Job '{}' was interrupted", executable);
-                return JobResult.CANCEL;
+                return context.result().cancelled();
             }
         }
 
         try {
             future.get();
         } catch (Exception e) {
-            // TODO propagate error to execution result, save output to job properties or sth
             LOG.error("Error executing asynchronously '{}'", executable, e);
-            return JobResult.FAILED;
+            return context.result().failed();
         }
 
         LOG.info("Executed asynchronously '{}'", executable);
-        return JobResult.OK;
+        return context.result().succeeded();
     }
 
     public Optional<ExecutionJob> find(String jobId) {
@@ -109,12 +107,10 @@ public class ExecutionQueue implements JobConsumer {
             return Optional.empty();
         }
 
-        // TODO read output from job properties (?) / or in-memory storage
-
         return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name()));
     }
 
-    public boolean remove(String jobId) {
-        return jobManager.removeJobById(jobId);
+    public void stop(String jobId) {
+        jobManager.stopJobById(jobId);
     }
 }

@@ -22,7 +22,7 @@ async function main(): Promise<void> {
 
     await tester.awaitQueuedCodeJob(jobId, 'ACTIVE');
     await tester.cancelQueuedCodeJob(jobId);
-    await tester.awaitQueuedCodeJob(jobId, 'CANCELLED');
+    await tester.awaitQueuedCodeJob(jobId, 'STOPPED');
 }
 
 main();

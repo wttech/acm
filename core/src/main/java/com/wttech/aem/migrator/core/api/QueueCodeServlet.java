@@ -116,6 +116,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             return;
         }
 
+        executionQueue.stop(jobId);
+
         ServletUtils.respondJson(response, new Result(SC_OK, "Job removed successfully", job));
     }
 }
