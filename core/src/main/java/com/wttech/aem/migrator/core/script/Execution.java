@@ -29,7 +29,7 @@ public class Execution implements Serializable {
         var builder = new StringBuilder();
         if (cause != null) {
             var rootCause = ExceptionUtils.getRootCause(cause);
-            if (rootCause != cause) {
+            if (rootCause != null && rootCause != cause) {
                 builder.append(rootCause.getMessage()).append("\n");
                 builder.append(ExceptionUtils.getStackTrace(rootCause));
                 builder.append("\n\n");
