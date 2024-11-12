@@ -49,6 +49,8 @@ public class ExecutionQueue implements JobExecutor {
 
     private ExecutorService executorService;
 
+    private Path outputDir;
+
     public Optional<ExecutionJob> add(Executable executable) throws MigratorException {
         var job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
         if (job == null) {
@@ -60,6 +62,11 @@ public class ExecutionQueue implements JobExecutor {
     @Activate
     protected void activate() {
         executorService = Executors.newSingleThreadExecutor();
+        try {
+            outputDir = Files.createTempDirectory("migrator");
+        } catch (IOException e) {
+            LOG.error("Cannot create output directory", e);
+        }
     }
 
     @Deactivate
@@ -116,30 +123,20 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     private void executeAsync(Executable executable, Job job) throws MigratorException {
-        try {
-            Path outputFile = Files.createTempFile(StringUtils.replace(job.getId(), "/", "-"), ".log");
-            LOG.info("Output file for job '{}' is '{}'", job.getId(), outputFile);
-            try (var resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
-                    var output = Files.newOutputStream(outputFile)) {
-                var options = new ExecutionOptions(resolver);
-                options.setOutputStream(output);
-                executor.execute(executable, options);
-            } catch (LoginException e) {
-                throw new MigratorException(
-                        String.format(
-                                "Failed to access repository while executing '%s' in job '%s'",
-                                executable.getId(), job.getId()),
-                        e);
-            } catch (IOException e) {
-                throw new MigratorException(
-                        String.format("Cannot create output file for executable '%s' in job '%s'", job.getId()), e);
-            }
-        } catch (IOException e) {
+        try (var resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
+                var output = Files.newOutputStream(outputFile(job.getId()))) {
+            var options = new ExecutionOptions(resolver);
+            options.setOutputStream(output);
+            executor.execute(executable, options);
+        } catch (LoginException e) {
             throw new MigratorException(
                     String.format(
-                            "Cannot create output file for executable '%s' in job '%s'",
+                            "Failed to access repository while executing '%s' in job '%s'",
                             executable.getId(), job.getId()),
                     e);
+        } catch (IOException e) {
+            throw new MigratorException(
+                    String.format("Cannot create output file for executable '%s' in job '%s'", job.getId()), e);
         }
     }
 
@@ -154,5 +151,9 @@ public class ExecutionQueue implements JobExecutor {
 
     public void stop(String jobId) {
         jobManager.stopJobById(jobId);
+    }
+
+    public Path outputFile(String jobId) {
+        return outputDir.resolve(StringUtils.replace(jobId, "/", "-") + ".log");
     }
 }
