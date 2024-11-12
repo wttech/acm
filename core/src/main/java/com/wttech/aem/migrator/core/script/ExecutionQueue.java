@@ -94,6 +94,7 @@ public class ExecutionQueue implements JobConsumer {
         try {
             future.get();
         } catch (Exception e) {
+            // TODO propagate error to execution result, save output to job properties or sth
             LOG.error("Error executing asynchronously '{}'", executable, e);
             return JobResult.FAILED;
         }
