@@ -14,6 +14,9 @@ import {apiRequest} from "../utils/api.ts";
 import {useState, useEffect, useRef} from "react";
 import {registerGroovyLanguage} from "../utils/monaco.groovy.ts";
 
+const pollInterval = 500;
+const toastTimeout = 3000;
+
 const ConsolePage = () => {
     const [selectedTab, setSelectedTab] = useState<string>('code');
     const [executing, setExecuting] = useState<boolean>(false);
@@ -42,10 +45,10 @@ const ConsolePage = () => {
             const executionJob = response.data;
             const jobId = executionJob.data.id;
             setJobId(jobId);
-            pollExecutionRef.current = window.setInterval(() => pollExecutionState(jobId), 1000);
+            pollExecutionRef.current = window.setInterval(() => pollExecutionState(jobId), pollInterval);
         } catch (error) {
             setExecuting(false);
-            ToastQueue.negative('Code execution error!', {timeout: 3000});
+            ToastQueue.negative('Code execution error!', {timeout: toastTimeout});
         }
     };
 
@@ -67,16 +70,16 @@ const ConsolePage = () => {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
                 if (executionJob.state === 'FAILED') {
-                    ToastQueue.negative('Code execution failed!', {timeout: 3000});
+                    ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
                     setSelectedTab('error');
                 } else {
-                    ToastQueue.positive('Code execution succeeded!', {timeout: 3000});
+                    ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
                 }
             }
         } catch (error) {
             clearInterval(pollExecutionRef.current!);
             setExecuting(false);
-            ToastQueue.negative('Code execution state error!', {timeout: 3000});
+            ToastQueue.negative('Code execution state error!', {timeout: toastTimeout});
         }
     };
 
@@ -106,11 +109,11 @@ const ConsolePage = () => {
                         setSelectedTab('output');
                         break;
                     }
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, pollInterval));
                 }
-                ToastQueue.neutral('Code execution cancelled successfully!', {timeout: 3000});
+                ToastQueue.neutral('Code execution cancelled successfully!', {timeout: toastTimeout});
             } catch (error) {
-                ToastQueue.negative('Code execution cancelling failed!', {timeout: 3000});
+                ToastQueue.negative('Code execution cancelling failed!', {timeout: toastTimeout});
             }
         }
     };
@@ -144,25 +147,25 @@ const ConsolePage = () => {
             setError(execution.error);
 
             if (execution.error) {
-                ToastQueue.negative('Code parsing failed!', {timeout: 3000});
+                ToastQueue.negative('Code parsing failed!', {timeout: toastTimeout});
                 setSelectedTab('error');
             } else {
-                ToastQueue.positive('Code parsing succeeded!', {timeout: 3000});
+                ToastQueue.positive('Code parsing succeeded!', {timeout: toastTimeout});
             }
         }).catch(() => {
             setOutput('');
             setError('');
-            ToastQueue.negative('Code parsing error!', {timeout: 3000});
+            ToastQueue.negative('Code parsing error!', {timeout: toastTimeout});
         }).finally(() => {
             setParsing(false);
         });
     }
 
     const onCopyOutput = () => {
-        ToastQueue.neutral('Copy output to be implemented!', {timeout: 5000});
+        ToastQueue.neutral('Copy output to be implemented!', {timeout: toastTimeout});
     }
     const onCopyError = () => {
-        ToastQueue.neutral('Copy error to be implemented!', {timeout: 5000});
+        ToastQueue.neutral('Copy error to be implemented!', {timeout: toastTimeout});
     }
 
     return (

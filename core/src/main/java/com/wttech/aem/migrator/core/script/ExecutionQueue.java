@@ -80,17 +80,22 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public Path outputFile(String jobId) {
+        if (outputDir == null || !outputDir.toFile().exists()) {
+            try {
+                outputDir = Files.createTempDirectory("migrator");
+            } catch (IOException e) {
+                LOG.error("Cannot create output directory", e);
+            }
+        }
+        if (outputDir == null) {
+            return null;
+        }
         return outputDir.resolve(StringUtils.replace(jobId, "/", "-") + ".log");
     }
 
     @Activate
     protected void activate() {
         executorService = Executors.newSingleThreadExecutor();
-        try {
-            outputDir = Files.createTempDirectory("migrator");
-        } catch (IOException e) {
-            LOG.error("Cannot create output directory", e);
-        }
     }
 
     @Deactivate
