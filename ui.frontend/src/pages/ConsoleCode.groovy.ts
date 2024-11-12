@@ -8,9 +8,10 @@ boolean shouldMigrate() {
 //void doMigrate() {
     println "Migrating..."
 
-    Thread.sleep(2000)
-    // def foo = resourceResolver.getResource("/content/foo")
-    // migrate foo
+    for (int i = 0; i < 20; i++) {
+        println "Migrating (\${i + 1}/20)"
+        Thread.sleep(500)
+    }
     
     println "Migration done"
 //}

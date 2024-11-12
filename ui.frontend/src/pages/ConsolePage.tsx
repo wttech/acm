@@ -22,7 +22,7 @@ const ConsolePage = () => {
     const [output, setOutput] = useState<string | undefined>('');
     const [error, setError] = useState<string | undefined>('');
     const [jobId, setJobId] = useState<string | undefined>(undefined);
-    const pollingRef = useRef<number | null>(null);
+    const pollExecutionRef = useRef<number | null>(null);
 
     const onExecute = async () => {
         setExecuting(true);
@@ -42,14 +42,14 @@ const ConsolePage = () => {
             const executionJob = response.data;
             const jobId = executionJob.data.id;
             setJobId(jobId);
-            pollingRef.current = window.setInterval(() => onPoll(jobId), 1000);
+            pollExecutionRef.current = window.setInterval(() => pollExecutionState(jobId), 1000);
         } catch (error) {
             setExecuting(false);
             ToastQueue.negative('Code execution error!', {timeout: 3000});
         }
     };
 
-    const onPoll = async (jobId: string) => {
+    const pollExecutionState = async (jobId: string) => {
         try {
             const response = await apiRequest({
                 operation: 'Code execution state',
@@ -64,7 +64,7 @@ const ConsolePage = () => {
                 setSelectedTab('output');
             }
             if (['SUCCEEDED', 'FAILED', 'STOPPED'].includes(executionJob.state)) {
-                clearInterval(pollingRef.current!);
+                clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
                 if (executionJob.state === 'FAILED') {
                     ToastQueue.negative('Code execution failed!', {timeout: 3000});
@@ -74,7 +74,7 @@ const ConsolePage = () => {
                 }
             }
         } catch (error) {
-            clearInterval(pollingRef.current!);
+            clearInterval(pollExecutionRef.current!);
             setExecuting(false);
             ToastQueue.negative('Code execution state error!', {timeout: 3000});
         }
@@ -88,8 +88,26 @@ const ConsolePage = () => {
                     url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
                     method: 'delete'
                 });
-                clearInterval(pollingRef.current!);
+                clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
+
+                let state = '';
+                while (state !== 'STOPPED') {
+                    const response = await apiRequest({
+                        operation: 'Code execution state',
+                        url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
+                        method: 'get'
+                    });
+                    const responseData = response.data;
+                    const executionJob = responseData.data;
+                    state = executionJob.state;
+                    setOutput(executionJob.output);
+                    if (state === 'STOPPED') {
+                        setSelectedTab('output');
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
                 ToastQueue.neutral('Code execution cancelled successfully!', {timeout: 3000});
             } catch (error) {
                 ToastQueue.negative('Code execution cancelling failed!', {timeout: 3000});
@@ -99,8 +117,8 @@ const ConsolePage = () => {
 
     useEffect(() => {
         return () => {
-            if (pollingRef.current) {
-                clearInterval(pollingRef.current);
+            if (pollExecutionRef.current) {
+                clearInterval(pollExecutionRef.current);
             }
         };
     }, []);
