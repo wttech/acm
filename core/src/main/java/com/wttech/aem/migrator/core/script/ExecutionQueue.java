@@ -4,12 +4,14 @@ import com.wttech.aem.migrator.core.MigratorException;
 import com.wttech.aem.migrator.core.instance.HealthChecker;
 import com.wttech.aem.migrator.core.util.ResourceUtils;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -51,12 +53,34 @@ public class ExecutionQueue implements JobExecutor {
 
     private Path outputDir;
 
-    public Optional<ExecutionJob> add(Executable executable) throws MigratorException {
+    public Optional<ExecutionJob> submit(Executable executable) throws MigratorException {
         var job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
         if (job == null) {
             return Optional.empty();
         }
-        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name()));
+        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name(), null));
+    }
+
+    public Optional<ExecutionJob> read(String jobId) throws MigratorException {
+        var job = jobManager.getJobById(jobId);
+        if (job == null) {
+            return Optional.empty();
+        }
+
+        try (var output = Files.newInputStream(outputFile(jobId))) {
+            return Optional.of(new ExecutionJob(
+                    job.getId(), job.getJobState().name(), IOUtils.toString(output, StandardCharsets.UTF_8)));
+        } catch (IOException e) {
+            throw new MigratorException(String.format("Cannot read output file for job '%s'", jobId), e);
+        }
+    }
+
+    public void stop(String jobId) {
+        jobManager.stopJobById(jobId);
+    }
+
+    public Path outputFile(String jobId) {
+        return outputDir.resolve(StringUtils.replace(jobId, "/", "-") + ".log");
     }
 
     @Activate
@@ -138,22 +162,5 @@ public class ExecutionQueue implements JobExecutor {
             throw new MigratorException(
                     String.format("Cannot create output file for executable '%s' in job '%s'", job.getId()), e);
         }
-    }
-
-    public Optional<ExecutionJob> find(String jobId) {
-        var job = jobManager.getJobById(jobId);
-        if (job == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name()));
-    }
-
-    public void stop(String jobId) {
-        jobManager.stopJobById(jobId);
-    }
-
-    public Path outputFile(String jobId) {
-        return outputDir.resolve(StringUtils.replace(jobId, "/", "-") + ".log");
     }
 }

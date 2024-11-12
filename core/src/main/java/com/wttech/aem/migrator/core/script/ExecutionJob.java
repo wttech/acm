@@ -8,9 +8,12 @@ public class ExecutionJob implements Serializable {
 
     private final String state;
 
-    public ExecutionJob(String id, String state) {
+    private final String output;
+
+    public ExecutionJob(String id, String state, String output) {
         this.id = id;
         this.state = state;
+        this.output = output;
     }
 
     public String getId() {
@@ -19,5 +22,9 @@ public class ExecutionJob implements Serializable {
 
     public String getState() {
         return state;
+    }
+
+    public String getOutput() {
+        return output;
     }
 }

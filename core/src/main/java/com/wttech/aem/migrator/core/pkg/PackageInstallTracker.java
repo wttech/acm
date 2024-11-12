@@ -115,7 +115,7 @@ public class PackageInstallTracker implements JobConsumer {
 
     private void queueScript(Script script) {
         try {
-            executionQueue.add(script);
+            executionQueue.submit(script);
         } catch (MigratorException e) {
             LOG.error("Error while adding script to the queue", e);
         }
