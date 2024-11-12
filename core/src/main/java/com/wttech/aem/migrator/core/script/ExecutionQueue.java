@@ -3,6 +3,7 @@ package com.wttech.aem.migrator.core.script;
 import com.wttech.aem.migrator.core.MigratorException;
 import com.wttech.aem.migrator.core.instance.HealthChecker;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -78,8 +79,8 @@ public class ExecutionQueue implements JobExecutor {
         while (!future.isDone()) {
             if (context.isStopped() || Thread.currentThread().isInterrupted()) {
                 future.cancel(true);
-                LOG.info("Job '{}' was cancelled", executable);
-                return context.result().cancelled();
+                LOG.info("Job '{}' is cancelling", executable);
+                break;
             }
             try {
                 Thread.sleep(1000); // TODO make this configurable
@@ -92,6 +93,9 @@ public class ExecutionQueue implements JobExecutor {
 
         try {
             future.get();
+        } catch (CancellationException e) {
+            LOG.info("Job '{}' is cancelled", executable);
+            return context.result().cancelled();
         } catch (Exception e) {
             LOG.error("Error executing asynchronously '{}'", executable, e);
             return context.result().failed();
