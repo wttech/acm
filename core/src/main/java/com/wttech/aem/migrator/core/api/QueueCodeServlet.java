@@ -74,8 +74,11 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                             job));
         } catch (Exception e) {
             LOG.error("Code input cannot be read!", e);
-            respondJson(response, new Result(SC_BAD_REQUEST, "Cannot read code input!"));
-            return;
+            respondJson(
+                    response,
+                    new Result(
+                            SC_BAD_REQUEST,
+                            String.format("Code input cannot be read! %s", e.getMessage()).trim()));
         }
     }
 

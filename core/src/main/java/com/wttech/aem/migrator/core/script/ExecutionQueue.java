@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.event.jobs.consumer.JobConsumer;
@@ -77,7 +76,8 @@ public class ExecutionQueue implements JobConsumer {
         });
 
         while (!future.isDone()) {
-            if (job.getJobState() == Job.JobState.STOPPED || Thread.currentThread().isInterrupted()) {
+            if (job.getJobState() == Job.JobState.STOPPED
+                    || Thread.currentThread().isInterrupted()) {
                 future.cancel(true);
                 LOG.info("Job '{}' was cancelled", executable);
                 return JobResult.CANCEL;

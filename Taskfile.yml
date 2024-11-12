@@ -161,3 +161,10 @@ tasks:
     cmds:
       - (cd ui.frontend && npm install && npm run build)
       - sh aemw content push --dir 'ui.apps/src/main/content/jcr_root/apps/migrator/spa'
+
+  test:core:queue-code:
+    desc: queue code for static analysis
+    dir: core/test
+    cmds:
+      - npm install
+      - npm run queue-code
