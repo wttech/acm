@@ -229,7 +229,7 @@ Private-Package: net.datafaker.*,com.mifmif.common.regex.*,dk.brics.automaton.*
         </dependency>
         <dependency>
             <artifactId>jackson-databind</artifactId>
-            <version>2.16.2</version><!-- TODO downgrade to compat with AEM 6.5.0 -->
+            <version>2.9.5</version>
             <groupId>com.fasterxml.jackson.core</groupId>
             <scope>provided</scope>
         </dependency>

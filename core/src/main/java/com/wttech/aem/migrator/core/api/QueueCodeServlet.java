@@ -78,7 +78,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                     response,
                     new Result(
                             SC_BAD_REQUEST,
-                            String.format("Code input cannot be read! %s", e.getMessage()).trim()));
+                            String.format("Code input cannot be read! %s", e.getMessage())
+                                    .trim()));
         }
     }
 

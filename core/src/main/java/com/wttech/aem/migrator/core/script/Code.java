@@ -29,7 +29,7 @@ public class Code implements Executable {
     }
 
     public static Executable fromJob(Job job) {
-        return new Code(job.getProperty("content", String.class), job.getProperty("id", String.class));
+        return new Code(job.getProperty("id", String.class), job.getProperty("content", String.class));
     }
 
     public String getId() {

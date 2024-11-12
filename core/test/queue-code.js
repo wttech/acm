@@ -7,8 +7,9 @@ const queueApiUrl = `${host}/apps/migrator/api/queue-code.json`;
 const pollInterval = 1000;
 
 function readCodeInput(filePath) {
-    console.log(`Reading job details from ${filePath}`);
+    console.log(`Reading code input from '${filePath}'`);
     const data = fs.readFileSync(filePath, 'utf8');
+    console.log('Read code input:', data);
     return JSON.parse(data);
 }
 
