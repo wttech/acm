@@ -4,7 +4,8 @@
   "description": "A script to test AEM migrator endpoints",
   "main": "queue-code.js",
   "scripts": {
-    "queue-code": "ts-node queue-code.ts"
+    "queue-code": "ts-node queue-code.ts",
+    "queue-cancel": "ts-node queue-cancel.ts"
   },
   "dependencies": {
     "axios": "^1.4.0"

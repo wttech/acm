@@ -8,7 +8,7 @@ async function main(): Promise<void> {
         const jobId: string = executionJob.data.id;
         if (jobId) {
             console.log('Queued code successfully. Job ID:', jobId);
-            await tester.awaitQueuedCodeJobSucceeded(jobId);
+            await tester.awaitQueuedCodeJob(jobId, 'SUCCEEDED');
             console.log('Queued code executed successfully');
         } else {
             console.error('Queueing job failed. Job ID not found.');

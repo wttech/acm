@@ -60,18 +60,34 @@ export class Tester {
         }
     }
 
-    async awaitQueuedCodeJobSucceeded(jobId: string): Promise<void> {
+    async awaitQueuedCodeJob(jobId: string, expectedState: string): Promise<void> {
         console.log(`Waiting for job ${jobId} to succeed`);
         let state: string | null = null;
-        while (state !== 'SUCCEEDED') {
+        while (state !== expectedState) {
             state = await this.pollQueuedCodeJob(jobId);
-            if (state === 'SUCCEEDED') {
-                console.log(`Job ${jobId} succeeded.`);
+            if (state === expectedState) {
+                console.log(`Job ${jobId} reached state '${expectedState}'`);
                 break;
             } else {
-                console.log(`Job ${jobId} is in state ${state}. Retrying in ${queuePollInterval} ms...`);
+                console.log(`Job ${jobId} is in state '${state}' instead of expected '${expectedState}'. Retrying in ${queuePollInterval} ms...`);
                 await new Promise(resolve => setTimeout(resolve, queuePollInterval));
             }
+        }
+    }
+
+    async cancelQueuedCodeJob(jobId: string): Promise<void> {
+        console.log(`Cancelling job ${jobId}`);
+        try {
+            await axios.delete(`${queueApiUrl}?jobId=${jobId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'basic YWRtaW46YWRtaW4='
+                }
+            });
+            console.log(`Job ${jobId} cancelled successfully.`);
+        } catch (error) {
+            console.error(`Cancelling job ${jobId} failed!`, error);
+            throw new Error(`Cancelling job ${jobId} failed!`);
         }
     }
 }
