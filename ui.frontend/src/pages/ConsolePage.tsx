@@ -86,39 +86,41 @@ const ConsolePage = () => {
     };
 
     const onAbort = async () => {
-        if (jobId) {
-            try {
-                await apiRequest({
-                    operation: 'Code execution cancelling',
+        if (!jobId) {
+            console.warn('Code execution cannot be aborted as it is not running!');
+            return
+        }
+        try {
+            await apiRequest({
+                operation: 'Code execution cancelling',
+                url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
+                method: 'delete'
+            });
+            clearInterval(pollExecutionRef.current!);
+            setExecuting(false);
+
+            let status = 'UNKNOWN';
+            while (!['STOPPED', 'FAILED', 'SUCCEEDED'].includes(status)) {
+                const response = await apiRequest({
+                    operation: 'Code execution state',
                     url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
-                    method: 'delete'
+                    method: 'get'
                 });
-                clearInterval(pollExecutionRef.current!);
-                setExecuting(false);
+                const responseData = response.data;
+                const execution = responseData.data;
+                status = execution.status;
 
-                let status = 'UNKNOWN';
-                while (!['STOPPED', 'FAILED', 'SUCCEEDED'].includes(status)) {
-                    const response = await apiRequest({
-                        operation: 'Code execution state',
-                        url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
-                        method: 'get'
-                    });
-                    const responseData = response.data;
-                    const execution = responseData.data;
-                    status = execution.status;
-
-                    setOutput(execution.output);
-                    setError(execution.error);
-                    if (status === 'STOPPED') {
-                        setSelectedTab('output');
-                        break;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, pollInterval));
+                setOutput(execution.output);
+                setError(execution.error);
+                if (status === 'STOPPED') {
+                    setSelectedTab('output');
+                    break;
                 }
-                ToastQueue.neutral('Code execution cancelled successfully!', {timeout: toastTimeout});
-            } catch (error) {
-                ToastQueue.negative('Code execution cancelling failed!', {timeout: toastTimeout});
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
             }
+            ToastQueue.neutral('Code execution cancelled successfully!', {timeout: toastTimeout});
+        } catch (error) {
+            ToastQueue.negative('Code execution cancelling failed!', {timeout: toastTimeout});
         }
     };
 
@@ -167,11 +169,32 @@ const ConsolePage = () => {
     }
 
     const onCopyOutput = () => {
-        ToastQueue.neutral('Copy output to be implemented!', {timeout: toastTimeout});
-    }
+        if (output) {
+            navigator.clipboard.writeText(output)
+                .then(() => {
+                    ToastQueue.neutral('Output copied to clipboard!', {timeout: toastTimeout});
+                })
+                .catch(() => {
+                    ToastQueue.negative('Failed to copy output!', {timeout: toastTimeout});
+                });
+        } else {
+            ToastQueue.negative('No output to copy!', {timeout: toastTimeout});
+        }
+    };
+
     const onCopyError = () => {
-        ToastQueue.neutral('Copy error to be implemented!', {timeout: toastTimeout});
-    }
+        if (error) {
+            navigator.clipboard.writeText(error)
+                .then(() => {
+                    ToastQueue.neutral('Error copied to clipboard!', {timeout: toastTimeout});
+                })
+                .catch(() => {
+                    ToastQueue.negative('Failed to copy error!', {timeout: toastTimeout});
+                });
+        } else {
+            ToastQueue.negative('No error to copy!', {timeout: toastTimeout});
+        }
+    };
 
     return (
         <Flex direction="column" gap="size-200">
