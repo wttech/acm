@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
@@ -37,6 +38,8 @@ public class ExecutionQueue implements JobExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
 
+    public static final String TMP_DIR = "migrator";
+
     @Reference
     private JobManager jobManager;
 
@@ -50,8 +53,6 @@ public class ExecutionQueue implements JobExecutor {
     private Executor executor;
 
     private ExecutorService executorService;
-
-    private Path outputDir;
 
     public Optional<ExecutionJob> submit(Executable executable) throws MigratorException {
         var job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
@@ -187,17 +188,13 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public Path filePath(String jobId, FileType kind) {
-        if (outputDir == null || !outputDir.toFile().exists()) {
-            try {
-                outputDir = Files.createTempDirectory("migrator");
-            } catch (IOException e) {
-                LOG.error("Cannot create output directory", e);
-            }
+        var dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
+        if (!dir.exists()) {
+            dir.mkdirs();
         }
-        if (outputDir == null) {
-            return null;
-        }
-        return outputDir.resolve(String.format(
-                "%s_%s.log", StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
+        return dir.toPath()
+                .resolve(String.format(
+                        "%s_%s.log",
+                        StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
     }
 }
