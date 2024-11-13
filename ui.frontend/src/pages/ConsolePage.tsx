@@ -96,20 +96,20 @@ const ConsolePage = () => {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
 
-                let state = 'UNKNOWN';
-                while (state !== 'STOPPED') {
+                let status = 'UNKNOWN';
+                while (!['STOPPED', 'FAILED', 'SUCCEEDED'].includes(status)) {
                     const response = await apiRequest({
                         operation: 'Code execution state',
                         url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
                         method: 'get'
                     });
                     const responseData = response.data;
-                    const executionJob = responseData.data;
-                    state = executionJob.status;
+                    const execution = responseData.data;
+                    status = execution.status;
 
-                    setOutput(executionJob.output);
-                    setError(executionJob.error);
-                    if (state === 'STOPPED') {
+                    setOutput(execution.output);
+                    setError(execution.error);
+                    if (status === 'STOPPED') {
                         setSelectedTab('output');
                         break;
                     }
