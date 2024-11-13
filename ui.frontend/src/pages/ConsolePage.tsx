@@ -65,13 +65,13 @@ const ConsolePage = () => {
             setOutput(executionJob.output);
             setError(executionJob.error);
 
-            if (executionJob.state === 'ACTIVE') {
+            if (executionJob.status === 'ACTIVE') {
                 setSelectedTab('output');
             }
-            if (['SUCCEEDED', 'FAILED', 'STOPPED'].includes(executionJob.state)) {
+            if (['SUCCEEDED', 'FAILED', 'STOPPED'].includes(executionJob.status)) {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
-                if (executionJob.state === 'FAILED') {
+                if (executionJob.status === 'FAILED') {
                     ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
                     setSelectedTab('error');
                 } else {
@@ -105,7 +105,7 @@ const ConsolePage = () => {
                     });
                     const responseData = response.data;
                     const executionJob = responseData.data;
-                    state = executionJob.state;
+                    state = executionJob.status;
 
                     setOutput(executionJob.output);
                     setError(executionJob.error);

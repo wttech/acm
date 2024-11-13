@@ -8,7 +8,9 @@ public class Execution implements Serializable {
 
     private final Executable executable;
 
-    private final Status status;
+    private final String id;
+
+    private final ExecutionStatus status;
 
     private final long duration;
 
@@ -16,8 +18,10 @@ public class Execution implements Serializable {
 
     private final String error;
 
-    public Execution(Executable executable, Status status, long duration, String output, String error) {
+    public Execution(
+            Executable executable, String id, ExecutionStatus status, long duration, String output, String error) {
         this.executable = executable;
+        this.id = id;
         this.status = status;
         this.duration = duration;
         this.output = output;
@@ -28,7 +32,11 @@ public class Execution implements Serializable {
         return executable;
     }
 
-    public Status getStatus() {
+    public String getId() {
+        return id;
+    }
+
+    public ExecutionStatus getStatus() {
         return status;
     }
 
@@ -52,10 +60,5 @@ public class Execution implements Serializable {
                 .append("output", StringUtils.abbreviate(output, 1024))
                 .append("error", StringUtils.abbreviate(error, 1024))
                 .toString();
-    }
-
-    public enum Status {
-        SUCCESS,
-        FAILURE
     }
 }

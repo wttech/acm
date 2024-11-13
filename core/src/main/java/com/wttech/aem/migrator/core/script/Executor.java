@@ -42,12 +42,14 @@ public class Executor {
     }
 
     public Execution execute(Executable executable, ExecutionOptions options) throws MigratorException {
+        var id = ExecutionId.generate();
+        var content = composeContent(executable);
+        var startTime = System.currentTimeMillis();
+
         var output = new StringBuilder();
         duplicateOutput(options, output);
 
         var shell = createShell(executable, options);
-        var content = composeContent(executable);
-        var startTime = System.currentTimeMillis();
 
         try {
             switch (options.getMode()) {
@@ -59,12 +61,13 @@ public class Executor {
                     break;
             }
             return new Execution(
-                    executable, Execution.Status.SUCCESS, calculateDuration(startTime), output.toString(), null);
+                    executable, id, ExecutionStatus.SUCCEEDED, calculateDuration(startTime), output.toString(), null);
         } catch (Throwable e) {
             LOG.debug("Execution of '{}' failed! Content:\n\n{}\n\n", executable.getId(), executable.getContent(), e);
             return new Execution(
                     executable,
-                    Execution.Status.FAILURE,
+                    id,
+                    ExecutionStatus.FAILED,
                     calculateDuration(startTime),
                     output.toString(),
                     ExceptionUtils.toString(e));

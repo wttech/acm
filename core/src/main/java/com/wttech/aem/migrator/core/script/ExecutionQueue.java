@@ -54,24 +54,28 @@ public class ExecutionQueue implements JobExecutor {
 
     private ExecutorService executorService;
 
-    public Optional<ExecutionJob> submit(Executable executable) throws MigratorException {
+    public Optional<Execution> submit(Executable executable) throws MigratorException {
         var job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
         if (job == null) {
             return Optional.empty();
         }
-        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name(), null, null));
+
+        return Optional.of(new Execution(executable, job.getId(), ExecutionStatus.of(job, null), 0, null, null));
     }
 
-    public Optional<ExecutionJob> read(String jobId) throws MigratorException {
+    public Optional<Execution> read(String jobId) throws MigratorException {
         var job = jobManager.getJobById(jobId);
         if (job == null) {
             return Optional.empty();
         }
 
+        var execution = Code.fromJob(job);
         var output = readFile(jobId, FileType.OUTPUT).orElse(null);
         var error = readFile(jobId, FileType.ERROR).orElse(null);
+        var duration = calculateDuration(job).orElse(0L);
+        var status = ExecutionStatus.of(job, error);
 
-        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name(), output, error));
+        return Optional.of(new Execution(execution, job.getId(), status, duration, output, error));
     }
 
     public void stop(String jobId) {
@@ -196,5 +200,13 @@ public class ExecutionQueue implements JobExecutor {
                 .resolve(String.format(
                         "%s_%s.log",
                         StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
+    }
+
+    private Optional<Long> calculateDuration(Job job) {
+        if (job == null || job.getFinishedDate() == null || job.getCreated() == null) {
+            return Optional.empty();
+        }
+        return Optional.of(job.getFinishedDate().getTime().getTime()
+                - job.getCreated().getTime().getTime());
     }
 }
