@@ -67,30 +67,14 @@ public class ExecutionQueue implements JobExecutor {
             return Optional.empty();
         }
 
-        try (var output = Files.newInputStream(outputFile(jobId))) {
-            return Optional.of(new ExecutionJob(
-                    job.getId(), job.getJobState().name(), IOUtils.toString(output, StandardCharsets.UTF_8), null));
-        } catch (IOException e) {
-            throw new MigratorException(String.format("Cannot read output file for job '%s'", jobId), e);
-        }
+        var output = readFile(jobId, FileType.OUTPUT).orElse(null);
+        var error = readFile(jobId, FileType.ERROR).orElse(null);
+
+        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name(), output, error));
     }
 
     public void stop(String jobId) {
         jobManager.stopJobById(jobId);
-    }
-
-    public Path outputFile(String jobId) {
-        if (outputDir == null || !outputDir.toFile().exists()) {
-            try {
-                outputDir = Files.createTempDirectory("migrator");
-            } catch (IOException e) {
-                LOG.error("Cannot create output directory", e);
-            }
-        }
-        if (outputDir == null) {
-            return null;
-        }
-        return outputDir.resolve(StringUtils.replace(jobId, "/", "-") + ".log");
     }
 
     @Activate
@@ -114,11 +98,12 @@ public class ExecutionQueue implements JobExecutor {
         }
 
         LOG.info("Executing asynchronously '{}'", executable);
+
         var future = executorService.submit(() -> {
             try {
                 executeAsync(executable, job);
-            } catch (MigratorException e) {
-                throw new RuntimeException(e); // TODO check if this bubbling up to parent thread
+            } catch (Throwable e) {
+                LOG.error("Executing asynchronously failed internally '{}'", executable, e);
             }
         });
 
@@ -153,19 +138,66 @@ public class ExecutionQueue implements JobExecutor {
 
     private void executeAsync(Executable executable, Job job) throws MigratorException {
         try (var resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
-                var output = Files.newOutputStream(outputFile(job.getId()))) {
+                var outputStream = Files.newOutputStream(filePath(job.getId(), FileType.OUTPUT))) {
             var options = new ExecutionOptions(resolver);
-            options.setOutputStream(output);
-            executor.execute(executable, options);
+            options.setOutputStream(outputStream);
+
+            var execution = executor.execute(executable, options);
+            if (execution.getError() != null) {
+                saveErrorToFile(executable, job, execution.getError());
+            }
         } catch (LoginException e) {
             throw new MigratorException(
                     String.format(
-                            "Failed to access repository while executing '%s' in job '%s'",
+                            "Cannot access repository while executing '%s' in job '%s'",
                             executable.getId(), job.getId()),
                     e);
         } catch (IOException e) {
             throw new MigratorException(
-                    String.format("Cannot create output file for executable '%s' in job '%s'", job.getId()), e);
+                    String.format(
+                            "Cannot write to files for executable '%s' in job '%s'", executable.getId(), job.getId()),
+                    e);
         }
+    }
+
+    private void saveErrorToFile(Executable executable, Job job, String error) {
+        try (var errorStream = Files.newOutputStream(filePath(job.getId(), FileType.ERROR))) {
+            IOUtils.write(error, errorStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            LOG.error("Cannot write error file for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
+        }
+    }
+
+    private Optional<String> readFile(String jobId, FileType fileType) throws MigratorException {
+        var path = filePath(jobId, fileType);
+        if (!path.toFile().exists()) {
+            return Optional.empty();
+        }
+
+        try (var input = Files.newInputStream(path)) {
+            return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new MigratorException(String.format("Cannot read output file for job '%s'", jobId), e);
+        }
+    }
+
+    public enum FileType {
+        OUTPUT,
+        ERROR
+    }
+
+    public Path filePath(String jobId, FileType kind) {
+        if (outputDir == null || !outputDir.toFile().exists()) {
+            try {
+                outputDir = Files.createTempDirectory("migrator");
+            } catch (IOException e) {
+                LOG.error("Cannot create output directory", e);
+            }
+        }
+        if (outputDir == null) {
+            return null;
+        }
+        return outputDir.resolve(String.format(
+                "%s_%s.log", StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
     }
 }

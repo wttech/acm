@@ -1,6 +1,7 @@
 package com.wttech.aem.migrator.core.script;
 
 import com.wttech.aem.migrator.core.MigratorException;
+import com.wttech.aem.migrator.core.util.ExceptionUtils;
 import com.wttech.aem.migrator.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -62,7 +63,11 @@ public class Executor {
         } catch (Throwable e) {
             LOG.debug("Execution of '{}' failed! Content:\n\n{}\n\n", executable.getId(), executable.getContent(), e);
             return new Execution(
-                    executable, Execution.Status.FAILURE, calculateDuration(startTime), output.toString(), e);
+                    executable,
+                    Execution.Status.FAILURE,
+                    calculateDuration(startTime),
+                    output.toString(),
+                    ExceptionUtils.toString(e));
         }
     }
 

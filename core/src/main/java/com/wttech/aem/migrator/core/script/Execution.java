@@ -1,6 +1,5 @@
 package com.wttech.aem.migrator.core.script;
 
-import com.wttech.aem.migrator.core.util.ExceptionUtils;
 import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -17,12 +16,12 @@ public class Execution implements Serializable {
 
     private final String error;
 
-    public Execution(Executable executable, Status status, long duration, String output, Throwable throwable) {
+    public Execution(Executable executable, Status status, long duration, String output, String error) {
         this.executable = executable;
         this.status = status;
         this.duration = duration;
         this.output = output;
-        this.error = ExceptionUtils.toString(throwable);
+        this.error = error;
     }
 
     public Executable getExecutable() {

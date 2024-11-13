@@ -1,6 +1,5 @@
 package com.wttech.aem.migrator.core.script;
 
-import com.wttech.aem.migrator.core.util.ExceptionUtils;
 import java.io.Serializable;
 
 public class ExecutionJob implements Serializable {
@@ -13,11 +12,11 @@ public class ExecutionJob implements Serializable {
 
     private final String error;
 
-    public ExecutionJob(String id, String state, String output, Throwable throwable) {
+    public ExecutionJob(String id, String state, String output, String error) {
         this.id = id;
         this.state = state;
         this.output = output;
-        this.error = ExceptionUtils.toString(throwable);
+        this.error = error;
     }
 
     public String getId() {

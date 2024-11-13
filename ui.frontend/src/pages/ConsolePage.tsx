@@ -63,6 +63,8 @@ const ConsolePage = () => {
             const executionJob = responseData.data;
 
             setOutput(executionJob.output);
+            setError(executionJob.error);
+
             if (executionJob.state === 'ACTIVE') {
                 setSelectedTab('output');
             }
@@ -94,7 +96,7 @@ const ConsolePage = () => {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
 
-                let state = '';
+                let state = 'UNKNOWN';
                 while (state !== 'STOPPED') {
                     const response = await apiRequest({
                         operation: 'Code execution state',
@@ -104,7 +106,9 @@ const ConsolePage = () => {
                     const responseData = response.data;
                     const executionJob = responseData.data;
                     state = executionJob.state;
+
                     setOutput(executionJob.output);
+                    setError(executionJob.error);
                     if (state === 'STOPPED') {
                         setSelectedTab('output');
                         break;
@@ -118,6 +122,7 @@ const ConsolePage = () => {
         }
     };
 
+    // Clear the interval on component unmount
     useEffect(() => {
         return () => {
             if (pollExecutionRef.current) {
