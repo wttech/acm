@@ -1,9 +1,9 @@
 package com.wttech.aem.migrator.core.script;
 
+import com.wttech.aem.migrator.core.util.ExceptionUtils;
 import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class Execution implements Serializable {
 
@@ -22,23 +22,7 @@ public class Execution implements Serializable {
         this.status = status;
         this.duration = duration;
         this.output = output;
-        this.error = composeError(throwable);
-    }
-
-    private String composeError(Throwable cause) {
-        var builder = new StringBuilder();
-        if (cause != null) {
-            var rootCause = ExceptionUtils.getRootCause(cause);
-            if (rootCause != null && rootCause != cause) {
-                builder.append(rootCause.getMessage()).append("\n");
-                builder.append(ExceptionUtils.getStackTrace(rootCause));
-                builder.append("\n\n");
-            }
-
-            builder.append(cause.getMessage()).append("\n");
-            builder.append(ExceptionUtils.getStackTrace(cause));
-        }
-        return builder.toString();
+        this.error = ExceptionUtils.toString(throwable);
     }
 
     public Executable getExecutable() {

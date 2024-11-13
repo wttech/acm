@@ -58,7 +58,7 @@ public class ExecutionQueue implements JobExecutor {
         if (job == null) {
             return Optional.empty();
         }
-        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name(), null));
+        return Optional.of(new ExecutionJob(job.getId(), job.getJobState().name(), null, null));
     }
 
     public Optional<ExecutionJob> read(String jobId) throws MigratorException {
@@ -69,7 +69,7 @@ public class ExecutionQueue implements JobExecutor {
 
         try (var output = Files.newInputStream(outputFile(jobId))) {
             return Optional.of(new ExecutionJob(
-                    job.getId(), job.getJobState().name(), IOUtils.toString(output, StandardCharsets.UTF_8)));
+                    job.getId(), job.getJobState().name(), IOUtils.toString(output, StandardCharsets.UTF_8), null));
         } catch (IOException e) {
             throw new MigratorException(String.format("Cannot read output file for job '%s'", jobId), e);
         }
