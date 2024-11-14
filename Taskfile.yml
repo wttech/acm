@@ -8,6 +8,8 @@ env:
   AEM_ENV: '{{.AEM_ENV | default "local"}}'
   AEM_INSTANCE_PROCESSING_MODE: auto
   AEM_OUTPUT_VALUE: NONE
+  JAVA_HOME:
+    sh: echo $(pwd)/aem/home/opt/java/jdk/jdk8u432-b06/Contents/Home
 
 dotenv:
   - '.env'              # VCS-ignored, user-specific
@@ -120,7 +122,11 @@ tasks:
 
   build:
     desc: build AEM package
-    cmd: mvn clean install
+    cmd: sh mvnw clean install
+
+  build:version:
+    desc: check build environment tool versions
+    cmd: sh mvnw -version
 
   deploy:all:
     desc: deploy all AEM package to AEM instances
@@ -147,13 +153,13 @@ tasks:
   develop:core:
     desc: build & deploy core OSGi bundle to instances
     cmds:
-      - (cd core && mvn clean package)
+      - (cd core && sh ../mvnw clean package)
       - sh aemw osgi bundle install --file 'core/target/migrator.core-*.jar'
 
   develop:content:
     desc: build & deploy content AEM package to instances
     cmds:
-      - (cd ui.content && mvn clean package)
+      - (cd ui.content && sh ../mvnw clean package)
       - sh aemw package deploy --file 'ui.content/target/migrator.ui.content-*.zip'
 
   develop:frontend:
