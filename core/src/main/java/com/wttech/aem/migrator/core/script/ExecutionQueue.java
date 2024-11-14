@@ -3,20 +3,6 @@ package com.wttech.aem.migrator.core.script;
 import com.wttech.aem.migrator.core.MigratorException;
 import com.wttech.aem.migrator.core.instance.HealthChecker;
 import com.wttech.aem.migrator.core.util.ResourceUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +21,19 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 @Component(
         immediate = true,
         service = {ExecutionQueue.class, JobExecutor.class},
@@ -42,11 +41,8 @@ import org.slf4j.LoggerFactory;
 public class ExecutionQueue implements JobExecutor {
 
     public static final String TOPIC = "com/wttech/aem/migrator/ExecutionQueue";
-
-    private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
-
     public static final String TMP_DIR = "migrator";
-
+    private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
     @Reference
     private JobManager jobManager;
 
@@ -193,11 +189,6 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    public enum FileType {
-        OUTPUT,
-        ERROR
-    }
-
     public Path filePath(String jobId, FileType kind) {
         File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
         if (!dir.exists()) {
@@ -215,5 +206,10 @@ public class ExecutionQueue implements JobExecutor {
         }
         return Optional.of(job.getFinishedDate().getTime().getTime()
                 - job.getCreated().getTime().getTime());
+    }
+
+    public enum FileType {
+        OUTPUT,
+        ERROR
     }
 }

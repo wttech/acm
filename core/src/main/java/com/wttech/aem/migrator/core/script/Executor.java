@@ -5,7 +5,6 @@ import com.wttech.aem.migrator.core.util.ExceptionUtils;
 import com.wttech.aem.migrator.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -18,6 +17,8 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
 
 @Component(immediate = true, service = Executor.class)
 public class Executor {

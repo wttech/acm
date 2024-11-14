@@ -1,10 +1,11 @@
 package com.wttech.aem.migrator.core.script;
 
 import com.wttech.aem.migrator.core.MigratorException;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.sling.event.jobs.Job;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Code implements Executable {
 

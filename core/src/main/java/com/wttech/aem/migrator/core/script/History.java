@@ -1,7 +1,8 @@
 package com.wttech.aem.migrator.core.script;
 
-import java.util.stream.Stream;
 import org.osgi.service.component.annotations.Component;
+
+import java.util.stream.Stream;
 
 @Component(immediate = true, service = History.class)
 public class History {

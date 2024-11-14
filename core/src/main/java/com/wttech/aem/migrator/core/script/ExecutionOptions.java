@@ -1,7 +1,8 @@
 package com.wttech.aem.migrator.core.script;
 
-import java.io.OutputStream;
 import org.apache.sling.api.resource.ResourceResolver;
+
+import java.io.OutputStream;
 
 public class ExecutionOptions {
 

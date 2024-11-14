@@ -1,10 +1,11 @@
 package com.wttech.aem.migrator.core.util;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public final class ResourceUtils {
 

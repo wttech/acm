@@ -9,6 +9,7 @@ public final class ExecutionId {
     private ExecutionId() {
         // intentionally empty
     }
+
     /**
      * Generate something looking Sling job compatible e.g '2024-11-13-9-15-6c393bf1-97ea-4e52-a1db-55c0be12d155_177'
      */

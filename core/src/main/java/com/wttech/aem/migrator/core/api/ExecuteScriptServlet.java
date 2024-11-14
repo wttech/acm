@@ -1,12 +1,6 @@
 package com.wttech.aem.migrator.core.api;
 
-import static com.wttech.aem.migrator.core.util.ServletUtils.*;
-import static javax.servlet.http.HttpServletResponse.*;
-
 import com.wttech.aem.migrator.core.script.*;
-
-import java.io.IOException;
-import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -16,13 +10,20 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
+import java.io.IOException;
+
+import static com.wttech.aem.migrator.core.util.ServletUtils.respondJson;
+import static com.wttech.aem.migrator.core.util.ServletUtils.stringParam;
+import static javax.servlet.http.HttpServletResponse.*;
+
 @Component(
         immediate = true,
         service = Servlet.class,
         property = {
-            ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
-            ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
-            ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ExecuteScriptServlet.RT
+                ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+                ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
+                ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ExecuteScriptServlet.RT
         })
 public class ExecuteScriptServlet extends SlingAllMethodsServlet {
 

@@ -3,12 +3,13 @@ package com.wttech.aem.migrator.core.script;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.migrator.core.MigratorException;
 import com.wttech.aem.migrator.core.util.JcrUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.sling.api.resource.Resource;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import org.apache.commons.io.IOUtils;
-import org.apache.sling.api.resource.Resource;
 
 public class Script implements Executable {
 

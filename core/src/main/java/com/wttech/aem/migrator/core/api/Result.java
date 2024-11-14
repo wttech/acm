@@ -1,7 +1,7 @@
 package com.wttech.aem.migrator.core.api;
 
-import java.io.Serializable;
 import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
 
 public class Result implements Serializable {
 

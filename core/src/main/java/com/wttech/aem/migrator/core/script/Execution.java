@@ -1,8 +1,9 @@
 package com.wttech.aem.migrator.core.script;
 
-import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.io.Serializable;
 
 public class Execution implements Serializable {
 

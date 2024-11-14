@@ -14,8 +14,8 @@
  |  See the License for the specific language governing permissions and
  |  limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.wttech.aem.migrator</groupId>
@@ -83,48 +83,6 @@ Private-Package: net.datafaker.*,com.mifmif.common.regex.*,dk.brics.automaton.*
                     </archive>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>com.diffplug.spotless</groupId>-->
-<!--                <artifactId>spotless-maven-plugin</artifactId>-->
-<!--                <version>2.43.0</version>-->
-<!--                <configuration>-->
-<!--                    <skip>${skipFormat}</skip>-->
-<!--                    <java>-->
-<!--                        <includes>-->
-<!--                            <include>src/main/java/**/*.java</include>-->
-<!--                            <include>src/test/java/**/*.java</include>-->
-<!--                        </includes>-->
-<!--                        <cleanthat/>-->
-<!--                        <palantirJavaFormat>-->
-<!--                            <version>2.40.0</version>-->
-<!--                            <style>PALANTIR</style>-->
-<!--                            <formatJavadoc>true</formatJavadoc>-->
-<!--                        </palantirJavaFormat>-->
-<!--                        <importOrder/>-->
-<!--                        <removeUnusedImports/>-->
-<!--                        <formatAnnotations/>-->
-<!--                    </java>-->
-<!--                </configuration>-->
-<!--                <executions>-->
-<!--                    &lt;!&ndash; Automatically correct code style during the normal build &ndash;&gt;-->
-<!--                    <execution>-->
-<!--                        <id>apply-style</id>-->
-<!--                        <goals>-->
-<!--                            <goal>apply</goal>-->
-<!--                        </goals>-->
-<!--                        <phase>validate</phase>-->
-<!--                    </execution>-->
-<!--                    &lt;!&ndash; Validate only code style and fail the build eventually &ndash;&gt;-->
-<!--                    &lt;!&ndash;-->
-<!--                    <execution>-->
-<!--                        <id>check-style</id>-->
-<!--                        <goals>-->
-<!--                            <goal>check</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                    &ndash;&gt;-->
-<!--                </executions>-->
-<!--            </plugin>-->
         </plugins>
     </build>
 
@@ -201,10 +159,10 @@ Private-Package: net.datafaker.*,com.mifmif.common.regex.*,dk.brics.automaton.*
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.servlets.annotations</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.adobe.aem</groupId>-->
-<!--            <artifactId>uber-jar</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.adobe.aem</groupId>-->
+        <!--            <artifactId>uber-jar</artifactId>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.models.api</artifactId>
