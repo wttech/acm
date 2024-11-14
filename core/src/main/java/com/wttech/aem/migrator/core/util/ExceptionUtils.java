@@ -7,9 +7,9 @@ public final class ExceptionUtils {
     }
 
     public static String toString(Throwable cause) {
-        var builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         if (cause != null) {
-            var rootCause = org.apache.commons.lang3.exception.ExceptionUtils.getRootCause(cause);
+            Throwable rootCause = org.apache.commons.lang3.exception.ExceptionUtils.getRootCause(cause);
             if (rootCause != null && rootCause != cause) {
                 builder.append(rootCause.getMessage()).append("\n");
                 builder.append(org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(rootCause));

@@ -83,48 +83,48 @@ Private-Package: net.datafaker.*,com.mifmif.common.regex.*,dk.brics.automaton.*
                     </archive>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.43.0</version>
-                <configuration>
-                    <skip>${skipFormat}</skip>
-                    <java>
-                        <includes>
-                            <include>src/main/java/**/*.java</include>
-                            <include>src/test/java/**/*.java</include>
-                        </includes>
-                        <cleanthat/>
-                        <palantirJavaFormat>
-                            <version>2.40.0</version>
-                            <style>PALANTIR</style>
-                            <formatJavadoc>true</formatJavadoc>
-                        </palantirJavaFormat>
-                        <importOrder/>
-                        <removeUnusedImports/>
-                        <formatAnnotations/>
-                    </java>
-                </configuration>
-                <executions>
-                    <!-- Automatically correct code style during the normal build -->
-                    <execution>
-                        <id>apply-style</id>
-                        <goals>
-                            <goal>apply</goal>
-                        </goals>
-                        <phase>validate</phase>
-                    </execution>
-                    <!-- Validate only code style and fail the build eventually -->
-                    <!--
-                    <execution>
-                        <id>check-style</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                    -->
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>com.diffplug.spotless</groupId>-->
+<!--                <artifactId>spotless-maven-plugin</artifactId>-->
+<!--                <version>2.43.0</version>-->
+<!--                <configuration>-->
+<!--                    <skip>${skipFormat}</skip>-->
+<!--                    <java>-->
+<!--                        <includes>-->
+<!--                            <include>src/main/java/**/*.java</include>-->
+<!--                            <include>src/test/java/**/*.java</include>-->
+<!--                        </includes>-->
+<!--                        <cleanthat/>-->
+<!--                        <palantirJavaFormat>-->
+<!--                            <version>2.40.0</version>-->
+<!--                            <style>PALANTIR</style>-->
+<!--                            <formatJavadoc>true</formatJavadoc>-->
+<!--                        </palantirJavaFormat>-->
+<!--                        <importOrder/>-->
+<!--                        <removeUnusedImports/>-->
+<!--                        <formatAnnotations/>-->
+<!--                    </java>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    &lt;!&ndash; Automatically correct code style during the normal build &ndash;&gt;-->
+<!--                    <execution>-->
+<!--                        <id>apply-style</id>-->
+<!--                        <goals>-->
+<!--                            <goal>apply</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>validate</phase>-->
+<!--                    </execution>-->
+<!--                    &lt;!&ndash; Validate only code style and fail the build eventually &ndash;&gt;-->
+<!--                    &lt;!&ndash;-->
+<!--                    <execution>-->
+<!--                        <id>check-style</id>-->
+<!--                        <goals>-->
+<!--                            <goal>check</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                    &ndash;&gt;-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 

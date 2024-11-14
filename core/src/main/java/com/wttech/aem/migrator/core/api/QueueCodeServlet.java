@@ -4,9 +4,7 @@ import static com.wttech.aem.migrator.core.util.ServletUtils.*;
 import static com.wttech.aem.migrator.core.util.ServletUtils.respondJson;
 import static javax.servlet.http.HttpServletResponse.*;
 
-import com.wttech.aem.migrator.core.script.ExecutionMode;
-import com.wttech.aem.migrator.core.script.ExecutionOptions;
-import com.wttech.aem.migrator.core.script.ExecutionQueue;
+import com.wttech.aem.migrator.core.script.*;
 import com.wttech.aem.migrator.core.util.JsonUtils;
 import java.io.IOException;
 import javax.servlet.Servlet;
@@ -42,24 +40,24 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
-            var input = JsonUtils.readJson(request.getInputStream(), ExecuteCodeInput.class);
+            ExecuteCodeInput input = JsonUtils.readJson(request.getInputStream(), ExecuteCodeInput.class);
             if (input == null) {
                 respondJson(response, Result.badRequest("Code input is not specified!"));
                 return;
             }
 
-            var code = input.getCode();
-            var options = new ExecutionOptions(request.getResourceResolver());
+            Code code = input.getCode();
+            ExecutionOptions options = new ExecutionOptions(request.getResourceResolver());
 
-            var mode = ExecutionMode.of(input.getMode()).orElse(null);
+            ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
             if (mode == null) {
                 respondJson(response, Result.badRequest(String.format("Execution mode '%s' is not supported!", mode)));
                 return;
             }
             options.setMode(mode);
 
-            var job = executionQueue.submit(code).orElse(null);
-            if (job == null) {
+            Execution execution = executionQueue.submit(code).orElse(null);
+            if (execution == null) {
                 respondJson(response, Result.error("Code cannot be queued for execution!"));
                 return;
             }
@@ -69,7 +67,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                     new Result(
                             SC_OK,
                             String.format("Code from '%s' queued for execution successfully", code.getId()),
-                            job));
+                            execution));
         } catch (Exception e) {
             LOG.error("Code input cannot be read!", e);
             respondJson(
@@ -81,20 +79,20 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        var jobId = stringParam(request, JOB_ID_PARAM);
+        String jobId = stringParam(request, JOB_ID_PARAM);
         if (jobId == null) {
             respondJson(response, Result.badRequest("Job ID is not specified!"));
             return;
         }
 
         try {
-            var job = executionQueue.read(jobId).orElse(null);
-            if (job == null) {
+            Execution execution = executionQueue.read(jobId).orElse(null);
+            if (execution == null) {
                 respondJson(response, Result.notFound(String.format("Job with ID '%s' not found!", jobId)));
                 return;
             }
 
-            respondJson(response, Result.ok("Job found successfully", job));
+            respondJson(response, Result.ok("Job found successfully", execution));
         } catch (Exception e) {
             LOG.error("Job cannot be read!", e);
             respondJson(
@@ -106,22 +104,22 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doDelete(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        var jobId = stringParam(request, JOB_ID_PARAM);
+        String jobId = stringParam(request, JOB_ID_PARAM);
         if (jobId == null) {
             respondJson(response, Result.badRequest("Job ID is not specified!"));
             return;
         }
 
         try {
-            var job = executionQueue.read(jobId).orElse(null);
-            if (job == null) {
+            Execution execution = executionQueue.read(jobId).orElse(null);
+            if (execution == null) {
                 respondJson(response, Result.notFound(String.format("Job with ID '%s' not found!", jobId)));
                 return;
             }
 
             executionQueue.stop(jobId);
 
-            respondJson(response, Result.ok("Job stopped successfully", job));
+            respondJson(response, Result.ok("Job stopped successfully", execution));
         } catch (Exception e) {
             LOG.error("Job cannot be stopped!", e);
             respondJson(

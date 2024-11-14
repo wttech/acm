@@ -22,13 +22,13 @@ public class Code implements Executable {
     }
 
     public static Map<String, Object> toJobProps(Executable executable) throws MigratorException {
-        var props = new HashMap<String, Object>();
+        Map<String, Object> props = new HashMap<>();
         props.put("id", executable.getId());
         props.put("content", executable.getContent());
         return props;
     }
 
-    public static Executable fromJob(Job job) {
+    public static Code fromJob(Job job) {
         return new Code(job.getProperty("id", String.class), job.getProperty("content", String.class));
     }
 

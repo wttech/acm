@@ -3,9 +3,7 @@ package com.wttech.aem.migrator.core.api;
 import static com.wttech.aem.migrator.core.util.ServletUtils.respondJson;
 import static javax.servlet.http.HttpServletResponse.*;
 
-import com.wttech.aem.migrator.core.script.ExecutionMode;
-import com.wttech.aem.migrator.core.script.ExecutionOptions;
-import com.wttech.aem.migrator.core.script.Executor;
+import com.wttech.aem.migrator.core.script.*;
 import com.wttech.aem.migrator.core.util.JsonUtils;
 import java.io.IOException;
 import javax.servlet.Servlet;
@@ -38,16 +36,16 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
-            var input = JsonUtils.readJson(request.getInputStream(), ExecuteCodeInput.class);
+            ExecuteCodeInput input = JsonUtils.readJson(request.getInputStream(), ExecuteCodeInput.class);
             if (input == null) {
                 respondJson(response, new Result(SC_BAD_REQUEST, "Code input is not specified!"));
                 return;
             }
 
-            var code = input.getCode();
-            var options = new ExecutionOptions(request.getResourceResolver());
+            Code code = input.getCode();
+            ExecutionOptions options = new ExecutionOptions(request.getResourceResolver());
 
-            var mode = ExecutionMode.of(input.getMode()).orElse(null);
+            ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
             if (mode == null) {
                 respondJson(
                         response,
@@ -57,7 +55,7 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
             options.setMode(mode);
 
             try {
-                var execution = executor.execute(code, options);
+                Execution execution = executor.execute(code, options);
 
                 // TODO should this servlet also save execution in history?
                 // history.save(execution)

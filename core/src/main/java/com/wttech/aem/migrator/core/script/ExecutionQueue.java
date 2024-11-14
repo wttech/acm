@@ -3,7 +3,11 @@ package com.wttech.aem.migrator.core.script;
 import com.wttech.aem.migrator.core.MigratorException;
 import com.wttech.aem.migrator.core.instance.HealthChecker;
 import com.wttech.aem.migrator.core.util.ResourceUtils;
+
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,10 +15,13 @@ import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
@@ -55,7 +62,7 @@ public class ExecutionQueue implements JobExecutor {
     private ExecutorService executorService;
 
     public Optional<Execution> submit(Executable executable) throws MigratorException {
-        var job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
+        Job job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
         if (job == null) {
             return Optional.empty();
         }
@@ -64,18 +71,18 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public Optional<Execution> read(String jobId) throws MigratorException {
-        var job = jobManager.getJobById(jobId);
+        Job job = jobManager.getJobById(jobId);
         if (job == null) {
             return Optional.empty();
         }
 
-        var execution = Code.fromJob(job);
-        var output = readFile(jobId, FileType.OUTPUT).orElse(null);
-        var error = readFile(jobId, FileType.ERROR).orElse(null);
-        var duration = calculateDuration(job).orElse(0L);
-        var status = ExecutionStatus.of(job, error);
+        Executable executable = Code.fromJob(job);
+        String output = readFile(jobId, FileType.OUTPUT).orElse(null);
+        String error = readFile(jobId, FileType.ERROR).orElse(null);
+        long duration = calculateDuration(job).orElse(0L);
+        ExecutionStatus status = ExecutionStatus.of(job, error);
 
-        return Optional.of(new Execution(execution, job.getId(), status, duration, output, error));
+        return Optional.of(new Execution(executable, job.getId(), status, duration, output, error));
     }
 
     public void stop(String jobId) {
@@ -96,7 +103,7 @@ public class ExecutionQueue implements JobExecutor {
 
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
-        var executable = Code.fromJob(job);
+        Executable executable = Code.fromJob(job);
         if (!healthChecker.isHealthy()) {
             LOG.warn("Failing execution '{}' - instance is not healthy.", executable);
             return context.result().failed();
@@ -104,7 +111,7 @@ public class ExecutionQueue implements JobExecutor {
 
         LOG.info("Executing asynchronously '{}'", executable);
 
-        var future = executorService.submit(() -> {
+        Future<?> future = executorService.submit(() -> {
             try {
                 executeAsync(executable, job);
             } catch (Throwable e) {
@@ -142,12 +149,12 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     private void executeAsync(Executable executable, Job job) throws MigratorException {
-        try (var resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
-                var outputStream = Files.newOutputStream(filePath(job.getId(), FileType.OUTPUT))) {
-            var options = new ExecutionOptions(resolver);
+        try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
+             OutputStream outputStream = Files.newOutputStream(filePath(job.getId(), FileType.OUTPUT))) {
+            ExecutionOptions options = new ExecutionOptions(resolver);
             options.setOutputStream(outputStream);
 
-            var execution = executor.execute(executable, options);
+            Execution execution = executor.execute(executable, options);
             if (execution.getError() != null) {
                 saveErrorToFile(executable, job, execution.getError());
             }
@@ -166,7 +173,7 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     private void saveErrorToFile(Executable executable, Job job, String error) {
-        try (var errorStream = Files.newOutputStream(filePath(job.getId(), FileType.ERROR))) {
+        try (OutputStream errorStream = Files.newOutputStream(filePath(job.getId(), FileType.ERROR))) {
             IOUtils.write(error, errorStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             LOG.error("Cannot write error file for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
@@ -174,12 +181,12 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     private Optional<String> readFile(String jobId, FileType fileType) throws MigratorException {
-        var path = filePath(jobId, fileType);
+        Path path = filePath(jobId, fileType);
         if (!path.toFile().exists()) {
             return Optional.empty();
         }
 
-        try (var input = Files.newInputStream(path)) {
+        try (InputStream input = Files.newInputStream(path)) {
             return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new MigratorException(String.format("Cannot read output file for job '%s'", jobId), e);
@@ -192,7 +199,7 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public Path filePath(String jobId, FileType kind) {
-        var dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
+        File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
         if (!dir.exists()) {
             dir.mkdirs();
         }
