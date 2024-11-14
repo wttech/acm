@@ -138,6 +138,8 @@ public class ExecutionQueue implements JobExecutor {
         } catch (Exception e) {
             LOG.error("Error executing asynchronously '{}'", executable, e);
             return context.result().failed();
+        } finally {
+            // TODO clean up files after few seconds allowing to poll the result
         }
 
         LOG.info("Executed asynchronously '{}'", executable);
