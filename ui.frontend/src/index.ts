@@ -7,9 +7,8 @@ async function getCsrfToken() {
     const response = await axios.get('/libs/granite/csrf/token.json');
     return response.data.token;
 }
-
 axios.interceptors.request.use(async (config) => {
-    if (config.method === 'post') {
+    if (['post', 'delete', 'put'].includes((config.method || ''))) {
         const csrfToken = await getCsrfToken();
         config.headers['CSRF-Token'] = csrfToken;
     }

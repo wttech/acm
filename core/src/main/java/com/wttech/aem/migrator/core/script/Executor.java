@@ -1,6 +1,7 @@
 package com.wttech.aem.migrator.core.script;
 
 import com.wttech.aem.migrator.core.MigratorException;
+import com.wttech.aem.migrator.core.util.ExceptionUtils;
 import com.wttech.aem.migrator.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -9,6 +10,7 @@ import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -32,7 +34,7 @@ public class Executor {
     private ResourceResolverFactory resourceResolverFactory;
 
     public Execution execute(Executable executable) throws MigratorException {
-        try (var resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
+        try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
             return execute(executable, new ExecutionOptions(resourceResolver));
         } catch (LoginException e) {
             throw new MigratorException(
@@ -41,12 +43,14 @@ public class Executor {
     }
 
     public Execution execute(Executable executable, ExecutionOptions options) throws MigratorException {
-        var output = new StringBuilder();
+        String id = ExecutionId.generate();
+        String content = composeContent(executable);
+        long startTime = System.currentTimeMillis();
+
+        StringBuilder output = new StringBuilder();
         duplicateOutput(options, output);
 
-        var shell = createShell(executable, options);
-        var content = composeContent(executable);
-        var startTime = System.currentTimeMillis();
+        GroovyShell shell = createShell(executable, options);
 
         try {
             switch (options.getMode()) {
@@ -58,25 +62,30 @@ public class Executor {
                     break;
             }
             return new Execution(
-                    executable, Execution.Status.SUCCESS, calculateDuration(startTime), output.toString(), null);
+                    executable, id, ExecutionStatus.SUCCEEDED, calculateDuration(startTime), output.toString(), null);
         } catch (Throwable e) {
             LOG.debug("Execution of '{}' failed! Content:\n\n{}\n\n", executable.getId(), executable.getContent(), e);
             return new Execution(
-                    executable, Execution.Status.FAILURE, calculateDuration(startTime), output.toString(), e);
+                    executable,
+                    id,
+                    ExecutionStatus.FAILED,
+                    calculateDuration(startTime),
+                    output.toString(),
+                    ExceptionUtils.toString(e));
         }
     }
 
     private String composeContent(Executable executable) throws MigratorException {
-        var builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         builder.append("System.setOut(new java.io.PrintStream(" + BINDING_OUT
-                + ", true, java.nio.charset.StandardCharsets.UTF_8));\n");
+                + ", true, \"UTF-8\"));\n");
         builder.append(executable.getContent());
         return builder.toString();
     }
 
     private void duplicateOutput(ExecutionOptions options, StringBuilder output) {
-        var writer = new StringBuilderWriter(output);
-        var stream = new WriterOutputStream(writer, StandardCharsets.UTF_8);
+        StringBuilderWriter writer = new StringBuilderWriter(output);
+        WriterOutputStream stream = new WriterOutputStream(writer, StandardCharsets.UTF_8);
 
         if (options.getOutputStream() == null) {
             options.setOutputStream(stream);
@@ -90,12 +99,12 @@ public class Executor {
     }
 
     private GroovyShell createShell(Executable executable, ExecutionOptions options) {
-        var binding = new Binding();
+        Binding binding = new Binding();
         binding.setVariable(BINDING_RESOURCE_RESOLVER, options.getResourceResolver());
         binding.setVariable(BINDING_LOG, createLogger(executable));
         binding.setVariable(BINDING_OUT, options.getOutputStream());
 
-        var compilerConfiguration = new CompilerConfiguration();
+        CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
         ImportCustomizer importCustomizer = new ImportCustomizer();
         compilerConfiguration.addCompilationCustomizers(importCustomizer);
 

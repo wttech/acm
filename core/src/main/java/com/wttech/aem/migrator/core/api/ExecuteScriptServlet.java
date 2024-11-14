@@ -3,9 +3,8 @@ package com.wttech.aem.migrator.core.api;
 import static com.wttech.aem.migrator.core.util.ServletUtils.*;
 import static javax.servlet.http.HttpServletResponse.*;
 
-import com.wttech.aem.migrator.core.script.ExecutionOptions;
-import com.wttech.aem.migrator.core.script.Executor;
-import com.wttech.aem.migrator.core.script.ScriptRepository;
+import com.wttech.aem.migrator.core.script.*;
+
 import java.io.IOException;
 import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -38,10 +37,10 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        var path = stringParam(request, PATH_PARAM);
+        String path = stringParam(request, PATH_PARAM);
 
         try {
-            var script = new ScriptRepository(request.getResourceResolver())
+            Script script = new ScriptRepository(request.getResourceResolver())
                     .read(path)
                     .orElse(null);
             if (script == null) {
@@ -50,8 +49,8 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            var options = new ExecutionOptions(request.getResourceResolver());
-            var execution = executor.execute(script, options);
+            ExecutionOptions options = new ExecutionOptions(request.getResourceResolver());
+            Execution execution = executor.execute(script, options);
 
             // TODO should this servlet also save execution in history?
             // history.save(execution)

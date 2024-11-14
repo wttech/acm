@@ -1,5 +1,6 @@
 package com.wttech.aem.migrator.core.util;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -13,7 +14,8 @@ public final class ResourceUtils {
 
     public static ResourceResolver serviceResolver(ResourceResolverFactory resourceResolverFactory)
             throws LoginException {
-        return resourceResolverFactory.getServiceResourceResolver(
-                Map.of(ResourceResolverFactory.SUBSERVICE, "migrator"));
+        Map<String, Object> serviceParams = new HashMap<>();
+        serviceParams.put(ResourceResolverFactory.SUBSERVICE, "migrator");
+        return resourceResolverFactory.getServiceResourceResolver(serviceParams);
     }
 }

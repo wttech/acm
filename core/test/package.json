@@ -1,0 +1,21 @@
+{
+  "name": "aem-migrator-tester",
+  "version": "1.0.0",
+  "description": "A script to test AEM migrator endpoints",
+  "main": "queue-code.js",
+  "scripts": {
+    "queue-code": "ts-node queue-code.ts",
+    "queue-cancel": "ts-node queue-cancel.ts"
+  },
+  "dependencies": {
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {
+    "typescript": "5.5.4",
+    "ts-node": "^10.4.0",
+    "@types/node": "^17.0.0",
+    "@types/axios": "^0.14.0"
+  },
+  "author": "",
+  "license": "ISC"
+}

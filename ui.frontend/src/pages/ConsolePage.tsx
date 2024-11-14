@@ -11,8 +11,11 @@ import Bug from "@spectrum-icons/workflow/Bug";
 
 import {ToastQueue} from '@react-spectrum/toast'
 import {apiRequest} from "../utils/api.ts";
-import {useState} from "react";
+import {useState, useEffect, useRef} from "react";
 import {registerGroovyLanguage} from "../utils/monaco.groovy.ts";
+
+const pollInterval = 500;
+const toastTimeout = 3000;
 
 const ConsolePage = () => {
     const [selectedTab, setSelectedTab] = useState<string>('code');
@@ -21,45 +24,115 @@ const ConsolePage = () => {
     const [code, setCode] = useState<string | undefined>(ConsoleCode);
     const [output, setOutput] = useState<string | undefined>('');
     const [error, setError] = useState<string | undefined>('');
+    const [jobId, setJobId] = useState<string | undefined>(undefined);
+    const pollExecutionRef = useRef<number | null>(null);
 
     const onExecute = async () => {
         setExecuting(true);
-        apiRequest({
-            operation: 'Script execution',
-            url: `/apps/migrator/api/execute-code.json`,
-            method: 'post',
-            data: {
-                mode: 'evaluate',
-                code: {
-                    id: 'console',
-                    content: code,
+        try {
+            const response = await apiRequest({
+                operation: 'Code execution',
+                url: `/apps/migrator/api/queue-code.json`,
+                method: 'post',
+                data: {
+                    mode: 'evaluate',
+                    code: {
+                        id: 'console',
+                        content: code,
+                    }
                 }
-            }
-        }).then((response: any) => {
+            });
+            const executionJob = response.data;
+            const jobId = executionJob.data.id;
+            setJobId(jobId);
+            pollExecutionRef.current = window.setInterval(() => pollExecutionState(jobId), pollInterval);
+        } catch (error) {
+            setExecuting(false);
+            ToastQueue.negative('Code execution error!', {timeout: toastTimeout});
+        }
+    };
+
+    const pollExecutionState = async (jobId: string) => {
+        try {
+            const response = await apiRequest({
+                operation: 'Code execution state',
+                url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
+                method: 'get'
+            });
             const responseData = response.data;
-            const execution = responseData.data;
+            const executionJob = responseData.data;
 
-            setOutput(execution.output);
-            setError(execution.error);
+            setOutput(executionJob.output);
+            setError(executionJob.error);
 
-            if (execution.error) {
-                ToastQueue.negative('Code execution failed!', {timeout: 3000});
-                setSelectedTab('error');
-            } else {
-                ToastQueue.positive('Code execution succeeded!', {timeout: 3000});
+            if (executionJob.status === 'ACTIVE') {
                 setSelectedTab('output');
             }
-        }).catch(() => {
-            setOutput('');
-            setError('');
-            ToastQueue.negative('Code execution error!', {timeout: 3000});
-        }).finally(() => {
+            if (['SUCCEEDED', 'FAILED', 'STOPPED'].includes(executionJob.status)) {
+                clearInterval(pollExecutionRef.current!);
+                setExecuting(false);
+                if (executionJob.status === 'FAILED') {
+                    ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
+                    setSelectedTab('error');
+                } else {
+                    ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
+                }
+            }
+        } catch (error) {
+            clearInterval(pollExecutionRef.current!);
             setExecuting(false);
-        });
-    }
-    const onAbort = () => {
-        ToastQueue.neutral('Abort to be implemented!', {timeout: 5000});
-    }
+            ToastQueue.negative('Code execution state error!', {timeout: toastTimeout});
+        }
+    };
+
+    const onAbort = async () => {
+        if (!jobId) {
+            console.warn('Code execution cannot be aborted as it is not running!');
+            return
+        }
+        try {
+            await apiRequest({
+                operation: 'Code execution cancelling',
+                url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
+                method: 'delete'
+            });
+            clearInterval(pollExecutionRef.current!);
+            setExecuting(false);
+
+            let status = 'UNKNOWN';
+            while (!['STOPPED', 'FAILED', 'SUCCEEDED'].includes(status)) {
+                const response = await apiRequest({
+                    operation: 'Code execution state',
+                    url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
+                    method: 'get'
+                });
+                const responseData = response.data;
+                const execution = responseData.data;
+                status = execution.status;
+
+                setOutput(execution.output);
+                setError(execution.error);
+                if (status === 'STOPPED') {
+                    setSelectedTab('output');
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
+            }
+            ToastQueue.neutral('Code execution cancelled successfully!', {timeout: toastTimeout});
+        } catch (error) {
+            ToastQueue.negative('Code execution cancelling failed!', {timeout: toastTimeout});
+        }
+    };
+
+    // Clear the interval on component unmount
+    useEffect(() => {
+        return () => {
+            if (pollExecutionRef.current) {
+                clearInterval(pollExecutionRef.current);
+            }
+        };
+    }, []);
+
     const onParse = () => {
         setParsing(true);
         apiRequest({
@@ -81,26 +154,47 @@ const ConsolePage = () => {
             setError(execution.error);
 
             if (execution.error) {
-                ToastQueue.negative('Code parsing failed!', {timeout: 3000});
+                ToastQueue.negative('Code parsing failed!', {timeout: toastTimeout});
                 setSelectedTab('error');
             } else {
-                ToastQueue.positive('Code parsing succeeded!', {timeout: 3000});
+                ToastQueue.positive('Code parsing succeeded!', {timeout: toastTimeout});
             }
         }).catch(() => {
             setOutput('');
             setError('');
-            ToastQueue.negative('Code parsing error!', {timeout: 3000});
+            ToastQueue.negative('Code parsing error!', {timeout: toastTimeout});
         }).finally(() => {
             setParsing(false);
         });
     }
 
     const onCopyOutput = () => {
-        ToastQueue.neutral('Copy output to be implemented!', {timeout: 5000});
-    }
+        if (output) {
+            navigator.clipboard.writeText(output)
+                .then(() => {
+                    ToastQueue.neutral('Output copied to clipboard!', {timeout: toastTimeout});
+                })
+                .catch(() => {
+                    ToastQueue.negative('Failed to copy output!', {timeout: toastTimeout});
+                });
+        } else {
+            ToastQueue.negative('No output to copy!', {timeout: toastTimeout});
+        }
+    };
+
     const onCopyError = () => {
-        ToastQueue.neutral('Copy error to be implemented!', {timeout: 5000});
-    }
+        if (error) {
+            navigator.clipboard.writeText(error)
+                .then(() => {
+                    ToastQueue.neutral('Error copied to clipboard!', {timeout: toastTimeout});
+                })
+                .catch(() => {
+                    ToastQueue.negative('Failed to copy error!', {timeout: toastTimeout});
+                });
+        } else {
+            ToastQueue.negative('No error to copy!', {timeout: toastTimeout});
+        }
+    };
 
     return (
         <Flex direction="column" gap="size-200">
@@ -123,11 +217,11 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                    value={code}
-                                    onChange={setCode}
-                                    height="60vh"
-                                    language="groovy"
-                                    beforeMount={registerGroovyLanguage}
+                                        value={code}
+                                        onChange={setCode}
+                                        height="60vh"
+                                        language="groovy"
+                                        beforeMount={registerGroovyLanguage}
                                 />
                             </View>
                         </Flex>
@@ -135,8 +229,8 @@ const ConsolePage = () => {
                     <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <ButtonGroup>
-                                <Button variant="negative" isDisabled={false} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
-                                <Button variant="secondary" onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
+                                <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
+                                <Button variant="secondary" isDisabled={!output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
                             </ButtonGroup>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"
@@ -154,7 +248,7 @@ const ConsolePage = () => {
                     <Item key="error">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <ButtonGroup>
-                                <Button variant="secondary" onPress={onCopyError}><Copy/><Text>Copy</Text></Button>
+                                <Button variant="secondary" isDisabled={!error} onPress={onCopyError}><Copy/><Text>Copy</Text></Button>
                             </ButtonGroup>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"

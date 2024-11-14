@@ -28,8 +28,8 @@ Simply [install](#installation) ready-to-use CRX package on AEM instance and sta
 Main concepts of AEM Migrator tool are:
 
 * **Simplicity**
-    * Creating migration scripts should be as much simple as it is possible,
-    * No extra configuration needed - no hooks to needed to be configured in a AEM build,
+    * Creating migration scripts should be as much simple as it is possible (no need to learn custom YML syntax or configuration language, just well-known Groovy),
+    * No extra configuration needed - no hooks to needed to be configured in a AEM build (just provide Groovy scripts, the tool will do the rest),
 * **Stability**
     * Executed always at optimal moment - safely use any classes from any OSGi bundles including your own,
 
