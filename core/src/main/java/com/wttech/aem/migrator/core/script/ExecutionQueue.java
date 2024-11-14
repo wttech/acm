@@ -41,8 +41,17 @@ import java.util.concurrent.Future;
 public class ExecutionQueue implements JobExecutor {
 
     public static final String TOPIC = "com/wttech/aem/migrator/ExecutionQueue";
+
     public static final String TMP_DIR = "migrator";
+
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
+
+    // TODO make this configurable
+    private static final long EXECUTE_POLL_INTERVAL = 1000;
+
+    // TODO make this configurable
+    private static final long CLEAN_POLL_DELAY = 3000;
+
     @Reference
     private JobManager jobManager;
 
@@ -122,7 +131,7 @@ public class ExecutionQueue implements JobExecutor {
                 break;
             }
             try {
-                Thread.sleep(1000); // TODO make this configurable
+                Thread.sleep(EXECUTE_POLL_INTERVAL);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 LOG.info("Job '{}' was interrupted", executable);
@@ -139,7 +148,13 @@ public class ExecutionQueue implements JobExecutor {
             LOG.error("Error executing asynchronously '{}'", executable, e);
             return context.result().failed();
         } finally {
-            // TODO clean up files after few seconds allowing to poll the result
+            executorService.submit(() -> {
+                try {
+                    cleanAsync(executable, job);
+                } catch (Throwable e) {
+                    LOG.error("Cleaning up asynchronously failed '{}'", executable, e);
+                }
+            });
         }
 
         LOG.info("Executed asynchronously '{}'", executable);
@@ -167,6 +182,23 @@ public class ExecutionQueue implements JobExecutor {
                     String.format(
                             "Cannot write to files for executable '%s' in job '%s'", executable.getId(), job.getId()),
                     e);
+        }
+    }
+
+    private void cleanAsync(Executable executable, Job job) {
+        try {
+            Thread.sleep(CLEAN_POLL_DELAY);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.info("Cleaning up job '{}' was interrupted", job.getId());
+            return;
+        }
+
+        try {
+            Files.deleteIfExists(filePath(job.getId(), FileType.OUTPUT));
+            Files.deleteIfExists(filePath(job.getId(), FileType.ERROR));
+        } catch (IOException e) {
+            LOG.error("Cannot delete files for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
         }
     }
 
