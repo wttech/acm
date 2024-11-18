@@ -129,18 +129,6 @@ instance:
     # Archived runtime dir (AEM backup files '*.aemb.zst')
     backup_dir: "aem/home/var/backup"
 
-    # Oak Run tool options (offline instance management)
-    oak_run:
-      download_url: "https://repo1.maven.org/maven2/org/apache/jackrabbit/oak-run/1.44.0/oak-run-1.44.0.jar"
-      store_path: "crx-quickstart/repository/segmentstore"
-
-    # Source files
-    quickstart:
-      # AEM SDK ZIP or JAR
-      dist_file: "aem/home/lib/{aem-sdk,cq-quickstart}-*.{zip,jar}"
-      # AEM License properties file
-      license_file: "aem/home/lib/license.properties"
-
   # Status discovery (timezone, AEM version, etc)
   status:
     timeout: 500ms
@@ -216,33 +204,9 @@ instance:
         timeout: 10m
         delay: 10s
 
-java:
-  # Require following versions before e.g running AEM instances
-  version_constraints: ">= 1.8, < 12"
-
-  # Pre-installed local JDK dir
-  # a) keep it empty to download open source Java automatically for current OS and architecture
-  # b) set it to absolute path or to env var '[[.Env.JAVA_HOME]]' to indicate where closed source Java like Oracle is installed
-  home_dir: ""
-
-  # Auto-installed JDK options
-  download:
-    # Source URL with template vars support
-    #url: "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.18%2B10/OpenJDK11U-jdk_[[.Arch]]_[[.Os]]_hotspot_11.0.18_10.[[.ArchiveExt]]"
-    url: "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u432-b06/OpenJDK8U-jdk_[[.Arch]]_[[.Os]]_hotspot_8u432b06.[[.ArchiveExt]]"
-    # Map source URL template vars to be compatible with Adoptium Java
-    replacements:
-      # Var 'Os' (GOOS)
-      "darwin": "mac"
-      # Var 'Arch' (GOARCH)
-      "x86_64": "x64"
-      "amd64": "x64"
-      "386": "x86-32"
-      # enforce non-ARM Java as some AEM features are not working on ARM (e.g Scene7)
-      "arm64": "x64"
-      "aarch64": "x64"
-
 base:
+  # Location of library files (AEM SDK ZIP, Quickstart JAR & License, Crypto keys, service packs, additional packages, etc.)
+  lib_dir: aem/home/lib
   # Location of temporary files (downloaded AEM packages, etc)
   tmp_dir: aem/home/tmp
   # Location of supportive tools (downloaded Java, OakRun, unpacked AEM SDK)
@@ -264,6 +228,46 @@ output:
     file: aem/home/var/log/aem.log
     # Controls where outputs and logs should be written to when format is 'text' (console|file|both)
     mode: console
+
+vendor:
+  # AEM source files
+  quickstart:
+    # Quickstart JAR or SDK ZIP
+    dist_file: "aem/home/lib/{aem-sdk,cq-quickstart}-*.{zip,jar}"
+    # Quickstart License properties file
+    license_file: "aem/home/lib/license.properties"
+
+  # Oak Run tool options (offline instance management)
+  oak_run:
+    download_url: "https://repo1.maven.org/maven2/org/apache/jackrabbit/oak-run/1.44.0/oak-run-1.44.0.jar"
+    store_path: "crx-quickstart/repository/segmentstore"
+
+  # JDK used to: build Java, AEM package and run instances
+  java:
+    # Require following versions before e.g running AEM instances
+    version_constraints: ">= 1.8, < 12"
+
+    # Pre-installed local JDK dir
+    # a) keep it empty to download open source Java automatically for current OS and architecture
+    # b) set it to absolute path or to env var '[[.Env.JAVA_HOME]]' to indicate where closed source Java like Oracle is installed
+    home_dir: ""
+
+    # Auto-installed JDK options
+    download:
+      # Source URL with template vars support
+      #url: "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.18%2B10/OpenJDK11U-jdk_[[.Arch]]_[[.Os]]_hotspot_11.0.18_10.[[.ArchiveExt]]"
+      url: "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u432-b06/OpenJDK8U-jdk_[[.Arch]]_[[.Os]]_hotspot_8u432b06.[[.ArchiveExt]]"
+      # Map source URL template vars to be compatible with Adoptium Java
+      replacements:
+        # Var 'Os' (GOOS)
+        "darwin": "mac"
+        # Var 'Arch' (GOARCH)
+        "x86_64": "x64"
+        "amd64": "x64"
+        "386": "x86-32"
+        # enforce non-ARM Java as some AEM features are not working on ARM (e.g Scene7)
+        "arm64": "x64"
+        "aarch64": "x64"
 
 content:
   clean:
