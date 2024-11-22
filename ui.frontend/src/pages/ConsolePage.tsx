@@ -12,7 +12,7 @@ import Bug from "@spectrum-icons/workflow/Bug";
 import {ToastQueue} from '@react-spectrum/toast'
 import {apiRequest} from "../utils/api.ts";
 import {useState, useEffect, useRef} from "react";
-import {registerGroovyLanguage} from "../utils/monaco.groovy.ts";
+import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
 
 const pollInterval = 500;
 const toastTimeout = 3000;
