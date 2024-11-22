@@ -2,6 +2,6 @@
   "mode": "evaluate",
   "code": {
     "id": "console",
-    "content": "/*\nboolean shouldMigrate() {\n    return migrator.instance.hasRunMode(\"author\") && migrator.afterDate(\"2024-10-29 15:30:00\") // <==> new Date().after(new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\").parse(\"2024-10-29 15:30:00\"));\n}\n*/\n\n//void doMigrate() {\n    println \"Migrating...\"\n\n    Thread.sleep(10000)\n    // def foo = resourceResolver.getResource(\"/content/foo\")\n    // migrate foo\n    \n    println \"Migration done\"\n//}"
+    "content": "/*\nboolean shouldMigrate() {\n    return contentor.instance.hasRunMode(\"author\") && contentor.afterDate(\"2024-10-29 15:30:00\") // <==> new Date().after(new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\").parse(\"2024-10-29 15:30:00\"));\n}\n*/\n\n//void doMigrate() {\n    println \"Migrating...\"\n\n    Thread.sleep(10000)\n    // def foo = resourceResolver.getResource(\"/content/foo\")\n    // migrate foo\n    \n    println \"Migration done\"\n//}"
   }
 }

@@ -3,5 +3,5 @@
     jcr:mixinTypes="[rep:AccessControllable]"
     jcr:primaryType="nt:folder">
     <cq/>
-    <migrator/>
+    <contentor/>
 </jcr:root>

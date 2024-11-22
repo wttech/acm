@@ -1,7 +1,7 @@
 {
-  "name": "aem-migrator-tester",
+  "name": "aem-contentor-tester",
   "version": "1.0.0",
-  "description": "A script to test AEM migrator endpoints",
+  "description": "A script to test AEM contentor endpoints",
   "main": "queue-code.js",
   "scripts": {
     "queue-code": "ts-node queue-code.ts",

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
-    <filter root="/apps/migrator-packages"/>
-    <filter root="/apps/migrator-vendor-packages"/>
+    <filter root="/apps/contentor-packages"/>
+    <filter root="/apps/contentor-vendor-packages"/>
 </workspaceFilter>

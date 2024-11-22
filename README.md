@@ -1,15 +1,15 @@
 [![WTT logo](docs/wtt-logo.png)](https://www.wundermanthompson.com)
 
 <!--
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/aem-migrator)](https://github.com/wttech/aem-migrator/releases)
-[![GitHub All Releases](https://img.shields.io/github/downloads/wttech/aem-migrator/total)](https://github.com/wttech/aem-migrator/releases)
-[![Check](https://github.com/wttech/aem-migrator/workflows/Check/badge.svg)](https://github.com/wttech/aem-migrator/actions/workflows/check.yml)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/aem-contentor)](https://github.com/wttech/aem-contentor/releases)
+[![GitHub All Releases](https://img.shields.io/github/downloads/wttech/aem-contentor/total)](https://github.com/wttech/aem-contentor/releases)
+[![Check](https://github.com/wttech/aem-contentor/workflows/Check/badge.svg)](https://github.com/wttech/aem-contentor/actions/workflows/check.yml)
 -->
 [![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
 
 <!--
 <p>
-  <img src="docs/logo-text.svg" alt="AEM Migrator" width="300"/>
+  <img src="docs/logo-text.svg" alt="AEM Contentor" width="300"/>
 </p>
 -->
 
@@ -18,14 +18,14 @@ Tool for migrating content and managing permissions for AEM applications in a si
 Simply [install](#installation) ready-to-use CRX package on AEM instance and start migrating!
 
 <p>
-  <img src="docs/screenshot-console-code.png" alt="AEM Migrator - Console Code (Screenshot)" width="640"/>
+  <img src="docs/screenshot-console-code.png" alt="AEM Contentor - Console Code (Screenshot)" width="640"/>
 </p>
 
 <p>
-  <img src="docs/screenshot-console-output.png" alt="AEM Migrator - Console Output (Screenshot)" width="640"/>
+  <img src="docs/screenshot-console-output.png" alt="AEM Contentor - Console Output (Screenshot)" width="640"/>
 </p>
 
-Main concepts of AEM Migrator tool are:
+Main concepts of AEM Contentor tool are:
 
 * **Simplicity**
     * Creating migration scripts should be as much simple as it is possible (no need to learn custom YML syntax or configuration language, just well-known Groovy),
@@ -35,26 +35,26 @@ Main concepts of AEM Migrator tool are:
 
 ## Installation
 
-The ready-to-install AEM packages are available on [GitHub releases](https://github.com/wttech/aem-migrator/releases).
+The ready-to-install AEM packages are available on [GitHub releases](https://github.com/wttech/aem-contentor/releases).
 
-There are two ways to install AEM Migrator on your AEM instances:
+There are two ways to install AEM Contentor on your AEM instances:
 
 1. Using the 'all' package:
     * Recommended for fresh AEM instances.
-    * This package will also install AEM Groovy Console and AEM Migrator examples.
+    * This package will also install AEM Groovy Console and AEM Contentor examples.
 2. Using the 'minimal' package:
     * Recommended for AEM instances that already contain some dependencies shared with other tools.
     * This package does not include Groovy bundles, which can be provided by other tools like [AEM Easy Content Upgrade](https://github.com/valtech/aem-easy-content-upgrade/releases) (AECU) or [AEM Groovy Console](https://github.com/orbinson/aem-groovy-console/releases).
 
 ## Compatibility
 
-| AEM Migrator | AEM        | Java  | Groovy |
+| AEM Contentor | AEM        | Java  | Groovy |
 |--------------|------------|-------|--------|
 | 1.0.0        | 6.5, cloud | 8, 11 | 4.x    |
 
-Note that AEM Migrator is using Groovy scripts concept. However it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
-AEM Migrator tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
-It is compatible with AEM Groovy Console - simply install one of AEM Migrator distributions without Groovy console OSGi bundle included as it is usually provided by Groovy Console AEM package.
+Note that AEM Contentor is using Groovy scripts concept. However it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
+AEM Contentor tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
+It is compatible with AEM Groovy Console - simply install one of AEM Contentor distributions without Groovy console OSGi bundle included as it is usually provided by Groovy Console AEM package.
 
 ## Documentation
 
@@ -111,4 +111,4 @@ Or to deploy only a single content package, run in the sub-module directory (i.e
 
 ## License
 
-**AEM Migrator** is licensed under the [Apache License, Version 2.0 (the "License")](https://www.apache.org/licenses/LICENSE-2.0.txt)
+**AEM Contentor** is licensed under the [Apache License, Version 2.0 (the "License")](https://www.apache.org/licenses/LICENSE-2.0.txt)

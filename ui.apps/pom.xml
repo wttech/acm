@@ -21,8 +21,8 @@
     <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
     <!-- ====================================================================== -->
     <parent>
-        <groupId>com.wttech.aem.migrator</groupId>
-        <artifactId>migrator</artifactId>
+        <groupId>com.wttech.aem.contentor</groupId>
+        <artifactId>contentor</artifactId>
         <version>0.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -30,10 +30,10 @@
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
-    <artifactId>migrator.ui.apps</artifactId>
+    <artifactId>contentor.ui.apps</artifactId>
     <packaging>content-package</packaging>
-    <name>AEM Migrator - UI Apps</name>
-    <description>UI Apps package for AEM Migrator</description>
+    <name>AEM Contentor - UI Apps</name>
+    <description>UI Apps package for AEM Contentor</description>
 
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
@@ -51,13 +51,13 @@
                     <properties>
                         <cloudManagerTarget>none</cloudManagerTarget>
                     </properties>
-                    <group>com.wttech.aem.migrator</group>
-                    <name>migrator.ui.apps</name>
+                    <group>com.wttech.aem.contentor</group>
+                    <name>contentor.ui.apps</name>
                     <packageType>application</packageType>
                     <repositoryStructurePackages>
                         <repositoryStructurePackage>
-                            <groupId>com.wttech.aem.migrator</groupId>
-                            <artifactId>migrator.ui.apps.structure</artifactId>
+                            <groupId>com.wttech.aem.contentor</groupId>
+                            <artifactId>contentor.ui.apps.structure</artifactId>
                         </repositoryStructurePackage>
                     </repositoryStructurePackages>
                 </configuration>
@@ -105,19 +105,19 @@
     <!-- ====================================================================== -->
     <dependencies>
         <dependency>
-            <groupId>com.wttech.aem.migrator</groupId>
-            <artifactId>migrator.ui.apps.structure</artifactId>
+            <groupId>com.wttech.aem.contentor</groupId>
+            <artifactId>contentor.ui.apps.structure</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>com.wttech.aem.migrator</groupId>
-            <artifactId>migrator.core</artifactId>
+            <groupId>com.wttech.aem.contentor</groupId>
+            <artifactId>contentor.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.wttech.aem.migrator</groupId>
-            <artifactId>migrator.ui.frontend</artifactId>
+            <groupId>com.wttech.aem.contentor</groupId>
+            <artifactId>contentor.ui.frontend</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>

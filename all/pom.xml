@@ -7,8 +7,8 @@
     <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
     <!-- ====================================================================== -->
     <parent>
-        <groupId>com.wttech.aem.migrator</groupId>
-        <artifactId>migrator</artifactId>
+        <groupId>com.wttech.aem.contentor</groupId>
+        <artifactId>contentor</artifactId>
         <version>0.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -16,10 +16,10 @@
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
-    <artifactId>migrator.all</artifactId>
+    <artifactId>contentor.all</artifactId>
     <packaging>content-package</packaging>
-    <name>AEM Migrator - All</name>
-    <description>Complete distribution package for AEM Migrator</description>
+    <name>AEM Contentor - All</name>
+    <description>Complete distribution package for AEM Contentor</description>
 
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
@@ -34,43 +34,43 @@
                 <artifactId>filevault-package-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <group>com.wttech.aem.migrator</group>
+                    <group>com.wttech.aem.contentor</group>
                     <packageType>container</packageType>
                     <!-- skip sub package validation for now as some vendor packages like CIF apps will not pass -->
                     <skipSubPackageValidation>true</skipSubPackageValidation>
                     <embeddeds>
                         <embedded>
-                            <groupId>com.wttech.aem.migrator</groupId>
-                            <artifactId>migrator.ui.apps</artifactId>
+                            <groupId>com.wttech.aem.contentor</groupId>
+                            <artifactId>contentor.ui.apps</artifactId>
                             <type>zip</type>
-                            <target>/apps/migrator-packages/application/install</target>
+                            <target>/apps/contentor-packages/application/install</target>
                         </embedded>
                         <embedded>
-                            <groupId>com.wttech.aem.migrator</groupId>
-                            <artifactId>migrator.ui.content</artifactId>
+                            <groupId>com.wttech.aem.contentor</groupId>
+                            <artifactId>contentor.ui.content</artifactId>
                             <type>zip</type>
-                            <target>/apps/migrator-packages/content/install</target>
+                            <target>/apps/contentor-packages/content/install</target>
                         </embedded>
                         <embedded>
-                            <groupId>com.wttech.aem.migrator</groupId>
-                            <artifactId>migrator.ui.config</artifactId>
+                            <groupId>com.wttech.aem.contentor</groupId>
+                            <artifactId>contentor.ui.config</artifactId>
                             <type>zip</type>
-                            <target>/apps/migrator-packages/application/install</target>
+                            <target>/apps/contentor-packages/application/install</target>
                         </embedded>
                         <embedded>
-                            <groupId>com.wttech.aem.migrator</groupId>
-                            <artifactId>migrator.core</artifactId>
-                            <target>/apps/migrator-packages/application/install</target>
+                            <groupId>com.wttech.aem.contentor</groupId>
+                            <artifactId>contentor.core</artifactId>
+                            <target>/apps/contentor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>org.apache.groovy</groupId>
                             <artifactId>groovy</artifactId>
-                            <target>/apps/migrator-packages/application/install</target>
+                            <target>/apps/contentor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>org.apache.groovy</groupId>
                             <artifactId>groovy-templates</artifactId>
-                            <target>/apps/migrator-packages/application/install</target>
+                            <target>/apps/contentor-packages/application/install</target>
                         </embedded>
                     </embeddeds>
                 </configuration>
@@ -162,20 +162,20 @@
     <!-- ====================================================================== -->
     <dependencies>
         <dependency>
-            <groupId>com.wttech.aem.migrator</groupId>
-            <artifactId>migrator.ui.apps</artifactId>
+            <groupId>com.wttech.aem.contentor</groupId>
+            <artifactId>contentor.ui.apps</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>com.wttech.aem.migrator</groupId>
-            <artifactId>migrator.ui.content</artifactId>
+            <groupId>com.wttech.aem.contentor</groupId>
+            <artifactId>contentor.ui.content</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>com.wttech.aem.migrator</groupId>
-            <artifactId>migrator.ui.config</artifactId>
+            <groupId>com.wttech.aem.contentor</groupId>
+            <artifactId>contentor.ui.config</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

@@ -32,7 +32,7 @@ const ConsolePage = () => {
         try {
             const response = await apiRequest({
                 operation: 'Code execution',
-                url: `/apps/migrator/api/queue-code.json`,
+                url: `/apps/contentor/api/queue-code.json`,
                 method: 'post',
                 data: {
                     mode: 'evaluate',
@@ -56,7 +56,7 @@ const ConsolePage = () => {
         try {
             const response = await apiRequest({
                 operation: 'Code execution state',
-                url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
+                url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
                 method: 'get'
             });
             const responseData = response.data;
@@ -93,7 +93,7 @@ const ConsolePage = () => {
         try {
             await apiRequest({
                 operation: 'Code execution cancelling',
-                url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
+                url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
                 method: 'delete'
             });
             clearInterval(pollExecutionRef.current!);
@@ -103,7 +103,7 @@ const ConsolePage = () => {
             while (!['STOPPED', 'FAILED', 'SUCCEEDED'].includes(status)) {
                 const response = await apiRequest({
                     operation: 'Code execution state',
-                    url: `/apps/migrator/api/queue-code.json?jobId=${jobId}`,
+                    url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
                     method: 'get'
                 });
                 const responseData = response.data;
@@ -137,7 +137,7 @@ const ConsolePage = () => {
         setParsing(true);
         apiRequest({
             operation: 'Script parsing',
-            url: `/apps/migrator/api/execute-code.json`,
+            url: `/apps/contentor/api/execute-code.json`,
             method: 'post',
             data: {
                 mode: 'parse',

@@ -14,7 +14,7 @@ export interface QueueCodeResponse {
 }
 
 const instanceBaseUrl: string = 'http://localhost:4502';
-const queueApiUrl: string = `${instanceBaseUrl}/apps/migrator/api/queue-code.json`;
+const queueApiUrl: string = `${instanceBaseUrl}/apps/contentor/api/queue-code.json`;
 const queuePollInterval: number = 1000;
 
 export class Tester {
