@@ -1,4 +1,4 @@
-import axios, {AxiosRequestConfig} from "axios";
+import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
 import {ToastQueue} from "@react-spectrum/toast";
 
 type ToastRequestConfig = AxiosRequestConfig & {
@@ -6,10 +6,23 @@ type ToastRequestConfig = AxiosRequestConfig & {
     timeout?: number
 }
 
-export async function toastRequest(config: ToastRequestConfig) {
+export type ApiResponse<T> = {
+    status: number;
+    message: string;
+    data: T
+}
+
+export type ApiDataExecution = {
+    id: string;
+    output: string;
+    error: string;
+    status: string;
+}
+
+export async function toastRequest<D>(config: ToastRequestConfig) : Promise<AxiosResponse<ApiResponse<D>>> {
     const toastTimeout = config.timeout || 5000;
     try {
-        const response = await axios(config);
+        const response = await axios<ApiResponse<D>>(config);
         if (response.status >= 200 && response.status < 300) {
             if (response.data && response.data.message) {
                 ToastQueue.positive(response.data.message, {timeout: toastTimeout});
@@ -32,9 +45,9 @@ export async function toastRequest(config: ToastRequestConfig) {
     }
 }
 
-export async function apiRequest(config: ToastRequestConfig) {
+export async function apiRequest<D>(config: ToastRequestConfig) : Promise<AxiosResponse<ApiResponse<D>>> {
     try {
-        const response = await axios(config);
+        const response = await axios<ApiResponse<D>>(config);
         if (response.status >= 200 && response.status < 300) {
             return response;
         } else {

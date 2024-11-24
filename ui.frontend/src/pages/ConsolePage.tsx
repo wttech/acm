@@ -1,4 +1,19 @@
-import {Button, ButtonGroup, Flex, View, Text, Tabs, TabList, Item, TabPanels} from "@adobe/react-spectrum";
+import {
+    Button,
+    ButtonGroup,
+    Flex,
+    View,
+    Text,
+    Tabs,
+    TabList,
+    Item,
+    TabPanels,
+    Heading,
+    Content,
+    Keyboard,
+    DialogTrigger,
+    Dialog, Divider
+} from "@adobe/react-spectrum";
 import Editor from "@monaco-editor/react";
 import ConsoleCode from "./ConsoleCode.groovy";
 import Spellcheck from "@spectrum-icons/workflow/Spellcheck";
@@ -8,10 +23,11 @@ import Print from "@spectrum-icons/workflow/Print";
 import Copy from "@spectrum-icons/workflow/Copy";
 import Cancel from "@spectrum-icons/workflow/Cancel";
 import Bug from "@spectrum-icons/workflow/Bug";
+import Help from "@spectrum-icons/workflow/Help";
 
 import {ToastQueue} from '@react-spectrum/toast'
-import {apiRequest} from "../utils/api.ts";
-import {useState, useEffect, useRef} from "react";
+import {ApiDataExecution, apiRequest} from "../utils/api.ts";
+import React, {useState, useEffect, useRef} from "react";
 import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
 
 const pollInterval = 500;
@@ -30,7 +46,7 @@ const ConsolePage = () => {
     const onExecute = async () => {
         setExecuting(true);
         try {
-            const response = await apiRequest({
+            const response = await apiRequest<ApiDataExecution>({
                 operation: 'Code execution',
                 url: `/apps/contentor/api/queue-code.json`,
                 method: 'post',
@@ -47,6 +63,7 @@ const ConsolePage = () => {
             setJobId(jobId);
             pollExecutionRef.current = window.setInterval(() => pollExecutionState(jobId), pollInterval);
         } catch (error) {
+            console.error('Code execution error:', error);
             setExecuting(false);
             ToastQueue.negative('Code execution error!', {timeout: toastTimeout});
         }
@@ -54,7 +71,7 @@ const ConsolePage = () => {
 
     const pollExecutionState = async (jobId: string) => {
         try {
-            const response = await apiRequest({
+            const response = await apiRequest<ApiDataExecution>({
                 operation: 'Code execution state',
                 url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
                 method: 'get'
@@ -79,6 +96,7 @@ const ConsolePage = () => {
                 }
             }
         } catch (error) {
+            console.error('Code execution state error:', error);
             clearInterval(pollExecutionRef.current!);
             setExecuting(false);
             ToastQueue.negative('Code execution state error!', {timeout: toastTimeout});
@@ -101,7 +119,7 @@ const ConsolePage = () => {
 
             let status = 'UNKNOWN';
             while (!['STOPPED', 'FAILED', 'SUCCEEDED'].includes(status)) {
-                const response = await apiRequest({
+                const response = await apiRequest<ApiDataExecution>({
                     operation: 'Code execution state',
                     url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
                     method: 'get'
@@ -120,6 +138,7 @@ const ConsolePage = () => {
             }
             ToastQueue.neutral('Code execution cancelled successfully!', {timeout: toastTimeout});
         } catch (error) {
+            console.error('Code execution cancelling error:', error);
             ToastQueue.negative('Code execution cancelling failed!', {timeout: toastTimeout});
         }
     };
@@ -135,7 +154,7 @@ const ConsolePage = () => {
 
     const onParse = () => {
         setParsing(true);
-        apiRequest({
+        apiRequest<ApiDataExecution>({
             operation: 'Script parsing',
             url: `/apps/contentor/api/execute-code.json`,
             method: 'post',
@@ -146,7 +165,7 @@ const ConsolePage = () => {
                     content: code,
                 }
             }
-        }).then((response: any) => {
+        }).then((response) => {
             const responseData = response.data;
             const execution = responseData.data;
 
@@ -207,10 +226,33 @@ const ConsolePage = () => {
                 <TabPanels>
                     <Item key="code">
                         <Flex direction="column" gap="size-200" marginY="size-100">
-                            <ButtonGroup>
-                                <Button variant="accent" onPress={onExecute} isPending={executing}><Gears/><Text>Execute</Text></Button>
-                                <Button variant="secondary" onPress={onParse} isPending={parsing} style="fill"><Spellcheck/><Text>Parse</Text></Button>
-                            </ButtonGroup>
+                            <View>
+                                <ButtonGroup>
+                                    <Button variant="accent" onPress={onExecute} isPending={executing}><Gears/><Text>Execute</Text></Button>
+                                    <Button variant="secondary" onPress={onParse} isPending={parsing} style="fill"><Spellcheck/><Text>Parse</Text></Button>
+                                    <DialogTrigger>
+                                        <Button variant="secondary" style="fill"><Help/><Text>Help</Text></Button>
+                                        {(close) => (
+                                            <Dialog>
+                                                <Heading>Keyboard Shortcuts</Heading>
+                                                <Divider />
+                                                <Content>
+                                                    <p>
+                                                        <Keyboard>Fn</Keyboard> + <Keyboard>F1</Keyboard> &mdash; Command&nbsp;Palette
+                                                    </p>
+                                                    <p>
+                                                        <Keyboard>⌃</Keyboard> + <Keyboard>Space</Keyboard> &mdash; Code&nbsp;Completions
+                                                    </p>
+                                                </Content>
+                                                <ButtonGroup>
+                                                    <Button variant="secondary" onPress={close}>Close</Button>
+                                                </ButtonGroup>
+                                            </Dialog>
+                                        )}
+                                    </DialogTrigger>
+                                </ButtonGroup>
+                            </View>
+
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"
                                   borderColor="dark"

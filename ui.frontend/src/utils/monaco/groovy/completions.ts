@@ -4,5 +4,5 @@ import {registerAemCodeCompletions} from "./completions/aem-code.ts";
 
 export function registerCompletions(instance: Monaco) {
     registerSelfCodeCompletions(instance);
-    //registerAemCodeCompletions(instance);
+    registerAemCodeCompletions(instance);
 }
