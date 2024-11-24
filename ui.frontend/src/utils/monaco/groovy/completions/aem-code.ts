@@ -8,15 +8,29 @@ function parseDTSFile(fileContent: string) {
 
     const suggestions: monaco.languages.CompletionItem[] = [];
 
+    // Helper function to get the fully qualified name of a node
+    function getFullyQualifiedName(node: ts.Node): string {
+        const parts: string[] = [];
+        let current: ts.Node | undefined = node;
+        while (current) {
+            if (ts.isModuleDeclaration(current) || ts.isClassDeclaration(current) || ts.isInterfaceDeclaration(current)) {
+                parts.unshift(current.name.text);
+            }
+            current = current.parent;
+        }
+        return parts.join('.');
+    }
+
     // Recursive function to traverse the AST
     function visitNode(node: ts.Node) {
         // Interface declarations
         if (ts.isInterfaceDeclaration(node)) {
+            const fullyQualifiedName = getFullyQualifiedName(node);
             suggestions.push({
-                label: node.name.text,
+                label: fullyQualifiedName,
                 kind: monaco.languages.CompletionItemKind.Interface,
-                insertText: node.name.text,
-                documentation: `Interface: ${node.name.text}`,
+                insertText: fullyQualifiedName,
+                documentation: `Interface: ${fullyQualifiedName}`,
                 range: new monaco.Range(0, 0, 0, 0), // Adjust dynamically
             });
 
@@ -25,9 +39,9 @@ function parseDTSFile(fileContent: string) {
                 if (ts.isMethodSignature(member)) {
                     const methodName = member.name ? member.name.getText() : 'anonymousMethod';
                     suggestions.push({
-                        label: methodName,
+                        label: `${fullyQualifiedName}.${methodName}`,
                         kind: monaco.languages.CompletionItemKind.Method,
-                        insertText: methodName + '()',
+                        insertText: `${methodName}()`,
                         documentation: `Method: ${methodName}`,
                         range: new monaco.Range(0, 0, 0, 0), // Adjust dynamically
                     });
@@ -37,11 +51,12 @@ function parseDTSFile(fileContent: string) {
 
         // Class declarations (including methods inside classes)
         else if (ts.isClassDeclaration(node)) {
+            const fullyQualifiedName = getFullyQualifiedName(node);
             suggestions.push({
-                label: node.name ? node.name.text : 'UnnamedClass',
+                label: fullyQualifiedName,
                 kind: monaco.languages.CompletionItemKind.Class,
-                insertText: node.name ? node.name.text : 'UnnamedClass',
-                documentation: `Class: ${node.name ? node.name.text : 'UnnamedClass'}`,
+                insertText: fullyQualifiedName,
+                documentation: `Class: ${fullyQualifiedName}`,
                 range: new monaco.Range(0, 0, 0, 0), // Adjust dynamically
             });
 
@@ -50,9 +65,9 @@ function parseDTSFile(fileContent: string) {
                 if (ts.isMethodDeclaration(member)) {
                     const methodName = member.name ? member.name.getText() : 'anonymousMethod';
                     suggestions.push({
-                        label: methodName,
+                        label: `${fullyQualifiedName}.${methodName}`,
                         kind: monaco.languages.CompletionItemKind.Method,
-                        insertText: methodName + '()',
+                        insertText: `${methodName}()`,
                         documentation: `Method: ${methodName}`,
                         range: new monaco.Range(0, 0, 0, 0), // Adjust dynamically
                     });
