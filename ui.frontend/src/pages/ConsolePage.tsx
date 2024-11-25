@@ -227,9 +227,11 @@ const ConsolePage = () => {
                     <Item key="code">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <View>
-                                <ButtonGroup>
-                                    <Button variant="accent" onPress={onExecute} isPending={executing}><Gears/><Text>Execute</Text></Button>
-                                    <Button variant="secondary" onPress={onParse} isPending={parsing} style="fill"><Spellcheck/><Text>Parse</Text></Button>
+                                <Flex justifyContent="space-between" alignItems="center">
+                                    <ButtonGroup>
+                                        <Button variant="accent" onPress={onExecute} isPending={executing}><Gears/><Text>Execute</Text></Button>
+                                        <Button variant="secondary" onPress={onParse} isPending={parsing} style="fill"><Spellcheck/><Text>Parse</Text></Button>
+                                    </ButtonGroup>
                                     <DialogTrigger>
                                         <Button variant="secondary" style="fill"><Help/><Text>Help</Text></Button>
                                         {(close) => (
@@ -253,7 +255,7 @@ const ConsolePage = () => {
                                             </Dialog>
                                         )}
                                     </DialogTrigger>
-                                </ButtonGroup>
+                                </Flex>
                             </View>
 
                             <View backgroundColor="gray-800"
