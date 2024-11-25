@@ -1,6 +1,7 @@
 import * as monaco from 'monaco-editor';
 import * as ts from 'typescript';
 import {Monaco} from "@monaco-editor/react";
+import {LANGUAGE_ID} from "../../groovy.ts";
 
 // Function to parse the TypeScript declaration file and extract symbols (including methods and classes)
 function parseDTSFile(fileContent: string) {
@@ -13,7 +14,7 @@ function parseDTSFile(fileContent: string) {
         const parts: string[] = [];
         let current: ts.Node | undefined = node;
         while (current) {
-            if (ts.isModuleDeclaration(current) || ts.isClassDeclaration(current) || ts.isInterfaceDeclaration(current)) {
+            if ((ts.isModuleDeclaration(current) || ts.isClassDeclaration(current) || ts.isInterfaceDeclaration(current)) && current.name) {
                 parts.unshift(current.name.text);
             }
             current = current.parent;
@@ -85,6 +86,7 @@ function parseDTSFile(fileContent: string) {
     return suggestions;
 }
 
+// TODO instead of reading pregenerated maybe just look for the class (search like in https://github.com/neva-dev/felix-search-webconsole-plugin/blob/a0cc739dbcf7e2735efec0987673ff3a6edb3c8d/src/main/java/com/neva/felix/webconsole/plugins/search/core/OsgiExplorer.java#L176)
 export function registerAemCodeCompletions(instance: Monaco) {
     fetch('/apps/contentor/api/assist-code/aem.d.ts')
         .then(response => response.text())
@@ -93,7 +95,7 @@ export function registerAemCodeCompletions(instance: Monaco) {
             const suggestions = parseDTSFile(fileContent);
 
             // Register the completion provider for Groovy language
-            instance.languages.registerCompletionItemProvider('groovy', {
+            instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
                 provideCompletionItems: (model: monaco.editor.ITextModel, position: monaco.Position) => {
                     // Get the word at the cursor position
                     const wordRange = model.getWordAtPosition(position);

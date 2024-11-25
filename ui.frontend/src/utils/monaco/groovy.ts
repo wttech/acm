@@ -4,6 +4,8 @@ import {registerCommands} from "./groovy/commands.ts";
 import {registerCompletions} from "./groovy/completions.ts";
 import {registerCodeActions} from "./groovy/code-actions.ts";
 
+export const LANGUAGE_ID = 'groovy';
+
 export function registerGroovyLanguage(instance: Monaco) {
     registerSyntax(instance);
     registerCommands(instance);

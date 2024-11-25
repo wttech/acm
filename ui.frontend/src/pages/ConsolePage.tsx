@@ -243,6 +243,9 @@ const ConsolePage = () => {
                                                     <p>
                                                         <Keyboard>⌃</Keyboard> + <Keyboard>Space</Keyboard> &mdash; Code&nbsp;Completions
                                                     </p>
+                                                    <p>
+                                                        <Keyboard>⌘</Keyboard> + <Keyboard>.</Keyboard> &mdash; Quick Fixes
+                                                    </p>
                                                 </Content>
                                                 <ButtonGroup>
                                                     <Button variant="secondary" onPress={close}>Close</Button>
