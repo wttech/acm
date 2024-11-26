@@ -281,7 +281,7 @@ const ConsolePage = () => {
                                     <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
                                     <Button variant="secondary" isDisabled={!output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
                                 </ButtonGroup>
-                                { executing && <ProgressCircle aria-label="Loading…" isIndeterminate={executing} value={0} />}
+                                <ProgressCircle aria-label="Loading…" isIndeterminate={executing} value={0} />
                             </Flex>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"
