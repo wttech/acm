@@ -12,7 +12,8 @@ import {
     Content,
     Keyboard,
     DialogTrigger,
-    Dialog, Divider
+    Dialog, Divider,
+    ProgressCircle
 } from "@adobe/react-spectrum";
 import Editor from "@monaco-editor/react";
 import ConsoleCode from "./ConsoleCode.groovy";
@@ -275,10 +276,13 @@ const ConsolePage = () => {
                     </Item>
                     <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100">
-                            <ButtonGroup>
-                                <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
-                                <Button variant="secondary" isDisabled={!output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
-                            </ButtonGroup>
+                            <Flex justifyContent="space-between" alignItems="center">
+                                <ButtonGroup>
+                                    <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
+                                    <Button variant="secondary" isDisabled={!output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
+                                </ButtonGroup>
+                                { executing && <ProgressCircle aria-label="Loading…" isIndeterminate={executing} value={0} />}
+                            </Flex>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"
                                   borderColor="dark"
