@@ -2,7 +2,7 @@
 <jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
     jcr:primaryType="nt:unstructured"
     jcr:title="Contentor"
-    jcr:description="Migrate content and manage permissions via Groovy Scripts"
+    jcr:description="Do live content and permission updates via Groovy Scripts"
     icon="gears"
     href="/apps/contentor/gui.html"
     id="contentor"/>
