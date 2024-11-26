@@ -1,6 +1,6 @@
 package com.wttech.aem.contentor.core.assist;
 
-import com.wttech.aem.contentor.core.util.SearchUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -11,9 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 @Component(immediate = true, service = OsgiScanner.class)
 public class OsgiScanner {
@@ -25,52 +25,58 @@ public class OsgiScanner {
 
 	private transient BundleContext bundleContext;
 
+	private final Map<String, List<String>> bundleClasses = new ConcurrentHashMap<>();
+
+
 	@Activate
 	protected void activate(BundleContext bundleContext) {
 		this.bundleContext = bundleContext;
 
-		// TODO do async warmup findClassNames("page")
+		// TODO do async warmup
+		scanBundles();
 	}
 
-	public List<String> findClassNames() {
-		return findClassNames(null);
+	private int bundleChecksum(Bundle bundle) {
+		return new HashCodeBuilder()
+				.append(bundle.getSymbolicName())
+				.append(bundle.getLastModified())
+				.append(bundle.getVersion())
+				.toHashCode();
 	}
 
-	public List<String> findClassNames(String word) {
-		List<String> classNames = new LinkedList<>();
-
-		ClassLoader classLoader = classLoaderManager.getDynamicClassLoader();
-		int notLoadable = 0;
-		int notImportable = 0;
-
+	private void scanBundles() {
 		for (Bundle bundle : bundleContext.getBundles()) {
-			Enumeration<URL> classUrls = toUrls(bundle);
-			if (classUrls != null) {
-				while (classUrls.hasMoreElements()) {
-					final URL url = classUrls.nextElement();
-					final String rawClassName = toRawClassName(url);
-
-					if (!isLoadableClass(classLoader, rawClassName)) {
-						notLoadable++;
-						continue;
-					}
-
-					final String stdClassName = toStdClassName(rawClassName);
-					if (!isImportableClass(stdClassName)) {
-						notImportable++;
-						continue;
-					}
-
-					if (word == null || SearchUtils.containsWord(word, stdClassName)) {
-						classNames.add(stdClassName);
-					}
-				}
+			if (isBundleOrFragmentReady(bundle)) {
+				final List<String> classes = scanClasses(bundle);
+				bundleClasses.put(bundle.getSymbolicName(), classes);
 			}
 		}
+	}
 
-		LOG.info("Found {} class names. Not loadable: {}, not importable: {}", classNames.size(), notLoadable, notImportable);
+	private boolean isBundleOrFragmentReady(Bundle bundle) {
+		return bundle.getState() == Bundle.ACTIVE
+				|| (bundle.getState() == Bundle.RESOLVED && bundle.getHeaders().get("Fragment-Host") != null);
+	}
 
-		return classNames;
+	private List<String> scanClasses(Bundle bundle) {
+		List<String> result = new LinkedList<>();
+		ClassLoader classLoader = classLoaderManager.getDynamicClassLoader();
+		Enumeration<URL> classUrls = toUrls(bundle);
+		if (classUrls != null) {
+			while (classUrls.hasMoreElements()) {
+				final URL url = classUrls.nextElement();
+				final String rawClassName = toRawClassName(url);
+				if (!isLoadableClass(classLoader, rawClassName)) {
+					continue;
+				}
+				final String stdClassName = toStdClassName(rawClassName);
+				if (!isImportableClass(stdClassName)) {
+					continue;
+				}
+				result.add(stdClassName);
+			}
+		}
+		return result;
 	}
 
 	private Enumeration<URL> toUrls(Bundle bundle) {
@@ -101,4 +107,13 @@ public class OsgiScanner {
 		// Exclude anonymous classes and package-info files
 		return !className.matches(".*\\$\\d+.*") && !className.endsWith("package-info");
 	}
+
+	public Stream<BundleClass> allClasses() {
+		return bundleClasses.entrySet().stream().flatMap(e -> {
+			final String bundleSymbolicName = e.getKey();
+			final List<String> classes = e.getValue();
+			return classes.stream().map(c -> new BundleClass(c, bundleSymbolicName));
+		});
+	}
+
 }

@@ -2,6 +2,7 @@ package com.wttech.aem.contentor.core.api;
 
 import com.wttech.aem.contentor.core.assist.Assistance;
 import com.wttech.aem.contentor.core.assist.Assistancer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -34,15 +35,18 @@ public class AssistCodeServlet extends SlingAllMethodsServlet {
 
     private static final String WORD_PARAM = "word";
 
+    private static final String LIMIT_PARAM = "limit";
+
     @Reference
     private Assistancer assistancer;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         String code = stringParam(request, WORD_PARAM);
+        int limit = Integer.parseInt(StringUtils.defaultString(stringParam(request, LIMIT_PARAM), "200"));
 
         try {
-            Assistance assistance = assistancer.forWord(code);
+            Assistance assistance = assistancer.forWord(code, limit);
 
             respondJson(
                     response,

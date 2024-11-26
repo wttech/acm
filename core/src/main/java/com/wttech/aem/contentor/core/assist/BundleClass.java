@@ -4,20 +4,20 @@ import java.io.Serializable;
 
 public class BundleClass implements Serializable {
 
-    private final String clazz;
+    private final String className;
 
-    private final String bundle;
+    private final String bundleSymbolicName;
 
-    public BundleClass(String clazz, String bundle) {
-        this.clazz = clazz;
-        this.bundle = bundle;
+    public BundleClass(String className, String bundleSymbolicName) {
+        this.className = className;
+        this.bundleSymbolicName = bundleSymbolicName;
     }
 
-    public String getClazz() {
-        return clazz;
+    public String getClassName() {
+        return className;
     }
 
-    public String getBundle() {
-        return bundle;
+    public String getBundleSymbolicName() {
+        return bundleSymbolicName;
     }
 }
