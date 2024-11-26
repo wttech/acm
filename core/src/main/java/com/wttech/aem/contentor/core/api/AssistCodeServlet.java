@@ -32,28 +32,28 @@ public class AssistCodeServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(AssistCodeServlet.class);
 
-    private static final String CODE_PARAM = "code";
+    private static final String WORD_PARAM = "word";
 
     @Reference
     private Assistancer assistancer;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        String code = stringParam(request, CODE_PARAM);
+        String code = stringParam(request, WORD_PARAM);
 
         try {
-            Assistance assistance = assistancer.forCode(code);
+            Assistance assistance = assistancer.forWord(code);
 
             respondJson(
                     response,
-                    new Result(SC_OK, String.format("Code '%s' assisted successfully", code), assistance));
+                    new Result(SC_OK, String.format("Code for word '%s' assisted successfully", code), assistance));
         } catch (Exception e) {
-            LOG.error("Cannot assist code '{}'", code, e);
+            LOG.error("Cannot assist code for word '{}'", code, e);
             respondJson(
                     response,
                     new Result(
                             SC_INTERNAL_SERVER_ERROR,
-                            String.format("Code '%s' cannot be assisted. Error: %s", code, e.getMessage())));
+                            String.format("Code for word '%s' cannot be assisted. Error: %s", code, e.getMessage())));
         }
     }
 }

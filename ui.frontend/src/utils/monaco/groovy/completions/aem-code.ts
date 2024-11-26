@@ -5,12 +5,13 @@ import {ApiDataAssistCode, apiRequest} from "../../../api.ts";
 
 export function registerAemCodeCompletions(instance: Monaco) {
     instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+
         provideCompletionItems: (model: monaco.editor.ITextModel, position: monaco.Position): monaco.languages.ProviderResult<monaco.languages.CompletionList> => {
-            const text = model.getValue();
+            const word = model.getWordAtPosition(position)?.word || '';
 
             return apiRequest<ApiDataAssistCode>({
                 method: "GET",
-                url: `/apps/contentor/api/assist-code.json?code=${encodeURIComponent(text)}`,
+                url: `/apps/contentor/api/assist-code.json?word=${encodeURIComponent(word)}`,
                 operation: "Code assistance"
             }).then(response => {
                 const suggestions = response.data.data.suggestions.map(suggestion => ({

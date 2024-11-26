@@ -5,7 +5,7 @@ import org.osgi.service.component.annotations.Component;
 @Component(immediate = true, service = Assistancer.class)
 public class Assistancer {
 
-    public Assistance forCode(String code) {
-        return Assistance.mock(code);
+    public Assistance forWord(String word) {
+        return Assistance.mock(word);
     }
 }
