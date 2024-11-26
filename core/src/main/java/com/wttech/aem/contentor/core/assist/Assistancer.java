@@ -1,10 +1,10 @@
 package com.wttech.aem.contentor.core.assist;
 
-import com.wttech.aem.contentor.core.assist.osgi.BundleScanner;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+
+import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -12,20 +12,24 @@ import java.util.List;
 @Component(immediate = true, service = Assistancer.class)
 public class Assistancer {
 
-    private transient BundleContext bundleContext;
+    private static final Logger LOG = LoggerFactory.getLogger(Assistancer.class);
 
-    @Activate
-    protected void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
+    @Reference
+    private transient OsgiScanner osgiScanner;
 
     public Assistance forWord(String word) {
+        LOG.info("Assisting for word '{}'", word);
+
+        // TODO refactor osgi scanner to make it faster
+        // TODO accept function to filter and map class names, map function should has an arg which BundleClass(clazz, bundle)
+        List<String> classNames = osgiScanner.findClassNames(word);
         List<Suggestion> suggestions = new LinkedList<>();
-        for (Bundle bundle : bundleContext.getBundles()) {
-            for (String className : new BundleScanner(bundle).findClassNames(word)) {
-                suggestions.add(new Suggestion("class", className));
-            }
+        for (String className : classNames) {
+            suggestions.add(new Suggestion("class", className));
         }
+
+        LOG.info("Assisted for word '{}'. Found suggestions ({})", word, suggestions.size());
+
         return new Assistance(word, suggestions);
     }
 }

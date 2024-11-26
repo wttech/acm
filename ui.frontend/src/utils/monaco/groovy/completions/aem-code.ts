@@ -16,6 +16,8 @@ export function registerAemCodeCompletions(instance: Monaco) {
             }).then(response => {
                 const suggestions = response.data.data.suggestions.map(suggestion => ({
                     label: suggestion.value,
+                    detail: suggestion.kind,
+                    documentation: suggestion.doc,
                     kind: mapToMonacoKind(suggestion.kind),
                     insertText: suggestion.value,
                     range: new monaco.Range(

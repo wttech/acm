@@ -1,5 +1,6 @@
 package com.wttech.aem.contentor.core.util;
 
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -13,5 +14,16 @@ public class StreamUtils {
     public static <T> Stream<T> asStream(Iterator<T> sourceIterator, boolean parallel) {
         Iterable<T> iterable = () -> sourceIterator;
         return StreamSupport.stream(iterable.spliterator(), parallel);
+    }
+
+    public static <T> Stream<T> asStream(Enumeration<T> enumeration) {
+        return asStream(new Iterator<T>() {
+            @Override public boolean hasNext() {
+                return enumeration.hasMoreElements();
+            }
+            @Override public T next() {
+                return enumeration.nextElement();
+            }
+        });
     }
 }
