@@ -28,6 +28,8 @@ public class OsgiScanner {
 	@Activate
 	protected void activate(BundleContext bundleContext) {
 		this.bundleContext = bundleContext;
+
+		// TODO do async warmup findClassNames("page")
 	}
 
 	public List<String> findClassNames() {
@@ -90,13 +92,13 @@ public class OsgiScanner {
 		try {
 			classLoader.loadClass(className);
 			return true;
-		} catch (ClassNotFoundException e) {
+		} catch (Throwable e) {
 			return false;
 		}
 	}
 
 	private boolean isImportableClass(String className) {
-		// Exclude anonymous classes
-		return !className.matches(".*\\$\\d+.*");
+		// Exclude anonymous classes and package-info files
+		return !className.matches(".*\\$\\d+.*") && !className.endsWith("package-info");
 	}
 }
