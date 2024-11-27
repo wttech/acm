@@ -5,17 +5,10 @@ import java.util.List;
 
 public class Assistance implements Serializable {
 
-    private final String word;
-
     private final List<Suggestion> suggestions;
 
-    public Assistance(String code, List<Suggestion> suggestions) {
-        this.word = code;
+    public Assistance(List<Suggestion> suggestions) {
         this.suggestions = suggestions;
-    }
-
-    public String getWord() {
-        return word;
     }
 
     public List<Suggestion> getSuggestions() {

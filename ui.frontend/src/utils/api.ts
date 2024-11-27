@@ -22,9 +22,9 @@ export type ApiDataExecution = {
 export type ApiDataAssistCode = {
     code: string;
     suggestions: {
-        kind: string
-        value: string
-        doc: string
+        k: string // kind
+        v: string // value
+        i: string // info
     }[]
 }
 

@@ -17,6 +17,9 @@ public class StreamUtils {
     }
 
     public static <T> Stream<T> asStream(Enumeration<T> enumeration) {
+        if (enumeration == null) {
+            return Stream.empty();
+        }
         return asStream(new Iterator<T>() {
             @Override public boolean hasNext() {
                 return enumeration.hasMoreElements();

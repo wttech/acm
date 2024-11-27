@@ -3,36 +3,45 @@ import {Monaco} from "@monaco-editor/react";
 import {LANGUAGE_ID} from "../../groovy.ts";
 import {ApiDataAssistCode, apiRequest} from "../../../api.ts";
 
+let aemDataAssistCode: ApiDataAssistCode | null = null;
+
 export function registerAemCodeCompletions(instance: Monaco) {
+    // Fetch all completions once during initialization
+    apiRequest<ApiDataAssistCode>({
+        method: "GET",
+        url: `/apps/contentor/api/assist-code.json`,
+        operation: "Code assistance"
+    }).then(response => {
+        aemDataAssistCode = response.data.data
+    }).catch(error => {
+        console.error('Code assistance error:', error);
+    });
+
     instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
-
         provideCompletionItems: (model: monaco.editor.ITextModel, position: monaco.Position): monaco.languages.ProviderResult<monaco.languages.CompletionList> => {
-            const word = model.getWordAtPosition(position)?.word || '';
+            const wordAtPosition = model.getWordAtPosition(position);
+            const wordText = wordAtPosition?.word || '';
 
-            return apiRequest<ApiDataAssistCode>({
-                method: "GET",
-                url: `/apps/contentor/api/assist-code.json?word=${encodeURIComponent(word)}`,
-                operation: "Code assistance"
-            }).then(response => {
-                const suggestions = response.data.data.suggestions.map(suggestion => ({
-                    label: suggestion.value,
-                    detail: suggestion.kind,
-                    documentation: suggestion.doc,
-                    kind: mapToMonacoKind(suggestion.kind),
-                    insertText: suggestion.value,
-                    range: new monaco.Range(
-                        position.lineNumber,
-                        model.getWordAtPosition(position)?.startColumn || position.column,
-                        position.lineNumber,
-                        model.getWordAtPosition(position)?.endColumn || position.column
-                    )
-                }));
+            console.info('Code assistance word:',  wordText);
 
-                return { suggestions };
-            }).catch(error => {
-                console.error('Code assistance error:', error);
-                return { suggestions: [] };
-            });
+            const filteredSuggestions = (aemDataAssistCode?.suggestions ?? []).map(suggestion => ({
+                label: suggestion.v, // TODO troubleshoot with: sortText(suggestion.v, wordText)
+                insertText: suggestion.v,
+                kind: mapToMonacoKind(suggestion.k),
+                detail: suggestion.k,
+                documentation: suggestion.i,
+                range: new monaco.Range(
+                    position.lineNumber,
+                    wordAtPosition?.startColumn || position.column,
+                    position.lineNumber,
+                    wordAtPosition?.endColumn || position.column
+                ),
+                // TODO: sortText: sortText(suggestion.v, wordText)
+            }));
+
+            // TODO support completing when cursor is in the middle of a word
+
+            return { suggestions: filteredSuggestions, incomplete: true };
         }
     });
 }
@@ -51,3 +60,12 @@ function mapToMonacoKind(kind: string): monaco.languages.CompletionItemKind {
             return monaco.languages.CompletionItemKind.Text;
     }
 }
+
+function sortText(label: string, word: string): string {
+    const lastSegment = label.split('.').pop() || '';
+    const isExactMatch = lastSegment === word;
+    const isPartialMatch = lastSegment.includes(word);
+    const score = (isExactMatch ? '0' : isPartialMatch ? '1' : '2');
+    return score + "_" + label;
+}
+

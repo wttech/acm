@@ -2,7 +2,6 @@ package com.wttech.aem.contentor.core.api;
 
 import com.wttech.aem.contentor.core.assist.Assistance;
 import com.wttech.aem.contentor.core.assist.Assistancer;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -16,8 +15,6 @@ import javax.servlet.Servlet;
 import java.io.IOException;
 
 import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
-import static com.wttech.aem.contentor.core.util.ServletUtils.stringParam;
-import static javax.servlet.http.HttpServletResponse.*;
 
 @Component(
         immediate = true,
@@ -33,31 +30,17 @@ public class AssistCodeServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(AssistCodeServlet.class);
 
-    private static final String WORD_PARAM = "word";
-
-    private static final String LIMIT_PARAM = "limit";
-
     @Reference
     private Assistancer assistancer;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        String code = stringParam(request, WORD_PARAM);
-        int limit = Integer.parseInt(StringUtils.defaultString(stringParam(request, LIMIT_PARAM), "200"));
-
         try {
-            Assistance assistance = assistancer.forWord(code, limit);
-
-            respondJson(
-                    response,
-                    new Result(SC_OK, String.format("Code for word '%s' assisted successfully", code), assistance));
+            Assistance assistance = assistancer.all();
+            respondJson(response, Result.ok("Code assistance generated successfully", assistance));
         } catch (Exception e) {
-            LOG.error("Cannot assist code for word '{}'", code, e);
-            respondJson(
-                    response,
-                    new Result(
-                            SC_INTERNAL_SERVER_ERROR,
-                            String.format("Code for word '%s' cannot be assisted. Error: %s", code, e.getMessage())));
+            LOG.error("Cannot generate code assistance", e);
+            respondJson(response, Result.error(String.format("Code assistance cannot be generated. Error: %s", e.getMessage())));
         }
     }
 }
