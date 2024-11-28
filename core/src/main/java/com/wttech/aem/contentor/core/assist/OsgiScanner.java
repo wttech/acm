@@ -1,28 +1,30 @@
 package com.wttech.aem.contentor.core.assist;
 
-import com.wttech.aem.contentor.core.util.StreamUtils;
-import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
+import com.wttech.aem.contentor.core.assist.BundleClass;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Modified;
-import org.osgi.service.component.annotations.Reference;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Enumeration;
 import java.util.stream.Stream;
+import java.util.Arrays;
+import com.wttech.aem.contentor.core.util.StreamUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(immediate = true, service = OsgiScanner.class)
 public class OsgiScanner {
 
-	@Reference
-	private transient DynamicClassLoaderManager classLoaderManager;
+	private static final Logger LOG = LoggerFactory.getLogger(OsgiScanner.class);
 
-	private transient BundleContext bundleContext;
+	private static final String BUNDLE_WIRING_PACKAGE = "osgi.wiring.package";
+
+	private BundleContext bundleContext;
 
 	@Activate
-	@Modified
 	protected void activate(BundleContext bundleContext) {
 		this.bundleContext = bundleContext;
 	}
@@ -39,40 +41,51 @@ public class OsgiScanner {
 	}
 
 	private Stream<BundleClass> scanClasses(Bundle bundle) {
-		return StreamUtils.asStream(toUrls(bundle))
-				.map(this::toRawClassName)
-				.filter(this::isLoadableClass)
-				.map(this::toStdClassName)
-				.filter(this::isImportableClass)
-				.map(c -> new BundleClass(c, bundle.getSymbolicName()));
+		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
+		if (bundleWiring == null) {
+			return Stream.empty();
+		}
+
+		return bundleWiring.getCapabilities(BUNDLE_WIRING_PACKAGE).stream()
+				.map(capability -> (String) capability.getAttributes().get(BUNDLE_WIRING_PACKAGE))
+				.flatMap(pkg -> getClassesInPackage(bundle, pkg));
 	}
 
-	private Enumeration<URL> toUrls(Bundle bundle) {
-		return bundle.findEntries("/", "*.class", true);
+	private Stream<BundleClass> getClassesInPackage(Bundle bundle, String packageName) {
+		try {
+			Enumeration<URL> resources = bundle.findEntries(packageName.replace('.', '/'), "*.class", false);
+			if (resources == null) {
+				return Stream.empty();
+			}
+
+			return StreamUtils.asStream(resources)
+					.map(this::toRawClassName)
+					.filter(className -> isDirectChildOfPackage(className, packageName))
+					.filter(this::isImportableClass)
+					.map(this::toStdClassName)
+					.map(c -> new BundleClass(c, bundle.getSymbolicName()));
+		} catch (Exception e) {
+			LOG.error("Error scanning classes in bundle '{}'", bundle.getSymbolicName(), e);
+			return Stream.empty();
+		}
+	}
+
+	private boolean isDirectChildOfPackage(String className, String packageName) {
+		String classPackage = className.substring(0, className.lastIndexOf('.'));
+		return classPackage.equals(packageName);
 	}
 
 	private String toRawClassName(URL url) {
 		final String f = url.getFile();
 		final String cn = f.substring(1, f.length() - ".class".length());
-
-		return cn.replace('/', '.');
+		return cn.replace('/', '.').replace("$", ".");
 	}
 
 	private String toStdClassName(String rawClassName) {
-		return rawClassName.replace("$", ".");
-	}
-
-	private boolean isLoadableClass(String className) {
-		try {
-			classLoaderManager.getDynamicClassLoader().loadClass(className);
-			return true;
-		} catch (Throwable e) {
-			return false;
-		}
+		return rawClassName;
 	}
 
 	private boolean isImportableClass(String className) {
-		// Exclude anonymous classes and package-info files
 		return !className.matches(".*\\$\\d+.*") && !className.endsWith("package-info");
 	}
 }
