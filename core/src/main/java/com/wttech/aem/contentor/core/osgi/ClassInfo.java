@@ -2,7 +2,7 @@ package com.wttech.aem.contentor.core.osgi;
 
 import org.osgi.framework.Bundle;
 
-public class ClassInfo {
+public class ClassInfo implements Comparable<ClassInfo> {
 
     private final String className;
 
@@ -19,5 +19,10 @@ public class ClassInfo {
 
     public Bundle getBundle() {
         return bundle;
+    }
+
+    @Override
+    public int compareTo(ClassInfo other) {
+        return this.className.compareTo(other.className);
     }
 }

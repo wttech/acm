@@ -16,6 +16,7 @@ import java.io.IOException;
 
 import static com.wttech.aem.contentor.core.util.ServletResult.*;
 import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
+import static com.wttech.aem.contentor.core.util.ServletUtils.stringParam;
 
 @Component(
         immediate = true,
@@ -31,13 +32,21 @@ public class AssistCodeServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(AssistCodeServlet.class);
 
+    public static final String WORD_PARAM = "word";
+
     @Reference
     private Assistancer assistancer;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        String word = stringParam(request, WORD_PARAM);
+        if (word == null) {
+            respondJson(response, badRequest("Code assistance word is not specified!"));
+            return;
+        }
+
         try {
-            Assistance assistance = assistancer.all();
+            Assistance assistance = assistancer.forWord(word);
             respondJson(response, ok("Code assistance generated successfully", assistance));
         } catch (Exception e) {
             LOG.error("Cannot generate code assistance", e);

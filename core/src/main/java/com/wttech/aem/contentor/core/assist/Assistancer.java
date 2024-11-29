@@ -1,6 +1,8 @@
 package com.wttech.aem.contentor.core.assist;
 
+import com.wttech.aem.contentor.core.osgi.ClassInfo;
 import com.wttech.aem.contentor.core.osgi.OsgiScanner;
+import com.wttech.aem.contentor.core.util.SearchUtils;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
@@ -17,15 +19,20 @@ public class Assistancer {
     @Reference
     private transient OsgiScanner osgiScanner;
 
-    private List<Suggestion> classSuggestions = Collections.emptyList();
+    private List<ClassInfo> classSuggestions = Collections.emptyList();
 
     @Activate
     @Modified
     protected void activate() {
-        this.classSuggestions = osgiScanner.scanClasses().map(ClassSuggestion::new).collect(Collectors.toList());
+        this.classSuggestions = osgiScanner.scanClasses().sorted().collect(Collectors.toList());
     }
 
-    public Assistance all() {
-        return new Assistance(classSuggestions);
+    public Assistance forWord(String word) {
+        return new Assistance(
+                classSuggestions.stream()
+                .filter(cf -> SearchUtils.containsWord(cf.getClassName(), word))
+                .map(ClassSuggestion::new)
+                .collect(Collectors.toList())
+        );
     }
 }
