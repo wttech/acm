@@ -1,6 +1,6 @@
 import {Cell, Column, Flex, Row, TableBody, TableHeader, TableView} from "@adobe/react-spectrum";
 
-const ScriptsPage = () => {
+const SnippetsPage = () => {
     return (
         <Flex direction="column">
             <TableView
@@ -30,4 +30,4 @@ const ScriptsPage = () => {
     );
 };
 
-export default ScriptsPage;
+export default SnippetsPage;

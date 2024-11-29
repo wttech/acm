@@ -5,12 +5,14 @@ import ConsolePage from "../pages/ConsolePage";
 
 import { Routes } from 'react-router-dom';
 import ExecutionsPage from "../pages/ExecutionsPage.tsx";
+import SnippetsPage from "../pages/SnippetsPage.tsx";
 
 const Content = () => {
     return (
         <Routes>
             <Route path="/" element={<Navigate to="/console" />} />
             <Route path="/scripts" element={<ScriptsPage/>} />
+            <Route path="/snippets" element={<SnippetsPage/>} />
             <Route path="/console" element={<ConsolePage/>} />
             <Route path="/executions" element={<ExecutionsPage/>} />
         </Routes>
