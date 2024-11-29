@@ -3,17 +3,16 @@ package com.wttech.aem.contentor.core.util;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 
 public final class ServletUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ServletUtils.class);
 
     private ServletUtils() {
         // intentionally empty
@@ -34,27 +33,26 @@ public final class ServletUtils {
             generator.writeStringField("status", String.valueOf(result.getStatus()));
             generator.writeStringField("message", result.getMessage());
 
+            generator.writeObjectFieldStart("data");
             Object data = result.getData();
-            JsonUtils.MAPPER.valueToTree(data).fields().forEachRemaining(entry -> {
-                try {
-                    generator.writeObjectField(entry.getKey(), entry.getValue());
-                } catch (IOException e) {
-                    LOG.error("Cannot serialize field: {}", entry.getKey(), e);
-                }
-            });
+            Iterator<Map.Entry<String, JsonNode>> fields = JsonUtils.MAPPER.valueToTree(data).fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                generator.writeObjectField(entry.getKey(), entry.getValue());
+            }
             if (data instanceof DataStreams) {
                 for (DataStream<?> dataStream : ((DataStreams) data).dataStreams()) {
                     generator.writeArrayFieldStart(dataStream.name());
-                    dataStream.items().forEach(item -> {
-                        try {
-                            generator.writeObject(item);
-                        } catch (Exception e) {
-                            LOG.error("Cannot serialize object: {}", item, e);
-                        }
-                    });
+                    Iterator<?> iterator = dataStream.items().iterator();
+                    while (iterator.hasNext()) {
+                        Object item = iterator.next();
+                        generator.writeObject(item);
+                    }
                     generator.writeEndArray();
                 }
             }
+            generator.writeEndObject();
+
             generator.writeEndObject();
         }
     }
