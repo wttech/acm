@@ -1,6 +1,5 @@
-package com.wttech.aem.contentor.core.assist;
+package com.wttech.aem.contentor.core.osgi;
 
-import com.wttech.aem.contentor.core.assist.BundleClass;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
@@ -29,7 +28,7 @@ public class OsgiScanner {
 		this.bundleContext = bundleContext;
 	}
 
-	public Stream<BundleClass> scanClasses() {
+	public Stream<ClassInfo> scanClasses() {
 		return Arrays.stream(bundleContext.getBundles())
 				.filter(this::isBundleOrFragmentReady)
 				.flatMap(this::scanClasses);
@@ -40,7 +39,7 @@ public class OsgiScanner {
 				|| (bundle.getState() == Bundle.RESOLVED && bundle.getHeaders().get("Fragment-Host") != null);
 	}
 
-	private Stream<BundleClass> scanClasses(Bundle bundle) {
+	private Stream<ClassInfo> scanClasses(Bundle bundle) {
 		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
 		if (bundleWiring == null) {
 			return Stream.empty();
@@ -48,10 +47,10 @@ public class OsgiScanner {
 
 		return bundleWiring.getCapabilities(BUNDLE_WIRING_PACKAGE).stream()
 				.map(capability -> (String) capability.getAttributes().get(BUNDLE_WIRING_PACKAGE))
-				.flatMap(pkg -> getClassesInPackage(bundle, pkg));
+				.flatMap(pkg -> findClasses(bundle, pkg));
 	}
 
-	private Stream<BundleClass> getClassesInPackage(Bundle bundle, String packageName) {
+	private Stream<ClassInfo> findClasses(Bundle bundle, String packageName) {
 		try {
 			Enumeration<URL> resources = bundle.findEntries(packageName.replace('.', '/'), "*.class", false);
 			if (resources == null) {
@@ -63,7 +62,7 @@ public class OsgiScanner {
 					.filter(className -> isDirectChildOfPackage(className, packageName))
 					.filter(this::isImportableClass)
 					.map(this::toStdClassName)
-					.map(c -> new BundleClass(c, bundle.getSymbolicName()));
+					.map(c -> new ClassInfo(c, bundle));
 		} catch (Exception e) {
 			LOG.error("Error scanning classes in bundle '{}'", bundle.getSymbolicName(), e);
 			return Stream.empty();
