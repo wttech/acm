@@ -3,11 +3,11 @@ instance:
 
   # Full details of local or remote instances
   config:
-    local_author:
+    afe_author:
       active: [[.Env.AEM_AUTHOR_ACTIVE | default true ]]
-      http_url: [[.Env.AEM_AUTHOR_HTTP_URL | default "http://127.0.0.1:4502" ]]
-      user: [[.Env.AEM_AUTHOR_USER | default "admin" ]]
-      password: [[.Env.AEM_AUTHOR_PASSWORD | default "admin" ]]
+      http_url: https://kp-6521-aem-author.gat-aws.wttech.cloud
+      user: admin
+      password: FY21l9ChYXix
       run_modes: [ local ]
       jvm_opts:
         - -server
@@ -23,7 +23,7 @@ instance:
       env_vars:
         - ACME_VAR=value
       sling_props: []
-    local_publish:
+    afe_publish:
       active: [[.Env.AEM_PUBLISH_ACTIVE | default true ]]
       http_url: [[.Env.AEM_PUBLISH_HTTP_URL | default "http://127.0.0.1:4503" ]]
       user: [[.Env.AEM_PUBLISH_USER | default "admin" ]]
@@ -43,6 +43,8 @@ instance:
       env_vars:
         - ACME_VAR=value
       sling_props: []
+
+
 
   # Tuning performance & reliability
   # 'auto'     - for more than 1 local instances - 'serial', otherwise 'parallel'

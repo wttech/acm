@@ -25,12 +25,6 @@ public class Executor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
-    private static final String BINDING_RESOURCE_RESOLVER = "resourceResolver";
-
-    private static final String BINDING_OUT = "out";
-
-    private static final String BINDING_LOG = "log";
-
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
 
@@ -78,8 +72,7 @@ public class Executor {
 
     private String composeContent(Executable executable) throws ContentorException {
         StringBuilder builder = new StringBuilder();
-        builder.append("System.setOut(new java.io.PrintStream(" + BINDING_OUT
-                + ", true, \"UTF-8\"));\n");
+        builder.append("System.setOut(new " + Variable.OUT.typeName() + "(" + Variable.OUT.bindingName() + ", true, \"UTF-8\"));\n");
         builder.append(executable.getContent());
         return builder.toString();
     }
@@ -101,9 +94,9 @@ public class Executor {
 
     private GroovyShell createShell(Executable executable, ExecutionOptions options) {
         Binding binding = new Binding();
-        binding.setVariable(BINDING_RESOURCE_RESOLVER, options.getResourceResolver());
-        binding.setVariable(BINDING_LOG, createLogger(executable));
-        binding.setVariable(BINDING_OUT, options.getOutputStream());
+        binding.setVariable(Variable.RESOURCE_RESOLVER.varName, options.getResourceResolver());
+        binding.setVariable(Variable.LOG.varName, createLogger(executable));
+        binding.setVariable(Variable.OUT.varName, options.getOutputStream());
 
         CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
         ImportCustomizer importCustomizer = new ImportCustomizer();
