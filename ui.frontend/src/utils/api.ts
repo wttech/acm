@@ -19,6 +19,15 @@ export type ApiDataExecution = {
     status: string;
 }
 
+export type ApiDataAssistCode = {
+    code: string;
+    suggestions: {
+        k: string // kind
+        v: string // value
+        i: string // info
+    }[]
+}
+
 export async function toastRequest<D>(config: ToastRequestConfig) : Promise<AxiosResponse<ApiResponse<D>>> {
     const toastTimeout = config.timeout || 5000;
     try {

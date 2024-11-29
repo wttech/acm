@@ -1,125 +1,141 @@
 import * as monaco from 'monaco-editor';
-import * as ts from 'typescript';
 import {Monaco} from "@monaco-editor/react";
 import {LANGUAGE_ID} from "../../groovy.ts";
+import {ApiDataAssistCode, apiRequest} from "../../../api.ts";
 
-// Function to parse the TypeScript declaration file and extract symbols (including methods and classes)
-function parseDTSFile(fileContent: string) {
-    const sourceFile = ts.createSourceFile('aem.d.ts', fileContent, ts.ScriptTarget.Latest, true);
-
-    const suggestions: monaco.languages.CompletionItem[] = [];
-
-    // Helper function to get the fully qualified name of a node
-    function getFullyQualifiedName(node: ts.Node): string {
-        const parts: string[] = [];
-        let current: ts.Node | undefined = node;
-        while (current) {
-            if ((ts.isModuleDeclaration(current) || ts.isClassDeclaration(current) || ts.isInterfaceDeclaration(current)) && current.name) {
-                parts.unshift(current.name.text);
-            }
-            current = current.parent;
-        }
-        return parts.join('.');
-    }
-
-    // Recursive function to traverse the AST
-    function visitNode(node: ts.Node) {
-        // Interface declarations
-        if (ts.isInterfaceDeclaration(node)) {
-            const fullyQualifiedName = getFullyQualifiedName(node);
-            suggestions.push({
-                label: fullyQualifiedName,
-                kind: monaco.languages.CompletionItemKind.Interface,
-                insertText: fullyQualifiedName,
-                documentation: `Interface: ${fullyQualifiedName}`,
-                range: new monaco.Range(0, 0, 0, 0), // Adjust dynamically
-            });
-
-            // Check for methods inside the interface
-            node.members.forEach(member => {
-                if (ts.isMethodSignature(member)) {
-                    const methodName = member.name ? member.name.getText() : 'anonymousMethod';
-                    suggestions.push({
-                        label: `${fullyQualifiedName}.${methodName}`,
-                        kind: monaco.languages.CompletionItemKind.Method,
-                        insertText: `${methodName}()`,
-                        documentation: `Method: ${methodName}`,
-                        range: new monaco.Range(0, 0, 0, 0), // Adjust dynamically
-                    });
-                }
-            });
-        }
-
-        // Class declarations (including methods inside classes)
-        else if (ts.isClassDeclaration(node)) {
-            const fullyQualifiedName = getFullyQualifiedName(node);
-            suggestions.push({
-                label: fullyQualifiedName,
-                kind: monaco.languages.CompletionItemKind.Class,
-                insertText: fullyQualifiedName,
-                documentation: `Class: ${fullyQualifiedName}`,
-                range: new monaco.Range(0, 0, 0, 0), // Adjust dynamically
-            });
-
-            // Check for methods inside the class
-            node.members.forEach(member => {
-                if (ts.isMethodDeclaration(member)) {
-                    const methodName = member.name ? member.name.getText() : 'anonymousMethod';
-                    suggestions.push({
-                        label: `${fullyQualifiedName}.${methodName}`,
-                        kind: monaco.languages.CompletionItemKind.Method,
-                        insertText: `${methodName}()`,
-                        documentation: `Method: ${methodName}`,
-                        range: new monaco.Range(0, 0, 0, 0), // Adjust dynamically
-                    });
-                }
-            });
-        }
-
-        // Recursively visit all child nodes in the AST
-        ts.forEachChild(node, visitNode);
-    }
-
-    // Start traversing from the root of the AST
-    visitNode(sourceFile);
-
-    return suggestions;
-}
-
-// TODO instead of reading pregenerated maybe just look for the class (search like in https://github.com/neva-dev/felix-search-webconsole-plugin/blob/a0cc739dbcf7e2735efec0987673ff3a6edb3c8d/src/main/java/com/neva/felix/webconsole/plugins/search/core/OsgiExplorer.java#L176)
 export function registerAemCodeCompletions(instance: Monaco) {
-    fetch('/apps/contentor/api/assist-code/aem.d.ts')
-        .then(response => response.text())
-        .then(fileContent => {
-            // Parse the file content to get suggestions
-            const suggestions = parseDTSFile(fileContent);
-
-            // Register the completion provider for Groovy language
-            instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
-                provideCompletionItems: (model: monaco.editor.ITextModel, position: monaco.Position) => {
-                    // Get the word at the cursor position
-                    const wordRange = model.getWordAtPosition(position);
-                    if (!wordRange) {
-                        return { suggestions };
-                    }
-
-                    // Adjust the range based on the current word at the cursor
-                    const adjustedSuggestions = suggestions.map(suggestion => ({
-                        ...suggestion,
-                        range: new monaco.Range(
-                            position.lineNumber,
-                            wordRange.startColumn,
-                            position.lineNumber,
-                            wordRange.endColumn
-                        ),
-                    }));
-
-                    // Return the adjusted suggestions
-                    return { suggestions: adjustedSuggestions };
-                }
-            });
-        })
-        .catch(error => {
-            console.error('Error loading aem.d.ts:', error);
-        });
+    registerWordCompletion(instance);
+    registerResourceCompletion(instance);
 }
+
+function registerWordCompletion(instance: Monaco) {
+    instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+
+        provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
+            const path = extractPath(model.getLineContent(position.lineNumber))
+            if (path) { // TODO not sure if needed
+                return {suggestions: [], incomplete: true};
+            }
+
+            let wordText = '';
+            const wordAtPosition = model.getWordAtPosition(position);
+            if (wordAtPosition) {
+                wordText = wordAtPosition.word;
+            }
+
+            try {
+                const response = await apiRequest<ApiDataAssistCode>({
+                    method: "GET",
+                    url: `/apps/contentor/api/assist-code.json?type=all&word=${encodeURIComponent(wordText)}`,
+                    operation: "Code assistance"
+                });
+                const assistance = response.data.data;
+                const suggestions = (assistance?.suggestions ?? []).map(suggestion => ({
+                    label: suggestion.v,
+                    insertText: suggestion.v,
+                    kind: mapToMonacoKind(suggestion.k),
+                    detail: suggestion.k,
+                    documentation: suggestion.i,
+                    range: new monaco.Range(
+                        position.lineNumber,
+                        wordAtPosition?.startColumn || position.column,
+                        position.lineNumber,
+                        wordAtPosition?.endColumn || position.column
+                    ),
+                    // TODO below does not work, Monaco bug? (we want to prioritize exact class name matches)
+                    // sortText: sortText(suggestion.v, wordText)
+                }));
+
+                return {suggestions: suggestions, incomplete: true};
+            } catch (error) {
+                console.error('Code assistance error:', error);
+                return {suggestions: [], incomplete: true};
+            }
+        }
+    });
+}
+
+function registerResourceCompletion(instance: Monaco) {
+    instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+
+        triggerCharacters: ['/'],
+
+        provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
+            let wordText = '';
+
+            const path = extractPath(model.getLineContent(position.lineNumber))
+            if (path) {
+                wordText = path;
+            }
+            const wordAtPosition = model.getWordAtPosition(position);
+            if (wordAtPosition) {
+                wordText = wordAtPosition.word;
+            }
+
+            try {
+                const response = await apiRequest<ApiDataAssistCode>({
+                    method: "GET",
+                    url: `/apps/contentor/api/assist-code.json?type=resource&word=${encodeURIComponent(wordText)}`,
+                    operation: "Code assistance"
+                });
+                const assistance = response.data.data;
+                const suggestions = (assistance?.suggestions ?? []).map(suggestion => ({
+                    label: suggestion.v,
+                    insertText: removePathPrefix(path, suggestion.v), // subtract path prefix
+                    kind: mapToMonacoKind(suggestion.k),
+                    detail: suggestion.k,
+                    documentation: suggestion.i,
+                    range: new monaco.Range(
+                        position.lineNumber,
+                        wordAtPosition?.startColumn || position.column,
+                        position.lineNumber,
+                        wordAtPosition?.endColumn || position.column
+                    ),
+                }));
+
+                return {suggestions: suggestions, incomplete: true};
+            } catch (error) {
+                console.error('Code assistance error:', error);
+                return {suggestions: [], incomplete: true};
+            }
+        }
+    });
+}
+
+function mapToMonacoKind(kind: string): monaco.languages.CompletionItemKind {
+    switch (kind.toLowerCase()) {
+        case 'class':
+            return monaco.languages.CompletionItemKind.Class;
+        case 'method':
+            return monaco.languages.CompletionItemKind.Method;
+        case 'function':
+            return monaco.languages.CompletionItemKind.Function;
+        case 'variable':
+            return monaco.languages.CompletionItemKind.Variable;
+        default:
+            return monaco.languages.CompletionItemKind.Text;
+    }
+}
+
+function extractPath(lineContent: string): string {
+    const regex = /"([^"]*)"/g;
+    const matches = regex.exec(lineContent);
+    return matches?.[1] || '';
+}
+
+function removePathPrefix(path: string, v: string) {
+    if (path && v.startsWith(path)) {
+        return v.substring(path.length);
+    }
+    return v;
+}
+
+/*
+function sortText(label: string, word: string): string {
+    const lastSegment = label.split('.').pop() || '';
+    const isExactMatch = lastSegment === word;
+    const isPartialMatch = lastSegment.includes(word);
+    const score = (isExactMatch ? '0' : isPartialMatch ? '1' : '2');
+    return score + "_" + label;
+}
+*/

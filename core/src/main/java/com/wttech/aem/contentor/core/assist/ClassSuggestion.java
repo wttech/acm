@@ -1,0 +1,27 @@
+package com.wttech.aem.contentor.core.assist;
+
+import com.wttech.aem.contentor.core.assist.osgi.ClassInfo;
+
+public class ClassSuggestion implements Suggestion {
+
+    private final ClassInfo classInfo;
+
+    public ClassSuggestion(ClassInfo classInfo) {
+        this.classInfo = classInfo;
+    }
+
+    @Override
+    public String getKind() {
+        return "class";
+    }
+
+    @Override
+    public String getValue() {
+        return classInfo.getClassName();
+    }
+
+    @Override
+    public String getInfo() {
+        return String.format("Bundle: %s", classInfo.getBundle().getSymbolicName());
+    }
+}

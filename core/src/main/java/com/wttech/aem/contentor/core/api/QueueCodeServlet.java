@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
 import java.io.IOException;
 
+import static com.wttech.aem.contentor.core.util.ServletResult.*;
 import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
 import static com.wttech.aem.contentor.core.util.ServletUtils.stringParam;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 @Component(
         service = {Servlet.class},
@@ -43,7 +43,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
         try {
             ExecuteCodeInput input = JsonUtils.readJson(request.getInputStream(), ExecuteCodeInput.class);
             if (input == null) {
-                respondJson(response, Result.badRequest("Code input is not specified!"));
+                respondJson(response, badRequest("Code input is not specified!"));
                 return;
             }
 
@@ -52,29 +52,21 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
             ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
             if (mode == null) {
-                respondJson(response, Result.badRequest(String.format("Execution mode '%s' is not supported!", mode)));
+                respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", mode)));
                 return;
             }
             options.setMode(mode);
 
             Execution execution = executionQueue.submit(code).orElse(null);
             if (execution == null) {
-                respondJson(response, Result.error("Code cannot be queued for execution!"));
+                respondJson(response, error("Code cannot be queued for execution!"));
                 return;
             }
 
-            respondJson(
-                    response,
-                    new Result(
-                            SC_OK,
-                            String.format("Code from '%s' queued for execution successfully", code.getId()),
-                            execution));
+            respondJson(response, ok(String.format("Code from '%s' queued for execution successfully", code.getId()), execution));
         } catch (Exception e) {
             LOG.error("Code input cannot be read!", e);
-            respondJson(
-                    response,
-                    Result.badRequest(String.format("Code input cannot be read! %s", e.getMessage())
-                            .trim()));
+            respondJson(response, badRequest(String.format("Code input cannot be read! %s", e.getMessage()).trim()));
         }
     }
 
@@ -82,24 +74,21 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         String jobId = stringParam(request, JOB_ID_PARAM);
         if (jobId == null) {
-            respondJson(response, Result.badRequest("Job ID is not specified!"));
+            respondJson(response, badRequest("Job ID is not specified!"));
             return;
         }
 
         try {
             Execution execution = executionQueue.read(jobId).orElse(null);
             if (execution == null) {
-                respondJson(response, Result.notFound(String.format("Job with ID '%s' not found!", jobId)));
+                respondJson(response, notFound(String.format("Job with ID '%s' not found!", jobId)));
                 return;
             }
 
-            respondJson(response, Result.ok("Job found successfully", execution));
+            respondJson(response, ok("Job found successfully", execution));
         } catch (Exception e) {
             LOG.error("Job cannot be read!", e);
-            respondJson(
-                    response,
-                    Result.error(String.format("Job cannot be read! %s", e.getMessage())
-                            .trim()));
+            respondJson(response, error(String.format("Job cannot be read! %s", e.getMessage()).trim()));
         }
     }
 
@@ -107,26 +96,23 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
     protected void doDelete(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         String jobId = stringParam(request, JOB_ID_PARAM);
         if (jobId == null) {
-            respondJson(response, Result.badRequest("Job ID is not specified!"));
+            respondJson(response, badRequest("Job ID is not specified!"));
             return;
         }
 
         try {
             Execution execution = executionQueue.read(jobId).orElse(null);
             if (execution == null) {
-                respondJson(response, Result.notFound(String.format("Job with ID '%s' not found!", jobId)));
+                respondJson(response, notFound(String.format("Job with ID '%s' not found!", jobId)));
                 return;
             }
 
             executionQueue.stop(jobId);
 
-            respondJson(response, Result.ok("Job stopped successfully", execution));
+            respondJson(response, ok("Job stopped successfully", execution));
         } catch (Exception e) {
             LOG.error("Job cannot be stopped!", e);
-            respondJson(
-                    response,
-                    Result.error(String.format("Job cannot be stopped! %s", e.getMessage())
-                            .trim()));
+            respondJson(response, error(String.format("Job cannot be stopped! %s", e.getMessage()).trim()));
         }
     }
 }

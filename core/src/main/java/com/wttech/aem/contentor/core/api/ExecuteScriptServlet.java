@@ -13,9 +13,9 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
 import java.io.IOException;
 
+import static com.wttech.aem.contentor.core.util.ServletResult.*;
 import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
 import static com.wttech.aem.contentor.core.util.ServletUtils.stringParam;
-import static javax.servlet.http.HttpServletResponse.*;
 
 @Component(
         immediate = true,
@@ -41,12 +41,9 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
         String path = stringParam(request, PATH_PARAM);
 
         try {
-            Script script = new ScriptRepository(request.getResourceResolver())
-                    .read(path)
-                    .orElse(null);
+            Script script = new ScriptRepository(request.getResourceResolver()).read(path).orElse(null);
             if (script == null) {
-                respondJson(
-                        response, new Result(SC_BAD_REQUEST, String.format("Script at path '%s' not found!", path)));
+                respondJson(response, badRequest(String.format("Script at path '%s' not found!", path)));
                 return;
             }
 
@@ -56,16 +53,10 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
             // TODO should this servlet also save execution in history?
             // history.save(execution)
 
-            respondJson(
-                    response,
-                    new Result(SC_OK, String.format("Script at path '%s' executed successfully", path), execution));
+            respondJson(response, ok(String.format("Script at path '%s' executed successfully", path), execution));
         } catch (Exception e) {
             LOG.error("Cannot execute script at path '{}'", path, e);
-            respondJson(
-                    response,
-                    new Result(
-                            SC_INTERNAL_SERVER_ERROR,
-                            String.format("Script at path '%s' cannot be executed. Error: %s", path, e.getMessage())));
+            respondJson(response, error(String.format("Script at path '%s' cannot be executed. Error: %s", path, e.getMessage())));
         }
     }
 }

@@ -2,6 +2,7 @@ package com.wttech.aem.contentor.core.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +12,8 @@ public final class JsonUtils {
 
     public static final String APPLICATION_JSON_UTF8 = "application/json; charset=utf-8";
 
-    public static final ObjectMapper MAPPER = new ObjectMapper();
+    public static final ObjectMapper MAPPER = new ObjectMapper()
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
     public static final ObjectWriter COMPACT_WRITER = MAPPER.writer();
 

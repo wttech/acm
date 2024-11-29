@@ -143,13 +143,13 @@ tasks:
     cmds:
       - task: deploy:all
 
-  develop:min:
-    desc: build & deploy minimal AEM package to instances
-    deps: [ build ]
-    cmds:
-      - sh aemw package deploy --url 'https://github.com/orbinson/aem-groovy-console/releases/download/19.0.5/aem-groovy-console-all-19.0.5.zip'
-      - task: deploy:min
-      - sh aemw package deploy --file 'ui.content/target/contentor.ui.content-*.zip'
+#  develop:min:
+#    desc: build & deploy minimal AEM package to instances
+#    deps: [ build ]
+#    cmds:
+#      #- sh aemw package deploy --url 'https://github.com/orbinson/aem-groovy-console/releases/download/19.0.5/aem-groovy-console-all-19.0.5.zip'
+#      - task: deploy:min
+#      - sh aemw package deploy --file 'ui.content/target/contentor.ui.content-*.zip'
 
   develop:core:
     desc: build & deploy core OSGi bundle to instances
