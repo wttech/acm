@@ -11,15 +11,15 @@ export function replaceWithShortClass(instance: Monaco) {
             // Get the content of the line where the code action is triggered.
             const lineContent = model.getLineContent(range.startLineNumber);
 
-            // Regular expression to match fully qualified class names.
-            const regex = /(?:[a-zA-Z_][\w]*\.)*[a-zA-Z_][\w]*(?<!\(\))$/;
+            // Regular expression to match fully qualified class names, optionally followed by parentheses with content.
+            const regex = /(?:[a-zA-Z_][\w]*\.)*[a-zA-Z_][\w]*(?:\([^)]*\))?$/;
             const match = lineContent.match(regex);
             if (!match) {
                 return { actions: codeActions, dispose: () => {} };
             }
 
             // Extract the fully qualified class name and the short class name.
-            const fullyQualifiedClassName = match[0];
+            const fullyQualifiedClassName = match[0].replace(/\([^)]*\)$/, ''); // Remove parentheses and content if present
             const shortClassName = fullyQualifiedClassName.split('.').pop();
 
             // If the class name does not contain a dot, it is already a short class name.
