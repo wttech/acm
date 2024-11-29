@@ -2,6 +2,8 @@ package com.wttech.aem.contentor.core.api;
 
 import com.wttech.aem.contentor.core.assist.Assistance;
 import com.wttech.aem.contentor.core.assist.Assistancer;
+import com.wttech.aem.contentor.core.assist.SuggestionType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -34,6 +36,8 @@ public class AssistCodeServlet extends SlingAllMethodsServlet {
 
     public static final String WORD_PARAM = "word";
 
+    public static final String TYPE_PARAM = "type";
+
     @Reference
     private Assistancer assistancer;
 
@@ -44,9 +48,9 @@ public class AssistCodeServlet extends SlingAllMethodsServlet {
             respondJson(response, badRequest("Code assistance word is not specified!"));
             return;
         }
-
+        String type = StringUtils.defaultString(stringParam(request, TYPE_PARAM), "all");
         try {
-            Assistance assistance = assistancer.forWord(word);
+            Assistance assistance = assistancer.forWord(request.getResourceResolver(), SuggestionType.of(type), word);
             respondJson(response, ok("Code assistance generated successfully", assistance));
         } catch (Exception e) {
             LOG.error("Cannot generate code assistance", e);

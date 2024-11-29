@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.osgi;
+package com.wttech.aem.contentor.core.assist.osgi;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
