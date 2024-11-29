@@ -31,7 +31,7 @@ public class Assistancer {
     @Modified
     protected void activate() {
         // TODO invalidate it based on bundles checksums (lastModified + symbolicName + version)
-        this.classCache = osgiScanner.scanClasses().sorted().collect(Collectors.toList());
+        this.classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
     }
 
     public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word) {
