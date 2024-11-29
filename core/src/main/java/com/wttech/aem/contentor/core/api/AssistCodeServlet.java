@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
 import java.io.IOException;
 
+import static com.wttech.aem.contentor.core.util.ServletResult.*;
 import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
 
 @Component(
@@ -37,10 +38,10 @@ public class AssistCodeServlet extends SlingAllMethodsServlet {
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             Assistance assistance = assistancer.all();
-            respondJson(response, Result.ok("Code assistance generated successfully", assistance));
+            respondJson(response, ok("Code assistance generated successfully", assistance));
         } catch (Exception e) {
             LOG.error("Cannot generate code assistance", e);
-            respondJson(response, Result.error(String.format("Code assistance cannot be generated. Error: %s", e.getMessage())));
+            respondJson(response, error(String.format("Code assistance cannot be generated. Error: %s", e.getMessage())));
         }
     }
 }

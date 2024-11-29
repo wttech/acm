@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
 import java.io.IOException;
 
+import static com.wttech.aem.contentor.core.util.ServletResult.*;
 import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
-import static javax.servlet.http.HttpServletResponse.*;
 
 @Component(
         immediate = true,
@@ -39,7 +39,7 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
         try {
             ExecuteCodeInput input = JsonUtils.readJson(request.getInputStream(), ExecuteCodeInput.class);
             if (input == null) {
-                respondJson(response, new Result(SC_BAD_REQUEST, "Code input is not specified!"));
+                respondJson(response, badRequest("Code input is not specified!"));
                 return;
             }
 
@@ -48,9 +48,7 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
 
             ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
             if (mode == null) {
-                respondJson(
-                        response,
-                        new Result(SC_BAD_REQUEST, String.format("Execution mode '%s' is not supported!", mode)));
+                respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", mode)));
                 return;
             }
             options.setMode(mode);
@@ -61,23 +59,15 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
                 // TODO should this servlet also save execution in history?
                 // history.save(execution)
 
-                respondJson(
-                        response,
-                        new Result(
-                                SC_OK, String.format("Code from '%s' executed successfully", code.getId()), execution));
+                respondJson(response, ok(String.format("Code from '%s' executed successfully", code.getId()), execution));
             } catch (Exception e) {
                 LOG.error("Code from '{}' cannot be executed!", code.getId(), e);
-                respondJson(
-                        response,
-                        new Result(
-                                SC_INTERNAL_SERVER_ERROR,
-                                String.format(
-                                        "Code from '%s' cannot be executed. Error: %s", code.getId(), e.getMessage())));
+                respondJson(response, error(String.format("Code from '%s' cannot be executed. Error: %s", code.getId(), e.getMessage())));
             }
-            respondJson(response, new Result(SC_OK, "Code executed successfully"));
+            respondJson(response, ok("Code executed successfully"));
         } catch (Exception e) {
             LOG.error("Code input cannot be read!", e);
-            respondJson(response, new Result(SC_BAD_REQUEST, "Cannot read code input!"));
+            respondJson(response, badRequest("Cannot read code input!"));
             return;
         }
     }

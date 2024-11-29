@@ -1,17 +1,22 @@
 package com.wttech.aem.contentor.core.assist;
 
+import com.wttech.aem.contentor.core.util.DataStream;
+import com.wttech.aem.contentor.core.util.DataStreams;
+
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collections;
+import java.util.stream.Stream;
 
-public class Assistance implements Serializable {
+public class Assistance implements Serializable, DataStreams {
 
-    private final List<Suggestion> suggestions;
+    private final Stream<Suggestion> suggestions;
 
-    public Assistance(List<Suggestion> suggestions) {
+    public Assistance(Stream<Suggestion> suggestions) {
         this.suggestions = suggestions;
     }
 
-    public List<Suggestion> getSuggestions() {
-        return suggestions;
+    @Override
+    public Iterable<DataStream<?>> dataStreams() {
+        return Collections.singletonList(DataStream.of("suggestions", suggestions));
     }
 }
