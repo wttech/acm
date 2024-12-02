@@ -7,8 +7,13 @@ import {registerCodeActions} from "./groovy/code-actions.ts";
 export const LANGUAGE_ID = 'groovy';
 
 export function registerGroovyLanguage(instance: Monaco) {
-    registerSyntax(instance);
-    registerCommands(instance);
-    registerCompletions(instance);
-    registerCodeActions(instance);
+    const languages = instance.languages.getLanguages();
+    const registered = languages.some(lang => lang.id === LANGUAGE_ID);
+
+    if (!registered) {
+        registerSyntax(instance);
+        registerCommands(instance);
+        registerCompletions(instance);
+        registerCodeActions(instance);
+    }
 }
