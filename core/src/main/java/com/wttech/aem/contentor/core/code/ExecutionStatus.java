@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.script;
+package com.wttech.aem.contentor.core.code;
 
 import org.apache.sling.event.jobs.Job;
 

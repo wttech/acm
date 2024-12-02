@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.script;
+package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ExceptionUtils;
@@ -72,7 +72,7 @@ public class Executor {
 
     private String composeContent(Executable executable) throws ContentorException {
         StringBuilder builder = new StringBuilder();
-        builder.append("System.setOut(new " + Variable.OUT.typeName() + "(" + Variable.OUT.bindingName() + ", true, \"UTF-8\"));\n");
+        builder.append("System.setOut(new java.io.PrintStream(" + Variable.OUT.varName() + ", true, \"UTF-8\"));\n");
         builder.append(executable.getContent());
         return builder.toString();
     }
@@ -93,19 +93,11 @@ public class Executor {
     }
 
     private GroovyShell createShell(Executable executable, ExecutionOptions options) {
-        Binding binding = new Binding();
-        binding.setVariable(Variable.RESOURCE_RESOLVER.varName, options.getResourceResolver());
-        binding.setVariable(Variable.LOG.varName, createLogger(executable));
-        binding.setVariable(Variable.OUT.varName, options.getOutputStream());
-
+        Binding binding = new CodeBinding(executable, options).toBinding();
         CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
         ImportCustomizer importCustomizer = new ImportCustomizer();
         compilerConfiguration.addCompilationCustomizers(importCustomizer);
 
         return new GroovyShell(binding, compilerConfiguration);
-    }
-
-    private Logger createLogger(Executable executable) {
-        return LoggerFactory.getLogger(String.format("%s(%s)", getClass().getSimpleName(), executable.getId()));
     }
 }

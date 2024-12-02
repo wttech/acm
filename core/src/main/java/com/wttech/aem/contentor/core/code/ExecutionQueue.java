@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.script;
+package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.instance.HealthChecker;
 import com.wttech.aem.contentor.core.util.ResourceUtils;

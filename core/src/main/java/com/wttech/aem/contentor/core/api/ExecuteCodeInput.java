@@ -1,6 +1,6 @@
 package com.wttech.aem.contentor.core.api;
 
-import com.wttech.aem.contentor.core.script.Code;
+import com.wttech.aem.contentor.core.code.Code;
 
 import java.io.Serializable;
 
