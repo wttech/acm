@@ -55,7 +55,7 @@ public class Assistancer {
 
     private Stream<VariableSuggestion> variableSuggestions(String word) {
         return Arrays.stream(Variable.values())
-                .filter(v -> SearchUtils.containsWord(v.bindingName(), word))
+                .filter(v -> SearchUtils.containsWord(v.varName(), word))
                 .map(VariableSuggestion::new);
     }
 

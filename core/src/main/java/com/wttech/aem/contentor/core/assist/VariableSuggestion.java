@@ -17,7 +17,7 @@ public class VariableSuggestion implements Suggestion {
 
     @Override
     public String getValue() {
-        return variable.bindingName();
+        return variable.varName();
     }
 
     @Override
