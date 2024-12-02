@@ -1,5 +1,7 @@
 package com.wttech.aem.contentor.core.acl;
 
+import com.wttech.aem.contentor.core.util.GroovyUtils;
+import groovy.lang.Closure;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
@@ -19,11 +21,16 @@ public class Acl {
         this.resourceResolver = resourceResolver;
     }
 
-    public User createUser(String id) throws AclException {
-        return createUser(UserOptions.simple(id));
+    // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
+    public User createUser(Closure<CreateUserOptions> closure) throws AclException {
+        return createUser(GroovyUtils.with(new CreateUserOptions(), closure));
     }
 
-    public User createUser(UserOptions options) throws AclException {
+    public User createUser(String id) throws AclException {
+        return createUser(CreateUserOptions.simple(id));
+    }
+
+    public User createUser(CreateUserOptions options) throws AclException {
         throw new IllegalStateException("Not implemented yet!");
     }
 

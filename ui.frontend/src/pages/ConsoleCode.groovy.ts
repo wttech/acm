@@ -7,8 +7,12 @@ boolean canRun() {
 
 //void doRun() {
     println "Migrating..."
+    
+    println "Updating ACLs..."
+    acl.createUser { id = "john.doe" ; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
 
-    for (int i = 0; i < 20; i++) {
+    println "Processing resources..."
+    for (int i = 0; i < 10; i++) {
         println "Migrating (\${i + 1}/20)"
         Thread.sleep(500)
     }
