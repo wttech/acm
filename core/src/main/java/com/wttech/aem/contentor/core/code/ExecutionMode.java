@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.script;
+package com.wttech.aem.contentor.core.code;
 
 import java.util.Arrays;
 import java.util.Optional;

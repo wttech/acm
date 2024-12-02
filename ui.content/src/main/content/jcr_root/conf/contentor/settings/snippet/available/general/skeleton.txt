@@ -1,0 +1,9 @@
+def canRun() boolean {
+    return $.once()
+}
+
+def doRun() {
+    println "Starting running script '$.script.path'"
+    Thread.sleep(1000)
+    println "Ended running script '$.script.path'"
+}

@@ -1,6 +1,6 @@
 package com.wttech.aem.contentor.core.assist;
 
-import com.wttech.aem.contentor.core.script.Variable;
+import com.wttech.aem.contentor.core.code.Variable;
 
 public class VariableSuggestion implements Suggestion {
 

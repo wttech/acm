@@ -5,7 +5,6 @@ import org.apache.sling.api.resource.Resource;
 import java.util.Spliterator;
 import java.util.Stack;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -13,26 +12,21 @@ public class ResourceSpliterator implements Spliterator<Resource> {
 
     private final Stack<Resource> stack = new Stack<>();
 
-    private final Predicate<Resource> filter;
-
-    public ResourceSpliterator(Resource root, Predicate<Resource> filter) {
-        this.filter = filter;
+    public ResourceSpliterator(Resource root) {
         stack.push(root);
     }
 
-    public static Stream<Resource> stream(Resource root, Predicate<Resource> filter) {
-        return StreamSupport.stream(new ResourceSpliterator(root, filter), false);
+    public static Stream<Resource> stream(Resource root) {
+        return StreamSupport.stream(new ResourceSpliterator(root), false);
     }
 
     @Override
     public boolean tryAdvance(Consumer<? super Resource> action) {
-        while (!stack.isEmpty()) {
+        if (!stack.isEmpty()) {
             Resource current = stack.pop();
-            if (filter.test(current)) {
-                action.accept(current);
-                return true;
-            }
+            action.accept(current);
             current.listChildren().forEachRemaining(stack::push);
+            return true;
         }
         return false;
     }

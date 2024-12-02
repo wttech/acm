@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.script;
+package com.wttech.aem.contentor.core.code;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

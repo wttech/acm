@@ -1,6 +1,6 @@
 package com.wttech.aem.contentor.core.api;
 
-import com.wttech.aem.contentor.core.script.*;
+import com.wttech.aem.contentor.core.code.*;
 import com.wttech.aem.contentor.core.util.JsonUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;

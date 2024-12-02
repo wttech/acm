@@ -1,8 +1,10 @@
-package com.wttech.aem.contentor.core.script;
+package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 
-public interface Executable {
+import java.io.Serializable;
+
+public interface Executable extends Serializable {
 
     String getId();
 

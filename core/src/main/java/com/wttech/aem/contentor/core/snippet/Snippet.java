@@ -1,8 +1,8 @@
-package com.wttech.aem.contentor.core.script;
+package com.wttech.aem.contentor.core.snippet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.contentor.core.code.Executable;
-import com.wttech.aem.contentor.core.snippet.Snippet;
+import com.wttech.aem.contentor.core.script.ScriptException;
 import com.wttech.aem.contentor.core.util.JcrUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.util.JcrConstants;
@@ -13,22 +13,22 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-public class Script implements Executable {
+public class Snippet implements Executable {
 
     private final transient Resource resource;
 
-    public Script(Resource resource) {
+    public Snippet(Resource resource) {
         this.resource = resource;
     }
 
-    public static Optional<Script> from(Resource resource) {
+    public static Optional<Snippet> from(Resource resource) {
         return Optional.ofNullable(resource)
-                .filter(Script::check)
-                .map(Script::new);
+                .filter(Snippet::check)
+                .map(Snippet::new);
     }
 
     public static boolean check(Resource resource) {
-        return resource != null && resource.isResourceType(JcrConstants.NT_FILE) && resource.getName().endsWith(".groovy");
+        return resource != null && resource.isResourceType(JcrConstants.NT_FILE) && resource.getName().endsWith(".txt");
     }
 
     @Override

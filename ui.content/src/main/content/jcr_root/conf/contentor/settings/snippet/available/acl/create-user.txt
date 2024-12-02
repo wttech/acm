@@ -1,0 +1,8 @@
+def user = acl.createUser {
+    id "${1:id}"
+    givenName "${2:givenName}"
+    familyName "${3:familyName}"
+    password "${4:password}"
+    property "email" "${5:email}"
+    ifNotExists
+}

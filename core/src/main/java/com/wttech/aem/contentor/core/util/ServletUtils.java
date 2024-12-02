@@ -9,8 +9,8 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class ServletUtils {
 
@@ -20,6 +20,17 @@ public final class ServletUtils {
 
     public static String stringParam(SlingHttpServletRequest request, String name) {
         return StringUtils.trimToNull(request.getParameter(name));
+    }
+
+    public static List<String> stringsParam(SlingHttpServletRequest request, String name) {
+        String[] values = request.getParameterValues(name);
+        if (values == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(values)
+                .map(StringUtils::trimToNull)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     public static void respondJson(SlingHttpServletResponse response, ServletResult<?> result) throws IOException {

@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.script;
+package com.wttech.aem.contentor.core.code;
 
 public enum Variable {
     RESOURCE_RESOLVER("resourceResolver", "org.apache.sling.api.resource.ResourceResolver"),
