@@ -201,6 +201,12 @@ Private-Package: net.datafaker.*,com.mifmif.common.regex.*,dk.brics.automaton.*
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <artifactId>oak-jackrabbit-api</artifactId>
+            <version>1.22.20</version><!-- TODO downgrade to AEM 6.5.0 compatible -->
+            <groupId>org.apache.jackrabbit</groupId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy</artifactId>
             <version>4.0.18</version>
@@ -209,17 +215,6 @@ Private-Package: net.datafaker.*,com.mifmif.common.regex.*,dk.brics.automaton.*
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-templates</artifactId>
             <version>4.0.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>1.28.5</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.datafaker</groupId>
-            <artifactId>datafaker</artifactId>
-            <version>1.9.0</version><!-- TODO upgrade when AEM supports JDK 17+ -->
         </dependency>
 
         <!-- Testing -->
