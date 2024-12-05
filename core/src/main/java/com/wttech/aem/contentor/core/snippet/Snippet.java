@@ -11,7 +11,9 @@ import org.apache.sling.api.resource.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 
 public class Snippet implements Executable {
 
@@ -34,6 +36,10 @@ public class Snippet implements Executable {
     @Override
     public String getId() {
         return getPath();
+    }
+
+    public String getName() {
+        return SnippetType.pathWithoutRoot(getPath()).orElse(getId());
     }
 
     @Override

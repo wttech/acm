@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.Servlet;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,7 +48,8 @@ public class SnippetServlet extends SlingAllMethodsServlet {
             } else {
                 snippets = repository.findAll().collect(Collectors.toList());
             }
-            respondJson(response, ok("Snippets listed successfully", snippets));
+            SnippetOutput output = new SnippetOutput(snippets);
+            respondJson(response, ok("Snippets listed successfully", output));
         } catch (Exception e) {
             LOG.error("Snippet(s) cannot be read!", e);
             respondJson(response, error(String.format("Snippet(s) cannot be read! %s", e.getMessage()).trim()));

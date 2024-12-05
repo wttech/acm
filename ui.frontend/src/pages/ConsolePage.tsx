@@ -27,9 +27,10 @@ import Bug from "@spectrum-icons/workflow/Bug";
 import Help from "@spectrum-icons/workflow/Help";
 
 import {ToastQueue} from '@react-spectrum/toast'
-import {ApiDataExecution, apiRequest} from "../utils/api.ts";
+import {apiRequest} from "../utils/api.ts";
 import React, {useState, useEffect, useRef} from "react";
 import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
+import {DataExecution} from "../utils/api.types.ts";
 
 const pollInterval = 500;
 const toastTimeout = 3000;
@@ -47,7 +48,7 @@ const ConsolePage = () => {
     const onExecute = async () => {
         setExecuting(true);
         try {
-            const response = await apiRequest<ApiDataExecution>({
+            const response = await apiRequest<DataExecution>({
                 operation: 'Code execution',
                 url: `/apps/contentor/api/queue-code.json`,
                 method: 'post',
@@ -72,7 +73,7 @@ const ConsolePage = () => {
 
     const pollExecutionState = async (jobId: string) => {
         try {
-            const response = await apiRequest<ApiDataExecution>({
+            const response = await apiRequest<DataExecution>({
                 operation: 'Code execution state',
                 url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
                 method: 'get'
@@ -120,7 +121,7 @@ const ConsolePage = () => {
 
             let status = 'UNKNOWN';
             while (!['STOPPED', 'FAILED', 'SUCCEEDED'].includes(status)) {
-                const response = await apiRequest<ApiDataExecution>({
+                const response = await apiRequest<DataExecution>({
                     operation: 'Code execution state',
                     url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
                     method: 'get'
@@ -155,7 +156,7 @@ const ConsolePage = () => {
 
     const onParse = () => {
         setParsing(true);
-        apiRequest<ApiDataExecution>({
+        apiRequest<DataExecution>({
             operation: 'Script parsing',
             url: `/apps/contentor/api/execute-code.json`,
             method: 'post',
