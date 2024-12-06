@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Flex, View, Heading, Content, Button } from '@adobe/react-spectrum';
+import {Flex, View, Heading, Content, Button, ProgressBar} from '@adobe/react-spectrum';
 import { toastRequest } from '../utils/api'; // Adjust the import path as necessary
 import { DataSnippet } from '../utils/api.types'; // Adjust the import path as necessary
 
@@ -18,11 +18,16 @@ const SnippetsPage = () => {
     }, []);
 
     if (snippets === null) {
-        return <div>Loading...</div>; // TODO do it more nicely
+        return (
+            <Flex justifyContent="center" alignItems="center" height="100vh">
+                <ProgressBar label="Loading..." isIndeterminate />
+            </Flex>
+        )
     }
 
     return (
         <Flex direction="column" gap="size-200">
+            {!snippets.list.length && <Heading level={2}>No snippets found</Heading>}
             {snippets.list.map(snippet => (
                 <View
                     key={snippet.id}

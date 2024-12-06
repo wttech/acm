@@ -9,7 +9,8 @@ export type DataAssistCode = {
     code: string;
     suggestions: {
         k: string // kind
-        v: string // value
+        l: string // label
+        it: string // insert text
         i: string // info
     }[]
 }

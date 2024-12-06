@@ -5,17 +5,18 @@ import com.wttech.aem.contentor.core.code.Executable;
 import com.wttech.aem.contentor.core.script.ScriptException;
 import com.wttech.aem.contentor.core.util.JcrUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Optional;
-import org.apache.commons.lang3.StringUtils;
 
 public class Snippet implements Executable {
+
+    public static final String FILE_EXTENSION = ".groovy";
 
     private final transient Resource resource;
 
@@ -30,7 +31,7 @@ public class Snippet implements Executable {
     }
 
     public static boolean check(Resource resource) {
-        return resource != null && resource.isResourceType(JcrConstants.NT_FILE) && resource.getName().endsWith(".txt");
+        return resource != null && resource.isResourceType(JcrConstants.NT_FILE) && resource.getName().endsWith(FILE_EXTENSION);
     }
 
     @Override
@@ -39,7 +40,12 @@ public class Snippet implements Executable {
     }
 
     public String getName() {
-        return SnippetType.pathWithoutRoot(getPath()).orElse(getId());
+        for (SnippetType type : SnippetType.values()) {
+            if (StringUtils.startsWith(getId(), type.root() + "/")) {
+                return StringUtils.removeEnd(StringUtils.removeStart(getId(), type.root() + "/"), FILE_EXTENSION);
+            }
+        }
+        return getId();
     }
 
     @Override

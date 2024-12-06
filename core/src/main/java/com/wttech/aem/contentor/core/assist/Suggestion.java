@@ -9,8 +9,11 @@ public interface Suggestion extends Serializable {
     @JsonProperty("k")
     String getKind();
 
-    @JsonProperty("v")
-    String getValue();
+    @JsonProperty("l")
+    String getLabel();
+
+    @JsonProperty("it")
+    String getInsertText();
 
     @JsonProperty("i")
     String getInfo();
