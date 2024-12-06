@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-public class Snippet implements Executable {
+public class Snippet implements Executable, Comparable<Snippet> {
 
     public static final String FILE_EXTENSION = ".groovy";
 
@@ -66,5 +66,10 @@ public class Snippet implements Executable {
         return Optional.ofNullable(resource.getChild(JcrUtils.JCR_CONTENT))
                 .map(r -> r.adaptTo(InputStream.class))
                 .orElseThrow(() -> new ScriptException(String.format("Cannot read script '%s'!", getPath())));
+    }
+
+    @Override
+    public int compareTo(Snippet o) {
+        return this.getName().compareTo(o.getName());
     }
 }

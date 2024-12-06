@@ -12,11 +12,7 @@ public class CreateUserOptions {
 
     private Mode mode = Mode.OVERRIDE;
 
-    public static CreateUserOptions simple(String id) {
-        CreateUserOptions result = new CreateUserOptions();
-        result.id = id;
-        return result;
-    }
+    private boolean system;
 
     public String getId() {
         return id;
@@ -58,6 +54,18 @@ public class CreateUserOptions {
         } else {
             throw new IllegalArgumentException("Full name must contain exactly two parts: given name and family name");
         }
+    }
+
+    public boolean isSystem() {
+        return system;
+    }
+
+    public void setSystem(boolean system) {
+        this.system = system;
+    }
+
+    public void system() {
+        this.system = true;
     }
 
     public void setMode(Mode mode) {
