@@ -1,0 +1,6 @@
+name: acl/delete-user
+content: |
+  acl.deleteUser { id = "${1:id}"; ifExists() }
+documentation: |
+  Delete a user with the given ID.
+  The user will be deleted only if it exists.

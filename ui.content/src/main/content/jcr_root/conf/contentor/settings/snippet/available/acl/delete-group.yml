@@ -1,0 +1,6 @@
+name: acl/delete-group
+content: |
+  acl.deleteGroup { id = "${1:id}"; ifExists() }
+documentation: |
+  Delete a group with the given ID.
+  The group will be deleted only if it exists.

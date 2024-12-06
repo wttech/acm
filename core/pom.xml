@@ -47,6 +47,7 @@
                         <configuration>
                             <bnd><![CDATA[
 Import-Package: javax.annotation;version=0.0.0,*
+Private-Package: org.yaml.snakeyaml.*
 DynamicImport-Package: *
                                 ]]></bnd>
                         </configuration>
@@ -219,6 +220,11 @@ DynamicImport-Package: *
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-templates</artifactId>
             <version>4.0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.32</version>
         </dependency>
 
         <!-- Testing -->

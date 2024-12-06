@@ -40,6 +40,9 @@ const SnippetsPage = () => {
                 >
                     <Heading level={3}>{snippet.name}</Heading>
                     <Content>
+                        {snippet.documentation}
+                    </Content>
+                    <Content>
                         <pre>{snippet.content}</pre>
                     </Content>
                     <Flex justifyContent="end">

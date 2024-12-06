@@ -23,4 +23,5 @@ export type Snippet = {
     name: string
     id: string
     content: string
+    documentation: string
 }
