@@ -1,6 +1,6 @@
 import { Monaco } from "@monaco-editor/react";
 import * as monaco from 'monaco-editor';
-import {LANGUAGE_ID} from "../../groovy.ts";
+import { LANGUAGE_ID } from "../../groovy.ts";
 
 export function replaceWithShortClass(instance: Monaco) {
 
@@ -11,15 +11,15 @@ export function replaceWithShortClass(instance: Monaco) {
             // Get the content of the line where the code action is triggered.
             const lineContent = model.getLineContent(range.startLineNumber);
 
-            // Regular expression to match fully qualified class names, optionally followed by parentheses with content.
-            const regex = /(?:[a-zA-Z_][\w]*\.)*[a-zA-Z_][\w]*(?:\([^)]*\))?$/;
+            // Regular expression to match fully qualified class names.
+            const regex = /([a-zA-Z_][\w]*\.)+[A-Z][\w]*(?:\.[A-Z][\w]*)*/;
             const match = lineContent.match(regex);
             if (!match) {
                 return { actions: codeActions, dispose: () => {} };
             }
 
             // Extract the fully qualified class name and the short class name.
-            const fullyQualifiedClassName = match[0].replace(/\([^)]*\)$/, ''); // Remove parentheses and content if present
+            const fullyQualifiedClassName = match[0];
             const shortClassName = fullyQualifiedClassName.split('.').pop();
 
             // If the class name does not contain a dot, it is already a short class name.
@@ -28,7 +28,7 @@ export function replaceWithShortClass(instance: Monaco) {
             }
 
             // Determine the range of the fully qualified class name in the line.
-            const startColumn = lineContent.lastIndexOf(fullyQualifiedClassName) + 1;
+            const startColumn = lineContent.indexOf(fullyQualifiedClassName) + 1;
             const endColumn = startColumn + fullyQualifiedClassName.length;
             const matchRange = new monaco.Range(range.startLineNumber, startColumn, range.startLineNumber, endColumn);
 
@@ -38,7 +38,7 @@ export function replaceWithShortClass(instance: Monaco) {
                 command: {
                     id: 'importClass',
                     title: 'Replace with short class name',
-                    arguments: [fullyQualifiedClassName, matchRange, shortClassName]
+                    arguments: [fullyQualifiedClassName, shortClassName, matchRange]
                 },
                 kind: 'quickfix'
             });

@@ -3,6 +3,7 @@ import { Monaco } from "@monaco-editor/react";
 export function registerImportClass(instance: Monaco) {
     instance.editor.registerCommand('importClass', (accessor, ...args) => {
         const [fullyQualifiedClassName] = args;
+
         const model = instance.editor.getModels()[0];
 
         const shortClassName = fullyQualifiedClassName.split('.').pop();
