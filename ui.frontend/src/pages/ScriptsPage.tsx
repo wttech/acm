@@ -6,10 +6,7 @@ import {Cell, Column, Flex, Row, TableBody, TableHeader, TableView} from "@adobe
 const ScriptsPage = () => {
     return (
         <Flex direction="column">
-            <TableView
-                aria-label="Example table with static contents"
-                selectionMode="multiple"
-            >
+            <TableView aria-label="Enabled script list" selectionMode="multiple">
                 <TableHeader>
                     <Column>Name</Column>
                     <Column>Modified At</Column>

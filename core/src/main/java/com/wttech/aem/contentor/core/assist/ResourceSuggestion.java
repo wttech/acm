@@ -16,7 +16,12 @@ public class ResourceSuggestion implements Suggestion
     }
 
     @Override
-    public String getValue() {
+    public String getLabel() {
+        return null;
+    }
+
+    @Override
+    public String getInsertText() {
         return resource.getPath();
     }
 

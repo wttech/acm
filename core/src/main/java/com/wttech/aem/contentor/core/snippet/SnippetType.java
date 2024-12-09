@@ -1,5 +1,9 @@
 package com.wttech.aem.contentor.core.snippet;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Optional;
+
 public enum SnippetType {
     AVAILABLE(SnippetRepository.ROOT + "/available");
 

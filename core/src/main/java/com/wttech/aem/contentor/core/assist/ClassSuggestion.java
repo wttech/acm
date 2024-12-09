@@ -16,7 +16,12 @@ public class ClassSuggestion implements Suggestion {
     }
 
     @Override
-    public String getValue() {
+    public String getLabel() {
+        return null;
+    }
+
+    @Override
+    public String getInsertText() {
         return classInfo.getClassName();
     }
 

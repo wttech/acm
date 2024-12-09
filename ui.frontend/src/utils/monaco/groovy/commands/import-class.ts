@@ -3,6 +3,7 @@ import { Monaco } from "@monaco-editor/react";
 export function registerImportClass(instance: Monaco) {
     instance.editor.registerCommand('importClass', (accessor, ...args) => {
         const [fullyQualifiedClassName] = args;
+
         const model = instance.editor.getModels()[0];
 
         const shortClassName = fullyQualifiedClassName.split('.').pop();
@@ -27,7 +28,17 @@ export function registerImportClass(instance: Monaco) {
             }
             return line.replace(regex, shortClassName);
         });
-        const updatedText = updatedLines.join('\n');
+
+        // Sort import statements alphabetically
+        const importLines = updatedLines.filter(line => line.startsWith('import ')).sort();
+        const nonImportLines = updatedLines.filter(line => !line.startsWith('import '));
+
+        // Ensure there is a single blank line between imports and the rest of the code
+        if (importLines.length > 0 && nonImportLines.length > 0 && nonImportLines[0].trim() !== '') {
+            importLines.push('');
+        }
+
+        const updatedText = [...importLines, ...nonImportLines].join('\n');
 
         model.pushEditOperations([], [{
             range: model.getFullModelRange(),

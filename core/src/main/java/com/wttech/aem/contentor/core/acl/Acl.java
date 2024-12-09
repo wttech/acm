@@ -26,12 +26,40 @@ public class Acl {
         return createUser(GroovyUtils.with(new CreateUserOptions(), closure));
     }
 
+    public Group createGroup(Closure<CreateGroupOptions> closure) throws AclException {
+        return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
+    }
+
+    public void allow(Closure<AllowOptions> closure) throws AclException {
+        allow(GroovyUtils.with(new AllowOptions(), closure));
+    }
+
+    public void deny(Closure<DenyOptions> closure) throws AclException {
+        deny(GroovyUtils.with(new DenyOptions(), closure));
+    }
+
+    // Non-closure accepting methods
+
     public User createUser(String id) throws AclException {
-        return createUser(CreateUserOptions.simple(id));
+        CreateUserOptions options = new CreateUserOptions();
+        options.setId(id);
+        return createUser(options);
     }
 
     public User createUser(CreateUserOptions options) throws AclException {
         throw new IllegalStateException("Not implemented yet!");
+    }
+
+    public User getUser(String id) throws AclException {
+        throw new IllegalStateException("Not implemented yet!");
+    }
+
+    public Group getGroup(String id) throws AclException {
+        throw new IllegalStateException("Not implemented yet!");
+    }
+
+    void removeUser(String id) throws AclException {
+        removeUser(getUser(id));
     }
 
     void removeUser(User user) throws AclException {
@@ -42,8 +70,18 @@ public class Acl {
         throw new IllegalStateException("Not implemented yet!");
     }
 
-    public Group createGroup() throws AclException {
+    public Group createGroup(String id) throws AclException {
+        CreateGroupOptions options = new CreateGroupOptions();
+        options.setId(id);
+        return createGroup(options);
+    }
+
+    public Group createGroup(CreateGroupOptions options) throws AclException {
         throw new IllegalStateException("Not implemented yet!");
+    }
+
+    void removeGroup(String id) throws AclException {
+        removeGroup(getGroup(id));
     }
 
     void removeGroup(Group group) throws AclException {
@@ -55,18 +93,26 @@ public class Acl {
     }
 
     public void allow(Authorizable authorizable, String path, Collection<String> permissions) throws AclException {
-        allow(authorizable, AllowOptions.simple(path, permissions));
+        AllowOptions options = new AllowOptions();
+        options.setAuthorizable(authorizable);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        allow(options);
     }
 
-    public void allow(Authorizable authorizable, AllowOptions options) throws AclException {
+    public void allow(AllowOptions options) throws AclException {
         throw new IllegalStateException("Not implemented yet!");
     }
 
     public void deny(Authorizable authorizable, String path, Collection<String> permissions) throws AclException {
-        deny(authorizable, DenyOptions.simple(path, permissions));
+        DenyOptions options = new DenyOptions();
+        options.setAuthorizable(authorizable);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        deny(options);
     }
 
-    public void deny(Authorizable authorizable, DenyOptions options) throws AclException {
+    public void deny(DenyOptions options) throws AclException {
         throw new IllegalStateException("Not implemented yet!");
     }
 

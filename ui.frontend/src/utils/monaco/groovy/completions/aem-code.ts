@@ -1,7 +1,8 @@
 import * as monaco from 'monaco-editor';
 import {Monaco} from "@monaco-editor/react";
 import {LANGUAGE_ID} from "../../groovy.ts";
-import {ApiDataAssistCode, apiRequest} from "../../../api.ts";
+import {apiRequest} from "../../../api.ts";
+import {DataAssistCode} from "../../../api.types.ts";
 
 export function registerAemCodeCompletions(instance: Monaco) {
     registerWordCompletion(instance);
@@ -24,16 +25,17 @@ function registerWordCompletion(instance: Monaco) {
             }
 
             try {
-                const response = await apiRequest<ApiDataAssistCode>({
+                const response = await apiRequest<DataAssistCode>({
                     method: "GET",
                     url: `/apps/contentor/api/assist-code.json?type=all&word=${encodeURIComponent(wordText)}`,
                     operation: "Code assistance"
                 });
                 const assistance = response.data.data;
                 const suggestions = (assistance?.suggestions ?? []).map(suggestion => ({
-                    label: suggestion.v,
-                    insertText: suggestion.v,
-                    kind: mapToMonacoKind(suggestion.k),
+                    label: suggestion.l ?? suggestion.it,
+                    insertText: suggestion.it ?? suggestion.l,
+                    insertTextRules: monacoInsertTextRules(suggestion.k),
+                    kind: monacoKind(suggestion.k),
                     detail: suggestion.k,
                     documentation: suggestion.i,
                     range: new monaco.Range(
@@ -42,6 +44,7 @@ function registerWordCompletion(instance: Monaco) {
                         position.lineNumber,
                         wordAtPosition?.endColumn || position.column
                     ),
+
                     // TODO below does not work, Monaco bug? (we want to prioritize exact class name matches)
                     // sortText: sortText(suggestion.v, wordText)
                 }));
@@ -73,16 +76,16 @@ function registerResourceCompletion(instance: Monaco) {
             }
 
             try {
-                const response = await apiRequest<ApiDataAssistCode>({
+                const response = await apiRequest<DataAssistCode>({
                     method: "GET",
                     url: `/apps/contentor/api/assist-code.json?type=resource&word=${encodeURIComponent(wordText)}`,
                     operation: "Code assistance"
                 });
                 const assistance = response.data.data;
                 const suggestions = (assistance?.suggestions ?? []).map(suggestion => ({
-                    label: suggestion.v,
-                    insertText: removePathPrefix(path, suggestion.v), // subtract path prefix
-                    kind: mapToMonacoKind(suggestion.k),
+                    label: suggestion.l ?? suggestion.it,
+                    insertText: removePathPrefix(path, suggestion.it ?? suggestion.l), // subtract path prefix
+                    kind: monacoKind(suggestion.k),
                     detail: suggestion.k,
                     documentation: suggestion.i,
                     range: new monaco.Range(
@@ -102,7 +105,7 @@ function registerResourceCompletion(instance: Monaco) {
     });
 }
 
-function mapToMonacoKind(kind: string): monaco.languages.CompletionItemKind {
+function monacoKind(kind: string): monaco.languages.CompletionItemKind {
     switch (kind.toLowerCase()) {
         case 'class':
             return monaco.languages.CompletionItemKind.Class;
@@ -112,8 +115,19 @@ function mapToMonacoKind(kind: string): monaco.languages.CompletionItemKind {
             return monaco.languages.CompletionItemKind.Function;
         case 'variable':
             return monaco.languages.CompletionItemKind.Variable;
+        case 'snippet':
+            return monaco.languages.CompletionItemKind.Snippet;
         default:
             return monaco.languages.CompletionItemKind.Text;
+    }
+}
+
+function monacoInsertTextRules(kind: string) {
+    switch (kind.toLowerCase()) {
+        case 'snippet':
+            return monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+        default:
+            return monaco.languages.CompletionItemInsertTextRule.None;
     }
 }
 
