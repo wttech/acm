@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {Flex, View, Heading, Content, Button, ProgressBar} from '@adobe/react-spectrum';
+import {Flex, View, Heading, Content, Text, ProgressBar} from '@adobe/react-spectrum';
 import { toastRequest } from '../utils/api'; // Adjust the import path as necessary
 import { DataSnippet } from '../utils/api.types'; // Adjust the import path as necessary
 
@@ -43,11 +43,8 @@ const SnippetsPage = () => {
                         {snippet.documentation}
                     </Content>
                     <Content>
-                        <pre>{snippet.content}</pre>
+                        <pre style={{fontSize: '80%'}}>{snippet.content}</pre>
                     </Content>
-                    <Flex justifyContent="end">
-                        <Button variant="cta">Action</Button>
-                    </Flex>
                 </View>
             ))}
         </Flex>
