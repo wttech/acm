@@ -28,7 +28,17 @@ export function registerImportClass(instance: Monaco) {
             }
             return line.replace(regex, shortClassName);
         });
-        const updatedText = updatedLines.join('\n');
+
+        // Sort import statements alphabetically
+        const importLines = updatedLines.filter(line => line.startsWith('import ')).sort();
+        const nonImportLines = updatedLines.filter(line => !line.startsWith('import '));
+
+        // Ensure there is a single blank line between imports and the rest of the code
+        if (importLines.length > 0 && nonImportLines.length > 0 && nonImportLines[0].trim() !== '') {
+            importLines.push('');
+        }
+
+        const updatedText = [...importLines, ...nonImportLines].join('\n');
 
         model.pushEditOperations([], [{
             range: model.getFullModelRange(),
