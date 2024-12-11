@@ -18,6 +18,17 @@ public class QueuedExecution implements Execution {
         this.job = job;
     }
 
+    static String composeJobResultMessage(Execution execution) throws ContentorException {
+        try {
+            Map<String, Object> props = new HashMap<>();
+            props.put("status", execution.getStatus().name());
+            props.put("duration", String.valueOf(execution.getDuration())); // JSON uses integers (avoid long -> int)
+            return JsonUtils.mapToString(props);
+        } catch (IOException e) {
+            throw new ContentorException("Failed to compose job result message!", e);
+        }
+    }
+
     @Override
     public Executable getExecutable() {
         return Code.fromJob(job);
@@ -47,17 +58,6 @@ public class QueuedExecution implements Execution {
             return JsonUtils.stringToMap(job.getResultMessage());
         } catch (IOException e) {
             throw new ContentorException("Failed to parse job result message properties!", e);
-        }
-    }
-
-    static String composeJobResultMessage(Execution execution) throws ContentorException {
-        try {
-            Map<String, Object> props = new HashMap<>();
-            props.put("status", execution.getStatus().name());
-            props.put("duration", String.valueOf(execution.getDuration())); // JSON uses integers (avoid long -> int)
-            return JsonUtils.mapToString(props);
-        } catch (IOException e) {
-            throw new ContentorException("Failed to compose job result message!", e);
         }
     }
 

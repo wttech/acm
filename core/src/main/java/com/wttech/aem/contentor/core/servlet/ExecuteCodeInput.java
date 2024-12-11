@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.api;
+package com.wttech.aem.contentor.core.servlet;
 
 import com.wttech.aem.contentor.core.code.Code;
 

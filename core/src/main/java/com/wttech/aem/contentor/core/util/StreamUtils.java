@@ -21,10 +21,13 @@ public class StreamUtils {
             return Stream.empty();
         }
         return asStream(new Iterator<T>() {
-            @Override public boolean hasNext() {
+            @Override
+            public boolean hasNext() {
                 return enumeration.hasMoreElements();
             }
-            @Override public T next() {
+
+            @Override
+            public T next() {
                 return enumeration.nextElement();
             }
         });

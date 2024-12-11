@@ -28,10 +28,11 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Component(
         immediate = true,
@@ -64,6 +65,30 @@ public class ExecutionQueue implements JobExecutor {
     private Executor executor;
 
     private ExecutorService executorService;
+
+    static Optional<String> readFile(String jobId, FileType fileType) throws ContentorException {
+        Path path = filePath(jobId, fileType);
+        if (!path.toFile().exists()) {
+            return Optional.empty();
+        }
+
+        try (InputStream input = Files.newInputStream(path)) {
+            return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new ContentorException(String.format("Cannot read output file for job '%s'", jobId), e);
+        }
+    }
+
+    static Path filePath(String jobId, FileType kind) {
+        File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir.toPath()
+                .resolve(String.format(
+                        "%s_%s.log",
+                        StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
+    }
 
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
         return executor.createContext(executable, resourceResolver);
@@ -205,30 +230,6 @@ public class ExecutionQueue implements JobExecutor {
         } catch (IOException e) {
             LOG.error("Cannot write error file for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
         }
-    }
-
-    static Optional<String> readFile(String jobId, FileType fileType) throws ContentorException {
-        Path path = filePath(jobId, fileType);
-        if (!path.toFile().exists()) {
-            return Optional.empty();
-        }
-
-        try (InputStream input = Files.newInputStream(path)) {
-            return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new ContentorException(String.format("Cannot read output file for job '%s'", jobId), e);
-        }
-    }
-
-    static Path filePath(String jobId, FileType kind) {
-        File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        return dir.toPath()
-                .resolve(String.format(
-                        "%s_%s.log",
-                        StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
     }
 
     public enum FileType {

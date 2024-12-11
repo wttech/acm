@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.api;
+package com.wttech.aem.contentor.core.servlet;
 
 import com.wttech.aem.contentor.core.assist.Assistance;
 import com.wttech.aem.contentor.core.assist.Assistancer;
@@ -31,13 +31,9 @@ import static com.wttech.aem.contentor.core.util.ServletUtils.stringParam;
 public class AssistCodeServlet extends SlingAllMethodsServlet {
 
     public static final String RT = "contentor/api/assist-code";
-
-    private static final Logger LOG = LoggerFactory.getLogger(AssistCodeServlet.class);
-
     public static final String WORD_PARAM = "word";
-
     public static final String TYPE_PARAM = "type";
-
+    private static final Logger LOG = LoggerFactory.getLogger(AssistCodeServlet.class);
     @Reference
     private Assistancer assistancer;
 

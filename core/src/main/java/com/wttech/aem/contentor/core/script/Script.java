@@ -2,7 +2,6 @@ package com.wttech.aem.contentor.core.script;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.contentor.core.code.Executable;
-import com.wttech.aem.contentor.core.snippet.Snippet;
 import com.wttech.aem.contentor.core.util.JcrUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.util.JcrConstants;

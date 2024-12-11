@@ -4,8 +4,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 
-import java.io.InputStream;
-
 // TODO implement read/write to JCR repository
 public class HistoricalExecution implements Execution {
 

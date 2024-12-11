@@ -6,8 +6,8 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.codehaus.groovy.transform.AbstractASTTransformation;
+import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 import java.util.List;
 
@@ -15,21 +15,6 @@ import java.util.List;
 public class CodeSyntax extends AbstractASTTransformation {
 
     public static final String MAIN_CLASS = "ContentorCode";
-
-    enum Methods {
-        INIT("doInit", "void"),
-        RUN("doRun", "void"),
-        CHECK("canRun", "boolean");
-
-        final String givenName;
-
-        final String returnType;
-
-        Methods(String givenName, String returnType) {
-            this.givenName = givenName;
-            this.returnType = returnType;
-        }
-    }
 
     @Override
     public void visit(ASTNode[] nodes, SourceUnit source) {
@@ -73,5 +58,20 @@ public class CodeSyntax extends AbstractASTTransformation {
             }
         }
         return false;
+    }
+
+    enum Methods {
+        INIT("doInit", "void"),
+        RUN("doRun", "void"),
+        CHECK("canRun", "boolean");
+
+        final String givenName;
+
+        final String returnType;
+
+        Methods(String givenName, String returnType) {
+            this.givenName = givenName;
+            this.returnType = returnType;
+        }
     }
 }

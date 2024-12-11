@@ -1,7 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.acl.Acl;
-import com.wttech.aem.contentor.core.script.Script;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 

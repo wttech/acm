@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.api;
+package com.wttech.aem.contentor.core.servlet;
 
 import com.wttech.aem.contentor.core.snippet.Snippet;
 import com.wttech.aem.contentor.core.snippet.SnippetRepository;
@@ -12,12 +12,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.Servlet;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.wttech.aem.contentor.core.util.ServletResult.*;
-import static com.wttech.aem.contentor.core.util.ServletUtils.*;
+import static com.wttech.aem.contentor.core.util.ServletResult.error;
+import static com.wttech.aem.contentor.core.util.ServletResult.ok;
+import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
+import static com.wttech.aem.contentor.core.util.ServletUtils.stringsParam;
 
 @Component(
         service = {Servlet.class},

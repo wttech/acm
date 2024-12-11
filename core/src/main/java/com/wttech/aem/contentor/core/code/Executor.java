@@ -51,7 +51,7 @@ public class Executor {
         StringBuilder simpleOutput = new StringBuilder();
         boolean simpleOutputActive = options.getOutputStream() == null;
         if (simpleOutputActive) {
-            options.setOutputStream(new WriterOutputStream( new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
+            options.setOutputStream(new WriterOutputStream(new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
         }
         GroovyShell shell = createShell(executable, options);
         long startTime = System.currentTimeMillis();

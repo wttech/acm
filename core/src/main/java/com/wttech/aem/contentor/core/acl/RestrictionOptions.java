@@ -23,12 +23,12 @@ public class RestrictionOptions extends AuthorizableOptions {
         this.path = path;
     }
 
-    public void setPathMode(PathMode mode) {
-        this.pathMode = mode;
-    }
-
     public PathMode getPathMode() {
         return pathMode;
+    }
+
+    public void setPathMode(PathMode mode) {
+        this.pathMode = mode;
     }
 
     public void skipPathMissing() {
@@ -37,10 +37,6 @@ public class RestrictionOptions extends AuthorizableOptions {
 
     public void failPathMissing() {
         pathMode = PathMode.FAIL_MISSING;
-    }
-
-    public enum PathMode {
-        FAIL_MISSING, SKIP_MISSING
     }
 
     public Collection<String> getPermissions() {
@@ -57,5 +53,9 @@ public class RestrictionOptions extends AuthorizableOptions {
 
     public void setRestrictions(Collection<String> restrictions) {
         this.restrictions = restrictions;
+    }
+
+    public enum PathMode {
+        FAIL_MISSING, SKIP_MISSING
     }
 }
