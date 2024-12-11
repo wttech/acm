@@ -84,18 +84,19 @@ const ConsolePage = () => {
             setOutput(executionJob.output);
             setError(executionJob.error);
 
-            if (executionJob.status === 'ACTIVE') {
+            if (executionJob.error) {
+                setSelectedTab('error')
+            } else if (executionJob.output) {
                 setSelectedTab('output');
             }
+
             if (['SUCCEEDED', 'SKIPPED', 'FAILED', 'STOPPED'].includes(executionJob.status)) {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
                 if (executionJob.status === 'FAILED') {
                     ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
-                    setSelectedTab('error');
                 } else if (executionJob.status === 'SKIPPED') {
-                    ToastQueue.neutral('Code execution skipped!', {timeout: toastTimeout});
-                    setSelectedTab('code');
+                    ToastQueue.neutral('Code execution cannot run!', {timeout: toastTimeout});
                 } else {
                     ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
                 }
