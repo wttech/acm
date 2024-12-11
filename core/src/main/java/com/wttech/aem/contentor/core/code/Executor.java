@@ -51,7 +51,7 @@ public class Executor {
         StringBuilder simpleOutput = new StringBuilder();
         boolean simpleOutputActive = options.getOutputStream() == null;
         if (simpleOutputActive) {
-            options.setOutputStream(new WriterOutputStream( new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
+            options.setOutputStream(new WriterOutputStream(new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
         }
         GroovyShell shell = createShell(executable, options);
         long startTime = System.currentTimeMillis();
@@ -59,9 +59,9 @@ public class Executor {
         try {
             Script script = shell.parse(content, CodeSyntax.MAIN_CLASS);
             script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
-            boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
-            if (!canRun) {
-                return new SimpleExecution(executable, id, ExecutionStatus.SKIPPED, calculateDuration(startTime),
+            boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
+            if (!runnable) {
+                return new ImmediateExecution(executable, id, ExecutionStatus.SKIPPED, calculateDuration(startTime),
                         simpleOutputActive ? simpleOutput.toString() : null, null);
             }
             switch (options.getMode()) {
@@ -71,11 +71,11 @@ public class Executor {
                     script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
                     break;
             }
-            return new SimpleExecution(executable, id, ExecutionStatus.SUCCEEDED, calculateDuration(startTime),
+            return new ImmediateExecution(executable, id, ExecutionStatus.SUCCEEDED, calculateDuration(startTime),
                     simpleOutputActive ? simpleOutput.toString() : null, null);
         } catch (Throwable e) {
             LOG.debug("Execution of '{}' failed! Content:\n\n{}\n\n", executable.getId(), executable.getContent(), e);
-            return new SimpleExecution(executable, id, ExecutionStatus.FAILED, calculateDuration(startTime),
+            return new ImmediateExecution(executable, id, ExecutionStatus.FAILED, calculateDuration(startTime),
                     simpleOutputActive ? simpleOutput.toString() : null, ExceptionUtils.toString(e));
         }
     }

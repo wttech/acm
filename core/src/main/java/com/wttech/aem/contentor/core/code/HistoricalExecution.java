@@ -4,8 +4,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 
-import java.io.InputStream;
-
 // TODO implement read/write to JCR repository
 public class HistoricalExecution implements Execution {
 
@@ -65,11 +63,12 @@ public class HistoricalExecution implements Execution {
         return error; // TODO from resource
     }
 
+    @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("executable", executable)
-                .append("status", status)
-                .append("duration", duration)
+                .append("executable", getExecutable())
+                .append("status", getStatus())
+                .append("duration", getDuration())
                 .toString();
     }
 }

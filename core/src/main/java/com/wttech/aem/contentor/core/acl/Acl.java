@@ -2,10 +2,10 @@ package com.wttech.aem.contentor.core.acl;
 
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

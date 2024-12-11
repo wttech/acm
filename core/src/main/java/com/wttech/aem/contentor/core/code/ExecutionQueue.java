@@ -66,6 +66,30 @@ public class ExecutionQueue implements JobExecutor {
 
     private ExecutorService executorService;
 
+    static Optional<String> readFile(String jobId, FileType fileType) throws ContentorException {
+        Path path = filePath(jobId, fileType);
+        if (!path.toFile().exists()) {
+            return Optional.empty();
+        }
+
+        try (InputStream input = Files.newInputStream(path)) {
+            return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new ContentorException(String.format("Cannot read output file for job '%s'", jobId), e);
+        }
+    }
+
+    static Path filePath(String jobId, FileType kind) {
+        File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir.toPath()
+                .resolve(String.format(
+                        "%s_%s.log",
+                        StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
+    }
+
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
         return executor.createContext(executable, resourceResolver);
     }
@@ -75,23 +99,15 @@ public class ExecutionQueue implements JobExecutor {
         if (job == null) {
             return Optional.empty();
         }
-
-        return Optional.of(new SimpleExecution(executable, job.getId(), ExecutionStatus.of(job, null), 0, null, null));
+        return read(job.getId());
     }
 
-    public Optional<Execution> read(String jobId) throws com.wttech.aem.contentor.core.ContentorException {
+    public Optional<Execution> read(String jobId) throws ContentorException {
         Job job = jobManager.getJobById(jobId);
         if (job == null) {
             return Optional.empty();
         }
-
-        Executable executable = Code.fromJob(job);
-        String output = readFile(jobId, FileType.OUTPUT).orElse(null);
-        String error = readFile(jobId, FileType.ERROR).orElse(null);
-        long duration = calculateDuration(job).orElse(0L);
-        ExecutionStatus status = ExecutionStatus.of(job, error);
-
-        return Optional.of(new SimpleExecution(executable, job.getId(), status, duration, output, error));
+        return Optional.of(new QueuedExecution(job));
     }
 
     public void stop(String jobId) {
@@ -120,11 +136,11 @@ public class ExecutionQueue implements JobExecutor {
 
         LOG.info("Executing asynchronously '{}'", executable);
 
-        Future<?> future = executorService.submit(() -> {
+        Future<Execution> future = executorService.submit(() -> {
             try {
-                executeAsync(executable, job);
+                return executeAsync(executable, job);
             } catch (Throwable e) {
-                LOG.error("Executing asynchronously failed internally '{}'", executable, e);
+                throw new ContentorException(String.format("Executing executable '%s' asynchronously failed internally '{}'", executable.getId()), e);
             }
         });
 
@@ -144,7 +160,16 @@ public class ExecutionQueue implements JobExecutor {
         }
 
         try {
-            future.get();
+            Execution execution = future.get();
+            String message = QueuedExecution.composeJobResultMessage(execution);
+
+            if (execution.getStatus() == ExecutionStatus.SKIPPED) {
+                LOG.info("Job '{}' is skipped", executable);
+                return context.result().message(message).cancelled();
+            } else {
+                LOG.info("Executed asynchronously '{}'", executable);
+                return context.result().message(message).succeeded();
+            }
         } catch (CancellationException e) {
             LOG.info("Job '{}' is cancelled", executable);
             return context.result().cancelled();
@@ -160,12 +185,9 @@ public class ExecutionQueue implements JobExecutor {
                 }
             });
         }
-
-        LOG.info("Executed asynchronously '{}'", executable);
-        return context.result().succeeded();
     }
 
-    private void executeAsync(Executable executable, Job job) throws com.wttech.aem.contentor.core.ContentorException {
+    private Execution executeAsync(Executable executable, Job job) throws ContentorException {
         try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
              OutputStream outputStream = Files.newOutputStream(filePath(job.getId(), FileType.OUTPUT))) {
             ExecutionContext context = executor.createContext(executable, resolver);
@@ -175,17 +197,13 @@ public class ExecutionQueue implements JobExecutor {
             if (execution.getError() != null) {
                 saveErrorToFile(executable, job, execution.getError());
             }
+            return execution;
         } catch (LoginException e) {
-            throw new com.wttech.aem.contentor.core.ContentorException(
-                    String.format(
-                            "Cannot access repository while executing '%s' in job '%s'",
-                            executable.getId(), job.getId()),
-                    e);
+            throw new ContentorException(String.format("Cannot access repository while executing '%s' in job '%s'",
+                    executable.getId(), job.getId()), e);
         } catch (IOException e) {
-            throw new com.wttech.aem.contentor.core.ContentorException(
-                    String.format(
-                            "Cannot write to files for executable '%s' in job '%s'", executable.getId(), job.getId()),
-                    e);
+            throw new ContentorException(String.format("Cannot write to files for executable '%s' in job '%s'",
+                    executable.getId(), job.getId()), e);
         }
     }
 
@@ -212,38 +230,6 @@ public class ExecutionQueue implements JobExecutor {
         } catch (IOException e) {
             LOG.error("Cannot write error file for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
         }
-    }
-
-    private Optional<String> readFile(String jobId, FileType fileType) throws com.wttech.aem.contentor.core.ContentorException {
-        Path path = filePath(jobId, fileType);
-        if (!path.toFile().exists()) {
-            return Optional.empty();
-        }
-
-        try (InputStream input = Files.newInputStream(path)) {
-            return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new com.wttech.aem.contentor.core.ContentorException(String.format("Cannot read output file for job '%s'", jobId), e);
-        }
-    }
-
-    public Path filePath(String jobId, FileType kind) {
-        File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        return dir.toPath()
-                .resolve(String.format(
-                        "%s_%s.log",
-                        StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
-    }
-
-    private Optional<Long> calculateDuration(Job job) {
-        if (job == null || job.getFinishedDate() == null || job.getCreated() == null) {
-            return Optional.empty();
-        }
-        return Optional.of(job.getFinishedDate().getTime().getTime()
-                - job.getCreated().getTime().getTime());
     }
 
     public enum FileType {

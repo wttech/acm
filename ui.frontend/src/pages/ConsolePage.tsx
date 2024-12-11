@@ -32,8 +32,9 @@ import React, {useState, useEffect, useRef} from "react";
 import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
 import {DataExecution} from "../utils/api.types.ts";
 
-const pollInterval = 500;
 const toastTimeout = 3000;
+const executionPollInterval = 500;
+const executionFinalStatuses = ['SUCCEEDED', 'SKIPPED', 'FAILED', 'STOPPED'];
 
 const ConsolePage = () => {
     const [selectedTab, setSelectedTab] = useState<string>('code');
@@ -63,7 +64,7 @@ const ConsolePage = () => {
             const executionJob = response.data;
             const jobId = executionJob.data.id;
             setJobId(jobId);
-            pollExecutionRef.current = window.setInterval(() => pollExecutionState(jobId), pollInterval);
+            pollExecutionRef.current = window.setInterval(() => pollExecutionState(jobId), executionPollInterval);
         } catch (error) {
             console.error('Code execution error:', error);
             setExecuting(false);
@@ -87,14 +88,15 @@ const ConsolePage = () => {
             if (executionJob.status === 'ACTIVE') {
                 setSelectedTab('output');
             }
-            if (['SUCCEEDED', 'SKIPPED', 'FAILED', 'STOPPED'].includes(executionJob.status)) {
+
+            if (executionFinalStatuses.includes(executionJob.status)) {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
                 if (executionJob.status === 'FAILED') {
                     ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
                     setSelectedTab('error');
                 } else if (executionJob.status === 'SKIPPED') {
-                    ToastQueue.neutral('Code execution skipped!', {timeout: toastTimeout});
+                    ToastQueue.neutral('Code execution cannot run!', {timeout: toastTimeout});
                 } else {
                     ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
                 }
@@ -122,7 +124,7 @@ const ConsolePage = () => {
             setExecuting(false);
 
             let status = 'UNKNOWN';
-            while (!['STOPPED', 'FAILED', 'SKIPPED', 'SUCCEEDED'].includes(status)) {
+            while (!executionFinalStatuses.includes(status)) {
                 const response = await apiRequest<DataExecution>({
                     operation: 'Code execution state',
                     url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
@@ -138,7 +140,7 @@ const ConsolePage = () => {
                     setSelectedTab('output');
                     break;
                 }
-                await new Promise(resolve => setTimeout(resolve, pollInterval));
+                await new Promise(resolve => setTimeout(resolve, executionPollInterval));
             }
             ToastQueue.neutral('Code execution cancelled successfully!', {timeout: toastTimeout});
         } catch (error) {

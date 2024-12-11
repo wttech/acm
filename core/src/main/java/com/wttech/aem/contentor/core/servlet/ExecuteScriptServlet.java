@@ -1,6 +1,8 @@
-package com.wttech.aem.contentor.core.api;
+package com.wttech.aem.contentor.core.servlet;
 
-import com.wttech.aem.contentor.core.code.*;
+import com.wttech.aem.contentor.core.code.Execution;
+import com.wttech.aem.contentor.core.code.ExecutionContext;
+import com.wttech.aem.contentor.core.code.Executor;
 import com.wttech.aem.contentor.core.script.Script;
 import com.wttech.aem.contentor.core.script.ScriptRepository;
 import org.apache.sling.api.SlingHttpServletRequest;
