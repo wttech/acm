@@ -10,6 +10,7 @@ boolean canRun() {
     
     println "Updating ACLs..."
     acl.createUser { id = "john.doe" ; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
+    acl.save()
 
     println "Processing resources..."
     for (int i = 0; i < 10; i++) {

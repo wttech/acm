@@ -6,6 +6,10 @@ public class ContentorException extends RuntimeException {
         super(message);
     }
 
+    public ContentorException(Throwable cause) {
+        super(cause);
+    }
+
     public ContentorException(String message, Throwable cause) {
         super(message, cause);
     }

@@ -8,6 +8,10 @@ public class AclException extends ContentorException {
         super(message);
     }
 
+    public AclException(Throwable cause) {
+        super(cause);
+    }
+
     public AclException(String message, Throwable cause) {
         super(message, cause);
     }

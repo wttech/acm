@@ -1,14 +1,23 @@
 package com.wttech.aem.contentor.core.acl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CreateUserOptions {
 
     private String id;
 
     private String password;
 
+    private String path;
+
     private String givenName;
 
     private String familyName;
+
+    private String email;
+
+    private String aboutMe;
 
     private Mode mode = Mode.OVERRIDE;
 
@@ -28,6 +37,14 @@ public class CreateUserOptions {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public String getGivenName() {
@@ -54,6 +71,22 @@ public class CreateUserOptions {
         } else {
             throw new IllegalArgumentException("Full name must contain exactly two parts: given name and family name");
         }
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAboutMe() {
+        return aboutMe;
+    }
+
+    public void setAboutMe(String aboutMe) {
+        this.aboutMe = aboutMe;
     }
 
     public boolean isSystem() {
@@ -86,6 +119,15 @@ public class CreateUserOptions {
 
     public void failIfExists() {
         mode = Mode.FAIL;
+    }
+
+    public Map<String, String> determineProperties() {
+        Map<String, String> properties = new HashMap<>();
+        properties.compute("profile/givenName", (key, value) -> givenName);
+        properties.compute("profile/familyName", (key, value) -> familyName);
+        properties.compute("profile/email", (key, value) -> email);
+        properties.compute("profile/aboutMe", (key, value) -> aboutMe);
+        return properties;
     }
 
     public enum Mode {

@@ -3,11 +3,10 @@ package com.wttech.aem.contentor.core.code;
 import com.wttech.aem.contentor.core.acl.Acl;
 import com.wttech.aem.contentor.core.script.Script;
 import groovy.lang.Binding;
+import java.io.OutputStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.OutputStream;
 
 public class CodeBinding {
 
@@ -25,7 +24,7 @@ public class CodeBinding {
         this.log = createLogger(executable);
         this.out = executionOptions.getOutputStream();
         this.resourceResolver = executionOptions.getResourceResolver();
-        this.acl = new Acl(resourceResolver);
+        this.acl = new Acl(resourceResolver, out);
         this.script = executionOptions.getScript();
     }
 

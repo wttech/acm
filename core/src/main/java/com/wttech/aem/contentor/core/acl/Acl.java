@@ -1,24 +1,22 @@
 package com.wttech.aem.contentor.core.acl;
 
+import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import org.apache.sling.api.resource.ResourceResolver;
+import java.io.OutputStream;
+import java.util.Collection;
+import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.ValueFactory;
-import javax.jcr.security.AccessControlManager;
-import java.util.Collection;
+import org.apache.sling.api.resource.ResourceResolver;
 
 public class Acl {
 
-    private final ResourceResolver resourceResolver;
+    private final Context context;
 
-    public Acl(ResourceResolver resourceResolver) {
-        this.resourceResolver = resourceResolver;
+    public Acl(ResourceResolver resourceResolver, OutputStream out) throws AclException {
+        this.context = new Context(resourceResolver, out);
     }
 
     // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
@@ -47,15 +45,21 @@ public class Acl {
     }
 
     public User createUser(CreateUserOptions options) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        AuthorizableManager manager = context.getAuthorizableManager();
+        User user = manager.getUser(options.getId());
+        if (user == null) {
+            user = manager.createUser(options.getId(), options.getPassword(), options.getPath());
+        }
+        manager.updateUser(user, options.getPassword(), options.determineProperties());
+        return user;
     }
 
     public User getUser(String id) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        return context.getAuthorizableManager().getUser(id);
     }
 
     public Group getGroup(String id) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        return context.getAuthorizableManager().getGroup(id);
     }
 
     void removeUser(String id) throws AclException {
@@ -63,7 +67,7 @@ public class Acl {
     }
 
     void removeUser(User user) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        context.getAuthorizableManager().removeUser(user);
     }
 
     public User createSystemUser() throws AclException {
@@ -77,7 +81,13 @@ public class Acl {
     }
 
     public Group createGroup(CreateGroupOptions options) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        AuthorizableManager manager = context.getAuthorizableManager();
+        Group group = getGroup(options.getId());
+        if (group == null) {
+            group = manager.createGroup(options.getId(), options.getPath(), options.getExternalId());
+        }
+        manager.updateGroup(group, options.determineProperties());
+        return group;
     }
 
     void removeGroup(String id) throws AclException {
@@ -85,7 +95,7 @@ public class Acl {
     }
 
     void removeGroup(Group group) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        context.getAuthorizableManager().removeGroup(group);
     }
 
     public void purge(Authorizable authorizable, String path) throws AclException {
@@ -116,11 +126,11 @@ public class Acl {
         throw new IllegalStateException("Not implemented yet!");
     }
 
-    private ValueFactory getValueFactory() throws RepositoryException {
-        return resourceResolver.adaptTo(Session.class).getValueFactory();
-    }
-
-    private AccessControlManager getAccessControlManager() throws RepositoryException {
-        return resourceResolver.adaptTo(Session.class).getAccessControlManager();
+    public void save() {
+        try {
+            context.getSession().save();
+        } catch (RepositoryException e) {
+            throw new AclException(e);
+        }
     }
 }
