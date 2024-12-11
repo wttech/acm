@@ -34,4 +34,9 @@ public class Condition {
     public boolean oncePerExecutableContent() {
         return false; // TOOD ...
     }
+
+    public boolean daily() {
+        // TODO check if history contains entry with this executable for today
+        return false;
+    }
 }

@@ -14,7 +14,10 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +35,16 @@ public class Executor {
     @Reference
     private History history;
 
+    private BundleContext bundleContext;
+
+    @Activate
+    @Modified
+    protected void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return new ExecutionContext(executable, resourceResolver, history);
+        return new ExecutionContext(executable, bundleContext, resourceResolver, history);
     }
 
     public Execution execute(Executable executable) throws ContentorException {
