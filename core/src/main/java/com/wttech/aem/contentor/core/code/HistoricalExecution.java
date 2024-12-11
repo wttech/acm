@@ -65,11 +65,12 @@ public class HistoricalExecution implements Execution {
         return error; // TODO from resource
     }
 
+    @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("executable", executable)
-                .append("status", status)
-                .append("duration", duration)
+                .append("executable", getExecutable())
+                .append("status", getStatus())
+                .append("duration", getDuration())
                 .toString();
     }
 }

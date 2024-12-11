@@ -2,7 +2,7 @@ package com.wttech.aem.contentor.core.code;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class SimpleExecution implements Execution {
+public class ImmediateExecution implements Execution {
 
     private final Executable executable;
 
@@ -16,7 +16,7 @@ public class SimpleExecution implements Execution {
 
     private final String error;
 
-    public SimpleExecution(Executable executable, String id, ExecutionStatus status, long duration, String output, String error) {
+    public ImmediateExecution(Executable executable, String id, ExecutionStatus status, long duration, String output, String error) {
         this.executable = executable;
         this.id = id;
         this.status = status;
@@ -55,11 +55,12 @@ public class SimpleExecution implements Execution {
         return error;
     }
 
+    @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("executable", executable)
-                .append("status", status)
-                .append("duration", duration)
+                .append("executable", getExecutable())
+                .append("status", getStatus())
+                .append("duration", getDuration())
                 .toString();
     }
 }

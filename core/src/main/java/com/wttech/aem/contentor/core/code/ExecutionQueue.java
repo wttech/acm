@@ -2,7 +2,6 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.instance.HealthChecker;
-import com.wttech.aem.contentor.core.util.JsonUtils;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -75,8 +74,7 @@ public class ExecutionQueue implements JobExecutor {
         if (job == null) {
             return Optional.empty();
         }
-
-        return Optional.of(new SimpleExecution(executable, job.getId(), ExecutionStatus.of(job), 0, null, null));
+        return read(job.getId());
     }
 
     public Optional<Execution> read(String jobId) throws ContentorException {
@@ -84,18 +82,7 @@ public class ExecutionQueue implements JobExecutor {
         if (job == null) {
             return Optional.empty();
         }
-
-        try {
-            Executable executable = Code.fromJob(job);
-            Map<String, Object> messageProps = JsonUtils.stringToMap(job.getResultMessage());
-            int duration = (int) messageProps.getOrDefault("duration", 0);
-            ExecutionStatus status = ExecutionStatus.of((String) messageProps.get("status")).orElseGet(() -> ExecutionStatus.of(job));
-            String output = readFile(jobId, FileType.OUTPUT).orElse(null);
-            String error = readFile(jobId, FileType.ERROR).orElse(null);
-            return Optional.of(new SimpleExecution(executable, job.getId(), status, duration, output, error));
-        } catch (IOException e) {
-            throw new ContentorException(String.format("Cannot read message for job '%s'", jobId), e);
-        }
+        return Optional.of(new QueuedExecution(job));
     }
 
     public void stop(String jobId) {
@@ -149,11 +136,7 @@ public class ExecutionQueue implements JobExecutor {
 
         try {
             Execution execution = future.get();
-
-            Map<String, Object> messageProps = new HashMap<>();
-            messageProps.put("status", execution.getStatus().name());
-            messageProps.put("duration", execution.getDuration());
-            String message = JsonUtils.mapToString(messageProps);
+            String message = QueuedExecution.composeJobResultMessage(execution);
 
             if (execution.getStatus() == ExecutionStatus.SKIPPED) {
                 LOG.info("Job '{}' is skipped", executable);
@@ -224,7 +207,7 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    private Optional<String> readFile(String jobId, FileType fileType) throws ContentorException {
+    static Optional<String> readFile(String jobId, FileType fileType) throws ContentorException {
         Path path = filePath(jobId, fileType);
         if (!path.toFile().exists()) {
             return Optional.empty();
@@ -237,7 +220,7 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    public Path filePath(String jobId, FileType kind) {
+    static Path filePath(String jobId, FileType kind) {
         File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
         if (!dir.exists()) {
             dir.mkdirs();
