@@ -95,6 +95,7 @@ const ConsolePage = () => {
                     setSelectedTab('error');
                 } else if (executionJob.status === 'SKIPPED') {
                     ToastQueue.neutral('Code execution skipped!', {timeout: toastTimeout});
+                    setSelectedTab('code');
                 } else {
                     ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
                 }
