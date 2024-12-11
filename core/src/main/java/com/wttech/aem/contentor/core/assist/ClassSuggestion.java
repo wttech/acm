@@ -1,6 +1,6 @@
 package com.wttech.aem.contentor.core.assist;
 
-import com.wttech.aem.contentor.core.assist.osgi.ClassInfo;
+import com.wttech.aem.contentor.core.osgi.ClassInfo;
 
 public class ClassSuggestion implements Suggestion {
 

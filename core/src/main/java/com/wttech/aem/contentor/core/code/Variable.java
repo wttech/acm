@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.acl.Acl;
+import com.wttech.aem.contentor.core.osgi.OsgiFacade;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 
@@ -9,9 +10,10 @@ import java.io.PrintStream;
 public enum Variable {
     OUT("out", PrintStream.class.getName()),
     LOG("log", Logger.class.getName()),
+    CONDITION("condition", Condition.class.getName()),
     RESOURCE_RESOLVER("resourceResolver", ResourceResolver.class.getName()),
     ACL("acl", Acl.class.getName()),
-    CONDITION("condition", Condition.class.getName());
+    OSGI("osgi", OsgiFacade.class.getName());
 
     final String varName;
 

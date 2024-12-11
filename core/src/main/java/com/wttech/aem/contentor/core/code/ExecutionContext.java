@@ -1,12 +1,15 @@
 package com.wttech.aem.contentor.core.code;
 
 import org.apache.sling.api.resource.ResourceResolver;
+import org.osgi.framework.BundleContext;
 
 import java.io.OutputStream;
 
 public class ExecutionContext {
 
     private final Executable executable;
+
+    private final BundleContext bundleContext;
 
     private final ResourceResolver resourceResolver;
 
@@ -16,8 +19,9 @@ public class ExecutionContext {
 
     private ExecutionMode mode = ExecutionMode.EVALUATE;
 
-    public ExecutionContext(Executable executable, ResourceResolver resourceResolver, History history) {
+    public ExecutionContext(Executable executable, BundleContext bundleContext, ResourceResolver resourceResolver, History history) {
         this.executable = executable;
+        this.bundleContext = bundleContext;
         this.resourceResolver = resourceResolver;
         this.history = history;
     }
@@ -28,6 +32,10 @@ public class ExecutionContext {
 
     public ResourceResolver getResourceResolver() {
         return resourceResolver;
+    }
+
+    public BundleContext getBundleContext() {
+        return bundleContext;
     }
 
     public History getHistory() {
