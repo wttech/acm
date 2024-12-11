@@ -64,7 +64,7 @@ public class ExecutionQueue implements JobExecutor {
     @Reference
     private Executor executor;
 
-    private ExecutorService executorService;
+    private ExecutorService jobAsyncExecutor;
 
     static Optional<String> readFile(String jobId, FileType fileType) throws ContentorException {
         Path path = filePath(jobId, fileType);
@@ -116,13 +116,13 @@ public class ExecutionQueue implements JobExecutor {
 
     @Activate
     protected void activate() {
-        executorService = Executors.newSingleThreadExecutor();
+        jobAsyncExecutor = Executors.newSingleThreadExecutor();
     }
 
     @Deactivate
     protected void deactivate() {
-        if (executorService != null) {
-            executorService.shutdown();
+        if (jobAsyncExecutor != null) {
+            jobAsyncExecutor.shutdown();
         }
     }
 
@@ -136,7 +136,7 @@ public class ExecutionQueue implements JobExecutor {
 
         LOG.info("Executing asynchronously '{}'", executable);
 
-        Future<Execution> future = executorService.submit(() -> {
+        Future<Execution> future = jobAsyncExecutor.submit(() -> {
             try {
                 return executeAsync(executable, job);
             } catch (Throwable e) {
@@ -177,7 +177,7 @@ public class ExecutionQueue implements JobExecutor {
             LOG.error("Error executing asynchronously '{}'", executable, e);
             return context.result().failed();
         } finally {
-            executorService.submit(() -> {
+            jobAsyncExecutor.submit(() -> {
                 try {
                     cleanAsync(executable, job);
                 } catch (Throwable e) {
@@ -192,12 +192,7 @@ public class ExecutionQueue implements JobExecutor {
              OutputStream outputStream = Files.newOutputStream(filePath(job.getId(), FileType.OUTPUT))) {
             ExecutionContext context = executor.createContext(executable, resolver);
             context.setOutputStream(outputStream);
-
-            Execution execution = executor.execute(executable, context);
-            if (execution.getError() != null) {
-                saveErrorToFile(executable, job, execution.getError());
-            }
-            return execution;
+            return executor.execute(executable, context);
         } catch (LoginException e) {
             throw new ContentorException(String.format("Cannot access repository while executing '%s' in job '%s'",
                     executable.getId(), job.getId()), e);
@@ -221,14 +216,6 @@ public class ExecutionQueue implements JobExecutor {
             Files.deleteIfExists(filePath(job.getId(), FileType.ERROR));
         } catch (IOException e) {
             LOG.error("Cannot delete files for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
-        }
-    }
-
-    private void saveErrorToFile(Executable executable, Job job, String error) {
-        try (OutputStream errorStream = Files.newOutputStream(filePath(job.getId(), FileType.ERROR))) {
-            IOUtils.write(error, errorStream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            LOG.error("Cannot write error file for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
         }
     }
 

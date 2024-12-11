@@ -53,7 +53,7 @@ public class Executor {
         if (simpleOutputActive) {
             context.setOutputStream(new WriterOutputStream(new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
         }
-        GroovyShell shell = createShell(executable, context);
+        GroovyShell shell = createShell(context);
         long startTime = System.currentTimeMillis();
 
         try {
@@ -95,8 +95,8 @@ public class Executor {
         return System.currentTimeMillis() - startTime;
     }
 
-    private GroovyShell createShell(Executable executable, ExecutionContext context) {
-        Binding binding = new CodeBinding(executable, context).toBinding();
+    private GroovyShell createShell(ExecutionContext context) {
+        Binding binding = new CodeBinding(context).toBinding();
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
         compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));

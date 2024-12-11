@@ -20,8 +20,8 @@ public class CodeBinding {
 
     private final Condition condition;
 
-    public CodeBinding(Executable executable, ExecutionContext context) {
-        this.log = createLogger(executable);
+    public CodeBinding(ExecutionContext context) {
+        this.log = createLogger(context.getExecutable());
         this.out = context.getOutputStream();
         this.resourceResolver = context.getResourceResolver();
         this.acl = new Acl(resourceResolver);
@@ -29,7 +29,7 @@ public class CodeBinding {
     }
 
     private Logger createLogger(Executable executable) {
-        return LoggerFactory.getLogger(String.format("%s(%s)", Executor.class.getName(), executable.getId()));
+        return LoggerFactory.getLogger(String.format("%s(%s)", getClass().getName(), executable.getId()));
     }
 
     public Binding toBinding() {
