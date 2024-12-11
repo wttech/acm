@@ -1,5 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
+import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.instance.HealthChecker;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import org.apache.commons.io.FileUtils;
@@ -65,13 +66,17 @@ public class ExecutionQueue implements JobExecutor {
 
     private ExecutorService executorService;
 
-    public Optional<Execution> submit(Executable executable) throws com.wttech.aem.contentor.core.ContentorException {
+    public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
+        return executor.createContext(executable, resourceResolver);
+    }
+
+    public Optional<Execution> submit(Executable executable) throws ContentorException {
         Job job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
         if (job == null) {
             return Optional.empty();
         }
 
-        return Optional.of(new Execution(executable, job.getId(), ExecutionStatus.of(job, null), 0, null, null));
+        return Optional.of(new SimpleExecution(executable, job.getId(), ExecutionStatus.of(job, null), 0, null, null));
     }
 
     public Optional<Execution> read(String jobId) throws com.wttech.aem.contentor.core.ContentorException {
@@ -86,7 +91,7 @@ public class ExecutionQueue implements JobExecutor {
         long duration = calculateDuration(job).orElse(0L);
         ExecutionStatus status = ExecutionStatus.of(job, error);
 
-        return Optional.of(new Execution(executable, job.getId(), status, duration, output, error));
+        return Optional.of(new SimpleExecution(executable, job.getId(), status, duration, output, error));
     }
 
     public void stop(String jobId) {
@@ -163,10 +168,10 @@ public class ExecutionQueue implements JobExecutor {
     private void executeAsync(Executable executable, Job job) throws com.wttech.aem.contentor.core.ContentorException {
         try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
              OutputStream outputStream = Files.newOutputStream(filePath(job.getId(), FileType.OUTPUT))) {
-            ExecutionOptions options = new ExecutionOptions(resolver);
-            options.setOutputStream(outputStream);
+            ExecutionContext context = executor.createContext(executable, resolver);
+            context.setOutputStream(outputStream);
 
-            Execution execution = executor.execute(executable, options);
+            Execution execution = executor.execute(executable, context);
             if (execution.getError() != null) {
                 saveErrorToFile(executable, job, execution.getError());
             }

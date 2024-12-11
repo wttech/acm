@@ -7,6 +7,7 @@ public enum ExecutionStatus {
     ACTIVE,
     STOPPED,
     FAILED,
+    SKIPPED,
     SUCCEEDED;
 
     public static ExecutionStatus of(Job job, String error) {

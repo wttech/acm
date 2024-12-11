@@ -87,12 +87,14 @@ const ConsolePage = () => {
             if (executionJob.status === 'ACTIVE') {
                 setSelectedTab('output');
             }
-            if (['SUCCEEDED', 'FAILED', 'STOPPED'].includes(executionJob.status)) {
+            if (['SUCCEEDED', 'SKIPPED', 'FAILED', 'STOPPED'].includes(executionJob.status)) {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
                 if (executionJob.status === 'FAILED') {
                     ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
                     setSelectedTab('error');
+                } else if (executionJob.status === 'SKIPPED') {
+                    ToastQueue.neutral('Code execution skipped!', {timeout: toastTimeout});
                 } else {
                     ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
                 }
@@ -120,7 +122,7 @@ const ConsolePage = () => {
             setExecuting(false);
 
             let status = 'UNKNOWN';
-            while (!['STOPPED', 'FAILED', 'SUCCEEDED'].includes(status)) {
+            while (!['STOPPED', 'FAILED', 'SKIPPED', 'SUCCEEDED'].includes(status)) {
                 const response = await apiRequest<DataExecution>({
                     operation: 'Code execution state',
                     url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,

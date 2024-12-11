@@ -44,11 +44,11 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
             }
 
             Code code = input.getCode();
-            ExecutionOptions options = new ExecutionOptions(request.getResourceResolver());
+            ExecutionContext options = executor.createContext(code, request.getResourceResolver());
 
             ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
             if (mode == null) {
-                respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", mode)));
+                respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", input.getMode())));
                 return;
             }
             options.setMode(mode);

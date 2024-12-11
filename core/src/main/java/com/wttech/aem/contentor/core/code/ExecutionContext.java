@@ -1,30 +1,37 @@
 package com.wttech.aem.contentor.core.code;
 
-import com.wttech.aem.contentor.core.script.Script;
 import org.apache.sling.api.resource.ResourceResolver;
 
 import java.io.OutputStream;
 
-public class ExecutionOptions {
+public class ExecutionContext {
 
-    private ResourceResolver resourceResolver;
+    private final Executable executable;
+
+    private final ResourceResolver resourceResolver;
+
+    private final History history;
 
     private OutputStream outputStream = null;
 
     private ExecutionMode mode = ExecutionMode.EVALUATE;
 
-    private Script script;
-
-    public ExecutionOptions(ResourceResolver resourceResolver) {
+    public ExecutionContext(Executable executable, ResourceResolver resourceResolver, History history) {
+        this.executable = executable;
         this.resourceResolver = resourceResolver;
+        this.history = history;
+    }
+
+    public Executable getExecutable() {
+        return executable;
     }
 
     public ResourceResolver getResourceResolver() {
         return resourceResolver;
     }
 
-    public void setResourceResolver(ResourceResolver resourceResolver) {
-        this.resourceResolver = resourceResolver;
+    public History getHistory() {
+        return history;
     }
 
     public OutputStream getOutputStream() {
@@ -41,13 +48,5 @@ public class ExecutionOptions {
 
     public void setMode(ExecutionMode mode) {
         this.mode = mode;
-    }
-
-    public void setScript(Script script) {
-        this.script = script;
-    }
-
-    public Script getScript() {
-        return script;
     }
 }

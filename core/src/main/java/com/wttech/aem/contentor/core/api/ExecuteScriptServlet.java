@@ -49,8 +49,8 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            ExecutionOptions options = new ExecutionOptions(request.getResourceResolver());
-            Execution execution = executor.execute(script, options);
+            ExecutionContext context = executor.createContext(script, request.getResourceResolver());
+            Execution execution = executor.execute(script, context);
 
             // TODO should this servlet also save execution in history?
             // history.save(execution)

@@ -1,7 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.acl.Acl;
-import com.wttech.aem.contentor.core.script.Script;
 import groovy.lang.Binding;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
@@ -19,14 +18,14 @@ public class CodeBinding {
 
     private final Acl acl;
 
-    private final Script script;
+    private final Condition condition;
 
-    public CodeBinding(Executable executable, ExecutionOptions executionOptions) {
+    public CodeBinding(Executable executable, ExecutionContext context) {
         this.log = createLogger(executable);
-        this.out = executionOptions.getOutputStream();
-        this.resourceResolver = executionOptions.getResourceResolver();
+        this.out = context.getOutputStream();
+        this.resourceResolver = context.getResourceResolver();
         this.acl = new Acl(resourceResolver);
-        this.script = executionOptions.getScript();
+        this.condition = new Condition(context);
     }
 
     private Logger createLogger(Executable executable) {
@@ -39,7 +38,7 @@ public class CodeBinding {
         result.setVariable(Variable.OUT.varName(), out);
         result.setVariable(Variable.RESOURCE_RESOLVER.varName(), resourceResolver);
         result.setVariable(Variable.ACL.varName(), acl);
-        result.setVariable(Variable.SCRIPT.varName(), script);
+        result.setVariable(Variable.CONDITION.varName(), condition);
         return result;
     }
 }

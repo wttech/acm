@@ -6,6 +6,8 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -14,6 +16,8 @@ import javax.jcr.security.AccessControlManager;
 import java.util.Collection;
 
 public class Acl {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Acl.class);
 
     private final ResourceResolver resourceResolver;
 
@@ -47,15 +51,18 @@ public class Acl {
     }
 
     public User createUser(CreateUserOptions options) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        LOG.error("Not implemented yet! Creating user with options: {}", options);
+        return null;
     }
 
     public User getUser(String id) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        LOG.error("Not implemented yet! Getting user with id: {}", id);
+        return null;
     }
 
     public Group getGroup(String id) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        LOG.error("Not implemented yet! Getting group with id: {}", id);
+        return null;
     }
 
     void removeUser(String id) throws AclException {
@@ -63,11 +70,7 @@ public class Acl {
     }
 
     void removeUser(User user) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
-    }
-
-    public User createSystemUser() throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        LOG.error("Not implemented yet! Removing user: {}", user);
     }
 
     public Group createGroup(String id) throws AclException {
@@ -77,7 +80,8 @@ public class Acl {
     }
 
     public Group createGroup(CreateGroupOptions options) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        LOG.error("Not implemented yet! Creating group with options: {}", options);
+        return null;
     }
 
     void removeGroup(String id) throws AclException {
@@ -85,11 +89,11 @@ public class Acl {
     }
 
     void removeGroup(Group group) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        LOG.error("Not implemented yet! Removing group: {}", group);
     }
 
     public void purge(Authorizable authorizable, String path) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        LOG.error("Not implemented yet! Purging authorizable: {} at path: {}", authorizable, path);
     }
 
     public void allow(Authorizable authorizable, String path, Collection<String> permissions) throws AclException {
@@ -101,7 +105,7 @@ public class Acl {
     }
 
     public void allow(AllowOptions options) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        LOG.error("Not implemented yet! Allowing options: {}", options);
     }
 
     public void deny(Authorizable authorizable, String path, Collection<String> permissions) throws AclException {
@@ -113,7 +117,7 @@ public class Acl {
     }
 
     public void deny(DenyOptions options) throws AclException {
-        throw new IllegalStateException("Not implemented yet!");
+        LOG.error("Not implemented yet! Denying options: {}", options);
     }
 
     private ValueFactory getValueFactory() throws RepositoryException {

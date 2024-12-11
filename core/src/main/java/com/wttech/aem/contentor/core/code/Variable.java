@@ -12,7 +12,7 @@ public enum Variable {
     LOG("log", Logger.class.getName()),
     RESOURCE_RESOLVER("resourceResolver", ResourceResolver.class.getName()),
     ACL("acl", Acl.class.getName()),
-    SCRIPT("script", Script.class.getName());
+    CONDITION("condition", Condition.class.getName());
 
     final String varName;
 

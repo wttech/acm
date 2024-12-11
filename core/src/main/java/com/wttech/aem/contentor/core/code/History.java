@@ -14,4 +14,8 @@ public class History {
     public void save(Execution execution) {
         // TODO
     }
+
+    public boolean contains(String id) {
+        return false;
+    }
 }

@@ -48,14 +48,14 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             }
 
             Code code = input.getCode();
-            ExecutionOptions options = new ExecutionOptions(request.getResourceResolver());
+            ExecutionContext context = executionQueue.createContext(code, request.getResourceResolver());
 
             ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
             if (mode == null) {
                 respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", mode)));
                 return;
             }
-            options.setMode(mode);
+            context.setMode(mode);
 
             Execution execution = executionQueue.submit(code).orElse(null);
             if (execution == null) {
