@@ -46,6 +46,7 @@
                         </goals>
                         <configuration>
                             <bnd><![CDATA[
+Export-Package com.wttech.aem.contentor.core.*
 Import-Package: javax.annotation;version=0.0.0,*
 Private-Package: org.yaml.snakeyaml.*
 DynamicImport-Package: *
