@@ -44,17 +44,17 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
             }
 
             Code code = input.getCode();
-            ExecutionContext options = executor.createContext(code, request.getResourceResolver());
+            ExecutionContext context = executor.createContext(code, request.getResourceResolver());
 
             ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
             if (mode == null) {
                 respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", input.getMode())));
                 return;
             }
-            options.setMode(mode);
+            context.setMode(mode);
 
             try {
-                Execution execution = executor.execute(code, options);
+                Execution execution = executor.execute(code, context);
 
                 // TODO should this servlet also save execution in history?
                 // history.save(execution)

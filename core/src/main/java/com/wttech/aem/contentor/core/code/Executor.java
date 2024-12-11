@@ -45,15 +45,15 @@ public class Executor {
         }
     }
 
-    public Execution execute(Executable executable, ExecutionContext options) throws ContentorException {
+    public Execution execute(Executable executable, ExecutionContext context) throws ContentorException {
         String id = ExecutionId.generate();
         String content = composeContent(executable);
         StringBuilder simpleOutput = new StringBuilder();
-        boolean simpleOutputActive = options.getOutputStream() == null;
+        boolean simpleOutputActive = context.getOutputStream() == null;
         if (simpleOutputActive) {
-            options.setOutputStream(new WriterOutputStream(new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
+            context.setOutputStream(new WriterOutputStream(new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
         }
-        GroovyShell shell = createShell(executable, options);
+        GroovyShell shell = createShell(executable, context);
         long startTime = System.currentTimeMillis();
 
         try {
@@ -64,7 +64,7 @@ public class Executor {
                 return new ImmediateExecution(executable, id, ExecutionStatus.SKIPPED, calculateDuration(startTime),
                         simpleOutputActive ? simpleOutput.toString() : null, null);
             }
-            switch (options.getMode()) {
+            switch (context.getMode()) {
                 case PARSE:
                     break;
                 case EVALUATE:
@@ -95,8 +95,8 @@ public class Executor {
         return System.currentTimeMillis() - startTime;
     }
 
-    private GroovyShell createShell(Executable executable, ExecutionContext options) {
-        Binding binding = new CodeBinding(executable, options).toBinding();
+    private GroovyShell createShell(Executable executable, ExecutionContext context) {
+        Binding binding = new CodeBinding(executable, context).toBinding();
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
         compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
