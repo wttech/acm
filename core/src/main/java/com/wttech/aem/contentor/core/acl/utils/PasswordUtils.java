@@ -12,10 +12,6 @@ public class PasswordUtils {
         return generateRandomPassword(MAX_LENGTH, CHARACTERS);
     }
 
-    public static String generateRandomPassword(int length) {
-        return generateRandomPassword(length, CHARACTERS);
-    }
-
     public static String generateRandomPassword(int length, String characterSet) {
         SecureRandom random = new SecureRandom();
         StringBuilder password = new StringBuilder(length);

@@ -17,6 +17,8 @@ public class CreateGroupOptions {
 
     private String aboutMe;
 
+    private Map<String, String> properties = new HashMap<>();
+
     private Mode mode = Mode.OVERRIDE;
 
     public String getId() {
@@ -67,12 +69,24 @@ public class CreateGroupOptions {
         this.aboutMe = aboutMe;
     }
 
-    public Map<String, String> determineProperties() {
-        Map<String, String> properties = new HashMap<>();
-        properties.compute("profile/givenName", (key, value) -> givenName);
-        properties.compute("profile/email", (key, value) -> email);
-        properties.compute("profile/aboutMe", (key, value) -> aboutMe);
+    public Map<String, String> getProperties() {
         return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+        this.properties.putAll(properties);
+    }
+
+    public void property(String key, String value) {
+        properties.put(key, value);
+    }
+
+    public Map<String, String> determineAllProperties() {
+        Map<String, String> allProperties = new HashMap<>(properties);
+        allProperties.compute("profile/givenName", (key, value) -> givenName);
+        allProperties.compute("profile/email", (key, value) -> email);
+        allProperties.compute("profile/aboutMe", (key, value) -> aboutMe);
+        return allProperties;
     }
 
     public Mode getMode() {

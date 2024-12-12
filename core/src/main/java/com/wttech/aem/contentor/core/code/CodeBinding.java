@@ -24,7 +24,7 @@ public class CodeBinding {
         this.log = createLogger(executable);
         this.out = executionOptions.getOutputStream();
         this.resourceResolver = executionOptions.getResourceResolver();
-        this.acl = new Acl(resourceResolver, out);
+        this.acl = new Acl(resourceResolver);
         this.script = executionOptions.getScript();
     }
 

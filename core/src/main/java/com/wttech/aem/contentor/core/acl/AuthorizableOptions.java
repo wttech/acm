@@ -6,7 +6,7 @@ public class AuthorizableOptions {
 
     private Authorizable authorizable;
 
-    private String authorizableId;
+    private String id;
 
     public Authorizable getAuthorizable() {
         return authorizable;
@@ -16,11 +16,11 @@ public class AuthorizableOptions {
         this.authorizable = authorizable;
     }
 
-    public String getAuthorizableId() {
-        return authorizableId;
+    public String getId() {
+        return id;
     }
 
-    public void setAuthorizableId(String authorizableId) {
-        this.authorizableId = authorizableId;
+    public void setId(String id) {
+        this.id = id;
     }
 }
