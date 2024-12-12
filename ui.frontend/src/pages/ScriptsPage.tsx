@@ -1,35 +1,80 @@
-import React, { useEffect, useState } from 'react';
-import {Cell, Column, Flex, Row, TableBody, TableHeader, TableView, View, Heading, ProgressBar} from "@adobe/react-spectrum";
+import React, { Key, useEffect, useState } from 'react';
+import {
+    Cell,
+    Column,
+    Flex,
+    Row,
+    TableBody,
+    TableHeader,
+    TableView,
+    View,
+    ProgressBar,
+    ActionButton,
+    Switch,
+    ButtonGroup,
+    Button
+} from "@adobe/react-spectrum";
 import { toastRequest } from '../utils/api';
 import { DataScript } from '../utils/api.types';
 
+type ScriptType = 'enabled' | 'disabled';
+
 const ScriptsPage = () => {
-    const [enabledScripts, setEnabledScripts] = useState<DataScript | null>(null);
-    const [disabledScripts, setDisabledScripts] = useState<DataScript | null>(null);
+    const [scripts, setScripts] = useState<DataScript | null>(null);
+    const [scriptType, setScriptType] = useState<ScriptType>('enabled');
+    const [selectedKeys, setSelectedKeys] = useState<Set<Key>>(new Set());
+    const [isLoading, setIsLoading] = useState(false);
+
+    const fetchScripts = async (type: ScriptType) => {
+        setIsLoading(true);
+        try {
+            const response = await toastRequest<DataScript>({
+                method: 'GET',
+                url: `/apps/contentor/api/script.json?type=${type}`,
+                operation: `Fetch ${type} scripts`,
+                positive: false
+            });
+            setScripts(response.data.data);
+        } catch (error) {
+            console.error(`Error fetching ${type} scripts:`, error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        // Fetch enabled scripts
-        toastRequest<DataScript>({
-            method: 'GET',
-            url: '/apps/contentor/api/script.json?type=enabled',
-            operation: 'Fetch enabled scripts',
-            positive: false
-        })
-            .then(data => setEnabledScripts(data.data.data))
-            .catch(error => console.error('Error fetching enabled scripts:', error));
+        fetchScripts(scriptType);
+    }, [scriptType]);
 
-        // Fetch disabled scripts
-        toastRequest<DataScript>({
-            method: 'GET',
-            url: '/apps/contentor/api/script.json?type=disabled',
-            operation: 'Fetch disabled scripts',
-            positive: false
-        })
-            .then(data => setDisabledScripts(data.data.data))
-            .catch(error => console.error('Error fetching disabled scripts:', error));
-    }, []);
+    const handleScriptTypeChange = (isChecked: boolean) => {
+        setScriptType(isChecked ? 'enabled' : 'disabled');
+        setSelectedKeys(new Set());
+    };
 
-    if (enabledScripts === null || disabledScripts === null) {
+    const handleBulkAction = async () => {
+        if (selectedKeys.size === 0) return;
+
+        setIsLoading(true);
+        const targetType = scriptType === 'enabled' ? 'disabled' : 'enabled';
+        const selectedIds = Array.from(selectedKeys);
+
+        try {
+            await toastRequest({
+                method: 'POST',
+                url: `/apps/contentor/api/script/${targetType}.json`,
+                operation: `${targetType === 'enabled' ? 'Enable' : 'Disable'} selected scripts`,
+                data: { ids: selectedIds }
+            });
+            await fetchScripts(scriptType);
+            setSelectedKeys(new Set());
+        } catch (error) {
+            console.error('Error updating scripts:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (isLoading && !scripts) {
         return (
             <Flex justifyContent="center" alignItems="center" height="100vh">
                 <ProgressBar label="Loading..." isIndeterminate />
@@ -37,43 +82,48 @@ const ScriptsPage = () => {
         );
     }
 
-    return (
-        <Flex direction="column" gap="size-400">
-            <View>
-                <Heading level={2}>Enabled Scripts</Heading>
-                <TableView aria-label="Enabled script list" selectionMode="multiple">
-                    <TableHeader>
-                        <Column>Name</Column>
-                        <Column>Content</Column>
-                    </TableHeader>
-                    <TableBody>
-                        {enabledScripts.list.map((script) => (
-                            <Row key={script.id}>
-                                <Cell>{script.id}</Cell>
-                                <Cell>{script.content}</Cell>
-                            </Row>
-                        ))}
-                    </TableBody>
-                </TableView>
-            </View>
+    const actionButtonLabel = scriptType === 'enabled' ? 'Disable Selected' : 'Enable Selected';
 
-            <View>
-                <Heading level={2}>Disabled Scripts</Heading>
-                <TableView aria-label="Disabled script list" selectionMode="multiple">
-                    <TableHeader>
-                        <Column>Name</Column>
-                        <Column>Content</Column>
-                    </TableHeader>
-                    <TableBody>
-                        {disabledScripts.list.map((script) => (
-                            <Row key={script.id}>
-                                <Cell>{script.id}</Cell>
-                                <Cell>{script.content}</Cell>
-                            </Row>
-                        ))}
-                    </TableBody>
-                </TableView>
-            </View>
+    return (
+        <Flex direction="column" gap="size-200">
+            <Flex direction="row" gap="size-200" alignItems="center" marginBottom="size-200">
+                <Switch
+                    isSelected={scriptType === 'enabled'}
+                    onChange={handleScriptTypeChange}
+                >
+                    {scriptType === 'enabled' ? 'Enabled Scripts' : 'Disabled Scripts'}
+                </Switch>
+                <ButtonGroup>
+                    <Button
+                        variant="primary"
+                        isDisabled={selectedKeys.size === 0 || isLoading}
+                        onPress={handleBulkAction}
+                    >
+                        {actionButtonLabel}
+                    </Button>
+                </ButtonGroup>
+            </Flex>
+
+            <TableView
+                aria-label="Scripts list"
+                selectionMode="multiple"
+                selectedKeys={selectedKeys}
+                onSelectionChange={setSelectedKeys}
+                isQuiet
+            >
+                <TableHeader>
+                    <Column>Name</Column>
+                    <Column>Content</Column>
+                </TableHeader>
+                <TableBody>
+                    {scripts?.list.map((script) => (
+                        <Row key={script.id}>
+                            <Cell>{script.id}</Cell>
+                            <Cell>{script.content}</Cell>
+                        </Row>
+                    ))}
+                </TableBody>
+            </TableView>
         </Flex>
     );
 };
