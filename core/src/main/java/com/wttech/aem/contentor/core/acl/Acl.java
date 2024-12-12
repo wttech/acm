@@ -5,6 +5,8 @@ import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
@@ -34,6 +36,10 @@ public class Acl {
 
     public void deny(Closure<DenyOptions> closure) throws AclException {
         deny(GroovyUtils.with(new DenyOptions(), closure));
+    }
+
+    public void setProperty(Closure<PropertyOptions> closure) throws AclException {
+        setProperty(GroovyUtils.with(new PropertyOptions(), closure));
     }
 
     // Non-closure accepting methods
@@ -124,6 +130,24 @@ public class Acl {
 
     public void deny(DenyOptions options) throws AclException {
         throw new IllegalStateException("Not implemented yet!");
+    }
+
+    public void setProperty(PropertyOptions options) throws AclException {
+        Authorizable authorizable = options.getAuthorizable();
+        if (authorizable == null) {
+            authorizable = context.getAuthorizableManager().getAuthorizable(options.getId());
+        }
+        setProperty(authorizable, options.getKey(), options.getValue());
+    }
+
+    public void setProperty(String id, String key, String value) {
+        Authorizable authorizable = context.getAuthorizableManager().getAuthorizable(id);
+        setProperty(authorizable, key, value);
+    }
+
+    public void setProperty(Authorizable authorizable, String key, String value) {
+        Map<String, String> properties = Collections.singletonMap(key, value);
+        context.getAuthorizableManager().updateAuthorizable(authorizable, properties);
     }
 
     public void save() {

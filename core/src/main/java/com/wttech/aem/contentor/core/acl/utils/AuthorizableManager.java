@@ -53,27 +53,29 @@ public class AuthorizableManager {
         }
     }
 
-    public void updateUser(User user, String password, Map<String, String> properties) throws AclException {
+    public void updateAuthorizable(Authorizable authorizable, Map<String, String> properties) throws AclException {
         try {
-            if (StringUtils.isEmpty(password)) {
-                user.changePassword(password);
-            }
             for (Map.Entry<String, String> property : properties.entrySet()) {
-                user.setProperty(property.getKey(), valueFactory.createValue(property.getValue()));
+                authorizable.setProperty(property.getKey(), valueFactory.createValue(property.getValue()));
             }
         } catch (RepositoryException e) {
             throw new AclException(e);
         }
     }
 
-    public void updateGroup(Group group, Map<String, String> properties) throws AclException {
+    public void updateUser(User user, String password, Map<String, String> properties) throws AclException {
         try {
-            for (Map.Entry<String, String> property : properties.entrySet()) {
-                group.setProperty(property.getKey(), valueFactory.createValue(property.getValue()));
+            if (StringUtils.isEmpty(password)) {
+                user.changePassword(password);
             }
+            updateAuthorizable(user, properties);
         } catch (RepositoryException e) {
             throw new AclException(e);
         }
+    }
+
+    public void updateGroup(Group group, Map<String, String> properties) throws AclException {
+        updateAuthorizable(group, properties);
     }
 
     public void removeUser(User user) throws AclException {

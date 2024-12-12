@@ -9,15 +9,15 @@ public class CreateGroupOptions {
 
     private String path;
 
+    private String externalId;
+
     private String givenName;
 
     private String email;
 
     private String aboutMe;
 
-    private String externalId;
-
-    private Mode mode;
+    private Mode mode = Mode.OVERRIDE;
 
     public String getId() {
         return id;
@@ -67,6 +67,14 @@ public class CreateGroupOptions {
         this.aboutMe = aboutMe;
     }
 
+    public Map<String, String> determineProperties() {
+        Map<String, String> properties = new HashMap<>();
+        properties.compute("profile/givenName", (key, value) -> givenName);
+        properties.compute("profile/email", (key, value) -> email);
+        properties.compute("profile/aboutMe", (key, value) -> aboutMe);
+        return properties;
+    }
+
     public Mode getMode() {
         return mode;
     }
@@ -85,14 +93,6 @@ public class CreateGroupOptions {
 
     public void failIfExists() {
         mode = Mode.FAIL;
-    }
-
-    public Map<String, String> determineProperties() {
-        Map<String, String> properties = new HashMap<>();
-        properties.compute("profile/givenName", (key, value) -> givenName);
-        properties.compute("profile/email", (key, value) -> email);
-        properties.compute("profile/aboutMe", (key, value) -> aboutMe);
-        return properties;
     }
 
     public enum Mode {

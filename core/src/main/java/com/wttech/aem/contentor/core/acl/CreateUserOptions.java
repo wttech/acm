@@ -7,9 +7,9 @@ public class CreateUserOptions {
 
     private String id;
 
-    private String password;
-
     private String path;
+
+    private String password;
 
     private String givenName;
 
@@ -19,9 +19,9 @@ public class CreateUserOptions {
 
     private String aboutMe;
 
-    private Mode mode = Mode.OVERRIDE;
+    private boolean systemUser;
 
-    private boolean system;
+    private Mode mode = Mode.OVERRIDE;
 
     public String getId() {
         return id;
@@ -89,24 +89,33 @@ public class CreateUserOptions {
         this.aboutMe = aboutMe;
     }
 
-    public boolean isSystem() {
-        return system;
+    public Map<String, String> determineProperties() {
+        Map<String, String> properties = new HashMap<>();
+        properties.compute("profile/givenName", (key, value) -> givenName);
+        properties.compute("profile/familyName", (key, value) -> familyName);
+        properties.compute("profile/email", (key, value) -> email);
+        properties.compute("profile/aboutMe", (key, value) -> aboutMe);
+        return properties;
     }
 
-    public void setSystem(boolean system) {
-        this.system = system;
+    public boolean isSystemUser() {
+        return systemUser;
     }
 
-    public void system() {
-        this.system = true;
+    public void setSystemUser(boolean systemUser) {
+        this.systemUser = systemUser;
     }
 
-    public void setMode(Mode mode) {
-        this.mode = mode;
+    public void systemUser() {
+        this.systemUser = true;
     }
 
     public Mode getMode() {
         return mode;
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
     }
 
     public void skipIfExists() {
@@ -119,15 +128,6 @@ public class CreateUserOptions {
 
     public void failIfExists() {
         mode = Mode.FAIL;
-    }
-
-    public Map<String, String> determineProperties() {
-        Map<String, String> properties = new HashMap<>();
-        properties.compute("profile/givenName", (key, value) -> givenName);
-        properties.compute("profile/familyName", (key, value) -> familyName);
-        properties.compute("profile/email", (key, value) -> email);
-        properties.compute("profile/aboutMe", (key, value) -> aboutMe);
-        return properties;
     }
 
     public enum Mode {
