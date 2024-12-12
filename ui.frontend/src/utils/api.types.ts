@@ -34,5 +34,5 @@ export type Script = {
 }
 
 export type DataScript = {
-    items: Script[];
+    list: Script[];
 }
