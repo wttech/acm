@@ -25,3 +25,12 @@ export type Snippet = {
     content: string
     documentation: string
 }
+
+export type DataScript = {
+    list: Script[]
+}
+
+export type Script = {
+    id: string
+    content: string
+}

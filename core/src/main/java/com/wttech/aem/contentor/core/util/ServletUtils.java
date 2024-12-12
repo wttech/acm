@@ -36,6 +36,6 @@ public final class ServletUtils {
         response.setStatus(result.getStatus());
         response.setContentType(JsonUtils.APPLICATION_JSON_UTF8);
 
-        JsonUtils.MAPPER.writeValue(response.getWriter(), result);
+        JsonUtils.MAPPER.writeValue(response.getOutputStream(), result);
     }
 }
