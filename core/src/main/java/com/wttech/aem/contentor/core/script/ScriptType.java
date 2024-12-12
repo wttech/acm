@@ -21,7 +21,7 @@ public enum ScriptType {
                 .findFirst();
     }
 
-    public static Optional<ScriptType> from(String path) {
+    public static Optional<ScriptType> byPath(String path) {
         return Arrays.stream(ScriptType.values())
                 .filter(t -> StringUtils.startsWith(path, t.root() + "/"))
                 .findFirst();

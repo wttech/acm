@@ -2,6 +2,9 @@ package com.wttech.aem.contentor.core.script;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceSpliterator;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 
@@ -22,7 +25,7 @@ public class ScriptRepository {
 
     public Optional<Script> read(String path) {
         return Optional.ofNullable(path)
-                .filter(p -> ScriptType.from(p).isPresent())
+                .filter(p -> ScriptType.byPath(p).isPresent())
                 .map(resourceResolver::getResource)
                 .flatMap(Script::from);
     }
@@ -35,7 +38,7 @@ public class ScriptRepository {
 
     public Stream<Script> readAll(List<String> paths) {
         return paths.stream()
-                .filter(p -> ScriptType.from(p).isPresent())
+                .filter(p -> ScriptType.byPath(p).isPresent())
                 .map(resourceResolver::getResource)
                 .map(Script::from)
                 .filter(Optional::isPresent)
@@ -50,4 +53,41 @@ public class ScriptRepository {
         return root;
     }
 
+    public void enable(String path) throws ContentorException {
+        Script script = read(path).orElse(null);
+        if (script == null) {
+            throw new ContentorException(String.format("Script at path '%s' does not exist!", path));
+        }
+        if (script.getType() == ScriptType.ENABLED) {
+            throw new ContentorException(String.format("Script at path '%s' is already enabled!", path));
+        }
+        try {
+            resourceResolver.move(
+                script.getPath(),
+                ScriptType.DISABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.ENABLED.root() + "/")
+            );
+            resourceResolver.commit();
+        } catch (PersistenceException e) {
+            throw new ContentorException(String.format("Cannot enable script at path '%s'!", path), e);
+        }
+    }
+
+    public void disable(String path) throws ContentorException {
+        Script script = read(path).orElse(null);
+        if (script == null) {
+            throw new ContentorException(String.format("Script at path '%s' does not exist!", path));
+        }
+        if (script.getType() == ScriptType.DISABLED) {
+            throw new ContentorException(String.format("Script at path '%s' is already disabled!", path));
+        }
+        try {
+            resourceResolver.move(
+                script.getPath(),
+                ScriptType.ENABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.DISABLED.root() + "/")
+            );
+            resourceResolver.commit();
+        } catch (PersistenceException e) {
+            throw new ContentorException(String.format("Cannot disable script at path '%s'!", path), e);
+        }
+    }
 }

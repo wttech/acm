@@ -49,9 +49,18 @@ public class Script implements Executable {
         return resource.getPath();
     }
 
+    @JsonIgnore
+    public ScriptType getType() {
+        return ScriptType.byPath(getPath()).orElse(ScriptType.DISABLED);
+    }
+
     public InputStream readContent() throws ScriptException {
         return Optional.ofNullable(resource.getChild(JcrUtils.JCR_CONTENT))
                 .map(r -> r.adaptTo(InputStream.class))
                 .orElseThrow(() -> new ScriptException(String.format("Cannot read script '%s'!", getPath())));
+    }
+
+    protected Resource getResource() {
+        return resource;
     }
 }

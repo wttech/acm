@@ -26,11 +26,13 @@ export type Snippet = {
     documentation: string
 }
 
-export type DataScript = {
-    list: Script[]
+export type Script = {
+    id: string;
+    path: string;
+    name: string;
+    content: string;
 }
 
-export type Script = {
-    id: string
-    content: string
+export type DataScript = {
+    items: Script[];
 }
