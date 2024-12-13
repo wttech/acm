@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-public class Script implements Executable {
+public class Script implements Executable, Comparable<Script> {
 
     private final transient Resource resource;
 
@@ -62,5 +62,13 @@ public class Script implements Executable {
 
     protected Resource getResource() {
         return resource;
+    }
+
+    @Override
+    public int compareTo(Script other) {
+        if (other == null) {
+            return 1;
+        }
+        return this.getPath().compareTo(other.getPath());
     }
 }

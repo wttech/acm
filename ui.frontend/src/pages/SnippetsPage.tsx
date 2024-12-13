@@ -10,11 +10,11 @@ const SnippetsPage = () => {
         toastRequest<DataSnippet>({
             method: 'GET',
             url: `/apps/contentor/api/snippet.json`,
-            operation: 'Fetch snippets',
+            operation: 'Snippets loading',
             positive: false
         })
             .then(data => setSnippets(data.data.data))
-            .catch(error => console.error('Error fetching snippets:', error));
+            .catch(error => console.error('Snippets loading error:', error));
     }, []);
 
     if (snippets === null) {

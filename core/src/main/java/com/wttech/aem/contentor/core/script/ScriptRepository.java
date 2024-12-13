@@ -62,10 +62,9 @@ public class ScriptRepository {
             throw new ContentorException(String.format("Script at path '%s' is already enabled!", path));
         }
         try {
-            resourceResolver.move(
-                script.getPath(),
-                ScriptType.DISABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.ENABLED.root() + "/")
-            );
+            String sourcePath = script.getPath();
+            String targetPath = ScriptType.ENABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.DISABLED.root() + "/");
+            resourceResolver.move(sourcePath, StringUtils.substringBeforeLast(targetPath, "/"));
             resourceResolver.commit();
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot enable script at path '%s'!", path), e);
@@ -81,10 +80,9 @@ public class ScriptRepository {
             throw new ContentorException(String.format("Script at path '%s' is already disabled!", path));
         }
         try {
-            resourceResolver.move(
-                script.getPath(),
-                ScriptType.ENABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.DISABLED.root() + "/")
-            );
+            String sourcePath = script.getPath();
+            String targetPath = ScriptType.DISABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.ENABLED.root() + "/");
+            resourceResolver.move(sourcePath, StringUtils.substringBeforeLast(targetPath, "/"));
             resourceResolver.commit();
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot disable script at path '%s'!", path), e);
