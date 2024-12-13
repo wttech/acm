@@ -80,8 +80,8 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        String path = stringParam(request, PATH_PARAM);
-        if (path == null || path.isEmpty()) {
+        List<String> paths = stringsParam(request, PATH_PARAM);
+        if (paths.isEmpty()) {
             respondJson(response, error("Script path parameter is not specified!"));
             return;
         }
@@ -97,12 +97,12 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             
             switch (action.get()) {
                 case ENABLE:
-                    repository.enable(path);
-                    respondJson(response, ok("Script enabled successfully"));
+                    paths.forEach(repository::enable);
+                    respondJson(response, ok(String.format("%d script(s) enabled successfully", paths.size())));
                     break;
                 case DISABLE:
-                    repository.disable(path);
-                    respondJson(response, ok("Script disabled successfully"));
+                    paths.forEach(repository::disable);
+                    respondJson(response, ok(String.format("%d script(s) disabled successfully", paths.size())));
                     break;
             }
         } catch (Exception e) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.contentor.core.code.Executable;
 import com.wttech.aem.contentor.core.util.JcrUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 
@@ -13,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class Script implements Executable, Comparable<Script> {
+
+    public static final String EXTENSION = ".groovy";
 
     private final transient Resource resource;
 
@@ -27,12 +30,19 @@ public class Script implements Executable, Comparable<Script> {
     }
 
     public static boolean check(Resource resource) {
-        return resource != null && resource.isResourceType(JcrConstants.NT_FILE) && resource.getName().endsWith(".groovy");
+        return resource != null && resource.isResourceType(JcrConstants.NT_FILE) && resource.getName().endsWith(EXTENSION);
     }
 
     @Override
     public String getId() {
         return getPath();
+    }
+
+    public String getName() {
+        String result = getPath();
+        result = StringUtils.removeStart(result, getType().root() + "/");
+        result = StringUtils.removeEnd(result, EXTENSION);
+        return result;
     }
 
     @Override

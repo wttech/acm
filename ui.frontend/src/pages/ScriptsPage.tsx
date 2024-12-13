@@ -39,18 +39,21 @@ const ScriptsPage = () => {
     const handleToggleScripts = async () => {
         const action = showEnabled ? 'disable' : 'enable';
         const paths = Array.from(selectedKeys as Set<Key>);
-        const pathsQuery = paths.map(script => `path=${script}`).join('&');
+        const params = new URLSearchParams();
+        params.append('action', action);
+        params.append('type', showEnabled ? 'enabled' : 'disabled');
+        paths.forEach(path => params.append('path', path.toString()));
         
         try {
             await toastRequest({
                 method: 'POST',
-                url: `/apps/contentor/api/script.json?type=${showEnabled ? 'enabled' : 'disabled'}&action=${action}&${pathsQuery}`,
-                operation: `${action} selected scripts`,
+                url: `/apps/contentor/api/script.json?${params.toString()}`,
+                operation: `${action} scripts`,
             });
             loadScripts(showEnabled ? 'enabled' : 'disabled');
             setSelectedKeys(new Set<Key>());
         } catch (error) {
-            console.error(`Error ${action}ing scripts:`, error);
+            console.error(`${action} scripts error:`, error);
         }
     };
 
@@ -70,13 +73,13 @@ const ScriptsPage = () => {
                     isDisabled={!selectedKeys || selectedKeys === 'all' || (selectedKeys as Set<Key>).size === 0}
                     onPress={handleToggleScripts}
                 >
-                    {showEnabled ? 'Disable' : 'Enable'} Selected
+                    {showEnabled ? 'Disable' : 'Enable'}
                 </Button>
                 <Switch
                     isSelected={showEnabled}
                     onChange={setShowEnabled}
                 >
-                    Show {showEnabled ? 'Enabled' : 'Disabled'} Scripts
+                    Show {showEnabled ? 'Enabled' : 'Disabled'}
                 </Switch>
             </Flex>
             
@@ -93,7 +96,7 @@ const ScriptsPage = () => {
                 <TableBody>
                     {scripts.list.map((script) => (
                         <Row key={script.id}>
-                            <Cell>{script.id}</Cell>
+                            <Cell>{script.name}</Cell>
                             <Cell>{script.content}</Cell>
                         </Row>
                     ))}
