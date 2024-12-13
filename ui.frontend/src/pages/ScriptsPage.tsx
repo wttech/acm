@@ -9,12 +9,25 @@ import {
     TableView,
     View,
     Button,
+    ButtonGroup,
     ProgressBar,
-    Switch
+    Tabs,
+    TabList,
+    TabPanels,
+    Item,
+    Text,
+    Heading,
+    Content,
+    IllustratedMessage
 } from "@adobe/react-spectrum";
 import { Key, Selection } from '@react-types/shared';
 import { toastRequest } from '../utils/api';
 import { DataScript } from '../utils/api.types';
+import Cancel from "@spectrum-icons/workflow/Cancel";
+import PlayCircle from "@spectrum-icons/workflow/PlayCircle";
+import CheckmarkCircle from "@spectrum-icons/workflow/CheckmarkCircle";
+import CloseCircle from "@spectrum-icons/workflow/CloseCircle";
+import NotFound from '@spectrum-icons/illustrations/NotFound';
 
 const ScriptsPage = () => {
     const [scripts, setScripts] = useState<DataScript | null>(null);
@@ -57,6 +70,13 @@ const ScriptsPage = () => {
         }
     };
 
+    const renderEmptyState = () => (
+        <IllustratedMessage>
+            <NotFound />
+            <Content>No scripts found</Content>
+        </IllustratedMessage>
+    );
+
     if (scripts === null) {
         return (
             <Flex justifyContent="center" alignItems="center" height="100vh">
@@ -67,41 +87,92 @@ const ScriptsPage = () => {
 
     return (
         <Flex direction="column" gap="size-400">
-            <Flex justifyContent="space-between" alignItems="center" marginBottom="size-200">
-                <Button
-                    variant="primary"
-                    isDisabled={!selectedKeys || selectedKeys === 'all' || (selectedKeys as Set<Key>).size === 0}
-                    onPress={handleToggleScripts}
-                >
-                    {showEnabled ? 'Disable' : 'Enable'}
-                </Button>
-                <Switch
-                    isSelected={showEnabled}
-                    onChange={setShowEnabled}
-                >
-                    Show {showEnabled ? 'Enabled' : 'Disabled'}
-                </Switch>
-            </Flex>
-            
-            <TableView
-                aria-label="Scripts list"
-                selectionMode="multiple"
-                selectedKeys={selectedKeys}
-                onSelectionChange={setSelectedKeys}
-            >
-                <TableHeader>
-                    <Column>Name</Column>
-                    <Column>Content</Column>
-                </TableHeader>
-                <TableBody>
-                    {scripts.list.map((script) => (
-                        <Row key={script.id}>
-                            <Cell>{script.name}</Cell>
-                            <Cell>{script.content}</Cell>
-                        </Row>
-                    ))}
-                </TableBody>
-            </TableView>
+            <Tabs onSelectionChange={(selected) => setShowEnabled(selected === 'enabled')}>
+                <TabList>
+                    <Item key="enabled"><CheckmarkCircle /><Text>Enabled</Text></Item>
+                    <Item key="disabled"><CloseCircle /><Text>Disabled</Text></Item>
+                </TabList>
+                <TabPanels>
+                    <Item key="enabled">
+                        <Flex direction="column" gap="size-200" marginY="size-100">
+                            <View>
+                                <Flex justifyContent="space-between" alignItems="center">
+                                    <ButtonGroup>
+                                        <Button
+                                            variant="negative"
+                                            isDisabled={!selectedKeys || selectedKeys === 'all' || (selectedKeys as Set<Key>).size === 0}
+                                            onPress={handleToggleScripts}
+                                        >
+                                            <Cancel />
+                                            <Text>Disable</Text>
+                                        </Button>
+                                    </ButtonGroup>
+                                </Flex>
+                            </View>
+                            <TableView
+                                aria-label="Scripts list"
+                                selectionMode="multiple"
+                                selectedKeys={selectedKeys}
+                                onSelectionChange={setSelectedKeys}
+                                minHeight="size-3600"
+                                renderEmptyState={renderEmptyState}
+                            >
+                                <TableHeader>
+                                    <Column>Name</Column>
+                                    <Column>Content</Column>
+                                </TableHeader>
+                                <TableBody>
+                                    {(scripts.list || []).map(script => (
+                                        <Row key={script.id}>
+                                            <Cell>{script.name}</Cell>
+                                            <Cell>{script.content}</Cell>
+                                        </Row>
+                                    ))}
+                                </TableBody>
+                            </TableView>
+                        </Flex>
+                    </Item>
+                    <Item key="disabled">
+                        <Flex direction="column" gap="size-200" marginY="size-100">
+                            <View>
+                                <Flex justifyContent="space-between" alignItems="center">
+                                    <ButtonGroup>
+                                        <Button
+                                            variant="accent"
+                                            isDisabled={!selectedKeys || selectedKeys === 'all' || (selectedKeys as Set<Key>).size === 0}
+                                            onPress={handleToggleScripts}
+                                        >
+                                            <PlayCircle />
+                                            <Text>Enable</Text>
+                                        </Button>
+                                    </ButtonGroup>
+                                </Flex>
+                            </View>
+                            <TableView
+                                aria-label="Scripts list"
+                                selectionMode="multiple"
+                                selectedKeys={selectedKeys}
+                                onSelectionChange={setSelectedKeys}
+                                minHeight="size-3600"
+                                renderEmptyState={renderEmptyState}
+                            >
+                                <TableHeader>
+                                    <Column>Name</Column>
+                                    <Column>Content</Column>
+                                </TableHeader>
+                                <TableBody>
+                                    {(scripts.list || []).map(script => (
+                                        <Row key={script.id}>
+                                            <Cell>{script.name}</Cell>
+                                            <Cell>{script.content}</Cell>
+                                        </Row>
+                                    ))}
+                                </TableBody>
+                            </TableView>
+                        </Flex>
+                    </Item>
+                </TabPanels>
+            </Tabs>
         </Flex>
     );
 };
