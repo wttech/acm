@@ -1,11 +1,15 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     Button,
     ButtonGroup,
     Cell,
     Column,
     Content,
+    Dialog,
+    DialogTrigger,
+    Divider,
     Flex,
+    Heading,
     IllustratedMessage,
     ProgressBar,
     Row,
@@ -29,6 +33,7 @@ type ScriptListProps = {
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
     const [scripts, setScripts] = useState<DataScript | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const loadScripts = useCallback(() => {
         toastRequest<DataScript>({
@@ -53,7 +58,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         }
     };
 
-    const toggleScripts = async () => {
+    const handleConfirm = async () => {
         const action = type === 'enabled' ? 'disable' : 'enable';
         const paths = selectedPaths(selectedKeys);
 
@@ -72,6 +77,8 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             setSelectedKeys(new Set<Key>());
         } catch (error) {
             console.error(`${action} scripts error:`, error);
+        } finally {
+            setIsDialogOpen(false);
         }
     };
 
@@ -80,6 +87,28 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             <NotFound />
             <Content>No scripts found</Content>
         </IllustratedMessage>
+    );
+
+    const renderDialogContent = () => (
+        <>
+            <Heading>{type === 'enabled' ? 'Disable Scripts' : 'Enable Scripts'}</Heading>
+            <Divider />
+            <Content>
+                {type === 'enabled' ? (
+                    <Text>
+                        Disabling scripts will stop their execution. To execute them again, you need to enable them or reinstall the package with scripts.
+                    </Text>
+                ) : (
+                    <Text>
+                        Enabling scripts can cause changes in the repository and potential data loss. Ensure the script is ready to use. It is recommended to provide enabled scripts via a package, not manually.
+                    </Text>
+                )}
+            </Content>
+            <ButtonGroup>
+                <Button variant="secondary" onPress={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button variant="cta" onPress={handleConfirm}>Confirm</Button>
+            </ButtonGroup>
+        </>
     );
 
     if (scripts === null) {
@@ -95,14 +124,17 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             <View>
                 <Flex justifyContent="space-between" alignItems="center">
                     <ButtonGroup>
-                        <Button
-                            variant={type === 'enabled' ? 'negative' : 'accent'}
-                            isDisabled={selectedKeys === 'all' ? false : (selectedKeys as Set<Key>).size === 0}
-                            onPress={toggleScripts}
-                        >
-                            {type === 'enabled' ? <Cancel /> : <PlayCircle />}
-                            <Text>{type === 'enabled' ? 'Disable' : 'Enable'}</Text>
-                        </Button>
+                        <DialogTrigger isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                            <Button
+                                variant={type === 'enabled' ? 'negative' : 'accent'}
+                                isDisabled={selectedKeys === 'all' ? false : (selectedKeys as Set<Key>).size === 0}
+                                onPress={() => setIsDialogOpen(true)}
+                            >
+                                {type === 'enabled' ? <Cancel /> : <PlayCircle />}
+                                <Text>{type === 'enabled' ? 'Disable' : 'Enable'}</Text>
+                            </Button>
+                            <Dialog>{renderDialogContent()}</Dialog>
+                        </DialogTrigger>
                     </ButtonGroup>
                 </Flex>
             </View>
