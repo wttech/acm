@@ -36,3 +36,16 @@ export type Script = {
 export type DataScript = {
     list: Script[];
 }
+
+export type Execution = {
+    executable: Executable;
+    status: string;
+    duration: number;
+    error: string;
+    output: string;
+}
+
+export type Executable = {
+    id: string;
+    content: string;
+}

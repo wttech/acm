@@ -160,13 +160,15 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             >
                 <TableHeader>
                     <Column>Name</Column>
-                    <Column>Content</Column>
+                    <Column>Last Execution</Column>
+                    <Column>Successful Executions</Column>
                 </TableHeader>
                 <TableBody>
                     {(scripts.list || []).map(script => (
                         <Row key={script.id}>
                             <Cell>{script.name}</Cell>
-                            <Cell>{script.content}</Cell>
+                            <Cell>&mdash;</Cell>
+                            <Cell>50% (1/2)</Cell>
                         </Row>
                     ))}
                 </TableBody>
