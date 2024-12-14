@@ -19,9 +19,7 @@ function App() {
             <HashRouter>
                 <Flex direction="column" height="100vh">
                     <View paddingX="size-200" paddingTop="size-200">
-                        <View marginBottom="size-100">
-                            <Header/>
-                        </View>
+                        <Header/>
                     </View>
                     <View flex paddingX="size-200">
                         <Content/>
