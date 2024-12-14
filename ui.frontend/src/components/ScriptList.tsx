@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
     Button,
     ButtonGroup,
@@ -30,7 +30,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
     const [scripts, setScripts] = useState<DataScript | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
 
-    const loadScripts = () => {
+    const loadScripts = useCallback(() => {
         toastRequest<DataScript>({
             method: 'GET',
             url: `/apps/contentor/api/script.json?type=${type}`,
@@ -39,19 +39,28 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         })
             .then(data => setScripts(data.data.data))
             .catch(error => console.error(`Scripts loading (${type}) error:`, error));
-    };
+    }, [type]);
 
     useEffect(() => {
         loadScripts();
-    }, [type]);
+    }, [type, loadScripts]);
 
-    const handleToggleScripts = async () => {
+    const selectedPaths = (selectedKeys: Selection): string[] => {
+        if (selectedKeys === 'all') {
+            return scripts?.list.map(script => script.id) || [];
+        } else {
+            return Array.from(selectedKeys as Set<Key>).map(key => key.toString());
+        }
+    };
+
+    const toggleScripts = async () => {
         const action = type === 'enabled' ? 'disable' : 'enable';
-        const paths = Array.from(selectedKeys as Set<Key>);
+        const paths = selectedPaths(selectedKeys);
+
         const params = new URLSearchParams();
         params.append('action', action);
         params.append('type', type);
-        paths.forEach(path => params.append('path', path.toString()));
+        paths.forEach(path => params.append('path', path));
 
         try {
             await toastRequest({
@@ -88,8 +97,8 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                     <ButtonGroup>
                         <Button
                             variant={type === 'enabled' ? 'negative' : 'accent'}
-                            isDisabled={!selectedKeys || selectedKeys === 'all' || (selectedKeys as Set<Key>).size === 0}
-                            onPress={handleToggleScripts}
+                            isDisabled={selectedKeys === 'all' ? false : (selectedKeys as Set<Key>).size === 0}
+                            onPress={toggleScripts}
                         >
                             {type === 'enabled' ? <Cancel /> : <PlayCircle />}
                             <Text>{type === 'enabled' ? 'Disable' : 'Enable'}</Text>
