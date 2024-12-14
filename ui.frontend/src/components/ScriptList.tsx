@@ -155,7 +155,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                 selectionMode="multiple"
                 selectedKeys={selectedKeys}
                 onSelectionChange={setSelectedKeys}
-                minHeight="size-3600"
+                minHeight="60vh"
                 renderEmptyState={renderEmptyState}
             >
                 <TableHeader>
