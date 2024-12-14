@@ -87,10 +87,10 @@ const ScriptsPage = () => {
 
     return (
         <Flex direction="column" gap="size-400">
-            <Tabs onSelectionChange={(selected) => setShowEnabled(selected === 'enabled')}>
+            <Tabs aria-label='Scripts' onSelectionChange={(selected) => setShowEnabled(selected === 'enabled')}>
                 <TabList>
-                    <Item key="enabled"><CheckmarkCircle /><Text>Enabled</Text></Item>
-                    <Item key="disabled"><CloseCircle /><Text>Disabled</Text></Item>
+                    <Item aria-label="Enabled scripts" key="enabled"><CheckmarkCircle /><Text>Enabled</Text></Item>
+                    <Item aria-label="Disabled scripts" key="disabled"><CloseCircle /><Text>Disabled</Text></Item>
                 </TabList>
                 <TabPanels>
                     <Item key="enabled">
