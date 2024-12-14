@@ -5,13 +5,13 @@ import java.util.List;
 
 public class Assistance implements Serializable {
 
-    private final List<Suggestion> suggestions;
+  private final List<Suggestion> suggestions;
 
-    public Assistance(List<Suggestion> suggestions) {
-        this.suggestions = suggestions;
-    }
+  public Assistance(List<Suggestion> suggestions) {
+    this.suggestions = suggestions;
+  }
 
-    public List<Suggestion> getSuggestions() {
-        return suggestions;
-    }
+  public List<Suggestion> getSuggestions() {
+    return suggestions;
+  }
 }

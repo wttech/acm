@@ -4,15 +4,15 @@ import java.io.Serializable;
 
 public interface Execution extends Serializable {
 
-    Executable getExecutable();
+  Executable getExecutable();
 
-    String getId();
+  String getId();
 
-    ExecutionStatus getStatus();
+  ExecutionStatus getStatus();
 
-    long getDuration();
+  long getDuration();
 
-    String getError();
+  String getError();
 
-    String getOutput();
+  String getOutput();
 }

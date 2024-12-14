@@ -4,12 +4,10 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum ExecutionMode {
-    PARSE,
-    EVALUATE;
+  PARSE,
+  EVALUATE;
 
-    public static Optional<ExecutionMode> of(String text) {
-        return Arrays.stream(values())
-                .filter(m -> m.name().equalsIgnoreCase(text))
-                .findFirst();
-    }
+  public static Optional<ExecutionMode> of(String text) {
+    return Arrays.stream(values()).filter(m -> m.name().equalsIgnoreCase(text)).findFirst();
+  }
 }

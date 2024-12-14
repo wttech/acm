@@ -7,68 +7,68 @@ import org.apache.sling.api.resource.ResourceResolver;
 // TODO implement read/write to JCR repository
 public class HistoricalExecution implements Execution {
 
-    private final Executable executable;
+  private final Executable executable;
 
-    private final String id;
+  private final String id;
 
-    private final ExecutionStatus status;
+  private final ExecutionStatus status;
 
-    private final long duration;
+  private final long duration;
 
-    private final String error;
+  private final String error;
 
-    public HistoricalExecution(Resource resource) {
-        this.executable = null;
-        this.id = null;
-        this.status = null;
-        this.duration = 0L;
-        this.error = null;
-    }
+  public HistoricalExecution(Resource resource) {
+    this.executable = null;
+    this.id = null;
+    this.status = null;
+    this.duration = 0L;
+    this.error = null;
+  }
 
-    public static HistoricalExecution read(Resource resource) {
-        return new HistoricalExecution(resource);
-    }
+  public static HistoricalExecution read(Resource resource) {
+    return new HistoricalExecution(resource);
+  }
 
-    public static void write(ResourceResolver resolver, String path, Execution execution) {
-        // TODO write to repository
-    }
+  public static void write(ResourceResolver resolver, String path, Execution execution) {
+    // TODO write to repository
+  }
 
-    @Override
-    public Executable getExecutable() {
-        return executable;
-    }
+  @Override
+  public Executable getExecutable() {
+    return executable;
+  }
 
-    @Override
-    public String getId() {
-        return id;
-    }
+  @Override
+  public String getId() {
+    return id;
+  }
 
-    @Override
-    public ExecutionStatus getStatus() {
-        return status;
-    }
+  @Override
+  public ExecutionStatus getStatus() {
+    return status;
+  }
 
-    @Override
-    public long getDuration() {
-        return duration;
-    }
+  @Override
+  public long getDuration() {
+    return duration;
+  }
 
-    @Override
-    public String getOutput() {
-        return null; // TODO from resource
-    }
+  @Override
+  public String getOutput() {
+    return null; // TODO from resource
+  }
 
-    @Override
-    public String getError() {
-        return error; // TODO from resource
-    }
+  @Override
+  public String getError() {
+    return error; // TODO from resource
+  }
 
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this)
-                .append("executable", getExecutable())
-                .append("status", getStatus())
-                .append("duration", getDuration())
-                .toString();
-    }
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("executable", getExecutable())
+        .append("status", getStatus())
+        .append("duration", getDuration())
+        .toString();
+  }
 }
