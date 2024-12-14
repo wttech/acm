@@ -25,6 +25,7 @@ import { DataScript } from '../utils/api.types';
 import Cancel from "@spectrum-icons/workflow/Cancel";
 import PlayCircle from "@spectrum-icons/workflow/PlayCircle";
 import NotFound from '@spectrum-icons/illustrations/NotFound';
+import Checkmark from "@spectrum-icons/workflow/Checkmark";
 
 type ScriptListProps = {
     type: 'enabled' | 'disabled';
@@ -91,22 +92,32 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
 
     const renderToggleDialog = () => (
         <>
-            <Heading>Confirmation</Heading>
+            <Heading>
+                <Text>Confirmation</Text>
+            </Heading>
             <Divider />
             <Content>
                 {type === 'enabled' ? (
                     <Text>
-                        Disabling scripts will stop their execution. To execute them again, you need to enable them or reinstall the package with scripts.
+                        Disabling scripts will stop their automatic execution.
+                        To execute them again, you need to enable them or reinstall the package with scripts.
                     </Text>
                 ) : (
                     <Text>
-                        Enabling scripts can cause changes in the repository and potential data loss. Ensure the script is ready to use. It is recommended to provide enabled scripts via a package, not manually.
+                        Enabling scripts can cause changes in the repository and potential data loss.
+                        Ensure the script is ready to use. It is recommended to provide enabled scripts via a package, not manually.
                     </Text>
                 )}
             </Content>
             <ButtonGroup>
-                <Button variant="secondary" onPress={() => setToggleDialogOpen(false)}>Cancel</Button>
-                <Button variant="cta" onPress={handleConfirm}>Confirm</Button>
+                <Button variant="secondary" onPress={() => setToggleDialogOpen(false)}>
+                    <Cancel />
+                    <Text>Cancel</Text>
+                </Button>
+                <Button variant="negative" style="fill" onPress={handleConfirm}>
+                    <Checkmark/>
+                    <Text>Confirm</Text>
+                </Button>
             </ButtonGroup>
         </>
     );
@@ -127,6 +138,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                         <DialogTrigger isOpen={toggleDialogOpen} onOpenChange={setToggleDialogOpen}>
                             <Button
                                 variant={type === 'enabled' ? 'negative' : 'accent'}
+                                style="fill"
                                 isDisabled={selectedKeys === 'all' ? false : (selectedKeys as Set<Key>).size === 0}
                                 onPress={() => setToggleDialogOpen(true)}
                             >
