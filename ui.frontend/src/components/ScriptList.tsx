@@ -33,7 +33,7 @@ type ScriptListProps = {
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
     const [scripts, setScripts] = useState<DataScript | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
 
     const loadScripts = useCallback(() => {
         toastRequest<DataScript>({
@@ -78,7 +78,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         } catch (error) {
             console.error(`${action} scripts error:`, error);
         } finally {
-            setIsDialogOpen(false);
+            setToggleDialogOpen(false);
         }
     };
 
@@ -89,9 +89,9 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         </IllustratedMessage>
     );
 
-    const renderDialogContent = () => (
+    const renderToggleDialog = () => (
         <>
-            <Heading>{type === 'enabled' ? 'Disable Scripts' : 'Enable Scripts'}</Heading>
+            <Heading>Confirmation</Heading>
             <Divider />
             <Content>
                 {type === 'enabled' ? (
@@ -105,7 +105,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                 )}
             </Content>
             <ButtonGroup>
-                <Button variant="secondary" onPress={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button variant="secondary" onPress={() => setToggleDialogOpen(false)}>Cancel</Button>
                 <Button variant="cta" onPress={handleConfirm}>Confirm</Button>
             </ButtonGroup>
         </>
@@ -124,16 +124,16 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             <View>
                 <Flex justifyContent="space-between" alignItems="center">
                     <ButtonGroup>
-                        <DialogTrigger isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger isOpen={toggleDialogOpen} onOpenChange={setToggleDialogOpen}>
                             <Button
                                 variant={type === 'enabled' ? 'negative' : 'accent'}
                                 isDisabled={selectedKeys === 'all' ? false : (selectedKeys as Set<Key>).size === 0}
-                                onPress={() => setIsDialogOpen(true)}
+                                onPress={() => setToggleDialogOpen(true)}
                             >
                                 {type === 'enabled' ? <Cancel /> : <PlayCircle />}
                                 <Text>{type === 'enabled' ? 'Disable' : 'Enable'}</Text>
                             </Button>
-                            <Dialog>{renderDialogContent()}</Dialog>
+                            <Dialog>{renderToggleDialog()}</Dialog>
                         </DialogTrigger>
                     </ButtonGroup>
                 </Flex>
