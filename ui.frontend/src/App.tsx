@@ -14,16 +14,24 @@ import Footer from "./components/Footer";
 
 function App() {
     return (
-        <Provider theme={defaultTheme} colorScheme={"light"} height="100vh">
+        <Provider theme={defaultTheme} colorScheme={"light"}>
             <HashRouter>
-                <View padding="size-200">
+                <View 
+                    height="100vh" 
+                    UNSAFE_style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        boxSizing: 'border-box'
+                    }} 
+                    padding="size-200"
+                >
                     <View marginBottom="size-200">
                         <Header/>
                     </View>
-                    <View marginY="size-200">
+                    <View marginY="size-200" flex={1}>
                         <Content/>
                     </View>
-                    <View marginTop="size-200">
+                    <View>
                         <Footer/>
                     </View>
                 </View>
