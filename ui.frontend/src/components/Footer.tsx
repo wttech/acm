@@ -13,7 +13,7 @@ const Footer = () => {
                         </Link>
                         <View>
                             <Link href="https://www.vml.com/expertise/enterprise-solutions" target="_blank">Enterprise Solutions</Link>
-                            <View marginTop="size-50">&copy; All rights reserved.</View>
+                            <View marginTop="size-50">Copyright {new Date().getFullYear() === 2024 ? '2024' : `2024 - ${new Date().getFullYear()}`} &copy; Licensed under the Apache License, Version 2.0.</View>
                         </View>
                     </Flex>
                     <Link href="https://github.com/wunderman-thompson/wtpl-aem-contentor" target="_blank">
