@@ -4,6 +4,7 @@ import {
     defaultTheme,
     Provider,
     View,
+    Flex
 } from '@adobe/react-spectrum';
 
 import {ToastContainer} from '@react-spectrum/toast'
@@ -16,25 +17,27 @@ function App() {
     return (
         <Provider theme={defaultTheme} colorScheme={"light"}>
             <HashRouter>
-                <View 
-                    height="100vh" 
-                    UNSAFE_style={{ 
-                        display: 'flex', 
-                        flexDirection: 'column',
-                        boxSizing: 'border-box'
-                    }} 
-                    padding="size-200"
-                >
-                    <View marginBottom="size-200">
-                        <Header/>
+                <Flex direction="column" height="100vh">
+                    <View 
+                        flex
+                        UNSAFE_style={{ boxSizing: 'border-box' }}
+                        padding="size-200"
+                    >
+                        <Flex
+                            direction="column"
+                            height="100%"
+                            gap="size-100"
+                        >
+                            <View marginBottom="size-100">
+                                <Header/>
+                            </View>
+                            <View flex>
+                                <Content/>
+                            </View>
+                            <Footer/>
+                        </Flex>
                     </View>
-                    <View marginY="size-200" flex={1}>
-                        <Content/>
-                    </View>
-                    <View>
-                        <Footer/>
-                    </View>
-                </View>
+                </Flex>
             </HashRouter>
             <ToastContainer/>
         </Provider>
