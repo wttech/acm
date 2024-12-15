@@ -4,8 +4,11 @@ public class Condition {
 
     private final ExecutionContext executionContext;
 
+    private final ExecutionHistory executionHistory;
+
     public Condition(ExecutionContext executionContext) {
         this.executionContext = executionContext;
+        this.executionHistory = new ExecutionHistory(executionContext.getResourceResolver());
     }
 
     public boolean always() {
@@ -22,12 +25,12 @@ public class Condition {
 
     // TODO check content and path
     public boolean oncePerExecutable() {
-        return !executionContext.getHistory().contains(executionContext.getExecutable().getId());
+        return !executionHistory.contains(executionContext.getExecutable().getId());
     }
 
     // TODO check path only
     public boolean oncePerExecutableId() {
-        return !executionContext.getHistory().contains(executionContext.getExecutable().getId());
+        return !executionHistory.contains(executionContext.getExecutable().getId());
     }
 
     // TODO check content only

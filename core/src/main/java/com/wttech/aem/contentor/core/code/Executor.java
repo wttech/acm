@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
 @Component(immediate = true, service = Executor.class)
 public class Executor {
@@ -31,9 +32,6 @@ public class Executor {
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
-
-    @Reference
-    private History history;
 
     private BundleContext bundleContext;
 
@@ -44,7 +42,7 @@ public class Executor {
     }
 
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return new ExecutionContext(executable, bundleContext, resourceResolver, history);
+        return new ExecutionContext(executable, bundleContext, resourceResolver);
     }
 
     public Execution execute(Executable executable) throws ContentorException {
@@ -57,6 +55,15 @@ public class Executor {
     }
 
     public Execution execute(Executable executable, ExecutionContext context) throws ContentorException {
+        Execution execution = executeImmediately(executable, context);
+        if (context.isHistory() && context.getMode() == ExecutionMode.EVALUATE) {
+            ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
+            history.save(execution);
+        }
+        return execution;
+    }
+
+    private Execution executeImmediately(Executable executable, ExecutionContext context) {
         String id = ExecutionId.generate();
         String content = composeContent(executable);
         StringBuilder simpleOutput = new StringBuilder();
@@ -65,14 +72,14 @@ public class Executor {
             context.setOutputStream(new WriterOutputStream(new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
         }
         GroovyShell shell = createShell(context);
-        long startTime = System.currentTimeMillis();
+        Date startDate = new Date();
 
         try {
             Script script = shell.parse(content, CodeSyntax.MAIN_CLASS);
             script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
             boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
             if (!runnable) {
-                return new ImmediateExecution(executable, id, ExecutionStatus.SKIPPED, calculateDuration(startTime),
+                return new ImmediateExecution(executable, id, ExecutionStatus.SKIPPED, startDate,
                         simpleOutputActive ? simpleOutput.toString() : null, null);
             }
             switch (context.getMode()) {
@@ -82,11 +89,11 @@ public class Executor {
                     script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
                     break;
             }
-            return new ImmediateExecution(executable, id, ExecutionStatus.SUCCEEDED, calculateDuration(startTime),
+            return new ImmediateExecution(executable, id, ExecutionStatus.SUCCEEDED, startDate,
                     simpleOutputActive ? simpleOutput.toString() : null, null);
         } catch (Throwable e) {
             LOG.debug("Execution of '{}' failed! Content:\n\n{}\n\n", executable.getId(), executable.getContent(), e);
-            return new ImmediateExecution(executable, id, ExecutionStatus.FAILED, calculateDuration(startTime),
+            return new ImmediateExecution(executable, id, ExecutionStatus.FAILED, startDate,
                     simpleOutputActive ? simpleOutput.toString() : null, ExceptionUtils.toString(e));
         }
     }
@@ -100,10 +107,6 @@ public class Executor {
         builder.append("\n");
         builder.append(executable.getContent());
         return builder.toString();
-    }
-
-    private long calculateDuration(long startTime) {
-        return System.currentTimeMillis() - startTime;
     }
 
     private GroovyShell createShell(ExecutionContext context) {

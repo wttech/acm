@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.code;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public interface Execution extends Serializable {
 
@@ -9,6 +10,10 @@ public interface Execution extends Serializable {
     String getId();
 
     ExecutionStatus getStatus();
+
+    Date getStartDate();
+
+    Date getEndDate();
 
     long getDuration();
 

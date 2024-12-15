@@ -3,6 +3,8 @@ package com.wttech.aem.contentor.core.code;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import java.util.Date;
+
 public class ImmediateExecution implements Execution {
 
     private final Executable executable;
@@ -11,17 +13,20 @@ public class ImmediateExecution implements Execution {
 
     private final ExecutionStatus status;
 
-    private final long duration;
+    private final Date startDate;
+
+    private final Date endDate;
 
     private final String output;
 
     private final String error;
 
-    public ImmediateExecution(Executable executable, String id, ExecutionStatus status, long duration, String output, String error) {
+    public ImmediateExecution(Executable executable, String id, ExecutionStatus status, Date startedDate, String output, String error) {
         this.executable = executable;
         this.id = id;
         this.status = status;
-        this.duration = duration;
+        this.startDate = startedDate;
+        this.endDate = new Date();
         this.output = output;
         this.error = error;
     }
@@ -42,8 +47,18 @@ public class ImmediateExecution implements Execution {
     }
 
     @Override
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    @Override
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    @Override
     public long getDuration() {
-        return duration;
+        return endDate.getTime() - startDate.getTime();
     }
 
     @Override

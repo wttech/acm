@@ -1,12 +1,14 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
+import com.wttech.aem.contentor.core.util.DateUtils;
 import com.wttech.aem.contentor.core.util.JsonUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -23,7 +25,8 @@ public class QueuedExecution implements Execution {
         try {
             Map<String, Object> props = new HashMap<>();
             props.put("status", execution.getStatus().name());
-            props.put("duration", String.valueOf(execution.getDuration())); // JSON uses integers (avoid long -> int)
+            props.put("startDate", DateUtils.toString(execution.getStartDate()));
+            props.put("endDate", DateUtils.toString(execution.getEndDate()));
             return JsonUtils.mapToString(props);
         } catch (IOException e) {
             throw new ContentorException("Failed to compose job result message!", e);
@@ -48,10 +51,25 @@ public class QueuedExecution implements Execution {
     }
 
     @Override
+    public Date getStartDate() {
+        return Optional.ofNullable(getJobResultMessageProps().get("startDate"))
+                .map(d -> DateUtils.fromString((String) d))
+                .orElseGet(() -> DateUtils.toDate(job.getCreated()));
+    }
+
+    @Override
+    public Date getEndDate() {
+        return Optional.ofNullable(getJobResultMessageProps().get("endDate"))
+                .map(d -> DateUtils.fromString((String) d))
+                .orElseGet(() -> DateUtils.toDate(job.getFinishedDate()));
+    }
+
+    @Override
     public long getDuration() {
-        return Optional.ofNullable(getJobResultMessageProps().get("duration"))
-                .map(d -> Long.parseLong((String) d))
-                .orElse(0L);
+        if (getStartDate() == null || getEndDate() == null) {
+            return 0L;
+        }
+        return getEndDate().getTime() - getStartDate().getTime();
     }
 
     private Map<String, Object> getJobResultMessageProps() throws ContentorException {

@@ -13,17 +13,16 @@ public class ExecutionContext {
 
     private final ResourceResolver resourceResolver;
 
-    private final History history;
-
     private OutputStream outputStream = null;
 
     private ExecutionMode mode = ExecutionMode.EVALUATE;
 
-    public ExecutionContext(Executable executable, BundleContext bundleContext, ResourceResolver resourceResolver, History history) {
+    private boolean history = true;
+
+    public ExecutionContext(Executable executable, BundleContext bundleContext, ResourceResolver resourceResolver) {
         this.executable = executable;
         this.bundleContext = bundleContext;
         this.resourceResolver = resourceResolver;
-        this.history = history;
     }
 
     public Executable getExecutable() {
@@ -36,10 +35,6 @@ public class ExecutionContext {
 
     public BundleContext getBundleContext() {
         return bundleContext;
-    }
-
-    public History getHistory() {
-        return history;
     }
 
     public OutputStream getOutputStream() {
@@ -56,5 +51,13 @@ public class ExecutionContext {
 
     public void setMode(ExecutionMode mode) {
         this.mode = mode;
+    }
+
+    public boolean isHistory() {
+        return history;
+    }
+
+    public void setHistory(boolean history) {
+        this.history = history;
     }
 }
