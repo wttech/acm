@@ -1,5 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.DateUtils;
 import com.wttech.aem.contentor.core.util.JsonUtils;
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 public class QueuedExecution implements Execution {
 
+    @JsonIgnore
     private final Job job;
 
     public QueuedExecution(Job job) {
@@ -39,6 +41,10 @@ public class QueuedExecution implements Execution {
         } catch (IOException e) {
             throw new ContentorException("Failed to compose job result message!", e);
         }
+    }
+
+    protected Job getJob() {
+        return job;
     }
 
     @Override

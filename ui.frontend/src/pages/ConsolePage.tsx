@@ -34,7 +34,7 @@ import {DataExecution} from "../utils/api.types.ts";
 
 const toastTimeout = 3000;
 const executionPollInterval = 500;
-const executionFinalStatuses = ['SUCCEEDED', 'SKIPPED', 'FAILED', 'STOPPED'];
+const executionFinalStatuses = ['SUCCEEDED', 'ABORTED', 'SKIPPED', 'FAILED', 'STOPPED'];
 
 const ConsolePage = () => {
     const [selectedTab, setSelectedTab] = useState<string>('code');

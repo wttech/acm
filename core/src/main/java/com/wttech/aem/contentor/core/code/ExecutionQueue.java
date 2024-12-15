@@ -124,90 +124,88 @@ public class ExecutionQueue implements JobExecutor {
 
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
-        Executable executable = Code.fromJob(job);
+        QueuedExecution queuedExecution = new QueuedExecution(job);
 
-        LOG.info("Queued execution started for executable '{}'", executable);
+        LOG.info("Execution started '{}'", queuedExecution);
 
         Future<Execution> future = jobAsyncExecutor.submit(() -> {
             try {
-                return executeAsync(executable, job);
+                return executeAsync(queuedExecution);
             } catch (Throwable e) {
-                throw new ContentorException(String.format("Queued execution '%s' failed asynchronously internally '{}'", executable.getId()), e);
+                throw new ContentorException(String.format("Execution failed asynchronously internally '%s'", queuedExecution), e);
             }
         });
 
         while (!future.isDone()) {
             if (context.isStopped() || Thread.currentThread().isInterrupted()) {
                 future.cancel(true);
-                LOG.info("Queued execution is cancelling for executable '{}'", executable);
+                LOG.info("Execution is cancelling '{}'", queuedExecution);
                 break;
             }
             try {
                 Thread.sleep(EXECUTE_POLL_INTERVAL);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.info("Queued execution is interrupted for executable '{}'", executable);
+                LOG.info("Execution is interrupted '{}'", queuedExecution);
                 return context.result().cancelled();
             }
         }
 
         try {
-            Execution execution = future.get();
-            String message = QueuedExecution.jobResultMessage(execution);
+            Execution immediateExecution = future.get();
+            String message = QueuedExecution.jobResultMessage(immediateExecution);
 
-            if (execution.getStatus() == ExecutionStatus.SKIPPED) {
-                LOG.info("Queued execution skipped for executable '{}'", executable);
+            if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
+                LOG.info("Execution skipped '{}'", immediateExecution);
                 return context.result().message(message).cancelled();
             } else {
-                LOG.info("Queued execution succeeded for executable '{}'", executable);
+                LOG.info("Execution succeeded '{}'", immediateExecution);
                 return context.result().message(message).succeeded();
             }
         } catch (CancellationException e) {
-            LOG.info("Queued execution aborted for executable '{}'", executable);
+            LOG.info("Execution aborted '{}'", queuedExecution);
             return context.result().message(QueuedExecution.jobResultMessage(ExecutionStatus.ABORTED)).cancelled();
         } catch (Exception e) {
-            LOG.error("Queued execution failed for executable '{}'", executable, e);
+            LOG.error("Execution failed '{}'", queuedExecution, e);
             return context.result().failed();
         } finally {
             jobAsyncExecutor.submit(() -> {
                 try {
-                    cleanAsync(executable, job);
+                    cleanAsync(queuedExecution);
                 } catch (Throwable e) {
-                    LOG.error("Queued execution clean up failed for executable '{}'", executable, e);
+                    LOG.error("Execution clean up failed '{}'", queuedExecution, e);
                 }
             });
         }
     }
 
-    private Execution executeAsync(Executable executable, Job job) throws ContentorException {
+    private Execution executeAsync(QueuedExecution execution) throws ContentorException {
         try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
-             OutputStream outputStream = Files.newOutputStream(filePath(job.getId(), FileType.OUTPUT))) {
-            ExecutionContext context = executor.createContext(executable, resolver);
+             OutputStream outputStream = Files.newOutputStream(filePath(execution.getJob().getId(), FileType.OUTPUT))) {
+            ExecutionContext context = executor.createContext(execution.getExecutable(), resolver);
             context.setOutputStream(outputStream);
-            return executor.execute(executable, context);
+            return executor.execute(execution.getExecutable(), context);
         } catch (LoginException e) {
-            throw new ContentorException(String.format("Cannot access repository while executing '%s' in job '%s'",
-                    executable.getId(), job.getId()), e);
+            throw new ContentorException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         } catch (IOException e) {
-            throw new ContentorException(String.format("Cannot write to files for executable '%s' in job '%s'",
-                    executable.getId(), job.getId()), e);
+            throw new ContentorException(String.format("Cannot write to files for execution '%s'", execution.getId()), e);
         }
     }
 
-    private void cleanAsync(Executable executable, Job job) {
+    private void cleanAsync(QueuedExecution execution) {
         try {
             Thread.sleep(CLEAN_POLL_DELAY);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            LOG.info("Cleaning up job '{}' was interrupted", job.getId());
+            LOG.info("Execution clean up is interrupted '{}'", execution);
             return;
         }
 
         try {
-            Files.deleteIfExists(filePath(job.getId(), FileType.OUTPUT));
-            Files.deleteIfExists(filePath(job.getId(), FileType.ERROR));
+            Files.deleteIfExists(filePath(execution.getJob().getId(), FileType.OUTPUT));
+            Files.deleteIfExists(filePath(execution.getJob().getId(), FileType.ERROR));
         } catch (IOException e) {
-            LOG.error("Cannot delete files for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
+            LOG.error("Execution clean up failed '{}'", execution, e);
         }
     }
 
