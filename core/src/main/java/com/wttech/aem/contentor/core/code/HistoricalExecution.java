@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.code;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 
@@ -65,7 +66,7 @@ public class HistoricalExecution implements Execution {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("executable", getExecutable())
                 .append("status", getStatus())
                 .append("duration", getDuration())

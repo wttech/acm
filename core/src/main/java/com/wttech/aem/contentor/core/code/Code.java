@@ -2,6 +2,7 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
 
 import java.util.HashMap;
@@ -42,6 +43,8 @@ public class Code implements Executable {
     }
 
     public String toString() {
-        return new ToStringBuilder(this).append("id", id).toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("id", id)
+                .toString();
     }
 }

@@ -5,6 +5,8 @@ import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.code.Executable;
 import com.wttech.aem.contentor.core.util.JcrUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 
@@ -78,5 +80,12 @@ public class Snippet implements Executable, Comparable<Snippet> {
     @Override
     public int compareTo(Snippet o) {
         return this.getName().compareTo(o.getName());
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("path", getPath())
+                .toString();
     }
 }

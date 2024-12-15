@@ -3,6 +3,7 @@ package com.wttech.aem.contentor.core.code;
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.JsonUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
 
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class QueuedExecution implements Execution {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("executable", getExecutable())
                 .append("status", getStatus())
                 .append("duration", getDuration())
