@@ -21,12 +21,20 @@ public class QueuedExecution implements Execution {
         this.job = job;
     }
 
-    static String composeJobResultMessage(Execution execution) throws ContentorException {
+    static String jobResultMessage(Execution execution) throws ContentorException {
+        return jobResultMessage(execution.getStatus(), execution.getStartDate(), execution.getEndDate());
+    }
+
+    static String jobResultMessage(ExecutionStatus status) throws ContentorException {
+        return jobResultMessage(status, null, null);
+    }
+
+    static String jobResultMessage(ExecutionStatus status, Date startDate, Date endDate) throws ContentorException {
         try {
             Map<String, Object> props = new HashMap<>();
-            props.put("status", execution.getStatus().name());
-            props.put("startDate", DateUtils.toString(execution.getStartDate()));
-            props.put("endDate", DateUtils.toString(execution.getEndDate()));
+            props.put("status", status.name());
+            props.put("startDate", DateUtils.toString(startDate));
+            props.put("endDate", DateUtils.toString(endDate));
             return JsonUtils.mapToString(props);
         } catch (IOException e) {
             throw new ContentorException("Failed to compose job result message!", e);

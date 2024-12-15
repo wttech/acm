@@ -11,7 +11,14 @@ public enum ExecutionStatus {
     STOPPED,
     FAILED,
     SKIPPED,
+    ABORTED,
     SUCCEEDED;
+
+    public static Optional<ExecutionStatus> of(String status) {
+        return Arrays.stream(values())
+                .filter(s -> s.name().equalsIgnoreCase(status))
+                .findFirst();
+    }
 
     public static ExecutionStatus of(Job job) {
         switch (job.getJobState()) {
@@ -29,11 +36,5 @@ public enum ExecutionStatus {
             default:
                 return ExecutionStatus.FAILED;
         }
-    }
-
-    public static Optional<ExecutionStatus> of(String status) {
-        return Arrays.stream(values())
-                .filter(s -> s.name().equalsIgnoreCase(status))
-                .findFirst();
     }
 }

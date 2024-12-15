@@ -1,7 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
-import com.wttech.aem.contentor.core.instance.HealthChecker;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -54,9 +53,6 @@ public class ExecutionQueue implements JobExecutor {
 
     @Reference
     private JobManager jobManager;
-
-    @Reference
-    private HealthChecker healthChecker;
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
@@ -129,59 +125,55 @@ public class ExecutionQueue implements JobExecutor {
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
         Executable executable = Code.fromJob(job);
-        if (!healthChecker.isHealthy()) {
-            LOG.warn("Failing execution '{}' - instance is not healthy.", executable);
-            return context.result().failed();
-        }
 
-        LOG.info("Executing asynchronously '{}'", executable);
+        LOG.info("Queued execution started for executable '{}'", executable);
 
         Future<Execution> future = jobAsyncExecutor.submit(() -> {
             try {
                 return executeAsync(executable, job);
             } catch (Throwable e) {
-                throw new ContentorException(String.format("Executing executable '%s' asynchronously failed internally '{}'", executable.getId()), e);
+                throw new ContentorException(String.format("Queued execution '%s' failed asynchronously internally '{}'", executable.getId()), e);
             }
         });
 
         while (!future.isDone()) {
             if (context.isStopped() || Thread.currentThread().isInterrupted()) {
                 future.cancel(true);
-                LOG.info("Job '{}' is cancelling", executable);
+                LOG.info("Queued execution is cancelling for executable '{}'", executable);
                 break;
             }
             try {
                 Thread.sleep(EXECUTE_POLL_INTERVAL);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.info("Job '{}' was interrupted", executable);
+                LOG.info("Queued execution is interrupted for executable '{}'", executable);
                 return context.result().cancelled();
             }
         }
 
         try {
             Execution execution = future.get();
-            String message = QueuedExecution.composeJobResultMessage(execution);
+            String message = QueuedExecution.jobResultMessage(execution);
 
             if (execution.getStatus() == ExecutionStatus.SKIPPED) {
-                LOG.info("Job '{}' is skipped", executable);
+                LOG.info("Queued execution skipped for executable '{}'", executable);
                 return context.result().message(message).cancelled();
             } else {
-                LOG.info("Executed asynchronously '{}'", executable);
+                LOG.info("Queued execution succeeded for executable '{}'", executable);
                 return context.result().message(message).succeeded();
             }
         } catch (CancellationException e) {
-            LOG.info("Job '{}' is cancelled", executable);
-            return context.result().cancelled();
+            LOG.info("Queued execution aborted for executable '{}'", executable);
+            return context.result().message(QueuedExecution.jobResultMessage(ExecutionStatus.ABORTED)).cancelled();
         } catch (Exception e) {
-            LOG.error("Error executing asynchronously '{}'", executable, e);
+            LOG.error("Queued execution failed for executable '{}'", executable, e);
             return context.result().failed();
         } finally {
             jobAsyncExecutor.submit(() -> {
                 try {
                     cleanAsync(executable, job);
                 } catch (Throwable e) {
-                    LOG.error("Cleaning up asynchronously failed '{}'", executable, e);
+                    LOG.error("Queued execution clean up failed for executable '{}'", executable, e);
                 }
             });
         }
