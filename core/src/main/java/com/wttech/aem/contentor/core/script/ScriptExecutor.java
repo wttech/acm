@@ -5,7 +5,9 @@ import com.wttech.aem.contentor.core.code.Executor;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
@@ -23,8 +25,14 @@ public class ScriptExecutor implements Runnable {
     public @interface Config {
 
         @AttributeDefinition(
-                name = "Cron Expression",
-                description = "Determines how often the scripts should be executed",
+                name = "Enabled",
+                description = "Allows to temporarily disable the script executor"
+        )
+        boolean enabled() default true;
+
+        @AttributeDefinition(
+                name = "Scheduler expression",
+                description = "How often the scripts should be executed. Default is every 30 seconds (0/30 * * * * ?). Quartz cron expression format.",
                 defaultValue = "0/30 * * * * ?"
         )
         String scheduler_expression() default "0/30 * * * * ?";
@@ -36,8 +44,21 @@ public class ScriptExecutor implements Runnable {
     @Reference
     private Executor executor;
 
+    private Config config;
+
+    @Activate
+    @Modified
+    protected void activate(Config config) {
+        this.config = config;
+    }
+
     @Override
     public void run() {
+        if (!config.enabled()) {
+            LOG.debug("Script executor is disabled");
+            return;
+        }
+
         try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
 
