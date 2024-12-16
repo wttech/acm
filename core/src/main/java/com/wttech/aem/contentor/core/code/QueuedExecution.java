@@ -24,19 +24,20 @@ public class QueuedExecution implements Execution {
     }
 
     static String jobResultMessage(Execution execution) throws ContentorException {
-        return jobResultMessage(execution.getStatus(), execution.getStartDate(), execution.getEndDate());
+        return jobResultMessage(execution.getStatus(), execution.getStartDate(), execution.getEndDate(), execution.getError());
     }
 
     static String jobResultMessage(ExecutionStatus status) throws ContentorException {
-        return jobResultMessage(status, null, null);
+        return jobResultMessage(status, null, null, null);
     }
 
-    static String jobResultMessage(ExecutionStatus status, Date startDate, Date endDate) throws ContentorException {
+    static String jobResultMessage(ExecutionStatus status, Date startDate, Date endDate, String error) throws ContentorException {
         try {
             Map<String, Object> props = new HashMap<>();
             props.put("status", status.name());
             props.put("startDate", DateUtils.toString(startDate));
             props.put("endDate", DateUtils.toString(endDate));
+            props.put("error", error);
             return JsonUtils.mapToString(props);
         } catch (IOException e) {
             throw new ContentorException("Failed to compose job result message!", e);
@@ -59,21 +60,21 @@ public class QueuedExecution implements Execution {
 
     @Override
     public ExecutionStatus getStatus() {
-        return Optional.ofNullable(getJobResultMessageProps().get("status"))
+        return Optional.ofNullable(getJobResultProps().get("status"))
                 .flatMap(s -> ExecutionStatus.of((String) s))
                 .orElseGet(() -> ExecutionStatus.of(job));
     }
 
     @Override
     public Date getStartDate() {
-        return Optional.ofNullable(getJobResultMessageProps().get("startDate"))
+        return Optional.ofNullable(getJobResultProps().get("startDate"))
                 .map(d -> DateUtils.fromString((String) d))
                 .orElseGet(() -> DateUtils.toDate(job.getProcessingStarted()));
     }
 
     @Override
     public Date getEndDate() {
-        return Optional.ofNullable(getJobResultMessageProps().get("endDate"))
+        return Optional.ofNullable(getJobResultProps().get("endDate"))
                 .map(d -> DateUtils.fromString((String) d))
                 .orElseGet(() -> DateUtils.toDate(job.getFinishedDate()));
     }
@@ -86,7 +87,7 @@ public class QueuedExecution implements Execution {
         return getEndDate().getTime() - getStartDate().getTime();
     }
 
-    private Map<String, Object> getJobResultMessageProps() throws ContentorException {
+    private Map<String, Object> getJobResultProps() throws ContentorException {
         try {
             return JsonUtils.stringToMap(job.getResultMessage());
         } catch (IOException e) {
@@ -96,7 +97,7 @@ public class QueuedExecution implements Execution {
 
     @Override
     public String getError() {
-        return null;
+        return (String) getJobResultProps().get("error");
     }
 
     @Override
