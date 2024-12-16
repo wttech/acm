@@ -1,26 +1,22 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
-import org.apache.jackrabbit.vault.util.JcrConstants;
+import com.wttech.aem.contentor.core.util.ResourceSpliterator;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 public class ExecutionHistory {
 
     public static final String ROOT = "/var/contentor/execution/history";
-
-    public static final String ENTRY_RT = "nt:unstructured";
-
-    public static final String FOLDER_RT = "sling:Folder";
 
     private final ResourceResolver resourceResolver;
 
@@ -35,8 +31,7 @@ public class ExecutionHistory {
     public void save(Execution execution) throws ContentorException {
         Resource parent = getOrCreateRoot();
         Map<String, Object> props = HistoricalExecution.toMap(execution);
-        props.put(JcrConstants.JCR_PRIMARYTYPE, ENTRY_RT);
-        props.entrySet().removeIf(e -> e.getValue() == null);
+
         try {
             resourceResolver.create(parent, execution.getId(), props);
             resourceResolver.commit();
@@ -54,7 +49,7 @@ public class ExecutionHistory {
 
     private Resource getOrCreateRoot() throws ContentorException {
         try {
-            return ResourceUtil.getOrCreateResource(resourceResolver, ROOT, FOLDER_RT, FOLDER_RT, true);
+            return ResourceUtil.getOrCreateResource(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
         } catch (Exception e) {
             throw new ContentorException(String.format("Failed to get or create execution history root '%s'", ROOT), e);
         }
@@ -65,10 +60,13 @@ public class ExecutionHistory {
     }
 
     public Stream<Execution> readAll(Collection<String> ids) {
-        return Stream.empty();
+        return findAll().filter(e -> ids.contains(e.getId()));
     }
 
     public Stream<Execution> findAll() {
-        return Stream.empty();
+        return ResourceSpliterator.stream(getOrCreateRoot())
+                .map(r -> HistoricalExecution.from(r).orElse(null))
+                .filter(Objects::nonNull)
+                .map(Execution.class::cast);
     }
 }

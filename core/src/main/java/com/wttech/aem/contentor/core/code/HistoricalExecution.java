@@ -3,12 +3,18 @@ package com.wttech.aem.contentor.core.code;
 import com.wttech.aem.contentor.core.util.DateUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 import java.util.*;
 
-public class HistoricalExecution implements Execution {
+public class HistoricalExecution implements Execution, Comparable<HistoricalExecution> {
+
+    public static final String PRIMARY_TYPE = "nt:unstructured";
+
+    public static final String RESOURCE_TYPE = "contentor/execution/history/entry";
 
     private final Executable executable;
 
@@ -27,32 +33,51 @@ public class HistoricalExecution implements Execution {
     private final String output;
 
     public HistoricalExecution(Resource resource) {
-        ValueMap valueMap = resource.getValueMap();
+        ValueMap props = resource.getValueMap();
+
         this.executable = new Code(
-                valueMap.get("executableId", String.class),
-                valueMap.get("executableContent", String.class
+                props.get("executableId", String.class),
+                props.get("executableContent", String.class
         ));
-        this.id = valueMap.get("id", String.class);
-        this.status = ExecutionStatus.of(valueMap.get("status", String.class)).orElse(null);
-        this.startDate = DateUtils.toDate(valueMap.get("startDate", Calendar.class));
-        this.endDate = DateUtils.toDate(valueMap.get("endDate", Calendar.class));
-        this.duration = valueMap.get("duration", Long.class);
-        this.error = valueMap.get("error", String.class);
-        this.output = valueMap.get("output", String.class);
+        this.id = props.get("id", String.class);
+        this.status = ExecutionStatus.of(props.get("status", String.class)).orElse(null);
+        this.startDate = DateUtils.toDate(props.get("startDate", Calendar.class));
+        this.endDate = DateUtils.toDate(props.get("endDate", Calendar.class));
+        this.duration = props.get("duration", Long.class);
+        this.error = props.get("error", String.class);
+        this.output = props.get("output", String.class);
     }
 
     protected static Map<String, Object> toMap(Execution execution) {
-        Map<String, Object> valueMap = new HashMap<>();
-        valueMap.put("executableId", execution.getExecutable().getId());
-        valueMap.put("executableContent", execution.getExecutable().getContent());
-        valueMap.put("id", execution.getId());
-        valueMap.put("status", execution.getStatus().name());
-        valueMap.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
-        valueMap.put("endDate", DateUtils.toCalendar(execution.getEndDate()));
-        valueMap.put("duration", execution.getDuration());
-        valueMap.put("error", execution.getError());
-        valueMap.put("output", execution.getOutput());
-        return valueMap;
+        Map<String, Object> props = new HashMap<>();
+
+        props.put("executableId", execution.getExecutable().getId());
+        props.put("executableContent", execution.getExecutable().getContent());
+        props.put("id", execution.getId());
+        props.put("status", execution.getStatus().name());
+        props.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
+        props.put("endDate", DateUtils.toCalendar(execution.getEndDate()));
+        props.put("duration", execution.getDuration());
+        props.put("error", execution.getError());
+        props.put("output", execution.getOutput());
+
+        props.entrySet().removeIf(e -> e.getValue() == null);
+        props.put(JcrConstants.JCR_PRIMARYTYPE, PRIMARY_TYPE);
+        props.put(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESOURCE_TYPE);
+
+        return props;
+    }
+
+    public static boolean check(Resource resource) {
+        return Optional.ofNullable(resource)
+                .filter(r -> r.isResourceType(RESOURCE_TYPE))
+                .isPresent();
+    }
+
+    public static Optional<HistoricalExecution> from(Resource resource) {
+        return Optional.ofNullable(resource)
+                .filter(HistoricalExecution::check)
+                .map(HistoricalExecution::new);
     }
 
     @Override
@@ -102,5 +127,13 @@ public class HistoricalExecution implements Execution {
                 .append("status", getStatus())
                 .append("duration", getDuration())
                 .toString();
+    }
+
+    @Override
+    public int compareTo(HistoricalExecution o) {
+        if (o == null) {
+            return 1;
+        }
+        return getStartDate().compareTo(o.getStartDate());
     }
 }
