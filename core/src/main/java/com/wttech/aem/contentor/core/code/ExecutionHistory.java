@@ -7,8 +7,11 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 public class ExecutionHistory {
@@ -59,5 +62,13 @@ public class ExecutionHistory {
 
     public boolean contains(String id) {
         return getOrCreateRoot().getChild(id) != null;
+    }
+
+    public Stream<Execution> readAll(Collection<String> ids) {
+        return Stream.empty();
+    }
+
+    public Stream<Execution> findAll() {
+        return Stream.empty();
     }
 }
