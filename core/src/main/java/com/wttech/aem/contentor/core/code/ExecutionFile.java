@@ -14,8 +14,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 public enum ExecutionFile {
-    OUTPUT,
-    ERROR;
+    OUTPUT;
 
     public static final String TMP_DIR = "contentor";
 
@@ -24,7 +23,7 @@ public enum ExecutionFile {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        return dir.toPath().resolve(String.format("%s_%s.log", StringUtils.replace(jobId, "/", "-"), type.name().toLowerCase()));
+        return dir.toPath().resolve(String.format("%s_%s.txt", StringUtils.replace(jobId, "/", "-"), type.name().toLowerCase()));
     }
 
     public static Optional<String> read(String jobId, ExecutionFile type) throws ContentorException {
@@ -42,8 +41,9 @@ public enum ExecutionFile {
 
     public static void delete(String jobId) throws ContentorException {
         try {
-            Files.deleteIfExists(path(jobId, OUTPUT));
-            Files.deleteIfExists(path(jobId, ERROR));
+            for (ExecutionFile value : values()) {
+                Files.deleteIfExists(path(jobId, value));
+            }
         } catch (IOException e) {
             throw new ContentorException(String.format("Execution files clean up failed for job '%s'", jobId), e);
         }

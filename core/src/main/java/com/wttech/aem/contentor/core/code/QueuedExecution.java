@@ -96,7 +96,7 @@ public class QueuedExecution implements Execution {
 
     @Override
     public String getError() {
-        return ExecutionFile.read(job.getId(), ExecutionFile.ERROR).orElse(null);
+        return null;
     }
 
     @Override

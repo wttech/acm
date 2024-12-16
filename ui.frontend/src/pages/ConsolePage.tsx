@@ -42,15 +42,12 @@ const ConsolePage = () => {
     const [executing, setExecuting] = useState<boolean>(false);
     const [parsing, setParsing] = useState<boolean>(false);
     const [code, setCode] = useState<string | undefined>(ConsoleCode);
-    const [output, setOutput] = useState<string | undefined>('');
-    const [error, setError] = useState<string | undefined>('');
-    const [jobId, setJobId] = useState<string | undefined>(undefined);
+    const [execution, setExecution] = useState<Execution | null>(null);
     const pollExecutionRef = useRef<number | null>(null);
 
     const onExecute = async () => {
         setExecuting(true);
-        setOutput('');
-        setError('');
+        setExecution(null);
 
         try {
             const response = await apiRequest<Execution>({
@@ -65,14 +62,12 @@ const ConsolePage = () => {
                     }
                 }
             });
-            const executionJob = response.data;
-            const jobId = executionJob.data.id;
-
-            setJobId(jobId);
+            const queuedExecution = response.data.data;
+            setExecution(queuedExecution);
             setSelectedTab('output');
 
             window.setTimeout(() => {
-                pollExecutionRef.current = window.setInterval(() => {pollExecutionState(jobId)}, executionPollInterval);
+                pollExecutionRef.current = window.setInterval(() => {pollExecutionState(queuedExecution.id)}, executionPollInterval);
             }, executionPollDelay);
         } catch (error) {
             console.error('Code execution error:', error);
@@ -88,19 +83,16 @@ const ConsolePage = () => {
                 url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
                 method: 'get'
             });
-            const responseData = response.data;
-            const executionJob = responseData.data;
+            const queuedExecution = response.data.data;
+            setExecution(queuedExecution);
 
-            setOutput(executionJob.output || '');
-            setError(executionJob.error || '');
-
-            if (executionFinalStatuses.includes(executionJob.status)) {
+            if (executionFinalStatuses.includes(queuedExecution.status)) {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
-                if (executionJob.status === 'FAILED') {
+                if (queuedExecution.status === 'FAILED') {
                     ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
                     setSelectedTab('error');
-                } else if (executionJob.status === 'SKIPPED') {
+                } else if (queuedExecution.status === 'SKIPPED') {
                     ToastQueue.neutral('Code execution cannot run!', {timeout: toastTimeout});
                 } else {
                     ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
@@ -108,20 +100,19 @@ const ConsolePage = () => {
                 }
             }
         } catch (error) {
-            // sometimes for a few seconds AEM job manager refuses to read the job after submitting it
             console.warn('Code execution state unknown:', error);
         }
     };
 
     const onAbort = async () => {
-        if (!jobId) {
+        if (!execution?.id) {
             console.warn('Code execution cannot be aborted as it is not running!');
-            return
+            return;
         }
         try {
             await apiRequest({
                 operation: 'Code execution cancelling',
-                url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
+                url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
                 method: 'delete'
             });
             clearInterval(pollExecutionRef.current!);
@@ -131,15 +122,13 @@ const ConsolePage = () => {
             while (!executionFinalStatuses.includes(status)) {
                 const response = await apiRequest<Execution>({
                     operation: 'Code execution state',
-                    url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
+                    url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
                     method: 'get'
                 });
-                const responseData = response.data;
-                const execution = responseData.data;
-                status = execution.status;
+                const queuedExecution = response.data.data;
+                status = queuedExecution.status;
 
-                setOutput(execution.output);
-                setError(execution.error);
+                setExecution(queuedExecution);
                 if (status === 'STOPPED') {
                     setSelectedTab('output');
                     break;
@@ -165,7 +154,7 @@ const ConsolePage = () => {
     const onParse = () => {
         setParsing(true);
         apiRequest<Execution>({
-            operation: 'Script parsing',
+            operation: 'Code parsing',
             url: `/apps/contentor/api/execute-code.json`,
             method: 'post',
             data: {
@@ -176,21 +165,17 @@ const ConsolePage = () => {
                 }
             }
         }).then((response) => {
-            const responseData = response.data;
-            const execution = responseData.data;
+            const queuedExecution = response.data.data;
+            setExecution(queuedExecution);
 
-            setOutput(execution.output);
-            setError(execution.error);
-
-            if (execution.error) {
+            if (queuedExecution.error) {
                 ToastQueue.negative('Code parsing failed!', {timeout: toastTimeout});
                 setSelectedTab('error');
             } else {
                 ToastQueue.positive('Code parsing succeeded!', {timeout: toastTimeout});
             }
         }).catch(() => {
-            setOutput('');
-            setError('');
+            setExecution(null);
             ToastQueue.negative('Code parsing error!', {timeout: toastTimeout});
         }).finally(() => {
             setParsing(false);
@@ -198,8 +183,8 @@ const ConsolePage = () => {
     }
 
     const onCopyOutput = () => {
-        if (output) {
-            navigator.clipboard.writeText(output)
+        if (execution?.output) {
+            navigator.clipboard.writeText(execution.output)
                 .then(() => {
                     ToastQueue.neutral('Output copied to clipboard!', {timeout: toastTimeout});
                 })
@@ -212,8 +197,8 @@ const ConsolePage = () => {
     };
 
     const onCopyError = () => {
-        if (error) {
-            navigator.clipboard.writeText(error)
+        if (execution?.error) {
+            navigator.clipboard.writeText(execution.error)
                 .then(() => {
                     ToastQueue.neutral('Error copied to clipboard!', {timeout: toastTimeout});
                 })
@@ -288,7 +273,7 @@ const ConsolePage = () => {
                             <Flex justifyContent="space-between" alignItems="center">
                                 <ButtonGroup>
                                     <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
-                                    <Button variant="secondary" isDisabled={!output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
+                                    <Button variant="secondary" isDisabled={!execution?.output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
                                 </ButtonGroup>
                                 <ProgressCircle aria-label="Loading…" isIndeterminate={executing} value={0} />
                             </Flex>
@@ -298,7 +283,7 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        value={output}
+                                        value={execution?.output ?? ''}
                                         height="60vh"
                                         options={{readOnly: true}}
                                 />
@@ -308,7 +293,7 @@ const ConsolePage = () => {
                     <Item key="error">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <ButtonGroup>
-                                <Button variant="secondary" isDisabled={!error} onPress={onCopyError}><Copy/><Text>Copy</Text></Button>
+                                <Button variant="secondary" isDisabled={!execution?.error} onPress={onCopyError}><Copy/><Text>Copy</Text></Button>
                             </ButtonGroup>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"
@@ -316,7 +301,7 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        value={error}
+                                        value={execution?.error ?? ''}
                                         height="60vh"
                                         options={{readOnly: true}}
                                 />
