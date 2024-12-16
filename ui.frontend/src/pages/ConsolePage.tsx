@@ -135,10 +135,10 @@ const ConsolePage = () => {
                 }
                 await new Promise(resolve => setTimeout(resolve, executionPollInterval));
             }
-            ToastQueue.neutral('Code execution cancelled successfully!', {timeout: toastTimeout});
+            ToastQueue.info('Code execution aborted successfully!', {timeout: toastTimeout});
         } catch (error) {
-            console.error('Code execution cancelling error:', error);
-            ToastQueue.negative('Code execution cancelling failed!', {timeout: toastTimeout});
+            console.error('Code execution aborting error:', error);
+            ToastQueue.negative('Code execution aborting failed!', {timeout: toastTimeout});
         }
     };
 
@@ -186,7 +186,7 @@ const ConsolePage = () => {
         if (execution?.output) {
             navigator.clipboard.writeText(execution.output)
                 .then(() => {
-                    ToastQueue.neutral('Output copied to clipboard!', {timeout: toastTimeout});
+                    ToastQueue.info('Output copied to clipboard!', {timeout: toastTimeout});
                 })
                 .catch(() => {
                     ToastQueue.negative('Failed to copy output!', {timeout: toastTimeout});
@@ -200,7 +200,7 @@ const ConsolePage = () => {
         if (execution?.error) {
             navigator.clipboard.writeText(execution.error)
                 .then(() => {
-                    ToastQueue.neutral('Error copied to clipboard!', {timeout: toastTimeout});
+                    ToastQueue.info('Error copied to clipboard!', {timeout: toastTimeout});
                 })
                 .catch(() => {
                     ToastQueue.negative('Failed to copy error!', {timeout: toastTimeout});
