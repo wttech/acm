@@ -16,6 +16,7 @@
     "@spectrum-icons/illustrations": "^3.6.17",
     "@spectrum-icons/workflow": "^4.2.16",
     "axios": "^1.7.7",
+    "date-fns": "^4.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.2.1"

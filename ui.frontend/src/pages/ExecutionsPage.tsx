@@ -1,23 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Cell,
-    Column,
-    Flex,
-    Row,
-    TableBody,
-    TableHeader,
-    TableView,
-    Tabs,
-    TabList,
-    TabPanels,
-    Item,
-    Text,
-    IllustratedMessage, Content, ProgressBar
-} from "@adobe/react-spectrum";
+import {Cell, Column, Flex, Row, TableBody, TableHeader, TableView, Tabs, TabList, TabPanels, Item, Text, IllustratedMessage, Content, ProgressBar} from "@adobe/react-spectrum";
 import { ExecutionOutput } from '../utils/api.types';
 import { toastRequest } from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
+import Folder from "@spectrum-icons/workflow/Folder";
 import ExecutionStatus from "../components/ExecutionStatus.tsx";
+import {Strings} from "../utils/strings.ts";
 
 const ExecutionsPage = () => {
     const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
@@ -58,10 +46,13 @@ const ExecutionsPage = () => {
         <Flex direction="column" gap="size-400">
             <Tabs aria-label='Executions'>
                 <TabList>
-                    <Item aria-label="Today" key="today"><Text>Today</Text></Item>
+                    <Item aria-label="All" key="all">
+                        <Folder/>
+                        <Text>All</Text>
+                    </Item>
                 </TabList>
                 <TabPanels>
-                    <Item key="today">
+                    <Item key="all">
                         <TableView
                             aria-label="Executions table"
                             selectionMode="none"
@@ -70,7 +61,6 @@ const ExecutionsPage = () => {
                             <TableHeader>
                                 <Column>Executable ID</Column>
                                 <Column>Started At</Column>
-                                <Column>Ended At</Column>
                                 <Column>Duration</Column>
                                 <Column>Status</Column>
                             </TableHeader>
@@ -78,9 +68,8 @@ const ExecutionsPage = () => {
                                 {(executions?.list || []).map(execution => (
                                     <Row key={execution.id}>
                                         <Cell>{execution.executable.id}</Cell>
-                                        <Cell>{execution.startDate}</Cell>
-                                        <Cell>{execution.endDate}</Cell>
-                                        <Cell>{execution.duration}</Cell>
+                                        <Cell>{Strings.dateRelative(execution.startDate)}</Cell>
+                                        <Cell>{Strings.duration(execution.duration)}</Cell>
                                         <Cell><ExecutionStatus value={execution.status}/></Cell>
                                     </Row>
                                 ))}
