@@ -14,7 +14,15 @@ export type Execution = {
     error: string;
 }
 
-export type ExecutionStatus = 'QUEUED' | 'ACTIVE' | 'STOPPED' | 'FAILED' | 'SKIPPED' | 'ABORTED' | 'SUCCEEDED';
+export enum ExecutionStatus {
+    QUEUED = 'QUEUED',
+    ACTIVE = 'ACTIVE',
+    STOPPED = 'STOPPED',
+    FAILED = 'FAILED',
+    SKIPPED = 'SKIPPED',
+    ABORTED = 'ABORTED',
+    SUCCEEDED = 'SUCCEEDED',
+}
 
 export type ExecutionOutput = {
     list: Execution[];

@@ -17,6 +17,7 @@ import {
 import { ExecutionOutput } from '../utils/api.types';
 import { toastRequest } from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
+import ExecutionStatus from "../components/ExecutionStatus.tsx";
 
 const ExecutionsPage = () => {
     const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
@@ -72,7 +73,7 @@ const ExecutionsPage = () => {
                                         <Cell>{execution.startDate}</Cell>
                                         <Cell>{execution.endDate}</Cell>
                                         <Cell>{execution.duration}</Cell>
-                                        <Cell>{execution.status}</Cell>
+                                        <Cell><ExecutionStatus value={execution.status}/></Cell>
                                     </Row>
                                 ))}
                             </TableBody>
