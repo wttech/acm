@@ -1,19 +1,19 @@
 import {
     Button,
     ButtonGroup,
-    Flex,
-    View,
-    Text,
-    Tabs,
-    TabList,
-    Item,
-    TabPanels,
-    Heading,
     Content,
-    Keyboard,
+    Dialog,
     DialogTrigger,
-    Dialog, Divider,
-    ProgressBar, Meter
+    Divider,
+    Flex,
+    Heading,
+    Item,
+    Keyboard,
+    TabList,
+    TabPanels,
+    Tabs,
+    Text,
+    View,
 } from "@adobe/react-spectrum";
 import Editor from "@monaco-editor/react";
 import ConsoleCode from "./ConsoleCode.groovy";
@@ -28,15 +28,14 @@ import Help from "@spectrum-icons/workflow/Help";
 
 import {ToastQueue} from '@react-spectrum/toast'
 import {apiRequest} from "../utils/api.ts";
-import React, {useState, useEffect, useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
-import {Execution} from "../utils/api.types.ts";
-import {Strings} from "../utils/strings.ts";
+import {Execution, ExecutionStatus, isExecutionPending} from "../utils/api.types.ts";
+import ExecutionProgressBar from "../components/ExecutionProgressBar";
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
 const executionPollInterval = 500;
-const executionFinalStatuses = ['SUCCEEDED', 'ABORTED', 'SKIPPED', 'FAILED', 'STOPPED'];
 
 const ConsolePage = () => {
     const [selectedTab, setSelectedTab] = useState<string>('code');
@@ -87,13 +86,13 @@ const ConsolePage = () => {
             const queuedExecution = response.data.data;
             setExecution(queuedExecution);
 
-            if (executionFinalStatuses.includes(queuedExecution.status)) {
+            if (!isExecutionPending(queuedExecution.status)) {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
-                if (queuedExecution.status === 'FAILED') {
+                if (queuedExecution.status === ExecutionStatus.FAILED) {
                     ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
                     setSelectedTab('error');
-                } else if (queuedExecution.status === 'SKIPPED') {
+                } else if (queuedExecution.status === ExecutionStatus.SKIPPED) {
                     ToastQueue.neutral('Code execution cannot run!', {timeout: toastTimeout});
                 } else {
                     ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
@@ -119,8 +118,8 @@ const ConsolePage = () => {
             clearInterval(pollExecutionRef.current!);
             setExecuting(false);
 
-            let status = 'UNKNOWN';
-            while (!executionFinalStatuses.includes(status)) {
+            let status: ExecutionStatus | null = null
+            while (isExecutionPending(status)) {
                 const response = await apiRequest<Execution>({
                     operation: 'Code execution state',
                     url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
@@ -130,7 +129,7 @@ const ConsolePage = () => {
                 status = queuedExecution.status;
 
                 setExecution(queuedExecution);
-                if (status === 'STOPPED') {
+                if (status === ExecutionStatus.STOPPED) {
                     setSelectedTab('output');
                     break;
                 }
@@ -211,21 +210,6 @@ const ConsolePage = () => {
         }
     };
 
-    const executionVariant = ():  "positive" | "informative" | "warning" | "critical" | undefined => {
-        switch (execution?.status) {
-            case 'SUCCEEDED':
-                return 'positive';
-            case 'ABORTED':
-                return 'informative';
-            case 'SKIPPED':
-                return 'warning';
-            case 'FAILED':
-                return 'critical';
-            default:
-                return undefined;
-        }
-    };
-
     return (
         <Flex direction="column" gap="size-200">
             <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as string)}>
@@ -294,15 +278,7 @@ const ConsolePage = () => {
                                     </ButtonGroup>
                                 </Flex>
                                 <Flex flex={1} justifyContent="center" alignItems="center">
-                                    { execution ? (
-                                        executing || !executionFinalStatuses.includes(execution.status) ? (
-                                            <ProgressBar aria-label="Executing" showValueLabel={false} label="Executing…" isIndeterminate />
-                                        ) : (
-                                            <Meter aria-label="Executed" variant={executionVariant()} showValueLabel={false} value={100} label={`${Strings.capitalize(execution.status)} after ${execution.duration} ms`}/>
-                                        )
-                                    ) : (
-                                        <Meter aria-label="Not executing" label="Not executing" showValueLabel={false} value={0} />
-                                    )}
+                                    <ExecutionProgressBar execution={execution} active={executing}/>
                                 </Flex>
                                 <Flex flex={1} justifyContent="end" alignItems="center">
                                     <DialogTrigger>

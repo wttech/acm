@@ -24,6 +24,10 @@ export enum ExecutionStatus {
     SUCCEEDED = 'SUCCEEDED',
 }
 
+export function isExecutionPending(status: ExecutionStatus | null) {
+    return status === ExecutionStatus.QUEUED || status === ExecutionStatus.ACTIVE;
+}
+
 export type ExecutionOutput = {
     list: Execution[];
 }
