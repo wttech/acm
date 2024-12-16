@@ -5,19 +5,19 @@ import java.util.Date;
 
 public interface Execution extends Serializable {
 
-    Executable getExecutable();
+  Executable getExecutable();
 
-    String getId();
+  String getId();
 
-    ExecutionStatus getStatus();
+  ExecutionStatus getStatus();
 
-    Date getStartDate();
+  Date getStartDate();
 
-    Date getEndDate();
+  Date getEndDate();
 
-    long getDuration();
+  long getDuration();
 
-    String getError();
+  String getError();
 
-    String getOutput();
+  String getOutput();
 }

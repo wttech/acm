@@ -15,65 +15,69 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(immediate = true, service = {Runnable.class})
+@Component(
+    immediate = true,
+    service = {Runnable.class})
 @Designate(ocd = ScriptExecutor.Config.class)
 public class ScriptExecutor implements Runnable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptExecutor.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ScriptExecutor.class);
 
-    @ObjectClassDefinition(name = "AEM Contentor - Script Executor")
-    public @interface Config {
+  @ObjectClassDefinition(name = "AEM Contentor - Script Executor")
+  public @interface Config {
 
-        @AttributeDefinition(
-                name = "Enabled",
-                description = "Allows to temporarily disable the script executor"
-        )
-        boolean enabled() default true;
+    @AttributeDefinition(
+        name = "Enabled",
+        description = "Allows to temporarily disable the script executor")
+    boolean enabled() default true;
 
-        @AttributeDefinition(
-                name = "Scheduler expression",
-                description = "How often the scripts should be executed. Default is every 30 seconds (0/30 * * * * ?). Quartz cron expression format.",
-                defaultValue = "0/30 * * * * ?"
-        )
-        String scheduler_expression() default "0/30 * * * * ?";
+    @AttributeDefinition(
+        name = "Scheduler expression",
+        description =
+            "How often the scripts should be executed. Default is every 30 seconds (0/30 * * * * ?). Quartz cron expression format.",
+        defaultValue = "0/30 * * * * ?")
+    String scheduler_expression() default "0/30 * * * * ?";
+  }
+
+  @Reference private ResourceResolverFactory resourceResolverFactory;
+
+  @Reference private Executor executor;
+
+  private Config config;
+
+  @Activate
+  @Modified
+  protected void activate(Config config) {
+    this.config = config;
+  }
+
+  @Override
+  public void run() {
+    if (!config.enabled()) {
+      LOG.debug("Script executor is disabled");
+      return;
     }
 
-    @Reference
-    private ResourceResolverFactory resourceResolverFactory;
+    try (ResourceResolver resourceResolver =
+        ResourceUtils.serviceResolver(resourceResolverFactory)) {
+      ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
 
-    @Reference
-    private Executor executor;
-
-    private Config config;
-
-    @Activate
-    @Modified
-    protected void activate(Config config) {
-        this.config = config;
-    }
-
-    @Override
-    public void run() {
-        if (!config.enabled()) {
-            LOG.debug("Script executor is disabled");
-            return;
-        }
-
-        try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
-            ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-
-            LOG.info("Executing scripts");
-            scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
+      LOG.info("Executing scripts");
+      scriptRepository
+          .findAll(ScriptType.ENABLED)
+          .forEach(
+              script -> {
                 try {
-                    Execution execution = executor.execute(script);
-                    LOG.info("Execution of script '{}' ended with result '{}'", script.getId(), execution);
+                  Execution execution = executor.execute(script);
+                  LOG.info(
+                      "Execution of script '{}' ended with result '{}'", script.getId(), execution);
                 } catch (Exception e) {
-                    LOG.error("Failed to execute script '{}'", script.getId(), e);
+                  LOG.error("Failed to execute script '{}'", script.getId(), e);
                 }
-            });
-            LOG.info("Executed scripts");
-        } catch (Exception e) {
-            LOG.error("Failed to execute scripts", e);
-        }
+              });
+      LOG.info("Executed scripts");
+    } catch (Exception e) {
+      LOG.error("Failed to execute scripts", e);
     }
+  }
 }
