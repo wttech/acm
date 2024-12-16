@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.Servlet;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,6 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
 
     private static final String ID_PARAM = "path";
 
-
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
@@ -47,6 +47,9 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
             } else {
                 executions = executionHistory.findAll().sorted().collect(Collectors.toList());
             }
+
+            Collections.reverse(executions); // TODO do it in the query
+
             ExecutionOutput output = new ExecutionOutput(executions);
             respondJson(response, ok("Executions listed successfully", output));
         } catch (Exception e) {

@@ -16,7 +16,8 @@ public final class JsonUtils {
     public static final String APPLICATION_JSON_UTF8 = "application/json; charset=utf-8";
 
     public static final ObjectMapper MAPPER = new ObjectMapper()
-            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     public static final ObjectWriter COMPACT_WRITER = MAPPER.writer();
 

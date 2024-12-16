@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {Flex, View, Heading, Content, Text, ProgressBar} from '@adobe/react-spectrum';
 import { toastRequest } from '../utils/api'; // Adjust the import path as necessary
-import { DataSnippet } from '../utils/api.types'; // Adjust the import path as necessary
+import { SnippetOutput } from '../utils/api.types'; // Adjust the import path as necessary
 
 const SnippetsPage = () => {
-    const [snippets, setSnippets] = useState<DataSnippet | null>(null);
+    const [snippets, setSnippets] = useState<SnippetOutput | null>(null);
 
     useEffect(() => {
-        toastRequest<DataSnippet>({
+        toastRequest<SnippetOutput>({
             method: 'GET',
             url: `/apps/contentor/api/snippet.json`,
             operation: 'Snippets loading',
