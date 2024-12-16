@@ -13,7 +13,7 @@ import {
     Keyboard,
     DialogTrigger,
     Dialog, Divider,
-    ProgressCircle
+    ProgressBar
 } from "@adobe/react-spectrum";
 import Editor from "@monaco-editor/react";
 import ConsoleCode from "./ConsoleCode.groovy";
@@ -275,7 +275,16 @@ const ConsolePage = () => {
                                     <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
                                     <Button variant="secondary" isDisabled={!execution?.output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
                                 </ButtonGroup>
-                                <ProgressCircle aria-label="Loading…" isIndeterminate={executing} value={0} />
+                                { execution ? (
+                                    executing ? (
+                                        <ProgressBar aria-label="Executing" showValueLabel={false} label="Executing" isIndeterminate />
+                                    ) : (
+                                        <ProgressBar aria-label="Executed" showValueLabel={false} value={100} label={`Executed in ${execution.duration}ms`}  isIndeterminate={executing} />
+                                    )
+                                ) : (
+                                    <ProgressBar aria-label="Not executing" label="Not executing" showValueLabel={false} value={0}/>
+                                )}
+
                             </Flex>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"
