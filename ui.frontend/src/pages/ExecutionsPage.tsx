@@ -12,7 +12,7 @@ import {
     TabPanels,
     Item,
     Text,
-    IllustratedMessage, Content
+    IllustratedMessage, Content, ProgressBar
 } from "@adobe/react-spectrum";
 import { ExecutionOutput } from '../utils/api.types';
 import { toastRequest } from '../utils/api';
@@ -45,6 +45,14 @@ const ExecutionsPage = () => {
             <Content>No scripts found</Content>
         </IllustratedMessage>
     );
+
+    if (executions === null) {
+        return (
+            <Flex justifyContent="center" alignItems="center" height="100vh">
+                <ProgressBar label="Loading..." isIndeterminate />
+            </Flex>
+        )
+    }
 
     return (
         <Flex direction="column" gap="size-400">

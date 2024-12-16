@@ -49,6 +49,9 @@ const ConsolePage = () => {
 
     const onExecute = async () => {
         setExecuting(true);
+        setOutput('');
+        setError('');
+
         try {
             const response = await apiRequest<Execution>({
                 operation: 'Code execution',
@@ -66,6 +69,7 @@ const ConsolePage = () => {
             const jobId = executionJob.data.id;
 
             setJobId(jobId);
+            setSelectedTab('output');
 
             window.setTimeout(() => {
                 pollExecutionRef.current = window.setInterval(() => {pollExecutionState(jobId)}, executionPollInterval);
@@ -90,10 +94,6 @@ const ConsolePage = () => {
             setOutput(executionJob.output || '');
             setError(executionJob.error || '');
 
-            if (executionJob.status === 'ACTIVE') {
-                setSelectedTab('output');
-            }
-
             if (executionFinalStatuses.includes(executionJob.status)) {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
@@ -104,6 +104,7 @@ const ConsolePage = () => {
                     ToastQueue.neutral('Code execution cannot run!', {timeout: toastTimeout});
                 } else {
                     ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
+                    setSelectedTab('output');
                 }
             }
         } catch (error) {
