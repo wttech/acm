@@ -1,20 +1,4 @@
-import {
-    Button,
-    ButtonGroup,
-    Content,
-    Dialog,
-    DialogTrigger,
-    Divider,
-    Flex,
-    Heading,
-    Item,
-    Keyboard,
-    TabList,
-    TabPanels,
-    Tabs,
-    Text,
-    View,
-} from "@adobe/react-spectrum";
+import {Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, TabList, TabPanels, Tabs, Text, View} from "@adobe/react-spectrum";
 import Editor from "@monaco-editor/react";
 import ConsoleCode from "./ConsoleCode.groovy";
 import Spellcheck from "@spectrum-icons/workflow/Spellcheck";
@@ -111,31 +95,30 @@ const ConsolePage = () => {
         }
         try {
             await apiRequest({
-                operation: 'Code execution cancelling',
+                operation: 'Code execution aborting',
                 url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
                 method: 'delete'
             });
             clearInterval(pollExecutionRef.current!);
             setExecuting(false);
 
-            let status: ExecutionStatus | null = null
-            while (isExecutionPending(status)) {
+            let queuedExecution: Execution | null = null;
+            while (queuedExecution === null || isExecutionPending(queuedExecution.status)) {
                 const response = await apiRequest<Execution>({
                     operation: 'Code execution state',
                     url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
                     method: 'get'
                 });
-                const queuedExecution = response.data.data;
-                status = queuedExecution.status;
-
+                queuedExecution = response.data.data;
                 setExecution(queuedExecution);
-                if (status === ExecutionStatus.STOPPED) {
-                    setSelectedTab('output');
-                    break;
-                }
                 await new Promise(resolve => setTimeout(resolve, executionPollInterval));
             }
-            ToastQueue.info('Code execution aborted successfully!', {timeout: toastTimeout});
+            if (queuedExecution.status === ExecutionStatus.ABORTED) {
+                ToastQueue.info('Code execution aborted successfully!', {timeout: toastTimeout});
+            } else {
+                console.warn('Code execution aborting failed!');
+                ToastQueue.negative('Code execution aborting failed!', {timeout: toastTimeout});
+            }
         } catch (error) {
             console.error('Code execution aborting error:', error);
             ToastQueue.negative('Code execution aborting failed!', {timeout: toastTimeout});

@@ -20,7 +20,7 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
             case 'FAILED':
                 return 'critical';
             default:
-                return undefined;
+                return 'informative';
         }
     };
 

@@ -61,7 +61,7 @@ const ExecutionsPage = () => {
                         >
                             <TableHeader>
                                 <Column>Executable</Column>
-                                <Column>Started At</Column>
+                                <Column>Started</Column>
                                 <Column>Duration</Column>
                                 <Column>Status</Column>
                             </TableHeader>
