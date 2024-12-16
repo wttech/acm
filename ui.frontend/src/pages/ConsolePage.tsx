@@ -271,8 +271,8 @@ const ConsolePage = () => {
                     </Item>
                     <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100">
-                            <Flex justifyContent="space-between" alignItems="center">
-                                <Flex alignItems="center">
+                            <Flex direction="row" justifyContent="space-between" alignItems="center">
+                                <Flex flex={1} alignItems="center">
                                     <ButtonGroup>
                                         <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
                                         <Button variant="secondary" isDisabled={!execution?.output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
@@ -283,13 +283,13 @@ const ConsolePage = () => {
                                         executing || !executionFinalStatuses.includes(execution.status) ? (
                                             <ProgressBar aria-label="Executing" showValueLabel={false} label="Executing…" isIndeterminate />
                                         ) : (
-                                            <ProgressBar aria-label="Executed" showValueLabel={false} value={100} label={`${Strings.capitalize(execution.status)} after ${execution.duration} ms`}  isIndeterminate={executing} />
+                                            <ProgressBar aria-label="Executed" showValueLabel={false} value={100} label={`${Strings.capitalize(execution.status)} after ${execution.duration} ms`} isIndeterminate={executing} />
                                         )
                                     ) : (
-                                        <ProgressBar aria-label="Not executing" label="Not executing" showValueLabel={false} value={0}/>
+                                        <ProgressBar aria-label="Not executing" label="Not executing" showValueLabel={false} value={0} />
                                     )}
                                 </Flex>
-                                <Flex alignItems="center">
+                                <Flex flex={1} justifyContent="end" alignItems="center">
                                     <DialogTrigger>
                                         <Button variant="secondary" style="fill"><Help/><Text>Help</Text></Button>
                                         {(close) => (
