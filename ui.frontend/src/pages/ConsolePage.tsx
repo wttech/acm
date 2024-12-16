@@ -33,6 +33,7 @@ import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
 import {Execution} from "../utils/api.types.ts";
 
 const toastTimeout = 3000;
+const executionPollDelay = 500;
 const executionPollInterval = 500;
 const executionFinalStatuses = ['SUCCEEDED', 'ABORTED', 'SKIPPED', 'FAILED', 'STOPPED'];
 
@@ -63,8 +64,12 @@ const ConsolePage = () => {
             });
             const executionJob = response.data;
             const jobId = executionJob.data.id;
+
             setJobId(jobId);
-            pollExecutionRef.current = window.setInterval(() => pollExecutionState(jobId), executionPollInterval);
+
+            window.setTimeout(() => {
+                pollExecutionRef.current = window.setInterval(() => {pollExecutionState(jobId)}, executionPollInterval);
+            }, executionPollDelay);
         } catch (error) {
             console.error('Code execution error:', error);
             setExecuting(false);
@@ -82,8 +87,8 @@ const ConsolePage = () => {
             const responseData = response.data;
             const executionJob = responseData.data;
 
-            setOutput(executionJob.output);
-            setError(executionJob.error);
+            setOutput(executionJob.output || '');
+            setError(executionJob.error || '');
 
             if (executionJob.status === 'ACTIVE') {
                 setSelectedTab('output');
@@ -102,10 +107,8 @@ const ConsolePage = () => {
                 }
             }
         } catch (error) {
-            console.warn('Code execution state error:', error);
-            //clearInterval(pollExecutionRef.current!);
-            //setExecuting(false);
-            ToastQueue.neutral('Code execution state unknown!', {timeout: toastTimeout});
+            // sometimes for a few seconds AEM job manager refuses to read the job after submitting it
+            console.warn('Code execution state unknown:', error);
         }
     };
 
