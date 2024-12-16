@@ -51,7 +51,7 @@ public class ExecutionHistory {
 
     private Resource getOrCreateRoot() throws ContentorException {
         try {
-            return ResourceUtil.getOrCreateResource(resourceResolver, ROOT, ENTRY_RT, FOLDER_RT, true);
+            return ResourceUtil.getOrCreateResource(resourceResolver, ROOT, FOLDER_RT, FOLDER_RT, true);
         } catch (Exception e) {
             throw new ContentorException(String.format("Failed to get or create execution history root '%s'", ROOT), e);
         }

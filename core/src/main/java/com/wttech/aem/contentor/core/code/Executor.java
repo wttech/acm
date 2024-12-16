@@ -19,16 +19,12 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component(immediate = true, service = Executor.class)
 public class Executor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
@@ -63,14 +59,16 @@ public class Executor {
         return execution;
     }
 
-    private Execution executeImmediately(Executable executable, ExecutionContext context) {
+    private ImmediateExecution executeImmediately(Executable executable, ExecutionContext context) {
         String id = ExecutionId.generate();
         String content = composeContent(executable);
+
         StringBuilder simpleOutput = new StringBuilder();
         boolean simpleOutputActive = context.getOutputStream() == null;
         if (simpleOutputActive) {
             context.setOutputStream(new WriterOutputStream(new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
         }
+
         GroovyShell shell = createShell(context);
         Date startDate = new Date();
 
@@ -92,7 +90,10 @@ public class Executor {
             return new ImmediateExecution(executable, id, ExecutionStatus.SUCCEEDED, startDate,
                     simpleOutputActive ? simpleOutput.toString() : null, null);
         } catch (Throwable e) {
-            LOG.debug("Execution of '{}' failed! Content:\n\n{}\n\n", executable.getId(), executable.getContent(), e);
+            if (e.getCause() != null && e.getCause() instanceof InterruptedException) {
+                return new ImmediateExecution(executable, id, ExecutionStatus.ABORTED, startDate,
+                        simpleOutputActive ? simpleOutput.toString() : null, ExceptionUtils.toString(e));
+            }
             return new ImmediateExecution(executable, id, ExecutionStatus.FAILED, startDate,
                     simpleOutputActive ? simpleOutput.toString() : null, ExceptionUtils.toString(e));
         }

@@ -2,9 +2,6 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -13,20 +10,15 @@ import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.event.jobs.consumer.JobExecutionContext;
 import org.apache.sling.event.jobs.consumer.JobExecutionResult;
 import org.apache.sling.event.jobs.consumer.JobExecutor;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.*;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
@@ -41,15 +33,17 @@ public class ExecutionQueue implements JobExecutor {
 
     public static final String TOPIC = "com/wttech/aem/contentor/ExecutionQueue";
 
-    public static final String TMP_DIR = "contentor";
-
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
 
-    // TODO make this configurable
-    private static final long EXECUTE_POLL_INTERVAL = 1000;
+    @ObjectClassDefinition(name = "AEM Contentor - Execution Queue")
+    public @interface Config {
 
-    // TODO make this configurable
-    private static final long CLEAN_POLL_DELAY = 3000;
+        @AttributeDefinition(name = "Async Poll Interval")
+        long asyncPollInterval() default 500L;
+
+        @AttributeDefinition(name = "Clean Poll Delay")
+        long cleanPollDelay() default 3000L;
+    }
 
     @Reference
     private JobManager jobManager;
@@ -62,28 +56,20 @@ public class ExecutionQueue implements JobExecutor {
 
     private ExecutorService jobAsyncExecutor;
 
-    static Optional<String> readFile(String jobId, FileType fileType) throws ContentorException {
-        Path path = filePath(jobId, fileType);
-        if (!path.toFile().exists()) {
-            return Optional.empty();
-        }
+    private Config config;
 
-        try (InputStream input = Files.newInputStream(path)) {
-            return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new ContentorException(String.format("Cannot read output file for job '%s'", jobId), e);
-        }
+    @Activate
+    @Modified
+    protected void activate(Config config) {
+        this.config = config;
+        this.jobAsyncExecutor = Executors.newSingleThreadExecutor();
     }
 
-    static Path filePath(String jobId, FileType kind) {
-        File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
-        if (!dir.exists()) {
-            dir.mkdirs();
+    @Deactivate
+    protected void deactivate() {
+        if (jobAsyncExecutor != null) {
+            jobAsyncExecutor.shutdown();
         }
-        return dir.toPath()
-                .resolve(String.format(
-                        "%s_%s.log",
-                        StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
     }
 
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
@@ -110,18 +96,6 @@ public class ExecutionQueue implements JobExecutor {
         jobManager.stopJobById(jobId);
     }
 
-    @Activate
-    protected void activate() {
-        jobAsyncExecutor = Executors.newSingleThreadExecutor();
-    }
-
-    @Deactivate
-    protected void deactivate() {
-        if (jobAsyncExecutor != null) {
-            jobAsyncExecutor.shutdown();
-        }
-    }
-
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
         QueuedExecution queuedExecution = new QueuedExecution(job);
@@ -132,7 +106,7 @@ public class ExecutionQueue implements JobExecutor {
             try {
                 return executeAsync(queuedExecution);
             } catch (Throwable e) {
-                throw new ContentorException(String.format("Execution failed asynchronously internally '%s'", queuedExecution), e);
+                throw new ContentorException(String.format("Execution failed asynchronously '%s'", queuedExecution), e);
             }
         });
 
@@ -143,7 +117,7 @@ public class ExecutionQueue implements JobExecutor {
                 break;
             }
             try {
-                Thread.sleep(EXECUTE_POLL_INTERVAL);
+                Thread.sleep(config.asyncPollInterval());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 LOG.info("Execution is interrupted '{}'", queuedExecution);
@@ -181,7 +155,7 @@ public class ExecutionQueue implements JobExecutor {
 
     private Execution executeAsync(QueuedExecution execution) throws ContentorException {
         try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
-             OutputStream outputStream = Files.newOutputStream(filePath(execution.getJob().getId(), FileType.OUTPUT))) {
+             OutputStream outputStream = Files.newOutputStream(ExecutionFile.path(execution.getJob().getId(), ExecutionFile.OUTPUT))) {
             ExecutionContext context = executor.createContext(execution.getExecutable(), resolver);
             context.setOutputStream(outputStream);
             return executor.execute(execution.getExecutable(), context);
@@ -194,23 +168,17 @@ public class ExecutionQueue implements JobExecutor {
 
     private void cleanAsync(QueuedExecution execution) {
         try {
-            Thread.sleep(CLEAN_POLL_DELAY);
+            Thread.sleep(config.cleanPollDelay());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             LOG.info("Execution clean up is interrupted '{}'", execution);
             return;
         }
-
         try {
-            Files.deleteIfExists(filePath(execution.getJob().getId(), FileType.OUTPUT));
-            Files.deleteIfExists(filePath(execution.getJob().getId(), FileType.ERROR));
-        } catch (IOException e) {
+            ExecutionFile.delete(execution.getJob().getId());
+            LOG.info("Execution clean up succeeded '{}'", execution);
+        } catch (ContentorException e) {
             LOG.error("Execution clean up failed '{}'", execution, e);
         }
-    }
-
-    public enum FileType {
-        OUTPUT,
-        ERROR
     }
 }

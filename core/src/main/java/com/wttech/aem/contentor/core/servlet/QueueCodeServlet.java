@@ -59,14 +59,14 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
             Execution execution = executionQueue.submit(code).orElse(null);
             if (execution == null) {
-                respondJson(response, error("Code cannot be queued for execution!"));
+                respondJson(response, error("Job cannot be queued!"));
                 return;
             }
 
             respondJson(response, ok(String.format("Code from '%s' queued for execution successfully", code.getId()), execution));
         } catch (Exception e) {
-            LOG.error("Code input cannot be read!", e);
-            respondJson(response, badRequest(String.format("Code input cannot be read! %s", e.getMessage()).trim()));
+            LOG.error("Job cannot be queued!", e);
+            respondJson(response, badRequest(String.format("Job cannot be queued! %s", e.getMessage()).trim()));
         }
     }
 

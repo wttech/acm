@@ -96,14 +96,12 @@ public class QueuedExecution implements Execution {
 
     @Override
     public String getError() {
-        return ExecutionQueue.readFile(job.getId(), ExecutionQueue.FileType.ERROR)
-                .orElse(null);
+        return ExecutionFile.read(job.getId(), ExecutionFile.ERROR).orElse(null);
     }
 
     @Override
     public String getOutput() {
-        return ExecutionQueue.readFile(job.getId(), ExecutionQueue.FileType.OUTPUT)
-                .orElse(null);
+        return ExecutionFile.read(job.getId(), ExecutionFile.OUTPUT).orElse(null);
     }
 
     @Override
