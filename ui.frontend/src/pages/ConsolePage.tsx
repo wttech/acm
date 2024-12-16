@@ -13,7 +13,7 @@ import {
     Keyboard,
     DialogTrigger,
     Dialog, Divider,
-    ProgressBar
+    ProgressBar, Meter
 } from "@adobe/react-spectrum";
 import Editor from "@monaco-editor/react";
 import ConsoleCode from "./ConsoleCode.groovy";
@@ -211,6 +211,21 @@ const ConsolePage = () => {
         }
     };
 
+    const executionVariant = ():  "positive" | "informative" | "warning" | "critical" | undefined => {
+        switch (execution?.status) {
+            case 'SUCCEEDED':
+                return 'positive';
+            case 'ABORTED':
+                return 'informative';
+            case 'SKIPPED':
+                return 'warning';
+            case 'FAILED':
+                return 'critical';
+            default:
+                return undefined;
+        }
+    };
+
     return (
         <Flex direction="column" gap="size-200">
             <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as string)}>
@@ -283,10 +298,10 @@ const ConsolePage = () => {
                                         executing || !executionFinalStatuses.includes(execution.status) ? (
                                             <ProgressBar aria-label="Executing" showValueLabel={false} label="Executing…" isIndeterminate />
                                         ) : (
-                                            <ProgressBar aria-label="Executed" showValueLabel={false} value={100} label={`${Strings.capitalize(execution.status)} after ${execution.duration} ms`} isIndeterminate={executing} />
+                                            <Meter aria-label="Executed" variant={executionVariant()} showValueLabel={false} value={100} label={`${Strings.capitalize(execution.status)} after ${execution.duration} ms`}/>
                                         )
                                     ) : (
-                                        <ProgressBar aria-label="Not executing" label="Not executing" showValueLabel={false} value={0} />
+                                        <Meter aria-label="Not executing" label="Not executing" showValueLabel={false} value={0} />
                                     )}
                                 </Flex>
                                 <Flex flex={1} justifyContent="end" alignItems="center">
