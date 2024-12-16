@@ -7,7 +7,11 @@ export class Strings {
 
     static duration(milliseconds: number): string {
         const duration = intervalToDuration({start: 0, end: milliseconds});
-        return formatDuration(duration);
+        let result = formatDuration(duration, {format: ['days', 'hours', 'minutes', 'seconds']});
+        if (!result) {
+            result = `${milliseconds} milliseconds`;
+        }
+        return result;
     }
 
     static date(value: string): string {

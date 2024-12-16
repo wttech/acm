@@ -34,10 +34,12 @@ public class Code implements Executable {
         return new Code(job.getProperty("id", String.class), job.getProperty("content", String.class));
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public String getContent() {
         return content;
     }

@@ -6,6 +6,7 @@ import NotFound from "@spectrum-icons/illustrations/NotFound";
 import Folder from "@spectrum-icons/workflow/Folder";
 import ExecutionStatus from "../components/ExecutionStatus.tsx";
 import {Strings} from "../utils/strings.ts";
+import ExecutableValue from "../components/ExecutableValue.tsx";
 
 const ExecutionsPage = () => {
     const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
@@ -59,7 +60,7 @@ const ExecutionsPage = () => {
                             renderEmptyState={renderEmptyState}
                         >
                             <TableHeader>
-                                <Column>Executable ID</Column>
+                                <Column>Executable</Column>
                                 <Column>Started At</Column>
                                 <Column>Duration</Column>
                                 <Column>Status</Column>
@@ -67,7 +68,7 @@ const ExecutionsPage = () => {
                             <TableBody>
                                 {(executions?.list || []).map(execution => (
                                     <Row key={execution.id}>
-                                        <Cell>{execution.executable.id}</Cell>
+                                        <Cell><ExecutableValue value={execution.executable}/></Cell>
                                         <Cell>{Strings.dateRelative(execution.startDate)}</Cell>
                                         <Cell>{Strings.duration(execution.duration)}</Cell>
                                         <Cell><ExecutionStatus value={execution.status}/></Cell>
