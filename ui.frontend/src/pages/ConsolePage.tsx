@@ -114,7 +114,7 @@ const ConsolePage = () => {
                 await new Promise(resolve => setTimeout(resolve, executionPollInterval));
             }
             if (queuedExecution.status === ExecutionStatus.ABORTED) {
-                ToastQueue.info('Code execution aborted successfully!', {timeout: toastTimeout});
+                ToastQueue.positive('Code execution aborted successfully!', {timeout: toastTimeout});
             } else {
                 console.warn('Code execution aborting failed!');
                 ToastQueue.negative('Code execution aborting failed!', {timeout: toastTimeout});
