@@ -31,6 +31,7 @@ import {apiRequest} from "../utils/api.ts";
 import React, {useState, useEffect, useRef} from "react";
 import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
 import {Execution} from "../utils/api.types.ts";
+import {Strings} from "../utils/strings.ts";
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
@@ -271,20 +272,48 @@ const ConsolePage = () => {
                     <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <Flex justifyContent="space-between" alignItems="center">
-                                <ButtonGroup>
-                                    <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
-                                    <Button variant="secondary" isDisabled={!execution?.output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
-                                </ButtonGroup>
-                                { execution ? (
-                                    executing ? (
-                                        <ProgressBar aria-label="Executing" showValueLabel={false} label="Executing" isIndeterminate />
+                                <Flex alignItems="center">
+                                    <ButtonGroup>
+                                        <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
+                                        <Button variant="secondary" isDisabled={!execution?.output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
+                                    </ButtonGroup>
+                                </Flex>
+                                <Flex flex={1} justifyContent="center" alignItems="center">
+                                    { execution ? (
+                                        executing || !executionFinalStatuses.includes(execution.status) ? (
+                                            <ProgressBar aria-label="Executing" showValueLabel={false} label="Executing…" isIndeterminate />
+                                        ) : (
+                                            <ProgressBar aria-label="Executed" showValueLabel={false} value={100} label={`${Strings.capitalize(execution.status)} after ${execution.duration} ms`}  isIndeterminate={executing} />
+                                        )
                                     ) : (
-                                        <ProgressBar aria-label="Executed" showValueLabel={false} value={100} label={`Executed in ${execution.duration}ms`}  isIndeterminate={executing} />
-                                    )
-                                ) : (
-                                    <ProgressBar aria-label="Not executing" label="Not executing" showValueLabel={false} value={0}/>
-                                )}
-
+                                        <ProgressBar aria-label="Not executing" label="Not executing" showValueLabel={false} value={0}/>
+                                    )}
+                                </Flex>
+                                <Flex alignItems="center">
+                                    <DialogTrigger>
+                                        <Button variant="secondary" style="fill"><Help/><Text>Help</Text></Button>
+                                        {(close) => (
+                                            <Dialog>
+                                                <Heading>Code execution</Heading>
+                                                <Divider />
+                                                <Content>
+                                                    <p><Print size="XS" /> Output is printed live.</p>
+                                                    <p><Cancel size="XS" /> <Text>Abort if the execution:</Text>
+                                                        <ul style={{listStyleType: 'none'}}>
+                                                            <li><Spellcheck size="XS" /> is taking too long</li>
+                                                            <li><Bug size="XS" /> is stuck in an infinite loop</li>
+                                                            <li><Gears size="XS" /> makes the instance unresponsive</li>
+                                                        </ul>
+                                                    </p>
+                                                    <p><Help size="XS" /> Be aware that aborting execution may leave data in an inconsistent state.</p>
+                                                </Content>
+                                                <ButtonGroup>
+                                                    <Button variant="secondary" onPress={close}>Close</Button>
+                                                </ButtonGroup>
+                                            </Dialog>
+                                        )}
+                                    </DialogTrigger>
+                                </Flex>
                             </Flex>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"
