@@ -68,7 +68,7 @@ public class QueuedExecution implements Execution {
     public Date getStartDate() {
         return Optional.ofNullable(getJobResultMessageProps().get("startDate"))
                 .map(d -> DateUtils.fromString((String) d))
-                .orElseGet(() -> DateUtils.toDate(job.getCreated()));
+                .orElseGet(() -> DateUtils.toDate(job.getProcessingStarted()));
     }
 
     @Override

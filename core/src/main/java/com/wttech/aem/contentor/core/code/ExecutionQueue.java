@@ -81,7 +81,7 @@ public class ExecutionQueue implements JobExecutor {
         if (job == null) {
             return Optional.empty();
         }
-        return read(job.getId());
+        return Optional.of(new QueuedExecution(job));
     }
 
     public Optional<Execution> read(String jobId) throws ContentorException {

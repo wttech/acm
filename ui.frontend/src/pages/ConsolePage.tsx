@@ -102,10 +102,10 @@ const ConsolePage = () => {
                 }
             }
         } catch (error) {
-            console.error('Code execution state error:', error);
-            clearInterval(pollExecutionRef.current!);
-            setExecuting(false);
-            ToastQueue.negative('Code execution state error!', {timeout: toastTimeout});
+            console.warn('Code execution state error:', error);
+            //clearInterval(pollExecutionRef.current!);
+            //setExecuting(false);
+            ToastQueue.neutral('Code execution state unknown!', {timeout: toastTimeout});
         }
     };
 
