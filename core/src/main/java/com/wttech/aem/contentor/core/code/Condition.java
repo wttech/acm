@@ -2,36 +2,44 @@ package com.wttech.aem.contentor.core.code;
 
 public class Condition {
 
-  private final ExecutionContext executionContext;
+    private final ExecutionContext executionContext;
 
-  public Condition(ExecutionContext executionContext) {
-    this.executionContext = executionContext;
-  }
+    private final ExecutionHistory executionHistory;
 
-  public boolean always() {
-    return true;
-  }
+    public Condition(ExecutionContext executionContext) {
+        this.executionContext = executionContext;
+        this.executionHistory = new ExecutionHistory(executionContext.getResourceResolver());
+    }
 
-  public boolean never() {
-    return false;
-  }
+    public boolean always() {
+        return true;
+    }
 
-  public boolean once() {
-    return oncePerExecutableContent();
-  }
+    public boolean never() {
+        return false;
+    }
 
-  // TODO check content and path
-  public boolean oncePerExecutable() {
-    return !executionContext.getHistory().contains(executionContext.getExecutable().getId());
-  }
+    public boolean once() {
+        return oncePerExecutableContent();
+    }
 
-  // TODO check path only
-  public boolean oncePerExecutableId() {
-    return !executionContext.getHistory().contains(executionContext.getExecutable().getId());
-  }
+    // TODO check content and path
+    public boolean oncePerExecutable() {
+        return !executionHistory.contains(executionContext.getExecutable().getId());
+    }
 
-  // TODO check content only
-  public boolean oncePerExecutableContent() {
-    return false; // TOOD ...
-  }
+    // TODO check path only
+    public boolean oncePerExecutableId() {
+        return !executionHistory.contains(executionContext.getExecutable().getId());
+    }
+
+    // TODO check content only
+    public boolean oncePerExecutableContent() {
+        return false; // TOOD ...
+    }
+
+    public boolean daily() {
+        // TODO check if history contains entry with this executable for today
+        return false;
+    }
 }

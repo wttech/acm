@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.assist.osgi;
+package com.wttech.aem.contentor.core.osgi;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

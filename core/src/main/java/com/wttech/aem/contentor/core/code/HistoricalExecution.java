@@ -1,74 +1,106 @@
 package com.wttech.aem.contentor.core.code;
 
+import com.wttech.aem.contentor.core.util.DateUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ValueMap;
 
-// TODO implement read/write to JCR repository
+import java.util.*;
+
 public class HistoricalExecution implements Execution {
 
-  private final Executable executable;
+    private final Executable executable;
 
-  private final String id;
+    private final String id;
 
-  private final ExecutionStatus status;
+    private final ExecutionStatus status;
 
-  private final long duration;
+    private final Date startDate;
 
-  private final String error;
+    private final Date endDate;
 
-  public HistoricalExecution(Resource resource) {
-    this.executable = null;
-    this.id = null;
-    this.status = null;
-    this.duration = 0L;
-    this.error = null;
-  }
+    private final Long duration;
 
-  public static HistoricalExecution read(Resource resource) {
-    return new HistoricalExecution(resource);
-  }
+    private final String error;
 
-  public static void write(ResourceResolver resolver, String path, Execution execution) {
-    // TODO write to repository
-  }
+    private final String output;
 
-  @Override
-  public Executable getExecutable() {
-    return executable;
-  }
+    public HistoricalExecution(Resource resource) {
+        ValueMap valueMap = resource.getValueMap();
+        this.executable = new Code(
+                valueMap.get("executableId", String.class),
+                valueMap.get("executableContent", String.class
+        ));
+        this.id = valueMap.get("id", String.class);
+        this.status = ExecutionStatus.of(valueMap.get("status", String.class)).orElse(null);
+        this.startDate = DateUtils.toDate(valueMap.get("startDate", Calendar.class));
+        this.endDate = DateUtils.toDate(valueMap.get("endDate", Calendar.class));
+        this.duration = valueMap.get("duration", Long.class);
+        this.error = valueMap.get("error", String.class);
+        this.output = valueMap.get("output", String.class);
+    }
 
-  @Override
-  public String getId() {
-    return id;
-  }
+    protected static Map<String, Object> toMap(Execution execution) {
+        Map<String, Object> valueMap = new HashMap<>();
+        valueMap.put("executableId", execution.getExecutable().getId());
+        valueMap.put("executableContent", execution.getExecutable().getContent());
+        valueMap.put("id", execution.getId());
+        valueMap.put("status", execution.getStatus().name());
+        valueMap.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
+        valueMap.put("endDate", DateUtils.toCalendar(execution.getEndDate()));
+        valueMap.put("duration", execution.getDuration());
+        valueMap.put("error", execution.getError());
+        valueMap.put("output", execution.getOutput());
+        return valueMap;
+    }
 
-  @Override
-  public ExecutionStatus getStatus() {
-    return status;
-  }
+    @Override
+    public Executable getExecutable() {
+        return executable;
+    }
 
-  @Override
-  public long getDuration() {
-    return duration;
-  }
+    @Override
+    public String getId() {
+        return id;
+    }
 
-  @Override
-  public String getOutput() {
-    return null; // TODO from resource
-  }
+    @Override
+    public ExecutionStatus getStatus() {
+        return status;
+    }
 
-  @Override
-  public String getError() {
-    return error; // TODO from resource
-  }
+    @Override
+    public Date getStartDate() {
+        return startDate;
+    }
 
-  @Override
-  public String toString() {
-    return new ToStringBuilder(this)
-        .append("executable", getExecutable())
-        .append("status", getStatus())
-        .append("duration", getDuration())
-        .toString();
-  }
+    @Override
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    @Override
+    public long getDuration() {
+        return duration;
+    }
+
+    @Override
+    public String getOutput() {
+        return output;
+    }
+
+    @Override
+    public String getError() {
+        return error;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("executable", getExecutable())
+                .append("status", getStatus())
+                .append("duration", getDuration())
+                .toString();
+    }
 }

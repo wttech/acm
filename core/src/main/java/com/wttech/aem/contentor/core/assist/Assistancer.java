@@ -1,8 +1,8 @@
 package com.wttech.aem.contentor.core.assist;
 
 import com.wttech.aem.contentor.core.ContentorException;
-import com.wttech.aem.contentor.core.assist.osgi.ClassInfo;
-import com.wttech.aem.contentor.core.assist.osgi.OsgiScanner;
+import com.wttech.aem.contentor.core.osgi.ClassInfo;
+import com.wttech.aem.contentor.core.osgi.OsgiScanner;
 import com.wttech.aem.contentor.core.assist.resource.ResourceScanner;
 import com.wttech.aem.contentor.core.code.Variable;
 import com.wttech.aem.contentor.core.snippet.SnippetRepository;

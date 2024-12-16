@@ -1,18 +1,23 @@
 package com.wttech.aem.contentor.core.code;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public interface Execution extends Serializable {
 
-  Executable getExecutable();
+    Executable getExecutable();
 
-  String getId();
+    String getId();
 
-  ExecutionStatus getStatus();
+    ExecutionStatus getStatus();
 
-  long getDuration();
+    Date getStartDate();
 
-  String getError();
+    Date getEndDate();
 
-  String getOutput();
+    long getDuration();
+
+    String getError();
+
+    String getOutput();
 }

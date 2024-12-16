@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.assist.osgi;
+package com.wttech.aem.contentor.core.osgi;
 
 import com.wttech.aem.contentor.core.util.StreamUtils;
 import java.net.URL;

@@ -1,11 +1,7 @@
-//boolean canRun() {
-//    return contentor.instance.hasRunMode("author") && contentor.afterDate("2024-10-29 15:30:00") // <==> new Date().after(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2024-10-29 15:30:00"));
-//}
-//
-//void doRun() {
-//    def foo = resourceResolver.getResource("/content/foo")
-//    // migrate foo
-//}
+boolean canRun() {
+    return condition.always()
+}
 
-
-println("Hello World!")
+void doRun() {
+    println("Hello World!")
+}

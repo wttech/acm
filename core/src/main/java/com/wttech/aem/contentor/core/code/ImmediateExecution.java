@@ -1,72 +1,82 @@
 package com.wttech.aem.contentor.core.code;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.util.Date;
 
 public class ImmediateExecution implements Execution {
 
-  private final Executable executable;
+    private final Executable executable;
 
-  private final String id;
+    private final String id;
 
-  private final ExecutionStatus status;
+    private final ExecutionStatus status;
 
-  private final long duration;
+    private final Date startDate;
 
-  private final String output;
+    private final Date endDate;
 
-  private final String error;
+    private final String output;
 
-  public ImmediateExecution(
-      Executable executable,
-      String id,
-      ExecutionStatus status,
-      long duration,
-      String output,
-      String error) {
-    this.executable = executable;
-    this.id = id;
-    this.status = status;
-    this.duration = duration;
-    this.output = output;
-    this.error = error;
-  }
+    private final String error;
 
-  @Override
-  public Executable getExecutable() {
-    return executable;
-  }
+    public ImmediateExecution(Executable executable, String id, ExecutionStatus status, Date startedDate, String output, String error) {
+        this.executable = executable;
+        this.id = id;
+        this.status = status;
+        this.startDate = startedDate;
+        this.endDate = new Date();
+        this.output = output;
+        this.error = error;
+    }
 
-  @Override
-  public String getId() {
-    return id;
-  }
+    @Override
+    public Executable getExecutable() {
+        return executable;
+    }
 
-  @Override
-  public ExecutionStatus getStatus() {
-    return status;
-  }
+    @Override
+    public String getId() {
+        return id;
+    }
 
-  @Override
-  public long getDuration() {
-    return duration;
-  }
+    @Override
+    public ExecutionStatus getStatus() {
+        return status;
+    }
 
-  @Override
-  public String getOutput() {
-    return output;
-  }
+    @Override
+    public Date getStartDate() {
+        return startDate;
+    }
 
-  @Override
-  public String getError() {
-    return error;
-  }
+    @Override
+    public Date getEndDate() {
+        return endDate;
+    }
 
-  @Override
-  public String toString() {
-    return new ToStringBuilder(this)
-        .append("executable", getExecutable())
-        .append("status", getStatus())
-        .append("duration", getDuration())
-        .toString();
-  }
+    @Override
+    public long getDuration() {
+        return endDate.getTime() - startDate.getTime();
+    }
+
+    @Override
+    public String getOutput() {
+        return output;
+    }
+
+    @Override
+    public String getError() {
+        return error;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("executable", getExecutable())
+                .append("status", getStatus())
+                .append("duration", getDuration())
+                .toString();
+    }
 }
