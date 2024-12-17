@@ -16,7 +16,7 @@ import {
     Tabs,
     Text
 } from "@adobe/react-spectrum";
-import {ExecutionOutput, ExecutionStatus} from '../utils/api.types';
+import {ExecutionOutput} from '../utils/api.types';
 import {toastRequest} from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
 import Folder from "@spectrum-icons/workflow/Folder";
@@ -25,7 +25,7 @@ import {Strings} from "../utils/strings.ts";
 import ExecutableValue from "../components/ExecutableValue.tsx";
 import {Key} from "@react-types/shared";
 
-const ExecutionsPage = () => {
+const ExecutionList = () => {
     const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
 
     useEffect(() => {
@@ -101,4 +101,4 @@ const ExecutionsPage = () => {
     );
 };
 
-export default ExecutionsPage;
+export default ExecutionList;
