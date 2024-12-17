@@ -48,7 +48,7 @@ const ConsolePage = () => {
             });
             const queuedExecution = response.data.data;
             setExecution(queuedExecution);
-            setSelectedTab('output');
+            setSelectedTab('execution');
 
             window.setTimeout(() => {
                 pollExecutionRef.current = window.setInterval(() => {pollExecutionState(queuedExecution.id)}, executionPollInterval);
@@ -75,12 +75,10 @@ const ConsolePage = () => {
                 setExecuting(false);
                 if (queuedExecution.status === ExecutionStatus.FAILED) {
                     ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
-                    setSelectedTab('error');
                 } else if (queuedExecution.status === ExecutionStatus.SKIPPED) {
                     ToastQueue.neutral('Code execution cannot run!', {timeout: toastTimeout});
                 } else {
                     ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
-                    setSelectedTab('output');
                 }
             }
         } catch (error) {
@@ -153,7 +151,7 @@ const ConsolePage = () => {
 
             if (queuedExecution.error) {
                 ToastQueue.negative('Code parsing failed!', {timeout: toastTimeout});
-                setSelectedTab('error');
+                setSelectedTab('execution');
             } else {
                 ToastQueue.positive('Code parsing succeeded!', {timeout: toastTimeout});
             }
@@ -165,31 +163,19 @@ const ConsolePage = () => {
         });
     }
 
-    const onCopyOutput = () => {
-        if (execution?.output) {
-            navigator.clipboard.writeText(execution.output)
-                .then(() => {
-                    ToastQueue.info('Output copied to clipboard!', {timeout: toastTimeout});
-                })
-                .catch(() => {
-                    ToastQueue.negative('Failed to copy output!', {timeout: toastTimeout});
-                });
-        } else {
-            ToastQueue.negative('No output to copy!', {timeout: toastTimeout});
-        }
-    };
+    const executionOutput = ((execution?.output ?? '' ) + '\n' + (execution?.error ?? '')).trim();
 
-    const onCopyError = () => {
-        if (execution?.error) {
-            navigator.clipboard.writeText(execution.error)
+    const onCopyExecutionOutput = () => {
+        if (executionOutput) {
+            navigator.clipboard.writeText(executionOutput)
                 .then(() => {
-                    ToastQueue.info('Error copied to clipboard!', {timeout: toastTimeout});
+                    ToastQueue.info('Execution output copied to clipboard!', {timeout: toastTimeout});
                 })
                 .catch(() => {
-                    ToastQueue.negative('Failed to copy error!', {timeout: toastTimeout});
+                    ToastQueue.negative('Failed to copy execution output!', {timeout: toastTimeout});
                 });
         } else {
-            ToastQueue.negative('No error to copy!', {timeout: toastTimeout});
+            ToastQueue.negative('No execution output to copy!', {timeout: toastTimeout});
         }
     };
 
@@ -198,8 +184,7 @@ const ConsolePage = () => {
             <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as string)}>
                 <TabList>
                     <Item key="code" aria-label="Code"><FileCode/><Text>Code</Text></Item>
-                    <Item key="output" aria-label="Output"><Print/><Text>Output</Text></Item>
-                    <Item key="error" aria-label="Error"><Bug/><Text>Error</Text></Item>
+                    <Item key="execution" aria-label="Execution"><Print/><Text>Execution</Text></Item>
                 </TabList>
                 <TabPanels>
                     <Item key="code">
@@ -251,13 +236,13 @@ const ConsolePage = () => {
                             </View>
                         </Flex>
                     </Item>
-                    <Item key="output">
+                    <Item key="execution">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <Flex direction="row" justifyContent="space-between" alignItems="center">
                                 <Flex flex={1} alignItems="center">
                                     <ButtonGroup>
                                         <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
-                                        <Button variant="secondary" isDisabled={!execution?.output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
+                                        <Button variant="secondary" isDisabled={!execution?.output} onPress={onCopyExecutionOutput}><Copy/><Text>Copy</Text></Button>
                                     </ButtonGroup>
                                 </Flex>
                                 <Flex flex={1} justifyContent="center" alignItems="center">
@@ -295,25 +280,7 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        value={execution?.output ?? ''}
-                                        height="60vh"
-                                        options={{readOnly: true}}
-                                />
-                            </View>
-                        </Flex>
-                    </Item>
-                    <Item key="error">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
-                            <ButtonGroup>
-                                <Button variant="secondary" isDisabled={!execution?.error} onPress={onCopyError}><Copy/><Text>Copy</Text></Button>
-                            </ButtonGroup>
-                            <View backgroundColor="gray-800"
-                                  borderWidth="thin"
-                                  borderColor="dark"
-                                  borderRadius="medium"
-                                  padding="size-50">
-                                <Editor theme="vs-dark"
-                                        value={execution?.error ?? ''}
+                                        value={executionOutput}
                                         height="60vh"
                                         options={{readOnly: true}}
                                 />
