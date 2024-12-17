@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge, Text } from '@adobe/react-spectrum';
-import { ExecutionStatus as ExecutionStatusType } from '../utils/api.types';
+import { ExecutionStatus } from '../utils/api.types';
 import Alert from '@spectrum-icons/workflow/Alert';
 import Clock from '@spectrum-icons/workflow/Clock';
 import Pause from '@spectrum-icons/workflow/Pause';
@@ -8,51 +8,51 @@ import Cancel from "@spectrum-icons/workflow/Cancel";
 import Checkmark from "@spectrum-icons/workflow/Checkmark";
 
 interface ExecutionStatusProps {
-    value: ExecutionStatusType;
+    value: ExecutionStatus;
 }
 
-const getBadgeVariant = (status: ExecutionStatusType): 'positive' | 'negative' | 'neutral' | 'info' | 'yellow' => {
+const getBadgeVariant = (status: ExecutionStatus): 'positive' | 'negative' | 'neutral' | 'info' | 'yellow' => {
     switch (status) {
-        case ExecutionStatusType.SUCCEEDED:
+        case ExecutionStatus.SUCCEEDED:
             return 'positive';
-        case ExecutionStatusType.FAILED:
+        case ExecutionStatus.FAILED:
             return 'negative';
-        case ExecutionStatusType.ACTIVE:
+        case ExecutionStatus.ACTIVE:
             return 'info';
-        case ExecutionStatusType.QUEUED:
+        case ExecutionStatus.QUEUED:
             return 'yellow';
-        case ExecutionStatusType.STOPPED:
-        case ExecutionStatusType.SKIPPED:
+        case ExecutionStatus.STOPPED:
+        case ExecutionStatus.SKIPPED:
             return 'neutral';
-        case ExecutionStatusType.ABORTED:
+        case ExecutionStatus.ABORTED:
             return 'negative';
         default:
             return 'neutral';
     }
 };
 
-const getIcon = (status: ExecutionStatusType) => {
+const getIcon = (status: ExecutionStatus) => {
     switch (status) {
-        case ExecutionStatusType.SUCCEEDED:
+        case ExecutionStatus.SUCCEEDED:
             return <Checkmark/>;
-        case ExecutionStatusType.FAILED:
+        case ExecutionStatus.FAILED:
             return <Alert/>;
-        case ExecutionStatusType.ACTIVE:
+        case ExecutionStatus.ACTIVE:
             return <Clock/>;
-        case ExecutionStatusType.QUEUED:
+        case ExecutionStatus.QUEUED:
             return <Clock/>;
-        case ExecutionStatusType.STOPPED:
+        case ExecutionStatus.STOPPED:
             return <Pause/>;
-        case ExecutionStatusType.SKIPPED:
+        case ExecutionStatus.SKIPPED:
             return <Pause/>;
-        case ExecutionStatusType.ABORTED:
+        case ExecutionStatus.ABORTED:
             return <Cancel/>;
         default:
             return null;
     }
 };
 
-const ExecutionStatus: React.FC<ExecutionStatusProps> = ({ value }) => {
+const ExecutionStatusBadge: React.FC<ExecutionStatusProps> = ({ value }) => {
     const variant = getBadgeVariant(value);
     const icon = getIcon(value);
 
@@ -64,4 +64,4 @@ const ExecutionStatus: React.FC<ExecutionStatusProps> = ({ value }) => {
     );
 };
 
-export default ExecutionStatus;
+export default ExecutionStatusBadge;

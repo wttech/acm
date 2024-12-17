@@ -1,12 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import {Cell, Column, Flex, Row, TableBody, TableHeader, TableView, Tabs, TabList, TabPanels, Item, Text, IllustratedMessage, Content, ProgressBar} from "@adobe/react-spectrum";
-import { ExecutionOutput } from '../utils/api.types';
-import { toastRequest } from '../utils/api';
+import React, {useEffect, useState} from 'react';
+import {
+    Cell,
+    Column,
+    Content,
+    Flex,
+    IllustratedMessage,
+    Item,
+    ProgressBar,
+    Row,
+    TableBody,
+    TableHeader,
+    TableView,
+    TabList,
+    TabPanels,
+    Tabs,
+    Text
+} from "@adobe/react-spectrum";
+import {ExecutionOutput, ExecutionStatus} from '../utils/api.types';
+import {toastRequest} from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
 import Folder from "@spectrum-icons/workflow/Folder";
-import ExecutionStatus from "../components/ExecutionStatus.tsx";
+import ExecutionStatusBadge from "../components/ExecutionStatusBadge.tsx";
 import {Strings} from "../utils/strings.ts";
 import ExecutableValue from "../components/ExecutableValue.tsx";
+import {Key} from "@react-types/shared";
 
 const ExecutionsPage = () => {
     const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
@@ -58,6 +75,7 @@ const ExecutionsPage = () => {
                             aria-label="Executions table"
                             selectionMode="none"
                             renderEmptyState={renderEmptyState}
+                            onAction={(key: Key) => window.alert(`Opening execution details for '${key}'`)}
                         >
                             <TableHeader>
                                 <Column>Executable</Column>
@@ -71,7 +89,7 @@ const ExecutionsPage = () => {
                                         <Cell><ExecutableValue value={execution.executable}/></Cell>
                                         <Cell>{Strings.dateRelative(execution.startDate)}</Cell>
                                         <Cell>{Strings.duration(execution.duration)}</Cell>
-                                        <Cell><ExecutionStatus value={execution.status}/></Cell>
+                                        <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
                                     </Row>
                                 ))}
                             </TableBody>
