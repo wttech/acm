@@ -52,7 +52,7 @@ const ExecutionView = () => {
         fetchExecution();
     }, [executionId]);
 
-    if (execution === null) {
+    if (!execution) {
         return (
             <Flex justifyContent="center" alignItems="center" height="100vh">
                 <IllustratedMessage>
