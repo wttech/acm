@@ -25,11 +25,15 @@ import Print from "@spectrum-icons/workflow/Print";
 import Editor from "@monaco-editor/react";
 import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
 import ExecutableValue from "../components/ExecutableValue.tsx";
+import Copy from "@spectrum-icons/workflow/Copy";
+import {ToastQueue} from "@react-spectrum/toast";
+import {useParams} from "react-router-dom";
+
+const toastTimeout = 3000;
 
 const ExecutionView = () => {
     const [execution, setExecution] = useState<Execution | null>(null);
-
-    const executionId = '2024-12-17-08-40-e39746ba-091a-458a-91e2-9c6184186375_112000000';
+    const executionId = useParams<{ executionId: string }>().executionId;
 
     useEffect(() => {
         const fetchExecution = async () => {
@@ -46,7 +50,7 @@ const ExecutionView = () => {
             }
         };
         fetchExecution();
-    }, []);
+    }, [executionId]);
 
     if (execution === null) {
         return (
@@ -60,6 +64,30 @@ const ExecutionView = () => {
     }
 
     const executionOutput = ((execution.output ?? '') + '\n' + (execution.error ?? '')).trim();
+
+    const onCopyExecutionOutput = () => {
+        if (executionOutput) {
+            navigator.clipboard.writeText(executionOutput)
+                .then(() => {
+                    ToastQueue.info('Execution output copied to clipboard!', {timeout: toastTimeout});
+                })
+                .catch(() => {
+                    ToastQueue.negative('Failed to copy execution output!', {timeout: toastTimeout});
+                });
+        } else {
+            ToastQueue.negative('No execution output to copy!', {timeout: toastTimeout});
+        }
+    };
+
+    const onCopyExecutableCode = () => {
+        navigator.clipboard.writeText(execution.executable.content)
+            .then(() => {
+                ToastQueue.info('Execution code copied to clipboard!', {timeout: toastTimeout});
+            })
+            .catch(() => {
+                ToastQueue.negative('Failed to copy execution code!', {timeout: toastTimeout});
+            });
+    };
 
     return (
         <Flex direction="column" gap="size-400">
@@ -101,7 +129,7 @@ const ExecutionView = () => {
                             <View>
                                 <Flex justifyContent="space-between" alignItems="center">
                                     <ButtonGroup>
-                                        <Button variant="secondary">Copy</Button>
+                                        <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutableCode}><Copy/><Text>Copy</Text></Button>
                                     </ButtonGroup>
                                 </Flex>
                             </View>
@@ -125,7 +153,7 @@ const ExecutionView = () => {
                             <View>
                                 <Flex justifyContent="space-between" alignItems="center">
                                     <ButtonGroup>
-                                        <Button variant="secondary">Copy</Button>
+                                        <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}><Copy/><Text>Copy</Text></Button>
                                     </ButtonGroup>
                                 </Flex>
                             </View>

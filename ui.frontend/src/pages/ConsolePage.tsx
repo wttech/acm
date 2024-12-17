@@ -242,7 +242,7 @@ const ConsolePage = () => {
                                 <Flex flex={1} alignItems="center">
                                     <ButtonGroup>
                                         <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
-                                        <Button variant="secondary" isDisabled={!execution?.output} onPress={onCopyExecutionOutput}><Copy/><Text>Copy</Text></Button>
+                                        <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}><Copy/><Text>Copy</Text></Button>
                                     </ButtonGroup>
                                 </Flex>
                                 <Flex flex={1} justifyContent="center" alignItems="center">

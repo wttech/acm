@@ -16,7 +16,7 @@ const Content = () => {
             <Route path="/snippets" element={<SnippetsPage/>} />
             <Route path="/console" element={<ConsolePage/>} />
             <Route path="/executions" element={<ExecutionList/>} />
-            <Route path="/executions/view/:id" element={<ExecutionView/>} />
+            <Route path="/executions/view/:executionId" element={<ExecutionView/>} />
         </Routes>
     );
 };

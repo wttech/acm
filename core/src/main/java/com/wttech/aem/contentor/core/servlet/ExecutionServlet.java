@@ -33,7 +33,7 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionServlet.class);
 
-    private static final String ID_PARAM = "path";
+    private static final String ID_PARAM = "id";
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
