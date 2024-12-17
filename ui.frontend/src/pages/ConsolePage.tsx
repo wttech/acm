@@ -20,9 +20,10 @@ import ExecutionProgressBar from "../components/ExecutionProgressBar";
 const toastTimeout = 3000;
 const executionPollDelay = 500;
 const executionPollInterval = 500;
+type SelectedTab = 'code' | 'output';
 
 const ConsolePage = () => {
-    const [selectedTab, setSelectedTab] = useState<string>('code');
+    const [selectedTab, setSelectedTab] = useState<SelectedTab>('code');
     const [executing, setExecuting] = useState<boolean>(false);
     const [parsing, setParsing] = useState<boolean>(false);
     const [code, setCode] = useState<string | undefined>(ConsoleCode);
@@ -48,7 +49,7 @@ const ConsolePage = () => {
             });
             const queuedExecution = response.data.data;
             setExecution(queuedExecution);
-            setSelectedTab('execution');
+            setSelectedTab('output');
 
             window.setTimeout(() => {
                 pollExecutionRef.current = window.setInterval(() => {pollExecutionState(queuedExecution.id)}, executionPollInterval);
@@ -151,7 +152,7 @@ const ConsolePage = () => {
 
             if (queuedExecution.error) {
                 ToastQueue.negative('Code parsing failed!', {timeout: toastTimeout});
-                setSelectedTab('execution');
+                setSelectedTab('output');
             } else {
                 ToastQueue.positive('Code parsing succeeded!', {timeout: toastTimeout});
             }
@@ -181,7 +182,7 @@ const ConsolePage = () => {
 
     return (
         <Flex direction="column" gap="size-200">
-            <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as string)}>
+            <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
                 <TabList>
                     <Item key="code" aria-label="Code"><FileCode/><Text>Code</Text></Item>
                     <Item key="output" aria-label="Execution"><Print/><Text>Output</Text></Item>
