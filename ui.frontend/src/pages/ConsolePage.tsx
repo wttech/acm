@@ -184,7 +184,7 @@ const ConsolePage = () => {
             <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as string)}>
                 <TabList>
                     <Item key="code" aria-label="Code"><FileCode/><Text>Code</Text></Item>
-                    <Item key="execution" aria-label="Execution"><Print/><Text>Execution</Text></Item>
+                    <Item key="output" aria-label="Execution"><Print/><Text>Output</Text></Item>
                 </TabList>
                 <TabPanels>
                     <Item key="code">
@@ -236,7 +236,7 @@ const ConsolePage = () => {
                             </View>
                         </Flex>
                     </Item>
-                    <Item key="execution">
+                    <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <Flex direction="row" justifyContent="space-between" alignItems="center">
                                 <Flex flex={1} alignItems="center">

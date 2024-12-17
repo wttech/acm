@@ -24,8 +24,10 @@ import ExecutionStatusBadge from "../components/ExecutionStatusBadge.tsx";
 import {Strings} from "../utils/strings.ts";
 import ExecutableValue from "../components/ExecutableValue.tsx";
 import {Key} from "@react-types/shared";
+import {useNavigate} from "react-router-dom";
 
 const ExecutionList = () => {
+    const navigate = useNavigate();
     const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
 
     useEffect(() => {
@@ -75,7 +77,7 @@ const ExecutionList = () => {
                             aria-label="Executions table"
                             selectionMode="none"
                             renderEmptyState={renderEmptyState}
-                            onAction={(key: Key) => window.alert(`Opening execution details for '${key}'`)}
+                            onAction={(key: Key) => navigate(`/executions/view/${key}`)}
                         >
                             <TableHeader>
                                 <Column>Executable</Column>
