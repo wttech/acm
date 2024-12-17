@@ -6,8 +6,6 @@ import com.wttech.aem.contentor.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
-import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -20,7 +18,8 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
-import java.nio.charset.StandardCharsets;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.Date;
 
 @Component(immediate = true, service = Executor.class)
@@ -60,27 +59,23 @@ public class Executor {
     }
 
     private ImmediateExecution executeImmediately(ExecutionContext context) {
-        String id = ExecutionId.generate();
+        Date startDate = new Date();
+        Executable executable = context.getExecutable();
         String content = composeContent(context.getExecutable());
 
-        StringBuilder simpleOutput = new StringBuilder();
-        boolean simpleOutputActive = context.getOutputStream() == null;
-        if (simpleOutputActive) {
-            context.setOutputStream(new WriterOutputStream(new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
-        }
+        try (OutputStream outputStream = Files.newOutputStream(ExecutionFile.path(context.getId(), ExecutionFile.OUTPUT))) {
+            context.setOutputStream(outputStream);
 
-        Executable executable = context.getExecutable();
-        GroovyShell shell = createShell(context);
-        Date startDate = new Date();
-
-        try {
+            GroovyShell shell = createShell(context);
             Script script = shell.parse(content, CodeSyntax.MAIN_CLASS);
             script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
+
             boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
             if (!runnable) {
-                return new ImmediateExecution(executable, id, ExecutionStatus.SKIPPED, startDate,
-                        simpleOutputActive ? simpleOutput.toString() : null, null);
+                return new ImmediateExecution(executable, context.getId(), ExecutionStatus.SKIPPED, startDate,
+                        ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), null);
             }
+
             switch (context.getMode()) {
                 case PARSE:
                     break;
@@ -88,15 +83,16 @@ public class Executor {
                     script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
                     break;
             }
-            return new ImmediateExecution(executable, id, ExecutionStatus.SUCCEEDED, startDate,
-                    simpleOutputActive ? simpleOutput.toString() : null, null);
+
+            return new ImmediateExecution(executable, context.getId(), ExecutionStatus.SUCCEEDED, startDate,
+                    ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), null);
         } catch (Throwable e) {
             if (e.getCause() != null && e.getCause() instanceof InterruptedException) {
-                return new ImmediateExecution(executable, id, ExecutionStatus.ABORTED, startDate,
-                        simpleOutputActive ? simpleOutput.toString() : null, ExceptionUtils.toString(e));
+                return new ImmediateExecution(executable, context.getId(), ExecutionStatus.ABORTED, startDate,
+                        ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), ExceptionUtils.toString(e));
             }
-            return new ImmediateExecution(executable, id, ExecutionStatus.FAILED, startDate,
-                    simpleOutputActive ? simpleOutput.toString() : null, ExceptionUtils.toString(e));
+            return new ImmediateExecution(executable, context.getId(), ExecutionStatus.FAILED, startDate,
+                    ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), ExceptionUtils.toString(e));
         }
     }
 

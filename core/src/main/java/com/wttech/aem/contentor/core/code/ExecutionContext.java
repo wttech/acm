@@ -1,5 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.framework.BundleContext;
 
@@ -18,6 +19,8 @@ public class ExecutionContext {
     private ExecutionMode mode = ExecutionMode.EVALUATE;
 
     private boolean history = true;
+
+    private String id = ExecutionId.generate();
 
     public ExecutionContext(Executable executable, BundleContext bundleContext, ResourceResolver resourceResolver) {
         this.executable = executable;
@@ -41,7 +44,7 @@ public class ExecutionContext {
         return outputStream;
     }
 
-    public void setOutputStream(OutputStream outputStream) {
+    protected void setOutputStream(OutputStream outputStream) {
         this.outputStream = outputStream;
     }
 
@@ -51,6 +54,14 @@ public class ExecutionContext {
 
     public void setMode(ExecutionMode mode) {
         this.mode = mode;
+    }
+
+    public String getId() {
+        return StringUtils.replace(id, "/", "-");
+    }
+
+    protected void setId(String id) {
+        this.id = id;
     }
 
     public boolean isHistory() {

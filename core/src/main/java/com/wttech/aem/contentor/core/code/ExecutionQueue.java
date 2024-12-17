@@ -16,9 +16,6 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
@@ -142,43 +139,16 @@ public class ExecutionQueue implements JobExecutor {
         } catch (Exception e) {
             LOG.error("Execution failed '{}'", queuedExecution, e);
             return context.result().failed();
-        } finally {
-            jobAsyncExecutor.submit(() -> {
-                try {
-                    cleanAsync(queuedExecution);
-                } catch (Throwable e) {
-                    LOG.error("Execution clean up failed '{}'", queuedExecution, e);
-                }
-            });
         }
     }
 
     private Execution executeAsync(QueuedExecution execution) throws ContentorException {
-        try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
-             OutputStream outputStream = Files.newOutputStream(ExecutionFile.path(execution.getJob().getId(), ExecutionFile.OUTPUT))) {
+        try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
             ExecutionContext context = executor.createContext(execution.getExecutable(), resolver);
-            context.setOutputStream(outputStream);
+            context.setId(execution.getJob().getId());
             return executor.execute(context);
         } catch (LoginException e) {
             throw new ContentorException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
-        } catch (IOException e) {
-            throw new ContentorException(String.format("Cannot write to files for execution '%s'", execution.getId()), e);
-        }
-    }
-
-    private void cleanAsync(QueuedExecution execution) {
-        try {
-            Thread.sleep(config.cleanPollDelay());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            LOG.info("Execution clean up is interrupted '{}'", execution);
-            return;
-        }
-        try {
-            ExecutionFile.delete(execution.getJob().getId());
-            LOG.info("Execution clean up succeeded '{}'", execution);
-        } catch (ContentorException e) {
-            LOG.error("Execution clean up failed '{}'", execution, e);
         }
     }
 }
