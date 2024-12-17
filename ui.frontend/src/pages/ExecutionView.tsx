@@ -72,29 +72,27 @@ const ExecutionView = () => {
                 <TabPanels>
                     <Item key="details">
                         <Flex direction="column" gap="size-200" marginY="size-100">
-                            <View backgroundColor="gray-100" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                                <LabeledValue label="ID" value={execution.id} />
+                            <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
+                                <Flex direction="row" justifyContent="space-between" gap="size-200">
+                                    <LabeledValue label="ID" value={execution.id} />
+                                    <Field label="Status">
+                                        <div><ExecutionStatusBadge value={execution.status}/></div>
+                                    </Field>
+                                </Flex>
                             </View>
-                            <View backgroundColor="gray-100" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
+                            <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                                 <Field label="Executable" width="100%">
                                     <div>
                                         <ExecutableValue value={execution.executable}/>
                                     </div>
                                 </Field>
                             </View>
-                            <View backgroundColor="gray-100" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                                <Field label="Status">
-                                    <div><ExecutionStatusBadge value={execution.status}/></div>
-                                </Field>
-                            </View>
-                            <View backgroundColor="gray-100" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                                <LabeledValue label="Started At" value={`${Strings.date(execution.startDate)} (${Strings.dateRelative(execution.startDate)})`} />
-                            </View>
-                            <View backgroundColor="gray-100" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                                <LabeledValue label="Ended At" value={`${Strings.date(execution.endDate)} (${Strings.dateRelative(execution.endDate)})`} />
-                            </View>
-                            <View backgroundColor="gray-100" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                                <LabeledValue label="Duration" value={Strings.duration(execution.duration)} />
+                            <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
+                                <Flex direction="row" justifyContent="space-between" gap="size-200">
+                                    <LabeledValue label="Started At" value={`${Strings.date(execution.startDate)} (${Strings.dateRelative(execution.startDate)})`} />
+                                    <LabeledValue label="Duration" value={Strings.duration(execution.duration)} />
+                                    <LabeledValue label="Ended At" value={`${Strings.date(execution.endDate)} (${Strings.dateRelative(execution.endDate)})`} />
+                                </Flex>
                             </View>
                         </Flex>
                     </Item>

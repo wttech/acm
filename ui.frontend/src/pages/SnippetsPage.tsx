@@ -31,12 +31,12 @@ const SnippetsPage = () => {
             {snippets.list.map(snippet => (
                 <View
                     key={snippet.id}
-                    backgroundColor="gray-100"
+                    backgroundColor="gray-50"
                     borderWidth="thin"
                     borderColor="dark"
                     borderRadius="medium"
                     padding="size-200"
-                    marginBottom="size-200"
+                    marginY="size-10"
                 >
                     <Heading level={3}>{snippet.name}</Heading>
                     <Content>

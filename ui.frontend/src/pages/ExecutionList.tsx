@@ -50,7 +50,7 @@ const ExecutionList = () => {
     const renderEmptyState = () => (
         <IllustratedMessage>
             <NotFound />
-            <Content>No scripts found</Content>
+            <Content>No executions found</Content>
         </IllustratedMessage>
     );
 
