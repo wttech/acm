@@ -54,10 +54,7 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
             context.setMode(mode);
 
             try {
-                Execution execution = executor.execute(code, context);
-
-                // TODO should this servlet also save execution in history?
-                // history.save(execution)
+                Execution execution = executor.execute(context);
 
                 respondJson(response, ok(String.format("Code from '%s' executed successfully", code.getId()), execution));
             } catch (Exception e) {

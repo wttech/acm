@@ -43,15 +43,15 @@ public class Executor {
 
     public Execution execute(Executable executable) throws ContentorException {
         try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
-            return execute(executable, createContext(executable, resourceResolver));
+            return execute(createContext(executable, resourceResolver));
         } catch (LoginException e) {
             throw new ContentorException(
                     String.format("Failed to access repository while executing '%s'", executable.getId()), e);
         }
     }
 
-    public Execution execute(Executable executable, ExecutionContext context) throws ContentorException {
-        Execution execution = executeImmediately(executable, context);
+    public Execution execute(ExecutionContext context) throws ContentorException {
+        Execution execution = executeImmediately(context);
         if (context.isHistory() && context.getMode() == ExecutionMode.EVALUATE) {
             ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
             history.save(execution);
@@ -59,9 +59,9 @@ public class Executor {
         return execution;
     }
 
-    private ImmediateExecution executeImmediately(Executable executable, ExecutionContext context) {
+    private ImmediateExecution executeImmediately(ExecutionContext context) {
         String id = ExecutionId.generate();
-        String content = composeContent(executable);
+        String content = composeContent(context.getExecutable());
 
         StringBuilder simpleOutput = new StringBuilder();
         boolean simpleOutputActive = context.getOutputStream() == null;
@@ -69,6 +69,7 @@ public class Executor {
             context.setOutputStream(new WriterOutputStream(new StringBuilderWriter(simpleOutput), StandardCharsets.UTF_8));
         }
 
+        Executable executable = context.getExecutable();
         GroovyShell shell = createShell(context);
         Date startDate = new Date();
 

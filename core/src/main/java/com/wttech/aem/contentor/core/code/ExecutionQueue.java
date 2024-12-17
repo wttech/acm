@@ -158,7 +158,7 @@ public class ExecutionQueue implements JobExecutor {
              OutputStream outputStream = Files.newOutputStream(ExecutionFile.path(execution.getJob().getId(), ExecutionFile.OUTPUT))) {
             ExecutionContext context = executor.createContext(execution.getExecutable(), resolver);
             context.setOutputStream(outputStream);
-            return executor.execute(execution.getExecutable(), context);
+            return executor.execute(context);
         } catch (LoginException e) {
             throw new ContentorException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         } catch (IOException e) {
