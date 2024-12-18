@@ -45,6 +45,9 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
 
             Code code = input.getCode();
             ExecutionContext context = executor.createContext(code, request.getResourceResolver());
+            if (input.getHistory() != null) {
+                context.setHistory(input.getHistory());
+            }
 
             ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
             if (mode == null) {

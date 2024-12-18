@@ -10,6 +10,8 @@ public class ExecuteCodeInput implements Serializable {
 
     private Code code;
 
+    private Boolean history;
+
     public ExecuteCodeInput() {
         // for deserialization
     }
@@ -20,5 +22,9 @@ public class ExecuteCodeInput implements Serializable {
 
     public Code getCode() {
         return code;
+    }
+
+    public Boolean getHistory() {
+        return history;
     }
 }
