@@ -6,6 +6,9 @@ import com.wttech.aem.contentor.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.Date;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -18,101 +21,124 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.util.Date;
-
 @Component(immediate = true, service = Executor.class)
 public class Executor {
 
-    @Reference
-    private ResourceResolverFactory resourceResolverFactory;
+  @Reference private ResourceResolverFactory resourceResolverFactory;
 
-    private BundleContext bundleContext;
+  private BundleContext bundleContext;
 
-    @Activate
-    @Modified
-    protected void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
+  @Activate
+  @Modified
+  protected void activate(BundleContext bundleContext) {
+    this.bundleContext = bundleContext;
+  }
+
+  public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
+    return new ExecutionContext(executable, bundleContext, resourceResolver);
+  }
+
+  public Execution execute(Executable executable) throws ContentorException {
+    try (ResourceResolver resourceResolver =
+        ResourceUtils.serviceResolver(resourceResolverFactory)) {
+      return execute(createContext(executable, resourceResolver));
+    } catch (LoginException e) {
+      throw new ContentorException(
+          String.format("Failed to access repository while executing '%s'", executable.getId()), e);
     }
+  }
 
-    public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return new ExecutionContext(executable, bundleContext, resourceResolver);
+  public Execution execute(ExecutionContext context) throws ContentorException {
+    Execution execution = executeImmediately(context);
+    if (context.isHistory() && context.getMode() == ExecutionMode.EVALUATE) {
+      ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
+      history.save(execution);
     }
+    return execution;
+  }
 
-    public Execution execute(Executable executable) throws ContentorException {
-        try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
-            return execute(createContext(executable, resourceResolver));
-        } catch (LoginException e) {
-            throw new ContentorException(
-                    String.format("Failed to access repository while executing '%s'", executable.getId()), e);
-        }
+  private ImmediateExecution executeImmediately(ExecutionContext context) {
+    Date startDate = new Date();
+    Executable executable = context.getExecutable();
+    String content = composeContent(context.getExecutable());
+
+    try (OutputStream outputStream =
+        Files.newOutputStream(ExecutionFile.path(context.getId(), ExecutionFile.OUTPUT))) {
+      context.setOutputStream(outputStream);
+
+      GroovyShell shell = createShell(context);
+      Script script = shell.parse(content, CodeSyntax.MAIN_CLASS);
+      script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
+
+      boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
+      if (!runnable) {
+        return new ImmediateExecution(
+            executable,
+            context.getId(),
+            ExecutionStatus.SKIPPED,
+            startDate,
+            ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null),
+            null);
+      }
+
+      switch (context.getMode()) {
+        case PARSE:
+          break;
+        case EVALUATE:
+          script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
+          break;
+      }
+
+      return new ImmediateExecution(
+          executable,
+          context.getId(),
+          ExecutionStatus.SUCCEEDED,
+          startDate,
+          ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null),
+          null);
+    } catch (Throwable e) {
+      if (e.getCause() != null && e.getCause() instanceof InterruptedException) {
+        return new ImmediateExecution(
+            executable,
+            context.getId(),
+            ExecutionStatus.ABORTED,
+            startDate,
+            ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null),
+            ExceptionUtils.toString(e));
+      }
+      return new ImmediateExecution(
+          executable,
+          context.getId(),
+          ExecutionStatus.FAILED,
+          startDate,
+          ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null),
+          ExceptionUtils.toString(e));
     }
+  }
 
-    public Execution execute(ExecutionContext context) throws ContentorException {
-        Execution execution = executeImmediately(context);
-        if (context.isHistory() && context.getMode() == ExecutionMode.EVALUATE) {
-            ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
-            history.save(execution);
-        }
-        return execution;
-    }
+  private String composeContent(Executable executable) throws ContentorException {
+    StringBuilder builder = new StringBuilder();
+    builder.append("void ").append(CodeSyntax.Methods.INIT.givenName).append("() {\n");
+    builder
+        .append("\tSystem.setOut(new java.io.PrintStream(")
+        .append(Variable.OUT.varName())
+        .append(", true, \"UTF-8\"));\n");
+    builder
+        .append("\tSystem.setErr(new java.io.PrintStream(")
+        .append(Variable.OUT.varName())
+        .append(", true, \"UTF-8\"));\n");
+    builder.append("}\n");
+    builder.append("\n");
+    builder.append(executable.getContent());
+    return builder.toString();
+  }
 
-    private ImmediateExecution executeImmediately(ExecutionContext context) {
-        Date startDate = new Date();
-        Executable executable = context.getExecutable();
-        String content = composeContent(context.getExecutable());
+  private GroovyShell createShell(ExecutionContext context) {
+    Binding binding = new CodeBinding(context).toBinding();
+    CompilerConfiguration compiler = new CompilerConfiguration();
+    compiler.addCompilationCustomizers(new ImportCustomizer());
+    compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
 
-        try (OutputStream outputStream = Files.newOutputStream(ExecutionFile.path(context.getId(), ExecutionFile.OUTPUT))) {
-            context.setOutputStream(outputStream);
-
-            GroovyShell shell = createShell(context);
-            Script script = shell.parse(content, CodeSyntax.MAIN_CLASS);
-            script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
-
-            boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
-            if (!runnable) {
-                return new ImmediateExecution(executable, context.getId(), ExecutionStatus.SKIPPED, startDate,
-                        ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), null);
-            }
-
-            switch (context.getMode()) {
-                case PARSE:
-                    break;
-                case EVALUATE:
-                    script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
-                    break;
-            }
-
-            return new ImmediateExecution(executable, context.getId(), ExecutionStatus.SUCCEEDED, startDate,
-                    ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), null);
-        } catch (Throwable e) {
-            if (e.getCause() != null && e.getCause() instanceof InterruptedException) {
-                return new ImmediateExecution(executable, context.getId(), ExecutionStatus.ABORTED, startDate,
-                        ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), ExceptionUtils.toString(e));
-            }
-            return new ImmediateExecution(executable, context.getId(), ExecutionStatus.FAILED, startDate,
-                    ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), ExceptionUtils.toString(e));
-        }
-    }
-
-    private String composeContent(Executable executable) throws ContentorException {
-        StringBuilder builder = new StringBuilder();
-        builder.append("void ").append(CodeSyntax.Methods.INIT.givenName).append("() {\n");
-        builder.append("\tSystem.setOut(new java.io.PrintStream(").append(Variable.OUT.varName()).append(", true, \"UTF-8\"));\n");
-        builder.append("\tSystem.setErr(new java.io.PrintStream(").append(Variable.OUT.varName()).append(", true, \"UTF-8\"));\n");
-        builder.append("}\n");
-        builder.append("\n");
-        builder.append(executable.getContent());
-        return builder.toString();
-    }
-
-    private GroovyShell createShell(ExecutionContext context) {
-        Binding binding = new CodeBinding(context).toBinding();
-        CompilerConfiguration compiler = new CompilerConfiguration();
-        compiler.addCompilationCustomizers(new ImportCustomizer());
-        compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
-
-        return new GroovyShell(binding, compiler);
-    }
+    return new GroovyShell(binding, compiler);
+  }
 }
