@@ -76,58 +76,49 @@ const ExecutionList = () => {
 
     return (
         <Flex direction="column" gap="size-400">
-            <Tabs aria-label='Executions'>
-                <TabList>
-                    <Item aria-label="All" key="all">
-                        <Folder/>
-                        <Text>All</Text>
-                    </Item>
-                </TabList>
-                <TabPanels>
-                    <Item key="all">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
-                            <View>
-                                <Flex direction="row" gap="size-200" alignItems="center">
-                                    <DatePicker
-                                        label="Start Date"
-                                        value={startDate}
-                                        onChange={setStartDate}
-                                    />
-                                    <DatePicker
-                                        label="End Date"
-                                        value={endDate}
-                                        onChange={setEndDate}
-                                    />
-                                </Flex>
-                            </View>
-                            <TableView
-                                aria-label="Executions table"
-                                selectionMode="none"
-                                renderEmptyState={renderEmptyState}
-                                minHeight="60vh"
-                                onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}
-                            >
-                                <TableHeader>
-                                    <Column>Executable</Column>
-                                    <Column>Started</Column>
-                                    <Column>Duration</Column>
-                                    <Column>Status</Column>
-                                </TableHeader>
-                                <TableBody>
-                                    {(executions?.list || []).map(execution => (
-                                        <Row key={execution.id}>
-                                            <Cell><ExecutableValue value={execution.executable}/></Cell>
-                                            <Cell>{Strings.dateRelative(execution.startDate)}</Cell>
-                                            <Cell>{Strings.duration(execution.duration)}</Cell>
-                                            <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
-                                        </Row>
-                                    ))}
-                                </TableBody>
-                            </TableView>
-                        </Flex>
-                    </Item>
-                </TabPanels>
-            </Tabs>
+            <Flex direction="column" gap="size-200" marginY="size-100" >
+                <View borderBottomWidth="thick"
+                      borderColor="gray-300"
+                      paddingBottom="size-200"
+                      marginBottom="size-10">
+                    <Flex direction="row" gap="size-200" alignItems="center">
+                        <DatePicker
+                            label="Start Date"
+                            value={startDate}
+                            onChange={setStartDate}
+                        />
+                        <DatePicker
+                            label="End Date"
+                            value={endDate}
+                            onChange={setEndDate}
+                        />
+                    </Flex>
+                </View>
+                <TableView
+                    aria-label="Executions table"
+                    selectionMode="none"
+                    renderEmptyState={renderEmptyState}
+                    minHeight="60vh"
+                    onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}
+                >
+                    <TableHeader>
+                        <Column>Executable</Column>
+                        <Column>Started</Column>
+                        <Column>Duration</Column>
+                        <Column>Status</Column>
+                    </TableHeader>
+                    <TableBody>
+                        {(executions?.list || []).map(execution => (
+                            <Row key={execution.id}>
+                                <Cell><ExecutableValue value={execution.executable}/></Cell>
+                                <Cell>{Strings.dateRelative(execution.startDate)}</Cell>
+                                <Cell>{Strings.duration(execution.duration)}</Cell>
+                                <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
+                            </Row>
+                        ))}
+                    </TableBody>
+                </TableView>
+            </Flex>
         </Flex>
     );
 };
