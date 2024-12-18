@@ -1,28 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Cell,
-    Column,
-    Content,
-    DatePicker,
-    Flex,
-    IllustratedMessage,
-    Item,
-    ProgressBar,
-    Row,
-    TableBody,
-    TableHeader,
-    TableView,
-    TabList,
-    TabPanels,
-    Tabs,
-    Text,
-    View
-} from "@adobe/react-spectrum";
+import {Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, View} from "@adobe/react-spectrum";
 import { DateValue } from '@internationalized/date';
-import { ExecutionOutput } from '../utils/api.types';
+import {ExecutionOutput, ExecutionStatus, isExecutionPending} from '../utils/api.types';
 import { toastRequest } from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
-import Folder from "@spectrum-icons/workflow/Folder";
 import ExecutionStatusBadge from "../components/ExecutionStatusBadge.tsx";
 import { Strings } from "../utils/strings.ts";
 import ExecutableValue from "../components/ExecutableValue.tsx";
@@ -34,17 +15,21 @@ const ExecutionList = () => {
     const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
     const [startDate, setStartDate] = useState<DateValue | null>(null);
     const [endDate, setEndDate] = useState<DateValue | null>(null);
+    const [status, setStatus] = useState<string | null>('all');
+
+    const statusOptions = Object.values(ExecutionStatus)
+        .filter(status => !isExecutionPending(status))
+        .map(status => ({ key: status.toLowerCase(), name: status.charAt(0) + status.slice(1).toLowerCase() }));
 
     useEffect(() => {
         const fetchExecutions = async () => {
             try {
                 let url = `/apps/contentor/api/execution.json`;
-                if (startDate || endDate) {
-                    const params = new URLSearchParams();
-                    if (startDate) params.append('startDate', startDate.toDate('UTC').toISOString());
-                    if (endDate) params.append('endDate', endDate.toDate('UTC').toISOString());
-                    url += `?${params.toString()}`;
-                }
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate.toDate('UTC').toISOString());
+                if (endDate) params.append('endDate', endDate.toDate('UTC').toISOString());
+                if (status && status !== 'all') params.append('status', status);
+                if (params.toString()) url += `?${params.toString()}`;
                 const response = await toastRequest<ExecutionOutput>({
                     method: 'GET',
                     url,
@@ -57,7 +42,7 @@ const ExecutionList = () => {
             }
         };
         fetchExecutions();
-    }, [startDate, endDate]);
+    }, [startDate, endDate, status]);
 
     const renderEmptyState = () => (
         <IllustratedMessage>
@@ -92,6 +77,17 @@ const ExecutionList = () => {
                             value={endDate}
                             onChange={setEndDate}
                         />
+                        <Picker
+                            label="Status"
+                            selectedKey={status}
+                            onSelectionChange={(key) => setStatus(String(key))}
+                            items={[
+                                { key: 'all', name: 'All' },
+                                ...statusOptions
+                            ]}
+                        >
+                            {(item) => <Item key={item.key}>{item.name}</Item>}
+                        </Picker>
                     </Flex>
                 </View>
                 <TableView

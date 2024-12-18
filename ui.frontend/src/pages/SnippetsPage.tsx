@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {Flex, View, Heading, Content, Text, ProgressBar} from '@adobe/react-spectrum';
-import { toastRequest } from '../utils/api'; // Adjust the import path as necessary
-import { SnippetOutput } from '../utils/api.types'; // Adjust the import path as necessary
+import {Flex, View, Heading, Content, ProgressBar} from '@adobe/react-spectrum';
+import { toastRequest } from '../utils/api';
+import { SnippetOutput } from '../utils/api.types';
 
 const SnippetsPage = () => {
     const [snippets, setSnippets] = useState<SnippetOutput | null>(null);

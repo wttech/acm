@@ -17,10 +17,13 @@ public class ExecutionQuery {
 
     private Date endDate;
 
+    private ExecutionStatus status;
+
     public static ExecutionQuery from(SlingHttpServletRequest request) {
         ExecutionQuery result = new ExecutionQuery();
         result.setStartDate(ServletUtils.dateParam(request, "startDate"));
         result.setEndDate(ServletUtils.dateParam(request, "endDate"));
+        result.setStatus(ExecutionStatus.of(ServletUtils.stringParam(request, "status")).orElse(null));
         return result;
     }
 
@@ -51,11 +54,22 @@ public class ExecutionQuery {
         this.endDate = endDate;
     }
 
+    public ExecutionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ExecutionStatus status) {
+        this.status = status;
+    }
+
     protected String toSql() {
         List<String> filters = new ArrayList<>();
         filters.add(String.format("s.[%s] = '%s'", JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, HistoricalExecution.RESOURCE_TYPE));
         if (path != null) {
             filters.add(String.format("ISDESCENDANTNODE(s, '%s')", path));
+        }
+        if (status != null) {
+            filters.add(String.format("s.[status] = '%s'", status));
         }
         if (startDate != null) {
             filters.add(String.format("s.[startDate] >= CAST('%s' AS DATE)", startDate));
