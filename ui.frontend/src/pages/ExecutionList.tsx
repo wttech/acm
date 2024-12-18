@@ -1,8 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Cell,
     Column,
     Content,
+    DatePicker,
     Flex,
     IllustratedMessage,
     Item,
@@ -14,28 +15,39 @@ import {
     TabList,
     TabPanels,
     Tabs,
-    Text
+    Text,
+    View
 } from "@adobe/react-spectrum";
-import {ExecutionOutput} from '../utils/api.types';
-import {toastRequest} from '../utils/api';
+import { DateValue } from '@internationalized/date';
+import { ExecutionOutput } from '../utils/api.types';
+import { toastRequest } from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
 import Folder from "@spectrum-icons/workflow/Folder";
 import ExecutionStatusBadge from "../components/ExecutionStatusBadge.tsx";
-import {Strings} from "../utils/strings.ts";
+import { Strings } from "../utils/strings.ts";
 import ExecutableValue from "../components/ExecutableValue.tsx";
-import {Key} from "@react-types/shared";
-import {useNavigate} from "react-router-dom";
+import { Key } from "@react-types/shared";
+import { useNavigate } from "react-router-dom";
 
 const ExecutionList = () => {
     const navigate = useNavigate();
     const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
+    const [startDate, setStartDate] = useState<DateValue | null>(null);
+    const [endDate, setEndDate] = useState<DateValue | null>(null);
 
     useEffect(() => {
         const fetchExecutions = async () => {
             try {
+                let url = `/apps/contentor/api/execution.json`;
+                if (startDate || endDate) {
+                    const params = new URLSearchParams();
+                    if (startDate) params.append('startDate', startDate.toDate('UTC').toISOString());
+                    if (endDate) params.append('endDate', endDate.toDate('UTC').toISOString());
+                    url += `?${params.toString()}`;
+                }
                 const response = await toastRequest<ExecutionOutput>({
                     method: 'GET',
-                    url: `/apps/contentor/api/execution.json`,
+                    url,
                     operation: `Executions loading`,
                     positive: false
                 });
@@ -45,7 +57,7 @@ const ExecutionList = () => {
             }
         };
         fetchExecutions();
-    }, []);
+    }, [startDate, endDate]);
 
     const renderEmptyState = () => (
         <IllustratedMessage>
@@ -73,30 +85,46 @@ const ExecutionList = () => {
                 </TabList>
                 <TabPanels>
                     <Item key="all">
-                        <TableView
-                            aria-label="Executions table"
-                            selectionMode="none"
-                            renderEmptyState={renderEmptyState}
-                            minHeight="60vh"
-                            onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}
-                        >
-                            <TableHeader>
-                                <Column>Executable</Column>
-                                <Column>Started</Column>
-                                <Column>Duration</Column>
-                                <Column>Status</Column>
-                            </TableHeader>
-                            <TableBody>
-                                {(executions?.list || []).map(execution => (
-                                    <Row key={execution.id}>
-                                        <Cell><ExecutableValue value={execution.executable}/></Cell>
-                                        <Cell>{Strings.dateRelative(execution.startDate)}</Cell>
-                                        <Cell>{Strings.duration(execution.duration)}</Cell>
-                                        <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
-                                    </Row>
-                                ))}
-                            </TableBody>
-                        </TableView>
+                        <Flex direction="column" gap="size-200" marginY="size-100">
+                            <View>
+                                <Flex direction="row" gap="size-200" alignItems="center">
+                                    <DatePicker
+                                        label="Start Date"
+                                        value={startDate}
+                                        onChange={setStartDate}
+                                    />
+                                    <DatePicker
+                                        label="End Date"
+                                        value={endDate}
+                                        onChange={setEndDate}
+                                    />
+                                </Flex>
+                            </View>
+                            <TableView
+                                aria-label="Executions table"
+                                selectionMode="none"
+                                renderEmptyState={renderEmptyState}
+                                minHeight="60vh"
+                                onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}
+                            >
+                                <TableHeader>
+                                    <Column>Executable</Column>
+                                    <Column>Started</Column>
+                                    <Column>Duration</Column>
+                                    <Column>Status</Column>
+                                </TableHeader>
+                                <TableBody>
+                                    {(executions?.list || []).map(execution => (
+                                        <Row key={execution.id}>
+                                            <Cell><ExecutableValue value={execution.executable}/></Cell>
+                                            <Cell>{Strings.dateRelative(execution.startDate)}</Cell>
+                                            <Cell>{Strings.duration(execution.duration)}</Cell>
+                                            <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
+                                        </Row>
+                                    ))}
+                                </TableBody>
+                            </TableView>
+                        </Flex>
                     </Item>
                 </TabPanels>
             </Tabs>
