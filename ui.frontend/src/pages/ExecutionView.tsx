@@ -33,7 +33,7 @@ const toastTimeout = 3000;
 
 const ExecutionView = () => {
     const [execution, setExecution] = useState<Execution | null>(null);
-    const executionId = useParams<{ executionId: string }>().executionId;
+    const executionId = decodeURIComponent(useParams<{ executionId: string }>().executionId as string);
 
     useEffect(() => {
         const fetchExecution = async () => {

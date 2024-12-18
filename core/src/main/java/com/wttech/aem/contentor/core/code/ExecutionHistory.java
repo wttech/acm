@@ -2,16 +2,14 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceSpliterator;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class ExecutionHistory {
@@ -29,22 +27,24 @@ public class ExecutionHistory {
     }
 
     public void save(Execution execution) throws ContentorException {
-        Resource parent = getOrCreateRoot();
+        Resource root = getOrCreateRoot();
         Map<String, Object> props = HistoricalExecution.toMap(execution);
 
         try {
-            resourceResolver.create(parent, execution.getId(), props);
+            String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");
+            Resource dir = ResourceUtil.getOrCreateResource(resourceResolver, dirPath, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
+            String entryName = StringUtils.substringAfterLast(execution.getId(), "/");
+            resourceResolver.create(dir, entryName, props);
             resourceResolver.commit();
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Failed to save execution '%s'", execution.getId()), e);
         }
     }
 
-    public Execution read(String id) {
+    public Optional<Execution> read(String id) {
         return Optional.of(getOrCreateRoot())
                 .map(r -> r.getChild(id))
-                .map(HistoricalExecution::new)
-                .orElse(null);
+                .map(HistoricalExecution::new);
     }
 
     private Resource getOrCreateRoot() throws ContentorException {
@@ -60,7 +60,13 @@ public class ExecutionHistory {
     }
 
     public Stream<Execution> readAll(Collection<String> ids) {
-        return findAll().filter(e -> ids.contains(e.getId()));
+        return Optional.ofNullable(ids)
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(StringUtils::isNotBlank)
+                .map(this::read)
+                .filter(Optional::isPresent)
+                .map(Optional::get);
     }
 
     public Stream<Execution> findAll() {

@@ -79,7 +79,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            Execution execution = executionQueue.read(jobId).orElse(null);
+            Execution execution = executionQueue.read(jobId, request.getResourceResolver()).orElse(null);
             if (execution == null) {
                 respondJson(response, notFound(String.format("Job with ID '%s' not found!", jobId)));
                 return;
@@ -101,7 +101,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            Execution execution = executionQueue.read(jobId).orElse(null);
+            Execution execution = executionQueue.read(jobId, request.getResourceResolver()).orElse(null);
             if (execution == null) {
                 respondJson(response, notFound(String.format("Job with ID '%s' not found!", jobId)));
                 return;

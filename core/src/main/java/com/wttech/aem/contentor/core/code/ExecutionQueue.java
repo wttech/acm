@@ -81,12 +81,17 @@ public class ExecutionQueue implements JobExecutor {
         return Optional.of(new QueuedExecution(job));
     }
 
-    public Optional<Execution> read(String jobId) throws ContentorException {
+    public Optional<Execution> read(String jobId, ResourceResolver resourceResolver) throws ContentorException {
         Job job = jobManager.getJobById(jobId);
         if (job == null) {
             return Optional.empty();
         }
-        return Optional.of(new QueuedExecution(job));
+        ExecutionHistory executionHistory = new ExecutionHistory(resourceResolver);
+        Execution result = executionHistory.read(jobId).orElse(null);
+        if (result == null) {
+            result = new QueuedExecution(job);
+        }
+        return Optional.of(result);
     }
 
     public void stop(String jobId) {
@@ -124,18 +129,17 @@ public class ExecutionQueue implements JobExecutor {
 
         try {
             Execution immediateExecution = future.get();
-            String message = QueuedExecution.jobResultMessage(immediateExecution);
 
             if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
                 LOG.info("Execution skipped '{}'", immediateExecution);
-                return context.result().message(message).cancelled();
+                return context.result().cancelled();
             } else {
                 LOG.info("Execution succeeded '{}'", immediateExecution);
-                return context.result().message(message).succeeded();
+                return context.result().succeeded();
             }
         } catch (CancellationException e) {
             LOG.info("Execution aborted '{}'", queuedExecution);
-            return context.result().message(QueuedExecution.jobResultMessage(ExecutionStatus.ABORTED)).cancelled();
+            return context.result().cancelled();
         } catch (Exception e) {
             LOG.error("Execution failed '{}'", queuedExecution, e);
             return context.result().failed();

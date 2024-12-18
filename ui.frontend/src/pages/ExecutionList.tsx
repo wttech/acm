@@ -78,7 +78,7 @@ const ExecutionList = () => {
                             selectionMode="none"
                             renderEmptyState={renderEmptyState}
                             minHeight="60vh"
-                            onAction={(key: Key) => navigate(`/executions/view/${key}`)}
+                            onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}
                         >
                             <TableHeader>
                                 <Column>Executable</Column>
