@@ -3,6 +3,6 @@
     jcr:primaryType="nt:unstructured"
     jcr:title="Contentor"
     jcr:description="Do live content and permission updates via Groovy Scripts"
-    icon="gears"
-    href="/apps/contentor/gui.html"
+    icon="fileCode"
+    href="/contentor.html"
     id="contentor"/>

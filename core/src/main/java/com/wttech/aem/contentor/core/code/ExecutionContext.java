@@ -1,63 +1,73 @@
 package com.wttech.aem.contentor.core.code;
 
-import java.io.OutputStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.framework.BundleContext;
 
+import java.io.OutputStream;
+
 public class ExecutionContext {
 
-  private final Executable executable;
+    private final Executable executable;
 
-  private final BundleContext bundleContext;
+    private final BundleContext bundleContext;
 
-  private final ResourceResolver resourceResolver;
+    private final ResourceResolver resourceResolver;
 
-  private OutputStream outputStream = null;
+    private OutputStream outputStream = null;
 
-  private ExecutionMode mode = ExecutionMode.EVALUATE;
+    private ExecutionMode mode = ExecutionMode.EVALUATE;
 
-  private boolean history = true;
+    private boolean history = true;
 
-  public ExecutionContext(
-      Executable executable, BundleContext bundleContext, ResourceResolver resourceResolver) {
-    this.executable = executable;
-    this.bundleContext = bundleContext;
-    this.resourceResolver = resourceResolver;
-  }
+    private String id = ExecutionId.generate();
 
-  public Executable getExecutable() {
-    return executable;
-  }
+    public ExecutionContext(Executable executable, BundleContext bundleContext, ResourceResolver resourceResolver) {
+        this.executable = executable;
+        this.bundleContext = bundleContext;
+        this.resourceResolver = resourceResolver;
+    }
 
-  public ResourceResolver getResourceResolver() {
-    return resourceResolver;
-  }
+    public Executable getExecutable() {
+        return executable;
+    }
 
-  public BundleContext getBundleContext() {
-    return bundleContext;
-  }
+    public ResourceResolver getResourceResolver() {
+        return resourceResolver;
+    }
 
-  public OutputStream getOutputStream() {
-    return outputStream;
-  }
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
 
-  public void setOutputStream(OutputStream outputStream) {
-    this.outputStream = outputStream;
-  }
+    public OutputStream getOutputStream() {
+        return outputStream;
+    }
 
-  public ExecutionMode getMode() {
-    return mode;
-  }
+    protected void setOutputStream(OutputStream outputStream) {
+        this.outputStream = outputStream;
+    }
 
-  public void setMode(ExecutionMode mode) {
-    this.mode = mode;
-  }
+    public ExecutionMode getMode() {
+        return mode;
+    }
 
-  public boolean isHistory() {
-    return history;
-  }
+    public void setMode(ExecutionMode mode) {
+        this.mode = mode;
+    }
 
-  public void setHistory(boolean history) {
-    this.history = history;
-  }
+    public String getId() {
+        return id;
+    }
+
+    protected void setId(String id) {
+        this.id = id;
+    }
+
+    public boolean isHistory() {
+        return history;
+    }
+
+    public void setHistory(boolean history) {
+        this.history = history;
+    }
 }

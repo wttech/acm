@@ -1,20 +1,4 @@
-import {
-    Button,
-    ButtonGroup,
-    Flex,
-    View,
-    Text,
-    Tabs,
-    TabList,
-    Item,
-    TabPanels,
-    Heading,
-    Content,
-    Keyboard,
-    DialogTrigger,
-    Dialog, Divider,
-    ProgressCircle
-} from "@adobe/react-spectrum";
+import {Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, TabList, TabPanels, Tabs, Text, View} from "@adobe/react-spectrum";
 import Editor from "@monaco-editor/react";
 import ConsoleCode from "./ConsoleCode.groovy";
 import Spellcheck from "@spectrum-icons/workflow/Spellcheck";
@@ -28,28 +12,30 @@ import Help from "@spectrum-icons/workflow/Help";
 
 import {ToastQueue} from '@react-spectrum/toast'
 import {apiRequest} from "../utils/api.ts";
-import React, {useState, useEffect, useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
-import {DataExecution} from "../utils/api.types.ts";
+import {Execution, ExecutionStatus, isExecutionPending} from "../utils/api.types.ts";
+import ExecutionProgressBar from "../components/ExecutionProgressBar";
 
 const toastTimeout = 3000;
+const executionPollDelay = 500;
 const executionPollInterval = 500;
-const executionFinalStatuses = ['SUCCEEDED', 'ABORTED', 'SKIPPED', 'FAILED', 'STOPPED'];
+type SelectedTab = 'code' | 'output';
 
 const ConsolePage = () => {
-    const [selectedTab, setSelectedTab] = useState<string>('code');
+    const [selectedTab, setSelectedTab] = useState<SelectedTab>('code');
     const [executing, setExecuting] = useState<boolean>(false);
     const [parsing, setParsing] = useState<boolean>(false);
     const [code, setCode] = useState<string | undefined>(ConsoleCode);
-    const [output, setOutput] = useState<string | undefined>('');
-    const [error, setError] = useState<string | undefined>('');
-    const [jobId, setJobId] = useState<string | undefined>(undefined);
+    const [execution, setExecution] = useState<Execution | null>(null);
     const pollExecutionRef = useRef<number | null>(null);
 
     const onExecute = async () => {
         setExecuting(true);
+        setExecution(null);
+
         try {
-            const response = await apiRequest<DataExecution>({
+            const response = await apiRequest<Execution>({
                 operation: 'Code execution',
                 url: `/apps/contentor/api/queue-code.json`,
                 method: 'post',
@@ -61,10 +47,13 @@ const ConsolePage = () => {
                     }
                 }
             });
-            const executionJob = response.data;
-            const jobId = executionJob.data.id;
-            setJobId(jobId);
-            pollExecutionRef.current = window.setInterval(() => pollExecutionState(jobId), executionPollInterval);
+            const queuedExecution = response.data.data;
+            setExecution(queuedExecution);
+            setSelectedTab('output');
+
+            window.setTimeout(() => {
+                pollExecutionRef.current = window.setInterval(() => {pollExecutionState(queuedExecution.id)}, executionPollInterval);
+            }, executionPollDelay);
         } catch (error) {
             console.error('Code execution error:', error);
             setExecuting(false);
@@ -74,78 +63,64 @@ const ConsolePage = () => {
 
     const pollExecutionState = async (jobId: string) => {
         try {
-            const response = await apiRequest<DataExecution>({
+            const response = await apiRequest<Execution>({
                 operation: 'Code execution state',
                 url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
                 method: 'get'
             });
-            const responseData = response.data;
-            const executionJob = responseData.data;
+            const queuedExecution = response.data.data;
+            setExecution(queuedExecution);
 
-            setOutput(executionJob.output);
-            setError(executionJob.error);
-
-            if (executionJob.status === 'ACTIVE') {
-                setSelectedTab('output');
-            }
-
-            if (executionFinalStatuses.includes(executionJob.status)) {
+            if (!isExecutionPending(queuedExecution.status)) {
                 clearInterval(pollExecutionRef.current!);
                 setExecuting(false);
-                if (executionJob.status === 'FAILED') {
+                if (queuedExecution.status === ExecutionStatus.FAILED) {
                     ToastQueue.negative('Code execution failed!', {timeout: toastTimeout});
-                    setSelectedTab('error');
-                } else if (executionJob.status === 'SKIPPED') {
+                } else if (queuedExecution.status === ExecutionStatus.SKIPPED) {
                     ToastQueue.neutral('Code execution cannot run!', {timeout: toastTimeout});
                 } else {
                     ToastQueue.positive('Code execution succeeded!', {timeout: toastTimeout});
                 }
             }
         } catch (error) {
-            console.error('Code execution state error:', error);
-            clearInterval(pollExecutionRef.current!);
-            setExecuting(false);
-            ToastQueue.negative('Code execution state error!', {timeout: toastTimeout});
+            console.warn('Code execution state unknown:', error);
         }
     };
 
     const onAbort = async () => {
-        if (!jobId) {
+        if (!execution?.id) {
             console.warn('Code execution cannot be aborted as it is not running!');
-            return
+            return;
         }
         try {
             await apiRequest({
-                operation: 'Code execution cancelling',
-                url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
+                operation: 'Code execution aborting',
+                url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
                 method: 'delete'
             });
             clearInterval(pollExecutionRef.current!);
             setExecuting(false);
 
-            let status = 'UNKNOWN';
-            while (!executionFinalStatuses.includes(status)) {
-                const response = await apiRequest<DataExecution>({
+            let queuedExecution: Execution | null = null;
+            while (queuedExecution === null || isExecutionPending(queuedExecution.status)) {
+                const response = await apiRequest<Execution>({
                     operation: 'Code execution state',
-                    url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
+                    url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
                     method: 'get'
                 });
-                const responseData = response.data;
-                const execution = responseData.data;
-                status = execution.status;
-
-                setOutput(execution.output);
-                setError(execution.error);
-                if (status === 'STOPPED') {
-                    setSelectedTab('output');
-                    break;
-                }
+                queuedExecution = response.data.data;
+                setExecution(queuedExecution);
                 await new Promise(resolve => setTimeout(resolve, executionPollInterval));
             }
-            ToastQueue.neutral('Code execution cancelled successfully!', {timeout: toastTimeout});
+            if (queuedExecution.status === ExecutionStatus.ABORTED) {
+                ToastQueue.positive('Code execution aborted successfully!', {timeout: toastTimeout});
+            } else {
+                console.warn('Code execution aborting failed!');
+                ToastQueue.negative('Code execution aborting failed!', {timeout: toastTimeout});
+            }
         } catch (error) {
-            console.error('Code execution cancelling error:', error);
-            ToastQueue.negative('Code execution cancelling failed!', {timeout: toastTimeout});
+            console.error('Code execution aborting error:', error);
+            ToastQueue.negative('Code execution aborting failed!', {timeout: toastTimeout});
         }
     };
 
@@ -160,8 +135,8 @@ const ConsolePage = () => {
 
     const onParse = () => {
         setParsing(true);
-        apiRequest<DataExecution>({
-            operation: 'Script parsing',
+        apiRequest<Execution>({
+            operation: 'Code parsing',
             url: `/apps/contentor/api/execute-code.json`,
             method: 'post',
             data: {
@@ -172,62 +147,45 @@ const ConsolePage = () => {
                 }
             }
         }).then((response) => {
-            const responseData = response.data;
-            const execution = responseData.data;
+            const queuedExecution = response.data.data;
+            setExecution(queuedExecution);
 
-            setOutput(execution.output);
-            setError(execution.error);
-
-            if (execution.error) {
+            if (queuedExecution.error) {
                 ToastQueue.negative('Code parsing failed!', {timeout: toastTimeout});
-                setSelectedTab('error');
+                setSelectedTab('output');
             } else {
                 ToastQueue.positive('Code parsing succeeded!', {timeout: toastTimeout});
             }
         }).catch(() => {
-            setOutput('');
-            setError('');
+            setExecution(null);
             ToastQueue.negative('Code parsing error!', {timeout: toastTimeout});
         }).finally(() => {
             setParsing(false);
         });
     }
 
-    const onCopyOutput = () => {
-        if (output) {
-            navigator.clipboard.writeText(output)
-                .then(() => {
-                    ToastQueue.neutral('Output copied to clipboard!', {timeout: toastTimeout});
-                })
-                .catch(() => {
-                    ToastQueue.negative('Failed to copy output!', {timeout: toastTimeout});
-                });
-        } else {
-            ToastQueue.negative('No output to copy!', {timeout: toastTimeout});
-        }
-    };
+    const executionOutput = ((execution?.output ?? '' ) + '\n' + (execution?.error ?? '')).trim();
 
-    const onCopyError = () => {
-        if (error) {
-            navigator.clipboard.writeText(error)
+    const onCopyExecutionOutput = () => {
+        if (executionOutput) {
+            navigator.clipboard.writeText(executionOutput)
                 .then(() => {
-                    ToastQueue.neutral('Error copied to clipboard!', {timeout: toastTimeout});
+                    ToastQueue.info('Execution output copied to clipboard!', {timeout: toastTimeout});
                 })
                 .catch(() => {
-                    ToastQueue.negative('Failed to copy error!', {timeout: toastTimeout});
+                    ToastQueue.negative('Failed to copy execution output!', {timeout: toastTimeout});
                 });
         } else {
-            ToastQueue.negative('No error to copy!', {timeout: toastTimeout});
+            ToastQueue.negative('No execution output to copy!', {timeout: toastTimeout});
         }
     };
 
     return (
         <Flex direction="column" gap="size-200">
-            <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as string)}>
+            <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
                 <TabList>
                     <Item key="code" aria-label="Code"><FileCode/><Text>Code</Text></Item>
-                    <Item key="output" aria-label="Output"><Print/><Text>Output</Text></Item>
-                    <Item key="error" aria-label="Error"><Bug/><Text>Error</Text></Item>
+                    <Item key="output" aria-label="Execution"><Print/><Text>Output</Text></Item>
                 </TabList>
                 <TabPanels>
                     <Item key="code">
@@ -281,12 +239,41 @@ const ConsolePage = () => {
                     </Item>
                     <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100">
-                            <Flex justifyContent="space-between" alignItems="center">
-                                <ButtonGroup>
-                                    <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
-                                    <Button variant="secondary" isDisabled={!output} onPress={onCopyOutput}><Copy/><Text>Copy</Text></Button>
-                                </ButtonGroup>
-                                <ProgressCircle aria-label="Loading…" isIndeterminate={executing} value={0} />
+                            <Flex direction="row" justifyContent="space-between" alignItems="center">
+                                <Flex flex={1} alignItems="center">
+                                    <ButtonGroup>
+                                        <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
+                                        <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}><Copy/><Text>Copy</Text></Button>
+                                    </ButtonGroup>
+                                </Flex>
+                                <Flex flex={1} justifyContent="center" alignItems="center">
+                                    <ExecutionProgressBar execution={execution} active={executing}/>
+                                </Flex>
+                                <Flex flex={1} justifyContent="end" alignItems="center">
+                                    <DialogTrigger>
+                                        <Button variant="secondary" style="fill"><Help/><Text>Help</Text></Button>
+                                        {(close) => (
+                                            <Dialog>
+                                                <Heading>Code execution</Heading>
+                                                <Divider />
+                                                <Content>
+                                                    <p><Print size="XS" /> Output is printed live.</p>
+                                                    <p><Cancel size="XS" /> <Text>Abort if the execution:</Text>
+                                                        <ul style={{listStyleType: 'none'}}>
+                                                            <li><Spellcheck size="XS" /> is taking too long</li>
+                                                            <li><Bug size="XS" /> is stuck in an infinite loop</li>
+                                                            <li><Gears size="XS" /> makes the instance unresponsive</li>
+                                                        </ul>
+                                                    </p>
+                                                    <p><Help size="XS" /> Be aware that aborting execution may leave data in an inconsistent state.</p>
+                                                </Content>
+                                                <ButtonGroup>
+                                                    <Button variant="secondary" onPress={close}>Close</Button>
+                                                </ButtonGroup>
+                                            </Dialog>
+                                        )}
+                                    </DialogTrigger>
+                                </Flex>
                             </Flex>
                             <View backgroundColor="gray-800"
                                   borderWidth="thin"
@@ -294,25 +281,7 @@ const ConsolePage = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        value={output}
-                                        height="60vh"
-                                        options={{readOnly: true}}
-                                />
-                            </View>
-                        </Flex>
-                    </Item>
-                    <Item key="error">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
-                            <ButtonGroup>
-                                <Button variant="secondary" isDisabled={!error} onPress={onCopyError}><Copy/><Text>Copy</Text></Button>
-                            </ButtonGroup>
-                            <View backgroundColor="gray-800"
-                                  borderWidth="thin"
-                                  borderColor="dark"
-                                  borderRadius="medium"
-                                  padding="size-50">
-                                <Editor theme="vs-dark"
-                                        value={error}
+                                        value={executionOutput}
                                         height="60vh"
                                         options={{readOnly: true}}
                                 />

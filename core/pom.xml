@@ -240,6 +240,12 @@ DynamicImport-Package: *
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <artifactId>org.apache.sling.jcr.resource</artifactId>
+            <version>3.0.18</version><!-- TODO downgrade to AEM 6.5.0 compatible -->
+            <groupId>org.apache.sling</groupId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy</artifactId>
             <version>4.0.18</version>

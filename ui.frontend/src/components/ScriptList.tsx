@@ -21,7 +21,7 @@ import {
 } from "@adobe/react-spectrum";
 import { Key, Selection } from '@react-types/shared';
 import { toastRequest } from '../utils/api';
-import { DataScript } from '../utils/api.types';
+import { ScriptOutput } from '../utils/api.types';
 import Cancel from "@spectrum-icons/workflow/Cancel";
 import PlayCircle from "@spectrum-icons/workflow/PlayCircle";
 import NotFound from '@spectrum-icons/illustrations/NotFound';
@@ -32,12 +32,12 @@ type ScriptListProps = {
 };
 
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
-    const [scripts, setScripts] = useState<DataScript | null>(null);
+    const [scripts, setScripts] = useState<ScriptOutput | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
     const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
 
     const loadScripts = useCallback(() => {
-        toastRequest<DataScript>({
+        toastRequest<ScriptOutput>({
             method: 'GET',
             url: `/apps/contentor/api/script.json?type=${type}`,
             operation: `Scripts loading (${type})`,
