@@ -1,8 +1,11 @@
 package com.wttech.aem.contentor.core.code;
 
+import com.wttech.aem.contentor.core.ContentorException;
+import com.wttech.aem.contentor.core.util.ExceptionUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import java.io.InputStream;
 import java.util.Date;
 
 public class ImmediateExecution implements Execution {
@@ -17,17 +20,14 @@ public class ImmediateExecution implements Execution {
 
     private final Date endDate;
 
-    private final String output;
-
     private final String error;
 
-    public ImmediateExecution(Executable executable, String id, ExecutionStatus status, Date startedDate, String output, String error) {
+    public ImmediateExecution(Executable executable, String id, ExecutionStatus status, Date startDate, Date endDate, String error) {
         this.executable = executable;
         this.id = id;
         this.status = status;
-        this.startDate = startedDate;
-        this.endDate = new Date();
-        this.output = output;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.error = error;
     }
 
@@ -62,13 +62,17 @@ public class ImmediateExecution implements Execution {
     }
 
     @Override
-    public String getOutput() {
-        return output;
+    public String getError() {
+        return error;
     }
 
     @Override
-    public String getError() {
-        return error;
+    public String getOutput() {
+        return ExecutionOutput.readString(getId()).orElse(null);
+    }
+
+    public InputStream readOutput() throws ContentorException {
+        return ExecutionOutput.read(getId());
     }
 
     @Override
@@ -78,5 +82,33 @@ public class ImmediateExecution implements Execution {
                 .append("status", getStatus())
                 .append("duration", getDuration())
                 .toString();
+    }
+
+    static class Builder {
+
+        private final ExecutionContext context;
+
+        private Date startDate;
+
+        private String error;
+
+        public Builder(ExecutionContext context) {
+            this.context = context;
+        }
+
+        public Builder start() {
+            this.startDate = new Date();
+            return this;
+        }
+
+        public Builder error(Throwable e) {
+            this.error = ExceptionUtils.toString(e);
+            return this;
+        }
+
+        public ImmediateExecution end(ExecutionStatus status) {
+            Date endDate = new Date();
+            return new ImmediateExecution(context.getExecutable(), context.getId(), status, startDate, endDate, error);
+        }
     }
 }

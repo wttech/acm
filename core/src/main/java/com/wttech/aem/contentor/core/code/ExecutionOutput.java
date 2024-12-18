@@ -13,21 +13,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public enum ExecutionFile {
-    OUTPUT;
+public class ExecutionOutput {
 
     public static final String TMP_DIR = "contentor";
 
-    public static Path path(String jobId, ExecutionFile type) {
+    public static Path path(String jobId) {
         File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        return dir.toPath().resolve(String.format("%s_%s.txt", StringUtils.replace(jobId, "/", "-"), type.name().toLowerCase()));
+        return dir.toPath().resolve(String.format("%s_output.txt", StringUtils.replace(jobId, "/", "-")));
     }
 
-    public static Optional<String> read(String jobId, ExecutionFile type) throws ContentorException {
-        Path path = path(jobId, type);
+    public static Optional<String> readString(String jobId) throws ContentorException {
+        Path path = path(jobId);
         if (!path.toFile().exists()) {
             return Optional.empty();
         }
@@ -35,17 +34,23 @@ public enum ExecutionFile {
         try (InputStream input = Files.newInputStream(path)) {
             return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
         } catch (IOException e) {
-            throw new ContentorException(String.format("Execution file '%s' cannot be read for job '%s'", type, jobId), e);
+            throw new ContentorException(String.format("Execution output file cannot be read as string for job '%s'", jobId), e);
+        }
+    }
+
+    public static InputStream read(String jobId) {
+        try {
+            return Files.newInputStream(path(jobId));
+        } catch (IOException e) {
+            throw new ContentorException(String.format("Execution output file cannot be read for job '%s'", jobId), e);
         }
     }
 
     public static void delete(String jobId) throws ContentorException {
         try {
-            for (ExecutionFile value : values()) {
-                Files.deleteIfExists(path(jobId, value));
-            }
+            Files.deleteIfExists(path(jobId));
         } catch (IOException e) {
-            throw new ContentorException(String.format("Execution files clean up failed for job '%s'", jobId), e);
+            throw new ContentorException(String.format("Execution output file clean up failed for job '%s'", jobId), e);
         }
     }
 }

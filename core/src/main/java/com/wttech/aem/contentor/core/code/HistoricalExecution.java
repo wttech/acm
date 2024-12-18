@@ -48,7 +48,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
         this.output = props.get("output", String.class);
     }
 
-    protected static Map<String, Object> toMap(Execution execution) {
+    protected static Map<String, Object> toMap(ImmediateExecution execution) {
         Map<String, Object> props = new HashMap<>();
 
         props.put("executableId", execution.getExecutable().getId());
@@ -59,7 +59,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
         props.put("endDate", DateUtils.toCalendar(execution.getEndDate()));
         props.put("duration", execution.getDuration());
         props.put("error", execution.getError());
-        props.put("output", execution.getOutput());
+        props.put("output", execution.readOutput());
 
         props.entrySet().removeIf(e -> e.getValue() == null);
         props.put(JcrConstants.JCR_PRIMARYTYPE, PRIMARY_TYPE);

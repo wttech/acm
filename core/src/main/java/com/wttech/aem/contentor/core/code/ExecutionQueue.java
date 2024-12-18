@@ -82,16 +82,11 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public Optional<Execution> read(String jobId, ResourceResolver resourceResolver) throws ContentorException {
-        Job job = jobManager.getJobById(jobId);
-        if (job == null) {
-            return Optional.empty();
-        }
-        ExecutionHistory executionHistory = new ExecutionHistory(resourceResolver);
-        Execution result = executionHistory.read(jobId).orElse(null);
+        Execution result = new ExecutionHistory(resourceResolver).read(jobId).orElse(null);
         if (result == null) {
-            result = new QueuedExecution(job);
+            result = Optional.ofNullable(jobManager.getJobById(jobId)).map(QueuedExecution::new).orElse(null);
         }
-        return Optional.of(result);
+        return Optional.ofNullable(result);
     }
 
     public void stop(String jobId) {

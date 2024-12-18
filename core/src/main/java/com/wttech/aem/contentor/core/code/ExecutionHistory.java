@@ -26,7 +26,7 @@ public class ExecutionHistory {
         return Stream.empty();
     }
 
-    public void save(Execution execution) throws ContentorException {
+    public void save(ImmediateExecution execution) throws ContentorException {
         Resource root = getOrCreateRoot();
         Map<String, Object> props = HistoricalExecution.toMap(execution);
 

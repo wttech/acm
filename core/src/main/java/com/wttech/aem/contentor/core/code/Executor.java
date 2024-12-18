@@ -1,7 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
-import com.wttech.aem.contentor.core.util.ExceptionUtils;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -20,7 +19,6 @@ import org.osgi.service.component.annotations.Reference;
 
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.util.Date;
 
 @Component(immediate = true, service = Executor.class)
 public class Executor {
@@ -50,30 +48,33 @@ public class Executor {
     }
 
     public Execution execute(ExecutionContext context) throws ContentorException {
-        Execution execution = executeImmediately(context);
-        if (context.isHistory() && context.getMode() == ExecutionMode.EVALUATE) {
-            ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
-            history.save(execution);
+        try {
+            ImmediateExecution execution = executeImmediately(context);
+            if (context.isHistory() && context.getMode() == ExecutionMode.EVALUATE) {
+                ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
+                history.save(execution);
+            }
+            return execution;
+        } finally {
+            ExecutionOutput.delete(context.getId());
         }
-        return execution;
     }
 
     private ImmediateExecution executeImmediately(ExecutionContext context) {
-        Date startDate = new Date();
-        Executable executable = context.getExecutable();
-        String content = composeContent(context.getExecutable());
+        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
-        try (OutputStream outputStream = Files.newOutputStream(ExecutionFile.path(context.getId(), ExecutionFile.OUTPUT))) {
+        try (OutputStream outputStream = Files.newOutputStream(ExecutionOutput.path(context.getId()))) {
             context.setOutputStream(outputStream);
 
             GroovyShell shell = createShell(context);
-            Script script = shell.parse(content, CodeSyntax.MAIN_CLASS);
+            Script script = shell.parse(composeScript(context.getExecutable()), CodeSyntax.MAIN_CLASS);
             script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
+
+            execution.start();
 
             boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
             if (!runnable) {
-                return new ImmediateExecution(executable, context.getId(), ExecutionStatus.SKIPPED, startDate,
-                        ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), null);
+                return execution.end(ExecutionStatus.SKIPPED);
             }
 
             switch (context.getMode()) {
@@ -84,19 +85,17 @@ public class Executor {
                     break;
             }
 
-            return new ImmediateExecution(executable, context.getId(), ExecutionStatus.SUCCEEDED, startDate,
-                    ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), null);
+            return execution.end(ExecutionStatus.SUCCEEDED);
         } catch (Throwable e) {
-            if (e.getCause() != null && e.getCause() instanceof InterruptedException) {
-                return new ImmediateExecution(executable, context.getId(), ExecutionStatus.ABORTED, startDate,
-                        ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), ExceptionUtils.toString(e));
+            execution.error(e);
+            if ((e.getCause() != null && e.getCause() instanceof InterruptedException)) {
+                return execution.end(ExecutionStatus.ABORTED);
             }
-            return new ImmediateExecution(executable, context.getId(), ExecutionStatus.FAILED, startDate,
-                    ExecutionFile.read(context.getId(), ExecutionFile.OUTPUT).orElse(null), ExceptionUtils.toString(e));
+            return execution.end(ExecutionStatus.FAILED);
         }
     }
 
-    private String composeContent(Executable executable) throws ContentorException {
+    private String composeScript(Executable executable) throws ContentorException {
         StringBuilder builder = new StringBuilder();
         builder.append("void ").append(CodeSyntax.Methods.INIT.givenName).append("() {\n");
         builder.append("\tSystem.setOut(new java.io.PrintStream(").append(Variable.OUT.varName()).append(", true, \"UTF-8\"));\n");

@@ -1,5 +1,7 @@
 package com.wttech.aem.contentor.core.util;
 
+import java.util.Optional;
+
 public final class ExceptionUtils {
 
     private ExceptionUtils() {
@@ -7,6 +9,8 @@ public final class ExceptionUtils {
     }
 
     public static String toString(Throwable cause) {
-        return org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace(cause);
+        return Optional.ofNullable(cause)
+                .map(org.apache.commons.lang3.exception.ExceptionUtils::getStackTrace)
+                .orElse(null);
     }
 }
