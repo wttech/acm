@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, View} from "@adobe/react-spectrum";
+import {Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, View, Text} from "@adobe/react-spectrum";
 import { DateValue } from '@internationalized/date';
-import {ExecutionOutput, ExecutionStatus, isExecutionPending} from '../utils/api.types';
+import {ExecutionOutput, ExecutionStatus} from '../utils/api.types';
 import { toastRequest } from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
 import ExecutionStatusBadge from "../components/ExecutionStatusBadge.tsx";
@@ -9,6 +9,11 @@ import { Strings } from "../utils/strings.ts";
 import ExecutableValue from "../components/ExecutableValue.tsx";
 import { Key } from "@react-types/shared";
 import { useNavigate } from "react-router-dom";
+import Alert from '@spectrum-icons/workflow/Alert';
+import Pause from '@spectrum-icons/workflow/Pause';
+import Cancel from "@spectrum-icons/workflow/Cancel";
+import Checkmark from "@spectrum-icons/workflow/Checkmark";
+import Star from "@spectrum-icons/workflow/Star";
 
 const ExecutionList = () => {
     const navigate = useNavigate();
@@ -17,10 +22,6 @@ const ExecutionList = () => {
     const [startDate, setStartDate] = useState<DateValue | null>(null);
     const [endDate, setEndDate] = useState<DateValue | null>(null);
     const [status, setStatus] = useState<string | null>('all');
-
-    const statusOptions = Object.values(ExecutionStatus)
-        .filter(status => !isExecutionPending(status))
-        .map(status => ({ key: status.toLowerCase(), name: status.charAt(0) + status.slice(1).toLowerCase() }));
 
     useEffect(() => {
         const fetchExecutions = async () => {
@@ -68,16 +69,27 @@ const ExecutionList = () => {
                       paddingBottom="size-200"
                       marginBottom="size-10">
                     <Flex direction="row" gap="size-200" alignItems="center">
-                        <Picker
-                            label="Status"
-                            selectedKey={status}
-                            onSelectionChange={(key) => setStatus(String(key))}
-                            items={[
-                                { key: 'all', name: 'All' },
-                                ...statusOptions
-                            ]}
-                        >
-                            {(item) => <Item key={item.key}>{item.name}</Item>}
+                        <Picker label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
+                            <Item textValue="All" key="all">
+                                <Star size="S" />
+                                <Text>All</Text>
+                            </Item>
+                            <Item textValue="Skipped" key={ExecutionStatus.SKIPPED}>
+                                <Pause size="S" />
+                                <Text>Skipped</Text>
+                            </Item>
+                            <Item textValue="Aborted" key={ExecutionStatus.ABORTED}>
+                                <Cancel size="S" />
+                                <Text>Aborted</Text>
+                            </Item>
+                            <Item textValue="Failed" key={ExecutionStatus.FAILED}>
+                                <Alert size="S" />
+                                <Text>Failed</Text>
+                            </Item>
+                            <Item textValue="Succeeded" key={ExecutionStatus.SUCCEEDED}>
+                                <Checkmark size="S" />
+                                <Text>Succeeded</Text>
+                            </Item>
                         </Picker>
                         <DatePicker
                             label="Start Date"

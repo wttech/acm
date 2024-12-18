@@ -8,10 +8,10 @@ import java.util.Optional;
 public enum ExecutionStatus {
     QUEUED,
     ACTIVE,
-    STOPPED,
-    FAILED,
     SKIPPED,
+    STOPPED,
     ABORTED,
+    FAILED,
     SUCCEEDED;
 
     public static Optional<ExecutionStatus> of(String status) {
