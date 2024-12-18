@@ -5,10 +5,8 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class ServletUtils {
@@ -30,6 +28,14 @@ public final class ServletUtils {
                 .map(StringUtils::trimToNull)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    public static Date dateParam(SlingHttpServletRequest request, String name) {
+        String value = stringParam(request, name);
+        if (value == null) {
+            return null;
+        }
+        return Date.from(Instant.parse(value));
     }
 
     public static void respondJson(SlingHttpServletResponse response, ServletResult<?> result) throws IOException {

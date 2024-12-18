@@ -1,7 +1,7 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
-import com.wttech.aem.contentor.core.util.ResourceSpliterator;
+import com.wttech.aem.contentor.core.util.StreamUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -9,6 +9,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
+import javax.jcr.query.Query;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -70,8 +71,13 @@ public class ExecutionHistory {
     }
 
     public Stream<Execution> findAll() {
-        return ResourceSpliterator.stream(getOrCreateRoot())
-                .map(r -> HistoricalExecution.from(r).orElse(null))
+        return findAll(new ExecutionQuery());
+    }
+
+    public Stream<Execution> findAll(ExecutionQuery query) {
+        Stream<Resource> entries = StreamUtils.asStream(resourceResolver.findResources(query.toSql(), Query.JCR_SQL2));
+
+        return entries.map(r -> HistoricalExecution.from(r).orElse(null))
                 .filter(Objects::nonNull)
                 .map(Execution.class::cast);
     }

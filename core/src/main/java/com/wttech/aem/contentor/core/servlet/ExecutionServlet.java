@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.servlet;
 
 import com.wttech.aem.contentor.core.code.Execution;
+import com.wttech.aem.contentor.core.code.ExecutionQuery;
 import com.wttech.aem.contentor.core.code.ExecutionHistory;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -12,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.Servlet;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,10 +45,9 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
             if (!ids.isEmpty()) {
                 executions = executionHistory.readAll(ids).sorted().collect(Collectors.toList());
             } else {
-                executions = executionHistory.findAll().sorted().collect(Collectors.toList());
+                ExecutionQuery criteria = ExecutionQuery.from(request);
+                executions = executionHistory.findAll(criteria).sorted().collect(Collectors.toList());
             }
-
-            Collections.reverse(executions); // TODO do it in the query
 
             ExecutionOutput output = new ExecutionOutput(executions);
             respondJson(response, ok("Executions listed successfully", output));
