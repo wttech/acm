@@ -14,6 +14,16 @@ export class Strings {
         return result;
     }
 
+    static durationExplained(milliseconds: number): string {
+        const duration = intervalToDuration({start: 0, end: milliseconds});
+        let result = `${milliseconds} ms`
+        const formatted = formatDuration(duration, {format: ['days', 'hours', 'minutes', 'seconds']});
+        if (formatted) {
+            result += ` (${formatted})`;
+        }
+        return result
+    }
+
     static date(value: string): string {
         return formatDate(value, 'yyyy-MM-dd HH:mm:ss');
     }
