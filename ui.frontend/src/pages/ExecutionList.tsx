@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 const ExecutionList = () => {
     const navigate = useNavigate();
     const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
+
     const [startDate, setStartDate] = useState<DateValue | null>(null);
     const [endDate, setEndDate] = useState<DateValue | null>(null);
     const [status, setStatus] = useState<string | null>('all');
@@ -26,8 +27,8 @@ const ExecutionList = () => {
             try {
                 let url = `/apps/contentor/api/execution.json`;
                 const params = new URLSearchParams();
-                if (startDate) params.append('startDate', startDate.toDate('UTC').toISOString());
-                if (endDate) params.append('endDate', endDate.toDate('UTC').toISOString());
+                if (startDate) params.append('startDate', startDate.toString());
+                if (endDate) params.append('endDate', endDate.toString());
                 if (status && status !== 'all') params.append('status', status);
                 if (params.toString()) url += `?${params.toString()}`;
                 const response = await toastRequest<ExecutionOutput>({
@@ -67,16 +68,6 @@ const ExecutionList = () => {
                       paddingBottom="size-200"
                       marginBottom="size-10">
                     <Flex direction="row" gap="size-200" alignItems="center">
-                        <DatePicker
-                            label="Start Date"
-                            value={startDate}
-                            onChange={setStartDate}
-                        />
-                        <DatePicker
-                            label="End Date"
-                            value={endDate}
-                            onChange={setEndDate}
-                        />
                         <Picker
                             label="Status"
                             selectedKey={status}
@@ -88,6 +79,18 @@ const ExecutionList = () => {
                         >
                             {(item) => <Item key={item.key}>{item.name}</Item>}
                         </Picker>
+                        <DatePicker
+                            label="Start Date"
+                            granularity="second"
+                            value={startDate}
+                            onChange={setStartDate}
+                        />
+                        <DatePicker
+                            label="End Date"
+                            granularity="second"
+                            value={endDate}
+                            onChange={setEndDate}
+                        />
                     </Flex>
                 </View>
                 <TableView
@@ -107,7 +110,7 @@ const ExecutionList = () => {
                         {(executions?.list || []).map(execution => (
                             <Row key={execution.id}>
                                 <Cell><ExecutableValue value={execution.executable}/></Cell>
-                                <Cell>{Strings.dateRelative(execution.startDate)}</Cell>
+                                <Cell>{Strings.dateExplained(execution.startDate)}</Cell>
                                 <Cell>{Strings.duration(execution.duration)}</Cell>
                                 <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
                             </Row>

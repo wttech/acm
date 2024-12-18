@@ -117,9 +117,9 @@ const ExecutionView = () => {
                             </View>
                             <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                                 <Flex direction="row" justifyContent="space-between" gap="size-200">
-                                    <LabeledValue label="Started At" value={`${Strings.date(execution.startDate)} (${Strings.dateRelative(execution.startDate)})`} />
+                                    <LabeledValue label="Started At" value={Strings.dateExplained(execution.startDate)} />
                                     <LabeledValue label="Duration" value={Strings.durationExplained(execution.duration)} />
-                                    <LabeledValue label="Ended At" value={`${Strings.date(execution.endDate)} (${Strings.dateRelative(execution.endDate)})`} />
+                                    <LabeledValue label="Ended At" value={Strings.dateExplained(execution.endDate)} />
                                 </Flex>
                             </View>
                         </Flex>

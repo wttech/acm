@@ -1,5 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
+import com.wttech.aem.contentor.core.util.DateUtils;
 import com.wttech.aem.contentor.core.util.ServletUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -21,8 +22,8 @@ public class ExecutionQuery {
 
     public static ExecutionQuery from(SlingHttpServletRequest request) {
         ExecutionQuery result = new ExecutionQuery();
-        result.setStartDate(ServletUtils.dateParam(request, "startDate"));
-        result.setEndDate(ServletUtils.dateParam(request, "endDate"));
+        result.setStartDate(DateUtils.fromString(ServletUtils.stringParam(request, "startDate")));
+        result.setEndDate(DateUtils.fromString(ServletUtils.stringParam(request, "endDate")));
         result.setStatus(ExecutionStatus.of(ServletUtils.stringParam(request, "status")).orElse(null));
         return result;
     }
@@ -72,10 +73,10 @@ public class ExecutionQuery {
             filters.add(String.format("s.[status] = '%s'", status));
         }
         if (startDate != null) {
-            filters.add(String.format("s.[startDate] >= CAST('%s' AS DATE)", startDate));
+            filters.add(String.format("s.[startDate] >= CAST('%s' AS DATE)", DateUtils.toString(startDate)));
         }
         if (endDate != null) {
-            filters.add(String.format("s.[endDate] <= CAST('%s' AS DATE)", endDate));
+            filters.add(String.format("s.[endDate] <= CAST('%s' AS DATE)", DateUtils.toString(endDate)));
         }
         String where = filters.stream()
                 .map(f -> "(" + f + ")")

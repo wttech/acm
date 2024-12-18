@@ -2,6 +2,7 @@ package com.wttech.aem.contentor.core.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
@@ -16,12 +17,23 @@ public final class DateUtils {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     }
 
+    private static SimpleDateFormat isoFormatNoMillis() {
+        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+    }
+
+    private static SimpleDateFormat isoFormatNoMillisNoTimezone() {
+        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    }
+
     private static Date fromStringInternal(String text) {
-        try {
-            return isoFormat().parse(text);
-        } catch (ParseException e) {
-            return null;
+        for (SimpleDateFormat format : Arrays.asList(isoFormat(), isoFormatNoMillis(), isoFormatNoMillisNoTimezone())) {
+            try {
+                return format.parse(text);
+            } catch (ParseException ignored) {
+                // ignore
+            }
         }
+        throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", text));
     }
 
     private static String toStringInternal(Date date) {

@@ -30,14 +30,6 @@ public final class ServletUtils {
                 .collect(Collectors.toList());
     }
 
-    public static Date dateParam(SlingHttpServletRequest request, String name) {
-        String value = stringParam(request, name);
-        if (value == null) {
-            return null;
-        }
-        return Date.from(Instant.parse(value));
-    }
-
     public static void respondJson(SlingHttpServletResponse response, ServletResult<?> result) throws IOException {
         response.setStatus(result.getStatus());
         response.setContentType(JsonUtils.APPLICATION_JSON_UTF8);
