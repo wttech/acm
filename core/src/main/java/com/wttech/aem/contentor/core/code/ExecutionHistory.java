@@ -75,8 +75,8 @@ public class ExecutionHistory {
     }
 
     public Stream<Execution> findAll(ExecutionQuery query) {
-        Stream<Resource> entries = StreamUtils.asStream(resourceResolver.findResources(query.toSql(), Query.JCR_SQL2));
-
+        String sql = query.toSql();
+        Stream<Resource> entries = StreamUtils.asStream(resourceResolver.findResources(sql, Query.JCR_SQL2));
         return entries.map(r -> HistoricalExecution.from(r).orElse(null))
                 .filter(Objects::nonNull)
                 .map(Execution.class::cast);
