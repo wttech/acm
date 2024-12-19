@@ -43,10 +43,10 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
 
             List<String> ids = stringsParam(request, ID_PARAM);
             if (!ids.isEmpty()) {
-                executions = executionHistory.readAll(ids).sorted().collect(Collectors.toList());
+                executions = executionHistory.readAll(ids).collect(Collectors.toList());
             } else {
                 ExecutionQuery criteria = ExecutionQuery.from(request);
-                executions = executionHistory.findAll(criteria).sorted().collect(Collectors.toList());
+                executions = executionHistory.findAll(criteria).collect(Collectors.toList());
             }
 
             ExecutionOutput output = new ExecutionOutput(executions);
