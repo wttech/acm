@@ -31,4 +31,8 @@ export class Strings {
     static dateRelative(value: string): string {
         return formatDistance(value, new Date(), {addSuffix: true, includeSeconds: true});
     }
+
+    static dateExplained(value: string): string {
+        return `${Strings.date(value)} (${Strings.dateRelative(value)})`
+    }
 }
