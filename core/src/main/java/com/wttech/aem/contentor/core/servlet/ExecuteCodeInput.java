@@ -5,25 +5,25 @@ import java.io.Serializable;
 
 public class ExecuteCodeInput implements Serializable {
 
-  private String mode;
+    private String mode;
 
-  private Code code;
+    private Code code;
 
-  private Boolean history;
+    private Boolean history;
 
-  public ExecuteCodeInput() {
-    // for deserialization
-  }
+    public ExecuteCodeInput() {
+        // for deserialization
+    }
 
-  public String getMode() {
-    return mode;
-  }
+    public String getMode() {
+        return mode;
+    }
 
-  public Code getCode() {
-    return code;
-  }
+    public Code getCode() {
+        return code;
+    }
 
-  public Boolean getHistory() {
-    return history;
-  }
+    public Boolean getHistory() {
+        return history;
+    }
 }

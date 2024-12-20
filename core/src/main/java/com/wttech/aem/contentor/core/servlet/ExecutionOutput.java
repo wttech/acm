@@ -6,13 +6,13 @@ import java.util.List;
 
 public class ExecutionOutput implements Serializable {
 
-  public List<Execution> list;
+    public List<Execution> list;
 
-  public ExecutionOutput(List<Execution> executions) {
-    this.list = executions;
-  }
+    public ExecutionOutput(List<Execution> executions) {
+        this.list = executions;
+    }
 
-  public List<Execution> getList() {
-    return list;
-  }
+    public List<Execution> getList() {
+        return list;
+    }
 }

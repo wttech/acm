@@ -5,15 +5,15 @@ import java.io.Serializable;
 
 public interface Suggestion extends Serializable {
 
-  @JsonProperty("k")
-  String getKind();
+    @JsonProperty("k")
+    String getKind();
 
-  @JsonProperty("l")
-  String getLabel();
+    @JsonProperty("l")
+    String getLabel();
 
-  @JsonProperty("it")
-  String getInsertText();
+    @JsonProperty("it")
+    String getInsertText();
 
-  @JsonProperty("i")
-  String getInfo();
+    @JsonProperty("i")
+    String getInfo();
 }

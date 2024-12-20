@@ -6,13 +6,13 @@ import java.util.List;
 
 public class SnippetOutput implements Serializable {
 
-  public List<Snippet> list;
+    public List<Snippet> list;
 
-  public SnippetOutput(List<Snippet> snippets) {
-    this.list = snippets;
-  }
+    public SnippetOutput(List<Snippet> snippets) {
+        this.list = snippets;
+    }
 
-  public List<Snippet> getList() {
-    return list;
-  }
+    public List<Snippet> getList() {
+        return list;
+    }
 }

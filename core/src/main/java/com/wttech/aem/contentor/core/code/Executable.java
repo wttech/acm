@@ -5,7 +5,7 @@ import java.io.Serializable;
 
 public interface Executable extends Serializable {
 
-  String getId();
+    String getId();
 
-  String getContent() throws ContentorException;
+    String getContent() throws ContentorException;
 }

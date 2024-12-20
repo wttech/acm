@@ -20,39 +20,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-    immediate = true,
-    service = Servlet.class,
-    property = {
-      ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
-      ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
-      ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + AssistCodeServlet.RT
-    })
+        immediate = true,
+        service = Servlet.class,
+        property = {
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
+            ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
+            ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + AssistCodeServlet.RT
+        })
 public class AssistCodeServlet extends SlingAllMethodsServlet {
 
-  public static final String RT = "contentor/api/assist-code";
-  public static final String WORD_PARAM = "word";
-  public static final String TYPE_PARAM = "type";
-  private static final Logger LOG = LoggerFactory.getLogger(AssistCodeServlet.class);
-  @Reference private Assistancer assistancer;
+    public static final String RT = "contentor/api/assist-code";
+    public static final String WORD_PARAM = "word";
+    public static final String TYPE_PARAM = "type";
+    private static final Logger LOG = LoggerFactory.getLogger(AssistCodeServlet.class);
 
-  @Override
-  protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
-      throws IOException {
-    String word = stringParam(request, WORD_PARAM);
-    if (word == null) {
-      respondJson(response, badRequest("Code assistance word is not specified!"));
-      return;
+    @Reference
+    private Assistancer assistancer;
+
+    @Override
+    protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        String word = stringParam(request, WORD_PARAM);
+        if (word == null) {
+            respondJson(response, badRequest("Code assistance word is not specified!"));
+            return;
+        }
+        String type = StringUtils.defaultString(stringParam(request, TYPE_PARAM), "all");
+        try {
+            Assistance assistance = assistancer.forWord(request.getResourceResolver(), SuggestionType.of(type), word);
+            respondJson(response, ok("Code assistance generated successfully", assistance));
+        } catch (Exception e) {
+            LOG.error("Cannot generate code assistance", e);
+            respondJson(
+                    response, error(String.format("Code assistance cannot be generated. Error: %s", e.getMessage())));
+        }
     }
-    String type = StringUtils.defaultString(stringParam(request, TYPE_PARAM), "all");
-    try {
-      Assistance assistance =
-          assistancer.forWord(request.getResourceResolver(), SuggestionType.of(type), word);
-      respondJson(response, ok("Code assistance generated successfully", assistance));
-    } catch (Exception e) {
-      LOG.error("Cannot generate code assistance", e);
-      respondJson(
-          response,
-          error(String.format("Code assistance cannot be generated. Error: %s", e.getMessage())));
-    }
-  }
 }

@@ -11,30 +11,30 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 @Designate(ocd = HealthChecker.Config.class)
 public class HealthChecker {
 
-  private Config config;
+    private Config config;
 
-  @Activate
-  @Modified
-  protected void activate(Config config) {
-    this.config = config;
-  }
+    @Activate
+    @Modified
+    protected void activate(Config config) {
+        this.config = config;
+    }
 
-  public boolean isHealthy() {
-    return true; // TODO implement this like in:
-    // https://github.com/wttech/aemc/blob/main/pkg/instance_manager_check.go
-  }
+    public boolean isHealthy() {
+        return true; // TODO implement this like in:
+        // https://github.com/wttech/aemc/blob/main/pkg/instance_manager_check.go
+    }
 
-  @ObjectClassDefinition(name = "AEM Contentor - Health Checker")
-  public @interface Config {
+    @ObjectClassDefinition(name = "AEM Contentor - Health Checker")
+    public @interface Config {
 
-    @AttributeDefinition(name = "Bundle Symbolic Names Ignored")
-    String[] bundleSymbolicNamesIgnored();
+        @AttributeDefinition(name = "Bundle Symbolic Names Ignored")
+        String[] bundleSymbolicNamesIgnored();
 
-    @AttributeDefinition(name = "Event Topics Unstable")
-    String[] eventTopicsUnstable() default {
-      "org/osgi/framework/ServiceEvent/*",
-      "org/osgi/framework/FrameworkEvent/*",
-      "org/osgi/framework/BundleEvent/*"
-    };
-  }
+        @AttributeDefinition(name = "Event Topics Unstable")
+        String[] eventTopicsUnstable() default {
+            "org/osgi/framework/ServiceEvent/*",
+            "org/osgi/framework/FrameworkEvent/*",
+            "org/osgi/framework/BundleEvent/*"
+        };
+    }
 }

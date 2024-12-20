@@ -9,30 +9,29 @@ import org.apache.sling.api.SlingHttpServletResponse;
 
 public final class ServletUtils {
 
-  private ServletUtils() {
-    // intentionally empty
-  }
-
-  public static String stringParam(SlingHttpServletRequest request, String name) {
-    return StringUtils.trimToNull(request.getParameter(name));
-  }
-
-  public static List<String> stringsParam(SlingHttpServletRequest request, String name) {
-    String[] values = request.getParameterValues(name);
-    if (values == null) {
-      return Collections.emptyList();
+    private ServletUtils() {
+        // intentionally empty
     }
-    return Arrays.stream(values)
-        .map(StringUtils::trimToNull)
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
-  }
 
-  public static void respondJson(SlingHttpServletResponse response, ServletResult<?> result)
-      throws IOException {
-    response.setStatus(result.getStatus());
-    response.setContentType(JsonUtils.APPLICATION_JSON_UTF8);
+    public static String stringParam(SlingHttpServletRequest request, String name) {
+        return StringUtils.trimToNull(request.getParameter(name));
+    }
 
-    JsonUtils.MAPPER.writeValue(response.getOutputStream(), result);
-  }
+    public static List<String> stringsParam(SlingHttpServletRequest request, String name) {
+        String[] values = request.getParameterValues(name);
+        if (values == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(values)
+                .map(StringUtils::trimToNull)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    public static void respondJson(SlingHttpServletResponse response, ServletResult<?> result) throws IOException {
+        response.setStatus(result.getStatus());
+        response.setContentType(JsonUtils.APPLICATION_JSON_UTF8);
+
+        JsonUtils.MAPPER.writeValue(response.getOutputStream(), result);
+    }
 }
