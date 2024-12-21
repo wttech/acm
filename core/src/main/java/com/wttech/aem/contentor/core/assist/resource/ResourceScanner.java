@@ -1,12 +1,11 @@
 package com.wttech.aem.contentor.core.assist.resource;
 
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.service.component.annotations.Component;
-
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @Component(immediate = true, service = ResourceScanner.class)
 public class ResourceScanner {
@@ -37,5 +36,4 @@ public class ResourceScanner {
             return Stream.of(resource);
         }
     }
-
 }

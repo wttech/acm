@@ -1,12 +1,11 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Code implements Executable {
 

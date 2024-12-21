@@ -2,6 +2,11 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
+import java.util.Optional;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -15,12 +20,6 @@ import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @Component(
         immediate = true,
@@ -84,7 +83,9 @@ public class ExecutionQueue implements JobExecutor {
     public Optional<Execution> read(String jobId, ResourceResolver resourceResolver) throws ContentorException {
         Execution result = new ExecutionHistory(resourceResolver).read(jobId).orElse(null);
         if (result == null) {
-            result = Optional.ofNullable(jobManager.getJobById(jobId)).map(QueuedExecution::new).orElse(null);
+            result = Optional.ofNullable(jobManager.getJobById(jobId))
+                    .map(QueuedExecution::new)
+                    .orElse(null);
         }
         return Optional.ofNullable(result);
     }
@@ -147,7 +148,8 @@ public class ExecutionQueue implements JobExecutor {
             context.setId(execution.getJob().getId());
             return executor.execute(context);
         } catch (LoginException e) {
-            throw new ContentorException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
+            throw new ContentorException(
+                    String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         }
     }
 }

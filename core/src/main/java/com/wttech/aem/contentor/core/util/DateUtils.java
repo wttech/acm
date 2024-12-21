@@ -41,21 +41,15 @@ public final class DateUtils {
     }
 
     public static String toString(Date date) {
-        return Optional.ofNullable(date)
-                .map(DateUtils::toStringInternal)
-                .orElse(null);
+        return Optional.ofNullable(date).map(DateUtils::toStringInternal).orElse(null);
     }
 
     public static Date fromString(String text) {
-        return Optional.ofNullable(text)
-                .map(DateUtils::fromStringInternal)
-                .orElse(null);
+        return Optional.ofNullable(text).map(DateUtils::fromStringInternal).orElse(null);
     }
 
     public static Calendar toCalendar(Date date) {
-        return Optional.ofNullable(date)
-                .map(DateUtils::toCalendarInternal)
-                .orElse(null);
+        return Optional.ofNullable(date).map(DateUtils::toCalendarInternal).orElse(null);
     }
 
     private static Calendar toCalendarInternal(Date d) {
@@ -65,8 +59,6 @@ public final class DateUtils {
     }
 
     public static Date toDate(Calendar calendar) {
-        return Optional.ofNullable(calendar)
-                .map(Calendar::getTime)
-                .orElse(null);
+        return Optional.ofNullable(calendar).map(Calendar::getTime).orElse(null);
     }
 }

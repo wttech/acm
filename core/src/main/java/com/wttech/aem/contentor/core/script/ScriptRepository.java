@@ -2,17 +2,15 @@ package com.wttech.aem.contentor.core.script;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceSpliterator;
-
 import com.wttech.aem.contentor.core.util.ResourceUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.sling.api.resource.PersistenceException;
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
 
 public class ScriptRepository {
 
@@ -64,7 +62,8 @@ public class ScriptRepository {
         }
         try {
             String sourcePath = script.getPath();
-            String targetPath = ScriptType.ENABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.DISABLED.root() + "/");
+            String targetPath =
+                    ScriptType.ENABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.DISABLED.root() + "/");
             ResourceUtils.move(resourceResolver, sourcePath, targetPath);
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot enable script at path '%s'!", path), e);
@@ -81,7 +80,8 @@ public class ScriptRepository {
         }
         try {
             String sourcePath = script.getPath();
-            String targetPath = ScriptType.DISABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.ENABLED.root() + "/");
+            String targetPath =
+                    ScriptType.DISABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.ENABLED.root() + "/");
             ResourceUtils.move(resourceResolver, sourcePath, targetPath);
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot disable script at path '%s'!", path), e);

@@ -2,11 +2,10 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ExceptionUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 import java.io.InputStream;
 import java.util.Date;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class ImmediateExecution implements Execution {
 
@@ -22,7 +21,8 @@ public class ImmediateExecution implements Execution {
 
     private final String error;
 
-    public ImmediateExecution(Executable executable, String id, ExecutionStatus status, Date startDate, Date endDate, String error) {
+    public ImmediateExecution(
+            Executable executable, String id, ExecutionStatus status, Date startDate, Date endDate, String error) {
         this.executable = executable;
         this.id = id;
         this.status = status;

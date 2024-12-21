@@ -1,5 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
+import java.util.List;
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -8,8 +9,6 @@ import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.AbstractASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-
-import java.util.List;
 
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class CodeSyntax extends AbstractASTTransformation {
@@ -27,7 +26,10 @@ public class CodeSyntax extends AbstractASTTransformation {
         ClassNode mainClass = requireMainClass(source.getAST().getClasses());
         for (Methods methodValue : Methods.values()) {
             if (!hasMethod(mainClass, methodValue)) {
-                addError(String.format("Top-level '%s %s()' method not found!", methodValue.returnType, methodValue.givenName), mainClass);
+                addError(
+                        String.format(
+                                "Top-level '%s %s()' method not found!", methodValue.returnType, methodValue.givenName),
+                        mainClass);
             }
         }
     }
@@ -43,8 +45,7 @@ public class CodeSyntax extends AbstractASTTransformation {
 
         if (mainClass == null) {
             throw new GroovyBugError(String.format(
-                    "Class '%s' not found! Check file name provided to parse/evaluate method.", MAIN_CLASS
-            ));
+                    "Class '%s' not found! Check file name provided to parse/evaluate method.", MAIN_CLASS));
         }
         return mainClass;
     }

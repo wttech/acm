@@ -5,6 +5,8 @@ import com.wttech.aem.contentor.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -16,9 +18,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-
-import java.io.OutputStream;
-import java.nio.file.Files;
 
 @Component(immediate = true, service = Executor.class)
 public class Executor {
@@ -98,8 +97,12 @@ public class Executor {
     private String composeScript(Executable executable) throws ContentorException {
         StringBuilder builder = new StringBuilder();
         builder.append("void ").append(CodeSyntax.Methods.INIT.givenName).append("() {\n");
-        builder.append("\tSystem.setOut(new java.io.PrintStream(").append(Variable.OUT.varName()).append(", true, \"UTF-8\"));\n");
-        builder.append("\tSystem.setErr(new java.io.PrintStream(").append(Variable.OUT.varName()).append(", true, \"UTF-8\"));\n");
+        builder.append("\tSystem.setOut(new java.io.PrintStream(")
+                .append(Variable.OUT.varName())
+                .append(", true, \"UTF-8\"));\n");
+        builder.append("\tSystem.setErr(new java.io.PrintStream(")
+                .append(Variable.OUT.varName())
+                .append(", true, \"UTF-8\"));\n");
         builder.append("}\n");
         builder.append("\n");
         builder.append(executable.getContent());

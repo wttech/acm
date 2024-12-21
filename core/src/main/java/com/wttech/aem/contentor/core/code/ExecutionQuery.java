@@ -2,13 +2,12 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.util.DateUtils;
 import com.wttech.aem.contentor.core.util.ServletUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.jcr.resource.api.JcrResourceConstants;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ExecutionQuery {
 
@@ -24,7 +23,8 @@ public class ExecutionQuery {
         ExecutionQuery result = new ExecutionQuery();
         result.setStartDate(DateUtils.fromString(ServletUtils.stringParam(request, "startDate")));
         result.setEndDate(DateUtils.fromString(ServletUtils.stringParam(request, "endDate")));
-        result.setStatus(ExecutionStatus.of(ServletUtils.stringParam(request, "status")).orElse(null));
+        result.setStatus(
+                ExecutionStatus.of(ServletUtils.stringParam(request, "status")).orElse(null));
         return result;
     }
 
@@ -34,7 +34,8 @@ public class ExecutionQuery {
 
     public void setPath(String path) {
         if (!StringUtils.startsWith(path, ExecutionHistory.ROOT)) {
-            throw new IllegalArgumentException(String.format("Path must be a descendant of '%s'!", ExecutionHistory.ROOT));
+            throw new IllegalArgumentException(
+                    String.format("Path must be a descendant of '%s'!", ExecutionHistory.ROOT));
         }
         this.path = path;
     }
@@ -65,7 +66,8 @@ public class ExecutionQuery {
 
     protected String toSql() {
         List<String> filters = new ArrayList<>();
-        filters.add(String.format("s.[%s] = '%s'", JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, HistoricalExecution.RESOURCE_TYPE));
+        filters.add(String.format(
+                "s.[%s] = '%s'", JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, HistoricalExecution.RESOURCE_TYPE));
         if (path != null) {
             filters.add(String.format("ISDESCENDANTNODE(s, '%s')", path));
         }

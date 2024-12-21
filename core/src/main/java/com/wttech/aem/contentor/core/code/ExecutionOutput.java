@@ -1,10 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class ExecutionOutput {
 
@@ -34,7 +33,8 @@ public class ExecutionOutput {
         try (InputStream input = Files.newInputStream(path)) {
             return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
         } catch (IOException e) {
-            throw new ContentorException(String.format("Execution output file cannot be read as string for job '%s'", jobId), e);
+            throw new ContentorException(
+                    String.format("Execution output file cannot be read as string for job '%s'", jobId), e);
         }
     }
 

@@ -1,6 +1,10 @@
 package com.wttech.aem.contentor.core.osgi;
 
 import com.wttech.aem.contentor.core.util.StreamUtils;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.stream.Stream;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
@@ -8,11 +12,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.stream.Stream;
 
 @Component(immediate = true, service = OsgiScanner.class)
 public class OsgiScanner {

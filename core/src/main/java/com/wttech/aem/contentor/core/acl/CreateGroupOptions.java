@@ -45,6 +45,8 @@ public class CreateGroupOptions {
     }
 
     public enum Mode {
-        OVERRIDE, SKIP, FAIL
+        OVERRIDE,
+        SKIP,
+        FAIL
     }
 }

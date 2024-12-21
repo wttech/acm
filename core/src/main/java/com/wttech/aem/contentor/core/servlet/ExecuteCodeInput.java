@@ -1,7 +1,6 @@
 package com.wttech.aem.contentor.core.servlet;
 
 import com.wttech.aem.contentor.core.code.Code;
-
 import java.io.Serializable;
 
 public class ExecuteCodeInput implements Serializable {

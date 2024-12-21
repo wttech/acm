@@ -2,16 +2,15 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.StreamUtils;
+import java.util.*;
+import java.util.stream.Stream;
+import javax.jcr.query.Query;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
-
-import javax.jcr.query.Query;
-import java.util.*;
-import java.util.stream.Stream;
 
 public class ExecutionHistory {
 
@@ -33,7 +32,12 @@ public class ExecutionHistory {
 
         try {
             String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");
-            Resource dir = ResourceUtil.getOrCreateResource(resourceResolver, dirPath, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
+            Resource dir = ResourceUtil.getOrCreateResource(
+                    resourceResolver,
+                    dirPath,
+                    JcrResourceConstants.NT_SLING_FOLDER,
+                    JcrResourceConstants.NT_SLING_FOLDER,
+                    true);
             String entryName = StringUtils.substringAfterLast(execution.getId(), "/");
             resourceResolver.create(dir, entryName, props);
             resourceResolver.commit();
@@ -43,14 +47,17 @@ public class ExecutionHistory {
     }
 
     public Optional<Execution> read(String id) {
-        return Optional.of(getOrCreateRoot())
-                .map(r -> r.getChild(id))
-                .map(HistoricalExecution::new);
+        return Optional.of(getOrCreateRoot()).map(r -> r.getChild(id)).map(HistoricalExecution::new);
     }
 
     private Resource getOrCreateRoot() throws ContentorException {
         try {
-            return ResourceUtil.getOrCreateResource(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
+            return ResourceUtil.getOrCreateResource(
+                    resourceResolver,
+                    ROOT,
+                    JcrResourceConstants.NT_SLING_FOLDER,
+                    JcrResourceConstants.NT_SLING_FOLDER,
+                    true);
         } catch (Exception e) {
             throw new ContentorException(String.format("Failed to get or create execution history root '%s'", ROOT), e);
         }
@@ -61,9 +68,7 @@ public class ExecutionHistory {
     }
 
     public Stream<Execution> readAll(Collection<String> ids) {
-        return Optional.ofNullable(ids)
-                .orElse(Collections.emptyList())
-                .stream()
+        return Optional.ofNullable(ids).orElse(Collections.emptyList()).stream()
                 .filter(StringUtils::isNotBlank)
                 .map(this::read)
                 .filter(Optional::isPresent)

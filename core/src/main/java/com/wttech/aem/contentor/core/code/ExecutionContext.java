@@ -1,9 +1,8 @@
 package com.wttech.aem.contentor.core.code;
 
+import java.io.OutputStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.framework.BundleContext;
-
-import java.io.OutputStream;
 
 public class ExecutionContext {
 

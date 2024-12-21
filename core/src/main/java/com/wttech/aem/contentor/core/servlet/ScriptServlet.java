@@ -1,8 +1,18 @@
 package com.wttech.aem.contentor.core.servlet;
 
+import static com.wttech.aem.contentor.core.util.ServletResult.error;
+import static com.wttech.aem.contentor.core.util.ServletResult.ok;
+import static com.wttech.aem.contentor.core.util.ServletUtils.*;
+
 import com.wttech.aem.contentor.core.script.Script;
 import com.wttech.aem.contentor.core.script.ScriptRepository;
 import com.wttech.aem.contentor.core.script.ScriptType;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -11,24 +21,13 @@ import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static com.wttech.aem.contentor.core.util.ServletResult.error;
-import static com.wttech.aem.contentor.core.util.ServletResult.ok;
-import static com.wttech.aem.contentor.core.util.ServletUtils.*;
-
 @Component(
         service = {Servlet.class},
         property = {
-                ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ScriptServlet.RT,
-                ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
-                ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
-                ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
+            ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ScriptServlet.RT,
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+            ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
         })
 public class ScriptServlet extends SlingAllMethodsServlet {
 
@@ -43,7 +42,8 @@ public class ScriptServlet extends SlingAllMethodsServlet {
     private static final String ACTION_PARAM = "action";
 
     private enum Action {
-        ENABLE, DISABLE;
+        ENABLE,
+        DISABLE;
 
         public static Optional<Action> of(String name) {
             return Arrays.stream(Action.values())
@@ -74,7 +74,10 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             respondJson(response, ok("Scripts listed successfully", output));
         } catch (Exception e) {
             LOG.error("Scripts cannot be read!", e);
-            respondJson(response, error(String.format("Scripts cannot be read! %s", e.getMessage()).trim()));
+            respondJson(
+                    response,
+                    error(String.format("Scripts cannot be read! %s", e.getMessage())
+                            .trim()));
         }
     }
 
@@ -94,7 +97,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
         try {
             ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
-            
+
             switch (action.get()) {
                 case ENABLE:
                     paths.forEach(repository::enable);

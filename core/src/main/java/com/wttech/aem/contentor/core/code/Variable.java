@@ -2,10 +2,9 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.acl.Acl;
 import com.wttech.aem.contentor.core.osgi.OsgiFacade;
+import java.io.PrintStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
-
-import java.io.PrintStream;
 
 public enum Variable {
     OUT("out", PrintStream.class.getName()),

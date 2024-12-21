@@ -2,11 +2,10 @@ package com.wttech.aem.contentor.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.contentor.core.util.DateUtils;
+import java.util.Date;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
-
-import java.util.Date;
 
 public class QueuedExecution implements Execution {
 

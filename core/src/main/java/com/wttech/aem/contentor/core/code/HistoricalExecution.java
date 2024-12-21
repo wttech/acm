@@ -1,14 +1,13 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.util.DateUtils;
+import java.util.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
-
-import java.util.*;
 
 public class HistoricalExecution implements Execution, Comparable<HistoricalExecution> {
 
@@ -35,10 +34,8 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
     public HistoricalExecution(Resource resource) {
         ValueMap props = resource.getValueMap();
 
-        this.executable = new Code(
-                props.get("executableId", String.class),
-                props.get("executableContent", String.class
-        ));
+        this.executable =
+                new Code(props.get("executableId", String.class), props.get("executableContent", String.class));
         this.id = props.get("id", String.class);
         this.status = ExecutionStatus.of(props.get("status", String.class)).orElse(null);
         this.startDate = DateUtils.toDate(props.get("startDate", Calendar.class));
@@ -75,9 +72,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
     }
 
     public static Optional<HistoricalExecution> from(Resource resource) {
-        return Optional.ofNullable(resource)
-                .filter(HistoricalExecution::check)
-                .map(HistoricalExecution::new);
+        return Optional.ofNullable(resource).filter(HistoricalExecution::check).map(HistoricalExecution::new);
     }
 
     @Override

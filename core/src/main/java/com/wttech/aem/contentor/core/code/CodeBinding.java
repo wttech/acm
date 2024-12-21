@@ -3,11 +3,10 @@ package com.wttech.aem.contentor.core.code;
 import com.wttech.aem.contentor.core.acl.Acl;
 import com.wttech.aem.contentor.core.osgi.OsgiFacade;
 import groovy.lang.Binding;
+import java.io.OutputStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.OutputStream;
 
 public class CodeBinding {
 
@@ -19,8 +18,7 @@ public class CodeBinding {
 
     private final Acl acl;
 
-    private final Condition condition
-            ;
+    private final Condition condition;
     private final OsgiFacade osgi;
 
     public CodeBinding(ExecutionContext context) {

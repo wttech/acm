@@ -4,14 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.code.Executable;
 import com.wttech.aem.contentor.core.util.JcrUtils;
+import java.io.InputStream;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.resource.Resource;
-
-import java.io.InputStream;
-import java.util.Optional;
 
 public class Snippet implements Executable, Comparable<Snippet> {
 
@@ -27,20 +26,21 @@ public class Snippet implements Executable, Comparable<Snippet> {
     }
 
     public static Optional<Snippet> from(Resource resource) throws ContentorException {
-        return Optional.ofNullable(resource)
-                .filter(Snippet::check)
-                .map(Snippet::new);
+        return Optional.ofNullable(resource).filter(Snippet::check).map(Snippet::new);
     }
 
     public static boolean check(Resource resource) {
-        return resource != null && resource.isResourceType(JcrConstants.NT_FILE) && resource.getName().endsWith(FILE_EXTENSION);
+        return resource != null
+                && resource.isResourceType(JcrConstants.NT_FILE)
+                && resource.getName().endsWith(FILE_EXTENSION);
     }
 
     private SnippetDefinition readDefinition() throws ContentorException {
         return Optional.ofNullable(resource.getChild(JcrUtils.JCR_CONTENT))
                 .map(r -> r.adaptTo(InputStream.class))
                 .map(SnippetDefinition::fromYaml)
-                .orElseThrow(() -> new ContentorException(String.format("Snippet definition '%s' cannot be read found!", resource.getPath())));
+                .orElseThrow(() -> new ContentorException(
+                        String.format("Snippet definition '%s' cannot be read found!", resource.getPath())));
     }
 
     @Override

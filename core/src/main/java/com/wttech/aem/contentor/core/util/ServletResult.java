@@ -1,10 +1,8 @@
 package com.wttech.aem.contentor.core.util;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.Serializable;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 
 public class ServletResult<D> implements Serializable {
 

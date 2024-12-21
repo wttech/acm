@@ -3,17 +3,16 @@ package com.wttech.aem.contentor.core.script;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.contentor.core.code.Executable;
 import com.wttech.aem.contentor.core.util.JcrUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.resource.Resource;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 public class Script implements Executable, Comparable<Script> {
 
@@ -26,13 +25,13 @@ public class Script implements Executable, Comparable<Script> {
     }
 
     public static Optional<Script> from(Resource resource) {
-        return Optional.ofNullable(resource)
-                .filter(Script::check)
-                .map(Script::new);
+        return Optional.ofNullable(resource).filter(Script::check).map(Script::new);
     }
 
     public static boolean check(Resource resource) {
-        return resource != null && resource.isResourceType(JcrConstants.NT_FILE) && resource.getName().endsWith(EXTENSION);
+        return resource != null
+                && resource.isResourceType(JcrConstants.NT_FILE)
+                && resource.getName().endsWith(EXTENSION);
     }
 
     @Override

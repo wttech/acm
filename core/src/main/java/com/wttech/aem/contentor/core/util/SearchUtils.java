@@ -1,10 +1,9 @@
 package com.wttech.aem.contentor.core.util;
 
+import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.List;
 
 public final class SearchUtils {
 
@@ -44,8 +43,10 @@ public final class SearchUtils {
                 final String p = StringUtils.trimToEmpty(words);
                 final String t = StringUtils.trimToEmpty(textWord);
 
-                if ((!p.isEmpty() && !t.isEmpty()) && (t.length() >= minWordLength) && (p.length()
-                        >= minWordLength) && (p.contains(t) || t.contains(p))) {
+                if ((!p.isEmpty() && !t.isEmpty())
+                        && (t.length() >= minWordLength)
+                        && (p.length() >= minWordLength)
+                        && (p.contains(t) || t.contains(p))) {
                     return true;
                 }
             }

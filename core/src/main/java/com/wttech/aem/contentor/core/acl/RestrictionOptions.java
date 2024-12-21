@@ -56,6 +56,7 @@ public class RestrictionOptions extends AuthorizableOptions {
     }
 
     public enum PathMode {
-        FAIL_MISSING, SKIP_MISSING
+        FAIL_MISSING,
+        SKIP_MISSING
     }
 }

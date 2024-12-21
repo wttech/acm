@@ -1,7 +1,13 @@
 package com.wttech.aem.contentor.core.servlet;
 
+import static com.wttech.aem.contentor.core.util.ServletResult.*;
+import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
+import static com.wttech.aem.contentor.core.util.ServletUtils.stringParam;
+
 import com.wttech.aem.contentor.core.code.*;
 import com.wttech.aem.contentor.core.util.JsonUtils;
+import java.io.IOException;
+import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -11,21 +17,14 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
-import java.io.IOException;
-
-import static com.wttech.aem.contentor.core.util.ServletResult.*;
-import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
-import static com.wttech.aem.contentor.core.util.ServletUtils.stringParam;
-
 @Component(
         service = {Servlet.class},
         property = {
-                ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + QueueCodeServlet.RT,
-                ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
-                ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
-                ServletResolverConstants.SLING_SERVLET_METHODS + "=DELETE",
-                ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
+            ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + QueueCodeServlet.RT,
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=DELETE",
+            ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
         })
 public class QueueCodeServlet extends SlingAllMethodsServlet {
 
@@ -66,10 +65,15 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            respondJson(response, ok(String.format("Code from '%s' queued for execution successfully", code.getId()), execution));
+            respondJson(
+                    response,
+                    ok(String.format("Code from '%s' queued for execution successfully", code.getId()), execution));
         } catch (Exception e) {
             LOG.error("Job cannot be queued!", e);
-            respondJson(response, badRequest(String.format("Job cannot be queued! %s", e.getMessage()).trim()));
+            respondJson(
+                    response,
+                    badRequest(String.format("Job cannot be queued! %s", e.getMessage())
+                            .trim()));
         }
     }
 
@@ -82,7 +86,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            Execution execution = executionQueue.read(jobId, request.getResourceResolver()).orElse(null);
+            Execution execution =
+                    executionQueue.read(jobId, request.getResourceResolver()).orElse(null);
             if (execution == null) {
                 respondJson(response, notFound(String.format("Job with ID '%s' not found!", jobId)));
                 return;
@@ -91,7 +96,10 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             respondJson(response, ok("Job found successfully", execution));
         } catch (Exception e) {
             LOG.error("Job cannot be read!", e);
-            respondJson(response, error(String.format("Job cannot be read! %s", e.getMessage()).trim()));
+            respondJson(
+                    response,
+                    error(String.format("Job cannot be read! %s", e.getMessage())
+                            .trim()));
         }
     }
 
@@ -104,7 +112,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            Execution execution = executionQueue.read(jobId, request.getResourceResolver()).orElse(null);
+            Execution execution =
+                    executionQueue.read(jobId, request.getResourceResolver()).orElse(null);
             if (execution == null) {
                 respondJson(response, notFound(String.format("Job with ID '%s' not found!", jobId)));
                 return;
@@ -115,7 +124,10 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             respondJson(response, ok("Job stopped successfully", execution));
         } catch (Exception e) {
             LOG.error("Job cannot be stopped!", e);
-            respondJson(response, error(String.format("Job cannot be stopped! %s", e.getMessage()).trim()));
+            respondJson(
+                    response,
+                    error(String.format("Job cannot be stopped! %s", e.getMessage())
+                            .trim()));
         }
     }
 }

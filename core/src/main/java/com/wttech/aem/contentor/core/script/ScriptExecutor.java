@@ -15,7 +15,9 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(immediate = true, service = {Runnable.class})
+@Component(
+        immediate = true,
+        service = {Runnable.class})
 @Designate(ocd = ScriptExecutor.Config.class)
 public class ScriptExecutor implements Runnable {
 
@@ -24,17 +26,14 @@ public class ScriptExecutor implements Runnable {
     @ObjectClassDefinition(name = "AEM Contentor - Script Executor")
     public @interface Config {
 
-        @AttributeDefinition(
-                name = "Enabled",
-                description = "Allows to temporarily disable the script executor"
-        )
+        @AttributeDefinition(name = "Enabled", description = "Allows to temporarily disable the script executor")
         boolean enabled() default true;
 
         @AttributeDefinition(
                 name = "Scheduler expression",
-                description = "How often the scripts should be executed. Default is every 30 seconds (0/30 * * * * ?). Quartz cron expression format.",
-                defaultValue = "0/30 * * * * ?"
-        )
+                description =
+                        "How often the scripts should be executed. Default is every 30 seconds (0/30 * * * * ?). Quartz cron expression format.",
+                defaultValue = "0/30 * * * * ?")
         String scheduler_expression() default "0/30 * * * * ?";
     }
 

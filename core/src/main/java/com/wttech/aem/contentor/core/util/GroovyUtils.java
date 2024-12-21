@@ -10,5 +10,4 @@ public class GroovyUtils {
         closure.call();
         return instance;
     }
-
 }

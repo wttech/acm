@@ -1,9 +1,8 @@
 package com.wttech.aem.contentor.core.code;
 
-import org.apache.sling.event.jobs.Job;
-
 import java.util.Arrays;
 import java.util.Optional;
+import org.apache.sling.event.jobs.Job;
 
 public enum ExecutionStatus {
     QUEUED,
