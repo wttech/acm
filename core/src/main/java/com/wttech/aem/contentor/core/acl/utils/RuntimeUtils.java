@@ -14,7 +14,7 @@ public final class RuntimeUtils {
         try {
             Node node = session.getNode("/apps");
             boolean hasPermission = session.hasPermission("/", Session.ACTION_SET_PROPERTY);
-            boolean hasCapability = session.hasCapability("addNode", node, new Object[]{"nt:folder"});
+            boolean hasCapability = session.hasCapability("addNode", node, new Object[] {"nt:folder"});
             return hasPermission && !hasCapability;
         } catch (Exception e) {
             throw new AclException("Failed to check if session is connected to a composite node store", e);

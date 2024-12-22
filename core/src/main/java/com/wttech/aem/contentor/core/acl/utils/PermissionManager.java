@@ -29,41 +29,49 @@ public class PermissionManager {
         this.valueFactory = valueFactory;
     }
 
-    public void applyPermissions(Authorizable authorizable,
-            String path, List<String> permissions,
-            Map<String, Object> restrictions, boolean allow) throws RepositoryException {
-        updateAccessControlList(authorizable.getPrincipal(),
-                path, permissions,
-                restrictions, allow);
+    public void applyPermissions(
+            Authorizable authorizable,
+            String path,
+            List<String> permissions,
+            Map<String, Object> restrictions,
+            boolean allow)
+            throws RepositoryException {
+        updateAccessControlList(authorizable.getPrincipal(), path, permissions, restrictions, allow);
         if (permissions.contains("MODIFY")) {
             List<String> globModifyPermissions = Collections.singletonList("MODIFY_PAGE");
             Map<String, Object> globModifyRestrictions = new HashMap<>(restrictions);
             String preparedGlob = recalculateGlob((String) restrictions.get(AccessControlConstants.REP_GLOB));
             globModifyRestrictions.put(AccessControlConstants.REP_GLOB, preparedGlob + "*/jcr:content*");
-            updateAccessControlList(authorizable.getPrincipal(),
-                    path, globModifyPermissions,
-                    globModifyRestrictions, allow);
+            updateAccessControlList(
+                    authorizable.getPrincipal(), path, globModifyPermissions, globModifyRestrictions, allow);
         }
     }
 
-    private void updateAccessControlList(Principal principal,
-            String path, List<String> permissions,
-            Map<String, Object> restrictions, boolean allow) throws RepositoryException {
-        JackrabbitAccessControlList jackrabbitAcl = JackrabbitAccessControlListUtil
-                .determineModifiableAcl(accessControlManager, path);
+    private void updateAccessControlList(
+            Principal principal, String path, List<String> permissions, Map<String, Object> restrictions, boolean allow)
+            throws RepositoryException {
+        JackrabbitAccessControlList jackrabbitAcl =
+                JackrabbitAccessControlListUtil.determineModifiableAcl(accessControlManager, path);
         addEntry(jackrabbitAcl, principal, permissions, restrictions, allow);
         accessControlManager.setPolicy(path, jackrabbitAcl);
     }
 
     private void addEntry(
-            JackrabbitAccessControlList jackrabbitAcl, Principal principal,
+            JackrabbitAccessControlList jackrabbitAcl,
+            Principal principal,
             List<String> permissions,
-            Map<String, Object> restrictions, boolean allow) throws RepositoryException {
+            Map<String, Object> restrictions,
+            boolean allow)
+            throws RepositoryException {
         List<Privilege> privileges = createPrivileges(permissions);
         Map<String, Value> singleValueRestrictions = getSingleValueRestrictions(jackrabbitAcl, restrictions);
         Map<String, Value[]> multiValueRestrictions = getMultiValueRestrictions(jackrabbitAcl, restrictions);
-        jackrabbitAcl.addEntry(principal, privileges.toArray(new Privilege[]{}), allow,
-                singleValueRestrictions, multiValueRestrictions);
+        jackrabbitAcl.addEntry(
+                principal,
+                privileges.toArray(new Privilege[] {}),
+                allow,
+                singleValueRestrictions,
+                multiValueRestrictions);
     }
 
     private List<Privilege> createPrivileges(List<String> permissions) throws RepositoryException {
@@ -74,8 +82,8 @@ public class PermissionManager {
         return privileges;
     }
 
-    private List<Privilege> createPrivileges(AccessControlManager accessControlManager,
-            String permission) throws RepositoryException {
+    private List<Privilege> createPrivileges(AccessControlManager accessControlManager, String permission)
+            throws RepositoryException {
         try {
             PrivilegeGroup privilegeGroup = PrivilegeGroup.fromTitle(permission);
             if (privilegeGroup != null) {
@@ -88,9 +96,8 @@ public class PermissionManager {
         }
     }
 
-
-    private Map<String, Value> getSingleValueRestrictions(JackrabbitAccessControlList
-            jackrabbitAcl, Map<String, Object> restrictions) throws RepositoryException {
+    private Map<String, Value> getSingleValueRestrictions(
+            JackrabbitAccessControlList jackrabbitAcl, Map<String, Object> restrictions) throws RepositoryException {
         Map<String, Value> result = new HashMap<>();
         for (Map.Entry<String, Object> entry : restrictions.entrySet()) {
             String key = entry.getKey();
@@ -108,13 +115,13 @@ public class PermissionManager {
         return result;
     }
 
-    private Value createValue(JackrabbitAccessControlList jackrabbitAcl, String key, String value) throws
-            RepositoryException {
+    private Value createValue(JackrabbitAccessControlList jackrabbitAcl, String key, String value)
+            throws RepositoryException {
         return valueFactory.createValue(value, jackrabbitAcl.getRestrictionType(key));
     }
 
-    private Map<String, Value[]> getMultiValueRestrictions(JackrabbitAccessControlList
-            jackrabbitAcl, Map<String, Object> restrictions) throws RepositoryException {
+    private Map<String, Value[]> getMultiValueRestrictions(
+            JackrabbitAccessControlList jackrabbitAcl, Map<String, Object> restrictions) throws RepositoryException {
         Map<String, Value[]> result = new HashMap<>();
         for (Map.Entry<String, Object> entry : restrictions.entrySet()) {
             String key = entry.getKey();
@@ -132,15 +139,14 @@ public class PermissionManager {
         return result;
     }
 
-    private Value[] createValues(JackrabbitAccessControlList jackrabbitAcl, String key, List<String> names) throws
-            RepositoryException {
+    private Value[] createValues(JackrabbitAccessControlList jackrabbitAcl, String key, List<String> names)
+            throws RepositoryException {
         Value[] values = new Value[names.size()];
         for (int index = 0; index < names.size(); index++) {
             values[index] = createValue(jackrabbitAcl, key, names.get(index));
         }
         return values;
     }
-
 
     private String recalculateGlob(String glob) {
         String preparedGlob = "";

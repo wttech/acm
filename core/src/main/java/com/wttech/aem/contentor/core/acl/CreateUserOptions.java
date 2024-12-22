@@ -145,6 +145,8 @@ public class CreateUserOptions {
     }
 
     public enum Mode {
-        OVERRIDE, SKIP, FAIL
+        OVERRIDE,
+        SKIP,
+        FAIL
     }
 }

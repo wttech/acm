@@ -16,7 +16,6 @@ public class AuthorizableManager {
 
     private final UserManager userManager;
 
-
     private final ValueFactory valueFactory;
 
     public AuthorizableManager(UserManager userManager, ValueFactory valueFactory) {
@@ -29,7 +28,8 @@ public class AuthorizableManager {
         if (StringUtils.isEmpty(password)) {
             password = PasswordUtils.generateRandomPassword();
         }
-        return userManager.createUser(id, StringUtils.defaultString(password, PasswordUtils.generateRandomPassword()), principal, path);
+        return userManager.createUser(
+                id, StringUtils.defaultString(password, PasswordUtils.generateRandomPassword()), principal, path);
     }
 
     public Group createGroup(String id, String path, String externalId) throws RepositoryException {
@@ -45,7 +45,8 @@ public class AuthorizableManager {
         return userManager.createSystemUser(id, path);
     }
 
-    public void updateAuthorizable(Authorizable authorizable, Map<String, String> properties) throws RepositoryException {
+    public void updateAuthorizable(Authorizable authorizable, Map<String, String> properties)
+            throws RepositoryException {
         for (Map.Entry<String, String> property : properties.entrySet()) {
             authorizable.setProperty(property.getKey(), valueFactory.createValue(property.getValue()));
         }
@@ -56,7 +57,6 @@ public class AuthorizableManager {
             user.changePassword(password);
         }
         updateAuthorizable(user, properties);
-
     }
 
     public void updateGroup(Group group, Map<String, String> properties) throws RepositoryException {
@@ -79,10 +79,12 @@ public class AuthorizableManager {
         return userManager.getAuthorizable(id);
     }
 
-    public <T extends Authorizable> T getAuthorizable(Class<T> authorizableClass, String id) throws RepositoryException {
+    public <T extends Authorizable> T getAuthorizable(Class<T> authorizableClass, String id)
+            throws RepositoryException {
         Authorizable authorizable = getAuthorizable(id);
         if (authorizable != null && !authorizableClass.isInstance(authorizable)) {
-            throw new AclException(String.format("Authorizable with id %s exists but is a %s", id, authorizableClass.getSimpleName()));
+            throw new AclException(
+                    String.format("Authorizable with id %s exists but is a %s", id, authorizableClass.getSimpleName()));
         }
         return authorizableClass.cast(authorizable);
     }

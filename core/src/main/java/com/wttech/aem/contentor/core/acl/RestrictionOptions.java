@@ -108,6 +108,7 @@ public class RestrictionOptions extends AuthorizableOptions {
     }
 
     public enum Mode {
-        FAIL, SKIP
+        FAIL,
+        SKIP
     }
 }

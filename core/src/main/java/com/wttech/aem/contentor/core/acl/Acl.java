@@ -141,7 +141,8 @@ public class Acl {
         throw new IllegalStateException("Not implemented yet!");
     }
 
-    public AclResult allow(Authorizable authorizable, String path, List<String> permissions) throws RepositoryException {
+    public AclResult allow(Authorizable authorizable, String path, List<String> permissions)
+            throws RepositoryException {
         AllowOptions options = new AllowOptions();
         options.setAuthorizable(authorizable);
         options.setPath(path);
@@ -171,7 +172,12 @@ public class Acl {
             if (authorizable == null) {
                 authorizable = authorizableManager.getAuthorizable(options.getId());
             }
-            permissionManager.applyPermissions(authorizable, options.getPath(), options.getPermissions(), options.determineAllRestrictions(), true);
+            permissionManager.applyPermissions(
+                    authorizable,
+                    options.getPath(),
+                    options.getPermissions(),
+                    options.determineAllRestrictions(),
+                    true);
             return AclResult.OK;
         }
     }
@@ -206,7 +212,12 @@ public class Acl {
             if (authorizable == null) {
                 authorizable = authorizableManager.getAuthorizable(options.getId());
             }
-            permissionManager.applyPermissions(authorizable, options.getPath(), options.getPermissions(), options.determineAllRestrictions(), false);
+            permissionManager.applyPermissions(
+                    authorizable,
+                    options.getPath(),
+                    options.getPermissions(),
+                    options.determineAllRestrictions(),
+                    false);
             return AclResult.OK;
         }
     }
