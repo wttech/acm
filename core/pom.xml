@@ -197,7 +197,13 @@ DynamicImport-Package: *
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-security-spi</artifactId>
-            <version>1.44.0</version>
+            <version>1.22.17</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>oak-api</artifactId>
+            <version>1.22.17</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

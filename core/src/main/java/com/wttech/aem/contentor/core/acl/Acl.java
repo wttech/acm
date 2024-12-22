@@ -3,6 +3,7 @@ package com.wttech.aem.contentor.core.acl;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.acl.utils.PermissionManager;
+import com.wttech.aem.contentor.core.acl.utils.PurgeManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
@@ -13,6 +14,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.ValueFactory;
 import javax.jcr.security.AccessControlManager;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
@@ -31,6 +33,8 @@ public class Acl {
 
     private final PermissionManager permissionManager;
 
+    private final PurgeManager purgeManager;
+
     private final boolean compositeNodeStore;
 
     public Acl(ResourceResolver resourceResolver) {
@@ -42,6 +46,7 @@ public class Acl {
             ValueFactory valueFactory = session.getValueFactory();
             this.authorizableManager = new AuthorizableManager(userManager, valueFactory);
             this.permissionManager = new PermissionManager(accessControlManager, valueFactory);
+            this.purgeManager = new PurgeManager(session, accessControlManager);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
         } catch (RepositoryException e) {
             throw new AclException("Failed to initialize acl", e);
@@ -55,6 +60,10 @@ public class Acl {
 
     public Group createGroup(Closure<CreateGroupOptions> closure) throws RepositoryException {
         return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
+    }
+
+    public void purge(Closure<PurgeOptions> closure) throws RepositoryException {
+        purge(GroovyUtils.with(new PurgeOptions(), closure));
     }
 
     public AclResult allow(Closure<AllowOptions> closure) throws RepositoryException {
@@ -145,8 +154,22 @@ public class Acl {
         return authorizableManager.removeFromGroup(authorizable, group);
     }
 
-    public void purge(Authorizable authorizable, String path) {
-        throw new IllegalStateException("Not implemented yet!");
+    public void purge(PurgeOptions options) throws RepositoryException {
+        Authorizable authorizable = options.getAuthorizable();
+        if (authorizable == null) {
+            authorizable = authorizableManager.getAuthorizable(options.getId());
+        }
+        purge(authorizable, options.getPath(), options.isStrict());
+    }
+
+    public AclResult purge(Authorizable authorizable, String path, boolean strict) throws RepositoryException {
+        path = StringUtils.defaultString(path, "/");
+        if (compositeNodeStore && PathUtils.isAppsOrLibsPath(path)) {
+            return AclResult.SKIPPED;
+        } else {
+            purgeManager.purge(authorizable, path, strict);
+            return AclResult.OK;
+        }
     }
 
     public AclResult allow(Authorizable authorizable, String path, List<String> permissions)

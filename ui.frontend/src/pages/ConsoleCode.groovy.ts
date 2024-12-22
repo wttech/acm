@@ -1,23 +1,28 @@
 export default `
-/*
 boolean canRun() {
-    return contentor.instance.hasRunMode("author") && contentor.afterDate("2024-10-29 15:30:00") // <==> new Date().after(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2024-10-29 15:30:00"));
+    return condition.always()
 }
-*/
 
-//void doRun() {
-    println "Migrating..."
+void doRun() {
+    println "Processing..."
     
     println "Updating ACLs..."
-    acl.createUser { id = "john.doe" ; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
+    def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
+    acl.allow(acmeService, "/content", ["jcr:read", "jcr:write"])
+    
+    def johnDoe = acl.createUser { id = "john.doe" ; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
+    acl.purge { id = "john.doe" }
+    acl.allow(johnDoe, "/content", ["jcr:read"])
+    
     acl.save()
-
-    println "Processing resources..."
-    for (int i = 0; i < 10; i++) {
-        println "Migrating (\${i + 1}/20)"
+    
+    println "Updating JCR resources..."
+    def max = 10
+    for (int i = 0; i < max; i++) {
         Thread.sleep(500)
+        println "Updated (\${i + 1}/\${max})"
     }
     
-    println "Migration done"
-//}
+    println "Processing done"
+}
 `.trim()
