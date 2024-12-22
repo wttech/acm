@@ -1,10 +1,12 @@
 package com.wttech.aem.contentor.core.code;
 
-import com.wttech.aem.contentor.core.instance.HealthChecker;
+import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import java.util.Optional;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -13,25 +15,11 @@ import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.event.jobs.consumer.JobExecutionContext;
 import org.apache.sling.event.jobs.consumer.JobExecutionResult;
 import org.apache.sling.event.jobs.consumer.JobExecutor;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.*;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @Component(
         immediate = true,
@@ -41,21 +29,20 @@ public class ExecutionQueue implements JobExecutor {
 
     public static final String TOPIC = "com/wttech/aem/contentor/ExecutionQueue";
 
-    public static final String TMP_DIR = "contentor";
-
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
 
-    // TODO make this configurable
-    private static final long EXECUTE_POLL_INTERVAL = 1000;
+    @ObjectClassDefinition(name = "AEM Contentor - Execution Queue")
+    public @interface Config {
 
-    // TODO make this configurable
-    private static final long CLEAN_POLL_DELAY = 3000;
+        @AttributeDefinition(name = "Async Poll Interval")
+        long asyncPollInterval() default 500L;
+
+        @AttributeDefinition(name = "Clean Poll Delay")
+        long cleanPollDelay() default 3000L;
+    }
 
     @Reference
     private JobManager jobManager;
-
-    @Reference
-    private HealthChecker healthChecker;
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
@@ -63,186 +50,106 @@ public class ExecutionQueue implements JobExecutor {
     @Reference
     private Executor executor;
 
-    private ExecutorService executorService;
+    private ExecutorService jobAsyncExecutor;
 
-    public Optional<Execution> submit(Executable executable) throws com.wttech.aem.contentor.core.ContentorException {
+    private Config config;
+
+    @Activate
+    @Modified
+    protected void activate(Config config) {
+        this.config = config;
+        this.jobAsyncExecutor = Executors.newSingleThreadExecutor();
+    }
+
+    @Deactivate
+    protected void deactivate() {
+        if (jobAsyncExecutor != null) {
+            jobAsyncExecutor.shutdown();
+        }
+    }
+
+    public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
+        return executor.createContext(executable, resourceResolver);
+    }
+
+    public Optional<Execution> submit(Executable executable) throws ContentorException {
         Job job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
         if (job == null) {
             return Optional.empty();
         }
-
-        return Optional.of(new Execution(executable, job.getId(), ExecutionStatus.of(job, null), 0, null, null));
+        return Optional.of(new QueuedExecution(job));
     }
 
-    public Optional<Execution> read(String jobId) throws com.wttech.aem.contentor.core.ContentorException {
-        Job job = jobManager.getJobById(jobId);
-        if (job == null) {
-            return Optional.empty();
+    public Optional<Execution> read(String jobId, ResourceResolver resourceResolver) throws ContentorException {
+        Execution result = new ExecutionHistory(resourceResolver).read(jobId).orElse(null);
+        if (result == null) {
+            result = Optional.ofNullable(jobManager.getJobById(jobId))
+                    .map(QueuedExecution::new)
+                    .orElse(null);
         }
-
-        Executable executable = Code.fromJob(job);
-        String output = readFile(jobId, FileType.OUTPUT).orElse(null);
-        String error = readFile(jobId, FileType.ERROR).orElse(null);
-        long duration = calculateDuration(job).orElse(0L);
-        ExecutionStatus status = ExecutionStatus.of(job, error);
-
-        return Optional.of(new Execution(executable, job.getId(), status, duration, output, error));
+        return Optional.ofNullable(result);
     }
 
     public void stop(String jobId) {
         jobManager.stopJobById(jobId);
     }
 
-    @Activate
-    protected void activate() {
-        executorService = Executors.newSingleThreadExecutor();
-    }
-
-    @Deactivate
-    protected void deactivate() {
-        if (executorService != null) {
-            executorService.shutdown();
-        }
-    }
-
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
-        Executable executable = Code.fromJob(job);
-        if (!healthChecker.isHealthy()) {
-            LOG.warn("Failing execution '{}' - instance is not healthy.", executable);
-            return context.result().failed();
-        }
+        QueuedExecution queuedExecution = new QueuedExecution(job);
 
-        LOG.info("Executing asynchronously '{}'", executable);
+        LOG.info("Execution started '{}'", queuedExecution);
 
-        Future<?> future = executorService.submit(() -> {
+        Future<Execution> future = jobAsyncExecutor.submit(() -> {
             try {
-                executeAsync(executable, job);
+                return executeAsync(queuedExecution);
             } catch (Throwable e) {
-                LOG.error("Executing asynchronously failed internally '{}'", executable, e);
+                throw new ContentorException(String.format("Execution failed asynchronously '%s'", queuedExecution), e);
             }
         });
 
         while (!future.isDone()) {
             if (context.isStopped() || Thread.currentThread().isInterrupted()) {
                 future.cancel(true);
-                LOG.info("Job '{}' is cancelling", executable);
+                LOG.info("Execution is cancelling '{}'", queuedExecution);
                 break;
             }
             try {
-                Thread.sleep(EXECUTE_POLL_INTERVAL);
+                Thread.sleep(config.asyncPollInterval());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.info("Job '{}' was interrupted", executable);
+                LOG.info("Execution is interrupted '{}'", queuedExecution);
                 return context.result().cancelled();
             }
         }
 
         try {
-            future.get();
+            Execution immediateExecution = future.get();
+
+            if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
+                LOG.info("Execution skipped '{}'", immediateExecution);
+                return context.result().cancelled();
+            } else {
+                LOG.info("Execution succeeded '{}'", immediateExecution);
+                return context.result().succeeded();
+            }
         } catch (CancellationException e) {
-            LOG.info("Job '{}' is cancelled", executable);
+            LOG.info("Execution aborted '{}'", queuedExecution);
             return context.result().cancelled();
         } catch (Exception e) {
-            LOG.error("Error executing asynchronously '{}'", executable, e);
+            LOG.error("Execution failed '{}'", queuedExecution, e);
             return context.result().failed();
-        } finally {
-            executorService.submit(() -> {
-                try {
-                    cleanAsync(executable, job);
-                } catch (Throwable e) {
-                    LOG.error("Cleaning up asynchronously failed '{}'", executable, e);
-                }
-            });
         }
-
-        LOG.info("Executed asynchronously '{}'", executable);
-        return context.result().succeeded();
     }
 
-    private void executeAsync(Executable executable, Job job) throws com.wttech.aem.contentor.core.ContentorException {
-        try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory);
-             OutputStream outputStream = Files.newOutputStream(filePath(job.getId(), FileType.OUTPUT))) {
-            ExecutionOptions options = new ExecutionOptions(resolver);
-            options.setOutputStream(outputStream);
-
-            Execution execution = executor.execute(executable, options);
-            if (execution.getError() != null) {
-                saveErrorToFile(executable, job, execution.getError());
-            }
+    private Execution executeAsync(QueuedExecution execution) throws ContentorException {
+        try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
+            ExecutionContext context = executor.createContext(execution.getExecutable(), resolver);
+            context.setId(execution.getJob().getId());
+            return executor.execute(context);
         } catch (LoginException e) {
-            throw new com.wttech.aem.contentor.core.ContentorException(
-                    String.format(
-                            "Cannot access repository while executing '%s' in job '%s'",
-                            executable.getId(), job.getId()),
-                    e);
-        } catch (IOException e) {
-            throw new com.wttech.aem.contentor.core.ContentorException(
-                    String.format(
-                            "Cannot write to files for executable '%s' in job '%s'", executable.getId(), job.getId()),
-                    e);
+            throw new ContentorException(
+                    String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         }
-    }
-
-    private void cleanAsync(Executable executable, Job job) {
-        try {
-            Thread.sleep(CLEAN_POLL_DELAY);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            LOG.info("Cleaning up job '{}' was interrupted", job.getId());
-            return;
-        }
-
-        try {
-            Files.deleteIfExists(filePath(job.getId(), FileType.OUTPUT));
-            Files.deleteIfExists(filePath(job.getId(), FileType.ERROR));
-        } catch (IOException e) {
-            LOG.error("Cannot delete files for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
-        }
-    }
-
-    private void saveErrorToFile(Executable executable, Job job, String error) {
-        try (OutputStream errorStream = Files.newOutputStream(filePath(job.getId(), FileType.ERROR))) {
-            IOUtils.write(error, errorStream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            LOG.error("Cannot write error file for executable '{}' in job '{}'", executable.getId(), job.getId(), e);
-        }
-    }
-
-    private Optional<String> readFile(String jobId, FileType fileType) throws com.wttech.aem.contentor.core.ContentorException {
-        Path path = filePath(jobId, fileType);
-        if (!path.toFile().exists()) {
-            return Optional.empty();
-        }
-
-        try (InputStream input = Files.newInputStream(path)) {
-            return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new com.wttech.aem.contentor.core.ContentorException(String.format("Cannot read output file for job '%s'", jobId), e);
-        }
-    }
-
-    public Path filePath(String jobId, FileType kind) {
-        File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        return dir.toPath()
-                .resolve(String.format(
-                        "%s_%s.log",
-                        StringUtils.replace(jobId, "/", "-"), kind.name().toLowerCase()));
-    }
-
-    private Optional<Long> calculateDuration(Job job) {
-        if (job == null || job.getFinishedDate() == null || job.getCreated() == null) {
-            return Optional.empty();
-        }
-        return Optional.of(job.getFinishedDate().getTime().getTime()
-                - job.getCreated().getTime().getTime());
-    }
-
-    public enum FileType {
-        OUTPUT,
-        ERROR
     }
 }

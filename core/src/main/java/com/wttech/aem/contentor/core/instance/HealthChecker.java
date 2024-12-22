@@ -32,9 +32,9 @@ public class HealthChecker {
 
         @AttributeDefinition(name = "Event Topics Unstable")
         String[] eventTopicsUnstable() default {
-                "org/osgi/framework/ServiceEvent/*",
-                "org/osgi/framework/FrameworkEvent/*",
-                "org/osgi/framework/BundleEvent/*"
+            "org/osgi/framework/ServiceEvent/*",
+            "org/osgi/framework/FrameworkEvent/*",
+            "org/osgi/framework/BundleEvent/*"
         };
     }
 }

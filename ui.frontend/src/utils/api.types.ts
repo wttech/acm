@@ -1,11 +1,38 @@
-export type DataExecution = {
+export type Executable = {
     id: string;
-    output: string;
-    error: string;
-    status: string;
+    content: string;
 }
 
-export type DataAssistCode = {
+export type Execution = {
+    id: string;
+    executable: Executable;
+    status: ExecutionStatus;
+    startDate: string;
+    endDate: string;
+    duration: number;
+    output: string;
+    error: string;
+}
+
+export enum ExecutionStatus {
+    QUEUED = 'QUEUED',
+    ACTIVE = 'ACTIVE',
+    STOPPED = 'STOPPED',
+    FAILED = 'FAILED',
+    SKIPPED = 'SKIPPED',
+    ABORTED = 'ABORTED',
+    SUCCEEDED = 'SUCCEEDED',
+}
+
+export function isExecutionPending(status: ExecutionStatus | null) {
+    return status === ExecutionStatus.QUEUED || status === ExecutionStatus.ACTIVE;
+}
+
+export type ExecutionOutput = {
+    list: Execution[];
+}
+
+export type AssistCodeOutput = {
     code: string;
     suggestions: {
         k: string // kind
@@ -15,7 +42,7 @@ export type DataAssistCode = {
     }[]
 }
 
-export type DataSnippet = {
+export type SnippetOutput = {
     list: Snippet[]
 }
 
@@ -24,4 +51,15 @@ export type Snippet = {
     id: string
     content: string
     documentation: string
+}
+
+export type Script = {
+    id: string;
+    path: string;
+    name: string;
+    content: string;
+}
+
+export type ScriptOutput = {
+    list: Script[];
 }

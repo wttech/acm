@@ -11,11 +11,11 @@ public final class ExecutionId {
     }
 
     /**
-     * Generate something looking Sling job compatible e.g '2024-11-13-9-15-6c393bf1-97ea-4e52-a1db-55c0be12d155_177'
+     * Generate something looking Sling job compatible e.g '2024/12/17/22/3/7e553244-1dc4-4cb5-a9d6-b384c0d2d919_108'
      */
     public static String generate() {
         LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd/HH/mm");
         String formattedDate = now.format(formatter);
         String uuid = UUID.randomUUID().toString();
         return String.format("%s-%s_%d", formattedDate, uuid, now.getNano());

@@ -1,24 +1,22 @@
 package com.wttech.aem.contentor.core.assist;
 
 import com.wttech.aem.contentor.core.ContentorException;
-import com.wttech.aem.contentor.core.assist.osgi.ClassInfo;
-import com.wttech.aem.contentor.core.assist.osgi.OsgiScanner;
 import com.wttech.aem.contentor.core.assist.resource.ResourceScanner;
 import com.wttech.aem.contentor.core.code.Variable;
+import com.wttech.aem.contentor.core.osgi.ClassInfo;
+import com.wttech.aem.contentor.core.osgi.OsgiScanner;
 import com.wttech.aem.contentor.core.snippet.SnippetRepository;
 import com.wttech.aem.contentor.core.util.SearchUtils;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-
-import org.osgi.service.component.annotations.Modified;
-import org.osgi.service.component.annotations.Reference;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 
 @Component(immediate = true, service = Assistancer.class)
 public class Assistancer {
@@ -38,7 +36,8 @@ public class Assistancer {
         this.classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
     }
 
-    public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word) throws ContentorException {
+    public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word)
+            throws ContentorException {
         switch (suggestionType) {
             case VARIABLE:
                 return new Assistance(variableSuggestions(word).collect(Collectors.toList()));
@@ -50,11 +49,12 @@ public class Assistancer {
                 return new Assistance(snippetSuggestions(resolver, word).collect(Collectors.toList()));
             default:
                 return new Assistance(Stream.of(
-                        classSuggestions(word),
-                        resourceSuggestions(resolver, word),
-                        variableSuggestions(word),
-                        snippetSuggestions(resolver, word)
-                ).flatMap(s -> s).collect(Collectors.toList()));
+                                classSuggestions(word),
+                                resourceSuggestions(resolver, word),
+                                variableSuggestions(word),
+                                snippetSuggestions(resolver, word))
+                        .flatMap(s -> s)
+                        .collect(Collectors.toList()));
         }
     }
 
@@ -64,8 +64,10 @@ public class Assistancer {
                 .map(VariableSuggestion::new);
     }
 
-    private Stream<SnippetSuggestion> snippetSuggestions(ResourceResolver resolver, String word) throws ContentorException {
-        return new SnippetRepository(resolver).findAll()
+    private Stream<SnippetSuggestion> snippetSuggestions(ResourceResolver resolver, String word)
+            throws ContentorException {
+        return new SnippetRepository(resolver)
+                .findAll()
                 .filter(s -> SearchUtils.containsWord(s.getName(), word))
                 .map(SnippetSuggestion::new);
     }
@@ -77,7 +79,6 @@ public class Assistancer {
     }
 
     private Stream<Suggestion> resourceSuggestions(ResourceResolver resolver, String word) {
-        return resourceScanner.forPattern(resolver, word)
-                .map(ResourceSuggestion::new);
+        return resourceScanner.forPattern(resolver, word).map(ResourceSuggestion::new);
     }
 }

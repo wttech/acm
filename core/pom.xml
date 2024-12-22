@@ -46,6 +46,7 @@
                         </goals>
                         <configuration>
                             <bnd><![CDATA[
+Export-Package com.wttech.aem.contentor.core.*
 Import-Package: javax.annotation;version=0.0.0,*
 Private-Package: org.yaml.snakeyaml.*
 DynamicImport-Package: *
@@ -81,6 +82,33 @@ DynamicImport-Package: *
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <configuration>
+                    <skip>${skipFormat}</skip>
+                    <java>
+                        <includes>
+                            <include>src/main/java/**/*.java</include>
+                            <include>src/test/java/**/*.java</include>
+                        </includes>
+                        <palantirJavaFormat/>
+                        <importOrder/>
+                        <removeUnusedImports/>
+                        <formatAnnotations/>
+                    </java>
+                </configuration>
+                <executions>
+                    <!-- Automatically correct code style during the normal build -->
+                    <execution>
+                        <id>apply-style</id>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -215,6 +243,12 @@ DynamicImport-Package: *
             <artifactId>oak-jackrabbit-api</artifactId>
             <version>1.22.20</version><!-- TODO downgrade to AEM 6.5.0 compatible  -->
             <groupId>org.apache.jackrabbit</groupId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <artifactId>org.apache.sling.jcr.resource</artifactId>
+            <version>3.0.18</version><!-- TODO downgrade to AEM 6.5.0 compatible -->
+            <groupId>org.apache.sling</groupId>
             <scope>provided</scope>
         </dependency>
         <dependency>

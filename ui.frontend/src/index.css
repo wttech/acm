@@ -1,5 +1,5 @@
 /* Reset margin and padding for html and body */
-html, body {
+html, body, #root {
     margin: 0;
     padding: 0;
     height: 100%;

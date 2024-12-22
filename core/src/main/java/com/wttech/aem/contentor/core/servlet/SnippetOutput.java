@@ -1,7 +1,6 @@
-package com.wttech.aem.contentor.core.api;
+package com.wttech.aem.contentor.core.servlet;
 
 import com.wttech.aem.contentor.core.snippet.Snippet;
-
 import java.io.Serializable;
 import java.util.List;
 

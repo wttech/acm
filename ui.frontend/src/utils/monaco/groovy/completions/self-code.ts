@@ -1,6 +1,6 @@
 import * as monaco from 'monaco-editor';
 import { Monaco } from "@monaco-editor/react";
-import {LANGUAGE_ID} from "../../groovy.ts";
+import { LANGUAGE_ID } from "../../groovy.ts";
 
 export function registerSelfCodeCompletions(instance: Monaco) {
     instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
@@ -31,7 +31,7 @@ export function registerSelfCodeCompletions(instance: Monaco) {
             }
 
             // Use regex to find method declarations
-            const methodRegex = /\b(def|void|public|private|protected|static)\s+(\w+)\s*\(/g;
+            const methodRegex = /\b(\w+)\s+(\w+)\s*\(/g;
             while ((match = methodRegex.exec(textUntilPosition)) !== null) {
                 suggestions.push({
                     label: match[2],

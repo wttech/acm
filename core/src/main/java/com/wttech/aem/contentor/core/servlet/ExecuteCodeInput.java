@@ -1,7 +1,6 @@
-package com.wttech.aem.contentor.core.api;
+package com.wttech.aem.contentor.core.servlet;
 
 import com.wttech.aem.contentor.core.code.Code;
-
 import java.io.Serializable;
 
 public class ExecuteCodeInput implements Serializable {
@@ -9,6 +8,8 @@ public class ExecuteCodeInput implements Serializable {
     private String mode;
 
     private Code code;
+
+    private Boolean history;
 
     public ExecuteCodeInput() {
         // for deserialization
@@ -20,5 +21,9 @@ public class ExecuteCodeInput implements Serializable {
 
     public Code getCode() {
         return code;
+    }
+
+    public Boolean getHistory() {
+        return history;
     }
 }

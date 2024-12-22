@@ -1,12 +1,11 @@
 package com.wttech.aem.contentor.core.util;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.SlingHttpServletResponse;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingHttpServletResponse;
 
 public final class ServletUtils {
 
@@ -33,6 +32,6 @@ public final class ServletUtils {
         response.setStatus(result.getStatus());
         response.setContentType(JsonUtils.APPLICATION_JSON_UTF8);
 
-        JsonUtils.MAPPER.writeValue(response.getWriter(), result);
+        JsonUtils.MAPPER.writeValue(response.getOutputStream(), result);
     }
 }

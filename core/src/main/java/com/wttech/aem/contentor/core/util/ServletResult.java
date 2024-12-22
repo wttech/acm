@@ -1,7 +1,8 @@
 package com.wttech.aem.contentor.core.util;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 
 public class ServletResult<D> implements Serializable {
 
@@ -18,7 +19,11 @@ public class ServletResult<D> implements Serializable {
     }
 
     public ServletResult(int status, String message) {
-        this(status, message, null);
+        this(status, trimMessage(message), null);
+    }
+
+    private static String trimMessage(String message) {
+        return StringUtils.trim(StringUtils.removeEnd(message, "null"));
     }
 
     public static ServletResult<Void> notFound(String message) {

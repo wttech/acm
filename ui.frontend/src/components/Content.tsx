@@ -4,8 +4,9 @@ import ScriptsPage from "../pages/ScriptsPage";
 import ConsolePage from "../pages/ConsolePage";
 
 import { Routes } from 'react-router-dom';
-import ExecutionsPage from "../pages/ExecutionsPage.tsx";
+import ExecutionList from "../pages/ExecutionList.tsx";
 import SnippetsPage from "../pages/SnippetsPage.tsx";
+import ExecutionView from "../pages/ExecutionView.tsx";
 
 const Content = () => {
     return (
@@ -14,7 +15,8 @@ const Content = () => {
             <Route path="/scripts" element={<ScriptsPage/>} />
             <Route path="/snippets" element={<SnippetsPage/>} />
             <Route path="/console" element={<ConsolePage/>} />
-            <Route path="/executions" element={<ExecutionsPage/>} />
+            <Route path="/executions" element={<ExecutionList/>} />
+            <Route path="/executions/view/:executionId" element={<ExecutionView/>} />
         </Routes>
     );
 };

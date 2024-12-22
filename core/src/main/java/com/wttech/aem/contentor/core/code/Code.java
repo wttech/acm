@@ -1,11 +1,11 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.sling.event.jobs.Job;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.sling.event.jobs.Job;
 
 public class Code implements Executable {
 
@@ -33,15 +33,19 @@ public class Code implements Executable {
         return new Code(job.getProperty("id", String.class), job.getProperty("content", String.class));
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public String getContent() {
         return content;
     }
 
     public String toString() {
-        return new ToStringBuilder(this).append("id", id).toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("id", id)
+                .toString();
     }
 }

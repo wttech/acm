@@ -2,8 +2,7 @@ package com.wttech.aem.contentor.core.assist;
 
 import org.apache.sling.api.resource.Resource;
 
-public class ResourceSuggestion implements Suggestion
-{
+public class ResourceSuggestion implements Suggestion {
     private final Resource resource;
 
     public ResourceSuggestion(Resource resource) {

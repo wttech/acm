@@ -2,7 +2,7 @@ import * as monaco from 'monaco-editor';
 import {Monaco} from "@monaco-editor/react";
 import {LANGUAGE_ID} from "../../groovy.ts";
 import {apiRequest} from "../../../api.ts";
-import {DataAssistCode} from "../../../api.types.ts";
+import {AssistCodeOutput} from "../../../api.types.ts";
 
 export function registerAemCodeCompletions(instance: Monaco) {
     registerWordCompletion(instance);
@@ -25,7 +25,7 @@ function registerWordCompletion(instance: Monaco) {
             }
 
             try {
-                const response = await apiRequest<DataAssistCode>({
+                const response = await apiRequest<AssistCodeOutput>({
                     method: "GET",
                     url: `/apps/contentor/api/assist-code.json?type=all&word=${encodeURIComponent(wordText)}`,
                     operation: "Code assistance"
@@ -76,7 +76,7 @@ function registerResourceCompletion(instance: Monaco) {
             }
 
             try {
-                const response = await apiRequest<DataAssistCode>({
+                const response = await apiRequest<AssistCodeOutput>({
                     method: "GET",
                     url: `/apps/contentor/api/assist-code.json?type=resource&word=${encodeURIComponent(wordText)}`,
                     operation: "Code assistance"

@@ -1,34 +1,39 @@
 package com.wttech.aem.contentor.core.code;
 
+import java.util.Arrays;
+import java.util.Optional;
 import org.apache.sling.event.jobs.Job;
 
 public enum ExecutionStatus {
     QUEUED,
     ACTIVE,
+    SKIPPED,
     STOPPED,
+    ABORTED,
     FAILED,
     SUCCEEDED;
 
-    public static ExecutionStatus of(Job job, String error) {
-        Job.JobState state = job.getJobState();
+    public static Optional<ExecutionStatus> of(String status) {
+        return Arrays.stream(values())
+                .filter(s -> s.name().equalsIgnoreCase(status))
+                .findFirst();
+    }
 
-        ExecutionStatus result;
-        if (state == Job.JobState.QUEUED) {
-            result = ExecutionStatus.QUEUED;
-        } else if (state == Job.JobState.ACTIVE) {
-            result = ExecutionStatus.ACTIVE;
-        } else if (state == Job.JobState.STOPPED) {
-            result = ExecutionStatus.STOPPED;
-        } else if (state == Job.JobState.SUCCEEDED) {
-            if (error != null) {
-                result = ExecutionStatus.FAILED;
-            } else {
-                result = ExecutionStatus.SUCCEEDED;
-            }
-        } else {
-            result = ExecutionStatus.FAILED;
+    public static ExecutionStatus of(Job job) {
+        switch (job.getJobState()) {
+            case QUEUED:
+                return ExecutionStatus.QUEUED;
+            case ACTIVE:
+                return ExecutionStatus.ACTIVE;
+            case STOPPED:
+                return ExecutionStatus.STOPPED;
+            case SUCCEEDED:
+                return ExecutionStatus.SUCCEEDED;
+            case DROPPED:
+            case GIVEN_UP:
+            case ERROR:
+            default:
+                return ExecutionStatus.FAILED;
         }
-
-        return result;
     }
 }
