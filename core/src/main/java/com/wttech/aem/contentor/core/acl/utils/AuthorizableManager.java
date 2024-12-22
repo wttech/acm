@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.acl.utils;
 
 import com.wttech.aem.contentor.core.acl.AclException;
+import com.wttech.aem.contentor.core.acl.AclResult;
 import java.security.Principal;
 import java.util.Iterator;
 import java.util.Map;
@@ -73,6 +74,20 @@ public class AuthorizableManager {
 
     public void removeGroup(Group group) throws RepositoryException {
         group.remove();
+    }
+
+    public AclResult addToGroup(Authorizable authorizable, Group group) throws RepositoryException {
+        if (!group.isMember(authorizable)) {
+            return group.addMember(authorizable) ? AclResult.OK : AclResult.FAILED;
+        }
+        return AclResult.SKIPPED;
+    }
+
+    public AclResult removeFromGroup(Authorizable authorizable, Group group) throws RepositoryException {
+        if (group.isMember(authorizable)) {
+            return group.removeMember(authorizable) ? AclResult.OK : AclResult.FAILED;
+        }
+        return AclResult.SKIPPED;
     }
 
     public Authorizable getAuthorizable(String id) throws RepositoryException {

@@ -86,7 +86,7 @@ public class Acl {
                 user = authorizableManager.createUser(options.getId(), options.getPassword(), options.getPath());
             }
             authorizableManager.updateUser(user, options.getPassword(), options.determineAllProperties());
-        } else if (options.getMode() == CreateUserOptions.Mode.OVERRIDE) {
+        } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             authorizableManager.updateUser(user, options.getPassword(), options.determineAllProperties());
         }
         return user;
@@ -100,11 +100,11 @@ public class Acl {
         return authorizableManager.getGroup(id);
     }
 
-    void removeUser(String id) throws RepositoryException {
+    public void removeUser(String id) throws RepositoryException {
         removeUser(getUser(id));
     }
 
-    void removeUser(User user) throws RepositoryException {
+    public void removeUser(User user) throws RepositoryException {
         authorizableManager.removeUser(user);
     }
 
@@ -129,12 +129,20 @@ public class Acl {
         return group;
     }
 
-    void removeGroup(String id) throws RepositoryException {
+    public void removeGroup(String id) throws RepositoryException {
         removeGroup(getGroup(id));
     }
 
-    void removeGroup(Group group) throws RepositoryException {
+    public void removeGroup(Group group) throws RepositoryException {
         authorizableManager.removeGroup(group);
+    }
+
+    public AclResult addToGroup(Authorizable authorizable, Group group) throws RepositoryException {
+        return authorizableManager.addToGroup(authorizable, group);
+    }
+
+    public AclResult removeFromGroup(Authorizable authorizable, Group group) throws RepositoryException {
+        return authorizableManager.removeFromGroup(authorizable, group);
     }
 
     public void purge(Authorizable authorizable, String path) {

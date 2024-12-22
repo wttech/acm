@@ -22,7 +22,7 @@ public class RestrictionOptions extends AuthorizableOptions {
     private List<String> properties = Collections.emptyList();
 
     // TODO strongly natively-typed here, provide string-accepting utility setters
-    private Map<String, Object> restrictions = Collections.emptyMap();
+    private Map<String, Object> restrictions = new HashMap<>();
 
     private Mode mode = Mode.SKIP;
 
@@ -72,6 +72,14 @@ public class RestrictionOptions extends AuthorizableOptions {
 
     public void setRestrictions(Map<String, Object> restrictions) {
         this.restrictions = restrictions;
+    }
+
+    public void restriction(String name, String value) {
+        restrictions.put(name, value);
+    }
+
+    public void restriction(String name, List<String> values) {
+        restrictions.put(name, values);
     }
 
     public void setMode(Mode mode) {
