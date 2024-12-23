@@ -117,12 +117,6 @@ public class Acl {
 
     // Non-closure accepting methods
 
-    public User createUser(String id) throws RepositoryException {
-        CreateUserOptions options = new CreateUserOptions();
-        options.setId(id);
-        return createUser(options);
-    }
-
     public User createUser(CreateUserOptions options) throws RepositoryException {
         User user = authorizableManager.getUser(options.getId());
         if (user == null) {
@@ -138,36 +132,18 @@ public class Acl {
         return user;
     }
 
+    public User createUser(String id) throws RepositoryException {
+        CreateUserOptions options = new CreateUserOptions();
+        options.setId(id);
+        return createUser(options);
+    }
+
     public User getUser(String id) throws RepositoryException {
         return authorizableManager.getUser(id);
     }
 
-    public Group getGroup(String id) throws RepositoryException {
-        return authorizableManager.getGroup(id);
-    }
-
-    public void removeUser(AuthorizableOptions options) throws RepositoryException {
-        User user = (User) determineAuthorizable(options);
-        removeUser(user);
-    }
-
-    public void removeUser(String id) throws RepositoryException {
-        User user = authorizableManager.getUser(id);
-        removeUser(user);
-    }
-
-    public void removeUser(User user) throws RepositoryException {
-        authorizableManager.removeUser(user);
-    }
-
     public User createSystemUser() {
         throw new IllegalStateException("Not implemented yet!");
-    }
-
-    public Group createGroup(String id) throws RepositoryException {
-        CreateGroupOptions options = new CreateGroupOptions();
-        options.setId(id);
-        return createGroup(options);
     }
 
     public Group createGroup(CreateGroupOptions options) throws RepositoryException {
@@ -181,18 +157,42 @@ public class Acl {
         return group;
     }
 
+    public Group createGroup(String id) throws RepositoryException {
+        CreateGroupOptions options = new CreateGroupOptions();
+        options.setId(id);
+        return createGroup(options);
+    }
+
+    public Group getGroup(String id) throws RepositoryException {
+        return authorizableManager.getGroup(id);
+    }
+
+    public void removeUser(AuthorizableOptions options) throws RepositoryException {
+        User user = (User) determineAuthorizable(options);
+        removeUser(user);
+    }
+
+    public void removeUser(User user) throws RepositoryException {
+        authorizableManager.removeUser(user);
+    }
+
+    public void removeUser(String id) throws RepositoryException {
+        User user = authorizableManager.getUser(id);
+        removeUser(user);
+    }
+
     public void removeGroup(AuthorizableOptions options) throws RepositoryException {
         Group group = (Group) determineAuthorizable(options);
         removeGroup(group);
     }
 
+    public void removeGroup(Group group) throws RepositoryException {
+        authorizableManager.removeGroup(group);
+    }
+
     public void removeGroup(String id) throws RepositoryException {
         Group group = authorizableManager.getGroup(id);
         removeGroup(group);
-    }
-
-    public void removeGroup(Group group) throws RepositoryException {
-        authorizableManager.removeGroup(group);
     }
 
     public void addToGroup(GroupOptions options) throws RepositoryException {
@@ -327,23 +327,6 @@ public class Acl {
         return purge(authorizable, path, strict);
     }
 
-    public AclResult allow(Authorizable authorizable, String path, List<String> permissions)
-            throws RepositoryException {
-        AllowOptions options = new AllowOptions();
-        options.setAuthorizable(authorizable);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        return allow(options);
-    }
-
-    public AclResult allow(String id, String path, List<String> permissions) throws RepositoryException {
-        AllowOptions options = new AllowOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        return allow(options);
-    }
-
     public AclResult allow(AllowOptions options) throws RepositoryException {
         Resource resource = resourceResolver.getResource(options.getPath());
         if (resource == null) {
@@ -365,20 +348,21 @@ public class Acl {
         }
     }
 
-    public AclResult deny(Authorizable authorizable, String path, List<String> permissions) throws RepositoryException {
-        DenyOptions options = new DenyOptions();
+    public AclResult allow(Authorizable authorizable, String path, List<String> permissions)
+            throws RepositoryException {
+        AllowOptions options = new AllowOptions();
         options.setAuthorizable(authorizable);
         options.setPath(path);
         options.setPermissions(permissions);
-        return deny(options);
+        return allow(options);
     }
 
-    public AclResult deny(String id, String path, List<String> permissions) throws RepositoryException {
-        DenyOptions options = new DenyOptions();
+    public AclResult allow(String id, String path, List<String> permissions) throws RepositoryException {
+        AllowOptions options = new AllowOptions();
         options.setId(id);
         options.setPath(path);
         options.setPermissions(permissions);
-        return deny(options);
+        return allow(options);
     }
 
     public AclResult deny(DenyOptions options) throws RepositoryException {
@@ -402,14 +386,25 @@ public class Acl {
         }
     }
 
+    public AclResult deny(Authorizable authorizable, String path, List<String> permissions) throws RepositoryException {
+        DenyOptions options = new DenyOptions();
+        options.setAuthorizable(authorizable);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        return deny(options);
+    }
+
+    public AclResult deny(String id, String path, List<String> permissions) throws RepositoryException {
+        DenyOptions options = new DenyOptions();
+        options.setId(id);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        return deny(options);
+    }
+
     public void setProperty(PropertyOptions options) throws RepositoryException {
         Authorizable authorizable = determineAuthorizable(options);
         setProperty(authorizable, options.getKey(), options.getValue());
-    }
-
-    public void setProperty(String id, String key, String value) throws RepositoryException {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        setProperty(authorizable, key, value);
     }
 
     public void setProperty(Authorizable authorizable, String key, String value) throws RepositoryException {
@@ -417,18 +412,23 @@ public class Acl {
         authorizableManager.updateAuthorizable(authorizable, properties);
     }
 
+    public void setProperty(String id, String key, String value) throws RepositoryException {
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        setProperty(authorizable, key, value);
+    }
+
     public void setPassword(PasswordOptions options) throws RepositoryException {
         User user = (User) determineAuthorizable(options);
         setPassword(user, options.getPassword());
     }
 
+    public void setPassword(User user, String password) throws RepositoryException {
+        user.changePassword(password);
+    }
+
     public void setPassword(String id, String password) throws RepositoryException {
         User user = authorizableManager.getUser(id);
         setPassword(user, password);
-    }
-
-    public void setPassword(User user, String password) throws RepositoryException {
-        user.changePassword(password);
     }
 
     public void save() throws RepositoryException {
