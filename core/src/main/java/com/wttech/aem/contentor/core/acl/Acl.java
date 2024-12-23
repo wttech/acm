@@ -404,11 +404,11 @@ public class Acl {
 
     public void setProperty(PropertyOptions options) throws RepositoryException {
         Authorizable authorizable = determineAuthorizable(options);
-        setProperty(authorizable, options.getKey(), options.getValue());
+        setProperty(authorizable, options.getName(), options.getValue());
     }
 
-    public void setProperty(Authorizable authorizable, String key, String value) throws RepositoryException {
-        Map<String, String> properties = Collections.singletonMap(key, value);
+    public void setProperty(Authorizable authorizable, String name, String value) throws RepositoryException {
+        Map<String, String> properties = Collections.singletonMap(name, value);
         authorizableManager.updateAuthorizable(authorizable, properties);
     }
 

@@ -207,6 +207,12 @@ DynamicImport-Package: *
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.day.cq</groupId>
+            <artifactId>cq-security</artifactId>
+            <version>5.6.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <artifactId>org.apache.sling.event</artifactId>
             <version>4.2.12</version>
             <groupId>org.apache.sling</groupId>
