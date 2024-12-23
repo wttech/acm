@@ -155,10 +155,7 @@ public class Acl {
     }
 
     public void purge(PurgeOptions options) throws RepositoryException {
-        Authorizable authorizable = options.getAuthorizable();
-        if (authorizable == null) {
-            authorizable = authorizableManager.getAuthorizable(options.getId());
-        }
+        Authorizable authorizable = determineAuthorizable(options);
         purge(authorizable, options.getPath(), options.isStrict());
     }
 
@@ -199,10 +196,7 @@ public class Acl {
         } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(options.getPath())) {
             return AclResult.SKIPPED;
         } else {
-            Authorizable authorizable = options.getAuthorizable();
-            if (authorizable == null) {
-                authorizable = authorizableManager.getAuthorizable(options.getId());
-            }
+            Authorizable authorizable = determineAuthorizable(options);
             permissionManager.applyPermissions(
                     authorizable,
                     options.getPath(),
@@ -239,10 +233,7 @@ public class Acl {
         } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(options.getPath())) {
             return AclResult.SKIPPED;
         } else {
-            Authorizable authorizable = options.getAuthorizable();
-            if (authorizable == null) {
-                authorizable = authorizableManager.getAuthorizable(options.getId());
-            }
+            Authorizable authorizable = determineAuthorizable(options);
             permissionManager.applyPermissions(
                     authorizable,
                     options.getPath(),
@@ -254,10 +245,7 @@ public class Acl {
     }
 
     public void setProperty(PropertyOptions options) throws RepositoryException {
-        Authorizable authorizable = options.getAuthorizable();
-        if (authorizable == null) {
-            authorizable = authorizableManager.getAuthorizable(options.getId());
-        }
+        Authorizable authorizable = determineAuthorizable(options);
         setProperty(authorizable, options.getKey(), options.getValue());
     }
 
@@ -273,5 +261,13 @@ public class Acl {
 
     public void save() throws RepositoryException {
         session.save();
+    }
+
+    private Authorizable determineAuthorizable(AuthorizableOptions options) throws RepositoryException {
+        Authorizable authorizable = options.getAuthorizable();
+        if (authorizable == null) {
+            authorizable = authorizableManager.getAuthorizable(options.getId());
+        }
+        return authorizable;
     }
 }
