@@ -62,6 +62,14 @@ public class Acl {
         return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
     }
 
+    public void removeUser(Closure<AuthorizableOptions> closure) throws RepositoryException {
+        removeUser(GroovyUtils.with(new AuthorizableOptions(), closure));
+    }
+
+    public void removeGroup(Closure<AuthorizableOptions> closure) throws RepositoryException {
+        removeGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
+    }
+
     public void purge(Closure<PurgeOptions> closure) throws RepositoryException {
         purge(GroovyUtils.with(new PurgeOptions(), closure));
     }
@@ -76,6 +84,10 @@ public class Acl {
 
     public void setProperty(Closure<PropertyOptions> closure) throws RepositoryException {
         setProperty(GroovyUtils.with(new PropertyOptions(), closure));
+    }
+
+    public void setPassword(Closure<PasswordOptions> closure) throws RepositoryException {
+        setPassword(GroovyUtils.with(new PasswordOptions(), closure));
     }
 
     // Non-closure accepting methods
@@ -109,6 +121,10 @@ public class Acl {
         return authorizableManager.getGroup(id);
     }
 
+    public void removeUser(AuthorizableOptions options) throws RepositoryException {
+        removeUser((User) determineAuthorizable(options));
+    }
+
     public void removeUser(String id) throws RepositoryException {
         removeUser(getUser(id));
     }
@@ -138,8 +154,14 @@ public class Acl {
         return group;
     }
 
+    public void removeGroup(AuthorizableOptions options) throws RepositoryException {
+        Group group = (Group) determineAuthorizable(options);
+        removeGroup(group);
+    }
+
     public void removeGroup(String id) throws RepositoryException {
-        removeGroup(getGroup(id));
+        Group group = getGroup(id);
+        removeGroup(group);
     }
 
     public void removeGroup(Group group) throws RepositoryException {
@@ -257,6 +279,20 @@ public class Acl {
     public void setProperty(Authorizable authorizable, String key, String value) throws RepositoryException {
         Map<String, String> properties = Collections.singletonMap(key, value);
         authorizableManager.updateAuthorizable(authorizable, properties);
+    }
+
+    public void setPassword(PasswordOptions options) throws RepositoryException {
+        User user = (User) determineAuthorizable(options);
+        setPassword(user, options.getPassword());
+    }
+
+    public void setPassword(String id, String password) throws RepositoryException {
+        User user = authorizableManager.getUser(id);
+        setPassword(user, password);
+    }
+
+    public void setPassword(User user, String password) throws RepositoryException {
+        user.changePassword(password);
     }
 
     public void save() throws RepositoryException {
