@@ -8,6 +8,7 @@ import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.jcr.RepositoryException;
@@ -78,12 +79,20 @@ public class Acl {
         removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
     }
 
+    public void removeFromAllGroups(Closure<AuthorizableOptions> closure) throws RepositoryException {
+        removeFromAllGroups(GroovyUtils.with(new AuthorizableOptions(), closure));
+    }
+
     public void addMember(Closure<MemberOptions> closure) throws RepositoryException {
         addMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
     public void removeMember(Closure<MemberOptions> closure) throws RepositoryException {
         removeMember(GroovyUtils.with(new MemberOptions(), closure));
+    }
+
+    public void removeAllMembers(Closure<AuthorizableOptions> closure) throws RepositoryException {
+        removeAllMembers(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
     public void purge(Closure<PurgeOptions> closure) throws RepositoryException {
@@ -224,6 +233,24 @@ public class Acl {
         removeFromGroup(authorizable, group);
     }
 
+    public void removeFromAllGroups(AuthorizableOptions options) throws RepositoryException {
+        Authorizable authorizable = determineAuthorizable(options);
+        removeFromAllGroups(authorizable);
+    }
+
+    public void removeFromAllGroups(Authorizable authorizable) throws RepositoryException {
+        Iterator<Group> groups = authorizable.memberOf();
+        while (groups.hasNext()) {
+            Group group = groups.next();
+            removeFromGroup(authorizable, group);
+        }
+    }
+
+    public void removeFromAllGroups(String id) throws RepositoryException {
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        removeFromAllGroups(authorizable);
+    }
+
     public void addMember(MemberOptions options) throws RepositoryException {
         Group group = (Group) determineAuthorizable(options);
         Authorizable member = options.getMemberAuthorizable();
@@ -262,6 +289,24 @@ public class Acl {
         removeMember(group, member);
     }
 
+    public void removeAllMembers(AuthorizableOptions options) throws RepositoryException {
+        Group group = (Group) determineAuthorizable(options);
+        removeAllMembers(group);
+    }
+
+    public void removeAllMembers(Group group) throws RepositoryException {
+        Iterator<Authorizable> members = group.getMembers();
+        while (members.hasNext()) {
+            Authorizable member = members.next();
+            removeFromGroup(member, group);
+        }
+    }
+
+    public void removeAllMembers(String id) throws RepositoryException {
+        Group group = authorizableManager.getGroup(id);
+        removeAllMembers(group);
+    }
+
     public void purge(PurgeOptions options) throws RepositoryException {
         Authorizable authorizable = determineAuthorizable(options);
         purge(authorizable, options.getPath(), options.isStrict());
@@ -275,6 +320,11 @@ public class Acl {
             purgeManager.purge(authorizable, path, strict);
             return AclResult.OK;
         }
+    }
+
+    public AclResult purge(String id, String path, boolean strict) throws RepositoryException {
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        return purge(authorizable, path, strict);
     }
 
     public AclResult allow(Authorizable authorizable, String path, List<String> permissions)
