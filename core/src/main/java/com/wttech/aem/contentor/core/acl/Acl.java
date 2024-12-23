@@ -70,6 +70,22 @@ public class Acl {
         removeGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
+    public void addToGroup(Closure<GroupOptions> closure) throws RepositoryException {
+        addToGroup(GroovyUtils.with(new GroupOptions(), closure));
+    }
+
+    public void removeFromGroup(Closure<GroupOptions> closure) throws RepositoryException {
+        removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
+    }
+
+    public void addMember(Closure<MemberOptions> closure) throws RepositoryException {
+        addMember(GroovyUtils.with(new MemberOptions(), closure));
+    }
+
+    public void removeMember(Closure<MemberOptions> closure) throws RepositoryException {
+        removeMember(GroovyUtils.with(new MemberOptions(), closure));
+    }
+
     public void purge(Closure<PurgeOptions> closure) throws RepositoryException {
         purge(GroovyUtils.with(new PurgeOptions(), closure));
     }
@@ -122,11 +138,13 @@ public class Acl {
     }
 
     public void removeUser(AuthorizableOptions options) throws RepositoryException {
-        removeUser((User) determineAuthorizable(options));
+        User user = (User) determineAuthorizable(options);
+        removeUser(user);
     }
 
     public void removeUser(String id) throws RepositoryException {
-        removeUser(getUser(id));
+        User user = authorizableManager.getUser(id);
+        removeUser(user);
     }
 
     public void removeUser(User user) throws RepositoryException {
@@ -160,7 +178,7 @@ public class Acl {
     }
 
     public void removeGroup(String id) throws RepositoryException {
-        Group group = getGroup(id);
+        Group group = authorizableManager.getGroup(id);
         removeGroup(group);
     }
 
@@ -168,12 +186,80 @@ public class Acl {
         authorizableManager.removeGroup(group);
     }
 
-    public AclResult addToGroup(Authorizable authorizable, Group group) throws RepositoryException {
-        return authorizableManager.addToGroup(authorizable, group);
+    public void addToGroup(GroupOptions options) throws RepositoryException {
+        Authorizable authorizable = determineAuthorizable(options);
+        Group group = (Group) options.getGroupAuthorizable();
+        if (group == null) {
+            group = authorizableManager.getGroup(options.getGroupId());
+        }
+        addToGroup(authorizable, group);
     }
 
-    public AclResult removeFromGroup(Authorizable authorizable, Group group) throws RepositoryException {
-        return authorizableManager.removeFromGroup(authorizable, group);
+    public void addToGroup(Authorizable authorizable, Group group) throws RepositoryException {
+        authorizableManager.addToGroup(authorizable, group);
+    }
+
+    public void addToGroup(String id, String groupId) throws RepositoryException {
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        Group group = authorizableManager.getGroup(groupId);
+        addToGroup(authorizable, group);
+    }
+
+    public void removeFromGroup(GroupOptions options) throws RepositoryException {
+        Authorizable authorizable = determineAuthorizable(options);
+        Group group = (Group) options.getGroupAuthorizable();
+        if (group == null) {
+            group = authorizableManager.getGroup(options.getGroupId());
+        }
+        removeFromGroup(authorizable, group);
+    }
+
+    public void removeFromGroup(Authorizable authorizable, Group group) throws RepositoryException {
+        authorizableManager.removeFromGroup(authorizable, group);
+    }
+
+    public void removeFromGroup(String id, String groupId) throws RepositoryException {
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        Group group = authorizableManager.getGroup(groupId);
+        removeFromGroup(authorizable, group);
+    }
+
+    public void addMember(MemberOptions options) throws RepositoryException {
+        Group group = (Group) determineAuthorizable(options);
+        Authorizable member = options.getMemberAuthorizable();
+        if (member == null) {
+            member = authorizableManager.getAuthorizable(options.getMemberId());
+        }
+        addMember(group, member);
+    }
+
+    public void addMember(Group group, Authorizable member) throws RepositoryException {
+        addToGroup(member, group);
+    }
+
+    public void addMember(String id, String memberId) throws RepositoryException {
+        Group group = authorizableManager.getGroup(id);
+        Authorizable member = authorizableManager.getAuthorizable(memberId);
+        addMember(group, member);
+    }
+
+    public void removeMember(MemberOptions options) throws RepositoryException {
+        Group group = (Group) determineAuthorizable(options);
+        Authorizable member = options.getMemberAuthorizable();
+        if (member == null) {
+            member = authorizableManager.getAuthorizable(options.getMemberId());
+        }
+        removeMember(group, member);
+    }
+
+    public void removeMember(Group group, Authorizable member) throws RepositoryException {
+        removeFromGroup(member, group);
+    }
+
+    public void removeMember(String id, String memberId) throws RepositoryException {
+        Group group = authorizableManager.getGroup(id);
+        Authorizable member = authorizableManager.getAuthorizable(memberId);
+        removeMember(group, member);
     }
 
     public void purge(PurgeOptions options) throws RepositoryException {
