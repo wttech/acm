@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -38,7 +39,7 @@ public class PurgeManager {
         if (strict) {
             removeAll(authorizable, path);
         } else {
-            purge(authorizable, path);
+            purge(authorizable, normalizePath(path));
         }
     }
 
@@ -56,11 +57,8 @@ public class PurgeManager {
 
     private void purge(Authorizable authorizable, String path) throws RepositoryException {
         Set<String> accessControlledPaths = getAccessControlledPaths(authorizable);
-        String normalizedPath = normalizePath(path);
         for (String parentPath : accessControlledPaths) {
-            String normalizedParentPath = normalizePath(parentPath);
-            boolean isUsersPermission = parentPath.startsWith(authorizable.getPath());
-            if (StringUtils.startsWith(normalizedParentPath, normalizedPath) && !isUsersPermission) {
+            if (StringUtils.startsWith(parentPath, path)) {
                 removeAll(authorizable, parentPath);
             }
         }
@@ -97,6 +95,11 @@ public class PurgeManager {
                 }
             }
         }
+        String authorizablePath = authorizable.getPath();
+        result = result.stream()
+                .filter(controlledPath -> !StringUtils.equals(controlledPath, authorizablePath))
+                .map(this::normalizePath)
+                .collect(Collectors.toSet());
         return result;
     }
 
