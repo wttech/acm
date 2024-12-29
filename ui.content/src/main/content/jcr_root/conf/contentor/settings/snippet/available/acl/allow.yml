@@ -1,5 +1,5 @@
 name: acl/allow
 content: |
-  acl.allow { authorizable = "${1:authorizable}"; path = "${2:path}"; glob="/*"; permissions = [${3:permissions}]; restrictions = [:]; skipPathMissing() }
+  acl.allow { authorizable = "${1:authorizable}"; path = "${2:path}"; glob="/*"; permissions = [${3:permissions}]; restrictions = [:]; skipIfPathMissing() }
 documentation: |
     Allow the given permissions on the given path for the given authorizable.

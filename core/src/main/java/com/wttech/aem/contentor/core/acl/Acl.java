@@ -62,12 +62,12 @@ public class Acl {
         return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
     }
 
-    public void removeUser(Closure<AuthorizableOptions> closure) throws RepositoryException {
-        removeUser(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public void deleteUser(Closure<AuthorizableOptions> closure) throws RepositoryException {
+        deleteUser(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
-    public void removeGroup(Closure<AuthorizableOptions> closure) throws RepositoryException {
-        removeGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public void deleteGroup(Closure<AuthorizableOptions> closure) throws RepositoryException {
+        deleteGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
     public void addToGroup(Closure<GroupOptions> closure) throws RepositoryException {
@@ -124,6 +124,30 @@ public class Acl {
 
     // Non-closure accepting methods
 
+    public User createUser(
+            String id,
+            String password,
+            String path,
+            String givenName,
+            String familyName,
+            String email,
+            String aboutMe,
+            boolean systemUser,
+            CreateUserOptions.Mode mode)
+            throws RepositoryException {
+        CreateUserOptions options = new CreateUserOptions();
+        options.setId(id);
+        options.setPassword(password);
+        options.setPath(path);
+        options.setGivenName(givenName);
+        options.setFamilyName(familyName);
+        options.setEmail(email);
+        options.setAboutMe(aboutMe);
+        options.setSystemUser(systemUser);
+        options.setMode(mode);
+        return createUser(options);
+    }
+
     public User createUser(CreateUserOptions options) throws RepositoryException {
         User user = authorizableManager.getUser(options.getId());
         if (user == null) {
@@ -132,9 +156,9 @@ public class Acl {
             } else {
                 user = authorizableManager.createUser(options.getId(), options.getPassword(), options.getPath());
             }
-            authorizableManager.updateUser(user, options.getPassword(), options.determineAllProperties());
+            authorizableManager.updateUser(user, options.getPassword(), options.determineProperties());
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
-            authorizableManager.updateUser(user, options.getPassword(), options.determineAllProperties());
+            authorizableManager.updateUser(user, options.getPassword(), options.determineProperties());
         }
         return user;
     }
@@ -153,13 +177,33 @@ public class Acl {
         throw new IllegalStateException("Not implemented yet!");
     }
 
+    public Group createGroup(
+            String id,
+            String externalId,
+            String path,
+            String givenName,
+            String email,
+            String aboutMe,
+            CreateGroupOptions.Mode mode)
+            throws RepositoryException {
+        CreateGroupOptions options = new CreateGroupOptions();
+        options.setId(id);
+        options.setExternalId(externalId);
+        options.setPath(path);
+        options.setGivenName(givenName);
+        options.setEmail(email);
+        options.setAboutMe(aboutMe);
+        options.setMode(mode);
+        return createGroup(options);
+    }
+
     public Group createGroup(CreateGroupOptions options) throws RepositoryException {
         Group group = authorizableManager.getGroup(options.getId());
         if (group == null) {
             group = authorizableManager.createGroup(options.getId(), options.getPath(), options.getExternalId());
-            authorizableManager.updateGroup(group, options.determineAllProperties());
+            authorizableManager.updateGroup(group, options.determineProperties());
         } else if (options.getMode() == CreateGroupOptions.Mode.OVERRIDE) {
-            authorizableManager.updateGroup(group, options.determineAllProperties());
+            authorizableManager.updateGroup(group, options.determineProperties());
         }
         return group;
     }
@@ -174,32 +218,32 @@ public class Acl {
         return authorizableManager.getGroup(id);
     }
 
-    public void removeUser(AuthorizableOptions options) throws RepositoryException {
+    public void deleteUser(AuthorizableOptions options) throws RepositoryException {
         User user = (User) determineAuthorizable(options);
-        removeUser(user);
+        deleteUser(user);
     }
 
-    public void removeUser(User user) throws RepositoryException {
-        authorizableManager.removeUser(user);
+    public void deleteUser(User user) throws RepositoryException {
+        authorizableManager.deleteUser(user);
     }
 
-    public void removeUser(String id) throws RepositoryException {
+    public void deleteUser(String id) throws RepositoryException {
         User user = authorizableManager.getUser(id);
-        removeUser(user);
+        deleteUser(user);
     }
 
-    public void removeGroup(AuthorizableOptions options) throws RepositoryException {
+    public void deleteGroup(AuthorizableOptions options) throws RepositoryException {
         Group group = (Group) determineAuthorizable(options);
-        removeGroup(group);
+        deleteGroup(group);
     }
 
-    public void removeGroup(Group group) throws RepositoryException {
-        authorizableManager.removeGroup(group);
+    public void deleteGroup(Group group) throws RepositoryException {
+        authorizableManager.deleteGroup(group);
     }
 
-    public void removeGroup(String id) throws RepositoryException {
+    public void deleteGroup(String id) throws RepositoryException {
         Group group = authorizableManager.getGroup(id);
-        removeGroup(group);
+        deleteGroup(group);
     }
 
     public void addToGroup(GroupOptions options) throws RepositoryException {

@@ -37,10 +37,10 @@ public class CreateUserOptions extends CreateAuthorizableOptions {
         }
     }
 
-    public Map<String, String> determineAllProperties() {
-        Map<String, String> allProperties = new HashMap<>(super.determineAllProperties());
-        allProperties.compute("profile/familyName", (key, value) -> familyName);
-        return allProperties;
+    public Map<String, String> determineProperties() {
+        Map<String, String> properties = new HashMap<>(super.determineProperties());
+        properties.compute("profile/familyName", (key, value) -> familyName);
+        return properties;
     }
 
     public boolean isSystemUser() {

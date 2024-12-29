@@ -64,7 +64,7 @@ public class AuthorizableManager {
         updateAuthorizable(group, properties);
     }
 
-    public void removeUser(User user) throws RepositoryException {
+    public void deleteUser(User user) throws RepositoryException {
         Iterator<Group> groups = user.memberOf();
         while (groups.hasNext()) {
             groups.next().removeMember(user);
@@ -72,7 +72,7 @@ public class AuthorizableManager {
         user.remove();
     }
 
-    public void removeGroup(Group group) throws RepositoryException {
+    public void deleteGroup(Group group) throws RepositoryException {
         group.remove();
     }
 

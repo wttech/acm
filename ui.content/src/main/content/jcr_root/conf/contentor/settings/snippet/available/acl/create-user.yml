@@ -1,6 +1,6 @@
 name: acl/create-user
 content: |
-  acl.createUser { id = "${1:id}"; fullName = "${2:fullName}"; password = "${3:password}"; property("email", "${4:email}"); skipIfExists() }
+  acl.createUser { id = "${1:id}"; fullName = "${2:fullName}"; password = "${3:password}"; email = "${4:email}"; skipIfExists() }
 documentation: |
   Create a user with the given id, full name, password and email.
   The user will be created only if it does not already exist.
