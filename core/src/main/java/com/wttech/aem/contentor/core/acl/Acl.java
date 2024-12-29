@@ -7,7 +7,6 @@ import com.wttech.aem.contentor.core.acl.utils.PurgeManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -107,12 +106,20 @@ public class Acl {
         return deny(GroovyUtils.with(new DenyOptions(), closure));
     }
 
-    public void setProperty(Closure<PropertyOptions> closure) throws RepositoryException {
-        setProperty(GroovyUtils.with(new PropertyOptions(), closure));
+    public void setProperty(Closure<SetPropertyOptions> closure) throws RepositoryException {
+        setProperty(GroovyUtils.with(new SetPropertyOptions(), closure));
+    }
+
+    public void removeProperty(Closure<RemovePropertyOptions> closure) throws RepositoryException {
+        removeProperty(GroovyUtils.with(new RemovePropertyOptions(), closure));
     }
 
     public void setPassword(Closure<PasswordOptions> closure) throws RepositoryException {
         setPassword(GroovyUtils.with(new PasswordOptions(), closure));
+    }
+
+    public void save(Closure<SaveOptions> closure) throws RepositoryException {
+        save(GroovyUtils.with(new SaveOptions(), closure));
     }
 
     // Non-closure accepting methods
@@ -327,6 +334,50 @@ public class Acl {
         return purge(authorizable, path, strict);
     }
 
+    public AclResult allow(
+            Authorizable authorizable,
+            String path,
+            List<String> permissions,
+            String glob,
+            List<String> types,
+            List<String> properties,
+            Map<String, Object> restrictions,
+            RestrictionOptions.Mode mode)
+            throws RepositoryException {
+        AllowOptions options = new AllowOptions();
+        options.setAuthorizable(authorizable);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        options.setTypes(types);
+        options.setProperties(properties);
+        options.setRestrictions(restrictions);
+        options.setMode(mode);
+        return allow(options);
+    }
+
+    public AclResult allow(
+            String id,
+            String path,
+            List<String> permissions,
+            String glob,
+            List<String> types,
+            List<String> properties,
+            Map<String, Object> restrictions,
+            RestrictionOptions.Mode mode)
+            throws RepositoryException {
+        AllowOptions options = new AllowOptions();
+        options.setId(id);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        options.setTypes(types);
+        options.setProperties(properties);
+        options.setRestrictions(restrictions);
+        options.setMode(mode);
+        return allow(options);
+    }
+
     public AclResult allow(AllowOptions options) throws RepositoryException {
         Resource resource = resourceResolver.getResource(options.getPath());
         if (resource == null) {
@@ -363,6 +414,50 @@ public class Acl {
         options.setPath(path);
         options.setPermissions(permissions);
         return allow(options);
+    }
+
+    public AclResult deny(
+            Authorizable authorizable,
+            String path,
+            List<String> permissions,
+            String glob,
+            List<String> types,
+            List<String> properties,
+            Map<String, Object> restrictions,
+            RestrictionOptions.Mode mode)
+            throws RepositoryException {
+        DenyOptions options = new DenyOptions();
+        options.setAuthorizable(authorizable);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        options.setTypes(types);
+        options.setProperties(properties);
+        options.setRestrictions(restrictions);
+        options.setMode(mode);
+        return deny(options);
+    }
+
+    public AclResult deny(
+            String id,
+            String path,
+            List<String> permissions,
+            String glob,
+            List<String> types,
+            List<String> properties,
+            Map<String, Object> restrictions,
+            RestrictionOptions.Mode mode)
+            throws RepositoryException {
+        DenyOptions options = new DenyOptions();
+        options.setId(id);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        options.setTypes(types);
+        options.setProperties(properties);
+        options.setRestrictions(restrictions);
+        options.setMode(mode);
+        return deny(options);
     }
 
     public AclResult deny(DenyOptions options) throws RepositoryException {
@@ -402,19 +497,32 @@ public class Acl {
         return deny(options);
     }
 
-    public void setProperty(PropertyOptions options) throws RepositoryException {
+    public void setProperty(SetPropertyOptions options) throws RepositoryException {
         Authorizable authorizable = determineAuthorizable(options);
         setProperty(authorizable, options.getName(), options.getValue());
     }
 
     public void setProperty(Authorizable authorizable, String name, String value) throws RepositoryException {
-        Map<String, String> properties = Collections.singletonMap(name, value);
-        authorizableManager.updateAuthorizable(authorizable, properties);
+        authorizableManager.setProperty(authorizable, name, value);
     }
 
-    public void setProperty(String id, String key, String value) throws RepositoryException {
+    public void setProperty(String id, String name, String value) throws RepositoryException {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        setProperty(authorizable, key, value);
+        setProperty(authorizable, name, value);
+    }
+
+    public void removeProperty(RemovePropertyOptions options) throws RepositoryException {
+        Authorizable authorizable = determineAuthorizable(options);
+        removeProperty(authorizable, options.getName());
+    }
+
+    public void removeProperty(Authorizable authorizable, String name) throws RepositoryException {
+        authorizableManager.removeProperty(authorizable, name);
+    }
+
+    public void removeProperty(String id, String name) throws RepositoryException {
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        authorizableManager.removeProperty(authorizable, name);
     }
 
     public void setPassword(PasswordOptions options) throws RepositoryException {
@@ -429,6 +537,10 @@ public class Acl {
     public void setPassword(String id, String password) throws RepositoryException {
         User user = authorizableManager.getUser(id);
         setPassword(user, password);
+    }
+
+    public void save(SaveOptions options) throws RepositoryException {
+        save();
     }
 
     public void save() throws RepositoryException {

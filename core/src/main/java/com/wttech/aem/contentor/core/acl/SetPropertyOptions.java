@@ -1,6 +1,6 @@
 package com.wttech.aem.contentor.core.acl;
 
-public class PropertyOptions extends AuthorizableOptions {
+public class SetPropertyOptions extends AuthorizableOptions {
 
     private String name;
 

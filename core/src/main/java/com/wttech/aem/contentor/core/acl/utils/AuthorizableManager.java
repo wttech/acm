@@ -111,4 +111,12 @@ public class AuthorizableManager {
     public Group getGroup(String id) throws RepositoryException {
         return getAuthorizable(Group.class, id);
     }
+
+    public void setProperty(Authorizable authorizable, String name, String value) throws RepositoryException {
+        authorizable.setProperty(name, valueFactory.createValue(value));
+    }
+
+    public void removeProperty(Authorizable authorizable, String name) throws RepositoryException {
+        authorizable.removeProperty(name);
+    }
 }
