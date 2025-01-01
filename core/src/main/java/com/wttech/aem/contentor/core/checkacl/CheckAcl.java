@@ -5,8 +5,6 @@ import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.checkacl.utils.PermissionManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.jcr.Credentials;
 import javax.jcr.LoginException;
@@ -80,30 +78,16 @@ public class CheckAcl {
     // Non-closure accepting methods
 
     public boolean exclude(ExcludeOptions options) throws RepositoryException {
-        List<String> ids = new ArrayList<>();
-        if (options.getIds() != null) {
-            ids.addAll(options.getIds());
-        }
-        if (options.getId() != null) {
-            ids.add(options.getId());
-        }
-        return exclude(options.getGroup(), ids);
+        return exclude(options.getGroupId(), options.getId());
     }
 
-    public boolean exclude(String group, String id) throws RepositoryException {
-        return exclude(group, Collections.singletonList(id));
-    }
-
-    public boolean exclude(String group, List<String> ids) throws RepositoryException {
-        boolean result = true;
-        Group groupAuthorizable = authorizableManager.getGroup(group);
-        for (String id : ids) {
-            Authorizable authorizable = authorizableManager.getAuthorizable(id);
-            if (authorizable != null) {
-                result &= !groupAuthorizable.isMember(authorizable);
-            }
+    public boolean exclude(String groupId, String id) throws RepositoryException {
+        Group group = authorizableManager.getGroup(groupId);
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        if (authorizable != null) {
+            return !group.isMember(authorizable);
         }
-        return result;
+        return true;
     }
 
     public boolean exists(ExistsOptions options) throws RepositoryException {
@@ -155,56 +139,26 @@ public class CheckAcl {
     }
 
     public boolean include(IncludeOptions options) throws RepositoryException {
-        List<String> ids = new ArrayList<>();
-        if (options.getIds() != null) {
-            ids.addAll(options.getIds());
-        }
-        if (options.getId() != null) {
-            ids.add(options.getId());
-        }
-        return include(options.getGroup(), ids, options.isIfExists());
+        return include(options.getGroupId(), options.getId(), options.isIfExists());
     }
 
-    public boolean include(String group, String id, boolean ifExists) throws RepositoryException {
-        return include(group, Collections.singletonList(id), ifExists);
-    }
-
-    public boolean include(String group, List<String> ids, boolean ifExists) throws RepositoryException {
-        boolean result = true;
-        Group groupAuthorizable = authorizableManager.getGroup(group);
-        for (String id : ids) {
-            Authorizable authorizable = authorizableManager.getAuthorizable(id);
-            if (authorizable == null) {
-                result &= ifExists;
-            } else {
-                result &= groupAuthorizable.isMember(authorizable);
-            }
+    public boolean include(String groupId, String id, boolean ifExists) throws RepositoryException {
+        Group group = authorizableManager.getGroup(groupId);
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        if (authorizable == null) {
+            return ifExists;
+        } else {
+            return group.isMember(authorizable);
         }
-        return result;
     }
 
     public boolean notExists(NotExistsOptions options) throws RepositoryException {
-        List<String> ids = new ArrayList<>();
-        if (options.getIds() != null) {
-            ids.addAll(options.getIds());
-        }
-        if (options.getId() != null) {
-            ids.add(options.getId());
-        }
-        return notExists(ids);
+        return notExists(options.getId());
     }
 
     public boolean notExists(String id) throws RepositoryException {
-        return notExists(Collections.singletonList(id));
-    }
-
-    public boolean notExists(List<String> ids) throws RepositoryException {
-        boolean result = true;
-        for (String id : ids) {
-            Authorizable authorizable = authorizableManager.getAuthorizable(id);
-            result &= authorizable == null;
-        }
-        return result;
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        return authorizable == null;
     }
 
     public boolean password(PasswordOptions options) throws RepositoryException {

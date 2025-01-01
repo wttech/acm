@@ -9,6 +9,7 @@ public class PermissionsOptions {
     private String path;
 
     private List<String> permissions;
+
     private String glob;
 
     public String getId() {

@@ -3,7 +3,9 @@ package com.wttech.aem.contentor.core.checkacl;
 public class PropertyOptions {
 
     private String id;
+
     private String name;
+
     private String value;
 
     public String getId() {
