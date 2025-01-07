@@ -15,7 +15,7 @@ import Footer from "./components/Footer";
 
 function App() {
     return (
-        <Provider theme={defaultTheme} colorScheme={"light"}>
+        <Provider theme={defaultTheme} colorScheme={"light"} locale={"en-uk"}>
             <HashRouter>
                 <Flex direction="column" height="100vh">
                     <View paddingX="size-200" paddingTop="size-200">

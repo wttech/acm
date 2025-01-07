@@ -1,5 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import {Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, View, Text} from "@adobe/react-spectrum";
+import {
+    Cell,
+    Column,
+    Content,
+    DatePicker,
+    Flex,
+    IllustratedMessage,
+    Item,
+    Picker,
+    ProgressBar,
+    Row,
+    TableBody,
+    TableHeader,
+    TableView,
+    View,
+    Text,
+} from "@adobe/react-spectrum";
 import { DateValue } from '@internationalized/date';
 import {ExecutionOutput, ExecutionStatus} from '../utils/api.types';
 import { toastRequest } from '../utils/api';
@@ -14,6 +30,7 @@ import Pause from '@spectrum-icons/workflow/Pause';
 import Cancel from "@spectrum-icons/workflow/Cancel";
 import Checkmark from "@spectrum-icons/workflow/Checkmark";
 import Star from "@spectrum-icons/workflow/Star";
+import {useDateFormatter} from '@react-aria/i18n';
 
 const ExecutionList = () => {
     const navigate = useNavigate();
@@ -22,6 +39,8 @@ const ExecutionList = () => {
     const [startDate, setStartDate] = useState<DateValue | null>(null);
     const [endDate, setEndDate] = useState<DateValue | null>(null);
     const [status, setStatus] = useState<string | null>('all');
+
+    const dateFormatter = useDateFormatter({dateStyle: 'long', timeStyle: 'short'});
 
     useEffect(() => {
         const fetchExecutions = async () => {
@@ -122,7 +141,9 @@ const ExecutionList = () => {
                         {(executions?.list || []).map(execution => (
                             <Row key={execution.id}>
                                 <Cell><ExecutableValue value={execution.executable}/></Cell>
-                                <Cell>{Strings.dateExplained(execution.startDate)}</Cell>
+                                <Cell>
+                                    {dateFormatter.format(new Date(execution.startDate))}
+                                </Cell>
                                 <Cell>{Strings.duration(execution.duration)}</Cell>
                                 <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
                             </Row>
