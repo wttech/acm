@@ -84,15 +84,7 @@ tasks:
 
   provision:repl-agent-publish:
     desc: configure replication agent on AEM author instance
-    cmd: |
-      PROPS="
-      enabled: true
-      transportUri: {{.AEM_PUBLISH_HTTP_URL}}/bin/receive?sling:authRequestLogin=1
-      transportUser: {{.AEM_PUBLISH_USER}}  
-      transportPassword: {{.AEM_PUBLISH_PASSWORD}}  
-      userId: admin
-      "
-      echo "$PROPS" | sh aemw repl agent setup -A --location "author" --name "publish"
+    cmd: 'sh aemw repl agent setup -A --location "author" --name "publish" --input-string "{ enabled: true, transportUri: \"{{.AEM_PUBLISH_HTTP_URL}}/bin/receive?sling:authRequestLogin=1\", transportUser: \"{{.AEM_PUBLISH_USER}}\", transportPassword: \"{{.AEM_PUBLISH_PASSWORD}}\", userId: \"admin\" }"'
 
   provision:crx:
     desc: enable CRX/DE on AEM instances
