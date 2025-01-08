@@ -12,9 +12,9 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 @Model(adaptables = SlingHttpServletRequest.class)
-public class Gui {
+public class Spa {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Gui.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Spa.class);
 
     private static final String ASSETS_ROOT = "/apps/contentor/spa/assets";
 
