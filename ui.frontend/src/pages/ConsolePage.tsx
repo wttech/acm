@@ -230,7 +230,7 @@ const ConsolePage = () => {
                                 <Editor theme="vs-dark"
                                         value={code}
                                         onChange={setCode}
-                                        height="50vh"
+                                        height="calc(60vh - 101px)"
                                         language="groovy"
                                         beforeMount={registerGroovyLanguage}
                                 />
@@ -282,7 +282,7 @@ const ConsolePage = () => {
                                   padding="size-50">
                                 <Editor theme="vs-dark"
                                         value={executionOutput}
-                                        height="50vh"
+                                        height="calc(60vh - 101px)"
                                         options={{readOnly: true}}
                                 />
                             </View>

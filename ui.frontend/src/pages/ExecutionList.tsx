@@ -128,7 +128,7 @@ const ExecutionList = () => {
                     aria-label="Executions table"
                     selectionMode="none"
                     renderEmptyState={renderEmptyState}
-                    minHeight="50vh"
+                    minHeight="calc(60vh - 101px)"
                     onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}
                 >
                     <TableHeader>
