@@ -37,6 +37,7 @@ export default defineConfig({
     },
     proxy: {
       '/apps/contentor/api': serverProxyConfig(),
+      '/apps/contentor/spa': serverProxyConfig(),
       '/libs/granite/csrf/token.json': serverProxyConfig()
     }
   },

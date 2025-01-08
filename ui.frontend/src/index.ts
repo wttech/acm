@@ -1,6 +1,8 @@
 import axios from "axios";
 import {loader as monacoLoader} from "@monaco-editor/react";
 
+const production = process.env.NODE_ENV === 'production';
+
 // Integrate with AEM's CSRF Protection
 // See: https://experienceleague.adobe.com/en/docs/experience-manager-learn/cloud-service/developing/advanced/csrf-protection#fetch-with-csrf-protection
 async function getCsrfToken() {
@@ -8,9 +10,12 @@ async function getCsrfToken() {
     return response.data.token;
 }
 axios.interceptors.request.use(async (config) => {
-    if (['post', 'delete', 'put'].includes((config.method || ''))) {
-        const csrfToken = await getCsrfToken();
-        config.headers['CSRF-Token'] = csrfToken;
+    // Granite shell page has a different CSRF token (no need to set it for dev development)
+    if (!production) {
+        if (['post', 'delete', 'put'].includes((config.method || ''))) {
+            const csrfToken = await getCsrfToken();
+            config.headers['CSRF-Token'] = csrfToken;
+        }
     }
     return config;
 }, (error) => {
@@ -19,5 +24,5 @@ axios.interceptors.request.use(async (config) => {
 
 // Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
 monacoLoader.config({
-    paths: {vs: process.env.NODE_ENV === 'production' ? '/apps/contentor/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs'},
+    paths: {vs: production ? '/apps/contentor/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs'},
 });
