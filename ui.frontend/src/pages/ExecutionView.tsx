@@ -140,7 +140,7 @@ const ExecutionView = () => {
                                   padding="size-50">
                                 <Editor theme="vs-dark"
                                     value={execution.executable.content}
-                                    height="60vh"
+                                    height="50vh"
                                     language="groovy"
                                     beforeMount={registerGroovyLanguage}
                                     options={{readOnly: true}}
@@ -164,7 +164,7 @@ const ExecutionView = () => {
                                   padding="size-50">
                                 <Editor theme="vs-dark"
                                         value={executionOutput}
-                                        height="60vh"
+                                        height="50vh"
                                         options={{readOnly: true}}
                                 />
                             </View>
