@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import {Flex, View, Heading, Content, ProgressBar} from '@adobe/react-spectrum';
+import {Flex, View, Heading, Content, ProgressBar, IllustratedMessage} from '@adobe/react-spectrum';
 import { toastRequest } from '../utils/api';
 import { SnippetOutput } from '../utils/api.types';
+import NotFound from "@spectrum-icons/illustrations/NotFound";
 
 const SnippetsPage = () => {
     const [snippets, setSnippets] = useState<SnippetOutput | null>(null);
@@ -25,9 +26,19 @@ const SnippetsPage = () => {
         )
     }
 
+    if (snippets.list.length === 0) {
+        return (
+            <Flex direction="column" flex="1">
+                <IllustratedMessage>
+                    <NotFound />
+                    <Content>No snippets found</Content>
+                </IllustratedMessage>
+            </Flex>
+        )
+    }
+
     return (
         <Flex direction="column" flex="1" gap="size-200">
-            {!snippets.list.length && <Heading level={2}>No snippets found</Heading>}
             {snippets.list.map(snippet => (
                 <View
                     key={snippet.id}
