@@ -181,15 +181,15 @@ const ConsolePage = () => {
     };
 
     return (
-        <Flex direction="column" gap="size-200">
-            <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
+        <Flex direction="column" gap="size-200" flex={1} UNSAFE_style={{ display: 'flex'}}>
+            <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)} flex={1} UNSAFE_style={{ display: 'flex'}}>
                 <TabList>
                     <Item key="code" aria-label="Code"><FileCode/><Text>Code</Text></Item>
                     <Item key="output" aria-label="Execution"><Print/><Text>Output</Text></Item>
                 </TabList>
-                <TabPanels>
+                <TabPanels flex={1} UNSAFE_style={{ display: 'flex'}}>
                     <Item key="code">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
+                        <Flex direction="column" gap="size-200" marginY="size-100" flex={1} UNSAFE_style={{ display: 'flex'}}>
                             <View>
                                 <Flex justifyContent="space-between" alignItems="center">
                                     <ButtonGroup>
@@ -226,19 +226,20 @@ const ConsolePage = () => {
                                   borderWidth="thin"
                                   borderColor="dark"
                                   borderRadius="medium"
-                                  padding="size-50">
+                                  padding="size-50"
+                                  height="100%">
                                 <Editor theme="vs-dark"
                                         value={code}
                                         onChange={setCode}
-                                        height="calc(60vh - 101px)"
                                         language="groovy"
                                         beforeMount={registerGroovyLanguage}
+                                        height="100%"
                                 />
                             </View>
                         </Flex>
                     </Item>
                     <Item key="output">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
+                        <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
                             <Flex direction="row" justifyContent="space-between" alignItems="center">
                                 <Flex flex={1} alignItems="center">
                                     <ButtonGroup>
@@ -279,11 +280,12 @@ const ConsolePage = () => {
                                   borderWidth="thin"
                                   borderColor="dark"
                                   borderRadius="medium"
-                                  padding="size-50">
+                                  padding="size-50"
+                                  height="100%">
                                 <Editor theme="vs-dark"
                                         value={executionOutput}
-                                        height="calc(60vh - 101px)"
                                         options={{readOnly: true}}
+                                        height="100%"
                                 />
                             </View>
                         </Flex>
