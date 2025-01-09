@@ -19,7 +19,6 @@ import {toastRequest} from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
 import History from "@spectrum-icons/workflow/History";
 import ExecutionStatusBadge from "../components/ExecutionStatusBadge.tsx";
-import {Strings} from "../utils/strings.ts";
 import FileCode from "@spectrum-icons/workflow/FileCode";
 import Print from "@spectrum-icons/workflow/Print";
 import Editor from "@monaco-editor/react";
@@ -28,12 +27,14 @@ import ExecutableValue from "../components/ExecutableValue.tsx";
 import Copy from "@spectrum-icons/workflow/Copy";
 import {ToastQueue} from "@react-spectrum/toast";
 import {useParams} from "react-router-dom";
+import {useFormatter} from "../utils/hooks.ts";
 
 const toastTimeout = 3000;
 
 const ExecutionView = () => {
     const [execution, setExecution] = useState<Execution | null>(null);
     const executionId = decodeURIComponent(useParams<{ executionId: string }>().executionId as string);
+    const formatter = useFormatter();
 
     useEffect(() => {
         const fetchExecution = async () => {
@@ -99,7 +100,7 @@ const ExecutionView = () => {
                 </TabList>
                 <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
                     <Item key="details">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
+                        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
                             <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                                 <Flex direction="row" justifyContent="space-between" gap="size-200">
                                     <LabeledValue label="ID" value={execution.id} />
@@ -117,15 +118,15 @@ const ExecutionView = () => {
                             </View>
                             <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                                 <Flex direction="row" justifyContent="space-between" gap="size-200">
-                                    <LabeledValue label="Started At" value={Strings.dateExplained(execution.startDate)} />
-                                    <LabeledValue label="Duration" value={Strings.durationExplained(execution.duration)} />
-                                    <LabeledValue label="Ended At" value={Strings.dateExplained(execution.endDate)} />
+                                    <LabeledValue label="Started At" value={formatter.dateExplained(execution.startDate)} />
+                                    <LabeledValue label="Duration" value={formatter.durationExplained(execution.duration)} />
+                                    <LabeledValue label="Ended At" value={formatter.dateExplained(execution.endDate)} />
                                 </Flex>
                             </View>
                         </Flex>
                     </Item>
                     <Item key="code">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
+                        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
                             <View>
                                 <Flex justifyContent="space-between" alignItems="center">
                                     <ButtonGroup>
@@ -149,7 +150,7 @@ const ExecutionView = () => {
                         </Flex>
                     </Item>
                     <Item key="output">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
+                        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
                             <View>
                                 <Flex justifyContent="space-between" alignItems="center">
                                     <ButtonGroup>

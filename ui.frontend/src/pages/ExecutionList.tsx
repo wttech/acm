@@ -21,7 +21,6 @@ import {ExecutionOutput, ExecutionStatus} from '../utils/api.types';
 import { toastRequest } from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
 import ExecutionStatusBadge from "../components/ExecutionStatusBadge.tsx";
-import { Strings } from "../utils/strings.ts";
 import ExecutableValue from "../components/ExecutableValue.tsx";
 import { Key } from "@react-types/shared";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +29,7 @@ import Pause from '@spectrum-icons/workflow/Pause';
 import Cancel from "@spectrum-icons/workflow/Cancel";
 import Checkmark from "@spectrum-icons/workflow/Checkmark";
 import Star from "@spectrum-icons/workflow/Star";
-import {useDateFormatter} from '@react-aria/i18n';
+import {useFormatter} from "../utils/hooks.ts";
 
 const ExecutionList = () => {
     const navigate = useNavigate();
@@ -40,7 +39,7 @@ const ExecutionList = () => {
     const [endDate, setEndDate] = useState<DateValue | null>(null);
     const [status, setStatus] = useState<string | null>('all');
 
-    const dateFormatter = useDateFormatter({dateStyle: 'long', timeStyle: 'short'});
+    const formatter = useFormatter();
 
     useEffect(() => {
         const fetchExecutions = async () => {
@@ -141,10 +140,8 @@ const ExecutionList = () => {
                         {(executions?.list || []).map(execution => (
                             <Row key={execution.id}>
                                 <Cell><ExecutableValue value={execution.executable}/></Cell>
-                                <Cell>
-                                    {dateFormatter.format(new Date(execution.startDate))}
-                                </Cell>
-                                <Cell>{Strings.duration(execution.duration)}</Cell>
+                                <Cell>{formatter.date(execution.startDate)}</Cell>
+                                <Cell>{formatter.duration(execution.duration)}</Cell>
                                 <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
                             </Row>
                         ))}
