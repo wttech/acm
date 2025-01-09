@@ -19,14 +19,14 @@ const SnippetsPage = () => {
 
     if (snippets === null) {
         return (
-            <Flex justifyContent="center" alignItems="center" height="100vh">
+            <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
                 <ProgressBar label="Loading..." isIndeterminate />
             </Flex>
         )
     }
 
     return (
-        <Flex direction="column" gap="size-200">
+        <Flex direction="column" flex="1" gap="size-200">
             {!snippets.list.length && <Heading level={2}>No snippets found</Heading>}
             {snippets.list.map(snippet => (
                 <View

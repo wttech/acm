@@ -90,14 +90,14 @@ const ExecutionView = () => {
     };
 
     return (
-        <Flex direction="column" gap="size-400">
-            <Tabs aria-label='Executions'>
+        <Flex direction="column" flex="1" gap="size-400">
+            <Tabs flex="1" aria-label='Executions'>
                 <TabList>
                     <Item key="details"><History/><Text>Execution</Text></Item>
                     <Item key="code" aria-label="Code"><FileCode/><Text>Code</Text></Item>
                     <Item key="output" aria-label="Execution"><Print/><Text>Output</Text></Item>
                 </TabList>
-                <TabPanels>
+                <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
                     <Item key="details">
                         <Flex direction="column" gap="size-200" marginY="size-100">
                             <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
