@@ -181,15 +181,15 @@ const ConsolePage = () => {
     };
 
     return (
-        <Flex direction="column" gap="size-200" flex={1} UNSAFE_style={{ display: 'flex'}}>
-            <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)} flex={1} UNSAFE_style={{ display: 'flex'}}>
+        <Flex direction="column" flex="1" gap="size-200">
+            <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
                 <TabList>
                     <Item key="code" aria-label="Code"><FileCode/><Text>Code</Text></Item>
                     <Item key="output" aria-label="Execution"><Print/><Text>Output</Text></Item>
                 </TabList>
-                <TabPanels flex={1} UNSAFE_style={{ display: 'flex'}}>
+                <TabPanels flex="1" UNSAFE_style={{ display: 'flex'}}>
                     <Item key="code">
-                        <Flex direction="column" gap="size-200" marginY="size-100" flex={1} UNSAFE_style={{ display: 'flex'}}>
+                        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
                             <View>
                                 <Flex justifyContent="space-between" alignItems="center">
                                     <ButtonGroup>
@@ -241,16 +241,16 @@ const ConsolePage = () => {
                     <Item key="output">
                         <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
                             <Flex direction="row" justifyContent="space-between" alignItems="center">
-                                <Flex flex={1} alignItems="center">
+                                <Flex flex="1" alignItems="center">
                                     <ButtonGroup>
                                         <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
                                         <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}><Copy/><Text>Copy</Text></Button>
                                     </ButtonGroup>
                                 </Flex>
-                                <Flex flex={1} justifyContent="center" alignItems="center">
+                                <Flex flex="1" justifyContent="center" alignItems="center">
                                     <ExecutionProgressBar execution={execution} active={executing}/>
                                 </Flex>
-                                <Flex flex={1} justifyContent="end" alignItems="center">
+                                <Flex flex="1" justifyContent="end" alignItems="center">
                                     <DialogTrigger>
                                         <Button variant="secondary" style="fill"><Help/><Text>Help</Text></Button>
                                         {(close) => (
