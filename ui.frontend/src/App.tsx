@@ -15,7 +15,7 @@ import Footer from "./components/Footer";
 
 function App() {
     return (
-        <Provider theme={defaultTheme} colorScheme={"light"} locale={"en-uk"} UNSAFE_style={{minHeight: '100vh', display: 'flex', flexDirection: 'column'}}>
+        <Provider theme={defaultTheme} colorScheme={"light"} locale={"en-uk"} UNSAFE_style={{display: 'flex', height: '100%', flexDirection: 'column'}}>
             <HashRouter>
                 <Flex direction="column" flex="1">
                     <View paddingX="size-200" paddingTop="size-200">
