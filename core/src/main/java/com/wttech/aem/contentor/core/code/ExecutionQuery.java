@@ -13,6 +13,8 @@ public class ExecutionQuery {
 
     private String path = ExecutionHistory.ROOT;
 
+    private String executableId;
+
     private Date startDate;
 
     private Date endDate;
@@ -21,6 +23,7 @@ public class ExecutionQuery {
 
     public static ExecutionQuery from(SlingHttpServletRequest request) {
         ExecutionQuery result = new ExecutionQuery();
+        result.setExecutableId(ServletUtils.stringParam(request, "executableId"));
         result.setStartDate(DateUtils.fromString(ServletUtils.stringParam(request, "startDate")));
         result.setEndDate(DateUtils.fromString(ServletUtils.stringParam(request, "endDate")));
         result.setStatus(
@@ -38,6 +41,14 @@ public class ExecutionQuery {
                     String.format("Path must be a descendant of '%s'!", ExecutionHistory.ROOT));
         }
         this.path = path;
+    }
+
+    public String getExecutableId() {
+        return executableId;
+    }
+
+    public void setExecutableId(String executableId) {
+        this.executableId = executableId;
     }
 
     public Date getStartDate() {
@@ -70,6 +81,9 @@ public class ExecutionQuery {
                 "s.[%s] = '%s'", JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, HistoricalExecution.RESOURCE_TYPE));
         if (path != null) {
             filters.add(String.format("ISDESCENDANTNODE(s, '%s')", path));
+        }
+        if (executableId != null) {
+            filters.add(String.format("s.[executableId] LIKE '%%%s%%'", executableId));
         }
         if (status != null) {
             filters.add(String.format("s.[status] = '%s'", status));

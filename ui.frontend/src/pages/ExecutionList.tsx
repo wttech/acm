@@ -1,4 +1,4 @@
-import { Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
+import { Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, Text, TextField, View } from '@adobe/react-spectrum';
 import { DateValue } from '@internationalized/date';
 import { Key } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
@@ -22,6 +22,7 @@ const ExecutionList = () => {
   const [startDate, setStartDate] = useState<DateValue | null>(null);
   const [endDate, setEndDate] = useState<DateValue | null>(null);
   const [status, setStatus] = useState<string | null>('all');
+  const [executableId, setExecutableId] = useState<string>('');
 
   const formatter = useFormatter();
 
@@ -33,6 +34,7 @@ const ExecutionList = () => {
         if (startDate) params.append('startDate', startDate.toString());
         if (endDate) params.append('endDate', endDate.toString());
         if (status && status !== 'all') params.append('status', status);
+        if (executableId) params.append('executableId', executableId);
         if (params.toString()) url += `?${params.toString()}`;
         const response = await toastRequest<ExecutionOutput>({
           method: 'GET',
@@ -46,7 +48,7 @@ const ExecutionList = () => {
       }
     };
     fetchExecutions();
-  }, [startDate, endDate, status]);
+  }, [startDate, endDate, status, executableId]);
 
   const renderEmptyState = () => (
     <IllustratedMessage>
@@ -67,6 +69,9 @@ const ExecutionList = () => {
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View borderBottomWidth="thick" borderColor="gray-300" paddingBottom="size-200" marginBottom="size-10">
         <Flex direction="row" gap="size-200" alignItems="center">
+          <TextField label="Executable" value={executableId} onChange={setExecutableId} placeholder="Console or Script Name" />
+          <DatePicker label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
+          <DatePicker label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
           <Picker label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
             <Item textValue="All" key="all">
               <Star size="S" />
@@ -89,8 +94,6 @@ const ExecutionList = () => {
               <Text>Succeeded</Text>
             </Item>
           </Picker>
-          <DatePicker label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
-          <DatePicker label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
         </Flex>
       </View>
       <TableView flex="1" aria-label="Executions table" selectionMode="none" renderEmptyState={renderEmptyState} onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
