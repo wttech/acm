@@ -141,7 +141,7 @@ const ExecutionView = () => {
                                   padding="size-50">
                                 <Editor theme="vs-dark"
                                     value={execution.executable.content}
-                                    height="calc(60vh - 101px)"
+                                    height="100%"
                                     language="groovy"
                                     beforeMount={registerGroovyLanguage}
                                     options={{readOnly: true}}
@@ -164,9 +164,9 @@ const ExecutionView = () => {
                                   borderRadius="medium"
                                   padding="size-50">
                                 <Editor theme="vs-dark"
-                                        value={executionOutput}
-                                        height="calc(60vh - 101px)"
-                                        options={{readOnly: true}}
+                                    value={executionOutput}
+                                    height="100%"
+                                    options={{readOnly: true}}
                                 />
                             </View>
                         </Flex>
