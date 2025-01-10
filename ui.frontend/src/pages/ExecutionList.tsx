@@ -7,8 +7,9 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Pause from '@spectrum-icons/workflow/Pause';
 import Star from '@spectrum-icons/workflow/Star';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDebounce } from 'react-use';
 import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import { toastRequest } from '../utils/api';
@@ -26,29 +27,33 @@ const ExecutionList = () => {
 
   const formatter = useFormatter();
 
-  useEffect(() => {
-    const fetchExecutions = async () => {
-      try {
-        let url = `/apps/contentor/api/execution.json`;
-        const params = new URLSearchParams();
-        if (startDate) params.append('startDate', startDate.toString());
-        if (endDate) params.append('endDate', endDate.toString());
-        if (status && status !== 'all') params.append('status', status);
-        if (executableId) params.append('executableId', executableId);
-        if (params.toString()) url += `?${params.toString()}`;
-        const response = await toastRequest<ExecutionOutput>({
-          method: 'GET',
-          url,
-          operation: `Executions loading`,
-          positive: false,
-        });
-        setExecutions(response.data.data);
-      } catch (error) {
-        console.error('Error fetching executions:', error);
-      }
-    };
-    fetchExecutions();
-  }, [startDate, endDate, status, executableId]);
+  useDebounce(
+    () => {
+      const fetchExecutions = async () => {
+        try {
+          let url = `/apps/contentor/api/execution.json`;
+          const params = new URLSearchParams();
+          if (executableId) params.append('executableId', executableId);
+          if (startDate) params.append('startDate', startDate.toString());
+          if (endDate) params.append('endDate', endDate.toString());
+          if (status && status !== 'all') params.append('status', status);
+          if (params.toString()) url += `?${params.toString()}`;
+          const response = await toastRequest<ExecutionOutput>({
+            method: 'GET',
+            url,
+            operation: `Executions loading`,
+            positive: false,
+          });
+          setExecutions(response.data.data);
+        } catch (error) {
+          console.error('Error fetching executions:', error);
+        }
+      };
+      fetchExecutions();
+    },
+    500,
+    [startDate, endDate, status, executableId],
+  );
 
   const renderEmptyState = () => (
     <IllustratedMessage>
