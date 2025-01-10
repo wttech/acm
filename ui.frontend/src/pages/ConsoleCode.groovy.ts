@@ -22,4 +22,4 @@ void doRun() {
     
     println "Processing done"
 }
-`.trim()
+`.trim();

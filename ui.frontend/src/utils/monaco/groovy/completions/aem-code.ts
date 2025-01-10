@@ -1,147 +1,136 @@
 import * as monaco from 'monaco-editor';
-import {Monaco} from "@monaco-editor/react";
-import {LANGUAGE_ID} from "../../groovy.ts";
-import {apiRequest} from "../../../api.ts";
-import {AssistCodeOutput} from "../../../api.types.ts";
+import { Monaco } from '@monaco-editor/react';
+import { LANGUAGE_ID } from '../../groovy.ts';
+import { apiRequest } from '../../../api.ts';
+import { AssistCodeOutput } from '../../../api.types.ts';
 
 export function registerAemCodeCompletions(instance: Monaco) {
-    registerWordCompletion(instance);
-    registerResourceCompletion(instance);
+  registerWordCompletion(instance);
+  registerResourceCompletion(instance);
 }
 
 function registerWordCompletion(instance: Monaco) {
-    instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+  instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+    provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
+      const path = extractPath(model.getLineContent(position.lineNumber));
+      if (path) {
+        // TODO not sure if needed
+        return { suggestions: [], incomplete: true };
+      }
 
-        provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
-            const path = extractPath(model.getLineContent(position.lineNumber))
-            if (path) { // TODO not sure if needed
-                return {suggestions: [], incomplete: true};
-            }
+      let wordText = '';
+      const wordAtPosition = model.getWordAtPosition(position);
+      if (wordAtPosition) {
+        wordText = wordAtPosition.word;
+      }
 
-            let wordText = '';
-            const wordAtPosition = model.getWordAtPosition(position);
-            if (wordAtPosition) {
-                wordText = wordAtPosition.word;
-            }
+      try {
+        const response = await apiRequest<AssistCodeOutput>({
+          method: 'GET',
+          url: `/apps/contentor/api/assist-code.json?type=all&word=${encodeURIComponent(wordText)}`,
+          operation: 'Code assistance',
+        });
+        const assistance = response.data.data;
+        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => ({
+          label: suggestion.l ?? suggestion.it,
+          insertText: suggestion.it ?? suggestion.l,
+          insertTextRules: monacoInsertTextRules(suggestion.k),
+          kind: monacoKind(suggestion.k),
+          detail: suggestion.k,
+          documentation: suggestion.i,
+          range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
 
-            try {
-                const response = await apiRequest<AssistCodeOutput>({
-                    method: "GET",
-                    url: `/apps/contentor/api/assist-code.json?type=all&word=${encodeURIComponent(wordText)}`,
-                    operation: "Code assistance"
-                });
-                const assistance = response.data.data;
-                const suggestions = (assistance?.suggestions ?? []).map(suggestion => ({
-                    label: suggestion.l ?? suggestion.it,
-                    insertText: suggestion.it ?? suggestion.l,
-                    insertTextRules: monacoInsertTextRules(suggestion.k),
-                    kind: monacoKind(suggestion.k),
-                    detail: suggestion.k,
-                    documentation: suggestion.i,
-                    range: new monaco.Range(
-                        position.lineNumber,
-                        wordAtPosition?.startColumn || position.column,
-                        position.lineNumber,
-                        wordAtPosition?.endColumn || position.column
-                    ),
+          // TODO below does not work, Monaco bug? (we want to prioritize exact class name matches)
+          // sortText: sortText(suggestion.v, wordText)
+        }));
 
-                    // TODO below does not work, Monaco bug? (we want to prioritize exact class name matches)
-                    // sortText: sortText(suggestion.v, wordText)
-                }));
-
-                return {suggestions: suggestions, incomplete: true};
-            } catch (error) {
-                console.error('Code assistance error:', error);
-                return {suggestions: [], incomplete: true};
-            }
-        }
-    });
+        return { suggestions: suggestions, incomplete: true };
+      } catch (error) {
+        console.error('Code assistance error:', error);
+        return { suggestions: [], incomplete: true };
+      }
+    },
+  });
 }
 
 function registerResourceCompletion(instance: Monaco) {
-    instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+  instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+    triggerCharacters: ['/'],
 
-        triggerCharacters: ['/'],
+    provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
+      let wordText = '';
 
-        provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
-            let wordText = '';
+      const path = extractPath(model.getLineContent(position.lineNumber));
+      if (path) {
+        wordText = path;
+      }
+      const wordAtPosition = model.getWordAtPosition(position);
+      if (wordAtPosition) {
+        wordText = wordAtPosition.word;
+      }
 
-            const path = extractPath(model.getLineContent(position.lineNumber))
-            if (path) {
-                wordText = path;
-            }
-            const wordAtPosition = model.getWordAtPosition(position);
-            if (wordAtPosition) {
-                wordText = wordAtPosition.word;
-            }
+      try {
+        const response = await apiRequest<AssistCodeOutput>({
+          method: 'GET',
+          url: `/apps/contentor/api/assist-code.json?type=resource&word=${encodeURIComponent(wordText)}`,
+          operation: 'Code assistance',
+        });
+        const assistance = response.data.data;
+        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => ({
+          label: suggestion.l ?? suggestion.it,
+          insertText: removePathPrefix(path, suggestion.it ?? suggestion.l), // subtract path prefix
+          kind: monacoKind(suggestion.k),
+          detail: suggestion.k,
+          documentation: suggestion.i,
+          range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
+        }));
 
-            try {
-                const response = await apiRequest<AssistCodeOutput>({
-                    method: "GET",
-                    url: `/apps/contentor/api/assist-code.json?type=resource&word=${encodeURIComponent(wordText)}`,
-                    operation: "Code assistance"
-                });
-                const assistance = response.data.data;
-                const suggestions = (assistance?.suggestions ?? []).map(suggestion => ({
-                    label: suggestion.l ?? suggestion.it,
-                    insertText: removePathPrefix(path, suggestion.it ?? suggestion.l), // subtract path prefix
-                    kind: monacoKind(suggestion.k),
-                    detail: suggestion.k,
-                    documentation: suggestion.i,
-                    range: new monaco.Range(
-                        position.lineNumber,
-                        wordAtPosition?.startColumn || position.column,
-                        position.lineNumber,
-                        wordAtPosition?.endColumn || position.column
-                    ),
-                }));
-
-                return {suggestions: suggestions, incomplete: true};
-            } catch (error) {
-                console.error('Code assistance error:', error);
-                return {suggestions: [], incomplete: true};
-            }
-        }
-    });
+        return { suggestions: suggestions, incomplete: true };
+      } catch (error) {
+        console.error('Code assistance error:', error);
+        return { suggestions: [], incomplete: true };
+      }
+    },
+  });
 }
 
 function monacoKind(kind: string): monaco.languages.CompletionItemKind {
-    switch (kind.toLowerCase()) {
-        case 'class':
-            return monaco.languages.CompletionItemKind.Class;
-        case 'method':
-            return monaco.languages.CompletionItemKind.Method;
-        case 'function':
-            return monaco.languages.CompletionItemKind.Function;
-        case 'variable':
-            return monaco.languages.CompletionItemKind.Variable;
-        case 'snippet':
-            return monaco.languages.CompletionItemKind.Snippet;
-        default:
-            return monaco.languages.CompletionItemKind.Text;
-    }
+  switch (kind.toLowerCase()) {
+    case 'class':
+      return monaco.languages.CompletionItemKind.Class;
+    case 'method':
+      return monaco.languages.CompletionItemKind.Method;
+    case 'function':
+      return monaco.languages.CompletionItemKind.Function;
+    case 'variable':
+      return monaco.languages.CompletionItemKind.Variable;
+    case 'snippet':
+      return monaco.languages.CompletionItemKind.Snippet;
+    default:
+      return monaco.languages.CompletionItemKind.Text;
+  }
 }
 
 function monacoInsertTextRules(kind: string) {
-    switch (kind.toLowerCase()) {
-        case 'snippet':
-            return monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
-        default:
-            return monaco.languages.CompletionItemInsertTextRule.None;
-    }
+  switch (kind.toLowerCase()) {
+    case 'snippet':
+      return monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+    default:
+      return monaco.languages.CompletionItemInsertTextRule.None;
+  }
 }
 
 function extractPath(lineContent: string): string {
-    const regex = /"([^"]*)"/g;
-    const matches = regex.exec(lineContent);
-    return matches?.[1] || '';
+  const regex = /"([^"]*)"/g;
+  const matches = regex.exec(lineContent);
+  return matches?.[1] || '';
 }
 
 function removePathPrefix(path: string, v: string) {
-    if (path && v.startsWith(path)) {
-        return v.substring(path.length);
-    }
-    return v;
+  if (path && v.startsWith(path)) {
+    return v.substring(path.length);
+  }
+  return v;
 }
 
 /*
