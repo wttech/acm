@@ -1,11 +1,11 @@
-import React from 'react';
 import { Badge, Text } from '@adobe/react-spectrum';
-import { ExecutionStatus } from '../utils/api.types';
 import Alert from '@spectrum-icons/workflow/Alert';
-import Clock from '@spectrum-icons/workflow/Clock';
-import Pause from '@spectrum-icons/workflow/Pause';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
+import Clock from '@spectrum-icons/workflow/Clock';
+import Pause from '@spectrum-icons/workflow/Pause';
+import React from 'react';
+import { ExecutionStatus } from '../utils/api.types';
 
 interface ExecutionStatusProps {
   value: ExecutionStatus;

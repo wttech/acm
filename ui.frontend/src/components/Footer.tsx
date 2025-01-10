@@ -1,5 +1,4 @@
-import { Link, Footer as SpectrumFooter, Divider } from '@adobe/react-spectrum';
-import { Flex, View } from '@adobe/react-spectrum';
+import { Divider, Flex, Link, Footer as SpectrumFooter, View } from '@adobe/react-spectrum';
 
 const Footer = () => {
   return (

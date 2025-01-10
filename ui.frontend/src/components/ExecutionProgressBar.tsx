@@ -1,7 +1,7 @@
+import { Meter, ProgressBar } from '@adobe/react-spectrum';
 import React from 'react';
-import { ProgressBar, Meter } from '@adobe/react-spectrum';
-import { Strings } from '../utils/strings.ts';
 import { Execution, isExecutionPending } from '../utils/api.types.ts';
+import { Strings } from '../utils/strings.ts';
 
 interface ExecutionProgressBarProps {
   execution: Execution | null;

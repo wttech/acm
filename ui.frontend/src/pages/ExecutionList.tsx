@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, View, Text } from '@adobe/react-spectrum';
+import { Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import { DateValue } from '@internationalized/date';
-import { ExecutionOutput, ExecutionStatus } from '../utils/api.types';
-import { toastRequest } from '../utils/api';
-import NotFound from '@spectrum-icons/illustrations/NotFound';
-import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
-import ExecutableValue from '../components/ExecutableValue.tsx';
 import { Key } from '@react-types/shared';
-import { useNavigate } from 'react-router-dom';
+import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Alert from '@spectrum-icons/workflow/Alert';
-import Pause from '@spectrum-icons/workflow/Pause';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
+import Pause from '@spectrum-icons/workflow/Pause';
 import Star from '@spectrum-icons/workflow/Star';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ExecutableValue from '../components/ExecutableValue.tsx';
+import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
+import { toastRequest } from '../utils/api';
+import { ExecutionOutput, ExecutionStatus } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks.ts';
 
 const ExecutionList = () => {
@@ -94,13 +94,7 @@ const ExecutionList = () => {
             <DatePicker label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
           </Flex>
         </View>
-        <TableView
-          aria-label="Executions table"
-          selectionMode="none"
-          renderEmptyState={renderEmptyState}
-          minHeight="calc(100vh - 400px)"
-          onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}
-        >
+        <TableView aria-label="Executions table" selectionMode="none" renderEmptyState={renderEmptyState} minHeight="calc(100vh - 400px)" onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
           <TableHeader>
             <Column>Executable</Column>
             <Column>Started</Column>

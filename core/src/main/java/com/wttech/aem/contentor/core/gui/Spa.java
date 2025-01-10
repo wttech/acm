@@ -1,15 +1,14 @@
 package com.wttech.aem.contentor.core.gui;
 
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.models.annotations.Model;
 import org.apache.sling.models.annotations.injectorspecific.Self;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 @Model(adaptables = SlingHttpServletRequest.class)
 public class Spa {

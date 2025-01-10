@@ -1,8 +1,8 @@
-import { defineConfig, HttpProxy } from 'vite';
 import react from '@vitejs/plugin-react';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
-import path from 'path';
 import { ClientRequest } from 'node:http';
+import path from 'path';
+import { defineConfig, HttpProxy } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 function serverProxyConfig() {
   return {
@@ -24,7 +24,10 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         // { src: 'public/*', dest: '../' },
-        { src: path.join(__dirname, 'node_modules', 'monaco-editor', 'min', 'vs'), dest: 'js/monaco-editor' },
+        {
+          src: path.join(__dirname, 'node_modules', 'monaco-editor', 'min', 'vs'),
+          dest: 'js/monaco-editor',
+        },
       ],
     }),
   ],

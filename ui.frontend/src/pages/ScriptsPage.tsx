@@ -1,5 +1,4 @@
-import React from 'react';
-import { Flex, Item, Tabs, TabList, TabPanels, Text } from '@adobe/react-spectrum';
+import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
 import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import ScriptList from '../components/ScriptList';

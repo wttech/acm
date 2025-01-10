@@ -1,8 +1,8 @@
-import * as monaco from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
-import { LANGUAGE_ID } from '../../groovy.ts';
+import * as monaco from 'monaco-editor';
 import { apiRequest } from '../../../api.ts';
 import { AssistCodeOutput } from '../../../api.types.ts';
+import { LANGUAGE_ID } from '../../groovy.ts';
 
 export function registerAemCodeCompletions(instance: Monaco) {
   registerWordCompletion(instance);

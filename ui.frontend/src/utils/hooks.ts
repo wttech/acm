@@ -5,7 +5,10 @@ class Formatter {
   dateFormatter: Intl.DateTimeFormat;
 
   constructor() {
-    this.dateFormatter = useDateFormatter({ dateStyle: 'long', timeStyle: 'short' });
+    this.dateFormatter = useDateFormatter({
+      dateStyle: 'long',
+      timeStyle: 'short',
+    });
   }
 
   public date(value: string | Date) {
@@ -17,7 +20,9 @@ class Formatter {
 
   public duration(milliseconds: number): string {
     const duration = intervalToDuration({ start: 0, end: milliseconds });
-    let result = formatDuration(duration, { format: ['days', 'hours', 'minutes', 'seconds'] });
+    let result = formatDuration(duration, {
+      format: ['days', 'hours', 'minutes', 'seconds'],
+    });
     if (!result) {
       result = `${milliseconds} milliseconds`;
     }
@@ -27,7 +32,9 @@ class Formatter {
   public durationExplained(milliseconds: number): string {
     const duration = intervalToDuration({ start: 0, end: milliseconds });
     let result = `${milliseconds} ms`;
-    const formatted = formatDuration(duration, { format: ['days', 'hours', 'minutes', 'seconds'] });
+    const formatted = formatDuration(duration, {
+      format: ['days', 'hours', 'minutes', 'seconds'],
+    });
     if (formatted) {
       result += ` (${formatted})`;
     }
@@ -35,7 +42,10 @@ class Formatter {
   }
 
   public dateRelative(value: string): string {
-    return formatDistance(value, new Date(), { addSuffix: true, includeSeconds: true });
+    return formatDistance(value, new Date(), {
+      addSuffix: true,
+      includeSeconds: true,
+    });
   }
 
   public dateExplained(value: string): string {

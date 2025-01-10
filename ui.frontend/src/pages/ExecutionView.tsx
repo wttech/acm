@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
-import { Field } from '@react-spectrum/label';
-import { Execution, ExecutionOutput } from '../utils/api.types';
-import { toastRequest } from '../utils/api';
-import NotFound from '@spectrum-icons/illustrations/NotFound';
-import History from '@spectrum-icons/workflow/History';
-import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
-import FileCode from '@spectrum-icons/workflow/FileCode';
-import Print from '@spectrum-icons/workflow/Print';
 import Editor from '@monaco-editor/react';
-import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
-import ExecutableValue from '../components/ExecutableValue.tsx';
-import Copy from '@spectrum-icons/workflow/Copy';
+import { Field } from '@react-spectrum/label';
 import { ToastQueue } from '@react-spectrum/toast';
+import NotFound from '@spectrum-icons/illustrations/NotFound';
+import Copy from '@spectrum-icons/workflow/Copy';
+import FileCode from '@spectrum-icons/workflow/FileCode';
+import History from '@spectrum-icons/workflow/History';
+import Print from '@spectrum-icons/workflow/Print';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import ExecutableValue from '../components/ExecutableValue.tsx';
+import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
+import { toastRequest } from '../utils/api';
+import { Execution, ExecutionOutput } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks.ts';
+import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 
 const toastTimeout = 3000;
 
@@ -58,13 +58,19 @@ const ExecutionView = () => {
       navigator.clipboard
         .writeText(executionOutput)
         .then(() => {
-          ToastQueue.info('Execution output copied to clipboard!', { timeout: toastTimeout });
+          ToastQueue.info('Execution output copied to clipboard!', {
+            timeout: toastTimeout,
+          });
         })
         .catch(() => {
-          ToastQueue.negative('Failed to copy execution output!', { timeout: toastTimeout });
+          ToastQueue.negative('Failed to copy execution output!', {
+            timeout: toastTimeout,
+          });
         });
     } else {
-      ToastQueue.negative('No execution output to copy!', { timeout: toastTimeout });
+      ToastQueue.negative('No execution output to copy!', {
+        timeout: toastTimeout,
+      });
     }
   };
 
@@ -72,10 +78,14 @@ const ExecutionView = () => {
     navigator.clipboard
       .writeText(execution.executable.content)
       .then(() => {
-        ToastQueue.info('Execution code copied to clipboard!', { timeout: toastTimeout });
+        ToastQueue.info('Execution code copied to clipboard!', {
+          timeout: toastTimeout,
+        });
       })
       .catch(() => {
-        ToastQueue.negative('Failed to copy execution code!', { timeout: toastTimeout });
+        ToastQueue.negative('Failed to copy execution code!', {
+          timeout: toastTimeout,
+        });
       });
   };
 

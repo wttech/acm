@@ -1,31 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Button,
-  ButtonGroup,
-  Cell,
-  Column,
-  Content,
-  Dialog,
-  DialogTrigger,
-  Divider,
-  Flex,
-  Heading,
-  IllustratedMessage,
-  ProgressBar,
-  Row,
-  TableBody,
-  TableHeader,
-  TableView,
-  Text,
-  View,
-} from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Cell, Column, Content, Dialog, DialogTrigger, Divider, Flex, Heading, IllustratedMessage, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import { Key, Selection } from '@react-types/shared';
+import NotFound from '@spectrum-icons/illustrations/NotFound';
+import Cancel from '@spectrum-icons/workflow/Cancel';
+import Checkmark from '@spectrum-icons/workflow/Checkmark';
+import PlayCircle from '@spectrum-icons/workflow/PlayCircle';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toastRequest } from '../utils/api';
 import { ScriptOutput } from '../utils/api.types';
-import Cancel from '@spectrum-icons/workflow/Cancel';
-import PlayCircle from '@spectrum-icons/workflow/PlayCircle';
-import NotFound from '@spectrum-icons/illustrations/NotFound';
-import Checkmark from '@spectrum-icons/workflow/Checkmark';
 
 type ScriptListProps = {
   type: 'enabled' | 'disabled';
@@ -100,9 +81,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         {type === 'enabled' ? (
           <Text>Disabling scripts will stop their automatic execution. To execute them again, you need to enable them or reinstall the package with scripts.</Text>
         ) : (
-          <Text>
-            Enabling scripts can cause changes in the repository and potential data loss. Ensure the script is ready to use. It is recommended to provide enabled scripts via a package, not manually.
-          </Text>
+          <Text>Enabling scripts can cause changes in the repository and potential data loss. Ensure the script is ready to use. It is recommended to provide enabled scripts via a package, not manually.</Text>
         )}
       </Content>
       <ButtonGroup>
@@ -132,12 +111,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         <Flex justifyContent="space-between" alignItems="center">
           <ButtonGroup>
             <DialogTrigger isOpen={toggleDialogOpen} onOpenChange={setToggleDialogOpen}>
-              <Button
-                variant={type === 'enabled' ? 'negative' : 'accent'}
-                style="fill"
-                isDisabled={selectedKeys === 'all' ? false : (selectedKeys as Set<Key>).size === 0}
-                onPress={() => setToggleDialogOpen(true)}
-              >
+              <Button variant={type === 'enabled' ? 'negative' : 'accent'} style="fill" isDisabled={selectedKeys === 'all' ? false : (selectedKeys as Set<Key>).size === 0} onPress={() => setToggleDialogOpen(true)}>
                 {type === 'enabled' ? <Cancel /> : <PlayCircle />}
                 <Text>{type === 'enabled' ? 'Disable' : 'Enable'}</Text>
               </Button>

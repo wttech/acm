@@ -1,21 +1,21 @@
 import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import Editor from '@monaco-editor/react';
-import ConsoleCode from './ConsoleCode.groovy';
-import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
-import Gears from '@spectrum-icons/workflow/Gears';
-import FileCode from '@spectrum-icons/workflow/FileCode';
-import Print from '@spectrum-icons/workflow/Print';
-import Copy from '@spectrum-icons/workflow/Copy';
-import Cancel from '@spectrum-icons/workflow/Cancel';
 import Bug from '@spectrum-icons/workflow/Bug';
+import Cancel from '@spectrum-icons/workflow/Cancel';
+import Copy from '@spectrum-icons/workflow/Copy';
+import FileCode from '@spectrum-icons/workflow/FileCode';
+import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
+import Print from '@spectrum-icons/workflow/Print';
+import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
+import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
-import { apiRequest } from '../utils/api.ts';
-import React, { useEffect, useRef, useState } from 'react';
-import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
-import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
+import { useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
+import { apiRequest } from '../utils/api.ts';
+import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
+import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
@@ -77,11 +77,17 @@ const ConsolePage = () => {
         clearInterval(pollExecutionRef.current!);
         setExecuting(false);
         if (queuedExecution.status === ExecutionStatus.FAILED) {
-          ToastQueue.negative('Code execution failed!', { timeout: toastTimeout });
+          ToastQueue.negative('Code execution failed!', {
+            timeout: toastTimeout,
+          });
         } else if (queuedExecution.status === ExecutionStatus.SKIPPED) {
-          ToastQueue.neutral('Code execution cannot run!', { timeout: toastTimeout });
+          ToastQueue.neutral('Code execution cannot run!', {
+            timeout: toastTimeout,
+          });
         } else {
-          ToastQueue.positive('Code execution succeeded!', { timeout: toastTimeout });
+          ToastQueue.positive('Code execution succeeded!', {
+            timeout: toastTimeout,
+          });
         }
       }
     } catch (error) {
@@ -115,14 +121,20 @@ const ConsolePage = () => {
         await new Promise((resolve) => setTimeout(resolve, executionPollInterval));
       }
       if (queuedExecution.status === ExecutionStatus.ABORTED) {
-        ToastQueue.positive('Code execution aborted successfully!', { timeout: toastTimeout });
+        ToastQueue.positive('Code execution aborted successfully!', {
+          timeout: toastTimeout,
+        });
       } else {
         console.warn('Code execution aborting failed!');
-        ToastQueue.negative('Code execution aborting failed!', { timeout: toastTimeout });
+        ToastQueue.negative('Code execution aborting failed!', {
+          timeout: toastTimeout,
+        });
       }
     } catch (error) {
       console.error('Code execution aborting error:', error);
-      ToastQueue.negative('Code execution aborting failed!', { timeout: toastTimeout });
+      ToastQueue.negative('Code execution aborting failed!', {
+        timeout: toastTimeout,
+      });
     }
   };
 
@@ -154,10 +166,14 @@ const ConsolePage = () => {
         setExecution(queuedExecution);
 
         if (queuedExecution.error) {
-          ToastQueue.negative('Code parsing failed!', { timeout: toastTimeout });
+          ToastQueue.negative('Code parsing failed!', {
+            timeout: toastTimeout,
+          });
           setSelectedTab('output');
         } else {
-          ToastQueue.positive('Code parsing succeeded!', { timeout: toastTimeout });
+          ToastQueue.positive('Code parsing succeeded!', {
+            timeout: toastTimeout,
+          });
         }
       })
       .catch(() => {
@@ -176,13 +192,19 @@ const ConsolePage = () => {
       navigator.clipboard
         .writeText(executionOutput)
         .then(() => {
-          ToastQueue.info('Execution output copied to clipboard!', { timeout: toastTimeout });
+          ToastQueue.info('Execution output copied to clipboard!', {
+            timeout: toastTimeout,
+          });
         })
         .catch(() => {
-          ToastQueue.negative('Failed to copy execution output!', { timeout: toastTimeout });
+          ToastQueue.negative('Failed to copy execution output!', {
+            timeout: toastTimeout,
+          });
         });
     } else {
-      ToastQueue.negative('No execution output to copy!', { timeout: toastTimeout });
+      ToastQueue.negative('No execution output to copy!', {
+        timeout: toastTimeout,
+      });
     }
   };
 

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Flex, View, Heading, Content, ProgressBar, IllustratedMessage } from '@adobe/react-spectrum';
+import { Content, Flex, Heading, IllustratedMessage, ProgressBar, View } from '@adobe/react-spectrum';
+import NotFound from '@spectrum-icons/illustrations/NotFound';
+import { useEffect, useState } from 'react';
 import { toastRequest } from '../utils/api';
 import { SnippetOutput } from '../utils/api.types';
-import NotFound from '@spectrum-icons/illustrations/NotFound';
 
 const SnippetsPage = () => {
   const [snippets, setSnippets] = useState<SnippetOutput | null>(null);

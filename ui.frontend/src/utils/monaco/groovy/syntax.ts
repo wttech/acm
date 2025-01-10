@@ -1,5 +1,5 @@
 import { Monaco } from '@monaco-editor/react';
-import { conf as javaLanguageConfiguration, language as javaLanguage } from 'monaco-editor/esm/vs/basic-languages/java/java.js';
+import { language as javaLanguage, conf as javaLanguageConfiguration } from 'monaco-editor/esm/vs/basic-languages/java/java.js';
 import { LANGUAGE_ID } from '../groovy.ts';
 
 export function registerSyntax(instance: Monaco) {

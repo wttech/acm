@@ -1,16 +1,25 @@
-import './App.css';
+import { defaultTheme, Flex, Provider, View } from '@adobe/react-spectrum';
 import { HashRouter } from 'react-router-dom';
-import { defaultTheme, Provider, View, Flex } from '@adobe/react-spectrum';
+import './App.css';
 
 import { ToastContainer } from '@react-spectrum/toast';
 
 import Content from './components/Content';
-import Header from './components/Header';
 import Footer from './components/Footer';
+import Header from './components/Header';
 
 function App() {
   return (
-    <Provider theme={defaultTheme} colorScheme={'light'} locale={'en-uk'} UNSAFE_style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
+    <Provider
+      theme={defaultTheme}
+      colorScheme={'light'}
+      locale={'en-uk'}
+      UNSAFE_style={{
+        display: 'flex',
+        height: '100%',
+        flexDirection: 'column',
+      }}
+    >
       <HashRouter>
         <Flex direction="column" flex="1">
           <View paddingX="size-200" paddingTop="size-200">

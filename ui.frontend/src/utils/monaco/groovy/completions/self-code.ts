@@ -1,5 +1,5 @@
-import * as monaco from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
+import * as monaco from 'monaco-editor';
 import { LANGUAGE_ID } from '../../groovy.ts';
 
 export function registerSelfCodeCompletions(instance: Monaco) {

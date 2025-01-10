@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { loader as monacoLoader } from '@monaco-editor/react';
+import axios from 'axios';
 
 const production = process.env.NODE_ENV === 'production';
 
@@ -27,5 +27,7 @@ axios.interceptors.request.use(
 
 // Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
 monacoLoader.config({
-  paths: { vs: production ? '/apps/contentor/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs' },
+  paths: {
+    vs: production ? '/apps/contentor/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs',
+  },
 });

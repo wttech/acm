@@ -1,5 +1,5 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ToastQueue } from '@react-spectrum/toast';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export type ApiResponse<T> = {
   status: number;
@@ -40,20 +40,28 @@ export async function toastRequest<D>(config: ToastRequestConfig): Promise<Axios
         if (response.data && response.data.message) {
           ToastQueue.positive(response.data.message, { timeout: toastTimeout });
         } else {
-          ToastQueue.positive(`${config.operation} succeeded!`, { timeout: toastTimeout });
+          ToastQueue.positive(`${config.operation} succeeded!`, {
+            timeout: toastTimeout,
+          });
         }
       }
       return response;
     } else {
-      ToastQueue.negative(`${config.operation} failed!`, { timeout: toastTimeout });
+      ToastQueue.negative(`${config.operation} failed!`, {
+        timeout: toastTimeout,
+      });
       throw new Error(`${config.operation} failed!`);
     }
   } catch (error: any) {
     console.error(`${config.operation} error!`, error);
     if (error.response && error.response.data && error.response.data.message) {
-      ToastQueue.negative(error.response.data.message, { timeout: toastTimeout });
+      ToastQueue.negative(error.response.data.message, {
+        timeout: toastTimeout,
+      });
     } else {
-      ToastQueue.negative(`${config.operation} failed!`, { timeout: toastTimeout });
+      ToastQueue.negative(`${config.operation} failed!`, {
+        timeout: toastTimeout,
+      });
     }
     throw error;
   }

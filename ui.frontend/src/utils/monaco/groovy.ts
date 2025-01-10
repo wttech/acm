@@ -1,8 +1,8 @@
 import { Monaco } from '@monaco-editor/react';
-import { registerSyntax } from './groovy/syntax.ts';
+import { registerCodeActions } from './groovy/code-actions.ts';
 import { registerCommands } from './groovy/commands.ts';
 import { registerCompletions } from './groovy/completions.ts';
-import { registerCodeActions } from './groovy/code-actions.ts';
+import { registerSyntax } from './groovy/syntax.ts';
 
 export const LANGUAGE_ID = 'groovy';
 

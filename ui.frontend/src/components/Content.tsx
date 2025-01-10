@@ -1,12 +1,12 @@
-import { Route, Navigate } from 'react-router-dom';
+import { Navigate, Route } from 'react-router-dom';
 
-import ScriptsPage from '../pages/ScriptsPage';
 import ConsolePage from '../pages/ConsolePage';
+import ScriptsPage from '../pages/ScriptsPage';
 
 import { Routes } from 'react-router-dom';
 import ExecutionList from '../pages/ExecutionList.tsx';
-import SnippetsPage from '../pages/SnippetsPage.tsx';
 import ExecutionView from '../pages/ExecutionView.tsx';
+import SnippetsPage from '../pages/SnippetsPage.tsx';
 
 const Content = () => {
   return (

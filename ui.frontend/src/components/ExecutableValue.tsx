@@ -1,7 +1,7 @@
-import React from 'react';
 import { Text } from '@adobe/react-spectrum';
 import Draft from '@spectrum-icons/workflow/Draft';
 import FileCode from '@spectrum-icons/workflow/FileCode';
+import React from 'react';
 import { Executable } from '../utils/api.types';
 
 interface ExecutableValueProps {
