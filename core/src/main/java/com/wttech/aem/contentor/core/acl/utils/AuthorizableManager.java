@@ -34,7 +34,7 @@ public class AuthorizableManager {
     }
 
     /**
-     * Create user user.
+     * Create user.
      *
      * @param id       the id
      * @param password the password
@@ -52,7 +52,7 @@ public class AuthorizableManager {
     }
 
     /**
-     * Create group group.
+     * Create group.
      *
      * @param id         the id
      * @param path       the path
@@ -70,7 +70,7 @@ public class AuthorizableManager {
     }
 
     /**
-     * Create system user user.
+     * Create system user.
      *
      * @param id   the id
      * @param path the path
@@ -228,7 +228,18 @@ public class AuthorizableManager {
     }
 
     /**
-     * Sets property.
+     * Set property.
+     *
+     * @param user     the user
+     * @param password the password
+     * @throws RepositoryException the repository exception
+     */
+    public void changePassword(User user, String password) throws RepositoryException {
+        user.changePassword(password);
+    }
+
+    /**
+     * Set property.
      *
      * @param authorizable the authorizable
      * @param name         the name
