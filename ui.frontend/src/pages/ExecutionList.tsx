@@ -1,11 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import {Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, View, Text} from "@adobe/react-spectrum";
+import {
+    Cell,
+    Column,
+    Content,
+    DatePicker,
+    Flex,
+    IllustratedMessage,
+    Item,
+    Picker,
+    ProgressBar,
+    Row,
+    TableBody,
+    TableHeader,
+    TableView,
+    View,
+    Text,
+} from "@adobe/react-spectrum";
 import { DateValue } from '@internationalized/date';
 import {ExecutionOutput, ExecutionStatus} from '../utils/api.types';
 import { toastRequest } from '../utils/api';
 import NotFound from "@spectrum-icons/illustrations/NotFound";
 import ExecutionStatusBadge from "../components/ExecutionStatusBadge.tsx";
-import { Strings } from "../utils/strings.ts";
 import ExecutableValue from "../components/ExecutableValue.tsx";
 import { Key } from "@react-types/shared";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +29,7 @@ import Pause from '@spectrum-icons/workflow/Pause';
 import Cancel from "@spectrum-icons/workflow/Cancel";
 import Checkmark from "@spectrum-icons/workflow/Checkmark";
 import Star from "@spectrum-icons/workflow/Star";
+import {useFormatter} from "../utils/hooks.ts";
 
 const ExecutionList = () => {
     const navigate = useNavigate();
@@ -22,6 +38,8 @@ const ExecutionList = () => {
     const [startDate, setStartDate] = useState<DateValue | null>(null);
     const [endDate, setEndDate] = useState<DateValue | null>(null);
     const [status, setStatus] = useState<string | null>('all');
+
+    const formatter = useFormatter();
 
     useEffect(() => {
         const fetchExecutions = async () => {
@@ -55,14 +73,14 @@ const ExecutionList = () => {
 
     if (executions === null) {
         return (
-            <Flex justifyContent="center" alignItems="center" height="100vh">
+            <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
                 <ProgressBar label="Loading..." isIndeterminate />
             </Flex>
         )
     }
 
     return (
-        <Flex direction="column" gap="size-400">
+        <Flex direction="column" flex="1" gap="size-400">
             <Flex direction="column" gap="size-200" marginY="size-100" >
                 <View borderBottomWidth="thick"
                       borderColor="gray-300"
@@ -109,7 +127,7 @@ const ExecutionList = () => {
                     aria-label="Executions table"
                     selectionMode="none"
                     renderEmptyState={renderEmptyState}
-                    minHeight="60vh"
+                    minHeight="calc(100vh - 400px)"
                     onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}
                 >
                     <TableHeader>
@@ -122,8 +140,8 @@ const ExecutionList = () => {
                         {(executions?.list || []).map(execution => (
                             <Row key={execution.id}>
                                 <Cell><ExecutableValue value={execution.executable}/></Cell>
-                                <Cell>{Strings.dateExplained(execution.startDate)}</Cell>
-                                <Cell>{Strings.duration(execution.duration)}</Cell>
+                                <Cell>{formatter.date(execution.startDate)}</Cell>
+                                <Cell>{formatter.duration(execution.duration)}</Cell>
                                 <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
                             </Row>
                         ))}

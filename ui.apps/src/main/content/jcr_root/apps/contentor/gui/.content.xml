@@ -27,7 +27,7 @@
             sling:resourceType="granite/ui/components/shell/title"/>
         <content
             jcr:primaryType="nt:unstructured"
-            sling:resourceType="contentor/gui/frame"/>
+            sling:resourceType="contentor/gui/spa"/>
     </jcr:content>
-    <frame/>
+    <spa/>
 </jcr:root>

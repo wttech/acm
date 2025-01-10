@@ -124,14 +124,14 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
 
     if (scripts === null) {
         return (
-            <Flex justifyContent="center" alignItems="center" height="100vh">
+            <Flex flex="1" justifyContent="center" alignItems="center">
                 <ProgressBar label="Loading..." isIndeterminate />
             </Flex>
         );
     }
 
     return (
-        <Flex direction="column" gap="size-200" marginY="size-100">
+        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
             <View>
                 <Flex justifyContent="space-between" alignItems="center">
                     <ButtonGroup>
@@ -155,7 +155,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                 selectionMode="multiple"
                 selectedKeys={selectedKeys}
                 onSelectionChange={setSelectedKeys}
-                minHeight="60vh"
+                minHeight="calc(100vh - 400px)"
                 renderEmptyState={renderEmptyState}
             >
                 <TableHeader>

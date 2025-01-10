@@ -181,15 +181,15 @@ const ConsolePage = () => {
     };
 
     return (
-        <Flex direction="column" gap="size-200">
-            <Tabs aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
+        <Flex direction="column" flex="1" gap="size-200">
+            <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
                 <TabList>
                     <Item key="code" aria-label="Code"><FileCode/><Text>Code</Text></Item>
                     <Item key="output" aria-label="Execution"><Print/><Text>Output</Text></Item>
                 </TabList>
-                <TabPanels>
+                <TabPanels flex="1" UNSAFE_style={{ display: 'flex'}}>
                     <Item key="code">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
+                        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
                             <View>
                                 <Flex justifyContent="space-between" alignItems="center">
                                     <ButtonGroup>
@@ -226,30 +226,31 @@ const ConsolePage = () => {
                                   borderWidth="thin"
                                   borderColor="dark"
                                   borderRadius="medium"
-                                  padding="size-50">
+                                  padding="size-50"
+                                  height="100%">
                                 <Editor theme="vs-dark"
                                         value={code}
                                         onChange={setCode}
-                                        height="60vh"
                                         language="groovy"
                                         beforeMount={registerGroovyLanguage}
+                                        height="100%"
                                 />
                             </View>
                         </Flex>
                     </Item>
                     <Item key="output">
-                        <Flex direction="column" gap="size-200" marginY="size-100">
+                        <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
                             <Flex direction="row" justifyContent="space-between" alignItems="center">
-                                <Flex flex={1} alignItems="center">
+                                <Flex flex="1" alignItems="center">
                                     <ButtonGroup>
                                         <Button variant="negative" isDisabled={!executing} onPress={onAbort}><Cancel/><Text>Abort</Text></Button>
                                         <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}><Copy/><Text>Copy</Text></Button>
                                     </ButtonGroup>
                                 </Flex>
-                                <Flex flex={1} justifyContent="center" alignItems="center">
+                                <Flex flex="1" justifyContent="center" alignItems="center">
                                     <ExecutionProgressBar execution={execution} active={executing}/>
                                 </Flex>
-                                <Flex flex={1} justifyContent="end" alignItems="center">
+                                <Flex flex="1" justifyContent="end" alignItems="center">
                                     <DialogTrigger>
                                         <Button variant="secondary" style="fill"><Help/><Text>Help</Text></Button>
                                         {(close) => (
@@ -279,11 +280,12 @@ const ConsolePage = () => {
                                   borderWidth="thin"
                                   borderColor="dark"
                                   borderRadius="medium"
-                                  padding="size-50">
+                                  padding="size-50"
+                                  height="100%">
                                 <Editor theme="vs-dark"
                                         value={executionOutput}
-                                        height="60vh"
                                         options={{readOnly: true}}
+                                        height="100%"
                                 />
                             </View>
                         </Flex>

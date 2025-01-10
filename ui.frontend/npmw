@@ -1,0 +1,117 @@
+#!/usr/bin/env sh
+
+VERSION=${NODE_VERSION:-"v20.16.0"}
+BIN_NAME="npm"
+
+# Define API
+# ==========
+
+# https://github.com/client9/shlib/blob/master/uname_os.sh
+detect_os() {
+  os=$(uname -s | tr '[:upper:]' '[:lower:]')
+
+  # fixed up for https://github.com/client9/shlib/issues/3
+  case "$os" in
+    msys*) os="win" ;;
+    mingw*) os="win" ;;
+    cygwin*) os="win" ;;
+    win*) os="win" ;; # for windows busybox and like # https://frippery.org/busybox/
+  esac
+
+  # other fixups here
+  echo "$os"
+}
+
+# https://github.com/client9/shlib/blob/master/uname_arch.sh
+detect_arch() {
+  arch=$(uname -m)
+  case $arch in
+    x86_64) arch="x64" ;;
+    x86) arch="x86" ;;
+    i686) arch="x86" ;;
+    i386) arch="x86" ;;
+    aarch64) arch="arm64" ;;
+    armv5*) arch="armv5" ;;
+    armv6*) arch="armv6" ;;
+    armv7*) arch="armv7" ;;
+  esac
+  echo ${arch}
+}
+
+# https://github.com/client9/shlib/blob/master/http_download.sh
+download_file() {
+  local_file=$1
+  source_url=$2
+  header=$3
+  if [ -z "$header" ]; then
+    code=$(curl -w '%{http_code}' -sL -o "$local_file" "$source_url")
+  else
+    code=$(curl -w '%{http_code}' -sL -H "$header" -o "$local_file" "$source_url")
+  fi
+  if [ "$code" != "200" ]; then
+    echo "Error! Downloading file from URL '$source_url' received HTTP status '$code'"
+    return 1
+  fi
+  return 0
+}
+
+download_file_once () {
+  URL=$1
+  FILE=$2
+
+  if [ ! -f "${FILE}" ]; then
+      mkdir -p "$(dirname "$FILE")"
+      FILE_TMP="$2.tmp"
+      download_file "$FILE_TMP" "$URL"
+      mv "$FILE_TMP" "$FILE"
+  fi
+}
+
+unarchive_file() {
+  FILE=$1
+  DIR=$2
+
+  mkdir -p "$DIR"
+  if [ "${FILE##*.}" = "zip" ] ; then
+    unzip -q "$FILE" -d "$DIR"
+    mv "$DIR"/*/* "$DIR"
+  else
+    tar -xf "$FILE" -C "$DIR" --strip-components=1
+  fi
+}
+
+# Download or use installed tool
+# ==============================
+
+OS=$(detect_os)
+ARCH=$(detect_arch)
+DOWNLOAD_DIR="node"
+
+BIN_DOWNLOAD_NAME="node"
+BIN_ARCHIVE_EXT="tar.gz"
+BIN_PATH="bin/${BIN_NAME}"
+if [ "$OS" = "win" ] ; then
+  BIN_PATH="${BIN_NAME}"
+  BIN_ARCHIVE_EXT="zip"
+fi
+
+BIN_DOWNLOAD_URL="https://nodejs.org/dist/${VERSION}/node-${VERSION}-${OS}-${ARCH}.${BIN_ARCHIVE_EXT}"
+
+BIN_ROOT="${DOWNLOAD_DIR}"
+BIN_ARCHIVE_FILE="${BIN_ROOT}/${BIN_DOWNLOAD_NAME}-${VERSION}.${BIN_ARCHIVE_EXT}"
+BIN_ARCHIVE_DIR="${BIN_ROOT}/dist"
+BIN_EXEC_FILE="${BIN_ARCHIVE_DIR}/${BIN_PATH}"
+BIN_EXEC_DIR=$(dirname "$BIN_EXEC_FILE")
+
+if [ ! -f "${BIN_EXEC_FILE}" ]; then
+  mkdir -p "${BIN_ARCHIVE_DIR}"
+  download_file_once "$BIN_DOWNLOAD_URL" "$BIN_ARCHIVE_FILE"
+  unarchive_file "$BIN_ARCHIVE_FILE" "$BIN_ARCHIVE_DIR"
+  chmod +x "${BIN_EXEC_FILE}"
+fi
+
+# Execute the binary
+# ==================
+
+export PATH=$(pwd)/$BIN_EXEC_DIR:$PATH
+"./${BIN_EXEC_FILE}" "$@"
