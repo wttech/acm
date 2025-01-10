@@ -120,7 +120,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           </ButtonGroup>
         </Flex>
       </View>
-      <TableView aria-label="Scripts list" selectionMode="multiple" selectedKeys={selectedKeys} onSelectionChange={setSelectedKeys} minHeight="calc(100vh - 400px)" renderEmptyState={renderEmptyState}>
+      <TableView flex="1" aria-label="Scripts list" selectionMode="multiple" selectedKeys={selectedKeys} onSelectionChange={setSelectedKeys} renderEmptyState={renderEmptyState}>
         <TableHeader>
           <Column>Name</Column>
           <Column>Last Execution</Column>

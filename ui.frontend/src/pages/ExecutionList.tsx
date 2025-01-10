@@ -64,59 +64,57 @@ const ExecutionList = () => {
   }
 
   return (
-    <Flex direction="column" flex="1" gap="size-400">
-      <Flex direction="column" gap="size-200" marginY="size-100">
-        <View borderBottomWidth="thick" borderColor="gray-300" paddingBottom="size-200" marginBottom="size-10">
-          <Flex direction="row" gap="size-200" alignItems="center">
-            <Picker label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
-              <Item textValue="All" key="all">
-                <Star size="S" />
-                <Text>All</Text>
-              </Item>
-              <Item textValue="Skipped" key={ExecutionStatus.SKIPPED}>
-                <Pause size="S" />
-                <Text>Skipped</Text>
-              </Item>
-              <Item textValue="Aborted" key={ExecutionStatus.ABORTED}>
-                <Cancel size="S" />
-                <Text>Aborted</Text>
-              </Item>
-              <Item textValue="Failed" key={ExecutionStatus.FAILED}>
-                <Alert size="S" />
-                <Text>Failed</Text>
-              </Item>
-              <Item textValue="Succeeded" key={ExecutionStatus.SUCCEEDED}>
-                <Checkmark size="S" />
-                <Text>Succeeded</Text>
-              </Item>
-            </Picker>
-            <DatePicker label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
-            <DatePicker label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
-          </Flex>
-        </View>
-        <TableView aria-label="Executions table" selectionMode="none" renderEmptyState={renderEmptyState} minHeight="calc(100vh - 400px)" onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
-          <TableHeader>
-            <Column>Executable</Column>
-            <Column>Started</Column>
-            <Column>Duration</Column>
-            <Column>Status</Column>
-          </TableHeader>
-          <TableBody>
-            {(executions?.list || []).map((execution) => (
-              <Row key={execution.id}>
-                <Cell>
-                  <ExecutableValue value={execution.executable} />
-                </Cell>
-                <Cell>{formatter.date(execution.startDate)}</Cell>
-                <Cell>{formatter.duration(execution.duration)}</Cell>
-                <Cell>
-                  <ExecutionStatusBadge value={execution.status} />
-                </Cell>
-              </Row>
-            ))}
-          </TableBody>
-        </TableView>
-      </Flex>
+    <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+      <View borderBottomWidth="thick" borderColor="gray-300" paddingBottom="size-200" marginBottom="size-10">
+        <Flex direction="row" gap="size-200" alignItems="center">
+          <Picker label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
+            <Item textValue="All" key="all">
+              <Star size="S" />
+              <Text>All</Text>
+            </Item>
+            <Item textValue="Skipped" key={ExecutionStatus.SKIPPED}>
+              <Pause size="S" />
+              <Text>Skipped</Text>
+            </Item>
+            <Item textValue="Aborted" key={ExecutionStatus.ABORTED}>
+              <Cancel size="S" />
+              <Text>Aborted</Text>
+            </Item>
+            <Item textValue="Failed" key={ExecutionStatus.FAILED}>
+              <Alert size="S" />
+              <Text>Failed</Text>
+            </Item>
+            <Item textValue="Succeeded" key={ExecutionStatus.SUCCEEDED}>
+              <Checkmark size="S" />
+              <Text>Succeeded</Text>
+            </Item>
+          </Picker>
+          <DatePicker label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
+          <DatePicker label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
+        </Flex>
+      </View>
+      <TableView flex="1" aria-label="Executions table" selectionMode="none" renderEmptyState={renderEmptyState} onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
+        <TableHeader>
+          <Column>Executable</Column>
+          <Column>Started</Column>
+          <Column>Duration</Column>
+          <Column>Status</Column>
+        </TableHeader>
+        <TableBody>
+          {(executions?.list || []).map((execution) => (
+            <Row key={execution.id}>
+              <Cell>
+                <ExecutableValue value={execution.executable} />
+              </Cell>
+              <Cell>{formatter.date(execution.startDate)}</Cell>
+              <Cell>{formatter.duration(execution.duration)}</Cell>
+              <Cell>
+                <ExecutionStatusBadge value={execution.status} />
+              </Cell>
+            </Row>
+          ))}
+        </TableBody>
+      </TableView>
     </Flex>
   );
 };
