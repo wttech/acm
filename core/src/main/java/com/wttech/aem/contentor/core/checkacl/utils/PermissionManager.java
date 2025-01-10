@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.checkacl.utils;
 
 import com.day.cq.security.util.CqActions;
+import com.wttech.aem.contentor.core.acl.AclException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,15 +28,18 @@ public class PermissionManager {
     }
 
     public boolean checkPermissions(
-            Authorizable authorizable, String path, List<String> permissions, String glob, boolean allow)
-            throws RepositoryException {
-        Set<Principal> authorizablesToCheck = getAuthorizablesToCheck(authorizable);
-        CqActions actions = new CqActions(session);
-        List<String> privilegesToCheck = preparePrivilegesToCheck(permissions);
-        if (glob == null) {
-            return checkPermissionsForPath(authorizablesToCheck, actions, privilegesToCheck, path, allow);
-        } else {
-            return checkPermissionsForGlob(authorizablesToCheck, actions, privilegesToCheck, path, glob, allow);
+            Authorizable authorizable, String path, List<String> permissions, String glob, boolean allow) {
+        try {
+            Set<Principal> authorizablesToCheck = getAuthorizablesToCheck(authorizable);
+            CqActions actions = new CqActions(session);
+            List<String> privilegesToCheck = preparePrivilegesToCheck(permissions);
+            if (glob == null) {
+                return checkPermissionsForPath(authorizablesToCheck, actions, privilegesToCheck, path, allow);
+            } else {
+                return checkPermissionsForGlob(authorizablesToCheck, actions, privilegesToCheck, path, glob, allow);
+            }
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to check permissions", e);
         }
     }
 
@@ -45,8 +49,7 @@ public class PermissionManager {
             List<String> privilegesToCheck,
             String path,
             String glob,
-            boolean allow)
-            throws RepositoryException {
+            boolean allow) {
         List<String> subpaths = getAllSubpaths(session, path);
         Pattern pattern = Pattern.compile(path + StringUtils.replace(glob, "*", ".*"));
         boolean foundMatch = false;
@@ -68,35 +71,50 @@ public class PermissionManager {
             CqActions actions,
             List<String> privilegesToCheck,
             String subpath,
-            boolean allow)
-            throws RepositoryException {
-        Collection<String> allowedActions = actions.getAllowedActions(subpath, authorizablesToCheck);
-        boolean containsAll = allowedActions.containsAll(privilegesToCheck);
-        return (!containsAll && allow) || (containsAll && !allow);
-    }
-
-    private List<String> getAllSubpaths(Session session, String path) throws RepositoryException {
-        Node node = session.getNode(path);
-        return new ArrayList<>(crawl(node));
-    }
-
-    private List<String> crawl(Node node) throws RepositoryException {
-        List<String> paths = new ArrayList<>();
-        paths.add(node.getPath());
-        for (NodeIterator iter = node.getNodes(); iter.hasNext(); ) {
-            paths.addAll(crawl(iter.nextNode()));
+            boolean allow) {
+        try {
+            Collection<String> allowedActions = actions.getAllowedActions(subpath, authorizablesToCheck);
+            boolean containsAll = allowedActions.containsAll(privilegesToCheck);
+            return (!containsAll && allow) || (containsAll && !allow);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to check permissions for path", e);
         }
-        return paths;
     }
 
-    private Set<Principal> getAuthorizablesToCheck(Authorizable authorizable) throws RepositoryException {
-        Set<Principal> principals = new HashSet<>();
-        Principal principal = authorizable.getPrincipal();
-        principals.add(principal);
-        for (PrincipalIterator it = session.getPrincipalManager().getGroupMembership(principal); it.hasNext(); ) {
-            principals.add(it.nextPrincipal());
+    private List<String> getAllSubpaths(Session session, String path) {
+        try {
+            Node node = session.getNode(path);
+            return new ArrayList<>(crawl(node));
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get all subpaths", e);
         }
-        return principals;
+    }
+
+    private List<String> crawl(Node node) {
+        try {
+            List<String> paths = new ArrayList<>();
+            paths.add(node.getPath());
+            for (NodeIterator iter = node.getNodes(); iter.hasNext(); ) {
+                paths.addAll(crawl(iter.nextNode()));
+            }
+            return paths;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to crawl", e);
+        }
+    }
+
+    private Set<Principal> getAuthorizablesToCheck(Authorizable authorizable) {
+        try {
+            Set<Principal> principals = new HashSet<>();
+            Principal principal = authorizable.getPrincipal();
+            principals.add(principal);
+            for (PrincipalIterator it = session.getPrincipalManager().getGroupMembership(principal); it.hasNext(); ) {
+                principals.add(it.nextPrincipal());
+            }
+            return principals;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get authorizables to check", e);
+        }
     }
 
     private List<String> preparePrivilegesToCheck(List<String> permissions) {

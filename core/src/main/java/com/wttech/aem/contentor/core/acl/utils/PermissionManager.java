@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
@@ -34,26 +35,36 @@ public class PermissionManager {
             String path,
             List<String> permissions,
             Map<String, Object> restrictions,
-            boolean allow)
-            throws RepositoryException {
-        updateAccessControlList(authorizable.getPrincipal(), path, permissions, restrictions, allow);
-        if (permissions.contains("MODIFY")) {
-            List<String> globModifyPermissions = Collections.singletonList("MODIFY_PAGE");
-            Map<String, Object> globModifyRestrictions = new HashMap<>(restrictions);
-            String preparedGlob = recalculateGlob((String) restrictions.get(AccessControlConstants.REP_GLOB));
-            globModifyRestrictions.put(AccessControlConstants.REP_GLOB, preparedGlob + "*/jcr:content*");
-            updateAccessControlList(
-                    authorizable.getPrincipal(), path, globModifyPermissions, globModifyRestrictions, allow);
+            boolean allow) {
+        try {
+            updateAccessControlList(authorizable.getPrincipal(), path, permissions, restrictions, allow);
+            if (permissions.contains("MODIFY")) {
+                List<String> globModifyPermissions = Collections.singletonList("MODIFY_PAGE");
+                Map<String, Object> globModifyRestrictions = new HashMap<>(restrictions);
+                String preparedGlob = recalculateGlob((String) restrictions.get(AccessControlConstants.REP_GLOB));
+                globModifyRestrictions.put(AccessControlConstants.REP_GLOB, preparedGlob + "*/jcr:content*");
+                updateAccessControlList(
+                        authorizable.getPrincipal(), path, globModifyPermissions, globModifyRestrictions, allow);
+            }
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to apply permissions", e);
         }
     }
 
     private void updateAccessControlList(
-            Principal principal, String path, List<String> permissions, Map<String, Object> restrictions, boolean allow)
-            throws RepositoryException {
-        JackrabbitAccessControlList jackrabbitAcl =
-                JackrabbitAccessControlListUtil.determineModifiableAcl(accessControlManager, path);
-        addEntry(jackrabbitAcl, principal, permissions, restrictions, allow);
-        accessControlManager.setPolicy(path, jackrabbitAcl);
+            Principal principal,
+            String path,
+            List<String> permissions,
+            Map<String, Object> restrictions,
+            boolean allow) {
+        try {
+            JackrabbitAccessControlList jackrabbitAcl =
+                    JackrabbitAccessControlListUtil.determineModifiableAcl(accessControlManager, path);
+            addEntry(jackrabbitAcl, principal, permissions, restrictions, allow);
+            accessControlManager.setPolicy(path, jackrabbitAcl);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to update access control list", e);
+        }
     }
 
     private void addEntry(
@@ -61,20 +72,23 @@ public class PermissionManager {
             Principal principal,
             List<String> permissions,
             Map<String, Object> restrictions,
-            boolean allow)
-            throws RepositoryException {
-        List<Privilege> privileges = createPrivileges(permissions);
-        Map<String, Value> singleValueRestrictions = getSingleValueRestrictions(jackrabbitAcl, restrictions);
-        Map<String, Value[]> multiValueRestrictions = getMultiValueRestrictions(jackrabbitAcl, restrictions);
-        jackrabbitAcl.addEntry(
-                principal,
-                privileges.toArray(new Privilege[] {}),
-                allow,
-                singleValueRestrictions,
-                multiValueRestrictions);
+            boolean allow) {
+        try {
+            List<Privilege> privileges = createPrivileges(permissions);
+            Map<String, Value> singleValueRestrictions = getSingleValueRestrictions(jackrabbitAcl, restrictions);
+            Map<String, Value[]> multiValueRestrictions = getMultiValueRestrictions(jackrabbitAcl, restrictions);
+            jackrabbitAcl.addEntry(
+                    principal,
+                    privileges.toArray(new Privilege[] {}),
+                    allow,
+                    singleValueRestrictions,
+                    multiValueRestrictions);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to add entry to acl", e);
+        }
     }
 
-    private List<Privilege> createPrivileges(List<String> permissions) throws RepositoryException {
+    private List<Privilege> createPrivileges(List<String> permissions) {
         List<Privilege> privileges = new ArrayList<>();
         for (String permission : permissions) {
             privileges.addAll(createPrivileges(accessControlManager, permission));
@@ -82,65 +96,72 @@ public class PermissionManager {
         return privileges;
     }
 
-    private List<Privilege> createPrivileges(AccessControlManager accessControlManager, String permission)
-            throws RepositoryException {
-        try {
-            PrivilegeGroup privilegeGroup = PrivilegeGroup.fromTitle(permission);
-            if (privilegeGroup != null) {
-                return privilegeGroup.toPrivileges(accessControlManager);
-            } else {
-                return Collections.singletonList(accessControlManager.privilegeFromName(permission));
-            }
-        } catch (AccessControlException e) {
-            throw new AclException("Unknown permission " + permission, e);
+    private List<Privilege> createPrivileges(AccessControlManager accessControlManager, String permission) {
+        PrivilegeGroup privilegeGroup = PrivilegeGroup.fromTitle(permission);
+        if (privilegeGroup != null) {
+            return privilegeGroup.getPrivileges().stream()
+                    .map(this::toPrivilege)
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.singletonList(toPrivilege(permission));
         }
     }
 
     private Map<String, Value> getSingleValueRestrictions(
-            JackrabbitAccessControlList jackrabbitAcl, Map<String, Object> restrictions) throws RepositoryException {
-        Map<String, Value> result = new HashMap<>();
-        for (Map.Entry<String, Object> entry : restrictions.entrySet()) {
-            String key = entry.getKey();
-            if (!jackrabbitAcl.isMultiValueRestriction(key)) {
-                String value;
-                if (entry.getValue() instanceof String) {
-                    value = (String) entry.getValue();
-                } else {
-                    List<String> values = (List<String>) entry.getValue();
-                    value = values.isEmpty() ? "" : values.get(0);
+            JackrabbitAccessControlList jackrabbitAcl, Map<String, Object> restrictions) {
+        try {
+            Map<String, Value> result = new HashMap<>();
+            for (Map.Entry<String, Object> entry : restrictions.entrySet()) {
+                String key = entry.getKey();
+                if (!jackrabbitAcl.isMultiValueRestriction(key)) {
+                    String value;
+                    if (entry.getValue() instanceof String) {
+                        value = (String) entry.getValue();
+                    } else {
+                        List<String> values = (List<String>) entry.getValue();
+                        value = values.isEmpty() ? "" : values.get(0);
+                    }
+                    result.put(key, createValue(jackrabbitAcl, key, value));
                 }
-                result.put(key, createValue(jackrabbitAcl, key, value));
             }
+            return result;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get single value restrictions", e);
         }
-        return result;
     }
 
-    private Value createValue(JackrabbitAccessControlList jackrabbitAcl, String key, String value)
-            throws RepositoryException {
-        return valueFactory.createValue(value, jackrabbitAcl.getRestrictionType(key));
+    private Value createValue(JackrabbitAccessControlList jackrabbitAcl, String key, String value) {
+        try {
+            return valueFactory.createValue(value, jackrabbitAcl.getRestrictionType(key));
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to create value", e);
+        }
     }
 
     private Map<String, Value[]> getMultiValueRestrictions(
-            JackrabbitAccessControlList jackrabbitAcl, Map<String, Object> restrictions) throws RepositoryException {
-        Map<String, Value[]> result = new HashMap<>();
-        for (Map.Entry<String, Object> entry : restrictions.entrySet()) {
-            String key = entry.getKey();
-            if (jackrabbitAcl.isMultiValueRestriction(key)) {
-                List<String> values;
-                if (entry.getValue() instanceof String) {
-                    String value = (String) entry.getValue();
-                    values = value.isEmpty() ? Collections.emptyList() : Collections.singletonList(value);
-                } else {
-                    values = (List<String>) entry.getValue();
+            JackrabbitAccessControlList jackrabbitAcl, Map<String, Object> restrictions) {
+        try {
+            Map<String, Value[]> result = new HashMap<>();
+            for (Map.Entry<String, Object> entry : restrictions.entrySet()) {
+                String key = entry.getKey();
+                if (jackrabbitAcl.isMultiValueRestriction(key)) {
+                    List<String> values;
+                    if (entry.getValue() instanceof String) {
+                        String value = (String) entry.getValue();
+                        values = value.isEmpty() ? Collections.emptyList() : Collections.singletonList(value);
+                    } else {
+                        values = (List<String>) entry.getValue();
+                    }
+                    result.put(key, createValues(jackrabbitAcl, key, values));
                 }
-                result.put(key, createValues(jackrabbitAcl, key, values));
             }
+            return result;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get multi value restrictions", e);
         }
-        return result;
     }
 
-    private Value[] createValues(JackrabbitAccessControlList jackrabbitAcl, String key, List<String> names)
-            throws RepositoryException {
+    private Value[] createValues(JackrabbitAccessControlList jackrabbitAcl, String key, List<String> names) {
         Value[] values = new Value[names.size()];
         for (int index = 0; index < names.size(); index++) {
             values[index] = createValue(jackrabbitAcl, key, names.get(index));
@@ -157,5 +178,15 @@ public class PermissionManager {
             }
         }
         return preparedGlob;
+    }
+
+    public Privilege toPrivilege(String permission) {
+        try {
+            return accessControlManager.privilegeFromName(permission);
+        } catch (AccessControlException e) {
+            throw new AclException("Unknown permission " + permission, e);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to create privilege", e);
+        }
     }
 }

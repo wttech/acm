@@ -1,5 +1,6 @@
 package com.wttech.aem.contentor.core.acl.utils;
 
+import com.wttech.aem.contentor.core.acl.AclException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -26,6 +27,7 @@ import org.apache.jackrabbit.oak.spi.security.authorization.restriction.Restrict
 public class PurgeManager {
 
     private static final String PERMISSION_STORE_PATH = "/jcr:system/rep:permissionStore/crx.default/";
+
     private final AccessControlManager accessControlManager;
 
     private final JackrabbitSession session;
@@ -35,7 +37,7 @@ public class PurgeManager {
         this.accessControlManager = accessControlManager;
     }
 
-    public void purge(Authorizable authorizable, String path, boolean strict) throws RepositoryException {
+    public void purge(Authorizable authorizable, String path, boolean strict) {
         if (strict) {
             removeAll(authorizable, path);
         } else {
@@ -43,19 +45,23 @@ public class PurgeManager {
         }
     }
 
-    private void removeAll(Authorizable authorizable, String path) throws RepositoryException {
-        JackrabbitAccessControlList jackrabbitAcl =
-                JackrabbitAccessControlListUtil.determineModifiableAcl(accessControlManager, path);
-        AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
-        for (AccessControlEntry accessControlEntry : accessControlEntries) {
-            if (Objects.equals(accessControlEntry.getPrincipal(), authorizable.getPrincipal())) {
-                jackrabbitAcl.removeAccessControlEntry(accessControlEntry);
+    private void removeAll(Authorizable authorizable, String path) {
+        try {
+            JackrabbitAccessControlList jackrabbitAcl =
+                    JackrabbitAccessControlListUtil.determineModifiableAcl(accessControlManager, path);
+            AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
+            for (AccessControlEntry accessControlEntry : accessControlEntries) {
+                if (Objects.equals(accessControlEntry.getPrincipal(), authorizable.getPrincipal())) {
+                    jackrabbitAcl.removeAccessControlEntry(accessControlEntry);
+                }
             }
+            accessControlManager.setPolicy(path, jackrabbitAcl);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to remove all privileges from path", e);
         }
-        accessControlManager.setPolicy(path, jackrabbitAcl);
     }
 
-    private void purge(Authorizable authorizable, String path) throws RepositoryException {
+    private void purge(Authorizable authorizable, String path) {
         Set<String> accessControlledPaths = getAccessControlledPaths(authorizable);
         for (String parentPath : accessControlledPaths) {
             if (StringUtils.startsWith(parentPath, path)) {
@@ -64,43 +70,49 @@ public class PurgeManager {
         }
     }
 
-    private Set<String> getAccessControlledPaths(Authorizable authorizable) throws RepositoryException {
-        Set<String> result = new HashSet<>();
-        String path = PERMISSION_STORE_PATH + authorizable.getID();
-        if (session.nodeExists(path)) {
-            Node node = session.getNode(path);
-            NodeIterator nodes = node.getNodes();
-            while (nodes.hasNext()) {
-                node = nodes.nextNode();
-                if (node.hasProperty(PermissionConstants.REP_ACCESS_CONTROLLED_PATH)) {
-                    result.add(node.getProperty(PermissionConstants.REP_ACCESS_CONTROLLED_PATH)
-                            .getString());
+    private Set<String> getAccessControlledPaths(Authorizable authorizable) {
+        try {
+            Set<String> result = new HashSet<>();
+            String path = PERMISSION_STORE_PATH + authorizable.getID();
+            if (session.nodeExists(path)) {
+                Node node = session.getNode(path);
+                NodeIterator nodes = node.getNodes();
+                while (nodes.hasNext()) {
+                    node = nodes.nextNode();
+                    if (node.hasProperty(PermissionConstants.REP_ACCESS_CONTROLLED_PATH)) {
+                        result.add(node.getProperty(PermissionConstants.REP_ACCESS_CONTROLLED_PATH)
+                                .getString());
+                    }
                 }
-            }
-        } else {
-            JackrabbitAccessControlManager accessControlManager =
-                    (JackrabbitAccessControlManager) session.getAccessControlManager();
-            AccessControlPolicy[] accessControlPolicies = accessControlManager.getPolicies(authorizable.getPrincipal());
-            for (AccessControlPolicy accessControlPolicy : accessControlPolicies) {
-                AbstractAccessControlList abstractAccessControlList = (AbstractAccessControlList) accessControlPolicy;
-                List<? extends JackrabbitAccessControlEntry> jackrabbitAccessControlEntries =
-                        abstractAccessControlList.getEntries();
-                for (JackrabbitAccessControlEntry jackrabbitAccessControlEntry : jackrabbitAccessControlEntries) {
-                    Set<Restriction> restrictions = ((ACE) jackrabbitAccessControlEntry).getRestrictions();
-                    for (Restriction restriction : restrictions) {
-                        if (Type.PATH.equals(restriction.getProperty().getType())) {
-                            result.add(restriction.getProperty().getValue(Type.PATH));
+            } else {
+                JackrabbitAccessControlManager accessControlManager =
+                        (JackrabbitAccessControlManager) session.getAccessControlManager();
+                AccessControlPolicy[] accessControlPolicies =
+                        accessControlManager.getPolicies(authorizable.getPrincipal());
+                for (AccessControlPolicy accessControlPolicy : accessControlPolicies) {
+                    AbstractAccessControlList abstractAccessControlList =
+                            (AbstractAccessControlList) accessControlPolicy;
+                    List<? extends JackrabbitAccessControlEntry> jackrabbitAccessControlEntries =
+                            abstractAccessControlList.getEntries();
+                    for (JackrabbitAccessControlEntry jackrabbitAccessControlEntry : jackrabbitAccessControlEntries) {
+                        Set<Restriction> restrictions = ((ACE) jackrabbitAccessControlEntry).getRestrictions();
+                        for (Restriction restriction : restrictions) {
+                            if (Type.PATH.equals(restriction.getProperty().getType())) {
+                                result.add(restriction.getProperty().getValue(Type.PATH));
+                            }
                         }
                     }
                 }
             }
+            String authorizablePath = authorizable.getPath();
+            result = result.stream()
+                    .filter(controlledPath -> !StringUtils.equals(controlledPath, authorizablePath))
+                    .map(this::normalizePath)
+                    .collect(Collectors.toSet());
+            return result;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get access controlled paths", e);
         }
-        String authorizablePath = authorizable.getPath();
-        result = result.stream()
-                .filter(controlledPath -> !StringUtils.equals(controlledPath, authorizablePath))
-                .map(this::normalizePath)
-                .collect(Collectors.toSet());
-        return result;
     }
 
     private String normalizePath(String path) {

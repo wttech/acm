@@ -13,190 +13,161 @@ import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 
-/**
- * The type Authorizable manager.
- */
 public class AuthorizableManager {
 
     private final UserManager userManager;
 
     private final ValueFactory valueFactory;
 
-    /**
-     * Instantiates a new Authorizable manager.
-     *
-     * @param userManager  the user manager
-     * @param valueFactory the value factory
-     */
     public AuthorizableManager(UserManager userManager, ValueFactory valueFactory) {
         this.userManager = userManager;
         this.valueFactory = valueFactory;
     }
 
-    /**
-     * Create user.
-     *
-     * @param id       the id
-     * @param password the password
-     * @param path     the path
-     * @return the user
-     * @throws RepositoryException the repository exception
-     */
-    public User createUser(String id, String password, String path) throws RepositoryException {
-        Principal principal = () -> id;
-        if (StringUtils.isEmpty(password)) {
-            password = PasswordUtils.generateRandomPassword();
-        }
-        return userManager.createUser(
-                id, StringUtils.defaultString(password, PasswordUtils.generateRandomPassword()), principal, path);
-    }
-
-    /**
-     * Create group.
-     *
-     * @param id         the id
-     * @param path       the path
-     * @param externalId the external id
-     * @return the group
-     * @throws RepositoryException the repository exception
-     */
-    public Group createGroup(String id, String path, String externalId) throws RepositoryException {
-        Principal principal = () -> id;
-        Group group = userManager.createGroup(id, principal, path);
-        if (StringUtils.isNotEmpty(externalId)) {
-            group.setProperty("rep:externalId", valueFactory.createValue(externalId));
-        }
-        return group;
-    }
-
-    /**
-     * Create system user.
-     *
-     * @param id   the id
-     * @param path the path
-     * @return the user
-     * @throws RepositoryException the repository exception
-     */
-    public User createSystemUser(String id, String path) throws RepositoryException {
-        return userManager.createSystemUser(id, path);
-    }
-
-    /**
-     * Update authorizable.
-     *
-     * @param authorizable the authorizable
-     * @param properties   the properties
-     * @throws RepositoryException the repository exception
-     */
-    public void updateAuthorizable(Authorizable authorizable, Map<String, String> properties)
-            throws RepositoryException {
-        for (Map.Entry<String, String> property : properties.entrySet()) {
-            authorizable.setProperty(property.getKey(), valueFactory.createValue(property.getValue()));
+    public User createUser(String id, String password, String path) {
+        try {
+            Principal principal = () -> id;
+            if (StringUtils.isEmpty(password)) {
+                password = PasswordUtils.generateRandomPassword();
+            }
+            return userManager.createUser(
+                    id, StringUtils.defaultString(password, PasswordUtils.generateRandomPassword()), principal, path);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to create user", e);
         }
     }
 
-    /**
-     * Update user.
-     *
-     * @param user       the user
-     * @param password   the password
-     * @param properties the properties
-     * @throws RepositoryException the repository exception
-     */
-    public void updateUser(User user, String password, Map<String, String> properties) throws RepositoryException {
-        if (StringUtils.isNotEmpty(password)) {
-            user.changePassword(password);
+    public Group createGroup(String id, String path, String externalId) {
+        try {
+            Principal principal = () -> id;
+            Group group = userManager.createGroup(id, principal, path);
+            if (StringUtils.isNotEmpty(externalId)) {
+                group.setProperty("rep:externalId", valueFactory.createValue(externalId));
+            }
+            return group;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to create group", e);
         }
-        updateAuthorizable(user, properties);
     }
 
-    /**
-     * Update group.
-     *
-     * @param group      the group
-     * @param properties the properties
-     * @throws RepositoryException the repository exception
-     */
-    public void updateGroup(Group group, Map<String, String> properties) throws RepositoryException {
+    public User createSystemUser(String id, String path) {
+        try {
+            return userManager.createSystemUser(id, path);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to create system user", e);
+        }
+    }
+
+    public void updateAuthorizable(Authorizable authorizable, Map<String, String> properties) {
+        try {
+            for (Map.Entry<String, String> property : properties.entrySet()) {
+                authorizable.setProperty(property.getKey(), valueFactory.createValue(property.getValue()));
+            }
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to update authorizable", e);
+        }
+    }
+
+    public void updateUser(User user, String password, Map<String, String> properties) {
+        try {
+            if (StringUtils.isNotEmpty(password)) {
+                user.changePassword(password);
+            }
+            updateAuthorizable(user, properties);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to update user", e);
+        }
+    }
+
+    public void updateGroup(Group group, Map<String, String> properties) {
         updateAuthorizable(group, properties);
     }
 
-    /**
-     * Delete user.
-     *
-     * @param user the user
-     * @throws RepositoryException the repository exception
-     */
-    public void deleteUser(User user) throws RepositoryException {
-        Iterator<Group> groups = user.memberOf();
-        while (groups.hasNext()) {
-            groups.next().removeMember(user);
+    public void deleteUser(User user) {
+        try {
+            Iterator<Group> groups = user.memberOf();
+            while (groups.hasNext()) {
+                groups.next().removeMember(user);
+            }
+            user.remove();
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to delete user", e);
         }
-        user.remove();
     }
 
-    /**
-     * Delete group.
-     *
-     * @param group the group
-     * @throws RepositoryException the repository exception
-     */
-    public void deleteGroup(Group group) throws RepositoryException {
-        group.remove();
-    }
-
-    /**
-     * Add to group acl result.
-     *
-     * @param authorizable the authorizable
-     * @param group        the group
-     * @return the acl result
-     * @throws RepositoryException the repository exception
-     */
-    public AclResult addToGroup(Authorizable authorizable, Group group) throws RepositoryException {
-        if (!group.isMember(authorizable)) {
-            return group.addMember(authorizable) ? AclResult.OK : AclResult.FAILED;
+    public void deleteGroup(Group group) {
+        try {
+            group.remove();
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to delete user", e);
         }
-        return AclResult.SKIPPED;
     }
 
-    /**
-     * Remove from group acl result.
-     *
-     * @param authorizable the authorizable
-     * @param group        the group
-     * @return the acl result
-     * @throws RepositoryException the repository exception
-     */
-    public AclResult removeFromGroup(Authorizable authorizable, Group group) throws RepositoryException {
-        if (group.isMember(authorizable)) {
-            return group.removeMember(authorizable) ? AclResult.OK : AclResult.FAILED;
+    public AclResult addToGroup(Authorizable authorizable, Group group) {
+        try {
+            if (!group.isMember(authorizable)) {
+                return group.addMember(authorizable) ? AclResult.OK : AclResult.FAILED;
+            }
+            return AclResult.SKIPPED;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to add authorizable to group", e);
+        }
+    }
+
+    public AclResult removeFromGroup(Authorizable authorizable, Group group) {
+        try {
+            if (group.isMember(authorizable)) {
+                return group.removeMember(authorizable) ? AclResult.OK : AclResult.FAILED;
+            }
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to remove authorizable from group", e);
         }
         return AclResult.SKIPPED;
     }
 
-    /**
-     * Gets authorizable.
-     *
-     * @param id the id
-     * @return the authorizable
-     * @throws RepositoryException the repository exception
-     */
-    public Authorizable getAuthorizable(String id) throws RepositoryException {
-        return userManager.getAuthorizable(id);
+    public void removeFromAllGroups(Authorizable authorizable) {
+        try {
+            Iterator<Group> groups = authorizable.memberOf();
+            while (groups.hasNext()) {
+                Group group = groups.next();
+                removeFromGroup(authorizable, group);
+            }
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to remove authorizable from all groups", e);
+        }
     }
 
-    /**
-     * Gets authorizable.
-     *
-     * @param <T>               the type parameter
-     * @param authorizableClass the authorizable class
-     * @param id                the id
-     * @return the authorizable
-     * @throws RepositoryException the repository exception
-     */
-    public <T extends Authorizable> T getAuthorizable(Class<T> authorizableClass, String id)
-            throws RepositoryException {
+    public void removeMember(Group group, Authorizable member) {
+        try {
+            if (group.isMember(member)) {
+                group.removeMember(member);
+            }
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to remove member from group", e);
+        }
+    }
+
+    public void removeAllMembers(Group group) {
+        try {
+            Iterator<Authorizable> members = group.getMembers();
+            while (members.hasNext()) {
+                Authorizable member = members.next();
+                removeMember(group, member);
+            }
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to remove all members from group", e);
+        }
+    }
+
+    public Authorizable getAuthorizable(String id) {
+        try {
+            return userManager.getAuthorizable(id);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get authorizable", e);
+        }
+    }
+
+    public <T extends Authorizable> T getAuthorizable(Class<T> authorizableClass, String id) {
         Authorizable authorizable = getAuthorizable(id);
         if (authorizable != null && !authorizableClass.isInstance(authorizable)) {
             throw new AclException(
@@ -205,59 +176,35 @@ public class AuthorizableManager {
         return authorizableClass.cast(authorizable);
     }
 
-    /**
-     * Gets user.
-     *
-     * @param id the id
-     * @return the user
-     * @throws RepositoryException the repository exception
-     */
-    public User getUser(String id) throws RepositoryException {
+    public User getUser(String id) {
         return getAuthorizable(User.class, id);
     }
 
-    /**
-     * Gets group.
-     *
-     * @param id the id
-     * @return the group
-     * @throws RepositoryException the repository exception
-     */
-    public Group getGroup(String id) throws RepositoryException {
+    public Group getGroup(String id) {
         return getAuthorizable(Group.class, id);
     }
 
-    /**
-     * Set property.
-     *
-     * @param user     the user
-     * @param password the password
-     * @throws RepositoryException the repository exception
-     */
-    public void changePassword(User user, String password) throws RepositoryException {
-        user.changePassword(password);
+    public void changePassword(User user, String password) {
+        try {
+            user.changePassword(password);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to change password", e);
+        }
     }
 
-    /**
-     * Set property.
-     *
-     * @param authorizable the authorizable
-     * @param name         the name
-     * @param value        the value
-     * @throws RepositoryException the repository exception
-     */
-    public void setProperty(Authorizable authorizable, String name, String value) throws RepositoryException {
-        authorizable.setProperty(name, valueFactory.createValue(value));
+    public void setProperty(Authorizable authorizable, String name, String value) {
+        try {
+            authorizable.setProperty(name, valueFactory.createValue(value));
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to set property", e);
+        }
     }
 
-    /**
-     * Remove property.
-     *
-     * @param authorizable the authorizable
-     * @param name         the name
-     * @throws RepositoryException the repository exception
-     */
-    public void removeProperty(Authorizable authorizable, String name) throws RepositoryException {
-        authorizable.removeProperty(name);
+    public void removeProperty(Authorizable authorizable, String name) {
+        try {
+            authorizable.removeProperty(name);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to remove property", e);
+        }
     }
 }

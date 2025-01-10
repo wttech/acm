@@ -13,8 +13,7 @@ public final class JackrabbitAccessControlListUtil {
         // intentionally empty
     }
 
-    public static JackrabbitAccessControlList determineModifiableAcl(AccessControlManager accessManager, String path)
-            throws RepositoryException {
+    public static JackrabbitAccessControlList determineModifiableAcl(AccessControlManager accessManager, String path) {
         JackrabbitAccessControlList acl = determineAcl(accessManager, path);
         if (acl != null) {
             return acl;
@@ -26,26 +25,32 @@ public final class JackrabbitAccessControlListUtil {
         throw new AclException("Failed to determine modifiable ACL at " + path);
     }
 
-    private static JackrabbitAccessControlList determineAcl(AccessControlManager accessManager, String path)
-            throws RepositoryException {
-        AccessControlPolicy[] policies = accessManager.getPolicies(path);
-        for (AccessControlPolicy policy : policies) {
-            if (policy instanceof JackrabbitAccessControlList) {
-                return (JackrabbitAccessControlList) policy;
+    private static JackrabbitAccessControlList determineAcl(AccessControlManager accessManager, String path) {
+        try {
+            AccessControlPolicy[] policies = accessManager.getPolicies(path);
+            for (AccessControlPolicy policy : policies) {
+                if (policy instanceof JackrabbitAccessControlList) {
+                    return (JackrabbitAccessControlList) policy;
+                }
             }
+            return null;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to determine acl", e);
         }
-        return null;
     }
 
-    private static JackrabbitAccessControlList determineApplicableAcl(AccessControlManager accessManager, String path)
-            throws RepositoryException {
-        AccessControlPolicyIterator policies = accessManager.getApplicablePolicies(path);
-        while (policies.hasNext()) {
-            AccessControlPolicy policy = policies.nextAccessControlPolicy();
-            if (policy instanceof JackrabbitAccessControlList) {
-                return (JackrabbitAccessControlList) policy;
+    private static JackrabbitAccessControlList determineApplicableAcl(AccessControlManager accessManager, String path) {
+        try {
+            AccessControlPolicyIterator policies = accessManager.getApplicablePolicies(path);
+            while (policies.hasNext()) {
+                AccessControlPolicy policy = policies.nextAccessControlPolicy();
+                if (policy instanceof JackrabbitAccessControlList) {
+                    return (JackrabbitAccessControlList) policy;
+                }
             }
+            return null;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to determine applicable acl", e);
         }
-        return null;
     }
 }
