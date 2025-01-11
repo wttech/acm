@@ -59,7 +59,7 @@ public class PermissionManager {
             boolean allow) {
         try {
             JackrabbitAccessControlList jackrabbitAcl =
-                    JackrabbitAccessControlListUtil.determineModifiableAcl(accessControlManager, path);
+                    JackrabbitAccessControlListUtils.determineModifiableAcl(accessControlManager, path);
             addEntry(jackrabbitAcl, principal, permissions, restrictions, allow);
             accessControlManager.setPolicy(path, jackrabbitAcl);
         } catch (RepositoryException e) {

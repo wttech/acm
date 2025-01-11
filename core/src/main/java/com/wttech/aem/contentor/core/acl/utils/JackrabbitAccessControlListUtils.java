@@ -7,27 +7,28 @@ import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.security.AccessControlPolicyIterator;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 
-public final class JackrabbitAccessControlListUtil {
+public final class JackrabbitAccessControlListUtils {
 
-    private JackrabbitAccessControlListUtil() {
+    private JackrabbitAccessControlListUtils() {
         // intentionally empty
     }
 
-    public static JackrabbitAccessControlList determineModifiableAcl(AccessControlManager accessManager, String path) {
-        JackrabbitAccessControlList acl = determineAcl(accessManager, path);
+    public static JackrabbitAccessControlList determineModifiableAcl(
+            AccessControlManager accessControlManager, String path) {
+        JackrabbitAccessControlList acl = determineAcl(accessControlManager, path);
         if (acl != null) {
             return acl;
         }
-        JackrabbitAccessControlList applicableAcl = determineApplicableAcl(accessManager, path);
+        JackrabbitAccessControlList applicableAcl = determineApplicableAcl(accessControlManager, path);
         if (applicableAcl != null) {
             return applicableAcl;
         }
         throw new AclException("Failed to determine modifiable ACL at " + path);
     }
 
-    private static JackrabbitAccessControlList determineAcl(AccessControlManager accessManager, String path) {
+    private static JackrabbitAccessControlList determineAcl(AccessControlManager accessControlManager, String path) {
         try {
-            AccessControlPolicy[] policies = accessManager.getPolicies(path);
+            AccessControlPolicy[] policies = accessControlManager.getPolicies(path);
             for (AccessControlPolicy policy : policies) {
                 if (policy instanceof JackrabbitAccessControlList) {
                     return (JackrabbitAccessControlList) policy;
@@ -39,9 +40,10 @@ public final class JackrabbitAccessControlListUtil {
         }
     }
 
-    private static JackrabbitAccessControlList determineApplicableAcl(AccessControlManager accessManager, String path) {
+    private static JackrabbitAccessControlList determineApplicableAcl(
+            AccessControlManager accessControlManager, String path) {
         try {
-            AccessControlPolicyIterator policies = accessManager.getApplicablePolicies(path);
+            AccessControlPolicyIterator policies = accessControlManager.getApplicablePolicies(path);
             while (policies.hasNext()) {
                 AccessControlPolicy policy = policies.nextAccessControlPolicy();
                 if (policy instanceof JackrabbitAccessControlList) {

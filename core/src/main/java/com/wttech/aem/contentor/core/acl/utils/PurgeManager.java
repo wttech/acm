@@ -48,7 +48,7 @@ public class PurgeManager {
     private void removeAll(Authorizable authorizable, String path) {
         try {
             JackrabbitAccessControlList jackrabbitAcl =
-                    JackrabbitAccessControlListUtil.determineModifiableAcl(accessControlManager, path);
+                    JackrabbitAccessControlListUtils.determineModifiableAcl(accessControlManager, path);
             AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
             for (AccessControlEntry accessControlEntry : accessControlEntries) {
                 if (Objects.equals(accessControlEntry.getPrincipal(), authorizable.getPrincipal())) {
@@ -90,10 +90,9 @@ public class PurgeManager {
                 AccessControlPolicy[] accessControlPolicies =
                         accessControlManager.getPolicies(authorizable.getPrincipal());
                 for (AccessControlPolicy accessControlPolicy : accessControlPolicies) {
-                    AbstractAccessControlList abstractAccessControlList =
-                            (AbstractAccessControlList) accessControlPolicy;
+                    AbstractAccessControlList abstractAcl = (AbstractAccessControlList) accessControlPolicy;
                     List<? extends JackrabbitAccessControlEntry> jackrabbitAccessControlEntries =
-                            abstractAccessControlList.getEntries();
+                            abstractAcl.getEntries();
                     for (JackrabbitAccessControlEntry jackrabbitAccessControlEntry : jackrabbitAccessControlEntries) {
                         Set<Restriction> restrictions = ((ACE) jackrabbitAccessControlEntry).getRestrictions();
                         for (Restriction restriction : restrictions) {
