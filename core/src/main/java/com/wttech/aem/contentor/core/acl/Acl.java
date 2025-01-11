@@ -8,6 +8,7 @@ import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
 import com.wttech.aem.contentor.core.checkacl.CheckAcl;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.jcr.RepositoryException;
@@ -65,36 +66,36 @@ public class Acl {
         return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
     }
 
-    public void deleteUser(Closure<AuthorizableOptions> closure) {
-        deleteUser(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public BasicResult deleteUser(Closure<AuthorizableOptions> closure) {
+        return deleteUser(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
-    public void deleteGroup(Closure<AuthorizableOptions> closure) {
-        deleteGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public BasicResult deleteGroup(Closure<AuthorizableOptions> closure) {
+        return deleteGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
-    public void addToGroup(Closure<GroupOptions> closure) {
-        addToGroup(GroovyUtils.with(new GroupOptions(), closure));
+    public BasicResult addToGroup(Closure<GroupOptions> closure) {
+        return addToGroup(GroovyUtils.with(new GroupOptions(), closure));
     }
 
-    public void removeFromGroup(Closure<GroupOptions> closure) {
-        removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
+    public BasicResult removeFromGroup(Closure<GroupOptions> closure) {
+        return removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
     }
 
-    public void removeFromAllGroups(Closure<AuthorizableOptions> closure) {
-        removeFromAllGroups(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public BasicResult removeFromAllGroups(Closure<AuthorizableOptions> closure) {
+        return removeFromAllGroups(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
-    public void addMember(Closure<MemberOptions> closure) {
-        addMember(GroovyUtils.with(new MemberOptions(), closure));
+    public BasicResult addMember(Closure<MemberOptions> closure) {
+        return addMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public void removeMember(Closure<MemberOptions> closure) {
-        removeMember(GroovyUtils.with(new MemberOptions(), closure));
+    public BasicResult removeMember(Closure<MemberOptions> closure) {
+        return removeMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public void removeAllMembers(Closure<AuthorizableOptions> closure) {
-        removeAllMembers(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public BasicResult removeAllMembers(Closure<AuthorizableOptions> closure) {
+        return removeAllMembers(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
     public void purge(Closure<PurgeOptions> closure) {
@@ -109,16 +110,16 @@ public class Acl {
         return deny(GroovyUtils.with(new DenyOptions(), closure));
     }
 
-    public void setProperty(Closure<SetPropertyOptions> closure) {
-        setProperty(GroovyUtils.with(new SetPropertyOptions(), closure));
+    public BasicResult setProperty(Closure<SetPropertyOptions> closure) {
+        return setProperty(GroovyUtils.with(new SetPropertyOptions(), closure));
     }
 
-    public void removeProperty(Closure<RemovePropertyOptions> closure) {
-        removeProperty(GroovyUtils.with(new RemovePropertyOptions(), closure));
+    public BasicResult removeProperty(Closure<RemovePropertyOptions> closure) {
+        return removeProperty(GroovyUtils.with(new RemovePropertyOptions(), closure));
     }
 
-    public void setPassword(Closure<PasswordOptions> closure) {
-        setPassword(GroovyUtils.with(new PasswordOptions(), closure));
+    public BasicResult setPassword(Closure<PasswordOptions> closure) {
+        return setPassword(GroovyUtils.with(new PasswordOptions(), closure));
     }
 
     public void save(Closure<SaveOptions> closure) {
@@ -219,136 +220,162 @@ public class Acl {
         return authorizableManager.getGroup(id);
     }
 
-    public void deleteUser(AuthorizableOptions options) {
+    public BasicResult deleteUser(AuthorizableOptions options) {
         User user = (User) determineAuthorizable(options);
-        deleteUser(user);
+        return deleteUser(user);
     }
 
-    public void deleteUser(User user) {
+    public BasicResult deleteUser(User user) {
+        if (user == null || check.notExists(getAuthorizableId(user))) {
+            return BasicResult.ALREADY_DONE;
+        }
         authorizableManager.deleteUser(user);
+        return BasicResult.DONE;
     }
 
-    public void deleteUser(String id) {
+    public BasicResult deleteUser(String id) {
         User user = authorizableManager.getUser(id);
-        deleteUser(user);
+        return deleteUser(user);
     }
 
-    public void deleteGroup(AuthorizableOptions options) {
+    public BasicResult deleteGroup(AuthorizableOptions options) {
         Group group = (Group) determineAuthorizable(options);
-        deleteGroup(group);
+        return deleteGroup(group);
     }
 
-    public void deleteGroup(Group group) {
+    public BasicResult deleteGroup(Group group) {
+        if (group == null || check.notExists(getAuthorizableId(group))) {
+            return BasicResult.ALREADY_DONE;
+        }
         authorizableManager.deleteGroup(group);
+        return BasicResult.DONE;
     }
 
-    public void deleteGroup(String id) {
+    public BasicResult deleteGroup(String id) {
         Group group = authorizableManager.getGroup(id);
-        deleteGroup(group);
+        return deleteGroup(group);
     }
 
-    public void addToGroup(GroupOptions options) {
+    public BasicResult addToGroup(GroupOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
         Group group = (Group) options.getGroupAuthorizable();
         if (group == null) {
             group = authorizableManager.getGroup(options.getGroupId());
         }
-        addToGroup(authorizable, group);
+        return addToGroup(authorizable, group);
     }
 
-    public void addToGroup(Authorizable authorizable, Group group) {
-        authorizableManager.addToGroup(authorizable, group);
+    public BasicResult addToGroup(Authorizable authorizable, Group group) {
+        return authorizableManager.addToGroup(authorizable, group) ? BasicResult.DONE : BasicResult.ALREADY_DONE;
     }
 
-    public void addToGroup(String id, String groupId) {
+    public BasicResult addToGroup(String id, String groupId) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
         Group group = authorizableManager.getGroup(groupId);
-        addToGroup(authorizable, group);
+        return addToGroup(authorizable, group);
     }
 
-    public void removeFromGroup(GroupOptions options) {
+    public BasicResult removeFromGroup(GroupOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
         Group group = (Group) options.getGroupAuthorizable();
         if (group == null) {
             group = authorizableManager.getGroup(options.getGroupId());
         }
-        removeFromGroup(authorizable, group);
+        return removeFromGroup(authorizable, group);
     }
 
-    public void removeFromGroup(Authorizable authorizable, Group group) {
-        authorizableManager.removeFromGroup(authorizable, group);
+    public BasicResult removeFromGroup(Authorizable authorizable, Group group) {
+        return authorizableManager.removeFromGroup(authorizable, group) ? BasicResult.DONE : BasicResult.ALREADY_DONE;
     }
 
-    public void removeFromGroup(String id, String groupId) {
+    public BasicResult removeFromGroup(String id, String groupId) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
         Group group = authorizableManager.getGroup(groupId);
-        removeFromGroup(authorizable, group);
+        return removeFromGroup(authorizable, group);
     }
 
-    public void removeFromAllGroups(AuthorizableOptions options) {
+    public BasicResult removeFromAllGroups(AuthorizableOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        removeFromAllGroups(authorizable);
+        return removeFromAllGroups(authorizable);
     }
 
-    public void removeFromAllGroups(Authorizable authorizable) {
-        authorizableManager.removeFromAllGroups(authorizable);
+    public BasicResult removeFromAllGroups(Authorizable authorizable) {
+        try {
+            Iterator<Group> groups = authorizable.memberOf();
+            BasicResult result = groups.hasNext() ? BasicResult.DONE : BasicResult.ALREADY_DONE;
+            while (groups.hasNext()) {
+                removeFromGroup(authorizable, groups.next());
+            }
+            return result;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to remove authorizable from all groups", e);
+        }
     }
 
-    public void removeFromAllGroups(String id) {
+    public BasicResult removeFromAllGroups(String id) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        removeFromAllGroups(authorizable);
+        return removeFromAllGroups(authorizable);
     }
 
-    public void addMember(MemberOptions options) {
+    public BasicResult addMember(MemberOptions options) {
         Group group = (Group) determineAuthorizable(options);
         Authorizable member = options.getMemberAuthorizable();
         if (member == null) {
             member = authorizableManager.getAuthorizable(options.getMemberId());
         }
-        addMember(group, member);
+        return addMember(group, member);
     }
 
-    public void addMember(Group group, Authorizable member) {
-        addToGroup(member, group);
+    public BasicResult addMember(Group group, Authorizable member) {
+        return addToGroup(member, group);
     }
 
-    public void addMember(String id, String memberId) {
+    public BasicResult addMember(String id, String memberId) {
         Group group = authorizableManager.getGroup(id);
         Authorizable member = authorizableManager.getAuthorizable(memberId);
-        addMember(group, member);
+        return addMember(group, member);
     }
 
-    public void removeMember(MemberOptions options) {
+    public BasicResult removeMember(MemberOptions options) {
         Group group = (Group) determineAuthorizable(options);
         Authorizable member = options.getMemberAuthorizable();
         if (member == null) {
             member = authorizableManager.getAuthorizable(options.getMemberId());
         }
-        removeMember(group, member);
+        return removeMember(group, member);
     }
 
-    public void removeMember(Group group, Authorizable member) {
-        authorizableManager.removeMember(group, member);
+    public BasicResult removeMember(Group group, Authorizable member) {
+        return removeFromGroup(member, group);
     }
 
-    public void removeMember(String id, String memberId) {
+    public BasicResult removeMember(String id, String memberId) {
         Group group = authorizableManager.getGroup(id);
         Authorizable member = authorizableManager.getAuthorizable(memberId);
-        removeMember(group, member);
+        return removeMember(group, member);
     }
 
-    public void removeAllMembers(AuthorizableOptions options) {
+    public BasicResult removeAllMembers(AuthorizableOptions options) {
         Group group = (Group) determineAuthorizable(options);
-        removeAllMembers(group);
+        return removeAllMembers(group);
     }
 
-    public void removeAllMembers(Group group) {
-        authorizableManager.removeAllMembers(group);
+    public BasicResult removeAllMembers(Group group) {
+        try {
+            Iterator<Authorizable> members = group.getMembers();
+            BasicResult result = members.hasNext() ? BasicResult.DONE : BasicResult.ALREADY_DONE;
+            while (members.hasNext()) {
+                removeMember(group, members.next());
+            }
+            return result;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to remove all members from group", e);
+        }
     }
 
-    public void removeAllMembers(String id) {
+    public BasicResult removeAllMembers(String id) {
         Group group = authorizableManager.getGroup(id);
-        removeAllMembers(group);
+        return removeAllMembers(group);
     }
 
     public void purge(PurgeOptions options) {
@@ -529,46 +556,54 @@ public class Acl {
         return deny(options);
     }
 
-    public void setProperty(SetPropertyOptions options) {
+    public BasicResult setProperty(SetPropertyOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        setProperty(authorizable, options.getName(), options.getValue());
+        return setProperty(authorizable, options.getName(), options.getValue());
     }
 
-    public void setProperty(Authorizable authorizable, String name, String value) {
-        authorizableManager.setProperty(authorizable, name, value);
+    public BasicResult setProperty(Authorizable authorizable, String name, String value) {
+        if (!check.property(getAuthorizableId(authorizable), name, value)) {
+            authorizableManager.setProperty(authorizable, name, value);
+            return BasicResult.DONE;
+        }
+        return BasicResult.ALREADY_DONE;
     }
 
-    public void setProperty(String id, String name, String value) {
+    public BasicResult setProperty(String id, String name, String value) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        setProperty(authorizable, name, value);
+        return setProperty(authorizable, name, value);
     }
 
-    public void removeProperty(RemovePropertyOptions options) {
+    public BasicResult removeProperty(RemovePropertyOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        removeProperty(authorizable, options.getName());
+        return removeProperty(authorizable, options.getName());
     }
 
-    public void removeProperty(Authorizable authorizable, String name) {
-        authorizableManager.removeProperty(authorizable, name);
+    public BasicResult removeProperty(Authorizable authorizable, String name) {
+        return authorizableManager.removeProperty(authorizable, name) ? BasicResult.DONE : BasicResult.ALREADY_DONE;
     }
 
-    public void removeProperty(String id, String name) {
+    public BasicResult removeProperty(String id, String name) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        authorizableManager.removeProperty(authorizable, name);
+        return removeProperty(authorizable, name);
     }
 
-    public void setPassword(PasswordOptions options) {
+    public BasicResult setPassword(PasswordOptions options) {
         User user = (User) determineAuthorizable(options);
-        setPassword(user, options.getPassword());
+        return setPassword(user, options.getPassword());
     }
 
-    public void setPassword(User user, String password) {
-        authorizableManager.changePassword(user, password);
+    public BasicResult setPassword(User user, String password) {
+        if (!check.password(getAuthorizableId(user), password)) {
+            authorizableManager.changePassword(user, password);
+            return BasicResult.DONE;
+        }
+        return BasicResult.ALREADY_DONE;
     }
 
-    public void setPassword(String id, String password) {
+    public BasicResult setPassword(String id, String password) {
         User user = authorizableManager.getUser(id);
-        setPassword(user, password);
+        return setPassword(user, password);
     }
 
     public void save(SaveOptions options) {
@@ -589,5 +624,13 @@ public class Acl {
             authorizable = authorizableManager.getAuthorizable(options.getId());
         }
         return authorizable;
+    }
+
+    private String getAuthorizableId(Authorizable authorizable) {
+        try {
+            return authorizable.getID();
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get authorizable ID", e);
+        }
     }
 }

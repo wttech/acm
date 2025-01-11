@@ -1,7 +1,6 @@
 package com.wttech.aem.contentor.core.acl.utils;
 
 import com.wttech.aem.contentor.core.acl.AclException;
-import com.wttech.aem.contentor.core.acl.AclResult;
 import java.security.Principal;
 import java.util.Iterator;
 import java.util.Map;
@@ -89,59 +88,25 @@ public class AuthorizableManager {
         }
     }
 
-    public AclResult addToGroup(Authorizable authorizable, Group group) {
+    public boolean addToGroup(Authorizable authorizable, Group group) {
         try {
             if (!group.isMember(authorizable)) {
-                return group.addMember(authorizable) ? AclResult.OK : AclResult.FAILED;
+                return group.addMember(authorizable);
             }
-            return AclResult.SKIPPED;
+            return false;
         } catch (RepositoryException e) {
             throw new AclException("Failed to add authorizable to group", e);
         }
     }
 
-    public AclResult removeFromGroup(Authorizable authorizable, Group group) {
+    public boolean removeFromGroup(Authorizable authorizable, Group group) {
         try {
             if (group.isMember(authorizable)) {
-                return group.removeMember(authorizable) ? AclResult.OK : AclResult.FAILED;
+                return group.removeMember(authorizable);
             }
+            return false;
         } catch (RepositoryException e) {
             throw new AclException("Failed to remove authorizable from group", e);
-        }
-        return AclResult.SKIPPED;
-    }
-
-    public void removeFromAllGroups(Authorizable authorizable) {
-        try {
-            Iterator<Group> groups = authorizable.memberOf();
-            while (groups.hasNext()) {
-                Group group = groups.next();
-                removeFromGroup(authorizable, group);
-            }
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to remove authorizable from all groups", e);
-        }
-    }
-
-    public void removeMember(Group group, Authorizable member) {
-        try {
-            if (group.isMember(member)) {
-                group.removeMember(member);
-            }
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to remove member from group", e);
-        }
-    }
-
-    public void removeAllMembers(Group group) {
-        try {
-            Iterator<Authorizable> members = group.getMembers();
-            while (members.hasNext()) {
-                Authorizable member = members.next();
-                removeMember(group, member);
-            }
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to remove all members from group", e);
         }
     }
 
@@ -186,9 +151,13 @@ public class AuthorizableManager {
         }
     }
 
-    public void removeProperty(Authorizable authorizable, String name) {
+    public boolean removeProperty(Authorizable authorizable, String name) {
         try {
-            authorizable.removeProperty(name);
+            if (authorizable.hasProperty(name)) {
+                authorizable.removeProperty(name);
+                return true;
+            }
+            return false;
         } catch (RepositoryException e) {
             throw new AclException("Failed to remove property", e);
         }
