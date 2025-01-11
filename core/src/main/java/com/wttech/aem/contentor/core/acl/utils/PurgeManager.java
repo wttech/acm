@@ -37,37 +37,43 @@ public class PurgeManager {
         this.accessControlManager = accessControlManager;
     }
 
-    public void purge(Authorizable authorizable, String path, boolean strict) {
+    public boolean purge(Authorizable authorizable, String path, boolean strict) {
         if (strict) {
-            removeAll(authorizable, path);
+            return removeAll(authorizable, path);
         } else {
-            purge(authorizable, normalizePath(path));
+            return purge(authorizable, normalizePath(path));
         }
     }
 
-    private void removeAll(Authorizable authorizable, String path) {
+    private boolean removeAll(Authorizable authorizable, String path) {
         try {
             JackrabbitAccessControlList jackrabbitAcl =
                     JackrabbitAccessControlListUtils.determineModifiableAcl(accessControlManager, path);
             AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
-            for (AccessControlEntry accessControlEntry : accessControlEntries) {
-                if (Objects.equals(accessControlEntry.getPrincipal(), authorizable.getPrincipal())) {
-                    jackrabbitAcl.removeAccessControlEntry(accessControlEntry);
+            boolean result = accessControlEntries.length > 0;
+            if (result) {
+                for (AccessControlEntry accessControlEntry : accessControlEntries) {
+                    if (Objects.equals(accessControlEntry.getPrincipal(), authorizable.getPrincipal())) {
+                        jackrabbitAcl.removeAccessControlEntry(accessControlEntry);
+                    }
                 }
+                accessControlManager.setPolicy(path, jackrabbitAcl);
             }
-            accessControlManager.setPolicy(path, jackrabbitAcl);
+            return result;
         } catch (RepositoryException e) {
             throw new AclException("Failed to remove all privileges from path", e);
         }
     }
 
-    private void purge(Authorizable authorizable, String path) {
+    private boolean purge(Authorizable authorizable, String path) {
         Set<String> accessControlledPaths = getAccessControlledPaths(authorizable);
+        boolean result = false;
         for (String parentPath : accessControlledPaths) {
             if (StringUtils.startsWith(parentPath, path)) {
-                removeAll(authorizable, parentPath);
+                result |= removeAll(authorizable, parentPath);
             }
         }
+        return result;
     }
 
     private Set<String> getAccessControlledPaths(Authorizable authorizable) {
