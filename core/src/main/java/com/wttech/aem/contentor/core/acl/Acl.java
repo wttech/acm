@@ -1,11 +1,11 @@
 package com.wttech.aem.contentor.core.acl;
 
+import com.wttech.aem.contentor.core.acl.check.CheckAcl;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.acl.utils.PermissionManager;
 import com.wttech.aem.contentor.core.acl.utils.PurgeManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
-import com.wttech.aem.contentor.core.checkacl.CheckAcl;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Iterator;

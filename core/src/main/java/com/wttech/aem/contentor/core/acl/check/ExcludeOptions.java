@@ -1,12 +1,10 @@
-package com.wttech.aem.contentor.core.checkacl;
+package com.wttech.aem.contentor.core.acl.check;
 
-public class IncludeOptions {
+public class ExcludeOptions {
 
     private String groupId;
 
     private String id;
-
-    private boolean ifExists;
 
     public String getGroupId() {
         return groupId;
@@ -22,13 +20,5 @@ public class IncludeOptions {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public boolean isIfExists() {
-        return ifExists;
-    }
-
-    public void setIfExists(boolean ifExists) {
-        this.ifExists = ifExists;
     }
 }

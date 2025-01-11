@@ -1,8 +1,8 @@
-package com.wttech.aem.contentor.core.checkacl;
+package com.wttech.aem.contentor.core.acl.check;
 
 import com.wttech.aem.contentor.core.acl.AclException;
+import com.wttech.aem.contentor.core.acl.check.utils.PermissionManager;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
-import com.wttech.aem.contentor.core.checkacl.utils.PermissionManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;

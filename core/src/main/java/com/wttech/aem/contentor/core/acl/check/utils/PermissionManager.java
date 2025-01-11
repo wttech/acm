@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.checkacl.utils;
+package com.wttech.aem.contentor.core.acl.check.utils;
 
 import com.day.cq.security.util.CqActions;
 import com.wttech.aem.contentor.core.acl.AclException;
