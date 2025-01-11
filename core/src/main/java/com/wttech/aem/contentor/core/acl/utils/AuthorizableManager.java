@@ -58,29 +58,15 @@ public class AuthorizableManager {
         }
     }
 
-    public void updateAuthorizable(Authorizable authorizable, Map<String, String> properties) {
-        try {
-            for (Map.Entry<String, String> property : properties.entrySet()) {
-                authorizable.setProperty(property.getKey(), valueFactory.createValue(property.getValue()));
-            }
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to update authorizable", e);
-        }
-    }
-
     public void updateUser(User user, String password, Map<String, String> properties) {
-        try {
-            if (StringUtils.isNotEmpty(password)) {
-                user.changePassword(password);
-            }
-            updateAuthorizable(user, properties);
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to update user", e);
+        if (StringUtils.isNotEmpty(password)) {
+            changePassword(user, password);
         }
+        properties.forEach((name, value) -> setProperty(user, name, value));
     }
 
     public void updateGroup(Group group, Map<String, String> properties) {
-        updateAuthorizable(group, properties);
+        properties.forEach((name, value) -> setProperty(group, name, value));
     }
 
     public void deleteUser(User user) {
