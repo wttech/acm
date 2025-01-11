@@ -5,6 +5,7 @@ import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.acl.utils.PermissionManager;
 import com.wttech.aem.contentor.core.acl.utils.PurgeManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
+import com.wttech.aem.contentor.core.checkacl.CheckAcl;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;
@@ -36,6 +37,8 @@ public class Acl {
 
     private final boolean compositeNodeStore;
 
+    public final CheckAcl check;
+
     public Acl(ResourceResolver resourceResolver) {
         try {
             this.resourceResolver = resourceResolver;
@@ -47,6 +50,7 @@ public class Acl {
             this.permissionManager = new PermissionManager(accessControlManager, valueFactory);
             this.purgeManager = new PurgeManager(session, accessControlManager);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
+            this.check = new CheckAcl(resourceResolver);
         } catch (RepositoryException e) {
             throw new AclException("Failed to initialize acl", e);
         }
