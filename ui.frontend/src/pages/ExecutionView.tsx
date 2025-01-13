@@ -147,7 +147,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <View backgroundColor="gray-800" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-50">
+              <View backgroundColor="gray-800" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-50" height="100%">
                 <Editor theme="vs-dark" value={execution.executable.content} height="100%" language="groovy" beforeMount={registerGroovyLanguage} options={{ readOnly: true }} />
               </View>
             </Flex>
@@ -164,7 +164,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <View backgroundColor="gray-800" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-50">
+              <View backgroundColor="gray-800" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-50" height="100%">
                 <Editor theme="vs-dark" value={executionOutput} height="100%" options={{ readOnly: true }} />
               </View>
             </Flex>
