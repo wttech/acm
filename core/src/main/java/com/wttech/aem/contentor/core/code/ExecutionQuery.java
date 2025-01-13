@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.util.DateUtils;
+import com.wttech.aem.contentor.core.util.Range;
 import com.wttech.aem.contentor.core.util.ServletUtils;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,18 +14,24 @@ public class ExecutionQuery {
 
     private String path = ExecutionHistory.ROOT;
 
+    private String executableId;
+
     private Date startDate;
 
     private Date endDate;
 
     private ExecutionStatus status;
 
+    private Range<Integer> duration;
+
     public static ExecutionQuery from(SlingHttpServletRequest request) {
         ExecutionQuery result = new ExecutionQuery();
+        result.setExecutableId(ServletUtils.stringParam(request, "executableId"));
         result.setStartDate(DateUtils.fromString(ServletUtils.stringParam(request, "startDate")));
         result.setEndDate(DateUtils.fromString(ServletUtils.stringParam(request, "endDate")));
         result.setStatus(
                 ExecutionStatus.of(ServletUtils.stringParam(request, "status")).orElse(null));
+        result.setDuration(Range.integersParse(ServletUtils.stringParam(request, "duration")));
         return result;
     }
 
@@ -38,6 +45,14 @@ public class ExecutionQuery {
                     String.format("Path must be a descendant of '%s'!", ExecutionHistory.ROOT));
         }
         this.path = path;
+    }
+
+    public String getExecutableId() {
+        return executableId;
+    }
+
+    public void setExecutableId(String executableId) {
+        this.executableId = executableId;
     }
 
     public Date getStartDate() {
@@ -64,12 +79,23 @@ public class ExecutionQuery {
         this.status = status;
     }
 
+    public Range<Integer> getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Range<Integer> duration) {
+        this.duration = duration;
+    }
+
     protected String toSql() {
         List<String> filters = new ArrayList<>();
         filters.add(String.format(
                 "s.[%s] = '%s'", JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, HistoricalExecution.RESOURCE_TYPE));
         if (path != null) {
             filters.add(String.format("ISDESCENDANTNODE(s, '%s')", path));
+        }
+        if (executableId != null) {
+            filters.add(String.format("s.[executableId] LIKE '%%%s%%'", executableId));
         }
         if (status != null) {
             filters.add(String.format("s.[status] = '%s'", status));
@@ -79,6 +105,14 @@ public class ExecutionQuery {
         }
         if (endDate != null) {
             filters.add(String.format("s.[endDate] <= CAST('%s' AS DATE)", DateUtils.toString(endDate)));
+        }
+        if (duration != null) {
+            if (duration.getStart() != null) {
+                filters.add(String.format("s.[duration] >= %d", duration.getStart()));
+            }
+            if (duration.getEnd() != null) {
+                filters.add(String.format("s.[duration] <= %d", duration.getEnd()));
+            }
         }
         String where = filters.stream()
                 .map(f -> "(" + f + ")")

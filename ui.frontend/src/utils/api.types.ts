@@ -1,65 +1,65 @@
 export type Executable = {
-    id: string;
-    content: string;
-}
+  id: string;
+  content: string;
+};
 
 export type Execution = {
-    id: string;
-    executable: Executable;
-    status: ExecutionStatus;
-    startDate: string;
-    endDate: string;
-    duration: number;
-    output: string;
-    error: string;
-}
+  id: string;
+  executable: Executable;
+  status: ExecutionStatus;
+  startDate: string;
+  endDate: string;
+  duration: number;
+  output: string;
+  error: string;
+};
 
 export enum ExecutionStatus {
-    QUEUED = 'QUEUED',
-    ACTIVE = 'ACTIVE',
-    STOPPED = 'STOPPED',
-    FAILED = 'FAILED',
-    SKIPPED = 'SKIPPED',
-    ABORTED = 'ABORTED',
-    SUCCEEDED = 'SUCCEEDED',
+  QUEUED = 'QUEUED',
+  ACTIVE = 'ACTIVE',
+  STOPPED = 'STOPPED',
+  FAILED = 'FAILED',
+  SKIPPED = 'SKIPPED',
+  ABORTED = 'ABORTED',
+  SUCCEEDED = 'SUCCEEDED',
 }
 
 export function isExecutionPending(status: ExecutionStatus | null) {
-    return status === ExecutionStatus.QUEUED || status === ExecutionStatus.ACTIVE;
+  return status === ExecutionStatus.QUEUED || status === ExecutionStatus.ACTIVE;
 }
 
 export type ExecutionOutput = {
-    list: Execution[];
-}
+  list: Execution[];
+};
 
 export type AssistCodeOutput = {
-    code: string;
-    suggestions: {
-        k: string // kind
-        l: string // label
-        it: string // insert text
-        i: string // info
-    }[]
-}
+  code: string;
+  suggestions: {
+    k: string; // kind
+    l: string; // label
+    it: string; // insert text
+    i: string; // info
+  }[];
+};
 
 export type SnippetOutput = {
-    list: Snippet[]
-}
+  list: Snippet[];
+};
 
 export type Snippet = {
-    name: string
-    id: string
-    content: string
-    documentation: string
-}
+  name: string;
+  id: string;
+  content: string;
+  documentation: string;
+};
 
 export type Script = {
-    id: string;
-    path: string;
-    name: string;
-    content: string;
-}
+  id: string;
+  path: string;
+  name: string;
+  content: string;
+};
 
 export type ScriptOutput = {
-    list: Script[];
-}
+  list: Script[];
+};
