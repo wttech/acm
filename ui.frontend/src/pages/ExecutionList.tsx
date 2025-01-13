@@ -6,6 +6,7 @@ import Alert from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Pause from '@spectrum-icons/workflow/Pause';
+import Search from '@spectrum-icons/workflow/Search';
 import Star from '@spectrum-icons/workflow/Star';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +31,7 @@ const ExecutionList = () => {
   useDebounce(
     () => {
       const fetchExecutions = async () => {
+        // setExecutions(null); // TODO do not hide filters when loading
         try {
           let url = `/apps/contentor/api/execution.json`;
           const params = new URLSearchParams();
@@ -62,6 +64,7 @@ const ExecutionList = () => {
     </IllustratedMessage>
   );
 
+  // TODO do not hide filters when loading
   if (executions === null) {
     return (
       <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
@@ -74,7 +77,7 @@ const ExecutionList = () => {
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View borderBottomWidth="thick" borderColor="gray-300" paddingBottom="size-200" marginBottom="size-10">
         <Flex direction="row" gap="size-200" alignItems="center">
-          <TextField label="Executable" value={executableId} onChange={setExecutableId} placeholder="Console or Script Name" />
+          <TextField icon={<Search />} label="Executable" value={executableId} type="search" onChange={setExecutableId} placeholder="e.g. script name" />
           <DatePicker label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
           <DatePicker label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
           <Picker label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
