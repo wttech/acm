@@ -1,5 +1,5 @@
 import { Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, NumberField, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, Text, TextField, View } from '@adobe/react-spectrum';
-import { DateValue } from '@internationalized/date';
+import { CalendarDateTime, DateValue } from '@internationalized/date';
 import { Key } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Alert from '@spectrum-icons/workflow/Alert';
@@ -22,8 +22,11 @@ const ExecutionList = () => {
   const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [startDate, setStartDate] = useState<DateValue | null>(null);
-  const [endDate, setEndDate] = useState<DateValue | null>(null);
+  const now = new Date(); // assume start date to be 7 days ago
+  const startDateDefault = new CalendarDateTime(now.getFullYear(), now.getMonth() + 1, now.getDate() - 7, 0, 0, 0);
+
+  const [startDate, setStartDate] = useState<DateValue | null>(startDateDefault);
+  const [endDate, setEndDate] = useState<DateValue | null>();
   const [status, setStatus] = useState<string | null>('all');
   const [executableId, setExecutableId] = useState<string>('');
   const [durationMin, setDurationMin] = useState<number | undefined>();
