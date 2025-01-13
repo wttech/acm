@@ -31,7 +31,7 @@ const ExecutionList = () => {
   useDebounce(
     () => {
       const fetchExecutions = async () => {
-        // setExecutions(null); // TODO do not hide filters when loading
+        setExecutions(null);
         try {
           let url = `/apps/contentor/api/execution.json`;
           const params = new URLSearchParams();
@@ -64,15 +64,6 @@ const ExecutionList = () => {
     </IllustratedMessage>
   );
 
-  // TODO do not hide filters when loading
-  if (executions === null) {
-    return (
-      <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
-        <ProgressBar label="Loading..." isIndeterminate />
-      </Flex>
-    );
-  }
-
   return (
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View borderBottomWidth="thick" borderColor="gray-300" paddingBottom="size-200" marginBottom="size-10">
@@ -104,28 +95,34 @@ const ExecutionList = () => {
           </Picker>
         </Flex>
       </View>
-      <TableView flex="1" aria-label="Executions table" selectionMode="none" renderEmptyState={renderEmptyState} onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
-        <TableHeader>
-          <Column>Executable</Column>
-          <Column>Started</Column>
-          <Column>Duration</Column>
-          <Column>Status</Column>
-        </TableHeader>
-        <TableBody>
-          {(executions?.list || []).map((execution) => (
-            <Row key={execution.id}>
-              <Cell>
-                <ExecutableValue value={execution.executable} />
-              </Cell>
-              <Cell>{formatter.date(execution.startDate)}</Cell>
-              <Cell>{formatter.duration(execution.duration)}</Cell>
-              <Cell>
-                <ExecutionStatusBadge value={execution.status} />
-              </Cell>
-            </Row>
-          ))}
-        </TableBody>
-      </TableView>
+      {executions === null ? (
+        <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
+          <ProgressBar label="Loading..." isIndeterminate />
+        </Flex>
+      ) : (
+        <TableView flex="1" aria-label="Executions table" selectionMode="none" renderEmptyState={renderEmptyState} onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
+          <TableHeader>
+            <Column>Executable</Column>
+            <Column>Started</Column>
+            <Column>Duration</Column>
+            <Column>Status</Column>
+          </TableHeader>
+          <TableBody>
+            {(executions?.list || []).map((execution) => (
+              <Row key={execution.id}>
+                <Cell>
+                  <ExecutableValue value={execution.executable} />
+                </Cell>
+                <Cell>{formatter.date(execution.startDate)}</Cell>
+                <Cell>{formatter.duration(execution.duration)}</Cell>
+                <Cell>
+                  <ExecutionStatusBadge value={execution.status} />
+                </Cell>
+              </Row>
+            ))}
+          </TableBody>
+        </TableView>
+      )}
     </Flex>
   );
 };
