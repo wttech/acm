@@ -1,4 +1,4 @@
-import { Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, Text, TextField, View } from '@adobe/react-spectrum';
+import { Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, NumberField, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, Text, TextField, View } from '@adobe/react-spectrum';
 import { DateValue } from '@internationalized/date';
 import { Key } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
@@ -20,18 +20,22 @@ import { useFormatter } from '../utils/hooks.ts';
 const ExecutionList = () => {
   const navigate = useNavigate();
   const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [startDate, setStartDate] = useState<DateValue | null>(null);
   const [endDate, setEndDate] = useState<DateValue | null>(null);
   const [status, setStatus] = useState<string | null>('all');
   const [executableId, setExecutableId] = useState<string>('');
+  const [durationMin, setDurationMin] = useState<number | undefined>();
+  const [durationMax, setDurationMax] = useState<number | undefined>();
 
   const formatter = useFormatter();
 
   useDebounce(
     () => {
+      // TODO use apiRequest
       const fetchExecutions = async () => {
-        setExecutions(null);
+        setLoading(true);
         try {
           let url = `/apps/contentor/api/execution.json`;
           const params = new URLSearchParams();
@@ -39,6 +43,7 @@ const ExecutionList = () => {
           if (startDate) params.append('startDate', startDate.toString());
           if (endDate) params.append('endDate', endDate.toString());
           if (status && status !== 'all') params.append('status', status);
+          if (durationMin || durationMax) params.append('duration', `${durationMin || ''},${durationMax || ''}`);
           if (params.toString()) url += `?${params.toString()}`;
           const response = await toastRequest<ExecutionOutput>({
             method: 'GET',
@@ -49,12 +54,14 @@ const ExecutionList = () => {
           setExecutions(response.data.data);
         } catch (error) {
           console.error('Error fetching executions:', error);
+        } finally {
+          setLoading(false);
         }
       };
       fetchExecutions();
     },
     500,
-    [startDate, endDate, status, executableId],
+    [startDate, endDate, status, executableId, durationMin, durationMax],
   );
 
   const renderEmptyState = () => (
@@ -67,10 +74,12 @@ const ExecutionList = () => {
   return (
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View borderBottomWidth="thick" borderColor="gray-300" paddingBottom="size-200" marginBottom="size-10">
-        <Flex direction="row" gap="size-200" alignItems="center">
+        <Flex direction="row" gap="size-200" alignItems="center" justifyContent="space-around">
           <TextField icon={<Search />} label="Executable" value={executableId} type="search" onChange={setExecutableId} placeholder="e.g. script name" />
           <DatePicker label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
           <DatePicker label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
+          <NumberField label="Min Duration (ms)" value={durationMin} onChange={setDurationMin} />
+          <NumberField label="Max Duration (ms)" value={durationMax} onChange={setDurationMax} />
           <Picker label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
             <Item textValue="All" key="all">
               <Star size="S" />
@@ -95,7 +104,7 @@ const ExecutionList = () => {
           </Picker>
         </Flex>
       </View>
-      {executions === null ? (
+      {executions === null || loading ? (
         <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
           <ProgressBar label="Loading..." isIndeterminate />
         </Flex>
