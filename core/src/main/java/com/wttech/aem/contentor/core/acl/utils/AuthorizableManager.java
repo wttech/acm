@@ -68,23 +68,15 @@ public class AuthorizableManager {
         properties.forEach((name, value) -> setProperty(group, name, value));
     }
 
-    public void deleteUser(User user) {
+    public void deleteAuthorizable(Authorizable authorizable) {
         try {
-            Iterator<Group> groups = user.memberOf();
+            Iterator<Group> groups = authorizable.memberOf();
             while (groups.hasNext()) {
-                groups.next().removeMember(user);
+                groups.next().removeMember(authorizable);
             }
-            user.remove();
+            authorizable.remove();
         } catch (RepositoryException e) {
-            throw new AclException("Failed to delete user", e);
-        }
-    }
-
-    public void deleteGroup(Group group) {
-        try {
-            group.remove();
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to delete user", e);
+            throw new AclException("Failed to delete authorizable", e);
         }
     }
 

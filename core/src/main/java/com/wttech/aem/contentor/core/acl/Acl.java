@@ -229,7 +229,7 @@ public class Acl {
         if (user == null || check.notExists(getAuthorizableId(user))) {
             return AclResult.ALREADY_DONE;
         }
-        authorizableManager.deleteUser(user);
+        authorizableManager.deleteAuthorizable(user);
         return AclResult.DONE;
     }
 
@@ -247,7 +247,7 @@ public class Acl {
         if (group == null || check.notExists(getAuthorizableId(group))) {
             return AclResult.ALREADY_DONE;
         }
-        authorizableManager.deleteGroup(group);
+        authorizableManager.deleteAuthorizable(group);
         return AclResult.DONE;
     }
 
