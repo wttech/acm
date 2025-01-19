@@ -58,12 +58,12 @@ public class Acl {
     }
 
     // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
-    public User createUser(Closure<CreateUserOptions> closure) {
-        return createUser(GroovyUtils.with(new CreateUserOptions(), closure));
+    public User determineUser(Closure<DetermineUserOptions> closure) {
+        return determineUser(GroovyUtils.with(new DetermineUserOptions(), closure));
     }
 
-    public Group createGroup(Closure<CreateGroupOptions> closure) {
-        return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
+    public Group determineGroup(Closure<DetermineGroupOptions> closure) {
+        return determineGroup(GroovyUtils.with(new DetermineGroupOptions(), closure));
     }
 
     public AclResult deleteUser(Closure<AuthorizableOptions> closure) {
@@ -128,7 +128,7 @@ public class Acl {
 
     // Non-closure accepting methods
 
-    public User createUser(
+    public User determineUser(
             String id,
             String password,
             String path,
@@ -137,8 +137,8 @@ public class Acl {
             String email,
             String aboutMe,
             boolean systemUser,
-            CreateUserOptions.Mode mode) {
-        CreateUserOptions options = new CreateUserOptions();
+            DetermineUserOptions.Mode mode) {
+        DetermineUserOptions options = new DetermineUserOptions();
         options.setId(id);
         options.setPassword(password);
         options.setPath(path);
@@ -148,10 +148,10 @@ public class Acl {
         options.setAboutMe(aboutMe);
         options.setSystemUser(systemUser);
         options.setMode(mode);
-        return createUser(options);
+        return determineUser(options);
     }
 
-    public User createUser(CreateUserOptions options) {
+    public User determineUser(DetermineUserOptions options) {
         User user = authorizableManager.getUser(options.getId());
         if (user == null) {
             if (options.isSystemUser()) {
@@ -160,16 +160,17 @@ public class Acl {
                 user = authorizableManager.createUser(options.getId(), options.getPassword(), options.getPath());
             }
             authorizableManager.updateUser(user, options.getPassword(), options.determineProperties());
-        } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
+        } else if (options.getMode() == DetermineUserOptions.Mode.FAIL) {
+        } else if (options.getMode() == DetermineUserOptions.Mode.OVERRIDE) {
             authorizableManager.updateUser(user, options.getPassword(), options.determineProperties());
         }
         return user;
     }
 
-    public User createUser(String id) {
-        CreateUserOptions options = new CreateUserOptions();
+    public User determineUser(String id) {
+        DetermineUserOptions options = new DetermineUserOptions();
         options.setId(id);
-        return createUser(options);
+        return determineUser(options);
     }
 
     public User getUser(String id) {
@@ -180,15 +181,15 @@ public class Acl {
         throw new IllegalStateException("Not implemented yet!");
     }
 
-    public Group createGroup(
+    public Group determineGroup(
             String id,
             String externalId,
             String path,
             String givenName,
             String email,
             String aboutMe,
-            CreateGroupOptions.Mode mode) {
-        CreateGroupOptions options = new CreateGroupOptions();
+            DetermineGroupOptions.Mode mode) {
+        DetermineGroupOptions options = new DetermineGroupOptions();
         options.setId(id);
         options.setExternalId(externalId);
         options.setPath(path);
@@ -196,24 +197,25 @@ public class Acl {
         options.setEmail(email);
         options.setAboutMe(aboutMe);
         options.setMode(mode);
-        return createGroup(options);
+        return determineGroup(options);
     }
 
-    public Group createGroup(CreateGroupOptions options) {
+    public Group determineGroup(DetermineGroupOptions options) {
         Group group = authorizableManager.getGroup(options.getId());
         if (group == null) {
             group = authorizableManager.createGroup(options.getId(), options.getPath(), options.getExternalId());
             authorizableManager.updateGroup(group, options.determineProperties());
-        } else if (options.getMode() == CreateGroupOptions.Mode.OVERRIDE) {
+        } else if (options.getMode() == DetermineGroupOptions.Mode.FAIL) {
+        } else if (options.getMode() == DetermineGroupOptions.Mode.OVERRIDE) {
             authorizableManager.updateGroup(group, options.determineProperties());
         }
         return group;
     }
 
-    public Group createGroup(String id) {
-        CreateGroupOptions options = new CreateGroupOptions();
+    public Group determineGroup(String id) {
+        DetermineGroupOptions options = new DetermineGroupOptions();
         options.setId(id);
-        return createGroup(options);
+        return determineGroup(options);
     }
 
     public Group getGroup(String id) {

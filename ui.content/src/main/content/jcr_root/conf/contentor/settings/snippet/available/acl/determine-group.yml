@@ -1,6 +1,6 @@
 name: acl/create-group
 content: |
-  acl.createGroup { id = "${1:id}"; skipIfExists() }
+  acl.determineGroup { id = "${1:id}"; skipIfExists() }
 documentation: |
   Create a group with the given id.
   The group will be created only if it does not already exist.

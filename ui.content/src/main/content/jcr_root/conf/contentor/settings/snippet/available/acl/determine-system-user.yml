@@ -1,6 +1,6 @@
 name: acl/create-system-user
 content: |
-  acl.createUser { id = "${1:id}"; systemUser(); skipIfExists() }
+  acl.determineUser { id = "${1:id}"; systemUser(); skipIfExists() }
 documentation: |
   Create a system user with the given id.
   The user will be created only if it does not already exist.

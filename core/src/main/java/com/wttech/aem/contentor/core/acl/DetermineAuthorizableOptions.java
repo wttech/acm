@@ -3,7 +3,7 @@ package com.wttech.aem.contentor.core.acl;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CreateAuthorizableOptions {
+public class DetermineAuthorizableOptions {
 
     private String id;
 
@@ -15,7 +15,7 @@ public class CreateAuthorizableOptions {
 
     private String aboutMe;
 
-    private CreateGroupOptions.Mode mode = CreateGroupOptions.Mode.OVERRIDE;
+    private Mode mode = Mode.OVERRIDE;
 
     public String getId() {
         return id;
@@ -65,24 +65,24 @@ public class CreateAuthorizableOptions {
         return properties;
     }
 
-    public CreateGroupOptions.Mode getMode() {
+    public DetermineGroupOptions.Mode getMode() {
         return mode;
     }
 
-    public void setMode(CreateGroupOptions.Mode mode) {
+    public void setMode(DetermineGroupOptions.Mode mode) {
         this.mode = mode;
     }
 
     public void skipIfExists() {
-        mode = CreateGroupOptions.Mode.SKIP;
+        mode = Mode.SKIP;
     }
 
     public void overrideIfExists() {
-        mode = CreateGroupOptions.Mode.OVERRIDE;
+        mode = Mode.OVERRIDE;
     }
 
     public void failIfExists() {
-        mode = CreateGroupOptions.Mode.FAIL;
+        mode = Mode.FAIL;
     }
 
     public enum Mode {
