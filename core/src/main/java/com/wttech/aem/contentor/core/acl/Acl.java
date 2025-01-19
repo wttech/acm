@@ -98,8 +98,12 @@ public class Acl {
         return removeAllMembers(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
-    public AclResult purge(Closure<PurgeOptions> closure) {
-        return purge(GroovyUtils.with(new PurgeOptions(), closure));
+    public AclResult clear(Closure<ClearOptions> closure) {
+        return clear(GroovyUtils.with(new ClearOptions(), closure));
+    }
+
+    public AclResult purge(Closure<AuthorizableOptions> closure) {
+        return purge(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
     public AclResult allow(Closure<AllowOptions> closure) {
@@ -380,12 +384,12 @@ public class Acl {
         return removeAllMembers(group);
     }
 
-    public AclResult purge(PurgeOptions options) {
+    public AclResult clear(ClearOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        return purge(authorizable, options.getPath(), options.isStrict());
+        return clear(authorizable, options.getPath(), options.isStrict());
     }
 
-    public AclResult purge(Authorizable authorizable, String path, boolean strict) {
+    public AclResult clear(Authorizable authorizable, String path, boolean strict) {
         path = StringUtils.defaultString(path, "/");
         if (compositeNodeStore && PathUtils.isAppsOrLibsPath(path)) {
             return AclResult.SKIPPED;
@@ -393,9 +397,35 @@ public class Acl {
         return purgeManager.purge(authorizable, path, strict) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
-    public AclResult purge(String id, String path, boolean strict) {
+    public AclResult clear(String id, String path, boolean strict) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return purge(authorizable, path, strict);
+        return clear(authorizable, path, strict);
+    }
+
+    public AclResult purge(AuthorizableOptions options) {
+        Authorizable authorizable = determineAuthorizable(options);
+        return purge(authorizable);
+    }
+
+    public AclResult purge(Authorizable authorizable) {
+        AclResult result = AclResult.ALREADY_DONE;
+        if (authorizable.isGroup()) {
+            if (removeAllMembers((Group) authorizable) != AclResult.ALREADY_DONE) {
+                result = AclResult.DONE;
+            }
+        }
+        if (removeFromAllGroups(authorizable) != AclResult.ALREADY_DONE) {
+            result = AclResult.DONE;
+        }
+        if (clear(authorizable, "/", false) != AclResult.ALREADY_DONE) {
+            result = AclResult.DONE;
+        }
+        return result;
+    }
+
+    public AclResult clear(String id) {
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        return purge(authorizable);
     }
 
     public AclResult allow(

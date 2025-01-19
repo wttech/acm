@@ -1,6 +1,6 @@
 package com.wttech.aem.contentor.core.acl;
 
-public class PurgeOptions extends AuthorizableOptions {
+public class ClearOptions extends AuthorizableOptions {
 
     private String path;
 
