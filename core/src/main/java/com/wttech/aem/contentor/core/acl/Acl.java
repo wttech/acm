@@ -496,11 +496,7 @@ public class Acl {
         } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(options.getPath())) {
             return AclResult.SKIPPED;
         } else {
-            if (check.allow(
-                    getAuthorizableId(authorizable),
-                    options.getPath(),
-                    options.getPermissions(),
-                    options.determineAllRestrictions())) {
+            if (check.allow(options)) {
                 return AclResult.ALREADY_DONE;
             }
             permissionManager.applyPermissions(
@@ -585,11 +581,7 @@ public class Acl {
         } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(options.getPath())) {
             return AclResult.SKIPPED;
         } else {
-            if (check.deny(
-                    getAuthorizableId(authorizable),
-                    options.getPath(),
-                    options.getPermissions(),
-                    options.determineAllRestrictions())) {
+            if (check.deny(options)) {
                 return AclResult.ALREADY_DONE;
             }
             permissionManager.applyPermissions(
@@ -694,7 +686,7 @@ public class Acl {
     }
 
     private Authorizable determineAuthorizable(Authorizable authorizable, String id) {
-        if (authorizable == null && StringUtils.isNotEmpty(id)) {
+        if (authorizable == null) {
             authorizable = authorizableManager.getAuthorizable(id);
         }
         return authorizable;

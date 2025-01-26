@@ -1,12 +1,14 @@
 package com.wttech.aem.contentor.core.acl.check;
 
 import com.wttech.aem.contentor.core.acl.AclException;
+import com.wttech.aem.contentor.core.acl.AllowOptions;
+import com.wttech.aem.contentor.core.acl.AuthorizableOptions;
+import com.wttech.aem.contentor.core.acl.DenyOptions;
 import com.wttech.aem.contentor.core.acl.check.utils.PermissionManager;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;
-import java.util.Map;
 import javax.jcr.Credentials;
 import javax.jcr.LoginException;
 import javax.jcr.Repository;
@@ -196,9 +198,9 @@ public class CheckAcl {
     }
 
     public boolean allow(AllowOptions options) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(options.getId());
+        Authorizable authorizable = determineAuthorizable(options);
         return permissionManager.checkPermissions(
-                authorizable, options.getPath(), options.getPermissions(), options.getRestrictions(), true);
+                authorizable, options.getPath(), options.getPermissions(), options.determineAllRestrictions(), true);
     }
 
     public boolean allow(String id, String path, List<String> permissions) {
@@ -209,19 +211,10 @@ public class CheckAcl {
         return allow(options);
     }
 
-    public boolean allow(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
-        AllowOptions options = new AllowOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setRestrictions(restrictions);
-        return allow(options);
-    }
-
     public boolean deny(DenyOptions options) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(options.getId());
+        Authorizable authorizable = determineAuthorizable(options);
         return permissionManager.checkPermissions(
-                authorizable, options.getPath(), options.getPermissions(), options.getRestrictions(), false);
+                authorizable, options.getPath(), options.getPermissions(), options.determineAllRestrictions(), false);
     }
 
     public boolean deny(String id, String path, List<String> permissions) {
@@ -229,15 +222,6 @@ public class CheckAcl {
         options.setId(id);
         options.setPath(path);
         options.setPermissions(permissions);
-        return deny(options);
-    }
-
-    public boolean deny(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
-        DenyOptions options = new DenyOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setRestrictions(restrictions);
         return deny(options);
     }
 
@@ -261,5 +245,13 @@ public class CheckAcl {
         } catch (RepositoryException e) {
             throw new AclException("Failed to check property", e);
         }
+    }
+
+    private Authorizable determineAuthorizable(AuthorizableOptions options) {
+        Authorizable authorizable = options.getAuthorizable();
+        if (authorizable == null) {
+            authorizable = authorizableManager.getAuthorizable(options.getId());
+        }
+        return authorizable;
     }
 }
