@@ -61,11 +61,11 @@ public class AuthorizableManager {
         if (StringUtils.isNotEmpty(password)) {
             changePassword(user, password);
         }
-        properties.forEach((name, value) -> setProperty(user, name, value));
+        properties.forEach((relPath, value) -> setProperty(user, relPath, value));
     }
 
     public void updateGroup(Group group, Map<String, String> properties) {
-        properties.forEach((name, value) -> setProperty(group, name, value));
+        properties.forEach((relPath, value) -> setProperty(group, relPath, value));
     }
 
     public void deleteAuthorizable(Authorizable authorizable) {
@@ -135,18 +135,18 @@ public class AuthorizableManager {
         }
     }
 
-    public void setProperty(Authorizable authorizable, String name, String value) {
+    public void setProperty(Authorizable authorizable, String relPath, String value) {
         try {
-            authorizable.setProperty(name, valueFactory.createValue(value));
+            authorizable.setProperty(relPath, valueFactory.createValue(value));
         } catch (RepositoryException e) {
             throw new AclException("Failed to set property", e);
         }
     }
 
-    public boolean removeProperty(Authorizable authorizable, String name) {
+    public boolean removeProperty(Authorizable authorizable, String relPath) {
         try {
-            if (authorizable.hasProperty(name)) {
-                authorizable.removeProperty(name);
+            if (authorizable.hasProperty(relPath)) {
+                authorizable.removeProperty(relPath);
                 return true;
             }
             return false;

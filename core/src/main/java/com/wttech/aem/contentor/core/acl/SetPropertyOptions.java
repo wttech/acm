@@ -2,16 +2,16 @@ package com.wttech.aem.contentor.core.acl;
 
 public class SetPropertyOptions extends AuthorizableOptions {
 
-    private String name;
+    private String relPath;
 
     private String value;
 
-    public String getName() {
-        return name;
+    public String getRelPath() {
+        return relPath;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setRelPath(String relPath) {
+        this.relPath = relPath;
     }
 
     public String getValue() {

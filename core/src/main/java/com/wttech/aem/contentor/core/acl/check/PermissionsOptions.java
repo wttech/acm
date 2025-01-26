@@ -1,6 +1,9 @@
 package com.wttech.aem.contentor.core.acl.check;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PermissionsOptions {
 
@@ -8,9 +11,9 @@ public class PermissionsOptions {
 
     private String path;
 
-    private List<String> permissions;
+    private List<String> permissions = Collections.emptyList();
 
-    private String glob;
+    private Map<String, Object> restrictions = new HashMap<>();
 
     public String getId() {
         return id;
@@ -36,11 +39,11 @@ public class PermissionsOptions {
         this.permissions = permissions;
     }
 
-    public String getGlob() {
-        return glob;
+    public Map<String, Object> getRestrictions() {
+        return restrictions;
     }
 
-    public void setGlob(String glob) {
-        this.glob = glob;
+    public void setRestrictions(Map<String, Object> restrictions) {
+        this.restrictions = restrictions;
     }
 }

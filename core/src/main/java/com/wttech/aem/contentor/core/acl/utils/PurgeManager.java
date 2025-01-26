@@ -50,13 +50,14 @@ public class PurgeManager {
             JackrabbitAccessControlList jackrabbitAcl =
                     JackrabbitAccessControlListUtils.determineModifiableAcl(accessControlManager, path);
             AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
-            boolean result = accessControlEntries.length > 0;
-            if (result) {
-                for (AccessControlEntry accessControlEntry : accessControlEntries) {
-                    if (Objects.equals(accessControlEntry.getPrincipal(), authorizable.getPrincipal())) {
-                        jackrabbitAcl.removeAccessControlEntry(accessControlEntry);
-                    }
+            boolean result = false;
+            for (AccessControlEntry accessControlEntry : accessControlEntries) {
+                if (Objects.equals(accessControlEntry.getPrincipal(), authorizable.getPrincipal())) {
+                    jackrabbitAcl.removeAccessControlEntry(accessControlEntry);
+                    result = true;
                 }
+            }
+            if (result) {
                 accessControlManager.setPolicy(path, jackrabbitAcl);
             }
             return result;

@@ -6,6 +6,7 @@ import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;
+import java.util.Map;
 import javax.jcr.Credentials;
 import javax.jcr.LoginException;
 import javax.jcr.Repository;
@@ -14,6 +15,7 @@ import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
+import javax.jcr.security.AccessControlManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -36,7 +38,8 @@ public class CheckAcl {
             UserManager userManager = session.getUserManager();
             ValueFactory valueFactory = session.getValueFactory();
             this.authorizableManager = new AuthorizableManager(userManager, valueFactory);
-            this.permissionManager = new PermissionManager(session);
+            AccessControlManager accessControlManager = session.getAccessControlManager();
+            this.permissionManager = new PermissionManager(accessControlManager);
         } catch (RepositoryException e) {
             throw new AclException("Failed to initialize check acl", e);
         }
@@ -195,7 +198,7 @@ public class CheckAcl {
     public boolean allow(AllowOptions options) {
         Authorizable authorizable = authorizableManager.getAuthorizable(options.getId());
         return permissionManager.checkPermissions(
-                authorizable, options.getPath(), options.getPermissions(), options.getGlob(), true);
+                authorizable, options.getPath(), options.getPermissions(), options.getRestrictions(), true);
     }
 
     public boolean allow(String id, String path, List<String> permissions) {
@@ -206,10 +209,19 @@ public class CheckAcl {
         return allow(options);
     }
 
+    public boolean allow(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
+        AllowOptions options = new AllowOptions();
+        options.setId(id);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setRestrictions(restrictions);
+        return allow(options);
+    }
+
     public boolean deny(DenyOptions options) {
         Authorizable authorizable = authorizableManager.getAuthorizable(options.getId());
         return permissionManager.checkPermissions(
-                authorizable, options.getPath(), options.getPermissions(), options.getGlob(), false);
+                authorizable, options.getPath(), options.getPermissions(), options.getRestrictions(), false);
     }
 
     public boolean deny(String id, String path, List<String> permissions) {
@@ -217,6 +229,15 @@ public class CheckAcl {
         options.setId(id);
         options.setPath(path);
         options.setPermissions(permissions);
+        return deny(options);
+    }
+
+    public boolean deny(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
+        DenyOptions options = new DenyOptions();
+        options.setId(id);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setRestrictions(restrictions);
         return deny(options);
     }
 

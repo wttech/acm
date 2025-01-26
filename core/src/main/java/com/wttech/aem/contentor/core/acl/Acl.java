@@ -181,7 +181,7 @@ public class Acl {
         return authorizableManager.getUser(id);
     }
 
-    public User createSystemUser() {
+    public User createSystemUser(String id) {
         throw new IllegalStateException("Not implemented yet!");
     }
 
@@ -227,15 +227,15 @@ public class Acl {
     }
 
     public AclResult deleteUser(AuthorizableOptions options) {
-        User user = (User) determineAuthorizable(options);
-        return deleteUser(user);
+        Authorizable authorizable = determineAuthorizable(options);
+        return deleteUser(authorizable);
     }
 
-    public AclResult deleteUser(User user) {
-        if (user == null || check.notExists(getAuthorizableId(user))) {
+    public AclResult deleteUser(Authorizable authorizable) {
+        if (notExists(authorizable)) {
             return AclResult.ALREADY_DONE;
         }
-        authorizableManager.deleteAuthorizable(user);
+        authorizableManager.deleteAuthorizable(authorizable);
         return AclResult.DONE;
     }
 
@@ -245,15 +245,15 @@ public class Acl {
     }
 
     public AclResult deleteGroup(AuthorizableOptions options) {
-        Group group = (Group) determineAuthorizable(options);
-        return deleteGroup(group);
+        Authorizable authorizable = determineAuthorizable(options);
+        return deleteGroup(authorizable);
     }
 
-    public AclResult deleteGroup(Group group) {
-        if (group == null || check.notExists(getAuthorizableId(group))) {
+    public AclResult deleteGroup(Authorizable authorizable) {
+        if (notExists(authorizable)) {
             return AclResult.ALREADY_DONE;
         }
-        authorizableManager.deleteAuthorizable(group);
+        authorizableManager.deleteAuthorizable(authorizable);
         return AclResult.DONE;
     }
 
@@ -264,15 +264,15 @@ public class Acl {
 
     public AclResult addToGroup(GroupOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        Group group = (Group) options.getGroupAuthorizable();
-        if (group == null) {
-            group = authorizableManager.getGroup(options.getGroupId());
-        }
+        Authorizable group = determineAuthorizable(options.getGroupAuthorizable(), options.getGroupId());
         return addToGroup(authorizable, group);
     }
 
-    public AclResult addToGroup(Authorizable authorizable, Group group) {
-        return authorizableManager.addToGroup(authorizable, group) ? AclResult.DONE : AclResult.ALREADY_DONE;
+    public AclResult addToGroup(Authorizable authorizable, Authorizable group) {
+        if (notExists(authorizable) || notExists(group)) {
+            return AclResult.SKIPPED;
+        }
+        return authorizableManager.addToGroup(authorizable, (Group) group) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult addToGroup(String id, String groupId) {
@@ -283,15 +283,17 @@ public class Acl {
 
     public AclResult removeFromGroup(GroupOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        Group group = (Group) options.getGroupAuthorizable();
-        if (group == null) {
-            group = authorizableManager.getGroup(options.getGroupId());
-        }
+        Authorizable group = determineAuthorizable(options.getGroupAuthorizable(), options.getGroupId());
         return removeFromGroup(authorizable, group);
     }
 
-    public AclResult removeFromGroup(Authorizable authorizable, Group group) {
-        return authorizableManager.removeFromGroup(authorizable, group) ? AclResult.DONE : AclResult.ALREADY_DONE;
+    public AclResult removeFromGroup(Authorizable authorizable, Authorizable group) {
+        if (notExists(authorizable)) {
+            return AclResult.SKIPPED;
+        }
+        return authorizableManager.removeFromGroup(authorizable, (Group) group)
+                ? AclResult.DONE
+                : AclResult.ALREADY_DONE;
     }
 
     public AclResult removeFromGroup(String id, String groupId) {
@@ -306,6 +308,9 @@ public class Acl {
     }
 
     public AclResult removeFromAllGroups(Authorizable authorizable) {
+        if (notExists(authorizable)) {
+            return AclResult.SKIPPED;
+        }
         try {
             Iterator<Group> groups = authorizable.memberOf();
             AclResult result = groups.hasNext() ? AclResult.DONE : AclResult.ALREADY_DONE;
@@ -324,16 +329,16 @@ public class Acl {
     }
 
     public AclResult addMember(MemberOptions options) {
-        Group group = (Group) determineAuthorizable(options);
-        Authorizable member = options.getMemberAuthorizable();
-        if (member == null) {
-            member = authorizableManager.getAuthorizable(options.getMemberId());
-        }
+        Authorizable group = determineAuthorizable(options);
+        Authorizable member = determineAuthorizable(options.getMemberAuthorizable(), options.getMemberId());
         return addMember(group, member);
     }
 
-    public AclResult addMember(Group group, Authorizable member) {
-        return addToGroup(member, group);
+    public AclResult addMember(Authorizable group, Authorizable member) {
+        if (notExists(group) || notExists(member)) {
+            return AclResult.SKIPPED;
+        }
+        return authorizableManager.addToGroup(member, (Group) group) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult addMember(String id, String memberId) {
@@ -343,16 +348,16 @@ public class Acl {
     }
 
     public AclResult removeMember(MemberOptions options) {
-        Group group = (Group) determineAuthorizable(options);
-        Authorizable member = options.getMemberAuthorizable();
-        if (member == null) {
-            member = authorizableManager.getAuthorizable(options.getMemberId());
-        }
+        Authorizable group = determineAuthorizable(options);
+        Authorizable member = determineAuthorizable(options.getMemberAuthorizable(), options.getMemberId());
         return removeMember(group, member);
     }
 
-    public AclResult removeMember(Group group, Authorizable member) {
-        return removeFromGroup(member, group);
+    public AclResult removeMember(Authorizable group, Authorizable member) {
+        if (notExists(group)) {
+            return AclResult.SKIPPED;
+        }
+        return authorizableManager.removeFromGroup(member, (Group) group) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult removeMember(String id, String memberId) {
@@ -362,13 +367,16 @@ public class Acl {
     }
 
     public AclResult removeAllMembers(AuthorizableOptions options) {
-        Group group = (Group) determineAuthorizable(options);
+        Authorizable group = determineAuthorizable(options);
         return removeAllMembers(group);
     }
 
-    public AclResult removeAllMembers(Group group) {
+    public AclResult removeAllMembers(Authorizable group) {
+        if (notExists(group)) {
+            return AclResult.SKIPPED;
+        }
         try {
-            Iterator<Authorizable> members = group.getMembers();
+            Iterator<Authorizable> members = ((Group) group).getMembers();
             AclResult result = members.hasNext() ? AclResult.DONE : AclResult.ALREADY_DONE;
             while (members.hasNext()) {
                 removeMember(group, members.next());
@@ -390,6 +398,9 @@ public class Acl {
     }
 
     public AclResult clear(Authorizable authorizable, String path, boolean strict) {
+        if (notExists(authorizable)) {
+            return AclResult.SKIPPED;
+        }
         path = StringUtils.defaultString(path, "/");
         if (compositeNodeStore && PathUtils.isAppsOrLibsPath(path)) {
             return AclResult.SKIPPED;
@@ -408,11 +419,12 @@ public class Acl {
     }
 
     public AclResult purge(Authorizable authorizable) {
+        if (notExists(authorizable)) {
+            return AclResult.SKIPPED;
+        }
         AclResult result = AclResult.ALREADY_DONE;
-        if (authorizable.isGroup()) {
-            if (removeAllMembers((Group) authorizable) != AclResult.ALREADY_DONE) {
-                result = AclResult.DONE;
-            }
+        if (authorizable.isGroup() && removeAllMembers(authorizable) != AclResult.ALREADY_DONE) {
+            result = AclResult.DONE;
         }
         if (removeFromAllGroups(authorizable) != AclResult.ALREADY_DONE) {
             result = AclResult.DONE;
@@ -471,6 +483,10 @@ public class Acl {
     }
 
     public AclResult allow(AllowOptions options) {
+        Authorizable authorizable = determineAuthorizable(options);
+        if (notExists(authorizable)) {
+            return AclResult.SKIPPED;
+        }
         Resource resource = resourceResolver.getResource(options.getPath());
         if (resource == null) {
             if (options.getMode() == RestrictionOptions.Mode.FAIL) {
@@ -480,8 +496,11 @@ public class Acl {
         } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(options.getPath())) {
             return AclResult.SKIPPED;
         } else {
-            Authorizable authorizable = determineAuthorizable(options);
-            if (check.allow(getAuthorizableId(authorizable), options.getPath(), options.getPermissions())) {
+            if (check.allow(
+                    getAuthorizableId(authorizable),
+                    options.getPath(),
+                    options.getPermissions(),
+                    options.determineAllRestrictions())) {
                 return AclResult.ALREADY_DONE;
             }
             permissionManager.applyPermissions(
@@ -553,6 +572,10 @@ public class Acl {
     }
 
     public AclResult deny(DenyOptions options) {
+        Authorizable authorizable = determineAuthorizable(options);
+        if (notExists(authorizable)) {
+            return AclResult.SKIPPED;
+        }
         Resource resource = resourceResolver.getResource(options.getPath());
         if (resource == null) {
             if (options.getMode() == RestrictionOptions.Mode.FAIL) {
@@ -562,8 +585,11 @@ public class Acl {
         } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(options.getPath())) {
             return AclResult.SKIPPED;
         } else {
-            Authorizable authorizable = determineAuthorizable(options);
-            if (check.deny(getAuthorizableId(authorizable), options.getPath(), options.getPermissions())) {
+            if (check.deny(
+                    getAuthorizableId(authorizable),
+                    options.getPath(),
+                    options.getPermissions(),
+                    options.determineAllRestrictions())) {
                 return AclResult.ALREADY_DONE;
             }
             permissionManager.applyPermissions(
@@ -594,44 +620,53 @@ public class Acl {
 
     public AclResult setProperty(SetPropertyOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        return setProperty(authorizable, options.getName(), options.getValue());
+        return setProperty(authorizable, options.getRelPath(), options.getValue());
     }
 
-    public AclResult setProperty(Authorizable authorizable, String name, String value) {
-        if (!check.property(getAuthorizableId(authorizable), name, value)) {
-            authorizableManager.setProperty(authorizable, name, value);
+    public AclResult setProperty(Authorizable authorizable, String relPath, String value) {
+        if (notExists(authorizable)) {
+            return AclResult.SKIPPED;
+        }
+        if (!check.property(getAuthorizableId(authorizable), relPath, value)) {
+            authorizableManager.setProperty(authorizable, relPath, value);
             return AclResult.DONE;
         }
         return AclResult.ALREADY_DONE;
     }
 
-    public AclResult setProperty(String id, String name, String value) {
+    public AclResult setProperty(String id, String relPath, String value) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return setProperty(authorizable, name, value);
+        return setProperty(authorizable, relPath, value);
     }
 
     public AclResult removeProperty(RemovePropertyOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        return removeProperty(authorizable, options.getName());
+        return removeProperty(authorizable, options.getRelPath());
     }
 
-    public AclResult removeProperty(Authorizable authorizable, String name) {
-        return authorizableManager.removeProperty(authorizable, name) ? AclResult.DONE : AclResult.ALREADY_DONE;
+    public AclResult removeProperty(Authorizable authorizable, String relPath) {
+        if (notExists(authorizable)) {
+            return AclResult.SKIPPED;
+        }
+        return authorizableManager.removeProperty(authorizable, relPath) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
-    public AclResult removeProperty(String id, String name) {
+    public AclResult removeProperty(String id, String relPath) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return removeProperty(authorizable, name);
+        return removeProperty(authorizable, relPath);
     }
 
     public AclResult setPassword(PasswordOptions options) {
-        User user = (User) determineAuthorizable(options);
+        Authorizable user = determineAuthorizable(options);
         return setPassword(user, options.getPassword());
     }
 
-    public AclResult setPassword(User user, String password) {
+    public AclResult setPassword(Authorizable user, String password) {
+        if (notExists(user)) {
+            return AclResult.SKIPPED;
+        }
         if (!check.password(getAuthorizableId(user), password)) {
-            authorizableManager.changePassword(user, password);
+            authorizableManager.changePassword((User) user, password);
             return AclResult.DONE;
         }
         return AclResult.ALREADY_DONE;
@@ -655,9 +690,12 @@ public class Acl {
     }
 
     private Authorizable determineAuthorizable(AuthorizableOptions options) {
-        Authorizable authorizable = options.getAuthorizable();
-        if (authorizable == null) {
-            authorizable = authorizableManager.getAuthorizable(options.getId());
+        return determineAuthorizable(options.getAuthorizable(), options.getId());
+    }
+
+    private Authorizable determineAuthorizable(Authorizable authorizable, String id) {
+        if (authorizable == null && StringUtils.isNotEmpty(id)) {
+            authorizable = authorizableManager.getAuthorizable(id);
         }
         return authorizable;
     }
@@ -668,5 +706,9 @@ public class Acl {
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
+    }
+
+    private boolean notExists(Authorizable authorizable) {
+        return authorizable == null || check.notExists(getAuthorizableId(authorizable));
     }
 }
