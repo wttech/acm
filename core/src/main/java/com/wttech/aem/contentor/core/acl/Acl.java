@@ -3,8 +3,7 @@ package com.wttech.aem.contentor.core.acl;
 import com.wttech.aem.contentor.core.acl.check.CheckAcl;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PathUtils;
-import com.wttech.aem.contentor.core.acl.utils.PermissionManager;
-import com.wttech.aem.contentor.core.acl.utils.PurgeManager;
+import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
@@ -32,9 +31,7 @@ public class Acl {
 
     private final AuthorizableManager authorizableManager;
 
-    private final PermissionManager permissionManager;
-
-    private final PurgeManager purgeManager;
+    private final PermissionsManager permissionsManager;
 
     private final boolean compositeNodeStore;
 
@@ -48,8 +45,7 @@ public class Acl {
             AccessControlManager accessControlManager = session.getAccessControlManager();
             ValueFactory valueFactory = session.getValueFactory();
             this.authorizableManager = new AuthorizableManager(userManager, valueFactory);
-            this.permissionManager = new PermissionManager(accessControlManager, valueFactory);
-            this.purgeManager = new PurgeManager(session, accessControlManager);
+            this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
             this.check = new CheckAcl(resourceResolver);
         } catch (RepositoryException e) {
@@ -405,7 +401,7 @@ public class Acl {
         if (compositeNodeStore && PathUtils.isAppsOrLibsPath(path)) {
             return AclResult.SKIPPED;
         }
-        return purgeManager.purge(authorizable, path, strict) ? AclResult.DONE : AclResult.ALREADY_DONE;
+        return permissionsManager.clear(authorizable, path, strict) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult clear(String id, String path, boolean strict) {
@@ -448,7 +444,7 @@ public class Acl {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            RestrictionOptions.Mode mode) {
+            PermissionsOptions.Mode mode) {
         AllowOptions options = new AllowOptions();
         options.setAuthorizable(authorizable);
         options.setPath(path);
@@ -469,7 +465,7 @@ public class Acl {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            RestrictionOptions.Mode mode) {
+            PermissionsOptions.Mode mode) {
         AllowOptions options = new AllowOptions();
         options.setId(id);
         options.setPath(path);
@@ -489,7 +485,7 @@ public class Acl {
         }
         Resource resource = resourceResolver.getResource(options.getPath());
         if (resource == null) {
-            if (options.getMode() == RestrictionOptions.Mode.FAIL) {
+            if (options.getMode() == PermissionsOptions.Mode.FAIL) {
                 throw new AclException(String.format("Path %s not found", options.getPath()));
             }
             return AclResult.SKIPPED;
@@ -499,7 +495,7 @@ public class Acl {
             if (check.allow(options)) {
                 return AclResult.ALREADY_DONE;
             }
-            permissionManager.applyPermissions(
+            permissionsManager.apply(
                     authorizable,
                     options.getPath(),
                     options.getPermissions(),
@@ -533,7 +529,7 @@ public class Acl {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            RestrictionOptions.Mode mode) {
+            PermissionsOptions.Mode mode) {
         DenyOptions options = new DenyOptions();
         options.setAuthorizable(authorizable);
         options.setPath(path);
@@ -554,7 +550,7 @@ public class Acl {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            RestrictionOptions.Mode mode) {
+            PermissionsOptions.Mode mode) {
         DenyOptions options = new DenyOptions();
         options.setId(id);
         options.setPath(path);
@@ -574,7 +570,7 @@ public class Acl {
         }
         Resource resource = resourceResolver.getResource(options.getPath());
         if (resource == null) {
-            if (options.getMode() == RestrictionOptions.Mode.FAIL) {
+            if (options.getMode() == PermissionsOptions.Mode.FAIL) {
                 throw new AclException(String.format("Path %s not found", options.getPath()));
             }
             return AclResult.SKIPPED;
@@ -584,7 +580,7 @@ public class Acl {
             if (check.deny(options)) {
                 return AclResult.ALREADY_DONE;
             }
-            permissionManager.applyPermissions(
+            permissionsManager.apply(
                     authorizable,
                     options.getPath(),
                     options.getPermissions(),

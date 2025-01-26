@@ -5,7 +5,7 @@ import com.wttech.aem.contentor.core.acl.AllowOptions;
 import com.wttech.aem.contentor.core.acl.AuthorizableOptions;
 import com.wttech.aem.contentor.core.acl.DenyOptions;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
-import com.wttech.aem.contentor.core.acl.utils.PermissionManager;
+import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;
@@ -32,7 +32,7 @@ public class CheckAcl {
 
     private final AuthorizableManager authorizableManager;
 
-    private final PermissionManager permissionManager;
+    private final PermissionsManager permissionsManager;
 
     public CheckAcl(ResourceResolver resourceResolver) {
         try {
@@ -41,7 +41,7 @@ public class CheckAcl {
             ValueFactory valueFactory = session.getValueFactory();
             this.authorizableManager = new AuthorizableManager(userManager, valueFactory);
             AccessControlManager accessControlManager = session.getAccessControlManager();
-            this.permissionManager = new PermissionManager(accessControlManager, valueFactory);
+            this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
         } catch (RepositoryException e) {
             throw new AclException("Failed to initialize check acl", e);
         }
@@ -199,7 +199,7 @@ public class CheckAcl {
 
     public boolean allow(AllowOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        return permissionManager.checkPermissions(
+        return permissionsManager.check(
                 authorizable, options.getPath(), options.getPermissions(), options.determineAllRestrictions(), true);
     }
 
@@ -213,7 +213,7 @@ public class CheckAcl {
 
     public boolean deny(DenyOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        return permissionManager.checkPermissions(
+        return permissionsManager.check(
                 authorizable, options.getPath(), options.getPermissions(), options.determineAllRestrictions(), false);
     }
 

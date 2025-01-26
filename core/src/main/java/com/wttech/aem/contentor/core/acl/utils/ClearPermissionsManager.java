@@ -24,7 +24,7 @@ import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.Abstra
 import org.apache.jackrabbit.oak.spi.security.authorization.permission.PermissionConstants;
 import org.apache.jackrabbit.oak.spi.security.authorization.restriction.Restriction;
 
-public class PurgeManager {
+public class ClearPermissionsManager {
 
     private static final String PERMISSION_STORE_PATH = "/jcr:system/rep:permissionStore/crx.default/";
 
@@ -32,7 +32,7 @@ public class PurgeManager {
 
     private final JackrabbitSession session;
 
-    public PurgeManager(JackrabbitSession session, AccessControlManager accessControlManager) {
+    public ClearPermissionsManager(JackrabbitSession session, AccessControlManager accessControlManager) {
         this.session = session;
         this.accessControlManager = accessControlManager;
     }
@@ -79,6 +79,7 @@ public class PurgeManager {
 
     private Set<String> getAccessControlledPaths(Authorizable authorizable) {
         try {
+            session.save();
             Set<String> result = new HashSet<>();
             String path = PERMISSION_STORE_PATH + authorizable.getID();
             if (session.nodeExists(path)) {
@@ -92,10 +93,10 @@ public class PurgeManager {
                     }
                 }
             } else {
-                JackrabbitAccessControlManager accessControlManager =
-                        (JackrabbitAccessControlManager) session.getAccessControlManager();
+                JackrabbitAccessControlManager jackrabbitAccessControlManager =
+                        (JackrabbitAccessControlManager) accessControlManager;
                 AccessControlPolicy[] accessControlPolicies =
-                        accessControlManager.getPolicies(authorizable.getPrincipal());
+                        jackrabbitAccessControlManager.getPolicies(authorizable.getPrincipal());
                 for (AccessControlPolicy accessControlPolicy : accessControlPolicies) {
                     AbstractAccessControlList abstractAcl = (AbstractAccessControlList) accessControlPolicy;
                     List<? extends JackrabbitAccessControlEntry> jackrabbitAccessControlEntries =

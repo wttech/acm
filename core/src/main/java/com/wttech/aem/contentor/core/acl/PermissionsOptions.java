@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.AccessControlConstants;
 
-public class RestrictionOptions extends AuthorizableOptions {
+public class PermissionsOptions extends AuthorizableOptions {
 
     private String path;
 
