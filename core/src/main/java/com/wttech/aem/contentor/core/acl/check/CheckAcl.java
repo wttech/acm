@@ -4,8 +4,8 @@ import com.wttech.aem.contentor.core.acl.AclException;
 import com.wttech.aem.contentor.core.acl.AllowOptions;
 import com.wttech.aem.contentor.core.acl.AuthorizableOptions;
 import com.wttech.aem.contentor.core.acl.DenyOptions;
-import com.wttech.aem.contentor.core.acl.check.utils.PermissionManager;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
+import com.wttech.aem.contentor.core.acl.utils.PermissionManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;
@@ -41,7 +41,7 @@ public class CheckAcl {
             ValueFactory valueFactory = session.getValueFactory();
             this.authorizableManager = new AuthorizableManager(userManager, valueFactory);
             AccessControlManager accessControlManager = session.getAccessControlManager();
-            this.permissionManager = new PermissionManager(accessControlManager);
+            this.permissionManager = new PermissionManager(accessControlManager, valueFactory);
         } catch (RepositoryException e) {
             throw new AclException("Failed to initialize check acl", e);
         }
@@ -229,10 +229,10 @@ public class CheckAcl {
         return property(options.getId(), options.getName(), options.getValue());
     }
 
-    public boolean property(String id, String name, String value) {
+    public boolean property(String id, String relPath, String value) {
         try {
             Authorizable authorizable = authorizableManager.getAuthorizable(id);
-            Value[] values = authorizable.getProperty(name);
+            Value[] values = authorizable.getProperty(relPath);
             if (values == null) {
                 return false;
             }
