@@ -59,6 +59,7 @@ public class ClearPermissionsManager {
             }
             if (result) {
                 accessControlManager.setPolicy(path, jackrabbitAcl);
+                session.save();
             }
             return result;
         } catch (RepositoryException e) {
@@ -79,7 +80,6 @@ public class ClearPermissionsManager {
 
     private Set<String> getAccessControlledPaths(Authorizable authorizable) {
         try {
-            session.save();
             Set<String> result = new HashSet<>();
             String path = PERMISSION_STORE_PATH + authorizable.getID();
             if (session.nodeExists(path)) {
