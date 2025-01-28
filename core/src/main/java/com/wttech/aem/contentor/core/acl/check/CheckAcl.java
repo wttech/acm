@@ -200,7 +200,11 @@ public class CheckAcl {
     public boolean allow(AllowOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
         return permissionsManager.check(
-                authorizable, options.getPath(), options.getPermissions(), options.determineAllRestrictions(), true);
+                authorizable,
+                options.getPath(),
+                options.determineAllPermissions(),
+                options.determineAllRestrictions(),
+                true);
     }
 
     public boolean allow(String id, String path, List<String> permissions) {
@@ -214,7 +218,11 @@ public class CheckAcl {
     public boolean deny(DenyOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
         return permissionsManager.check(
-                authorizable, options.getPath(), options.getPermissions(), options.determineAllRestrictions(), false);
+                authorizable,
+                options.getPath(),
+                options.determineAllPermissions(),
+                options.determineAllRestrictions(),
+                false);
     }
 
     public boolean deny(String id, String path, List<String> permissions) {

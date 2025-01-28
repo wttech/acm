@@ -1,9 +1,12 @@
 package com.wttech.aem.contentor.core.acl;
 
+import com.wttech.aem.contentor.core.acl.utils.PrivilegeGroup;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.AccessControlConstants;
 
 public class PermissionsOptions extends AuthorizableOptions {
@@ -96,6 +99,19 @@ public class PermissionsOptions extends AuthorizableOptions {
 
     public void failIfPathMissing() {
         mode = Mode.FAIL;
+    }
+
+    public List<String> determineAllPermissions() {
+        return permissions.stream()
+                .map(permission -> {
+                    PrivilegeGroup privilegeGroup = PrivilegeGroup.fromTitle(permission);
+                    if (privilegeGroup == null) {
+                        return Collections.singletonList(permission);
+                    }
+                    return privilegeGroup.getPrivileges();
+                })
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     public Map<String, Object> determineAllRestrictions() {

@@ -2,7 +2,6 @@ package com.wttech.aem.contentor.core.acl.utils;
 
 import com.wttech.aem.contentor.core.acl.AclException;
 import java.security.Principal;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -98,18 +97,7 @@ public class ApplyPermissionsManager {
     }
 
     private List<Privilege> createPrivileges(List<String> permissions) {
-        return permissions.stream()
-                .map(this::createPrivileges)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-    }
-
-    private List<Privilege> createPrivileges(String permission) {
-        PrivilegeGroup privilegeGroup = PrivilegeGroup.fromTitle(permission);
-        if (privilegeGroup == null) {
-            return Collections.singletonList(toPrivilege(permission));
-        }
-        return privilegeGroup.getPrivileges().stream().map(this::toPrivilege).collect(Collectors.toList());
+        return permissions.stream().map(this::toPrivilege).collect(Collectors.toList());
     }
 
     private Value[] createValues(JackrabbitAccessControlList jackrabbitAcl, Map.Entry<String, Object> entry) {
@@ -138,7 +126,7 @@ public class ApplyPermissionsManager {
         return glob + "*/jcr:content*";
     }
 
-    public Privilege toPrivilege(String permission) {
+    private Privilege toPrivilege(String permission) {
         try {
             return accessControlManager.privilegeFromName(permission);
         } catch (AccessControlException e) {

@@ -498,7 +498,7 @@ public class Acl {
             permissionsManager.apply(
                     authorizable,
                     options.getPath(),
-                    options.getPermissions(),
+                    options.determineAllPermissions(),
                     options.determineAllRestrictions(),
                     true);
             return AclResult.DONE;
@@ -583,7 +583,7 @@ public class Acl {
             permissionsManager.apply(
                     authorizable,
                     options.getPath(),
-                    options.getPermissions(),
+                    options.determineAllPermissions(),
                     options.determineAllRestrictions(),
                     false);
             return AclResult.DONE;
