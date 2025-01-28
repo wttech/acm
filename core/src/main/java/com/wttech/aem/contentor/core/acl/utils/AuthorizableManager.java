@@ -90,7 +90,7 @@ public class AuthorizableManager {
         }
     }
 
-    public boolean addToGroup(Authorizable authorizable, Group group) {
+    public boolean addMember(Group group, Authorizable authorizable) {
         try {
             boolean result = false;
             if (!group.isMember(authorizable)) {
@@ -105,7 +105,7 @@ public class AuthorizableManager {
         }
     }
 
-    public boolean removeFromGroup(Authorizable authorizable, Group group) {
+    public boolean removeMember(Group group, Authorizable authorizable) {
         try {
             boolean result = false;
             if (group.isMember(authorizable)) {

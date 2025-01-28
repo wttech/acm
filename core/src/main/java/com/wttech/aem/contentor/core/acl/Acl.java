@@ -27,8 +27,6 @@ public class Acl {
 
     private final ResourceResolver resourceResolver;
 
-    private final JackrabbitSession session;
-
     private final AuthorizableManager authorizableManager;
 
     private final PermissionsManager permissionsManager;
@@ -39,11 +37,11 @@ public class Acl {
 
     public Acl(ResourceResolver resourceResolver) {
         try {
-            this.resourceResolver = resourceResolver;
-            this.session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
+            JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
             AccessControlManager accessControlManager = session.getAccessControlManager();
             ValueFactory valueFactory = session.getValueFactory();
+            this.resourceResolver = resourceResolver;
             this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
@@ -252,7 +250,7 @@ public class Acl {
         if (notExists(authorizable) || notExists(group)) {
             return AclResult.SKIPPED;
         }
-        return authorizableManager.addToGroup(authorizable, (Group) group) ? AclResult.DONE : AclResult.ALREADY_DONE;
+        return authorizableManager.addMember((Group) group, authorizable) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult addToGroup(String id, String groupId) {
@@ -271,9 +269,7 @@ public class Acl {
         if (notExists(authorizable)) {
             return AclResult.SKIPPED;
         }
-        return authorizableManager.removeFromGroup(authorizable, (Group) group)
-                ? AclResult.DONE
-                : AclResult.ALREADY_DONE;
+        return authorizableManager.removeMember((Group) group, authorizable) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult removeFromGroup(String id, String groupId) {
@@ -295,7 +291,7 @@ public class Acl {
             Iterator<Group> groups = authorizable.memberOf();
             AclResult result = groups.hasNext() ? AclResult.DONE : AclResult.ALREADY_DONE;
             while (groups.hasNext()) {
-                removeFromGroup(authorizable, groups.next());
+                authorizableManager.removeMember(groups.next(), authorizable);
             }
             return result;
         } catch (RepositoryException e) {
@@ -318,7 +314,7 @@ public class Acl {
         if (notExists(group) || notExists(member)) {
             return AclResult.SKIPPED;
         }
-        return authorizableManager.addToGroup(member, (Group) group) ? AclResult.DONE : AclResult.ALREADY_DONE;
+        return authorizableManager.addMember((Group) group, member) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult addMember(String id, String memberId) {
@@ -337,7 +333,7 @@ public class Acl {
         if (notExists(group)) {
             return AclResult.SKIPPED;
         }
-        return authorizableManager.removeFromGroup(member, (Group) group) ? AclResult.DONE : AclResult.ALREADY_DONE;
+        return authorizableManager.removeMember((Group) group, member) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult removeMember(String id, String memberId) {
@@ -359,7 +355,7 @@ public class Acl {
             Iterator<Authorizable> members = ((Group) group).getMembers();
             AclResult result = members.hasNext() ? AclResult.DONE : AclResult.ALREADY_DONE;
             while (members.hasNext()) {
-                removeMember(group, members.next());
+                authorizableManager.removeMember((Group) group, members.next());
             }
             return result;
         } catch (RepositoryException e) {
