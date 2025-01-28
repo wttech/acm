@@ -169,14 +169,6 @@ public class Acl {
         return determineUser(options);
     }
 
-    public User getUser(String id) {
-        return authorizableManager.getUser(id);
-    }
-
-    public User createSystemUser(String id) {
-        throw new IllegalStateException("Not implemented yet!");
-    }
-
     public Group determineGroup(
             String id,
             String externalId,
@@ -212,10 +204,6 @@ public class Acl {
         DetermineGroupOptions options = new DetermineGroupOptions();
         options.setId(id);
         return determineGroup(options);
-    }
-
-    public Group getGroup(String id) {
-        return authorizableManager.getGroup(id);
     }
 
     public AclResult deleteUser(AuthorizableOptions options) {
