@@ -112,11 +112,10 @@ public class ClearPermissionsManager {
                 }
             }
             String authorizablePath = authorizable.getPath();
-            result = result.stream()
+            return result.stream()
                     .filter(controlledPath -> !StringUtils.equals(controlledPath, authorizablePath))
                     .map(this::normalizePath)
                     .collect(Collectors.toSet());
-            return result;
         } catch (RepositoryException e) {
             throw new AclException("Failed to get access controlled paths", e);
         }

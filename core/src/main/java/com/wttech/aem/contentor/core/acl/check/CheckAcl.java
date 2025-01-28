@@ -13,18 +13,13 @@ import javax.jcr.Credentials;
 import javax.jcr.LoginException;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.jcr.Value;
-import javax.jcr.ValueFactory;
-import javax.jcr.security.AccessControlManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
-import org.apache.jackrabbit.api.security.user.UserManager;
-import org.apache.sling.api.resource.ResourceResolver;
 
 public class CheckAcl {
 
@@ -34,17 +29,11 @@ public class CheckAcl {
 
     private final PermissionsManager permissionsManager;
 
-    public CheckAcl(ResourceResolver resourceResolver) {
-        try {
-            this.session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
-            UserManager userManager = session.getUserManager();
-            ValueFactory valueFactory = session.getValueFactory();
-            this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
-            AccessControlManager accessControlManager = session.getAccessControlManager();
-            this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to initialize check acl", e);
-        }
+    public CheckAcl(
+            JackrabbitSession session, AuthorizableManager authorizableManager, PermissionsManager permissionsManager) {
+        this.session = session;
+        this.authorizableManager = authorizableManager;
+        this.permissionsManager = permissionsManager;
     }
 
     // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)

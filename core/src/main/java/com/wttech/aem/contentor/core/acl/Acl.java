@@ -47,7 +47,7 @@ public class Acl {
             this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
-            this.check = new CheckAcl(resourceResolver);
+            this.check = new CheckAcl(session, authorizableManager, permissionsManager);
         } catch (RepositoryException e) {
             throw new AclException("Failed to initialize acl", e);
         }
