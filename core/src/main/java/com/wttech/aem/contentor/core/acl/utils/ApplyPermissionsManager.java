@@ -14,17 +14,22 @@ import javax.jcr.security.AccessControlException;
 import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.Privilege;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.AccessControlConstants;
 
 public class ApplyPermissionsManager {
 
+    private final JackrabbitSession session;
+
     private final AccessControlManager accessControlManager;
 
     private final ValueFactory valueFactory;
 
-    public ApplyPermissionsManager(AccessControlManager accessControlManager, ValueFactory valueFactory) {
+    public ApplyPermissionsManager(
+            JackrabbitSession session, AccessControlManager accessControlManager, ValueFactory valueFactory) {
+        this.session = session;
         this.accessControlManager = accessControlManager;
         this.valueFactory = valueFactory;
     }
@@ -45,6 +50,7 @@ public class ApplyPermissionsManager {
                 updateAccessControlList(
                         authorizable.getPrincipal(), path, modifyPermissions, modifyRestrictions, allow);
             }
+            session.save();
         } catch (RepositoryException e) {
             throw new AclException("Failed to apply permissions", e);
         }

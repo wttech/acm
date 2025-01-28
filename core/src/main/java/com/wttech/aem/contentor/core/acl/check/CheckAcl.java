@@ -39,7 +39,7 @@ public class CheckAcl {
             this.session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
             ValueFactory valueFactory = session.getValueFactory();
-            this.authorizableManager = new AuthorizableManager(userManager, valueFactory);
+            this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             AccessControlManager accessControlManager = session.getAccessControlManager();
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
         } catch (RepositoryException e) {

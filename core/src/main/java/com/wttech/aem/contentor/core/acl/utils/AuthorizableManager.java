@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
@@ -14,11 +15,14 @@ import org.apache.jackrabbit.api.security.user.UserManager;
 
 public class AuthorizableManager {
 
+    private JackrabbitSession session;
+
     private final UserManager userManager;
 
     private final ValueFactory valueFactory;
 
-    public AuthorizableManager(UserManager userManager, ValueFactory valueFactory) {
+    public AuthorizableManager(JackrabbitSession session, UserManager userManager, ValueFactory valueFactory) {
+        this.session = session;
         this.userManager = userManager;
         this.valueFactory = valueFactory;
     }
@@ -29,8 +33,10 @@ public class AuthorizableManager {
             if (StringUtils.isEmpty(password)) {
                 password = PasswordUtils.generateRandomPassword();
             }
-            return userManager.createUser(
+            User user = userManager.createUser(
                     id, StringUtils.defaultString(password, PasswordUtils.generateRandomPassword()), principal, path);
+            save();
+            return user;
         } catch (RepositoryException e) {
             throw new AclException("Failed to create user", e);
         }
@@ -43,6 +49,7 @@ public class AuthorizableManager {
             if (StringUtils.isNotEmpty(externalId)) {
                 group.setProperty("rep:externalId", valueFactory.createValue(externalId));
             }
+            save();
             return group;
         } catch (RepositoryException e) {
             throw new AclException("Failed to create group", e);
@@ -51,7 +58,9 @@ public class AuthorizableManager {
 
     public User createSystemUser(String id, String path) {
         try {
-            return userManager.createSystemUser(id, path);
+            User user = userManager.createSystemUser(id, path);
+            save();
+            return user;
         } catch (RepositoryException e) {
             throw new AclException("Failed to create system user", e);
         }
@@ -75,6 +84,7 @@ public class AuthorizableManager {
                 groups.next().removeMember(authorizable);
             }
             authorizable.remove();
+            save();
         } catch (RepositoryException e) {
             throw new AclException("Failed to delete authorizable", e);
         }
@@ -82,10 +92,14 @@ public class AuthorizableManager {
 
     public boolean addToGroup(Authorizable authorizable, Group group) {
         try {
+            boolean result = false;
             if (!group.isMember(authorizable)) {
-                return group.addMember(authorizable);
+                result = group.addMember(authorizable);
             }
-            return false;
+            if (result) {
+                save();
+            }
+            return result;
         } catch (RepositoryException e) {
             throw new AclException("Failed to add authorizable to group", e);
         }
@@ -93,10 +107,14 @@ public class AuthorizableManager {
 
     public boolean removeFromGroup(Authorizable authorizable, Group group) {
         try {
+            boolean result = false;
             if (group.isMember(authorizable)) {
-                return group.removeMember(authorizable);
+                result = group.removeMember(authorizable);
             }
-            return false;
+            if (result) {
+                save();
+            }
+            return result;
         } catch (RepositoryException e) {
             throw new AclException("Failed to remove authorizable from group", e);
         }
@@ -130,6 +148,7 @@ public class AuthorizableManager {
     public void changePassword(User user, String password) {
         try {
             user.changePassword(password);
+            save();
         } catch (RepositoryException e) {
             throw new AclException("Failed to change password", e);
         }
@@ -138,6 +157,7 @@ public class AuthorizableManager {
     public void setProperty(Authorizable authorizable, String relPath, String value) {
         try {
             authorizable.setProperty(relPath, valueFactory.createValue(value));
+            save();
         } catch (RepositoryException e) {
             throw new AclException("Failed to set property", e);
         }
@@ -147,11 +167,16 @@ public class AuthorizableManager {
         try {
             if (authorizable.hasProperty(relPath)) {
                 authorizable.removeProperty(relPath);
+                save();
                 return true;
             }
             return false;
         } catch (RepositoryException e) {
             throw new AclException("Failed to remove property", e);
         }
+    }
+
+    private void save() throws RepositoryException {
+        session.save();
     }
 }

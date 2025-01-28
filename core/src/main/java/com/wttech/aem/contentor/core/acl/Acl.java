@@ -44,7 +44,7 @@ public class Acl {
             UserManager userManager = session.getUserManager();
             AccessControlManager accessControlManager = session.getAccessControlManager();
             ValueFactory valueFactory = session.getValueFactory();
-            this.authorizableManager = new AuthorizableManager(userManager, valueFactory);
+            this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
             this.check = new CheckAcl(resourceResolver);
@@ -120,10 +120,6 @@ public class Acl {
 
     public AclResult setPassword(Closure<PasswordOptions> closure) {
         return setPassword(GroovyUtils.with(new PasswordOptions(), closure));
-    }
-
-    public void save(Closure<SaveOptions> closure) {
-        save(GroovyUtils.with(new SaveOptions(), closure));
     }
 
     // Non-closure accepting methods
@@ -663,18 +659,6 @@ public class Acl {
     public AclResult setPassword(String id, String password) {
         User user = authorizableManager.getUser(id);
         return setPassword(user, password);
-    }
-
-    public void save(SaveOptions options) {
-        save();
-    }
-
-    public void save() {
-        try {
-            session.save();
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to save", e);
-        }
     }
 
     private Authorizable determineAuthorizable(AuthorizableOptions options) {

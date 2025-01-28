@@ -17,7 +17,7 @@ public class PermissionsManager {
 
     public PermissionsManager(
             JackrabbitSession session, AccessControlManager accessControlManager, ValueFactory valueFactory) {
-        this.applyPermissionsManager = new ApplyPermissionsManager(accessControlManager, valueFactory);
+        this.applyPermissionsManager = new ApplyPermissionsManager(session, accessControlManager, valueFactory);
         this.checkPermissionsManager = new CheckPermissionsManager(accessControlManager);
         this.clearPermissionsManager = new ClearPermissionsManager(session, accessControlManager);
     }
