@@ -8,6 +8,10 @@ public class PasswordUtils {
 
     private static final int MAX_LENGTH = 12;
 
+    private PasswordUtils() {
+        // intentionally empty
+    }
+
     public static String generateRandomPassword() {
         return generateRandomPassword(MAX_LENGTH, CHARACTERS);
     }

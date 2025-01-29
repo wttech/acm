@@ -101,21 +101,21 @@ public class CheckAcl {
             }
             switch (type) {
                 case USER:
-                    result &= authorizable != null && !authorizable.isGroup();
+                    result &= authorizable instanceof User;
                     if (result) {
                         User user = (User) authorizable;
                         result = !user.isSystemUser();
                     }
                     break;
                 case SYSTEM_USER:
-                    result &= authorizable != null && !authorizable.isGroup();
+                    result &= authorizable instanceof User;
                     if (result) {
                         User user = (User) authorizable;
                         result = user.isSystemUser();
                     }
                     break;
                 case GROUP:
-                    result &= authorizable != null && authorizable.isGroup();
+                    result &= authorizable instanceof Group;
                     break;
             }
             return result;
