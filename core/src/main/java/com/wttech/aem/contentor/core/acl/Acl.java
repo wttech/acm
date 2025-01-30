@@ -167,6 +167,13 @@ public class Acl {
         return forUser(options);
     }
 
+    public User forUser(String id, boolean systemUser) {
+        ForUserOptions options = new ForUserOptions();
+        options.setId(id);
+        options.setSystemUser(systemUser);
+        return forUser(options);
+    }
+
     public Group forGroup(
             String id,
             String externalId,
@@ -205,15 +212,15 @@ public class Acl {
     }
 
     public AclResult deleteUser(AuthorizableOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
-        return deleteUser(authorizable);
+        Authorizable user = determineAuthorizable(options);
+        return deleteUser(user);
     }
 
-    public AclResult deleteUser(Authorizable authorizable) {
-        if (notExists(authorizable)) {
+    public AclResult deleteUser(Authorizable user) {
+        if (notExists(user)) {
             return AclResult.ALREADY_DONE;
         }
-        authorizableManager.deleteAuthorizable(authorizable);
+        authorizableManager.deleteAuthorizable(user);
         return AclResult.DONE;
     }
 
@@ -223,15 +230,15 @@ public class Acl {
     }
 
     public AclResult deleteGroup(AuthorizableOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
-        return deleteGroup(authorizable);
+        Authorizable group = determineAuthorizable(options);
+        return deleteGroup(group);
     }
 
-    public AclResult deleteGroup(Authorizable authorizable) {
-        if (notExists(authorizable)) {
+    public AclResult deleteGroup(Authorizable group) {
+        if (notExists(group)) {
             return AclResult.ALREADY_DONE;
         }
-        authorizableManager.deleteAuthorizable(authorizable);
+        authorizableManager.deleteAuthorizable(group);
         return AclResult.DONE;
     }
 
@@ -446,16 +453,8 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setGlob(glob);
-        options.setTypes(types);
-        options.setProperties(properties);
-        options.setRestrictions(restrictions);
-        options.setMode(mode);
-        return allow(options);
+        Authorizable authorizable = determineAuthorizable(id);
+        return allow(authorizable, path, permissions, glob, types, properties, restrictions, mode);
     }
 
     public AclResult allow(PermissionsOptions options) {
@@ -499,11 +498,8 @@ public class Acl {
     }
 
     public AclResult allow(String id, String path, List<String> permissions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        return allow(options);
+        Authorizable authorizable = determineAuthorizable(id);
+        return allow(authorizable, path, permissions);
     }
 
     public AclResult allow(
@@ -517,12 +513,8 @@ public class Acl {
     }
 
     public AclResult allow(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setRestrictions(restrictions);
-        return allow(options);
+        Authorizable authorizable = determineAuthorizable(id);
+        return allow(authorizable, path, permissions, restrictions);
     }
 
     public AclResult deny(
@@ -555,16 +547,8 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setGlob(glob);
-        options.setTypes(types);
-        options.setProperties(properties);
-        options.setRestrictions(restrictions);
-        options.setMode(mode);
-        return deny(options);
+        Authorizable authorizable = determineAuthorizable(id);
+        return deny(authorizable, path, permissions, glob, types, properties, restrictions, mode);
     }
 
     public AclResult deny(PermissionsOptions options) {
@@ -608,11 +592,8 @@ public class Acl {
     }
 
     public AclResult deny(String id, String path, List<String> permissions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        return deny(options);
+        Authorizable authorizable = determineAuthorizable(id);
+        return deny(authorizable, path, permissions);
     }
 
     public AclResult deny(
@@ -626,12 +607,8 @@ public class Acl {
     }
 
     public AclResult deny(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setRestrictions(restrictions);
-        return deny(options);
+        Authorizable authorizable = determineAuthorizable(id);
+        return deny(authorizable, path, permissions, restrictions);
     }
 
     public AclResult setProperty(SetPropertyOptions options) {
@@ -643,7 +620,8 @@ public class Acl {
         if (notExists(authorizable)) {
             return AclResult.SKIPPED;
         }
-        if (!check.property(getAuthorizableId(authorizable), relPath, value)) {
+        List<String> values = authorizableManager.getProperty(authorizable, relPath);
+        if (values == null || !values.contains(value)) {
             authorizableManager.setProperty(authorizable, relPath, value);
             return AclResult.DONE;
         }
@@ -681,7 +659,7 @@ public class Acl {
         if (notExists(user)) {
             return AclResult.SKIPPED;
         }
-        if (!check.password(getAuthorizableId(user), password)) {
+        if (!authorizableManager.testPassword(user, password)) {
             authorizableManager.changePassword((User) user, password);
             return AclResult.DONE;
         }
@@ -702,18 +680,10 @@ public class Acl {
     }
 
     private Authorizable determineAuthorizable(Authorizable authorizable, String id) {
-        if (authorizable == null) {
+        if (authorizable == null && StringUtils.isNotEmpty(id)) {
             authorizable = authorizableManager.getAuthorizable(id);
         }
         return authorizable;
-    }
-
-    private String getAuthorizableId(Authorizable authorizable) {
-        try {
-            return authorizable.getID();
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to get authorizable ID", e);
-        }
     }
 
     private boolean notExists(Authorizable authorizable) {

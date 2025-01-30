@@ -2,9 +2,16 @@ package com.wttech.aem.contentor.core.acl.utils;
 
 import com.wttech.aem.contentor.core.acl.AclException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import javax.jcr.Credentials;
+import javax.jcr.LoginException;
+import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
+import javax.jcr.SimpleCredentials;
+import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
@@ -15,7 +22,7 @@ import org.apache.jackrabbit.api.security.user.UserManager;
 
 public class AuthorizableManager {
 
-    private JackrabbitSession session;
+    private final JackrabbitSession session;
 
     private final UserManager userManager;
 
@@ -145,12 +152,43 @@ public class AuthorizableManager {
         return getAuthorizable(Group.class, id);
     }
 
+    public boolean testPassword(Authorizable authorizable, String password) {
+        try {
+            Repository repository = session.getRepository();
+            Credentials credentials = new SimpleCredentials(authorizable.getID(), password.toCharArray());
+            try {
+                repository.login(credentials).logout();
+            } catch (LoginException e) {
+                return false;
+            }
+            return true;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to test password", e);
+        }
+    }
+
     public void changePassword(User user, String password) {
         try {
             user.changePassword(password);
             save();
         } catch (RepositoryException e) {
             throw new AclException("Failed to change password", e);
+        }
+    }
+
+    public List<String> getProperty(Authorizable authorizable, String relPath) {
+        try {
+            List<String> result = null;
+            Value[] values = authorizable.getProperty(relPath);
+            if (values != null) {
+                result = new ArrayList<>();
+                for (Value value : values) {
+                    result.add(value.getString());
+                }
+            }
+            return result;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get property", e);
         }
     }
 

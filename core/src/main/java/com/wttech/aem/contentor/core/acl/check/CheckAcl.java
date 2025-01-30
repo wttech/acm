@@ -6,12 +6,8 @@ import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;
-import javax.jcr.Credentials;
-import javax.jcr.LoginException;
-import javax.jcr.Repository;
+import java.util.Map;
 import javax.jcr.RepositoryException;
-import javax.jcr.SimpleCredentials;
-import javax.jcr.Value;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -169,18 +165,8 @@ public class CheckAcl {
     }
 
     public boolean password(String id, String password) {
-        try {
-            Repository repository = session.getRepository();
-            Credentials credentials = new SimpleCredentials(id, password.toCharArray());
-            try {
-                repository.login(credentials).logout();
-            } catch (LoginException e) {
-                return false;
-            }
-            return true;
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to check password", e);
-        }
+        User user = authorizableManager.getUser(id);
+        return authorizableManager.testPassword(user, password);
     }
 
     public boolean allow(PermissionsOptions options) {
@@ -198,6 +184,15 @@ public class CheckAcl {
         options.setId(id);
         options.setPath(path);
         options.setPermissions(permissions);
+        return allow(options);
+    }
+
+    public boolean allow(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
+        PermissionsOptions options = new PermissionsOptions();
+        options.setId(id);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setRestrictions(restrictions);
         return allow(options);
     }
 
@@ -219,25 +214,22 @@ public class CheckAcl {
         return deny(options);
     }
 
+    public boolean deny(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
+        PermissionsOptions options = new PermissionsOptions();
+        options.setId(id);
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setRestrictions(restrictions);
+        return deny(options);
+    }
+
     public boolean property(PropertyOptions options) {
         return property(options.getId(), options.getName(), options.getValue());
     }
 
     public boolean property(String id, String relPath, String value) {
-        try {
-            Authorizable authorizable = authorizableManager.getAuthorizable(id);
-            Value[] values = authorizable.getProperty(relPath);
-            if (values == null) {
-                return false;
-            }
-            for (Value val : values) {
-                if (StringUtils.equals(val.getString(), value)) {
-                    return true;
-                }
-            }
-            return false;
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to check property", e);
-        }
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        List<String> values = authorizableManager.getProperty(authorizable, relPath);
+        return values != null && values.contains(value);
     }
 }
