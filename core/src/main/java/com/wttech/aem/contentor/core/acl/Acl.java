@@ -218,7 +218,7 @@ public class Acl {
     }
 
     public AclResult deleteUser(String id) {
-        User user = authorizableManager.getUser(id);
+        Authorizable user = authorizableManager.getAuthorizable(id);
         return deleteUser(user);
     }
 
@@ -236,7 +236,7 @@ public class Acl {
     }
 
     public AclResult deleteGroup(String id) {
-        Group group = authorizableManager.getGroup(id);
+        Authorizable group = authorizableManager.getAuthorizable(id);
         return deleteGroup(group);
     }
 
@@ -247,7 +247,7 @@ public class Acl {
     }
 
     public AclResult addToGroup(Authorizable authorizable, Authorizable group) {
-        if (notExists(authorizable) || notExists(group)) {
+        if (notExists(authorizable) || notExists(group) || !group.isGroup()) {
             return AclResult.SKIPPED;
         }
         return authorizableManager.addMember((Group) group, authorizable) ? AclResult.DONE : AclResult.ALREADY_DONE;
@@ -255,7 +255,7 @@ public class Acl {
 
     public AclResult addToGroup(String id, String groupId) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        Group group = authorizableManager.getGroup(groupId);
+        Authorizable group = authorizableManager.getAuthorizable(groupId);
         return addToGroup(authorizable, group);
     }
 
@@ -266,7 +266,7 @@ public class Acl {
     }
 
     public AclResult removeFromGroup(Authorizable authorizable, Authorizable group) {
-        if (notExists(authorizable)) {
+        if (notExists(authorizable) || !group.isGroup()) {
             return AclResult.SKIPPED;
         }
         return authorizableManager.removeMember((Group) group, authorizable) ? AclResult.DONE : AclResult.ALREADY_DONE;
@@ -274,7 +274,7 @@ public class Acl {
 
     public AclResult removeFromGroup(String id, String groupId) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        Group group = authorizableManager.getGroup(groupId);
+        Authorizable group = authorizableManager.getAuthorizable(groupId);
         return removeFromGroup(authorizable, group);
     }
 
@@ -311,14 +311,14 @@ public class Acl {
     }
 
     public AclResult addMember(Authorizable group, Authorizable member) {
-        if (notExists(group) || notExists(member)) {
+        if (notExists(group) || notExists(member) || !group.isGroup()) {
             return AclResult.SKIPPED;
         }
         return authorizableManager.addMember((Group) group, member) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult addMember(String id, String memberId) {
-        Group group = authorizableManager.getGroup(id);
+        Authorizable group = authorizableManager.getAuthorizable(id);
         Authorizable member = authorizableManager.getAuthorizable(memberId);
         return addMember(group, member);
     }
@@ -330,14 +330,14 @@ public class Acl {
     }
 
     public AclResult removeMember(Authorizable group, Authorizable member) {
-        if (notExists(group)) {
+        if (notExists(group) || !group.isGroup()) {
             return AclResult.SKIPPED;
         }
         return authorizableManager.removeMember((Group) group, member) ? AclResult.DONE : AclResult.ALREADY_DONE;
     }
 
     public AclResult removeMember(String id, String memberId) {
-        Group group = authorizableManager.getGroup(id);
+        Authorizable group = authorizableManager.getAuthorizable(id);
         Authorizable member = authorizableManager.getAuthorizable(memberId);
         return removeMember(group, member);
     }
@@ -348,7 +348,7 @@ public class Acl {
     }
 
     public AclResult removeAllMembers(Authorizable group) {
-        if (notExists(group)) {
+        if (notExists(group) || !group.isGroup()) {
             return AclResult.SKIPPED;
         }
         try {
@@ -364,7 +364,7 @@ public class Acl {
     }
 
     public AclResult removeAllMembers(String id) {
-        Group group = authorizableManager.getGroup(id);
+        Authorizable group = authorizableManager.getAuthorizable(id);
         return removeAllMembers(group);
     }
 
@@ -641,7 +641,7 @@ public class Acl {
     }
 
     public AclResult setPassword(String id, String password) {
-        User user = authorizableManager.getUser(id);
+        Authorizable user = authorizableManager.getAuthorizable(id);
         return setPassword(user, password);
     }
 
