@@ -1,6 +1,6 @@
 package com.wttech.aem.contentor.core.acl;
 
-public class DetermineGroupOptions extends DetermineAuthorizableOptions {
+public class ForGroupOptions extends ForAuthorizableOptions {
 
     private String externalId;
 

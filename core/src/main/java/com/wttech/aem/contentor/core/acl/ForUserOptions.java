@@ -3,7 +3,7 @@ package com.wttech.aem.contentor.core.acl;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DetermineUserOptions extends DetermineAuthorizableOptions {
+public class ForUserOptions extends ForAuthorizableOptions {
 
     private String password;
 

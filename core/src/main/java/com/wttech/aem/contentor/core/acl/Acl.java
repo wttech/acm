@@ -52,12 +52,12 @@ public class Acl {
     }
 
     // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
-    public User determineUser(Closure<DetermineUserOptions> closure) {
-        return determineUser(GroovyUtils.with(new DetermineUserOptions(), closure));
+    public User forUser(Closure<ForUserOptions> closure) {
+        return forUser(GroovyUtils.with(new ForUserOptions(), closure));
     }
 
-    public Group determineGroup(Closure<DetermineGroupOptions> closure) {
-        return determineGroup(GroovyUtils.with(new DetermineGroupOptions(), closure));
+    public Group forGroup(Closure<ForGroupOptions> closure) {
+        return forGroup(GroovyUtils.with(new ForGroupOptions(), closure));
     }
 
     public AclResult deleteUser(Closure<AuthorizableOptions> closure) {
@@ -122,7 +122,7 @@ public class Acl {
 
     // Non-closure accepting methods
 
-    public User determineUser(
+    public User forUser(
             String id,
             String password,
             String path,
@@ -131,8 +131,8 @@ public class Acl {
             String email,
             String aboutMe,
             boolean systemUser,
-            DetermineUserOptions.Mode mode) {
-        DetermineUserOptions options = new DetermineUserOptions();
+            ForUserOptions.Mode mode) {
+        ForUserOptions options = new ForUserOptions();
         options.setId(id);
         options.setPassword(password);
         options.setPath(path);
@@ -142,10 +142,10 @@ public class Acl {
         options.setAboutMe(aboutMe);
         options.setSystemUser(systemUser);
         options.setMode(mode);
-        return determineUser(options);
+        return forUser(options);
     }
 
-    public User determineUser(DetermineUserOptions options) {
+    public User forUser(ForUserOptions options) {
         User user = authorizableManager.getUser(options.getId());
         if (user == null) {
             if (options.isSystemUser()) {
@@ -154,28 +154,28 @@ public class Acl {
                 user = authorizableManager.createUser(options.getId(), options.getPassword(), options.getPath());
             }
             authorizableManager.updateUser(user, options.getPassword(), options.determineProperties());
-        } else if (options.getMode() == DetermineUserOptions.Mode.FAIL) {
-        } else if (options.getMode() == DetermineUserOptions.Mode.OVERRIDE) {
+        } else if (options.getMode() == ForUserOptions.Mode.FAIL) {
+        } else if (options.getMode() == ForUserOptions.Mode.OVERRIDE) {
             authorizableManager.updateUser(user, options.getPassword(), options.determineProperties());
         }
         return user;
     }
 
-    public User determineUser(String id) {
-        DetermineUserOptions options = new DetermineUserOptions();
+    public User forUser(String id) {
+        ForUserOptions options = new ForUserOptions();
         options.setId(id);
-        return determineUser(options);
+        return forUser(options);
     }
 
-    public Group determineGroup(
+    public Group forGroup(
             String id,
             String externalId,
             String path,
             String givenName,
             String email,
             String aboutMe,
-            DetermineGroupOptions.Mode mode) {
-        DetermineGroupOptions options = new DetermineGroupOptions();
+            ForGroupOptions.Mode mode) {
+        ForGroupOptions options = new ForGroupOptions();
         options.setId(id);
         options.setExternalId(externalId);
         options.setPath(path);
@@ -183,25 +183,25 @@ public class Acl {
         options.setEmail(email);
         options.setAboutMe(aboutMe);
         options.setMode(mode);
-        return determineGroup(options);
+        return forGroup(options);
     }
 
-    public Group determineGroup(DetermineGroupOptions options) {
+    public Group forGroup(ForGroupOptions options) {
         Group group = authorizableManager.getGroup(options.getId());
         if (group == null) {
             group = authorizableManager.createGroup(options.getId(), options.getPath(), options.getExternalId());
             authorizableManager.updateGroup(group, options.determineProperties());
-        } else if (options.getMode() == DetermineGroupOptions.Mode.FAIL) {
-        } else if (options.getMode() == DetermineGroupOptions.Mode.OVERRIDE) {
+        } else if (options.getMode() == ForGroupOptions.Mode.FAIL) {
+        } else if (options.getMode() == ForGroupOptions.Mode.OVERRIDE) {
             authorizableManager.updateGroup(group, options.determineProperties());
         }
         return group;
     }
 
-    public Group determineGroup(String id) {
-        DetermineGroupOptions options = new DetermineGroupOptions();
+    public Group forGroup(String id) {
+        ForGroupOptions options = new ForGroupOptions();
         options.setId(id);
-        return determineGroup(options);
+        return forGroup(options);
     }
 
     public AclResult deleteUser(AuthorizableOptions options) {

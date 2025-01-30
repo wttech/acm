@@ -3,7 +3,7 @@ package com.wttech.aem.contentor.core.acl;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DetermineAuthorizableOptions {
+public class ForAuthorizableOptions {
 
     private String id;
 
@@ -65,11 +65,11 @@ public class DetermineAuthorizableOptions {
         return properties;
     }
 
-    public DetermineGroupOptions.Mode getMode() {
+    public Mode getMode() {
         return mode;
     }
 
-    public void setMode(DetermineGroupOptions.Mode mode) {
+    public void setMode(Mode mode) {
         this.mode = mode;
     }
 

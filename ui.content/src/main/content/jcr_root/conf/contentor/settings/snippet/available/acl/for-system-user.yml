@@ -1,0 +1,6 @@
+name: acl/for-system-user
+content: |
+  acl.forUser { id = "${1:id}"; systemUser(); skipIfExists() }
+documentation: |
+  Create or get a system user with the given id.
+  The user will be created only if it does not already exist.

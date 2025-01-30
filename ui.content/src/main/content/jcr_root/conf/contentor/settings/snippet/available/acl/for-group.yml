@@ -1,0 +1,6 @@
+name: acl/for-group
+content: |
+  acl.forGroup { id = "${1:id}"; skipIfExists() }
+documentation: |
+  Create or get a group with the given id.
+  The group will be created only if it does not already exist.

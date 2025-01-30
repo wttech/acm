@@ -7,14 +7,12 @@ void doRun() {
     println "Processing..."
     
     println "Updating ACLs..."
-    def acmeService = acl.determineUser { id = "acme.service"; systemUser(); skipIfExists() }
+    def acmeService = acl.forUser { id = "acme.service"; systemUser(); skipIfExists() }
     acl.allow(acmeService, "/content", ["jcr:read", "jcr:write"])
     
-    def johnDoe = acl.determineUser { id = "john.doe" ; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
+    def johnDoe = acl.forUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
     acl.purge { id = "john.doe" }
     acl.allow(johnDoe, "/content", ["jcr:read"])
-    
-    acl.save()
     
     println "Updating JCR resources..."
     def max = 10
