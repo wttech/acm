@@ -7,6 +7,7 @@ import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -423,6 +424,53 @@ public class Acl {
         return purge(authorizable);
     }
 
+    private AclResult apply(
+            Authorizable authorizable,
+            String path,
+            List<String> permissions,
+            String glob,
+            List<String> types,
+            List<String> properties,
+            Map<String, Object> restrictions,
+            PermissionsOptions.Mode mode,
+            boolean allow) {
+        PermissionsOptions options = new PermissionsOptions();
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        options.setTypes(types);
+        options.setProperties(properties);
+        options.setRestrictions(restrictions);
+        return apply(
+                authorizable, path, options.determineAllPermissions(), options.determineAllRestrictions(), mode, allow);
+    }
+
+    private AclResult apply(
+            Authorizable authorizable,
+            String path,
+            List<String> permissions,
+            Map<String, Object> restrictions,
+            PermissionsOptions.Mode mode,
+            boolean allow) {
+        if (notExists(authorizable)) {
+            return AclResult.SKIPPED;
+        }
+        Resource resource = resourceResolver.getResource(path);
+        if (resource == null) {
+            if (mode == PermissionsOptions.Mode.FAIL) {
+                throw new AclException(String.format("Path %s not found", path));
+            }
+            return AclResult.SKIPPED;
+        } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(path)) {
+            return AclResult.SKIPPED;
+        } else {
+            if (permissionsManager.check(authorizable, path, permissions, restrictions, allow)) {
+                return AclResult.ALREADY_DONE;
+            }
+            permissionsManager.apply(authorizable, path, permissions, restrictions, allow);
+            return AclResult.DONE;
+        }
+    }
+
     public AclResult allow(
             Authorizable authorizable,
             String path,
@@ -432,16 +480,7 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setAuthorizable(authorizable);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setGlob(glob);
-        options.setTypes(types);
-        options.setProperties(properties);
-        options.setRestrictions(restrictions);
-        options.setMode(mode);
-        return allow(options);
+        return apply(authorizable, path, permissions, glob, types, properties, restrictions, mode, true);
     }
 
     public AclResult allow(
@@ -459,42 +498,17 @@ public class Acl {
 
     public AclResult allow(PermissionsOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        if (notExists(authorizable)) {
-            return AclResult.SKIPPED;
-        }
-        Resource resource = resourceResolver.getResource(options.getPath());
-        if (resource == null) {
-            if (options.getMode() == PermissionsOptions.Mode.FAIL) {
-                throw new AclException(String.format("Path %s not found", options.getPath()));
-            }
-            return AclResult.SKIPPED;
-        } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(options.getPath())) {
-            return AclResult.SKIPPED;
-        } else {
-            if (permissionsManager.check(
-                    authorizable,
-                    options.getPath(),
-                    options.determineAllPermissions(),
-                    options.determineAllRestrictions(),
-                    true)) {
-                return AclResult.ALREADY_DONE;
-            }
-            permissionsManager.apply(
-                    authorizable,
-                    options.getPath(),
-                    options.determineAllPermissions(),
-                    options.determineAllRestrictions(),
-                    true);
-            return AclResult.DONE;
-        }
+        return apply(
+                authorizable,
+                options.getPath(),
+                options.determineAllPermissions(),
+                options.determineAllRestrictions(),
+                options.getMode(),
+                true);
     }
 
     public AclResult allow(Authorizable authorizable, String path, List<String> permissions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setAuthorizable(authorizable);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        return allow(options);
+        return apply(authorizable, path, permissions, Collections.emptyMap(), PermissionsOptions.Mode.SKIP, true);
     }
 
     public AclResult allow(String id, String path, List<String> permissions) {
@@ -504,12 +518,7 @@ public class Acl {
 
     public AclResult allow(
             Authorizable authorizable, String path, List<String> permissions, Map<String, Object> restrictions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setAuthorizable(authorizable);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setRestrictions(restrictions);
-        return allow(options);
+        return apply(authorizable, path, permissions, restrictions, PermissionsOptions.Mode.SKIP, true);
     }
 
     public AclResult allow(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
@@ -526,16 +535,7 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setAuthorizable(authorizable);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setGlob(glob);
-        options.setTypes(types);
-        options.setProperties(properties);
-        options.setRestrictions(restrictions);
-        options.setMode(mode);
-        return deny(options);
+        return apply(authorizable, path, permissions, glob, types, properties, restrictions, mode, false);
     }
 
     public AclResult deny(
@@ -553,42 +553,17 @@ public class Acl {
 
     public AclResult deny(PermissionsOptions options) {
         Authorizable authorizable = determineAuthorizable(options);
-        if (notExists(authorizable)) {
-            return AclResult.SKIPPED;
-        }
-        Resource resource = resourceResolver.getResource(options.getPath());
-        if (resource == null) {
-            if (options.getMode() == PermissionsOptions.Mode.FAIL) {
-                throw new AclException(String.format("Path %s not found", options.getPath()));
-            }
-            return AclResult.SKIPPED;
-        } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(options.getPath())) {
-            return AclResult.SKIPPED;
-        } else {
-            if (permissionsManager.check(
-                    authorizable,
-                    options.getPath(),
-                    options.determineAllPermissions(),
-                    options.determineAllRestrictions(),
-                    false)) {
-                return AclResult.ALREADY_DONE;
-            }
-            permissionsManager.apply(
-                    authorizable,
-                    options.getPath(),
-                    options.determineAllPermissions(),
-                    options.determineAllRestrictions(),
-                    false);
-            return AclResult.DONE;
-        }
+        return apply(
+                authorizable,
+                options.getPath(),
+                options.determineAllPermissions(),
+                options.determineAllRestrictions(),
+                options.getMode(),
+                false);
     }
 
     public AclResult deny(Authorizable authorizable, String path, List<String> permissions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setAuthorizable(authorizable);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        return deny(options);
+        return apply(authorizable, path, permissions, Collections.emptyMap(), PermissionsOptions.Mode.SKIP, false);
     }
 
     public AclResult deny(String id, String path, List<String> permissions) {
@@ -598,12 +573,7 @@ public class Acl {
 
     public AclResult deny(
             Authorizable authorizable, String path, List<String> permissions, Map<String, Object> restrictions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setAuthorizable(authorizable);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setRestrictions(restrictions);
-        return deny(options);
+        return apply(authorizable, path, permissions, restrictions, PermissionsOptions.Mode.SKIP, false);
     }
 
     public AclResult deny(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
