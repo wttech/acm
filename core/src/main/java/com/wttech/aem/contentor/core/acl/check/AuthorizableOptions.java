@@ -1,6 +1,6 @@
 package com.wttech.aem.contentor.core.acl.check;
 
-public class NotExistsOptions {
+public class AuthorizableOptions {
 
     private String id;
 

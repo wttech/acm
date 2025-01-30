@@ -9,9 +9,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.AccessControlConstants;
 
-public class PermissionsOptions {
-
-    private String id;
+public class PermissionsOptions extends AuthorizableOptions {
 
     private String path;
 
@@ -28,16 +26,6 @@ public class PermissionsOptions {
 
     // TODO strongly natively-typed here, provide string-accepting utility setters
     private Map<String, Object> restrictions = new HashMap<>();
-
-    private Mode mode = Mode.SKIP;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getPath() {
         return path;
@@ -95,22 +83,6 @@ public class PermissionsOptions {
         restrictions.put(name, values);
     }
 
-    public Mode getMode() {
-        return mode;
-    }
-
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
-    public void skipIfPathMissing() {
-        mode = Mode.SKIP;
-    }
-
-    public void failIfPathMissing() {
-        mode = Mode.FAIL;
-    }
-
     public List<String> determineAllPermissions() {
         return permissions.stream()
                 .map(permission -> {
@@ -130,10 +102,5 @@ public class PermissionsOptions {
         allRestrictions.compute(AccessControlConstants.REP_NT_NAMES, (key, value) -> types);
         allRestrictions.compute(AccessControlConstants.REP_ITEM_NAMES, (key, value) -> properties);
         return allRestrictions;
-    }
-
-    public enum Mode {
-        FAIL,
-        SKIP
     }
 }

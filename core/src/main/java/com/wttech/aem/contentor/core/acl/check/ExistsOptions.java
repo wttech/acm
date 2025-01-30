@@ -1,20 +1,10 @@
 package com.wttech.aem.contentor.core.acl.check;
 
-public class ExistsOptions {
-
-    private String id;
+public class ExistsOptions extends AuthorizableOptions {
 
     private String path;
 
     private Type type = Type.AUTHORIZABLE;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getPath() {
         return path;

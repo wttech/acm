@@ -1,20 +1,10 @@
 package com.wttech.aem.contentor.core.acl.check;
 
-public class PropertyOptions {
-
-    private String id;
+public class PropertyOptions extends AuthorizableOptions {
 
     private String name;
 
     private String value;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;

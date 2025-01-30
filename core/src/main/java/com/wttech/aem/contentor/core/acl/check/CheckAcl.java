@@ -5,6 +5,7 @@ import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.jcr.RepositoryException;
@@ -30,20 +31,20 @@ public class CheckAcl {
     }
 
     // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
-    public boolean exclude(Closure<ExcludeOptions> closure) {
-        return exclude(GroovyUtils.with(new ExcludeOptions(), closure));
+    public boolean exclude(Closure<MemberOptions> closure) {
+        return exclude(GroovyUtils.with(new MemberOptions(), closure));
     }
 
     public boolean exists(Closure<ExistsOptions> closure) {
         return exists(GroovyUtils.with(new ExistsOptions(), closure));
     }
 
-    public boolean include(Closure<IncludeOptions> closure) {
-        return include(GroovyUtils.with(new IncludeOptions(), closure));
+    public boolean include(Closure<MemberOptions> closure) {
+        return include(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public boolean notExists(Closure<NotExistsOptions> closure) {
-        return notExists(GroovyUtils.with(new NotExistsOptions(), closure));
+    public boolean notExists(Closure<AuthorizableOptions> closure) {
+        return notExists(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
     public boolean password(Closure<PasswordOptions> closure) {
@@ -64,14 +65,14 @@ public class CheckAcl {
 
     // Non-closure accepting methods
 
-    public boolean exclude(ExcludeOptions options) {
-        return exclude(options.getGroupId(), options.getId());
+    public boolean exclude(MemberOptions options) {
+        return exclude(options.getId(), options.getMemberId());
     }
 
-    public boolean exclude(String groupId, String id) {
+    public boolean exclude(String groupId, String memberId) {
         try {
             Group group = authorizableManager.getGroup(groupId);
-            Authorizable authorizable = authorizableManager.getAuthorizable(id);
+            Authorizable authorizable = authorizableManager.getAuthorizable(memberId);
             if (authorizable != null) {
                 return !group.isMember(authorizable);
             }
@@ -133,25 +134,24 @@ public class CheckAcl {
         return exists(id, null, ExistsOptions.Type.GROUP);
     }
 
-    public boolean include(IncludeOptions options) {
-        return include(options.getGroupId(), options.getId(), options.isIfExists());
+    public boolean include(MemberOptions options) {
+        return include(options.getId(), options.getMemberId());
     }
 
-    public boolean include(String groupId, String id, boolean ifExists) {
+    public boolean include(String groupId, String memberId) {
         try {
             Group group = authorizableManager.getGroup(groupId);
-            Authorizable authorizable = authorizableManager.getAuthorizable(id);
-            if (authorizable == null) {
-                return ifExists;
-            } else {
+            Authorizable authorizable = authorizableManager.getAuthorizable(memberId);
+            if (authorizable != null) {
                 return group.isMember(authorizable);
             }
+            return false;
         } catch (RepositoryException e) {
             throw new AclException("Failed to check if group contains authorizable", e);
         }
     }
 
-    public boolean notExists(NotExistsOptions options) {
+    public boolean notExists(AuthorizableOptions options) {
         return notExists(options.getId());
     }
 
@@ -170,57 +170,29 @@ public class CheckAcl {
     }
 
     public boolean allow(PermissionsOptions options) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(options.getId());
-        return permissionsManager.check(
-                authorizable,
-                options.getPath(),
-                options.determineAllPermissions(),
-                options.determineAllRestrictions(),
-                true);
+        return allow(options.getId(), options.getPath(), options.determineAllPermissions(), options.getRestrictions());
     }
 
     public boolean allow(String id, String path, List<String> permissions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        return allow(options);
+        return allow(id, path, permissions, Collections.emptyMap());
     }
 
     public boolean allow(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setRestrictions(restrictions);
-        return allow(options);
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        return permissionsManager.check(authorizable, path, permissions, restrictions, true);
     }
 
     public boolean deny(PermissionsOptions options) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(options.getId());
-        return permissionsManager.check(
-                authorizable,
-                options.getPath(),
-                options.determineAllPermissions(),
-                options.determineAllRestrictions(),
-                false);
+        return deny(options.getId(), options.getPath(), options.determineAllPermissions(), options.getRestrictions());
     }
 
     public boolean deny(String id, String path, List<String> permissions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        return deny(options);
+        return deny(id, path, permissions, Collections.emptyMap());
     }
 
     public boolean deny(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setId(id);
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setRestrictions(restrictions);
-        return deny(options);
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        return permissionsManager.check(authorizable, path, permissions, restrictions, false);
     }
 
     public boolean property(PropertyOptions options) {
