@@ -1,4 +1,4 @@
-package com.wttech.aem.contentor.core.acl;
+package com.wttech.aem.contentor.core.acl.check;
 
 import com.wttech.aem.contentor.core.acl.utils.PrivilegeGroup;
 import java.util.Collection;
@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.AccessControlConstants;
 
-public class PermissionsOptions extends AuthorizableOptions {
+public class PermissionsOptions {
+
+    private String id;
 
     private String path;
 
@@ -28,6 +30,14 @@ public class PermissionsOptions extends AuthorizableOptions {
     private Map<String, Object> restrictions = new HashMap<>();
 
     private Mode mode = Mode.SKIP;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getPath() {
         return path;
