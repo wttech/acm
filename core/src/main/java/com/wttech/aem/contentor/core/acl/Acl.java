@@ -419,7 +419,7 @@ public class Acl {
         return result;
     }
 
-    public AclResult clear(String id) {
+    public AclResult purge(String id) {
         Authorizable authorizable = determineAuthorizable(id);
         return purge(authorizable);
     }
