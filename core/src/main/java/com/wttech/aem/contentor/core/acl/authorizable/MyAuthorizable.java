@@ -105,7 +105,11 @@ public class MyAuthorizable {
 
     public AclResult addToGroup(Authorizable group) {
         AclResult result;
-        if (notExists(authorizable) || notExists(group) || !group.isGroup()) {
+        if (notExists(authorizable)) {
+            result = AclResult.SKIPPED;
+        } else if (notExists(group)) {
+            result = AclResult.SKIPPED;
+        } else if (!group.isGroup()) {
             result = AclResult.SKIPPED;
         } else {
             result = authorizableManager.addMember((Group) group, authorizable)
@@ -127,7 +131,11 @@ public class MyAuthorizable {
 
     public AclResult removeFromGroup(Authorizable group) {
         AclResult result;
-        if (notExists(authorizable) || !group.isGroup()) {
+        if (notExists(authorizable)) {
+            result = AclResult.SKIPPED;
+        } else if (notExists(group)) {
+            result = AclResult.SKIPPED;
+        } else if (!group.isGroup()) {
             result = AclResult.SKIPPED;
         } else {
             result = authorizableManager.removeMember((Group) group, authorizable)
@@ -167,7 +175,11 @@ public class MyAuthorizable {
 
     public AclResult addMember(Authorizable member) {
         AclResult result;
-        if (notExists(authorizable) || notExists(member) || !authorizable.isGroup()) {
+        if (notExists(authorizable)) {
+            result = AclResult.SKIPPED;
+        } else if (!authorizable.isGroup()) {
+            result = AclResult.SKIPPED;
+        } else if (notExists(member)) {
             result = AclResult.SKIPPED;
         } else {
             result = authorizableManager.addMember((Group) authorizable, member)
@@ -189,7 +201,11 @@ public class MyAuthorizable {
 
     public AclResult removeMember(Authorizable member) {
         AclResult result;
-        if (notExists(authorizable) || !authorizable.isGroup()) {
+        if (notExists(authorizable)) {
+            result = AclResult.SKIPPED;
+        } else if (!authorizable.isGroup()) {
+            result = AclResult.SKIPPED;
+        } else if (notExists(member)) {
             result = AclResult.SKIPPED;
         } else {
             result = authorizableManager.removeMember((Group) authorizable, member)
@@ -207,7 +223,9 @@ public class MyAuthorizable {
     public AclResult removeAllMembers() {
         try {
             AclResult result;
-            if (notExists(authorizable) || !authorizable.isGroup()) {
+            if (notExists(authorizable)) {
+                result = AclResult.SKIPPED;
+            } else if (!authorizable.isGroup()) {
                 result = AclResult.SKIPPED;
             } else {
                 Iterator<Authorizable> members = ((Group) authorizable).getMembers();
@@ -228,7 +246,11 @@ public class MyAuthorizable {
 
     public AclResult clear(String path, boolean strict) {
         AclResult result;
-        if (notExists(authorizable) || compositeNodeStore && PathUtils.isAppsOrLibsPath(path)) {
+        if (notExists(authorizable)) {
+            result = AclResult.SKIPPED;
+        } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(path)) {
+            result = AclResult.SKIPPED;
+        } else if (resourceResolver.getResource(path) == null) {
             result = AclResult.SKIPPED;
         } else {
             result = permissionsManager.clear(authorizable, path, strict) ? AclResult.DONE : AclResult.ALREADY_DONE;
@@ -286,12 +308,12 @@ public class MyAuthorizable {
         AclResult result;
         if (notExists(authorizable)) {
             result = AclResult.SKIPPED;
+        } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(path)) {
+            result = AclResult.SKIPPED;
         } else if (resourceResolver.getResource(path) == null) {
             if (mode == PermissionsOptions.Mode.FAIL) {
                 throw new AclException(String.format("Path %s not found", path));
             }
-            result = AclResult.SKIPPED;
-        } else if (compositeNodeStore && PathUtils.isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else {
             if (permissionsManager.check(authorizable, path, permissions, restrictions, allow)) {
@@ -401,7 +423,9 @@ public class MyAuthorizable {
 
     public AclResult setPassword(String password) {
         AclResult result;
-        if (notExists(authorizable) || authorizable.isGroup()) {
+        if (notExists(authorizable)) {
+            result = AclResult.SKIPPED;
+        } else if (authorizable.isGroup()) {
             result = AclResult.SKIPPED;
         } else {
             if (authorizableManager.testPassword(authorizable, password)) {
