@@ -1,8 +1,8 @@
-package com.wttech.aem.contentor.core.acl;
+package com.wttech.aem.contentor.core.acl.authorizable;
 
 import org.apache.jackrabbit.api.security.user.Authorizable;
 
-public class MemberOptions extends AuthorizableOptions {
+public class MemberOptions {
 
     private Authorizable member;
 

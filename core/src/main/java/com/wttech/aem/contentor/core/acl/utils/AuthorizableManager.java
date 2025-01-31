@@ -135,7 +135,7 @@ public class AuthorizableManager {
         }
     }
 
-    public <T extends Authorizable> T getAuthorizable(Class<T> authorizableClass, String id) {
+    public <T extends Authorizable> T getAuthorizable(String id, Class<T> authorizableClass) {
         Authorizable authorizable = getAuthorizable(id);
         if (authorizable != null && !authorizableClass.isInstance(authorizable)) {
             throw new AclException(
@@ -145,11 +145,11 @@ public class AuthorizableManager {
     }
 
     public User getUser(String id) {
-        return getAuthorizable(User.class, id);
+        return getAuthorizable(id, User.class);
     }
 
     public Group getGroup(String id) {
-        return getAuthorizable(Group.class, id);
+        return getAuthorizable(id, Group.class);
     }
 
     public boolean testPassword(Authorizable authorizable, String password) {
