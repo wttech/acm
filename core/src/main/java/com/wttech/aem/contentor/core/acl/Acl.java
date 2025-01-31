@@ -64,17 +64,15 @@ public class Acl {
         return user;
     }
 
-    public void forUser(User user, Closure<MyUser> action) {
+    public void forUser(Authorizable user, Closure<MyUser> action) {
         if (!notExists(user)) {
             GroovyUtils.with(forUser(user), action);
         }
     }
 
     public void forUser(String id, Closure<MyUser> action) {
-        User user = authorizableManager.getUser(id);
-        if (!notExists(user)) {
-            GroovyUtils.with(forUser(user), action);
-        }
+        Authorizable user = determineAuthorizable(id);
+        forUser(user, action);
     }
 
     public Group createGroup(Closure<CreateGroupOptions> closure) {
@@ -87,17 +85,15 @@ public class Acl {
         return group;
     }
 
-    public void forGroup(Group group, Closure<MyGroup> action) {
+    public void forGroup(Authorizable group, Closure<MyGroup> action) {
         if (!notExists(group)) {
             GroovyUtils.with(forGroup(group), action);
         }
     }
 
     public void forGroup(String id, Closure<MyGroup> action) {
-        Group group = authorizableManager.getGroup(id);
-        if (!notExists(group)) {
-            GroovyUtils.with(forGroup(group), action);
-        }
+        Authorizable group = determineAuthorizable(id);
+        forGroup(group, action);
     }
 
     public AclResult deleteUser(Closure<AuthorizableOptions> closure) {

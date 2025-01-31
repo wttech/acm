@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.acl.utils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.jcr.security.Privilege;
 import org.apache.commons.lang3.StringUtils;
@@ -38,14 +39,11 @@ public enum PrivilegeGroup {
         this.privileges = Arrays.asList(privileges);
     }
 
-    public static PrivilegeGroup fromTitle(String title) {
+    public static List<String> determinePermissions(String title) {
         return Arrays.stream(PrivilegeGroup.values())
                 .filter(item -> StringUtils.equalsIgnoreCase(title, item.title))
                 .findFirst()
-                .orElse(null);
-    }
-
-    public List<String> getPrivileges() {
-        return privileges;
+                .map(item -> item.privileges)
+                .orElse(Collections.singletonList(title));
     }
 }

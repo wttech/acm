@@ -95,14 +95,9 @@ public class PermissionsOptions {
 
     public List<String> determineAllPermissions() {
         return permissions.stream()
-                .map(permission -> {
-                    PrivilegeGroup privilegeGroup = PrivilegeGroup.fromTitle(permission);
-                    if (privilegeGroup == null) {
-                        return Collections.singletonList(permission);
-                    }
-                    return privilegeGroup.getPrivileges();
-                })
+                .map(PrivilegeGroup::determinePermissions)
                 .flatMap(Collection::stream)
+                .distinct()
                 .collect(Collectors.toList());
     }
 

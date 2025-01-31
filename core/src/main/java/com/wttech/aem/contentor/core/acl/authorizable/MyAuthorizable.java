@@ -19,6 +19,8 @@ import org.apache.sling.api.resource.ResourceResolver;
 
 public class MyAuthorizable {
 
+    private static final String EVERYONE = "everyone";
+
     protected final Authorizable authorizable;
 
     protected final ResourceResolver resourceResolver;
@@ -136,9 +138,13 @@ public class MyAuthorizable {
                 result = AclResult.SKIPPED;
             } else {
                 Iterator<Group> groups = authorizable.memberOf();
-                result = groups.hasNext() ? AclResult.DONE : AclResult.ALREADY_DONE;
+                result = AclResult.ALREADY_DONE;
                 while (groups.hasNext()) {
-                    authorizableManager.removeMember(groups.next(), authorizable);
+                    Group group = groups.next();
+                    if (!StringUtils.equals(group.getID(), EVERYONE)
+                            && authorizableManager.removeMember(group, authorizable)) {
+                        result = AclResult.DONE;
+                    }
                 }
             }
             return result;
