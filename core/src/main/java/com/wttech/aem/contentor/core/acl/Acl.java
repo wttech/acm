@@ -1,6 +1,8 @@
 package com.wttech.aem.contentor.core.acl;
 
 import com.wttech.aem.contentor.core.acl.authorizable.MyAuthorizable;
+import com.wttech.aem.contentor.core.acl.authorizable.MyGroup;
+import com.wttech.aem.contentor.core.acl.authorizable.MyUser;
 import com.wttech.aem.contentor.core.acl.authorizable.UnknownAuthorizable;
 import com.wttech.aem.contentor.core.acl.check.CheckAcl;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
@@ -56,22 +58,22 @@ public class Acl {
         return createUser(GroovyUtils.with(new CreateUserOptions(), closure));
     }
 
-    public User createUser(Closure<CreateUserOptions> closure, Closure<MyAuthorizable> action) {
+    public User createUser(Closure<CreateUserOptions> closure, Closure<MyUser> action) {
         User user = createUser(GroovyUtils.with(new CreateUserOptions(), closure));
-        GroovyUtils.with(forAuthorizable(user), action);
+        GroovyUtils.with(forUser(user), action);
         return user;
     }
 
-    public void forUser(User user, Closure<MyAuthorizable> action) {
+    public void forUser(User user, Closure<MyUser> action) {
         if (!notExists(user)) {
-            GroovyUtils.with(forAuthorizable(user), action);
+            GroovyUtils.with(forUser(user), action);
         }
     }
 
-    public void forUser(String id, Closure<MyAuthorizable> action) {
+    public void forUser(String id, Closure<MyUser> action) {
         User user = authorizableManager.getUser(id);
         if (!notExists(user)) {
-            GroovyUtils.with(forAuthorizable(user), action);
+            GroovyUtils.with(forUser(user), action);
         }
     }
 
@@ -79,22 +81,22 @@ public class Acl {
         return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
     }
 
-    public Group createGroup(Closure<CreateGroupOptions> closure, Closure<MyAuthorizable> action) {
+    public Group createGroup(Closure<CreateGroupOptions> closure, Closure<MyGroup> action) {
         Group group = createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
-        GroovyUtils.with(forAuthorizable(group), action);
+        GroovyUtils.with(forGroup(group), action);
         return group;
     }
 
-    public void forGroup(Group group, Closure<MyAuthorizable> action) {
+    public void forGroup(Group group, Closure<MyGroup> action) {
         if (!notExists(group)) {
-            GroovyUtils.with(forAuthorizable(group), action);
+            GroovyUtils.with(forGroup(group), action);
         }
     }
 
-    public void forGroup(String id, Closure<MyAuthorizable> action) {
+    public void forGroup(String id, Closure<MyGroup> action) {
         Group group = authorizableManager.getGroup(id);
         if (!notExists(group)) {
-            GroovyUtils.with(forAuthorizable(group), action);
+            GroovyUtils.with(forGroup(group), action);
         }
     }
 
@@ -344,7 +346,7 @@ public class Acl {
     }
 
     public AclResult addMember(Authorizable group, Authorizable member) {
-        return forAuthorizable(group).addMember(member);
+        return forGroup(group).addMember(member);
     }
 
     public AclResult addMember(String id, String memberId) {
@@ -360,7 +362,7 @@ public class Acl {
     }
 
     public AclResult removeMember(Authorizable group, Authorizable member) {
-        return forAuthorizable(group).removeMember(member);
+        return forGroup(group).removeMember(member);
     }
 
     public AclResult removeMember(String id, String memberId) {
@@ -375,7 +377,7 @@ public class Acl {
     }
 
     public AclResult removeAllMembers(Authorizable group) {
-        return forAuthorizable(group).removeAllMembers();
+        return forGroup(group).removeAllMembers();
     }
 
     public AclResult removeAllMembers(String id) {
@@ -412,7 +414,9 @@ public class Acl {
     }
 
     public AclResult purge(Authorizable authorizable) {
-        return forAuthorizable(authorizable).purge();
+        return authorizable.isGroup()
+                ? forGroup(authorizable).purge()
+                : forUser(authorizable).purge();
     }
 
     public AclResult purge(String id) {
@@ -598,7 +602,7 @@ public class Acl {
     }
 
     public AclResult setPassword(Authorizable user, String password) {
-        return forAuthorizable(user).setPassword(password);
+        return forUser(user).setPassword(password);
     }
 
     public AclResult setPassword(String id, String password) {
@@ -627,6 +631,14 @@ public class Acl {
     private MyAuthorizable forAuthorizable(Authorizable authorizable) {
         return new MyAuthorizable(
                 authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
+    }
+
+    private MyUser forUser(Authorizable authorizable) {
+        return new MyUser(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
+    }
+
+    private MyGroup forGroup(Authorizable authorizable) {
+        return new MyGroup(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
     }
 
     private boolean notExists(Authorizable authorizable) {
