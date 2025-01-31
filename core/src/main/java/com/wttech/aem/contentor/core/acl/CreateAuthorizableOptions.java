@@ -15,7 +15,7 @@ public class CreateAuthorizableOptions {
 
     private String aboutMe;
 
-    private Mode mode = Mode.OVERRIDE;
+    private Mode mode = Mode.SKIP;
 
     public String getId() {
         return id;

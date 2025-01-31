@@ -77,14 +77,6 @@ public class PermissionsOptions extends AuthorizableOptions {
         this.restrictions = restrictions;
     }
 
-    public void restriction(String name, String value) {
-        restrictions.put(name, value);
-    }
-
-    public void restriction(String name, List<String> values) {
-        restrictions.put(name, values);
-    }
-
     public Mode getMode() {
         return mode;
     }
