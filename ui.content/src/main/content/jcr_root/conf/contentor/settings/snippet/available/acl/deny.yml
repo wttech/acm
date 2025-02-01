@@ -1,5 +1,5 @@
 name: acl/deny
 content: |
-  acl.deny { authorizable = "${1:authorizable}"; path = "${2:path}"; glob="/*" permissions = [${3:permissions}]; restrictions = [:]; skipIfPathMissing() }
+  acl.deny { authorizable = ${1:authorizable}; path = "${2:path}"; permissions = [${3:permissions}]; glob="/*"; restrictions = [:] }
 documentation: |
   Deny the given permissions on the given path for the given authorizable.

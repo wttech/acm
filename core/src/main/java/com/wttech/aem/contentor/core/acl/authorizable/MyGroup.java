@@ -32,11 +32,11 @@ public class MyGroup extends MyAuthorizable {
         return removeMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public AclResult removeAllMembers(Closure<EmptyOptions> closure) {
+    public AclResult removeAllMembers(Closure<Void> closure) {
         return removeAllMembers();
     }
 
-    public AclResult purge(Closure<EmptyOptions> closure) {
+    public AclResult purge(Closure<Void> closure) {
         return purge();
     }
 

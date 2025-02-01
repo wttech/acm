@@ -53,7 +53,7 @@ public class MyAuthorizable {
         return removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
     }
 
-    public AclResult removeFromAllGroups(Closure<EmptyOptions> closure) {
+    public AclResult removeFromAllGroups(Closure<Void> closure) {
         return removeFromAllGroups();
     }
 

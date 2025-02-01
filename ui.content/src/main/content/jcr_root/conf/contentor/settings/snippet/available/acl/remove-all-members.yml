@@ -1,0 +1,5 @@
+name: acl/remove-all-members
+content: |
+  acl.removeAllMembers { authorizable = ${1:authorizable} }
+documentation: |
+  Remove all members from the given authorizable.

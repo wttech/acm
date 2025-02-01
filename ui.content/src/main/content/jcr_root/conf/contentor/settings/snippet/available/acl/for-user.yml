@@ -1,6 +1,8 @@
 name: acl/for-user
 content: |
-  acl.determineUser { id = "${1:id}"; fullName = "${2:fullName}"; password = "${3:password}"; email = "${4:email}"; skipIfExists() }
+  acl.forUser("${1:id}") {
+  
+  }
 documentation: |
-  Create or get a user with the given id, full name, password and email.
-  The user will be created only if it does not already exist.
+  Execute closure for a user with the given id.
+  Closure will be executed only if user exists.

@@ -1,0 +1,5 @@
+name: acl/remove-property
+content: |
+  user = acl.removeProperty { authorizable = ${1:authorizable}; relPath = "${2:relPath}" }
+documentation: |
+  Remove the given property with given repPath to the given authorizable.

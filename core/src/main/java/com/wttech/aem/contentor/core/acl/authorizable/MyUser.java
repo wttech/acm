@@ -21,7 +21,7 @@ public class MyUser extends MyAuthorizable {
     }
 
     // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
-    public AclResult purge(Closure<EmptyOptions> closure) {
+    public AclResult purge(Closure<Void> closure) {
         return purge();
     }
 
