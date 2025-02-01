@@ -203,10 +203,10 @@ public class Acl {
         return createUser(options);
     }
 
-    public User createUser(String id, boolean systemUser) {
+    public User createSystemUser(String id) {
         CreateUserOptions options = new CreateUserOptions();
         options.setId(id);
-        options.setSystemUser(systemUser);
+        options.systemUser();
         return createUser(options);
     }
 
@@ -244,6 +244,13 @@ public class Acl {
     public Group createGroup(String id) {
         CreateGroupOptions options = new CreateGroupOptions();
         options.setId(id);
+        return createGroup(options);
+    }
+
+    public Group createGroup(String id, String externalId) {
+        CreateGroupOptions options = new CreateGroupOptions();
+        options.setId(id);
+        options.setExternalId(externalId);
         return createGroup(options);
     }
 
