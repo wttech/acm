@@ -6,6 +6,7 @@ import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.util.Arrays;
 import java.util.Iterator;
 import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -121,16 +122,10 @@ public class MyGroup extends MyAuthorizable {
         } else if (!authorizable.isGroup()) {
             result = AclResult.SKIPPED;
         } else {
-            result = AclResult.ALREADY_DONE;
-            if (removeAllMembers() != AclResult.ALREADY_DONE) {
-                result = AclResult.DONE;
-            }
-            if (removeFromAllGroups() != AclResult.ALREADY_DONE) {
-                result = AclResult.DONE;
-            }
-            if (clear("/", false) != AclResult.ALREADY_DONE) {
-                result = AclResult.DONE;
-            }
+            result = Arrays.asList(removeAllMembers(), removeFromAllGroups(), clear("/", false))
+                            .contains(AclResult.DONE)
+                    ? AclResult.DONE
+                    : AclResult.ALREADY_DONE;
         }
         return result;
     }

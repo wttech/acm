@@ -209,13 +209,11 @@ public class MyAuthorizable {
                 throw new AclException(String.format("Path %s not found", path));
             }
             result = AclResult.SKIPPED;
+        } else if (permissionsManager.check(authorizable, path, permissions, restrictions, allow)) {
+            result = AclResult.ALREADY_DONE;
         } else {
-            if (permissionsManager.check(authorizable, path, permissions, restrictions, allow)) {
-                result = AclResult.ALREADY_DONE;
-            } else {
-                permissionsManager.apply(authorizable, path, permissions, restrictions, allow);
-                result = AclResult.DONE;
-            }
+            permissionsManager.apply(authorizable, path, permissions, restrictions, allow);
+            result = AclResult.DONE;
         }
         return result;
     }

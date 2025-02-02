@@ -97,33 +97,33 @@ public class AuthorizableManager {
         }
     }
 
-    public boolean addMember(Group group, Authorizable authorizable) {
+    public boolean addMember(Group group, Authorizable member) {
         try {
             boolean result = false;
-            if (!group.isMember(authorizable)) {
-                result = group.addMember(authorizable);
+            if (!group.isMember(member)) {
+                result = group.addMember(member);
             }
             if (result) {
                 save();
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to add authorizable to group", e);
+            throw new AclException("Failed to add member to group", e);
         }
     }
 
-    public boolean removeMember(Group group, Authorizable authorizable) {
+    public boolean removeMember(Group group, Authorizable member) {
         try {
             boolean result = false;
-            if (group.isMember(authorizable)) {
-                result = group.removeMember(authorizable);
+            if (group.isMember(member)) {
+                result = group.removeMember(member);
             }
             if (result) {
                 save();
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to remove authorizable from group", e);
+            throw new AclException("Failed to remove member from group", e);
         }
     }
 

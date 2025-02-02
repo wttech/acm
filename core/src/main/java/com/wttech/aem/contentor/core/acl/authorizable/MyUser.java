@@ -5,6 +5,7 @@ import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.util.Arrays;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -38,13 +39,9 @@ public class MyUser extends MyAuthorizable {
         } else if (authorizable.isGroup()) {
             result = AclResult.SKIPPED;
         } else {
-            result = AclResult.ALREADY_DONE;
-            if (removeFromAllGroups() != AclResult.ALREADY_DONE) {
-                result = AclResult.DONE;
-            }
-            if (clear("/", false) != AclResult.ALREADY_DONE) {
-                result = AclResult.DONE;
-            }
+            result = Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.DONE)
+                    ? AclResult.DONE
+                    : AclResult.ALREADY_DONE;
         }
         return result;
     }
@@ -59,13 +56,11 @@ public class MyUser extends MyAuthorizable {
             result = AclResult.SKIPPED;
         } else if (authorizable.isGroup()) {
             result = AclResult.SKIPPED;
+        } else if (authorizableManager.testPassword(authorizable, password)) {
+            result = AclResult.ALREADY_DONE;
         } else {
-            if (authorizableManager.testPassword(authorizable, password)) {
-                result = AclResult.ALREADY_DONE;
-            } else {
-                authorizableManager.changePassword((User) authorizable, password);
-                result = AclResult.DONE;
-            }
+            authorizableManager.changePassword((User) authorizable, password);
+            result = AclResult.DONE;
         }
         return result;
     }
