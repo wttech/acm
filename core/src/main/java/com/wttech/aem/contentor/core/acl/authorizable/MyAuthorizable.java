@@ -7,6 +7,8 @@ import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.slf4j.helpers.MessageFormatter;
 
 public class MyAuthorizable {
 
@@ -30,17 +33,21 @@ public class MyAuthorizable {
 
     protected final boolean compositeNodeStore;
 
+    protected final OutputStream out;
+
     public MyAuthorizable(
             Authorizable authorizable,
             ResourceResolver resourceResolver,
             AuthorizableManager authorizableManager,
             PermissionsManager permissionsManager,
-            boolean compositeNodeStore) {
+            boolean compositeNodeStore,
+            OutputStream out) {
         this.authorizable = authorizable;
         this.resourceResolver = resourceResolver;
         this.authorizableManager = authorizableManager;
         this.permissionsManager = permissionsManager;
         this.compositeNodeStore = compositeNodeStore;
+        this.out = out;
     }
 
     // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
@@ -97,6 +104,7 @@ public class MyAuthorizable {
                     ? AclResult.DONE
                     : AclResult.ALREADY_DONE;
         }
+        logResult("addToGroup {}", result, getID(group));
         return result;
     }
 
@@ -119,6 +127,7 @@ public class MyAuthorizable {
                     ? AclResult.DONE
                     : AclResult.ALREADY_DONE;
         }
+        logResult("removeFromGroup {}", result, getID(group));
         return result;
     }
 
@@ -138,6 +147,7 @@ public class MyAuthorizable {
                     }
                 }
             }
+            logResult("removeFromAllGroups {}", result);
             return result;
         } catch (RepositoryException e) {
             throw new AclException("Failed to remove authorizable from all groups", e);
@@ -159,6 +169,7 @@ public class MyAuthorizable {
         } else {
             result = permissionsManager.clear(authorizable, path, strict) ? AclResult.DONE : AclResult.ALREADY_DONE;
         }
+        logResult("clear {}", result, path);
         return result;
     }
 
@@ -194,6 +205,7 @@ public class MyAuthorizable {
         } else {
             result = apply(path, options.determineAllPermissions(), options.determineAllRestrictions(), allow);
         }
+        logResult(allow ? "allow {}" : "deny {}", result, path, permissions);
         return result;
     }
 
@@ -244,7 +256,6 @@ public class MyAuthorizable {
     }
 
     public AclResult deny(PermissionsOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
         return apply(
                 options.getPath(),
                 options.getPermissions(),
@@ -296,6 +307,7 @@ public class MyAuthorizable {
                 result = AclResult.DONE;
             }
         }
+        logResult("setProperty {}", result, relPath, value);
         return result;
     }
 
@@ -311,6 +323,7 @@ public class MyAuthorizable {
             result =
                     authorizableManager.removeProperty(authorizable, relPath) ? AclResult.DONE : AclResult.ALREADY_DONE;
         }
+        logResult("removeProperty {}", result, relPath);
         return result;
     }
 
@@ -351,6 +364,18 @@ public class MyAuthorizable {
             return authorizable.getID();
         } catch (RepositoryException e) {
             return "";
+        }
+    }
+
+    protected void logResult(String messagePattern, Object... args) {
+        try {
+            String newMessagePattern = String.format("[%s] %s\n", authorizable.getID(), messagePattern);
+            String message = MessageFormatter.format(newMessagePattern, args).getMessage();
+            out.write(message.getBytes());
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get authorizable ID", e);
+        } catch (IOException e) {
+            throw new AclException("Failed to log message", e);
         }
     }
 }

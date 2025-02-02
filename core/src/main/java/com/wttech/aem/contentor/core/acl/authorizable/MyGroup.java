@@ -6,6 +6,7 @@ import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.jcr.RepositoryException;
@@ -20,11 +21,26 @@ public class MyGroup extends MyAuthorizable {
             ResourceResolver resourceResolver,
             AuthorizableManager authorizableManager,
             PermissionsManager permissionsManager,
-            boolean compositeNodeStore) {
-        super(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
+            boolean compositeNodeStore,
+            OutputStream out) {
+        super(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
     }
 
     // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
+    public AclResult with(Closure<MyGroup> closure) {
+        AclResult result;
+        if (notExists(authorizable)) {
+            result = AclResult.SKIPPED;
+        } else if (!authorizable.isGroup()) {
+            result = AclResult.SKIPPED;
+        } else {
+            GroovyUtils.with(this, closure);
+            result = AclResult.DONE;
+        }
+        logResult("with {}", result);
+        return result;
+    }
+
     public AclResult addMember(Closure<MemberOptions> closure) {
         return addMember(GroovyUtils.with(new MemberOptions(), closure));
     }
@@ -62,6 +78,7 @@ public class MyGroup extends MyAuthorizable {
                     ? AclResult.DONE
                     : AclResult.ALREADY_DONE;
         }
+        logResult("addMember {}", result, getID(member));
         return result;
     }
 
@@ -84,6 +101,7 @@ public class MyGroup extends MyAuthorizable {
                     ? AclResult.DONE
                     : AclResult.ALREADY_DONE;
         }
+        logResult("removeMember {}", result, getID(member));
         return result;
     }
 
@@ -101,6 +119,7 @@ public class MyGroup extends MyAuthorizable {
                     authorizableManager.removeMember((Group) authorizable, members.next());
                 }
             }
+            logResult("removeAllMembers {}", result);
             return result;
         } catch (RepositoryException e) {
             throw new AclException("Failed to remove all members from group", e);
@@ -119,6 +138,7 @@ public class MyGroup extends MyAuthorizable {
                     ? AclResult.DONE
                     : AclResult.ALREADY_DONE;
         }
+        logResult("purge {}", result);
         return result;
     }
 }

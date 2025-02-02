@@ -5,6 +5,7 @@ import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.io.OutputStream;
 import java.util.Arrays;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.User;
@@ -17,11 +18,26 @@ public class MyUser extends MyAuthorizable {
             ResourceResolver resourceResolver,
             AuthorizableManager authorizableManager,
             PermissionsManager permissionsManager,
-            boolean compositeNodeStore) {
-        super(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
+            boolean compositeNodeStore,
+            OutputStream out) {
+        super(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
     }
 
     // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
+    public AclResult with(Closure<MyUser> closure) {
+        AclResult result;
+        if (notExists(authorizable)) {
+            result = AclResult.SKIPPED;
+        } if (authorizable.isGroup()){
+            result = AclResult.SKIPPED;
+        } else {
+            GroovyUtils.with(this, closure);
+            result = AclResult.DONE;
+        }
+        logResult("with {}", result);
+        return result;
+    }
+
     public AclResult purge(Closure<Void> closure) {
         return purge();
     }
@@ -43,6 +59,7 @@ public class MyUser extends MyAuthorizable {
                     ? AclResult.DONE
                     : AclResult.ALREADY_DONE;
         }
+        logResult("purge {}", result);
         return result;
     }
 
@@ -62,6 +79,7 @@ public class MyUser extends MyAuthorizable {
             authorizableManager.changePassword((User) authorizable, password);
             result = AclResult.DONE;
         }
+        logResult("setPassword {}", result);
         return result;
     }
 }

@@ -10,6 +10,8 @@ import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import javax.jcr.RepositoryException;
@@ -23,6 +25,7 @@ import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.slf4j.helpers.MessageFormatter;
 
 public class Acl {
 
@@ -36,7 +39,9 @@ public class Acl {
 
     public final CheckAcl check;
 
-    public Acl(ResourceResolver resourceResolver) {
+    private final OutputStream out;
+
+    public Acl(ResourceResolver resourceResolver, OutputStream out) {
         try {
             JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
@@ -47,6 +52,7 @@ public class Acl {
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
             this.check = new CheckAcl(session, authorizableManager, permissionsManager);
+            this.out = out;
         } catch (RepositoryException e) {
             throw new AclException("Failed to initialize acl", e);
         }
@@ -59,7 +65,7 @@ public class Acl {
 
     public MyUser createUser(Closure<CreateUserOptions> closure, Closure<MyUser> action) {
         MyUser user = createUser(closure);
-        GroovyUtils.with(user, action);
+        user.with(action);
         return user;
     }
 
@@ -69,7 +75,7 @@ public class Acl {
 
     public MyGroup createGroup(Closure<CreateGroupOptions> closure, Closure<MyGroup> action) {
         MyGroup group = createGroup(closure);
-        GroovyUtils.with(group, action);
+        group.with(action);
         return group;
     }
 
@@ -79,9 +85,7 @@ public class Acl {
 
     public MyUser forUser(Closure<AuthorizableOptions> closure, Closure<MyUser> action) {
         MyUser user = forUser(closure);
-        if (!notExists(user.getAuthorizable())) {
-            GroovyUtils.with(user, action);
-        }
+        user.with(action);
         return user;
     }
 
@@ -91,9 +95,7 @@ public class Acl {
 
     public MyGroup forGroup(Closure<AuthorizableOptions> closure, Closure<MyGroup> action) {
         MyGroup group = forGroup(closure);
-        if (!notExists(group.getAuthorizable())) {
-            GroovyUtils.with(group, action);
-        }
+        group.with(action);
         return group;
     }
 
@@ -191,6 +193,7 @@ public class Acl {
     }
 
     public MyUser createUser(CreateUserOptions options) {
+        logResult(options.getId(), "createUser");
         User user = authorizableManager.getUser(options.getId());
         if (user == null) {
             if (options.isSystemUser()) {
@@ -239,6 +242,7 @@ public class Acl {
     }
 
     public MyGroup createGroup(CreateGroupOptions options) {
+        logResult(options.getId(), "createGroup");
         Group group = authorizableManager.getGroup(options.getId());
         if (group == null) {
             group = authorizableManager.createGroup(options.getId(), options.getPath(), options.getExternalId());
@@ -265,21 +269,25 @@ public class Acl {
 
     public MyUser forUser(Object userObj) {
         Authorizable user = determineAuthorizable(userObj);
+        logResult(user, "forUser");
         return forMyUser(user);
     }
 
     public MyGroup forGroup(Object groupObj) {
         Authorizable group = determineAuthorizable(groupObj);
+        logResult(group, "forGroup");
         return forMyGroup(group);
     }
 
     public MyUser getUser(Object userObj) {
         Authorizable user = determineAuthorizable(userObj);
+        logResult(user, "getUser");
         return forMyUser(user);
     }
 
     public MyGroup getGroup(Object groupObj) {
         Authorizable group = determineAuthorizable(groupObj);
+        logResult(group, "getGroup");
         return forMyGroup(group);
     }
 
@@ -292,6 +300,7 @@ public class Acl {
             authorizableManager.deleteAuthorizable(user);
             result = AclResult.DONE;
         }
+        logResult(user, "deleteUser {}", result);
         return result;
     }
 
@@ -304,6 +313,7 @@ public class Acl {
             authorizableManager.deleteAuthorizable(group);
             result = AclResult.DONE;
         }
+        logResult(group, "deleteGroup {}", result);
         return result;
     }
 
@@ -542,18 +552,38 @@ public class Acl {
 
     private MyAuthorizable forMyAuthorizable(Authorizable authorizable) {
         return new MyAuthorizable(
-                authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
+                authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
     }
 
     private MyUser forMyUser(Authorizable authorizable) {
-        return new MyUser(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
+        return new MyUser(
+                authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
     }
 
     private MyGroup forMyGroup(Authorizable authorizable) {
-        return new MyGroup(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
+        return new MyGroup(
+                authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
     }
 
     private boolean notExists(Authorizable authorizable) {
         return authorizable == null || authorizable instanceof UnknownAuthorizable;
+    }
+
+    private void logResult(Authorizable authorizable, String messagePattern, Object... args) {
+        try {
+            logResult(authorizable.getID(), messagePattern, args);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get authorizable ID", e);
+        }
+    }
+
+    private void logResult(String id, String messagePattern, Object... args) {
+        try {
+            String newMessagePattern = String.format("[%s] %s\n", id, messagePattern);
+            String message = MessageFormatter.format(newMessagePattern, args).getMessage();
+            out.write(message.getBytes());
+        } catch (IOException e) {
+            throw new AclException("Failed to log message", e);
+        }
     }
 }
