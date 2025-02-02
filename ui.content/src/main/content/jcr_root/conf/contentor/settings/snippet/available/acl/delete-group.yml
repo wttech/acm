@@ -2,4 +2,4 @@ name: acl/delete-group
 content: |
   acl.deleteGroup { id = "${1:id}" }
 documentation: |
-  Delete a group with the given ID.
+  Delete the group with the given ID.

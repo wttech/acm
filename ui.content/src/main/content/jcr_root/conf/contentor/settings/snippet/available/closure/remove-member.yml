@@ -1,0 +1,5 @@
+name: closure/remove-member
+content: |
+  removeMember { member = ${1:member} }
+documentation: |
+  Remove the given member from the context group.

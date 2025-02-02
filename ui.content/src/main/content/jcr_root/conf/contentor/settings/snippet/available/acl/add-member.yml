@@ -2,4 +2,4 @@ name: acl/add-member
 content: |
   acl.addMember { authorizable = ${1:authorizable}; member = ${2:member} }
 documentation: |
-  Add the given member to the given authorizable.
+  Add the given member to the target authorizable.

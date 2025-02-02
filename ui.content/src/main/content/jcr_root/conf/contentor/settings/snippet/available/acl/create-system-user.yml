@@ -2,5 +2,5 @@ name: acl/create-system-user
 content: |
   systemUser = acl.createUser { id = "${1:id}"; systemUser() }
 documentation: |
-  Create or get a system user with the given id.
-  The user will be created only if it does not already exist.
+  Create or retrieve the system user with the given ID.
+  The user will only be created if it does not already exist.

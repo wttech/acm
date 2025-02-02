@@ -2,5 +2,5 @@ name: acl/create-group
 content: |
   group = acl.createGroup { id = "${1:id}" }
 documentation: |
-  Create or get a group with the given id.
-  The group will be created only if it does not already exist.
+  Create or retrieve the group with the given ID.
+  The group will only be created if it does not already exist.

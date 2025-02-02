@@ -1,8 +1,8 @@
 name: acl/for-group
 content: |
   acl.forGroup("${1:id}") {
-  
+
   }
 documentation: |
-  Execute closure for a group with the given id.
-  Closure will be executed only if group exists.
+  Executes the closure for the group with the given ID.
+  The closure will only be executed if the group exists.

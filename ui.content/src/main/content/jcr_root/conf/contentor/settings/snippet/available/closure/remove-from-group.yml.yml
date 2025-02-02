@@ -1,0 +1,5 @@
+name: closure/remove-from-group
+content: |
+  removeFromGroup { group = ${1:group} }
+documentation: |
+  Remove the context authorizable from the target group.

@@ -1,0 +1,5 @@
+name: closure/add-to-group
+content: |
+  addToGroup { group = ${1:group} }
+documentation: |
+  Add the given authorizable to the context group.

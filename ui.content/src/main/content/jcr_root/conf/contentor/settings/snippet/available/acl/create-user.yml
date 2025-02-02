@@ -2,5 +2,5 @@ name: acl/create-user
 content: |
   user = acl.createUser { id = "${1:id}"; fullName = "${2:fullName}"; password = "${3:password}"; email = "${4:email}" }
 documentation: |
-  Create or get a user with the given id, full name, password and email.
-  The user will be created only if it does not already exist.
+  Create or retrieve the system user with the given ID, full name, password and email.
+  The user will only be created if it does not already exist.

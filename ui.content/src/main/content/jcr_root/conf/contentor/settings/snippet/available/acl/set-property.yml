@@ -1,5 +1,5 @@
 name: acl/set-property
 content: |
-  user = acl.setProperty { authorizable = ${1:authorizable}; relPath = "${2:relPath}"; value = "${3:value}" }
+  acl.setProperty { authorizable = ${1:authorizable}; relPath = "${2:relPath}"; value = "${3:value}" }
 documentation: |
-  Set the given property with given repPath and value to the given authorizable.
+  Set the specified value on the property at the given relative path on the target authorizable.

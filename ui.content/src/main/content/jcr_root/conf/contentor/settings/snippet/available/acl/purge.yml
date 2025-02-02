@@ -2,4 +2,4 @@ name: acl/purge
 content: |
   acl.purge { authorizable = ${1:authorizable} }
 documentation: |
-  Clear all permissions on the root path and all subpaths, remove all members and groups for the given authorizable.
+  Clear all permissions on the root path and all its subpaths, remove all members and remove from all groups for the given authorizable."

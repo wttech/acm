@@ -2,4 +2,4 @@ name: acl/clear
 content: |
   acl.clear { authorizable = ${1:authorizable}; path = "${2:path}" }
 documentation: |
-  Clear all permissions on the given path and all subpaths for the given authorizable.
+  Clear all permissions on the given path and all its subpaths for the target authorizable.

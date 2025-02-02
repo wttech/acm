@@ -1,8 +1,8 @@
 name: acl/for-user
 content: |
   acl.forUser("${1:id}") {
-  
+
   }
 documentation: |
-  Execute closure for a user with the given id.
-  Closure will be executed only if user exists.
+  Executes the closure for the user with the given ID.
+  The closure will only be executed if the user exists.

@@ -2,4 +2,4 @@ name: acl/remove-from-all-groups
 content: |
   acl.removeFromAllGroups { authorizable = ${1:authorizable} }
 documentation: |
-  Remove the given authorizable from all group.
+  Remove the given authorizable from all groups.

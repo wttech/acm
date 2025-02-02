@@ -1,0 +1,5 @@
+name: closure/allow
+content: |
+  allow { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
+documentation: |
+  Allow the specified permissions, glob and restrictions on the given path for the context authorizable.
