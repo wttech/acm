@@ -59,20 +59,43 @@ public class Acl {
     }
 
     public User createUser(Closure<CreateUserOptions> closure, Closure<MyUser> action) {
-        User user = createUser(GroovyUtils.with(new CreateUserOptions(), closure));
-        GroovyUtils.with(forUser(user), action);
+        User user = createUser(closure);
+        GroovyUtils.with(forMyUser(user), action);
         return user;
     }
 
-    public void forUser(Authorizable user, Closure<MyUser> action) {
-        if (!notExists(user)) {
-            GroovyUtils.with(forUser(user), action);
-        }
+    public User createUser(
+            String id,
+            String password,
+            String path,
+            String givenName,
+            String familyName,
+            String email,
+            String aboutMe,
+            boolean systemUser,
+            CreateUserOptions.Mode mode,
+            Closure<MyUser> action) {
+        User user = createUser(id, password, path, givenName, familyName, email, aboutMe, systemUser, mode);
+        GroovyUtils.with(forMyUser(user), action);
+        return user;
     }
 
-    public void forUser(String id, Closure<MyUser> action) {
-        Authorizable user = determineAuthorizable(id);
-        forUser(user, action);
+    public User createUser(CreateUserOptions options, Closure<MyUser> action) {
+        User user = createUser(options);
+        GroovyUtils.with(forMyUser(user), action);
+        return user;
+    }
+
+    public User createUser(String id, Closure<MyUser> action) {
+        User user = createUser(id);
+        GroovyUtils.with(forMyUser(user), action);
+        return user;
+    }
+
+    public User createSystemUser(String id, Closure<MyUser> action) {
+        User user = createSystemUser(id);
+        GroovyUtils.with(forMyUser(user), action);
+        return user;
     }
 
     public Group createGroup(Closure<CreateGroupOptions> closure) {
@@ -80,20 +103,103 @@ public class Acl {
     }
 
     public Group createGroup(Closure<CreateGroupOptions> closure, Closure<MyGroup> action) {
-        Group group = createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
-        GroovyUtils.with(forGroup(group), action);
+        Group group = createGroup(closure);
+        GroovyUtils.with(forMyGroup(group), action);
         return group;
     }
 
-    public void forGroup(Authorizable group, Closure<MyGroup> action) {
-        if (!notExists(group)) {
-            GroovyUtils.with(forGroup(group), action);
-        }
+    public Group createGroup(
+            String id,
+            String externalId,
+            String path,
+            String givenName,
+            String email,
+            String aboutMe,
+            CreateGroupOptions.Mode mode,
+            Closure<MyGroup> action) {
+        Group group = createGroup(id, externalId, path, givenName, email, aboutMe, mode);
+        GroovyUtils.with(forMyGroup(group), action);
+        return group;
     }
 
-    public void forGroup(String id, Closure<MyGroup> action) {
+    public Group createGroup(CreateGroupOptions options, Closure<MyGroup> action) {
+        Group group = createGroup(options);
+        GroovyUtils.with(forMyGroup(group), action);
+        return group;
+    }
+
+    public Group createGroup(String id, Closure<MyGroup> action) {
+        Group group = createGroup(id);
+        GroovyUtils.with(forMyGroup(group), action);
+        return group;
+    }
+
+    public Group createGroup(String id, String externalId, Closure<MyGroup> action) {
+        Group group = createGroup(id, externalId);
+        GroovyUtils.with(forMyGroup(group), action);
+        return group;
+    }
+
+    public AclResult forUser(Closure<AuthorizableOptions> closure, Closure<MyUser> action) {
+        return forUser(GroovyUtils.with(new AuthorizableOptions(), closure), action);
+    }
+
+    public AclResult forUser(AuthorizableOptions options, Closure<MyUser> action) {
+        Authorizable authorizable = determineAuthorizable(options);
+        return forUser(authorizable, action);
+    }
+
+    public AclResult forUser(Authorizable user, Closure<MyUser> action) {
+        AclResult result;
+        if (notExists(user)) {
+            result = AclResult.SKIPPED;
+        } else if (user.isGroup()) {
+            result = AclResult.SKIPPED;
+        } else {
+            GroovyUtils.with(forMyUser(user), action);
+            result = AclResult.DONE;
+        }
+        return result;
+    }
+
+    public AclResult forUser(String id, Closure<MyUser> action) {
+        Authorizable user = determineAuthorizable(id);
+        return forUser(user, action);
+    }
+
+    public AclResult forGroup(Closure<AuthorizableOptions> closure, Closure<MyGroup> action) {
+        return forGroup(GroovyUtils.with(new AuthorizableOptions(), closure), action);
+    }
+
+    public AclResult forGroup(AuthorizableOptions options, Closure<MyGroup> action) {
+        Authorizable authorizable = determineAuthorizable(options);
+        return forGroup(authorizable, action);
+    }
+
+    public AclResult forGroup(Authorizable group, Closure<MyGroup> action) {
+        AclResult result;
+        if (notExists(group)) {
+            result = AclResult.SKIPPED;
+        } else if (!group.isGroup()) {
+            result = AclResult.SKIPPED;
+        } else {
+            GroovyUtils.with(forMyGroup(group), action);
+            result = AclResult.DONE;
+        }
+        return result;
+    }
+
+    public AclResult forGroup(String id, Closure<MyGroup> action) {
         Authorizable group = determineAuthorizable(id);
-        forGroup(group, action);
+        return forGroup(group, action);
+    }
+
+    public Authorizable getUser(Closure<AuthorizableOptions> closure) {
+        return getUser(GroovyUtils.with(new AuthorizableOptions(), closure));
+    }
+
+    public Authorizable getGroup(Closure<AuthorizableOptions> closure) {
+        return getGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
     public AclResult deleteUser(Closure<AuthorizableOptions> closure) {
@@ -254,6 +360,30 @@ public class Acl {
         return createGroup(options);
     }
 
+    public Authorizable getUser(AuthorizableOptions options) {
+        return determineAuthorizable(options);
+    }
+
+    public Authorizable getUser(Authorizable authorizable) {
+        return authorizable;
+    }
+
+    public Authorizable getUser(String id) {
+        return determineAuthorizable(id);
+    }
+
+    public Authorizable getGroup(AuthorizableOptions options) {
+        return determineAuthorizable(options);
+    }
+
+    public Authorizable getGroup(Authorizable authorizable) {
+        return authorizable;
+    }
+
+    public Authorizable getGroup(String id) {
+        return determineAuthorizable(id);
+    }
+
     public AclResult deleteUser(AuthorizableOptions options) {
         Authorizable user = determineAuthorizable(options);
         return deleteUser(user);
@@ -303,7 +433,7 @@ public class Acl {
     }
 
     public AclResult addToGroup(Authorizable authorizable, Authorizable group) {
-        return forAuthorizable(authorizable).addToGroup(group);
+        return forMyAuthorizable(authorizable).addToGroup(group);
     }
 
     public AclResult addToGroup(String id, String groupId) {
@@ -319,7 +449,7 @@ public class Acl {
     }
 
     public AclResult removeFromGroup(Authorizable authorizable, Authorizable group) {
-        return forAuthorizable(authorizable).removeFromGroup(group);
+        return forMyAuthorizable(authorizable).removeFromGroup(group);
     }
 
     public AclResult removeFromGroup(String id, String groupId) {
@@ -334,7 +464,7 @@ public class Acl {
     }
 
     public AclResult removeFromAllGroups(Authorizable authorizable) {
-        return forAuthorizable(authorizable).removeFromAllGroups();
+        return forMyAuthorizable(authorizable).removeFromAllGroups();
     }
 
     public AclResult removeFromAllGroups(String id) {
@@ -349,7 +479,7 @@ public class Acl {
     }
 
     public AclResult addMember(Authorizable group, Authorizable member) {
-        return forGroup(group).addMember(member);
+        return forMyGroup(group).addMember(member);
     }
 
     public AclResult addMember(String id, String memberId) {
@@ -365,7 +495,7 @@ public class Acl {
     }
 
     public AclResult removeMember(Authorizable group, Authorizable member) {
-        return forGroup(group).removeMember(member);
+        return forMyGroup(group).removeMember(member);
     }
 
     public AclResult removeMember(String id, String memberId) {
@@ -380,7 +510,7 @@ public class Acl {
     }
 
     public AclResult removeAllMembers(Authorizable group) {
-        return forGroup(group).removeAllMembers();
+        return forMyGroup(group).removeAllMembers();
     }
 
     public AclResult removeAllMembers(String id) {
@@ -394,7 +524,7 @@ public class Acl {
     }
 
     public AclResult clear(Authorizable authorizable, String path, boolean strict) {
-        return forAuthorizable(authorizable).clear(path, strict);
+        return forMyAuthorizable(authorizable).clear(path, strict);
     }
 
     public AclResult clear(String id, String path, boolean strict) {
@@ -418,8 +548,8 @@ public class Acl {
 
     public AclResult purge(Authorizable authorizable) {
         return authorizable.isGroup()
-                ? forGroup(authorizable).purge()
-                : forUser(authorizable).purge();
+                ? forMyGroup(authorizable).purge()
+                : forMyUser(authorizable).purge();
     }
 
     public AclResult purge(String id) {
@@ -455,9 +585,9 @@ public class Acl {
             PermissionsOptions.Mode mode,
             boolean allow) {
         if (allow) {
-            return forAuthorizable(authorizable).allow(path, permissions, restrictions);
+            return forMyAuthorizable(authorizable).allow(path, permissions, restrictions);
         } else {
-            return forAuthorizable(authorizable).deny(path, permissions, restrictions);
+            return forMyAuthorizable(authorizable).deny(path, permissions, restrictions);
         }
     }
 
@@ -577,7 +707,7 @@ public class Acl {
     }
 
     public AclResult setProperty(Authorizable authorizable, String relPath, String value) {
-        return forAuthorizable(authorizable).setProperty(relPath, value);
+        return forMyAuthorizable(authorizable).setProperty(relPath, value);
     }
 
     public AclResult setProperty(String id, String relPath, String value) {
@@ -591,7 +721,7 @@ public class Acl {
     }
 
     public AclResult removeProperty(Authorizable authorizable, String relPath) {
-        return forAuthorizable(authorizable).removeProperty(relPath);
+        return forMyAuthorizable(authorizable).removeProperty(relPath);
     }
 
     public AclResult removeProperty(String id, String relPath) {
@@ -605,7 +735,7 @@ public class Acl {
     }
 
     public AclResult setPassword(Authorizable user, String password) {
-        return forUser(user).setPassword(password);
+        return forMyUser(user).setPassword(password);
     }
 
     public AclResult setPassword(String id, String password) {
@@ -631,16 +761,16 @@ public class Acl {
         return authorizable;
     }
 
-    private MyAuthorizable forAuthorizable(Authorizable authorizable) {
+    private MyAuthorizable forMyAuthorizable(Authorizable authorizable) {
         return new MyAuthorizable(
                 authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
     }
 
-    private MyUser forUser(Authorizable authorizable) {
+    private MyUser forMyUser(Authorizable authorizable) {
         return new MyUser(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
     }
 
-    private MyGroup forGroup(Authorizable authorizable) {
+    private MyGroup forMyGroup(Authorizable authorizable) {
         return new MyGroup(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore);
     }
 
