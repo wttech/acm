@@ -48,7 +48,8 @@ public class MyGroup extends MyAuthorizable {
         return addMember(member);
     }
 
-    public AclResult addMember(Authorizable member) {
+    public AclResult addMember(Object memberObj) {
+        Authorizable member = determineAuthorizable(memberObj);
         AclResult result;
         if (notExists(authorizable)) {
             result = AclResult.SKIPPED;
@@ -64,17 +65,13 @@ public class MyGroup extends MyAuthorizable {
         return result;
     }
 
-    public AclResult addMember(String memberId) {
-        Authorizable member = determineAuthorizable(memberId);
-        return addMember(member);
-    }
-
     public AclResult removeMember(MemberOptions options) {
         Authorizable member = determineAuthorizable(options.getMember(), options.getMemberId());
         return removeMember(member);
     }
 
-    public AclResult removeMember(Authorizable member) {
+    public AclResult removeMember(Object memberObj) {
+        Authorizable member = determineAuthorizable(memberObj);
         AclResult result;
         if (notExists(authorizable)) {
             result = AclResult.SKIPPED;
@@ -88,11 +85,6 @@ public class MyGroup extends MyAuthorizable {
                     : AclResult.ALREADY_DONE;
         }
         return result;
-    }
-
-    public AclResult removeMember(String memberId) {
-        Authorizable member = determineAuthorizable(memberId);
-        return removeMember(member);
     }
 
     public AclResult removeAllMembers() {

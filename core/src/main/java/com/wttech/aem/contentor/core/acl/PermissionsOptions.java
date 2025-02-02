@@ -25,7 +25,7 @@ public class PermissionsOptions extends AuthorizableOptions {
     private List<String> properties;
 
     // TODO strongly natively-typed here, provide string-accepting utility setters
-    private Map<String, Object> restrictions = new HashMap<>();
+    private Map<String, Object> restrictions;
 
     private Mode mode = Mode.SKIP;
 
@@ -102,10 +102,13 @@ public class PermissionsOptions extends AuthorizableOptions {
     }
 
     public Map<String, Object> determineAllRestrictions() {
-        Map<String, Object> allRestrictions = new HashMap<>(restrictions);
+        Map<String, Object> allRestrictions = new HashMap<>();
         allRestrictions.compute(AccessControlConstants.REP_GLOB, (key, value) -> glob);
         allRestrictions.compute(AccessControlConstants.REP_NT_NAMES, (key, value) -> types);
         allRestrictions.compute(AccessControlConstants.REP_ITEM_NAMES, (key, value) -> properties);
+        if (restrictions != null) {
+            allRestrictions.putAll(restrictions);
+        }
         return allRestrictions;
     }
 
