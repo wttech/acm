@@ -291,10 +291,10 @@ public class Acl {
         String userId = getID(user);
         AclResult result;
         if (notExists(user)) {
-            result = AclResult.ALREADY_DONE;
+            result = AclResult.OK;
         } else {
             authorizableManager.deleteAuthorizable(user);
-            result = AclResult.DONE;
+            result = AclResult.CHANGED;
         }
         logResult(userId, "deleteUser {}", result);
         return result;
@@ -305,10 +305,10 @@ public class Acl {
         String groupId = getID(group);
         AclResult result;
         if (notExists(group)) {
-            result = AclResult.ALREADY_DONE;
+            result = AclResult.OK;
         } else {
             authorizableManager.deleteAuthorizable(group);
-            result = AclResult.DONE;
+            result = AclResult.CHANGED;
         }
         logResult(groupId, "deleteGroup {}", result);
         return result;

@@ -35,7 +35,7 @@ public class MyGroup extends MyAuthorizable {
             result = AclResult.SKIPPED;
         } else {
             GroovyUtils.with(this, closure);
-            result = AclResult.DONE;
+            result = AclResult.CHANGED;
         }
         logResult("with {}", result);
         return result;
@@ -74,9 +74,7 @@ public class MyGroup extends MyAuthorizable {
         } else if (notExists(member)) {
             result = AclResult.SKIPPED;
         } else {
-            result = authorizableManager.addMember((Group) authorizable, member)
-                    ? AclResult.DONE
-                    : AclResult.ALREADY_DONE;
+            result = authorizableManager.addMember((Group) authorizable, member) ? AclResult.CHANGED : AclResult.OK;
         }
         logResult("addMember {}", result, getID(member));
         return result;
@@ -97,9 +95,7 @@ public class MyGroup extends MyAuthorizable {
         } else if (notExists(member)) {
             result = AclResult.SKIPPED;
         } else {
-            result = authorizableManager.removeMember((Group) authorizable, member)
-                    ? AclResult.DONE
-                    : AclResult.ALREADY_DONE;
+            result = authorizableManager.removeMember((Group) authorizable, member) ? AclResult.CHANGED : AclResult.OK;
         }
         logResult("removeMember {}", result, getID(member));
         return result;
@@ -114,7 +110,7 @@ public class MyGroup extends MyAuthorizable {
                 result = AclResult.SKIPPED;
             } else {
                 Iterator<Authorizable> members = ((Group) authorizable).getMembers();
-                result = members.hasNext() ? AclResult.DONE : AclResult.ALREADY_DONE;
+                result = members.hasNext() ? AclResult.CHANGED : AclResult.OK;
                 while (members.hasNext()) {
                     authorizableManager.removeMember((Group) authorizable, members.next());
                 }
@@ -134,9 +130,9 @@ public class MyGroup extends MyAuthorizable {
             result = AclResult.SKIPPED;
         } else {
             result = Arrays.asList(removeAllMembers(), removeFromAllGroups(), clear("/", false))
-                            .contains(AclResult.DONE)
-                    ? AclResult.DONE
-                    : AclResult.ALREADY_DONE;
+                            .contains(AclResult.CHANGED)
+                    ? AclResult.CHANGED
+                    : AclResult.OK;
         }
         logResult("purge {}", result);
         return result;

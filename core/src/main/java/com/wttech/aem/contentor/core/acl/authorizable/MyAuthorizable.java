@@ -100,9 +100,7 @@ public class MyAuthorizable {
         } else if (!group.isGroup()) {
             result = AclResult.SKIPPED;
         } else {
-            result = authorizableManager.addMember((Group) group, authorizable)
-                    ? AclResult.DONE
-                    : AclResult.ALREADY_DONE;
+            result = authorizableManager.addMember((Group) group, authorizable) ? AclResult.CHANGED : AclResult.OK;
         }
         logResult("addToGroup {}", result, getID(group));
         return result;
@@ -123,9 +121,7 @@ public class MyAuthorizable {
         } else if (!group.isGroup()) {
             result = AclResult.SKIPPED;
         } else {
-            result = authorizableManager.removeMember((Group) group, authorizable)
-                    ? AclResult.DONE
-                    : AclResult.ALREADY_DONE;
+            result = authorizableManager.removeMember((Group) group, authorizable) ? AclResult.CHANGED : AclResult.OK;
         }
         logResult("removeFromGroup {}", result, getID(group));
         return result;
@@ -138,12 +134,12 @@ public class MyAuthorizable {
                 result = AclResult.SKIPPED;
             } else {
                 Iterator<Group> groups = authorizable.memberOf();
-                result = AclResult.ALREADY_DONE;
+                result = AclResult.OK;
                 while (groups.hasNext()) {
                     Group group = groups.next();
                     if (!StringUtils.equals(group.getID(), EVERYONE)
                             && authorizableManager.removeMember(group, authorizable)) {
-                        result = AclResult.DONE;
+                        result = AclResult.CHANGED;
                     }
                 }
             }
@@ -167,7 +163,7 @@ public class MyAuthorizable {
         } else if (resourceResolver.getResource(path) == null) {
             result = AclResult.SKIPPED;
         } else {
-            result = permissionsManager.clear(authorizable, path, strict) ? AclResult.DONE : AclResult.ALREADY_DONE;
+            result = permissionsManager.clear(authorizable, path, strict) ? AclResult.CHANGED : AclResult.OK;
         }
         logResult("clear {}", result, path);
         return result;
@@ -212,10 +208,10 @@ public class MyAuthorizable {
     private AclResult apply(String path, List<String> permissions, Map<String, Object> restrictions, boolean allow) {
         AclResult result;
         if (permissionsManager.check(authorizable, path, permissions, restrictions, allow)) {
-            result = AclResult.ALREADY_DONE;
+            result = AclResult.OK;
         } else {
             permissionsManager.apply(authorizable, path, permissions, restrictions, allow);
-            result = AclResult.DONE;
+            result = AclResult.CHANGED;
         }
         return result;
     }
@@ -301,10 +297,10 @@ public class MyAuthorizable {
         } else {
             List<String> values = authorizableManager.getProperty(authorizable, relPath);
             if (values != null && values.contains(value)) {
-                result = AclResult.ALREADY_DONE;
+                result = AclResult.OK;
             } else {
                 authorizableManager.setProperty(authorizable, relPath, value);
-                result = AclResult.DONE;
+                result = AclResult.CHANGED;
             }
         }
         logResult("setProperty {}", result, relPath, value);
@@ -320,8 +316,7 @@ public class MyAuthorizable {
         if (notExists(authorizable)) {
             result = AclResult.SKIPPED;
         } else {
-            result =
-                    authorizableManager.removeProperty(authorizable, relPath) ? AclResult.DONE : AclResult.ALREADY_DONE;
+            result = authorizableManager.removeProperty(authorizable, relPath) ? AclResult.CHANGED : AclResult.OK;
         }
         logResult("removeProperty {}", result, relPath);
         return result;

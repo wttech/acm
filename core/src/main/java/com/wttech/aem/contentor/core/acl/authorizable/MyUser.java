@@ -32,7 +32,7 @@ public class MyUser extends MyAuthorizable {
             result = AclResult.SKIPPED;
         } else {
             GroovyUtils.with(this, closure);
-            result = AclResult.DONE;
+            result = AclResult.CHANGED;
         }
         logResult("with {}", result);
         return result;
@@ -55,9 +55,9 @@ public class MyUser extends MyAuthorizable {
         } else if (authorizable.isGroup()) {
             result = AclResult.SKIPPED;
         } else {
-            result = Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.DONE)
-                    ? AclResult.DONE
-                    : AclResult.ALREADY_DONE;
+            result = Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.CHANGED)
+                    ? AclResult.CHANGED
+                    : AclResult.OK;
         }
         logResult("purge {}", result);
         return result;
@@ -74,10 +74,10 @@ public class MyUser extends MyAuthorizable {
         } else if (authorizable.isGroup()) {
             result = AclResult.SKIPPED;
         } else if (authorizableManager.testPassword(authorizable, password)) {
-            result = AclResult.ALREADY_DONE;
+            result = AclResult.OK;
         } else {
             authorizableManager.changePassword((User) authorizable, password);
-            result = AclResult.DONE;
+            result = AclResult.CHANGED;
         }
         logResult("setPassword {}", result);
         return result;
