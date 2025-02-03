@@ -1,6 +1,9 @@
 package com.wttech.aem.contentor.core.acl.utils;
 
 import com.wttech.aem.contentor.core.acl.AclException;
+import com.wttech.aem.contentor.core.acl.AuthorizableOptions;
+import com.wttech.aem.contentor.core.acl.authorizable.MyAuthorizable;
+import com.wttech.aem.contentor.core.acl.authorizable.UnknownAuthorizable;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -210,5 +213,42 @@ public class AuthorizableManager {
 
     private void save() throws RepositoryException {
         session.save();
+    }
+
+    public Authorizable determineAuthorizable(Object authorizableObj) {
+        Authorizable authorizable;
+        if (authorizableObj instanceof AuthorizableOptions) {
+            AuthorizableOptions options = (AuthorizableOptions) authorizableObj;
+            authorizable = determineAuthorizable(options.getAuthorizable(), options.getId());
+        } else if (authorizableObj instanceof MyAuthorizable) {
+            authorizable = ((MyAuthorizable) authorizableObj).getAuthorizable();
+        } else if (authorizableObj instanceof String) {
+            String id = (String) authorizableObj;
+            authorizable = getAuthorizable(id);
+            if (authorizable == null) {
+                authorizable = new UnknownAuthorizable(id);
+            }
+        } else if (authorizableObj instanceof Authorizable) {
+            authorizable = (Authorizable) authorizableObj;
+        } else {
+            authorizable = new UnknownAuthorizable("");
+        }
+        return authorizable;
+    }
+
+    public Authorizable determineAuthorizable(Object authorizableObj, String id) {
+        Authorizable authorizable = null;
+        if (authorizableObj instanceof MyAuthorizable) {
+            authorizable = ((MyAuthorizable) authorizableObj).getAuthorizable();
+        } else if (authorizableObj instanceof Authorizable) {
+            authorizable = (Authorizable) authorizableObj;
+        }
+        if (authorizable == null && StringUtils.isNotEmpty(id)) {
+            authorizable = getAuthorizable(id);
+        }
+        if (authorizable == null) {
+            authorizable = new UnknownAuthorizable(StringUtils.defaultString(id));
+        }
+        return authorizable;
     }
 }
