@@ -1,6 +1,6 @@
 name: acl/for-group
 content: |
-  acl.forGroup("${1:id}") {
+  acl.forGroup { id = "${1:id}" } {
 
   }
 documentation: |

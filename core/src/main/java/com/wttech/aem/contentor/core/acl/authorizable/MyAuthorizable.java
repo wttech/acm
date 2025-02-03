@@ -328,27 +328,11 @@ public class MyAuthorizable {
     }
 
     protected Authorizable determineAuthorizable(Object authorizableObj) {
-        if (authorizableObj instanceof MyAuthorizable) {
-            MyAuthorizable authorizable = (MyAuthorizable) authorizableObj;
-            return authorizable.getAuthorizable();
-        } else if (authorizableObj instanceof String) {
-            String id = (String) authorizableObj;
-            return authorizableManager.getAuthorizable(id);
-        } else {
-            Authorizable authorizable = (Authorizable) authorizableObj;
-            return authorizable;
-        }
+        return authorizableManager.determineAuthorizable(authorizableObj);
     }
 
     protected Authorizable determineAuthorizable(Object authorizableObj, String id) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        if (authorizable == null && StringUtils.isNotEmpty(id)) {
-            authorizable = authorizableManager.getAuthorizable(id);
-        }
-        if (authorizable == null) {
-            authorizable = new UnknownAuthorizable(StringUtils.defaultString(id));
-        }
-        return authorizable;
+        return authorizableManager.determineAuthorizable(authorizableObj, id);
     }
 
     protected boolean notExists(Authorizable authorizable) {

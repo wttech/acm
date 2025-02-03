@@ -18,7 +18,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.ValueFactory;
 import javax.jcr.security.AccessControlManager;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
@@ -51,7 +50,7 @@ public class Acl {
             this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
-            this.check = new CheckAcl(session, authorizableManager, permissionsManager);
+            this.check = new CheckAcl(authorizableManager, permissionsManager);
             this.out = out;
         } catch (RepositoryException e) {
             throw new AclException("Failed to initialize acl", e);
@@ -63,40 +62,36 @@ public class Acl {
         return createUser(GroovyUtils.with(new CreateUserOptions(), closure));
     }
 
-    public MyUser createUser(Closure<CreateUserOptions> closure, Closure<MyUser> action) {
+    public AclResult createUser(Closure<CreateUserOptions> closure, Closure<MyUser> action) {
         MyUser user = createUser(closure);
-        user.with(action);
-        return user;
+        return user.with(action);
     }
 
     public MyGroup createGroup(Closure<CreateGroupOptions> closure) {
         return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
     }
 
-    public MyGroup createGroup(Closure<CreateGroupOptions> closure, Closure<MyGroup> action) {
+    public AclResult createGroup(Closure<CreateGroupOptions> closure, Closure<MyGroup> action) {
         MyGroup group = createGroup(closure);
-        group.with(action);
-        return group;
+        return group.with(action);
     }
 
     public MyUser forUser(Closure<AuthorizableOptions> closure) {
         return forUser(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
-    public MyUser forUser(Closure<AuthorizableOptions> closure, Closure<MyUser> action) {
+    public AclResult forUser(Closure<AuthorizableOptions> closure, Closure<MyUser> action) {
         MyUser user = forUser(closure);
-        user.with(action);
-        return user;
+        return user.with(action);
     }
 
     public MyGroup forGroup(Closure<AuthorizableOptions> closure) {
         return forGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
-    public MyGroup forGroup(Closure<AuthorizableOptions> closure, Closure<MyGroup> action) {
+    public AclResult forGroup(Closure<AuthorizableOptions> closure, Closure<MyGroup> action) {
         MyGroup group = forGroup(closure);
-        group.with(action);
-        return group;
+        return group.with(action);
     }
 
     public MyUser getUser(Closure<AuthorizableOptions> closure) {
@@ -293,6 +288,7 @@ public class Acl {
 
     public AclResult deleteUser(Object userObj) {
         Authorizable user = determineAuthorizable(userObj);
+        String userId = getID(user);
         AclResult result;
         if (notExists(user)) {
             result = AclResult.ALREADY_DONE;
@@ -300,12 +296,13 @@ public class Acl {
             authorizableManager.deleteAuthorizable(user);
             result = AclResult.DONE;
         }
-        logResult(user, "deleteUser {}", result);
+        logResult(userId, "deleteUser {}", result);
         return result;
     }
 
     public AclResult deleteGroup(Object groupObj) {
         Authorizable group = determineAuthorizable(groupObj);
+        String groupId = getID(group);
         AclResult result;
         if (notExists(group)) {
             result = AclResult.ALREADY_DONE;
@@ -313,7 +310,7 @@ public class Acl {
             authorizableManager.deleteAuthorizable(group);
             result = AclResult.DONE;
         }
-        logResult(group, "deleteGroup {}", result);
+        logResult(groupId, "deleteGroup {}", result);
         return result;
     }
 
@@ -490,7 +487,7 @@ public class Acl {
 
     public AclResult deny(
             Object authorizableObj, String path, List<String> permissions, Map<String, Object> restrictions) {
-        return apply(authorizableObj, path, permissions, null, null, null, null, null, false);
+        return apply(authorizableObj, path, permissions, null, null, null, restrictions, null, false);
     }
 
     public AclResult setProperty(SetPropertyOptions options) {
@@ -523,31 +520,12 @@ public class Acl {
         return forMyUser(user).setPassword(password);
     }
 
-    protected Authorizable determineAuthorizable(Object authorizableObj) {
-        if (authorizableObj instanceof AuthorizableOptions) {
-            AuthorizableOptions options = (AuthorizableOptions) authorizableObj;
-            return determineAuthorizable(options.getAuthorizable(), options.getId());
-        } else if (authorizableObj instanceof MyAuthorizable) {
-            MyAuthorizable authorizable = (MyAuthorizable) authorizableObj;
-            return authorizable.getAuthorizable();
-        } else if (authorizableObj instanceof String) {
-            String id = (String) authorizableObj;
-            return authorizableManager.getAuthorizable(id);
-        } else {
-            Authorizable authorizable = (Authorizable) authorizableObj;
-            return authorizable;
-        }
+    private Authorizable determineAuthorizable(Object authorizableObj) {
+        return authorizableManager.determineAuthorizable(authorizableObj);
     }
 
-    protected Authorizable determineAuthorizable(Object authorizableObj, String id) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        if (authorizable == null && StringUtils.isNotEmpty(id)) {
-            authorizable = authorizableManager.getAuthorizable(id);
-        }
-        if (authorizable == null) {
-            authorizable = new UnknownAuthorizable(StringUtils.defaultString(id));
-        }
-        return authorizable;
+    private Authorizable determineAuthorizable(Object authorizableObj, String id) {
+        return authorizableManager.determineAuthorizable(authorizableObj, id);
     }
 
     private MyAuthorizable forMyAuthorizable(Authorizable authorizable) {
@@ -567,6 +545,14 @@ public class Acl {
 
     private boolean notExists(Authorizable authorizable) {
         return authorizable == null || authorizable instanceof UnknownAuthorizable;
+    }
+
+    protected String getID(Authorizable authorizable) {
+        try {
+            return authorizable.getID();
+        } catch (RepositoryException e) {
+            return "";
+        }
     }
 
     private void logResult(Authorizable authorizable, String messagePattern, Object... args) {

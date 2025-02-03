@@ -28,7 +28,7 @@ public class MyUser extends MyAuthorizable {
         AclResult result;
         if (notExists(authorizable)) {
             result = AclResult.SKIPPED;
-        } if (authorizable.isGroup()){
+        } else if (authorizable.isGroup()) {
             result = AclResult.SKIPPED;
         } else {
             GroovyUtils.with(this, closure);

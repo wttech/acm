@@ -9,22 +9,17 @@ import java.util.List;
 import java.util.Map;
 import javax.jcr.RepositoryException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 
 public class CheckAcl {
 
-    private final JackrabbitSession session;
-
     private final AuthorizableManager authorizableManager;
 
     private final PermissionsManager permissionsManager;
 
-    public CheckAcl(
-            JackrabbitSession session, AuthorizableManager authorizableManager, PermissionsManager permissionsManager) {
-        this.session = session;
+    public CheckAcl(AuthorizableManager authorizableManager, PermissionsManager permissionsManager) {
         this.authorizableManager = authorizableManager;
         this.permissionsManager = permissionsManager;
     }
@@ -109,6 +104,9 @@ public class CheckAcl {
                     break;
                 case GROUP:
                     result &= authorizable instanceof Group;
+                    break;
+                default:
+                    result = false;
                     break;
             }
             return result;

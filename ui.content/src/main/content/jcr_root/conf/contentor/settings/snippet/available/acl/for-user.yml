@@ -1,6 +1,6 @@
 name: acl/for-user
 content: |
-  acl.forUser("${1:id}") {
+  acl.forUser { id = "${1:id}" } {
 
   }
 documentation: |
