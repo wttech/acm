@@ -12,6 +12,7 @@ import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
 import { useEffect, useRef, useState } from 'react';
+import FullscreenContainer from '../common/FullscreenContainer.tsx';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
@@ -209,8 +210,8 @@ const ConsolePage = () => {
   };
 
   return (
-    <Flex direction="column" flex="1" gap="size-200">
-      <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
+    <Flex direction="column" flex="1" gap="size-200" UNSAFE_style={{ overflow: 'hidden' }}>
+      <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)} UNSAFE_style={{ height: '100%' }}>
         <TabList>
           <Item key="code" aria-label="Code">
             <FileCode />
@@ -221,9 +222,9 @@ const ConsolePage = () => {
             <Text>Output</Text>
           </Item>
         </TabList>
-        <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
+        <TabPanels flex="1" UNSAFE_style={{ display: 'flex', overflow: 'hidden', height: '100%' }}>
           <Item key="code">
-            <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+            <Flex direction="column" flex="1" gap="size-200" marginY="size-100" width="size-100" UNSAFE_style={{ overflow: 'hidden' }}>
               <View>
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
@@ -266,10 +267,9 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </View>
-
-              <View backgroundColor="gray-800" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-50" height="100%">
+              <FullscreenContainer>
                 <Editor theme="vs-dark" value={code} onChange={setCode} language="groovy" beforeMount={registerGroovyLanguage} height="100%" />
-              </View>
+              </FullscreenContainer>
             </Flex>
           </Item>
           <Item key="output">
@@ -332,9 +332,9 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </Flex>
-              <View backgroundColor="gray-800" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-50" height="100%">
+              <FullscreenContainer>
                 <Editor theme="vs-dark" value={executionOutput} options={{ readOnly: true }} height="100%" />
-              </View>
+              </FullscreenContainer>
             </Flex>
           </Item>
         </TabPanels>
