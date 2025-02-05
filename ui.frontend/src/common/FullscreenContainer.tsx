@@ -17,7 +17,7 @@ const FullscreenContainer = <C extends ColorVersion>({ children, ...rest }: View
       borderRadius="medium"
       padding="size-50"
       overflow="hidden"
-      {...(fullscreen && { position: 'fixed', left: 0, right: 0, top: 0, bottom: 0 })}
+      {...(fullscreen && { position: 'fixed', left: 0, right: 0, top: 48, bottom: 0, height: 'calc(100% - 48px)', borderRadius: undefined })}
       {...rest}
     >
       {children}
