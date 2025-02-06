@@ -266,7 +266,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </View>
-              <ImmersiveEditor theme="vs-dark" value={code} onChange={setCode} language="groovy" beforeMount={registerGroovyLanguage} height="100%" />
+              <ImmersiveEditor value={code} onChange={setCode} language="groovy" beforeMount={registerGroovyLanguage} />
             </Flex>
           </Item>
           <Item key="output">
@@ -329,7 +329,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </Flex>
-              <ImmersiveEditor theme="vs-dark" value={executionOutput} options={{ readOnly: true }} height="100%" />
+              <ImmersiveEditor value={executionOutput} options={{ readOnly: true }} />
             </Flex>
           </Item>
         </TabPanels>

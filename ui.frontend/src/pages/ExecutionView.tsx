@@ -1,5 +1,4 @@
 import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
-import Editor from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
@@ -11,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
+import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import { toastRequest } from '../utils/api';
 import { Execution, ExecutionOutput } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks.ts';
@@ -147,9 +147,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <View backgroundColor="gray-800" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-50" height="100%">
-                <Editor theme="vs-dark" value={execution.executable.content} height="100%" language="groovy" beforeMount={registerGroovyLanguage} options={{ readOnly: true }} />
-              </View>
+              <ImmersiveEditor value={execution.executable.content} language="groovy" beforeMount={registerGroovyLanguage} options={{ readOnly: true }} />
             </Flex>
           </Item>
           <Item key="output">
@@ -164,9 +162,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <View backgroundColor="gray-800" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-50" height="100%">
-                <Editor theme="vs-dark" value={executionOutput} height="100%" options={{ readOnly: true }} />
-              </View>
+              <ImmersiveEditor value={executionOutput} options={{ readOnly: true }} />
             </Flex>
           </Item>
         </TabPanels>
