@@ -1,4 +1,4 @@
-name: closure/remove-from-all-groups
+name: noderemove-from-all-groups
 content: |
   removeFromAllGroups { }
 documentation: |

@@ -1,4 +1,4 @@
-name: closure/purge
+name: nodepurge
 content: |
   purge { }
 documentation: |

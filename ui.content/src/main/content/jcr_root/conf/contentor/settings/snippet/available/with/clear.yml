@@ -1,4 +1,4 @@
-name: closure/clear
+name: nodeclear
 content: |
   clear { path = "${1:path}" }
 documentation: |

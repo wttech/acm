@@ -1,4 +1,4 @@
-name: closure/allow
+name: nodeallow
 content: |
   allow { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
 documentation: |
