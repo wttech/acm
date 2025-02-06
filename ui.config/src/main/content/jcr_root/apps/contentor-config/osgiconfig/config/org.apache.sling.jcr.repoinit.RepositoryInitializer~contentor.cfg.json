@@ -1,0 +1,6 @@
+{
+  "scripts": [
+    "create path /conf/contentor/settings/script/disabled",
+    "create path /conf/contentor/settings/script/enabled"
+  ]
+}

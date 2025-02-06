@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
-    <!-- TODO move to ui.content.example -->
-    <filter root="/conf/contentor"/>
+    <filter root="/conf/contentor/settings/snippet"/>
 </workspaceFilter>
