@@ -1,4 +1,4 @@
-name: closure/add-to-group
+name: nodeadd-to-group
 content: |
   addToGroup { group = ${1:group} }
 documentation: |

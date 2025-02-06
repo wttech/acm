@@ -1,4 +1,4 @@
-name: closure/remove-property
+name: noderemove-property
 content: |
   removeProperty { relPath = "${1:relPath}" }
 documentation: |

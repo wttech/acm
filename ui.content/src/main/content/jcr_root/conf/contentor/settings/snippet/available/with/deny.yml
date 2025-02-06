@@ -1,4 +1,4 @@
-name: closure/deny
+name: nodedeny
 content: |
   deny { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
 documentation: |

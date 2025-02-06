@@ -1,4 +1,4 @@
-name: closure/set-property
+name: nodeset-property
 content: |
   setProperty { relPath = "${1:relPath}"; value = "${2:value}" }
 documentation: |

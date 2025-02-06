@@ -13,18 +13,14 @@ public class PermissionsOptions extends AuthorizableOptions {
 
     private String path;
 
-    // TODO strongly natively-typed here, provide string-accepting utility setters
     private List<String> permissions = Collections.emptyList();
 
     private String glob;
 
-    // TODO strongly natively-typed here, provide string-accepting utility setters
     private List<String> types;
 
-    // TODO strongly natively-typed here, provide string-accepting utility setters
     private List<String> properties;
 
-    // TODO strongly natively-typed here, provide string-accepting utility setters
     private Map<String, Object> restrictions;
 
     private Mode mode = Mode.SKIP;

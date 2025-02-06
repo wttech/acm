@@ -1,4 +1,4 @@
-name: closure/add-member
+name: nodeadd-member
 content: |
   addMember { member = ${1:member} }
 documentation: |
