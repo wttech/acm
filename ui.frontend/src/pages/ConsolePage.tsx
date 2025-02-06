@@ -1,5 +1,4 @@
 import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
-import Editor from '@monaco-editor/react';
 import Bug from '@spectrum-icons/workflow/Bug';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Copy from '@spectrum-icons/workflow/Copy';
@@ -8,11 +7,11 @@ import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
+import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
 import { useEffect, useRef, useState } from 'react';
-import FullscreenContainer from '../common/FullscreenContainer.tsx';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
@@ -210,8 +209,8 @@ const ConsolePage = () => {
   };
 
   return (
-    <Flex direction="column" flex="1" gap="size-200" UNSAFE_style={{ overflow: 'hidden' }}>
-      <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)} UNSAFE_style={{ height: '100%' }}>
+    <Flex direction="column" flex="1" gap="size-200">
+      <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
         <TabList>
           <Item key="code" aria-label="Code">
             <FileCode />
@@ -222,9 +221,9 @@ const ConsolePage = () => {
             <Text>Output</Text>
           </Item>
         </TabList>
-        <TabPanels flex="1" UNSAFE_style={{ display: 'flex', overflow: 'hidden', height: '100%' }}>
+        <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="code">
-            <Flex direction="column" flex="1" gap="size-200" marginY="size-100" width="size-100" UNSAFE_style={{ overflow: 'hidden' }}>
+            <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View>
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
@@ -267,9 +266,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </View>
-              <FullscreenContainer>
-                <Editor theme="vs-dark" value={code} onChange={setCode} language="groovy" beforeMount={registerGroovyLanguage} height="100%" />
-              </FullscreenContainer>
+              <ImmersiveEditor theme="vs-dark" value={code} onChange={setCode} language="groovy" beforeMount={registerGroovyLanguage} height="100%" />
             </Flex>
           </Item>
           <Item key="output">
@@ -332,9 +329,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </Flex>
-              <FullscreenContainer>
-                <Editor theme="vs-dark" value={executionOutput} options={{ readOnly: true }} height="100%" />
-              </FullscreenContainer>
+              <ImmersiveEditor theme="vs-dark" value={executionOutput} options={{ readOnly: true }} height="100%" />
             </Flex>
           </Item>
         </TabPanels>

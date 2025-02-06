@@ -21,11 +21,11 @@ function App() {
       }}
     >
       <HashRouter>
-        <Flex direction="column" flex="1" height="100vh">
+        <Flex direction="column" flex="1">
           <View paddingX="size-200" paddingTop="size-200">
             <Header />
           </View>
-          <View paddingX="size-200" flex="1" UNSAFE_style={{ display: 'flex', overflow: 'hidden' }}>
+          <View paddingX="size-200" flex="1" UNSAFE_style={{ display: 'flex' }}>
             <Content />
           </View>
           <View paddingX="size-200" paddingBottom="size-200">
