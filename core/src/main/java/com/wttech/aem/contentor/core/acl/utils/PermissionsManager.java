@@ -224,38 +224,57 @@ public class PermissionsManager {
         return result;
     }
 
-    private Set<String> getAccessControlledPaths(Authorizable authorizable) {
+    private Set<String> getAccessControlledPathsFromJcr(String path) {
         try {
             Set<String> result = new HashSet<>();
-            String path = PERMISSION_STORE_PATH + authorizable.getID();
-            if (session.nodeExists(path)) {
-                Node node = session.getNode(path);
-                NodeIterator nodes = node.getNodes();
-                while (nodes.hasNext()) {
-                    node = nodes.nextNode();
-                    if (node.hasProperty(PermissionConstants.REP_ACCESS_CONTROLLED_PATH)) {
-                        result.add(node.getProperty(PermissionConstants.REP_ACCESS_CONTROLLED_PATH)
-                                .getString());
-                    }
+            Node node = session.getNode(path);
+            NodeIterator nodes = node.getNodes();
+            while (nodes.hasNext()) {
+                node = nodes.nextNode();
+                if (node.hasProperty(PermissionConstants.REP_ACCESS_CONTROLLED_PATH)) {
+                    result.add(node.getProperty(PermissionConstants.REP_ACCESS_CONTROLLED_PATH)
+                            .getString());
                 }
-            } else {
-                JackrabbitAccessControlManager jackrabbitAccessControlManager =
-                        (JackrabbitAccessControlManager) accessControlManager;
-                AccessControlPolicy[] accessControlPolicies =
-                        jackrabbitAccessControlManager.getPolicies(authorizable.getPrincipal());
-                for (AccessControlPolicy accessControlPolicy : accessControlPolicies) {
-                    AbstractAccessControlList abstractAcl = (AbstractAccessControlList) accessControlPolicy;
-                    List<? extends JackrabbitAccessControlEntry> jackrabbitAccessControlEntries =
-                            abstractAcl.getEntries();
-                    for (JackrabbitAccessControlEntry jackrabbitAccessControlEntry : jackrabbitAccessControlEntries) {
-                        Set<Restriction> restrictions = ((ACE) jackrabbitAccessControlEntry).getRestrictions();
-                        for (Restriction restriction : restrictions) {
-                            if (Type.PATH.equals(restriction.getProperty().getType())) {
-                                result.add(restriction.getProperty().getValue(Type.PATH));
-                            }
+            }
+            return result;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get access controlled paths from jcr", e);
+        }
+    }
+
+    private Set<String> getAccessControlledPathsByApi(Authorizable authorizable) {
+        try {
+            Set<String> result = new HashSet<>();
+            JackrabbitAccessControlManager jackrabbitAccessControlManager =
+                    (JackrabbitAccessControlManager) accessControlManager;
+            AccessControlPolicy[] accessControlPolicies =
+                    jackrabbitAccessControlManager.getPolicies(authorizable.getPrincipal());
+            for (AccessControlPolicy accessControlPolicy : accessControlPolicies) {
+                AbstractAccessControlList abstractAcl = (AbstractAccessControlList) accessControlPolicy;
+                List<? extends JackrabbitAccessControlEntry> jackrabbitAccessControlEntries = abstractAcl.getEntries();
+                for (JackrabbitAccessControlEntry jackrabbitAccessControlEntry : jackrabbitAccessControlEntries) {
+                    Set<Restriction> restrictions = ((ACE) jackrabbitAccessControlEntry).getRestrictions();
+                    for (Restriction restriction : restrictions) {
+                        if (Type.PATH.equals(restriction.getProperty().getType())) {
+                            result.add(restriction.getProperty().getValue(Type.PATH));
                         }
                     }
                 }
+            }
+            return result;
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get access controlled paths from api", e);
+        }
+    }
+
+    private Set<String> getAccessControlledPaths(Authorizable authorizable) {
+        try {
+            Set<String> result;
+            String path = PERMISSION_STORE_PATH + authorizable.getID();
+            if (session.nodeExists(path)) {
+                result = getAccessControlledPathsFromJcr(path);
+            } else {
+                result = getAccessControlledPathsByApi(authorizable);
             }
             String authorizablePath = authorizable.getPath();
             return result.stream()

@@ -293,6 +293,7 @@ public class Acl {
         if (notExists(user)) {
             result = AclResult.OK;
         } else {
+            purge(user);
             authorizableManager.deleteAuthorizable(user);
             result = AclResult.CHANGED;
         }
@@ -307,6 +308,7 @@ public class Acl {
         if (notExists(group)) {
             result = AclResult.OK;
         } else {
+            purge(group);
             authorizableManager.deleteAuthorizable(group);
             result = AclResult.CHANGED;
         }

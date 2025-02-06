@@ -6,7 +6,6 @@ import com.wttech.aem.contentor.core.acl.authorizable.MyAuthorizable;
 import com.wttech.aem.contentor.core.acl.authorizable.UnknownAuthorizable;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.jcr.Credentials;
@@ -89,10 +88,6 @@ public class AuthorizableManager {
 
     public void deleteAuthorizable(Authorizable authorizable) {
         try {
-            Iterator<Group> groups = authorizable.memberOf();
-            while (groups.hasNext()) {
-                groups.next().removeMember(authorizable);
-            }
             authorizable.remove();
             save();
         } catch (RepositoryException e) {
