@@ -1,18 +1,18 @@
 package com.wttech.aem.contentor.core.acl;
 
-import org.apache.jackrabbit.api.security.user.Authorizable;
+import com.wttech.aem.contentor.core.acl.authorizable.MyAuthorizable;
 
 public class GroupOptions extends AuthorizableOptions {
 
-    private Authorizable group;
+    private MyAuthorizable group;
 
     private String groupId;
 
-    public Authorizable getGroup() {
+    public MyAuthorizable getGroup() {
         return group;
     }
 
-    public void setGroup(Authorizable group) {
+    public void setGroup(MyAuthorizable group) {
         this.group = group;
     }
 

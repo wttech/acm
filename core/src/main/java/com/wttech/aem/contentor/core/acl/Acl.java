@@ -3,103 +3,41 @@ package com.wttech.aem.contentor.core.acl;
 import com.wttech.aem.contentor.core.acl.authorizable.MyAuthorizable;
 import com.wttech.aem.contentor.core.acl.authorizable.MyGroup;
 import com.wttech.aem.contentor.core.acl.authorizable.MyUser;
-import com.wttech.aem.contentor.core.acl.authorizable.UnknownAuthorizable;
 import com.wttech.aem.contentor.core.acl.check.CheckAcl;
-import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
-import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
-import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.ValueFactory;
-import javax.jcr.security.AccessControlManager;
-import org.apache.jackrabbit.api.JackrabbitSession;
-import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
-import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.slf4j.helpers.MessageFormatter;
 
 public class Acl {
 
-    private final ResourceResolver resourceResolver;
-
-    private final AuthorizableManager authorizableManager;
-
-    private final PermissionsManager permissionsManager;
-
-    private final boolean compositeNodeStore;
+    private final AclContext context;
 
     public final CheckAcl check;
 
-    private final OutputStream out;
-
     public Acl(ResourceResolver resourceResolver, OutputStream out) {
-        try {
-            JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
-            UserManager userManager = session.getUserManager();
-            AccessControlManager accessControlManager = session.getAccessControlManager();
-            ValueFactory valueFactory = session.getValueFactory();
-            this.resourceResolver = resourceResolver;
-            this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
-            this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
-            this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
-            this.check = new CheckAcl(authorizableManager, permissionsManager);
-            this.out = out;
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to initialize acl", e);
-        }
+        this.context = new AclContext(resourceResolver, out);
+        this.check = new CheckAcl(context);
     }
 
-    // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
     public MyUser createUser(Closure<CreateUserOptions> closure) {
         return createUser(GroovyUtils.with(new CreateUserOptions(), closure));
-    }
-
-    public AclResult createUser(Closure<CreateUserOptions> closure, Closure<MyUser> action) {
-        MyUser user = createUser(closure);
-        return user.with(action);
     }
 
     public MyGroup createGroup(Closure<CreateGroupOptions> closure) {
         return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
     }
 
-    public AclResult createGroup(Closure<CreateGroupOptions> closure, Closure<MyGroup> action) {
-        MyGroup group = createGroup(closure);
-        return group.with(action);
+    public MyUser getUser(Closure<GetAuthorizableOptions> closure) {
+        return getUser(GroovyUtils.with(new GetAuthorizableOptions(), closure));
     }
 
-    public MyUser forUser(Closure<AuthorizableOptions> closure) {
-        return forUser(GroovyUtils.with(new AuthorizableOptions(), closure));
-    }
-
-    public AclResult forUser(Closure<AuthorizableOptions> closure, Closure<MyUser> action) {
-        MyUser user = forUser(closure);
-        return user.with(action);
-    }
-
-    public MyGroup forGroup(Closure<AuthorizableOptions> closure) {
-        return forGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
-    }
-
-    public AclResult forGroup(Closure<AuthorizableOptions> closure, Closure<MyGroup> action) {
-        MyGroup group = forGroup(closure);
-        return group.with(action);
-    }
-
-    public MyUser getUser(Closure<AuthorizableOptions> closure) {
-        return getUser(GroovyUtils.with(new AuthorizableOptions(), closure));
-    }
-
-    public MyGroup getGroup(Closure<AuthorizableOptions> closure) {
-        return getGroup(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public MyGroup getGroup(Closure<GetAuthorizableOptions> closure) {
+        return getGroup(GroovyUtils.with(new GetAuthorizableOptions(), closure));
     }
 
     public AclResult deleteUser(Closure<AuthorizableOptions> closure) {
@@ -188,20 +126,22 @@ public class Acl {
     }
 
     public MyUser createUser(CreateUserOptions options) {
-        logResult(options.getId(), "createUser");
-        User user = authorizableManager.getUser(options.getId());
+        User user = context.getAuthorizableManager().getUser(options.getId());
         if (user == null) {
             if (options.isSystemUser()) {
-                user = authorizableManager.createSystemUser(options.getId(), options.getPath());
+                user = context.getAuthorizableManager().createSystemUser(options.getId(), options.getPath());
             } else {
-                user = authorizableManager.createUser(options.getId(), options.getPassword(), options.getPath());
+                user = context.getAuthorizableManager()
+                        .createUser(options.getId(), options.getPassword(), options.getPath());
             }
-            authorizableManager.updateUser(user, options.getPassword(), options.determineProperties());
+            context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
         } else if (options.getMode() == CreateUserOptions.Mode.FAIL) {
         } else if (options.getMode() == CreateUserOptions.Mode.OVERRIDE) {
-            authorizableManager.updateUser(user, options.getPassword(), options.determineProperties());
+            context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
         }
-        return forMyUser(user);
+        MyUser myUser = context.determineUser(user);
+        context.logResult(myUser, "createUser");
+        return myUser;
     }
 
     public MyUser createUser(String id) {
@@ -237,16 +177,18 @@ public class Acl {
     }
 
     public MyGroup createGroup(CreateGroupOptions options) {
-        logResult(options.getId(), "createGroup");
-        Group group = authorizableManager.getGroup(options.getId());
+        Group group = context.getAuthorizableManager().getGroup(options.getId());
         if (group == null) {
-            group = authorizableManager.createGroup(options.getId(), options.getPath(), options.getExternalId());
-            authorizableManager.updateGroup(group, options.determineProperties());
+            group = context.getAuthorizableManager()
+                    .createGroup(options.getId(), options.getPath(), options.getExternalId());
+            context.getAuthorizableManager().updateGroup(group, options.determineProperties());
         } else if (options.getMode() == CreateGroupOptions.Mode.FAIL) {
         } else if (options.getMode() == CreateGroupOptions.Mode.OVERRIDE) {
-            authorizableManager.updateGroup(group, options.determineProperties());
+            context.getAuthorizableManager().updateGroup(group, options.determineProperties());
         }
-        return forMyGroup(group);
+        MyGroup myGroup = context.determineGroup(group);
+        context.logResult(myGroup, "createGroup");
+        return myGroup;
     }
 
     public MyGroup createGroup(String id) {
@@ -262,174 +204,234 @@ public class Acl {
         return createGroup(options);
     }
 
-    public MyUser forUser(Object userObj) {
-        Authorizable user = determineAuthorizable(userObj);
-        logResult(user, "forUser");
-        return forMyUser(user);
+    public MyUser getUser(GetAuthorizableOptions options) {
+        return getUser(options.getId());
     }
 
-    public MyGroup forGroup(Object groupObj) {
-        Authorizable group = determineAuthorizable(groupObj);
-        logResult(group, "forGroup");
-        return forMyGroup(group);
+    public MyUser getUser(String id) {
+        MyUser user = context.determineUser(id);
+        AclResult result = user.get() == null ? AclResult.SKIPPED : AclResult.OK;
+        context.logResult(user, "getUser {}", result);
+        return result == AclResult.OK ? user : null;
     }
 
-    public MyUser getUser(Object userObj) {
-        Authorizable user = determineAuthorizable(userObj);
-        logResult(user, "getUser");
-        return forMyUser(user);
+    public MyGroup getGroup(GetAuthorizableOptions options) {
+        return getGroup(options.getId());
     }
 
-    public MyGroup getGroup(Object groupObj) {
-        Authorizable group = determineAuthorizable(groupObj);
-        logResult(group, "getGroup");
-        return forMyGroup(group);
+    public MyGroup getGroup(String id) {
+        MyGroup group = context.determineGroup(id);
+        AclResult result = group.get() == null ? AclResult.SKIPPED : AclResult.OK;
+        context.logResult(group, "getGroup {}", result);
+        return result == AclResult.OK ? group : null;
     }
 
-    public AclResult deleteUser(Object userObj) {
-        Authorizable user = determineAuthorizable(userObj);
-        String userId = getID(user);
+    public AclResult deleteUser(AuthorizableOptions options) {
+        MyUser user = context.determineUser(options.getAuthorizable(), options.getId());
+        return deleteUser(user);
+    }
+
+    public AclResult deleteUser(String id) {
+        MyUser user = context.determineUser(id);
+        return deleteUser(user);
+    }
+
+    public AclResult deleteUser(MyUser user) {
         AclResult result;
-        if (notExists(user)) {
+        if (user.get() == null) {
             result = AclResult.OK;
         } else {
             purge(user);
-            authorizableManager.deleteAuthorizable(user);
+            context.getAuthorizableManager().deleteAuthorizable(user.get());
             result = AclResult.CHANGED;
         }
-        logResult(userId, "deleteUser {}", result);
+        context.logResult(user, "deleteUser {}", result);
         return result;
     }
 
-    public AclResult deleteGroup(Object groupObj) {
-        Authorizable group = determineAuthorizable(groupObj);
-        String groupId = getID(group);
+    public AclResult deleteGroup(AuthorizableOptions options) {
+        MyGroup group = context.determineGroup(options);
+        return deleteGroup(group);
+    }
+
+    public AclResult deleteGroup(String id) {
+        MyGroup group = context.determineGroup(id);
+        return deleteGroup(group);
+    }
+
+    public AclResult deleteGroup(MyGroup group) {
         AclResult result;
-        if (notExists(group)) {
+        if (group.get() == null) {
             result = AclResult.OK;
         } else {
             purge(group);
-            authorizableManager.deleteAuthorizable(group);
+            context.getAuthorizableManager().deleteAuthorizable(group.get());
             result = AclResult.CHANGED;
         }
-        logResult(groupId, "deleteGroup {}", result);
+        context.logResult(group, "deleteGroup {}", result);
         return result;
     }
 
     public AclResult addToGroup(GroupOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
-        Authorizable group = determineAuthorizable(options.getGroup(), options.getGroupId());
-        return addToGroup(authorizable, group);
+        MyAuthorizable authorizable = context.determineAuthorizable(options);
+        MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        return authorizable.addToGroup(group);
     }
 
-    public AclResult addToGroup(Object authorizableObj, Object groupObj) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        Authorizable group = determineAuthorizable(groupObj);
-        return forMyAuthorizable(authorizable).addToGroup(group);
+    public AclResult addToGroup(String id, String groupId) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        MyGroup group = context.determineGroup(groupId);
+        return authorizable.addToGroup(group);
+    }
+
+    public AclResult addToGroup(String id, MyGroup group) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.addToGroup(group);
+    }
+
+    public AclResult addToGroup(MyAuthorizable authorizable, String groupId) {
+        MyGroup group = context.determineGroup(groupId);
+        return authorizable.addToGroup(group);
+    }
+
+    public AclResult addToGroup(MyAuthorizable authorizable, MyGroup group) {
+        return authorizable.addToGroup(group);
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
-        Authorizable group = determineAuthorizable(options.getGroup(), options.getGroupId());
-        return removeFromGroup(authorizable, group);
+        MyAuthorizable authorizable = context.determineAuthorizable(options);
+        MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        return authorizable.removeFromGroup(group);
     }
 
-    public AclResult removeFromGroup(Object authorizableObj, Object groupObj) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        Authorizable group = determineAuthorizable(groupObj);
-        return forMyAuthorizable(authorizable).removeFromGroup(group);
+    public AclResult removeFromGroup(String id, String groupId) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        MyGroup group = context.determineGroup(groupId);
+        return authorizable.removeFromGroup(group);
     }
 
-    public AclResult removeFromAllGroups(Object authorizableObj) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        return forMyAuthorizable(authorizable).removeFromAllGroups();
+    public AclResult removeFromGroup(MyAuthorizable authorizable, MyGroup group) {
+        return authorizable.removeFromGroup(group);
+    }
+
+    public AclResult removeFromAllGroups(AuthorizableOptions options) {
+        MyGroup group = context.determineGroup(options);
+        return group.removeFromAllGroups();
+    }
+
+    public AclResult removeFromAllGroups(String groupId) {
+        MyGroup group = context.determineGroup(groupId);
+        return group.removeFromAllGroups();
+    }
+
+    public AclResult removeFromAllGroups(MyGroup group) {
+        return group.removeFromAllGroups();
     }
 
     public AclResult addMember(MemberOptions options) {
-        Authorizable group = determineAuthorizable(options);
-        Authorizable member = determineAuthorizable(options.getMember(), options.getMemberId());
-        return addMember(group, member);
+        MyGroup group = context.determineGroup(options);
+        MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+        return group.addMember(member);
     }
 
-    public AclResult addMember(Object groupObj, Object memberObj) {
-        Authorizable group = determineAuthorizable(groupObj);
-        Authorizable member = determineAuthorizable(memberObj);
-        return forMyGroup(group).addMember(member);
+    public AclResult addMember(String groupId, String memberId) {
+        MyGroup group = context.determineGroup(groupId);
+        return group.addMember(memberId);
+    }
+
+    public AclResult addMember(String groupId, MyAuthorizable member) {
+        MyGroup group = context.determineGroup(groupId);
+        return group.addMember(member);
+    }
+
+    public AclResult addMember(MyGroup group, String memberId) {
+        return group.addMember(memberId);
+    }
+
+    public AclResult addMember(MyGroup group, MyAuthorizable member) {
+        return group.addMember(member);
     }
 
     public AclResult removeMember(MemberOptions options) {
-        Authorizable group = determineAuthorizable(options);
-        Authorizable member = determineAuthorizable(options.getMember(), options.getMemberId());
-        return removeMember(group, member);
+        MyGroup group = context.determineGroup(options);
+        MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+        return group.removeMember(member);
     }
 
-    public AclResult removeMember(Object groupObj, Object memberObj) {
-        Authorizable group = determineAuthorizable(groupObj);
-        Authorizable member = determineAuthorizable(memberObj);
-        return forMyGroup(group).removeMember(member);
+    public AclResult removeMember(String groupId, String memberId) {
+        MyGroup group = context.determineGroup(groupId);
+        return group.removeMember(memberId);
     }
 
-    public AclResult removeAllMembers(Object groupObj) {
-        Authorizable group = determineAuthorizable(groupObj);
-        return forMyGroup(group).removeAllMembers();
+    public AclResult removeMember(MyGroup group, MyAuthorizable member) {
+        return group.removeMember(member);
+    }
+
+    public AclResult removeAllMembers(AuthorizableOptions options) {
+        MyGroup group = context.determineGroup(options);
+        return group.removeAllMembers();
+    }
+
+    public AclResult removeAllMembers(String groupId) {
+        MyGroup group = context.determineGroup(groupId);
+        return group.removeAllMembers();
+    }
+
+    public AclResult removeAllMembers(MyGroup group) {
+        return group.removeAllMembers();
     }
 
     public AclResult clear(ClearOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
-        return clear(authorizable, options.getPath(), options.isStrict());
+        MyAuthorizable authorizable = context.determineAuthorizable(options);
+        return authorizable.clear(options.getPath(), options.isStrict());
     }
 
-    public AclResult clear(Object authorizableObj, String path, boolean strict) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        return forMyAuthorizable(authorizable).clear(path, strict);
+    public AclResult clear(String id, String path, boolean strict) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.clear(path, strict);
     }
 
-    public AclResult clear(Object authorizableObj, String path) {
-        return clear(authorizableObj, path, false);
+    public AclResult clear(String id, String path) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.clear(path);
     }
 
-    public AclResult purge(Object authorizableObj) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        return authorizable.isGroup()
-                ? forMyGroup(authorizable).purge()
-                : forMyUser(authorizable).purge();
+    public AclResult clear(MyAuthorizable authorizable, String path, boolean strict) {
+        return authorizable.clear(path, strict);
     }
 
-    private AclResult apply(
-            Object authorizableObj,
-            String path,
-            List<String> permissions,
-            String glob,
-            List<String> types,
-            List<String> properties,
-            Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode,
-            boolean allow) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        if (allow) {
-            return forMyAuthorizable(authorizable)
-                    .allow(path, permissions, glob, types, properties, restrictions, null);
-        } else {
-            return forMyAuthorizable(authorizable).deny(path, permissions, glob, types, properties, restrictions, null);
-        }
+    public AclResult clear(MyAuthorizable authorizable, String path) {
+        return authorizable.clear(path);
+    }
+
+    public AclResult purge(AuthorizableOptions options) {
+        MyAuthorizable authorizable = context.determineAuthorizable(options);
+        return authorizable.purge();
+    }
+
+    public AclResult purge(String id) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.purge();
+    }
+
+    public AclResult purge(MyAuthorizable authorizable) {
+        return authorizable.purge();
     }
 
     public AclResult allow(PermissionsOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
-        return apply(
-                authorizable,
+        MyAuthorizable authorizable = context.determineAuthorizable(options);
+        return authorizable.allow(
                 options.getPath(),
                 options.getPermissions(),
                 options.getGlob(),
                 options.getTypes(),
                 options.getProperties(),
                 options.getRestrictions(),
-                options.getMode(),
-                true);
+                null);
     }
 
     public AclResult allow(
-            Object authorizableObj,
+            String id,
             String path,
             List<String> permissions,
             String glob,
@@ -437,38 +439,65 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        return apply(authorizableObj, path, permissions, glob, types, properties, restrictions, mode, true);
-    }
-
-    public AclResult allow(Object authorizableObj, String path, List<String> permissions) {
-        return apply(authorizableObj, path, permissions, null, null, null, null, null, true);
-    }
-
-    public AclResult allow(Object authorizableObj, String path, List<String> permissions, String glob) {
-        return apply(authorizableObj, path, permissions, glob, null, null, null, null, true);
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.allow(path, permissions, glob, types, properties, restrictions, null);
     }
 
     public AclResult allow(
-            Object authorizableObj, String path, List<String> permissions, Map<String, Object> restrictions) {
-        return apply(authorizableObj, path, permissions, null, null, null, restrictions, null, true);
+            MyAuthorizable authorizable,
+            String path,
+            List<String> permissions,
+            String glob,
+            List<String> types,
+            List<String> properties,
+            Map<String, Object> restrictions,
+            PermissionsOptions.Mode mode) {
+        return authorizable.allow(path, permissions, glob, types, properties, restrictions, null);
+    }
+
+    public AclResult allow(String id, String path, List<String> permissions) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.allow(path, permissions);
+    }
+
+    public AclResult allow(MyAuthorizable authorizable, String path, List<String> permissions) {
+        return authorizable.allow(path, permissions);
+    }
+
+    public AclResult allow(String id, String path, List<String> permissions, String glob) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.allow(path, permissions, glob);
+    }
+
+    public AclResult allow(MyAuthorizable authorizable, String path, List<String> permissions, String glob) {
+        return authorizable.allow(path, permissions, glob);
+    }
+
+    public AclResult allow(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
+
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.allow(path, permissions, restrictions);
+    }
+
+    public AclResult allow(
+            MyAuthorizable authorizable, String path, List<String> permissions, Map<String, Object> restrictions) {
+        return authorizable.allow(path, permissions, restrictions);
     }
 
     public AclResult deny(PermissionsOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
-        return apply(
-                authorizable,
+        MyAuthorizable authorizable = context.determineAuthorizable(options);
+        return authorizable.deny(
                 options.getPath(),
                 options.getPermissions(),
                 options.getGlob(),
                 options.getTypes(),
                 options.getProperties(),
                 options.getRestrictions(),
-                options.getMode(),
-                false);
+                null);
     }
 
     public AclResult deny(
-            Object authorizableObj,
+            String id,
             String path,
             List<String> permissions,
             String glob,
@@ -476,102 +505,105 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        return apply(authorizableObj, path, permissions, glob, types, properties, restrictions, mode, false);
-    }
-
-    public AclResult deny(Object authorizableObj, String path, List<String> permissions) {
-        return apply(authorizableObj, path, permissions, null, null, null, null, null, false);
-    }
-
-    public AclResult deny(Object authorizableObj, String path, List<String> permissions, String glob) {
-        return apply(authorizableObj, path, permissions, glob, null, null, null, null, false);
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.deny(path, permissions, glob, types, properties, restrictions, null);
     }
 
     public AclResult deny(
-            Object authorizableObj, String path, List<String> permissions, Map<String, Object> restrictions) {
-        return apply(authorizableObj, path, permissions, null, null, null, restrictions, null, false);
+            MyAuthorizable authorizable,
+            String path,
+            List<String> permissions,
+            String glob,
+            List<String> types,
+            List<String> properties,
+            Map<String, Object> restrictions,
+            PermissionsOptions.Mode mode) {
+        return authorizable.deny(path, permissions, glob, types, properties, restrictions, null);
+    }
+
+    public AclResult deny(String id, String path, List<String> permissions) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.deny(path, permissions);
+    }
+
+    public AclResult deny(MyAuthorizable authorizable, String path, List<String> permissions) {
+        return authorizable.deny(path, permissions);
+    }
+
+    public AclResult deny(String id, String path, List<String> permissions, String glob) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.deny(path, permissions, glob);
+    }
+
+    public AclResult deny(MyAuthorizable authorizable, String path, List<String> permissions, String glob) {
+        return authorizable.deny(path, permissions, glob);
+    }
+
+    public AclResult deny(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.deny(path, permissions, restrictions);
+    }
+
+    public AclResult deny(
+            MyAuthorizable authorizable, String path, List<String> permissions, Map<String, Object> restrictions) {
+        return authorizable.deny(path, permissions, restrictions);
     }
 
     public AclResult setProperty(SetPropertyOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
-        return setProperty(authorizable, options.getRelPath(), options.getValue());
+        MyAuthorizable authorizable = context.determineAuthorizable(options);
+        return authorizable.setProperty(options.getRelPath(), options.getValue());
     }
 
-    public AclResult setProperty(Object authorizableObj, String relPath, String value) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        return forMyAuthorizable(authorizable).setProperty(relPath, value);
+    public AclResult setProperty(String id, String relPath, String value) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.setProperty(relPath, value);
+    }
+
+    public AclResult setProperty(MyAuthorizable authorizable, String relPath, String value) {
+        return authorizable.setProperty(relPath, value);
     }
 
     public AclResult removeProperty(RemovePropertyOptions options) {
-        Authorizable authorizable = determineAuthorizable(options);
-        return removeProperty(authorizable, options.getRelPath());
+        MyAuthorizable authorizable = context.determineAuthorizable(options);
+        return authorizable.removeProperty(options.getRelPath());
     }
 
-    public AclResult removeProperty(Object authorizableObj, String relPath) {
-        Authorizable authorizable = determineAuthorizable(authorizableObj);
-        return forMyAuthorizable(authorizable).removeProperty(relPath);
+    public AclResult removeProperty(String id, String relPath) {
+        MyAuthorizable authorizable = context.determineAuthorizable(id);
+        return authorizable.removeProperty(relPath);
+    }
+
+    public AclResult removeProperty(MyAuthorizable authorizable, String relPath) {
+        return authorizable.removeProperty(relPath);
     }
 
     public AclResult setPassword(PasswordOptions options) {
-        Authorizable user = determineAuthorizable(options);
-        return setPassword(user, options.getPassword());
+        MyUser user = context.determineUser(options);
+        return user.setPassword(options.getPassword());
     }
 
-    public AclResult setPassword(Object userObj, String password) {
-        Authorizable user = determineAuthorizable(userObj);
-        return forMyUser(user).setPassword(password);
+    public AclResult setPassword(String userId, String password) {
+        MyUser user = context.determineUser(userId);
+        return user.setPassword(password);
     }
 
-    private Authorizable determineAuthorizable(Object authorizableObj) {
-        return authorizableManager.determineAuthorizable(authorizableObj);
+    public AclResult setPassword(MyUser user, String password) {
+        return user.setPassword(password);
     }
 
-    private Authorizable determineAuthorizable(Object authorizableObj, String id) {
-        return authorizableManager.determineAuthorizable(authorizableObj, id);
+    public MyUser user(String id) {
+        return user(context.getAuthorizableManager().getUser(id));
     }
 
-    private MyAuthorizable forMyAuthorizable(Authorizable authorizable) {
-        return new MyAuthorizable(
-                authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
+    public MyUser user(User user) {
+        return user == null ? null : context.determineUser(user);
     }
 
-    private MyUser forMyUser(Authorizable authorizable) {
-        return new MyUser(
-                authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
+    public MyGroup group(String id) {
+        return group(context.getAuthorizableManager().getGroup(id));
     }
 
-    private MyGroup forMyGroup(Authorizable authorizable) {
-        return new MyGroup(
-                authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
-    }
-
-    private boolean notExists(Authorizable authorizable) {
-        return authorizable == null || authorizable instanceof UnknownAuthorizable;
-    }
-
-    protected String getID(Authorizable authorizable) {
-        try {
-            return authorizable.getID();
-        } catch (RepositoryException e) {
-            return "";
-        }
-    }
-
-    private void logResult(Authorizable authorizable, String messagePattern, Object... args) {
-        try {
-            logResult(authorizable.getID(), messagePattern, args);
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to get authorizable ID", e);
-        }
-    }
-
-    private void logResult(String id, String messagePattern, Object... args) {
-        try {
-            String newMessagePattern = String.format("[%s] %s\n", id, messagePattern);
-            String message = MessageFormatter.format(newMessagePattern, args).getMessage();
-            out.write(message.getBytes());
-        } catch (IOException e) {
-            throw new AclException("Failed to log message", e);
-        }
+    public MyGroup group(Group group) {
+        return group == null ? null : context.determineGroup(group);
     }
 }

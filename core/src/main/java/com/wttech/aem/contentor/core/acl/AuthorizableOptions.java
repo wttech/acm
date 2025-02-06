@@ -1,16 +1,18 @@
 package com.wttech.aem.contentor.core.acl;
 
+import com.wttech.aem.contentor.core.acl.authorizable.MyAuthorizable;
+
 public class AuthorizableOptions {
 
-    private Object authorizable;
+    private MyAuthorizable authorizable;
 
     private String id;
 
-    public Object getAuthorizable() {
+    public MyAuthorizable getAuthorizable() {
         return authorizable;
     }
 
-    public void setAuthorizable(Object authorizable) {
+    public void setAuthorizable(MyAuthorizable authorizable) {
         this.authorizable = authorizable;
     }
 

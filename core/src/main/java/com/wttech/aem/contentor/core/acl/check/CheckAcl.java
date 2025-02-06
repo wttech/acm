@@ -1,8 +1,7 @@
 package com.wttech.aem.contentor.core.acl.check;
 
+import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclException;
-import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
-import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;
@@ -15,16 +14,12 @@ import org.apache.jackrabbit.api.security.user.User;
 
 public class CheckAcl {
 
-    private final AuthorizableManager authorizableManager;
+    private final AclContext context;
 
-    private final PermissionsManager permissionsManager;
-
-    public CheckAcl(AuthorizableManager authorizableManager, PermissionsManager permissionsManager) {
-        this.authorizableManager = authorizableManager;
-        this.permissionsManager = permissionsManager;
+    public CheckAcl(AclContext context) {
+        this.context = context;
     }
 
-    // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
     public boolean exclude(Closure<MemberOptions> closure) {
         return exclude(GroovyUtils.with(new MemberOptions(), closure));
     }
@@ -65,8 +60,8 @@ public class CheckAcl {
 
     public boolean exclude(String groupId, String memberId) {
         try {
-            Group group = authorizableManager.getGroup(groupId);
-            Authorizable authorizable = authorizableManager.getAuthorizable(memberId);
+            Group group = context.getAuthorizableManager().getGroup(groupId);
+            Authorizable authorizable = context.getAuthorizableManager().getAuthorizable(memberId);
             if (authorizable != null) {
                 return !group.isMember(authorizable);
             }
@@ -82,7 +77,7 @@ public class CheckAcl {
 
     public boolean exists(String id, String path, ExistsOptions.Type type) {
         try {
-            Authorizable authorizable = authorizableManager.getAuthorizable(id);
+            Authorizable authorizable = context.getAuthorizableManager().getAuthorizable(id);
             boolean result = authorizable != null;
             if (result && StringUtils.isNotEmpty(path)) {
                 result = StringUtils.endsWith(authorizable.getPath(), path);
@@ -137,8 +132,8 @@ public class CheckAcl {
 
     public boolean include(String groupId, String memberId) {
         try {
-            Group group = authorizableManager.getGroup(groupId);
-            Authorizable authorizable = authorizableManager.getAuthorizable(memberId);
+            Group group = context.getAuthorizableManager().getGroup(groupId);
+            Authorizable authorizable = context.getAuthorizableManager().getAuthorizable(memberId);
             if (authorizable != null) {
                 return group.isMember(authorizable);
             }
@@ -153,7 +148,7 @@ public class CheckAcl {
     }
 
     public boolean notExists(String id) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        Authorizable authorizable = context.getAuthorizableManager().getAuthorizable(id);
         return authorizable == null;
     }
 
@@ -162,8 +157,8 @@ public class CheckAcl {
     }
 
     public boolean password(String id, String password) {
-        User user = authorizableManager.getUser(id);
-        return authorizableManager.testPassword(user, password);
+        User user = context.getAuthorizableManager().getUser(id);
+        return context.getAuthorizableManager().testPassword(user, password);
     }
 
     private boolean check(
@@ -175,15 +170,20 @@ public class CheckAcl {
             List<String> properties,
             Map<String, Object> restrictions,
             boolean allow) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        Authorizable authorizable = context.getAuthorizableManager().getAuthorizable(id);
         PermissionsOptions options = new PermissionsOptions();
         options.setPermissions(permissions);
         options.setGlob(glob);
         options.setTypes(types);
         options.setProperties(properties);
         options.setRestrictions(restrictions);
-        return permissionsManager.check(
-                authorizable, path, options.determineAllPermissions(), options.determineAllRestrictions(), allow);
+        return context.getPermissionsManager()
+                .check(
+                        authorizable,
+                        path,
+                        options.determineAllPermissions(),
+                        options.determineAllRestrictions(),
+                        allow);
     }
 
     public boolean allow(PermissionsOptions options) {
@@ -261,8 +261,8 @@ public class CheckAcl {
     }
 
     public boolean property(String id, String relPath, String value) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        List<String> values = authorizableManager.getProperty(authorizable, relPath);
+        Authorizable authorizable = context.getAuthorizableManager().getAuthorizable(id);
+        List<String> values = context.getAuthorizableManager().getProperty(authorizable, relPath);
         return values != null && values.contains(value);
     }
 }

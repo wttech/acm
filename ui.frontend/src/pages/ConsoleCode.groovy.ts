@@ -8,13 +8,13 @@ void doRun() {
 
     println "Updating ACLs..."
     def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
-    acl.forUser { authorizable = acmeService } {
+    acl.getUser { authorizable = acmeService }?.with {
         purge { }
         allow { path = "/content"; permissions = ["jcr:read", "jcr:write"] }
     }
 
     def johnDoe = acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
-    johnDoe.with {
+    johnDoe?.with {
         purge()
         allow("/content", ["jcr:read"])
     }

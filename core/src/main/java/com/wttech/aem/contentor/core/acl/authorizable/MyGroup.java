@@ -1,44 +1,23 @@
 package com.wttech.aem.contentor.core.acl.authorizable;
 
+import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclException;
 import com.wttech.aem.contentor.core.acl.AclResult;
-import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
-import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
-import org.apache.sling.api.resource.ResourceResolver;
 
 public class MyGroup extends MyAuthorizable {
 
-    public MyGroup(
-            Authorizable authorizable,
-            ResourceResolver resourceResolver,
-            AuthorizableManager authorizableManager,
-            PermissionsManager permissionsManager,
-            boolean compositeNodeStore,
-            OutputStream out) {
-        super(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
-    }
+    private final Group group;
 
-    // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
-    public AclResult with(Closure<MyGroup> closure) {
-        AclResult result;
-        if (notExists(authorizable)) {
-            result = AclResult.SKIPPED;
-        } else if (!authorizable.isGroup()) {
-            result = AclResult.SKIPPED;
-        } else {
-            GroovyUtils.with(this, closure);
-            result = AclResult.CHANGED;
-        }
-        logResult("with {}", result);
-        return result;
+    public MyGroup(Group group, String id, AclContext context) {
+        super(group, id, context);
+        this.group = group;
     }
 
     public AclResult addMember(Closure<MemberOptions> closure) {
@@ -53,80 +32,79 @@ public class MyGroup extends MyAuthorizable {
         return removeAllMembers();
     }
 
-    public AclResult purge(Closure<Void> closure) {
-        return purge();
-    }
-
     // Non-closure accepting methods
 
     public AclResult addMember(MemberOptions options) {
-        Authorizable member = determineAuthorizable(options.getMember(), options.getMemberId());
+        MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return addMember(member);
     }
 
-    public AclResult addMember(Object memberObj) {
-        Authorizable member = determineAuthorizable(memberObj);
+    public AclResult addMember(String memberId) {
+        MyAuthorizable member = context.determineAuthorizable(memberId);
+        return addMember(member);
+    }
+
+    public AclResult addMember(MyAuthorizable member) {
         AclResult result;
-        if (notExists(authorizable)) {
+        if (group == null) {
             result = AclResult.SKIPPED;
-        } else if (!authorizable.isGroup()) {
-            result = AclResult.SKIPPED;
-        } else if (notExists(member)) {
+        } else if (member.get() == null) {
             result = AclResult.SKIPPED;
         } else {
-            result = authorizableManager.addMember((Group) authorizable, member) ? AclResult.CHANGED : AclResult.OK;
+            result = context.getAuthorizableManager().addMember(group, member.get()) ? AclResult.CHANGED : AclResult.OK;
         }
-        logResult("addMember {}", result, getID(member));
+        context.logResult(this, "addMember {}", result, member.getId());
         return result;
     }
 
     public AclResult removeMember(MemberOptions options) {
-        Authorizable member = determineAuthorizable(options.getMember(), options.getMemberId());
+        MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return removeMember(member);
     }
 
-    public AclResult removeMember(Object memberObj) {
-        Authorizable member = determineAuthorizable(memberObj);
+    public AclResult removeMember(String memberId) {
+        MyAuthorizable member = context.determineAuthorizable(memberId);
+        return removeMember(member);
+    }
+
+    public AclResult removeMember(MyAuthorizable member) {
         AclResult result;
-        if (notExists(authorizable)) {
+        if (group == null) {
             result = AclResult.SKIPPED;
-        } else if (!authorizable.isGroup()) {
-            result = AclResult.SKIPPED;
-        } else if (notExists(member)) {
+        } else if (member.get() == null) {
             result = AclResult.SKIPPED;
         } else {
-            result = authorizableManager.removeMember((Group) authorizable, member) ? AclResult.CHANGED : AclResult.OK;
+            result = context.getAuthorizableManager().removeMember(group, member.get())
+                    ? AclResult.CHANGED
+                    : AclResult.OK;
         }
-        logResult("removeMember {}", result, getID(member));
+        context.logResult(this, "removeMember {}", result, member.getId());
         return result;
     }
 
     public AclResult removeAllMembers() {
         try {
             AclResult result;
-            if (notExists(authorizable)) {
-                result = AclResult.SKIPPED;
-            } else if (!authorizable.isGroup()) {
+            if (group == null) {
                 result = AclResult.SKIPPED;
             } else {
-                Iterator<Authorizable> members = ((Group) authorizable).getMembers();
+                Iterator<Authorizable> members = group.getMembers();
                 result = members.hasNext() ? AclResult.CHANGED : AclResult.OK;
                 while (members.hasNext()) {
-                    authorizableManager.removeMember((Group) authorizable, members.next());
+                    context.getAuthorizableManager().removeMember(group, members.next());
                 }
             }
-            logResult("removeAllMembers {}", result);
+            context.logResult(this, "removeAllMembers {}", result);
             return result;
         } catch (RepositoryException e) {
             throw new AclException("Failed to remove all members from group", e);
         }
     }
 
+    @Override
     public AclResult purge() {
         AclResult result;
-        if (notExists(authorizable)) {
-            result = AclResult.SKIPPED;
-        } else if (!authorizable.isGroup()) {
+        if (group == null) {
             result = AclResult.SKIPPED;
         } else {
             result = Arrays.asList(removeAllMembers(), removeFromAllGroups(), clear("/", false))
@@ -134,7 +112,12 @@ public class MyGroup extends MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        logResult("purge {}", result);
+        context.logResult(this, "purge {}", result);
         return result;
+    }
+
+    @Override
+    public Group get() {
+        return group;
     }
 }

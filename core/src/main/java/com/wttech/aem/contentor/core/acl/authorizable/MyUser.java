@@ -1,45 +1,19 @@
 package com.wttech.aem.contentor.core.acl.authorizable;
 
+import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclResult;
-import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
-import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import java.io.OutputStream;
 import java.util.Arrays;
-import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.User;
-import org.apache.sling.api.resource.ResourceResolver;
 
 public class MyUser extends MyAuthorizable {
 
-    public MyUser(
-            Authorizable authorizable,
-            ResourceResolver resourceResolver,
-            AuthorizableManager authorizableManager,
-            PermissionsManager permissionsManager,
-            boolean compositeNodeStore,
-            OutputStream out) {
-        super(authorizable, resourceResolver, authorizableManager, permissionsManager, compositeNodeStore, out);
-    }
+    private final User user;
 
-    // TODO Closure accepting methods need to be defined before the simple ones (add arch unit rule to protect it)
-    public AclResult with(Closure<MyUser> closure) {
-        AclResult result;
-        if (notExists(authorizable)) {
-            result = AclResult.SKIPPED;
-        } else if (authorizable.isGroup()) {
-            result = AclResult.SKIPPED;
-        } else {
-            GroovyUtils.with(this, closure);
-            result = AclResult.CHANGED;
-        }
-        logResult("with {}", result);
-        return result;
-    }
-
-    public AclResult purge(Closure<Void> closure) {
-        return purge();
+    public MyUser(User user, String id, AclContext context) {
+        super(user, id, context);
+        this.user = user;
     }
 
     public AclResult setPassword(Closure<PasswordOptions> closure) {
@@ -48,18 +22,17 @@ public class MyUser extends MyAuthorizable {
 
     // Non-closure accepting methods
 
+    @Override
     public AclResult purge() {
         AclResult result;
-        if (notExists(authorizable)) {
-            result = AclResult.SKIPPED;
-        } else if (authorizable.isGroup()) {
+        if (user == null) {
             result = AclResult.SKIPPED;
         } else {
             result = Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.CHANGED)
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        logResult("purge {}", result);
+        context.logResult(this, "purge {}", result);
         return result;
     }
 
@@ -69,17 +42,20 @@ public class MyUser extends MyAuthorizable {
 
     public AclResult setPassword(String password) {
         AclResult result;
-        if (notExists(authorizable)) {
+        if (user == null) {
             result = AclResult.SKIPPED;
-        } else if (authorizable.isGroup()) {
-            result = AclResult.SKIPPED;
-        } else if (authorizableManager.testPassword(authorizable, password)) {
+        } else if (context.getAuthorizableManager().testPassword(user, password)) {
             result = AclResult.OK;
         } else {
-            authorizableManager.changePassword((User) authorizable, password);
+            context.getAuthorizableManager().changePassword(user, password);
             result = AclResult.CHANGED;
         }
-        logResult("setPassword {}", result);
+        context.logResult(this, "setPassword {}", result);
         return result;
+    }
+
+    @Override
+    public User get() {
+        return user;
     }
 }
