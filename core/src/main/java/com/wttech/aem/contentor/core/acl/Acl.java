@@ -136,6 +136,7 @@ public class Acl {
             }
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
         } else if (options.getMode() == CreateUserOptions.Mode.FAIL) {
+            throw new AclException(String.format("User with id %s already exists", options.getId()));
         } else if (options.getMode() == CreateUserOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
         }
@@ -183,6 +184,7 @@ public class Acl {
                     .createGroup(options.getId(), options.getPath(), options.getExternalId());
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
         } else if (options.getMode() == CreateGroupOptions.Mode.FAIL) {
+            throw new AclException(String.format("Group with id %s already exists", options.getId()));
         } else if (options.getMode() == CreateGroupOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
         }
