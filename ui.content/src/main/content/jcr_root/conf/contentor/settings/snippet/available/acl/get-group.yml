@@ -1,0 +1,19 @@
+name: acl/get-group
+content: |
+  acl.getGroup { id = "${1:id}" }?.with {
+    setProperty { relPath = "${1:relPath}"; value = "${2:value}" }
+    removeProperty { relPath = "${1:relPath}" }
+    removeAllMembers { }
+    removeFromAllGroups { }
+    clear { path = "${1:path}" }
+    purge { }
+    addMember { member = ${1:member} }
+    removeMember { member = ${1:member} }
+    addToGroup { group = ${1:group} }
+    removeFromGroup { group = ${1:group} }
+    allow { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
+    deny { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
+  }
+documentation: |
+  Executes the closure for the group with the given ID.
+  The closure will only be executed if the group exists.

@@ -317,17 +317,17 @@ public class Acl {
     }
 
     public AclResult removeFromAllGroups(AuthorizableOptions options) {
-        MyGroup group = context.determineGroup(options);
-        return group.removeFromAllGroups();
+        MyAuthorizable authorizable = context.determineAuthorizable(options);
+        return authorizable.removeFromAllGroups();
     }
 
     public AclResult removeFromAllGroups(String groupId) {
-        MyGroup group = context.determineGroup(groupId);
-        return group.removeFromAllGroups();
+        MyAuthorizable authorizable = context.determineAuthorizable(groupId);
+        return authorizable.removeFromAllGroups();
     }
 
-    public AclResult removeFromAllGroups(MyGroup group) {
-        return group.removeFromAllGroups();
+    public AclResult removeFromAllGroups(MyAuthorizable authorizable) {
+        return authorizable.removeFromAllGroups();
     }
 
     public AclResult addMember(MemberOptions options) {

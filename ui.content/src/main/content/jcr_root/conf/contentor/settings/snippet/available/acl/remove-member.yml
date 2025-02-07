@@ -1,5 +1,5 @@
 name: acl/remove-member
 content: |
-  acl.removeMember { group = ${1:group}; member = ${2:member} }
+  acl.removeMember { authorizable = ${1:group}; member = ${2:member} }
 documentation: |
   Remove the given member from the target group.
