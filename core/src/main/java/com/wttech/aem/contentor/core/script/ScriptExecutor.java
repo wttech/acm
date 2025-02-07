@@ -61,7 +61,7 @@ public class ScriptExecutor implements Runnable {
         try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
 
-            LOG.info("Executing scripts");
+            LOG.debug("Executing scripts");
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
                 try {
                     Execution execution = executor.execute(script);
@@ -70,7 +70,7 @@ public class ScriptExecutor implements Runnable {
                     LOG.error("Failed to execute script '{}'", script.getId(), e);
                 }
             });
-            LOG.info("Executed scripts");
+            LOG.debug("Executed scripts");
         } catch (Exception e) {
             LOG.error("Failed to execute scripts", e);
         }
