@@ -1,16 +1,15 @@
 name: acl/create-system-user
 content: |
   def ${1:user} = acl.createUser { id = "${2:id}"; systemUser() }
-  acl.setPassword { authorizable = ${1:user}; password = "${2:password}" }
-  acl.setProperty { authorizable = ${1:user}; relPath = "${2:relPath}"; value = "${3:value}" }
-  acl.removeProperty { authorizable = ${1:user}; relPath = "${1:relPath}" }
-  acl.removeFromAllGroups { authorizable = ${1:user} }
-  acl.clear { authorizable = ${1:user}; path = "${2:path}" }
-  acl.purge { authorizable = ${1:user} }
-  acl.addToGroup { authorizable = ${1:user}; group = ${2:group} }
-  acl.removeFromGroup { authorizable = ${1:user}; group = ${2:parent} }
-  acl.allow { authorizable = ${1:user}; path = "${2:path}"; permissions = [${3:permissions}]; glob = "/*"; restrictions = [:] }
-  acl.deny { authorizable = ${1:user}; path = "${2:path}"; permissions = [${3:permissions}]; glob = "/*"; restrictions = [:] }
+  acl.setProperty { authorizable = ${1}; relPath = "${3:relPath}"; value = "${4:value}" }
+  acl.removeProperty { authorizable = ${1}; relPath = "${3}" }
+  acl.removeFromAllGroups { authorizable = ${1} }
+  acl.clear { authorizable = ${1}; path = "${5:path}" }
+  acl.purge { authorizable = ${1} }
+  acl.addToGroup { authorizable = ${1}; group = ${6:parent} }
+  acl.removeFromGroup { authorizable = ${1}; group = ${6} }
+  acl.allow { authorizable = ${1}; path = "${5}"; permissions = [${7:permissions}]; glob = "/*"; restrictions = [:] }
+  acl.deny { authorizable = ${1}; path = "${5}"; permissions = [${7}]; glob = "/*"; restrictions = [:] }
 documentation: |
   Create or retrieve the system user with the given ID.
   The user will only be created if it does not already exist.

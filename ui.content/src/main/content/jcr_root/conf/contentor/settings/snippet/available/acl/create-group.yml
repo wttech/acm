@@ -1,18 +1,18 @@
 name: acl/create-group
 content: |
   def ${1:group} = acl.createGroup { id = "${2:id}" }
-  acl.setProperty { authorizable = ${1:group}; relPath = "${2:relPath}"; value = "${3:value}" }
-  acl.removeProperty { authorizable = ${1:group}; relPath = "${1:relPath}" }
-  acl.removeAllMembers { authorizable = ${1:group} }
-  acl.removeFromAllGroups { authorizable = ${1:group} }
-  acl.clear { authorizable = ${1:group}; path = "${2:path}" }
-  acl.purge { authorizable = ${1:group} }
-  acl.addMember { authorizable = ${1:group}; member = ${2:member} }
-  acl.removeMember { authorizable = ${1:group}; member = ${2:member} }
-  acl.addToGroup { authorizable = ${1:group}; group = ${2:group} }
-  acl.removeFromGroup { authorizable = ${1:group}; group = ${2:parent} }
-  acl.allow { authorizable = ${1:group}; path = "${2:path}"; permissions = [${3:permissions}]; glob = "/*"; restrictions = [:] }
-  acl.deny { authorizable = ${1:group}; path = "${2:path}"; permissions = [${3:permissions}]; glob = "/*"; restrictions = [:] }
+  acl.setProperty { authorizable = ${1}; relPath = "${3:relPath}"; value = "${4:value}" }
+  acl.removeProperty { authorizable = ${1}; relPath = "${3}" }
+  acl.removeAllMembers { authorizable = ${1} }
+  acl.removeFromAllGroups { authorizable = ${1} }
+  acl.clear { authorizable = ${1}; path = "${5:path}" }
+  acl.purge { authorizable = ${1} }
+  acl.addMember { authorizable = ${1}; member = ${6:member} }
+  acl.removeMember { authorizable = ${1}; member = ${6} }
+  acl.addToGroup { authorizable = ${1}; group = ${7:parent} }
+  acl.removeFromGroup { authorizable = ${1}; group = ${7} }
+  acl.allow { authorizable = ${1}; path = "${5}"; permissions = [${8:permissions}]; glob = "/*"; restrictions = [:] }
+  acl.deny { authorizable = ${1}; path = "${5}"; permissions = [${8}]; glob = "/*"; restrictions = [:] }
 documentation: |
   Create or retrieve the group with the given ID.
   The group will only be created if it does not already exist.

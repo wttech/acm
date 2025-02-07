@@ -1,18 +1,18 @@
 name: acl/get-group
 content: |
   acl.getGroup { id = "${1:id}" }?.with {
-    setProperty { relPath = "${1:relPath}"; value = "${2:value}" }
-    removeProperty { relPath = "${1:relPath}" }
+    setProperty { relPath = "${2:relPath}"; value = "${3:value}" }
+    removeProperty { relPath = "${2}" }
     removeAllMembers { }
     removeFromAllGroups { }
-    clear { path = "${1:path}" }
+    clear { path = "${4:path}" }
     purge { }
-    addMember { member = ${1:member} }
-    removeMember { member = ${1:member} }
-    addToGroup { group = ${1:group} }
-    removeFromGroup { group = ${1:group} }
-    allow { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
-    deny { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
+    addMember { member = ${5:member} }
+    removeMember { member = ${5} }
+    addToGroup { group = ${6:parent} }
+    removeFromGroup { group = ${6} }
+    allow { path = "${4}"; permissions = [${7:permissions}]; glob = "/*"; restrictions = [:] }
+    deny { path = "${4}"; permissions = [${7}]; glob = "/*"; restrictions = [:] }
   }
 documentation: |
   Executes the closure for the group with the given ID.

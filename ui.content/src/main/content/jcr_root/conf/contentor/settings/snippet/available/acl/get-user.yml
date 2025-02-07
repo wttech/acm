@@ -1,16 +1,16 @@
 name: acl/get-user
 content: |
   acl.getUser { id = "${1:id}" }?.with {
-    setPassword { password = "${1:password}" }
-    setProperty { relPath = "${1:relPath}"; value = "${2:value}" }
-    removeProperty { relPath = "${1:relPath}" }
+    setPassword { password = "${2:password}" }
+    setProperty { relPath = "${3:relPath}"; value = "${4:value}" }
+    removeProperty { relPath = "${3}" }
     removeFromAllGroups { }
-    clear { path = "${1:path}" }
+    clear { path = "${5:path}" }
     purge { }
-    addToGroup { group = ${1:group} }
-    removeFromGroup { group = ${1:group} }
-    allow { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
-    deny { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
+    addToGroup { group = ${6:parent} }
+    removeFromGroup { group = ${6} }
+    allow { path = "${5}"; permissions = [${7:permissions}]; glob = "/*"; restrictions = [:] }
+    deny { path = "${5}"; permissions = [${7}]; glob = "/*"; restrictions = [:] }
   }
 documentation: |
   Executes the closure for the user with the given ID.
