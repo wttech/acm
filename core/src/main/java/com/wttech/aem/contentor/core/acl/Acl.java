@@ -110,7 +110,7 @@ public class Acl {
             String email,
             String aboutMe,
             boolean systemUser,
-            CreateUserOptions.Mode mode) {
+            CreateAuthorizableOptions.Mode mode) {
         CreateUserOptions options = new CreateUserOptions();
         options.setId(id);
         options.setPassword(password);
@@ -134,9 +134,9 @@ public class Acl {
                         .createUser(options.getId(), options.getPassword(), options.getPath());
             }
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
-        } else if (options.getMode() == CreateUserOptions.Mode.FAIL) {
+        } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
             throw new AclException(String.format("User with id %s already exists", options.getId()));
-        } else if (options.getMode() == CreateUserOptions.Mode.OVERRIDE) {
+        } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
         }
         MyUser myUser = context.determineUser(user);
@@ -164,7 +164,7 @@ public class Acl {
             String givenName,
             String email,
             String aboutMe,
-            CreateGroupOptions.Mode mode) {
+            CreateAuthorizableOptions.Mode mode) {
         CreateGroupOptions options = new CreateGroupOptions();
         options.setId(id);
         options.setExternalId(externalId);
@@ -182,9 +182,9 @@ public class Acl {
             group = context.getAuthorizableManager()
                     .createGroup(options.getId(), options.getPath(), options.getExternalId());
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
-        } else if (options.getMode() == CreateGroupOptions.Mode.FAIL) {
+        } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
             throw new AclException(String.format("Group with id %s already exists", options.getId()));
-        } else if (options.getMode() == CreateGroupOptions.Mode.OVERRIDE) {
+        } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
         }
         MyGroup myGroup = context.determineGroup(group);
@@ -441,7 +441,8 @@ public class Acl {
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
         MyAuthorizable authorizable = context.determineAuthorizable(id);
-        return authorizable.allow(path, permissions, glob, types, properties, restrictions, null);
+        return authorizable.allow(
+                path, permissions, glob, types, properties, restrictions, PermissionsOptions.Mode.cast(mode));
     }
 
     public AclResult allow(
@@ -453,7 +454,8 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        return authorizable.allow(path, permissions, glob, types, properties, restrictions, null);
+        return authorizable.allow(
+                path, permissions, glob, types, properties, restrictions, PermissionsOptions.Mode.cast(mode));
     }
 
     public AclResult allow(String id, String path, List<String> permissions) {
@@ -507,7 +509,8 @@ public class Acl {
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
         MyAuthorizable authorizable = context.determineAuthorizable(id);
-        return authorizable.deny(path, permissions, glob, types, properties, restrictions, null);
+        return authorizable.deny(
+                path, permissions, glob, types, properties, restrictions, PermissionsOptions.Mode.cast(mode));
     }
 
     public AclResult deny(
@@ -519,7 +522,8 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        return authorizable.deny(path, permissions, glob, types, properties, restrictions, null);
+        return authorizable.deny(
+                path, permissions, glob, types, properties, restrictions, PermissionsOptions.Mode.cast(mode));
     }
 
     public AclResult deny(String id, String path, List<String> permissions) {

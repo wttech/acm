@@ -110,6 +110,16 @@ public class PermissionsOptions extends AuthorizableOptions {
 
     public enum Mode {
         FAIL,
-        SKIP
+        SKIP;
+
+        public static com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode cast(
+                PermissionsOptions.Mode mode) {
+            if (mode == FAIL) {
+                return com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode.FAIL;
+            } else if (mode == SKIP) {
+                return com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode.SKIP;
+            }
+            return null;
+        }
     }
 }
