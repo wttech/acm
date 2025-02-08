@@ -147,11 +147,11 @@ tasks:
       - (cd ui.content && sh ../mvnw clean package)
       - sh aemw package deploy --file 'ui.content/target/contentor.ui.content-*.zip'
 
-  develop:sample:
-    desc: build & deploy content AEM package to instances
+  develop:example:
+    desc: build & deploy example content AEM package to instances
     cmds:
-      - (cd ui.content.sample && sh ../mvnw clean package)
-      - sh aemw package deploy --file 'ui.content.sample/target/contentor.ui.content.sample-*.zip'
+      - (cd ui.content.example && sh ../mvnw clean package)
+      - sh aemw package deploy --file 'ui.content.example/target/contentor.ui.content.example-*.zip'
 
   develop:frontend:
     desc: build & deploy frontend to instances

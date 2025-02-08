@@ -30,10 +30,10 @@
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
-    <artifactId>contentor.ui.content.sample</artifactId>
+    <artifactId>contentor.ui.content.example</artifactId>
     <packaging>content-package</packaging>
-    <name>AEM Contentor - UI Content Sample</name>
-    <description>UI Sample Content Package for AEM Contentor</description>
+    <name>AEM Contentor - UI Content Example</name>
+    <description>UI Example Content Package for AEM Contentor</description>
 
     <!-- ====================================================================== -->
     <!-- B U I L D   D E F I N I T I O N                                        -->
@@ -51,7 +51,7 @@
                         <cloudManagerTarget>none</cloudManagerTarget>
                     </properties>
                     <group>com.wttech.aem.contentor</group>
-                    <name>contentor.ui.content.sample</name>
+                    <name>contentor.ui.content.example</name>
                     <packageType>content</packageType>
                     <!--<accessControlHandling>merge</accessControlHandling>-->
                     <validatorsSettings>

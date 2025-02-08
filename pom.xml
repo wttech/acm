@@ -31,7 +31,7 @@
         <module>ui.apps.structure</module>
         <module>ui.config</module>
         <module>ui.content</module>
-        <module>ui.content.sample</module>
+        <module>ui.content.example</module>
         <module>ui.frontend</module>
     </modules>
     <properties>
