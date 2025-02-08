@@ -96,7 +96,7 @@ public class PermissionsManager {
             boolean result = false;
             for (AccessControlEntry accessControlEntry : accessControlEntries) {
                 if (Objects.equals(accessControlEntry.getPrincipal(), authorizable.getPrincipal())) {
-                    result |= checkACE((ACE) accessControlEntry, new HashSet<>(permissions), restrictions, allow);
+                    result |= checkAce((ACE) accessControlEntry, new HashSet<>(permissions), restrictions, allow);
                 }
             }
             return result;
@@ -187,7 +187,7 @@ public class PermissionsManager {
         } catch (AccessControlException e) {
             throw new AclException("Unknown permission " + permission, e);
         } catch (RepositoryException e) {
-            throw new AclException("Failed to create privilege", e);
+            throw new AclException(String.format("Failed to determine privilege for '%s'", permission), e);
         }
     }
 
@@ -290,7 +290,7 @@ public class PermissionsManager {
         return path + (path.endsWith("/") ? "" : "/");
     }
 
-    private boolean checkACE(ACE ace, Set<String> permissions, Map<String, Object> restrictions, boolean allow)
+    private boolean checkAce(ACE ace, Set<String> permissions, Map<String, Object> restrictions, boolean allow)
             throws RepositoryException {
         boolean result = allow == ace.isAllow();
         if (result) {
