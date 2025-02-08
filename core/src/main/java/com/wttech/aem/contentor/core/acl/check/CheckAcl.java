@@ -52,8 +52,6 @@ public class CheckAcl {
         return property(GroovyUtils.with(new PropertyOptions(), closure));
     }
 
-    // Non-closure accepting methods
-
     public boolean exclude(MemberOptions options) {
         return exclude(options.getId(), options.getMemberId());
     }

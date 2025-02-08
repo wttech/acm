@@ -66,8 +66,6 @@ public class MyAuthorizable {
         return removeProperty(GroovyUtils.with(new RemovePropertyOptions(), closure));
     }
 
-    // Non-closure accepting methods
-
     public AclResult addToGroup(GroupOptions options) {
         MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         return addToGroup(group);

@@ -20,8 +20,6 @@ public class MyUser extends MyAuthorizable {
         return setPassword(GroovyUtils.with(new PasswordOptions(), closure));
     }
 
-    // Non-closure accepting methods
-
     @Override
     public AclResult purge() {
         AclResult result;

@@ -32,8 +32,6 @@ public class MyGroup extends MyAuthorizable {
         return removeAllMembers();
     }
 
-    // Non-closure accepting methods
-
     public AclResult addMember(MemberOptions options) {
         MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return addMember(member);

@@ -100,8 +100,6 @@ public class Acl {
         return setPassword(GroovyUtils.with(new PasswordOptions(), closure));
     }
 
-    // Non-closure accepting methods
-
     public MyUser createUser(
             String id,
             String password,
