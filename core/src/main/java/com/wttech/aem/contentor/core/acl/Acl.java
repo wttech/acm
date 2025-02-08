@@ -9,6 +9,7 @@ import groovy.lang.Closure;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -605,5 +606,13 @@ public class Acl {
 
     public MyGroup group(Group group) {
         return group == null ? null : context.determineGroup(group);
+    }
+
+    public String id(MyAuthorizable authorizable) {
+        return authorizable.getId();
+    }
+
+    public String id(Authorizable authorizable) {
+        return id(context.determineAuthorizable(authorizable));
     }
 }
