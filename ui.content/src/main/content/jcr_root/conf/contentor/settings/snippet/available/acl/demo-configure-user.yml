@@ -1,4 +1,4 @@
-name: acl/demo/configure-user
+name: acl-demo/configure-user
 content: |
   acl.getUser { id = "${1:id}" }?.with {
     /*

@@ -1,4 +1,4 @@
-name: acl/remove-all-members
+name: acl-remove-all-members
 content: |
   acl.removeAllMembers { authorizable = ${1:group} }
 documentation: |

@@ -1,4 +1,4 @@
-name: acl/delete-user
+name: acl-delete-user
 content: |
   acl.deleteUser { id = "${1:id}" }
 documentation: |

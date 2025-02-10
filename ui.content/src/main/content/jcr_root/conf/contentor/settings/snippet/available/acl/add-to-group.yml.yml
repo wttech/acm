@@ -1,4 +1,4 @@
-name: acl/add-to-group
+name: acl-add-to-group
 content: |
   acl.addToGroup { authorizable = ${1:authorizable}; group = ${2:group} }
 documentation: |

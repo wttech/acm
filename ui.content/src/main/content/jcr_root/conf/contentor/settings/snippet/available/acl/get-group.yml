@@ -1,4 +1,4 @@
-name: acl/get-group
+name: acl-get-group
 content: |
   def ${1:varName} = acl.getGroup { id = "${2:id}" }
 documentation: |

@@ -1,4 +1,4 @@
-name: acl/remove-from-group
+name: acl-remove-from-group
 content: |
   acl.removeFromGroup { authorizable = ${1:authorizable}; group = ${2:parent} }
 documentation: |
