@@ -1,5 +1,0 @@
-name: nodedeny
-content: |
-  deny { path = "${1:path}"; permissions = [${2:permissions}]; glob = "/*"; restrictions = [:] }
-documentation: |
-  Deny the specified permissions, glob and restrictions on the given path for the context authorizable.

@@ -1,19 +1,5 @@
 name: acl/get-group
 content: |
-  acl.getGroup { id = "${1:id}" }?.with {
-    setProperty { relPath = "${2:relPath}"; value = "${3:value}" }
-    removeProperty { relPath = "${2}" }
-    removeAllMembers { }
-    removeFromAllGroups { }
-    clear { path = "${4:path}" }
-    purge { }
-    addMember { member = ${5:member} }
-    removeMember { member = ${5} }
-    addToGroup { group = ${6:parent} }
-    removeFromGroup { group = ${6} }
-    allow { path = "${4}"; permissions = [${7:permissions}]; glob = "/*"; restrictions = [:] }
-    deny { path = "${4}"; permissions = [${7}]; glob = "/*"; restrictions = [:] }
-  }
+  def ${1:varName} = acl.getGroup { id = "${2:id}" }
 documentation: |
-  Executes the closure for the group with the given ID.
-  The closure will only be executed if the group exists.
+  Get an existing AEM group by its ID.

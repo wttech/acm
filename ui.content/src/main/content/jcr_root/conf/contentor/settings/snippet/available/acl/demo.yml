@@ -1,0 +1,31 @@
+name: acl/demo
+content: |
+  boolean canRun() {
+    return condition.always()
+  }
+    
+  void doRun() {
+    println "ACL setup started"
+    
+    def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
+    acl.getUser { authorizable = acmeService }?.with {
+      purge()
+      allow { path = "/content"; permissions = ["jcr:read", "jcr:write"] }
+    }
+    
+    def johnDoe = acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
+    johnDoe?.with {
+      purge()
+      allow("/content", ["jcr:read"])
+    }
+    
+    acl.createGroup { id = "test.group" }.with {
+      removeAllMembers()
+      addMember(acmeService)
+      addMember(johnDoe)
+    }
+    
+    println "ACL setup done"
+  }
+documentation: |
+  Setup the ACLs for the demo users and groups.

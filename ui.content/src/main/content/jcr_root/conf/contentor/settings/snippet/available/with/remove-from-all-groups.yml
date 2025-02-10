@@ -1,5 +1,0 @@
-name: noderemove-from-all-groups
-content: |
-  removeFromAllGroups { }
-documentation: |
-  Remove the context authorizable from all groups.

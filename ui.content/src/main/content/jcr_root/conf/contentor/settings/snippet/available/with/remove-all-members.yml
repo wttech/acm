@@ -1,5 +1,0 @@
-name: noderemove-all-members
-content: |
-  removeAllMembers { }
-documentation: |
-  Remove all members from the context group.
