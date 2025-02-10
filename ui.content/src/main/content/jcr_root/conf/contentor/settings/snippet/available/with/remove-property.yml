@@ -1,5 +1,0 @@
-name: noderemove-property
-content: |
-  removeProperty { relPath = "${1:relPath}" }
-documentation: |
-  Remove the property at the given relative path from the context authorizable.

@@ -1,5 +1,0 @@
-name: nodeadd-member
-content: |
-  addMember { member = ${1:member} }
-documentation: |
-  Add the given member to the context authorizable.

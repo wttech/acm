@@ -1,5 +1,0 @@
-name: nodeset-property
-content: |
-  setProperty { relPath = "${1:relPath}"; value = "${2:value}" }
-documentation: |
-  Set the specified value on the property at the given relative path on the context authorizable.

@@ -1,5 +1,0 @@
-name: nodeclear
-content: |
-  clear { path = "${1:path}" }
-documentation: |
-  Clear all permissions on the given path and all its subpaths for the context authorizable.

@@ -1,5 +1,0 @@
-name: nodepurge
-content: |
-  purge { }
-documentation: |
-  Clear all permissions on the root path and all its subpaths, remove all members and remove from all groups for the context authorizable."
