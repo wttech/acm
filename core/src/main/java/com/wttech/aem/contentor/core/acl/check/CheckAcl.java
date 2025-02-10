@@ -184,26 +184,6 @@ public class CheckAcl {
                         allow);
     }
 
-    private boolean check(
-            String id,
-            String path,
-            List<String> permissions,
-            String glob,
-            List<String> types,
-            List<String> properties,
-            Map<String, Object> restrictions,
-            boolean allow) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        PermissionsOptions options = new PermissionsOptions();
-        options.setPermissions(permissions);
-        options.setGlob(glob);
-        options.setTypes(types);
-        options.setProperties(properties);
-        options.setRestrictions(restrictions);
-        return permissionsManager.check(
-                authorizable, path, options.determineAllPermissions(), options.determineAllRestrictions(), allow);
-    }
-
     public boolean allow(PermissionsOptions options) {
         return check(
                 options.getId(),
