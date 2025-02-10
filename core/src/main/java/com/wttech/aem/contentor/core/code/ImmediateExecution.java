@@ -58,6 +58,9 @@ public class ImmediateExecution implements Execution {
 
     @Override
     public long getDuration() {
+        if (getStartDate() == null || getEndDate() == null) {
+            return 0L;
+        }
         return endDate.getTime() - startDate.getTime();
     }
 
