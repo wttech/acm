@@ -5,7 +5,7 @@ content: |
     return condition.always()
   }
     
-    void doRun() {
+  void doRun() {
     println "Hello World!"
   }
 documentation: |
