@@ -68,7 +68,7 @@ public class Snippet implements Executable, Comparable<Snippet> {
             for (SnippetType type : SnippetType.values()) {
                 if (StringUtils.startsWith(getId(), type.root() + "/")) {
                     result = StringUtils.removeEnd(StringUtils.removeStart(getId(), type.root() + "/"), FILE_EXTENSION);
-                    result = StringUtils.replace(result, "/", "-");
+                    result = StringUtils.replace(result, "/", "_");
                 }
             }
         }
