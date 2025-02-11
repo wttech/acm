@@ -88,7 +88,7 @@ public class Snippet implements Executable, Comparable<Snippet> {
 
     @Override
     public int compareTo(Snippet o) {
-        return this.getName().compareTo(o.getName());
+        return this.getId().compareTo(o.getId());
     }
 
     @Override
