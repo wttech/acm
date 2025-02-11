@@ -1,5 +1,5 @@
 group: General
-name: general_initial
+name: general_hello_world
 content: |
   boolean canRun() {
     return condition.always()
