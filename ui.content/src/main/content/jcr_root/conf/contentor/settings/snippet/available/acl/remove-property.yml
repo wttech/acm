@@ -1,5 +1,5 @@
 group: ACL
-name: acl-remove-property
+name: acl_remove_property
 content: |
   acl.removeProperty { authorizable = ${1:authorizable}; relPath = "${2:relPath}" }
 documentation: |

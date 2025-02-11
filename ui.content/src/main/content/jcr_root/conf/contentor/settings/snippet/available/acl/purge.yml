@@ -1,5 +1,5 @@
 group: ACL
-name: acl-purge
+name: acl_purge
 content: |
   acl.purge { authorizable = ${1:authorizable} }
 documentation: |

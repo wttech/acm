@@ -1,5 +1,5 @@
 group: ACL
-name: acl-add-to-group
+name: acl_add_to_group
 content: |
   acl.addToGroup { authorizable = ${1:authorizable}; group = ${2:group} }
 documentation: |

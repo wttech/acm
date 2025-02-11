@@ -1,5 +1,5 @@
 group: ACL
-name: acl-demo-configure-group
+name: acl_demo_configure_group
 content: |
   acl.getGroup { id = "${1:id}" }?.with {
     /*

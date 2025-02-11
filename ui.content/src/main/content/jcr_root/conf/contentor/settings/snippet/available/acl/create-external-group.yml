@@ -1,5 +1,5 @@
 group: ACL
-name: acl-create-external-group
+name: acl_create_external_group
 content: |
   def ${1:group} = acl.createGroup { id = "${2:id}"; externalId = "${3:externalId}" }
   acl.setProperty { authorizable = ${1}; relPath = "${4:relPath}"; value = "${5:value}" }

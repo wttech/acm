@@ -1,5 +1,5 @@
 group: ACL
-name: acl-deny
+name: acl_deny
 content: |
   acl.deny { authorizable = ${1:authorizable}; path = "${2:path}"; permissions = [${3:permissions}]; glob = "/*"; restrictions = [:] }
 documentation: |
