@@ -72,7 +72,7 @@ const SnippetsPage = () => {
                 {snippetGroups[group]
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((snippet) => (
-                    <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" marginY="size-10">
+                    <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" paddingY="size-100" paddingX="size-200" marginY="size-10">
                       <Heading level={3}>{snippet.name}</Heading>
                       <Content>{snippet.documentation}</Content>
                       <Content>
