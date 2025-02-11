@@ -1,4 +1,5 @@
-name: acl-delete-group
+group: ACL
+name: acl_delete_group
 content: |
   acl.deleteGroup { id = "${1:id}" }
 documentation: |

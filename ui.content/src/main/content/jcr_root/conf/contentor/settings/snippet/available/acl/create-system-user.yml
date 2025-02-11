@@ -1,4 +1,5 @@
-name: acl-create-system-user
+group: ACL
+name: acl_create_system_user
 content: |
   def ${1:user} = acl.createUser { id = "${2:id}"; systemUser() }
   acl.setProperty { authorizable = ${1}; relPath = "${3:relPath}"; value = "${4:value}" }

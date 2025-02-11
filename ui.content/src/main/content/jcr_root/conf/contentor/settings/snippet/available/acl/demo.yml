@@ -1,4 +1,5 @@
-name: acl-demo
+group: ACL
+name: acl_demo
 content: |
   boolean canRun() {
     return condition.always()
