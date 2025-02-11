@@ -208,29 +208,25 @@ void doRun() {
             ]
     ]
 
-
     ["guilty", "company", "gokk", "ddffd", "electrolyte", "optic", "dyson", "nna"].each { experience ->
         acl.clear { id = "xyz-$experience-global-content-authors"; path = "/" }
         acl.deleteGroup { id = "xyz-$experience-global-content-authors" }
     }
 
-
     experiences.each { experience ->
         acl.clear { id = "xyz-${experience.name}-all-template-authors"; path = "/content" }
     }
 
-
     acl.createGroup { id = "xyz-all-users-base" }
     acl.createGroup { id = "xyz-developers-base" }
-
 
     acl.createGroup { id = "xyz-forms-users" }.with {
         clear { path = "/conf" }
         clear { path = "/content" }
         clear { path = "/etc" }
         clear { path = "/tmp" }
-        removeFromAllGroups { }
-        removeAllMembers { }
+        removeFromAllGroups()
+        removeAllMembers()
         addToGroup { groupId = "workflow-users" }
         addToGroup { groupId = "tag-administrators" }
         addToGroup { groupId = "contributor" }
@@ -250,10 +246,9 @@ void doRun() {
         allow { path = "/libs/fd/af/dor/templates/defaultTemplate.xdp"; permissions = ["jcr:read"] }
     }
 
-
     acl.createGroup { id = "xyz-forms-pu" }.with {
-        removeFromAllGroups { }
-        removeAllMembers { }
+        removeFromAllGroups()
+        removeAllMembers()
         addMember { memberId = "ims-xyz-forms-pu" }
         addToGroup { groupId = "xyz-forms-users" }
         addToGroup { groupId = "fdm-authors" }
@@ -261,14 +256,13 @@ void doRun() {
         addToGroup { groupId = "forms-script-writers" }
     }
 
-
     acl.createGroup { id = "xyz-all-users" }.with {
         clear { path = "/conf" }
         clear { path = "/content" }
         clear { path = "/etc" }
         clear { path = "/var" }
-        removeFromAllGroups { }
-        removeAllMembers { }
+        removeFromAllGroups()
+        removeAllMembers()
         addToGroup { groupId = "xyz-all-users-base" }
         allow { path = "/conf"; permissions = ["crx:replicate"]; glob = "/*/cloudconfigs" }
         allow { path = "/conf"; permissions = ["crx:replicate"]; glob = "/*/cloudconfigs/*" }
@@ -295,6 +289,7 @@ void doRun() {
         allow { path = "/var/workflow/instances"; permissions = ["jcr:read", "rep:write", "crx:replicate"] }
         allow { path = "/var/workflow/packages"; permissions = ["jcr:read", "rep:write", "crx:replicate"] }
         allow { path = "/content/dam/formsanddocuments/xyz"; permissions = ["jcr:read"] }
+
         experiences.each { experience ->
             deny { path = "/content/${experience.name}"; permissions = ["jcr:read"] }
             deny { path = "/content/dam/${experience.name}"; permissions = ["jcr:read"] }
@@ -303,7 +298,6 @@ void doRun() {
             deny { path = "/content/dam/formsanddocuments-fdm/${experience.name}"; permissions = ["jcr:read"] }
         }
     }
-
 
     acl.createGroup { id = "xyz-developers" }.with {
         clear { path = "/content" }
@@ -314,8 +308,8 @@ void doRun() {
         clear { path = "/tmp" }
         clear { path = "/var" }
         clear { path = "/home" }
-        removeFromAllGroups { }
-        removeAllMembers { }
+        removeFromAllGroups()
+        removeAllMembers()
         addMember { memberId = "ims-xyz-developers" }
         addToGroup { groupId = "xyz-developers-base" }
         allow { path = "/content"; permissions = ["jcr:read", "rep:write", "jcr:readAccessControl", "jcr:lockManagement", "jcr:versionManagement", "jcr:retentionManagement", "jcr:lifecycleManagement", "crx:replicate"] }
@@ -330,38 +324,36 @@ void doRun() {
         allow { path = "/home/users/system"; permissions = ["jcr:read", "jcr:readAccessControl"] }
     }
 
-
     acl.createGroup { id = "xyz-script-executors" }.with {
-        removeFromAllGroups { }
-        removeAllMembers { }
+        removeFromAllGroups()
+        removeAllMembers()
         addMember { memberId = "ims-xyz-script-executors" }
     }
 
-
     acl.createGroup { id = "xyz-all-content-authors" }.with {
-        removeFromAllGroups { }
-        removeAllMembers { }
+        removeFromAllGroups()
+        removeAllMembers()
         addMember { memberId = "ims-xyz-all-content-authors" }
     }
 
     experiences.each { experience ->
         acl.createGroup { id = "xyz-${experience.name}-all-content-authors" }.with {
-            removeFromAllGroups { }
-            removeAllMembers { }
+            removeFromAllGroups()
+            removeAllMembers()
             addMember { memberId = "ims-xyz-${experience.name}-all-content-authors" }
             addMember { memberId = "xyz-all-content-authors" }
         }
 
         acl.createGroup { id = "xyz-${experience.name}-all-template-authors" }.with {
-            removeAllMembers { }
-            removeFromAllGroups { }
+            removeAllMembers()
+            removeFromAllGroups()
             addMember { memberId = "ims-xyz-${experience.name}-all-template-authors" }
         }
 
         acl.createGroup { id = "xyz-${experience.name}-forms" }.with {
             clear { path = "/content" }
-            removeFromAllGroups { }
-            removeAllMembers { }
+            removeFromAllGroups()
+            removeAllMembers()
             addMember { memberId = "ims-xyz-${experience.name}-forms" }
             addToGroup { groupId = "xyz-all-users" }
             allow { path = "/content/dam/formsanddocuments/xyz"; permissions = ["jcr:read"] }
@@ -374,8 +366,8 @@ void doRun() {
             clear { path = "/conf" }
             clear { path = "/content" }
             clear { path = "/etc" }
-            removeFromAllGroups { }
-            removeAllMembers { }
+            removeFromAllGroups()
+            removeAllMembers()
             addToGroup { groupId = "xyz-all-users" }
             allow { path = "/conf/${experience.name}"; permissions = ["jcr:read", "crx:replicate"] }
             allow { path = "/etc/cloudservices"; permissions = ["jcr:read"] }
@@ -407,8 +399,8 @@ void doRun() {
             clear { path = "/conf" }
             clear { path = "/content" }
             clear { path = "/etc" }
-            removeFromAllGroups { }
-            removeAllMembers { }
+            removeFromAllGroups()
+            removeAllMembers()
             addToGroup { groupId = "xyz-all-users" }
             allow { path = "/conf/xyz"; permissions = ["jcr:read"] }
             allow { path = "/conf/${experience.name}"; permissions = ["jcr:read", "rep:write", "crx:replicate"] }
@@ -437,8 +429,8 @@ void doRun() {
 
         acl.createGroup { id = "xyz-${experience.name}-fe-base" }.with {
             clear { path = "/content" }
-            removeFromAllGroups { }
-            removeAllMembers { }
+            removeFromAllGroups()
+            removeAllMembers()
             addToGroup { groupId = "xyz-forms-pu" }
             addToGroup { groupId = "xyz-all-users" }
             allow { path = "/content/dam/formsanddocuments/xyz"; permissions = ["jcr:read"] }
@@ -449,19 +441,16 @@ void doRun() {
         }
     }
 
-
     acl.allow { id = "xyz-company-ca-base"; path = "/conf/noexp"; permissions = ["jcr:read"] }
 
-
     acl.allow { id = "xyz-company-ta-base"; path = "/conf/noexp"; permissions = ["jcr:read"] }
-
 
     experiences.each { experience ->
         experience.markets.each { market ->
             acl.createGroup { id = "xyz-${experience.name}-ca-${market.code}" }.with {
                 clear { path = "/content" }
-                removeFromAllGroups { }
-                removeAllMembers { }
+                removeFromAllGroups()
+                removeAllMembers()
                 addMember { memberId = "ims-xyz-${experience.name}-ca-${market.code}" }
                 addMember { memberId = "xyz-${experience.name}-all-content-authors" }
                 addToGroup { groupId = "xyz-${experience.name}-ca-base" }
@@ -482,8 +471,8 @@ void doRun() {
 
             acl.createGroup { id = "xyz-${experience.name}-ta-${market.code}" }.with {
                 clear { path = "/content" }
-                removeFromAllGroups { }
-                removeAllMembers { }
+                removeFromAllGroups()
+                removeAllMembers()
                 addMember { memberId = "ims-xyz-${experience.name}-ta-${market.code}" }
                 addMember { memberId = "xyz-${experience.name}-all-template-authors" }
                 addToGroup { groupId = "xyz-${experience.name}-ta-base" }
@@ -502,8 +491,8 @@ void doRun() {
 
             acl.createGroup { id = "xyz-${experience.name}-fe-${market.code}" }.with {
                 clear { path = "/content" }
-                removeFromAllGroups { }
-                removeAllMembers { }
+                removeFromAllGroups()
+                removeAllMembers()
                 addMember { memberId = "ims-xyz-${experience.name}-fe-${market.code}" }
                 addToGroup { groupId = "xyz-${experience.name}-fe-base" }
                 allow { path = "/content/dam/formsanddocuments/${experience.name}/${market.code}"; permissions = ["jcr:read", "rep:write", "crx:replicate"] }
@@ -512,13 +501,12 @@ void doRun() {
         }
     }
 
-
     experiences[4].markets.each { market ->
         acl.createGroup { id = "xyz-noexp-ma-${market.code}" }.with {
             clear { path = "/content" }
             clear { path = "/conf" }
-            removeFromAllGroups { }
-            removeAllMembers { }
+            removeFromAllGroups()
+            removeAllMembers()
             addMember { memberId = "ims-xyz-noexp-ma-${market.code}" }
             addToGroup { groupId = "xyz-noexp-ca-${market.code}" }
             market.languages.each { language ->
@@ -535,12 +523,11 @@ void doRun() {
         }
     }
 
-
     acl.createGroup { id = "xyz-noexp-global-content-authors" }.with {
         clear { path = "/content" }
         clear { path = "/conf" }
-        removeFromAllGroups { }
-        removeAllMembers { }
+        removeFromAllGroups()
+        removeAllMembers()
         addMember { memberId = "ims-xyz-noexp-global-content-authors" }
         allow { path = "/content/noexp/configuration"; permissions = ["jcr:read", "jcr:versionManagement", "jcr:modifyProperties", "jcr:lockManagement", "crx:replicate"] }
         allow { path = "/conf/noexp/sling:configs"; permissions = ["rep:write", "crx:replicate"]; glob = "*com.acme.config.DictionaryConfig*" }
@@ -591,20 +578,17 @@ void doRun() {
         deny { path = "/content/noexp/zz/en/demo/authoring"; permissions = ["jcr:removeNode"]; glob = "" }
     }
 
-
     acl.createUser { id = "xyz-cf-replicator"; systemUser() }.with {
         clear { path = "/content" }
         allow { path = "/content/dam"; permissions = ["jcr:read", "crx:replicate"] }
     }
 
-
     acl.createUser { id = "xyz-distribution-job-user"; systemUser() }
-
 
     acl.createGroup { id = "test-xyz-noexp-dam-authors" }.with {
         clear { path = "/content" }
-        removeFromAllGroups { }
-        removeAllMembers { }
+        removeFromAllGroups()
+        removeAllMembers()
         addToGroup { groupId = "xyz-noexp-ca-base" }
         allow { path = "/content/dam/noexp/global"; permissions = ["jcr:read", "rep:write"] }
     }

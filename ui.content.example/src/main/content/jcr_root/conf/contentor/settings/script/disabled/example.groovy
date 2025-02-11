@@ -208,21 +208,17 @@ void doRun() {
             ]
     ]
 
-
     ["guilty", "company", "gokk", "ddffd", "electrolyte", "optic", "dyson", "nna"].each { experience ->
         acl.clear { id = "xyz-$experience-global-content-authors"; path = "/" }
         acl.deleteGroup { id = "xyz-$experience-global-content-authors" }
     }
 
-
     experiences.each { experience ->
         acl.clear { id = "xyz-${experience.name}-all-template-authors"; path = "/content" }
     }
 
-
     acl.createGroup { id = "xyz-all-users-base" }
     acl.createGroup { id = "xyz-developers-base" }
-
 
     group = acl.createGroup { id = "xyz-forms-users" }
     acl.clear { authorizable = group; path = "/conf" }
@@ -249,7 +245,6 @@ void doRun() {
     acl.allow { authorizable = group; path = "/tmp/fd/fm/upload"; permissions = ["jcr:read", "rep:write"] }
     acl.allow { authorizable = group; path = "/libs/fd/af/dor/templates/defaultTemplate.xdp"; permissions = ["jcr:read"] }
 
-
     group = acl.createGroup { id = "xyz-forms-pu" }
     acl.removeFromAllGroups { authorizable = group }
     acl.removeAllMembers { authorizable = group }
@@ -258,7 +253,6 @@ void doRun() {
     acl.addToGroup { authorizable = group; groupId = "fdm-authors" }
     acl.addToGroup { authorizable = group; groupId = "forms-xfa-writers" }
     acl.addToGroup { authorizable = group; groupId = "forms-script-writers" }
-
 
     group = acl.createGroup { id = "xyz-all-users" }
     acl.clear { authorizable = group; path = "/conf" }
@@ -301,7 +295,6 @@ void doRun() {
         acl.deny { authorizable = group; path = "/content/dam/formsanddocuments-fdm/${experience.name}"; permissions = ["jcr:read"] }
     }
 
-
     group = acl.createGroup { id = "xyz-developers" }
     acl.clear { authorizable = group; path = "/content" }
     acl.clear { authorizable = group; path = "/conf" }
@@ -326,12 +319,10 @@ void doRun() {
     acl.allow { authorizable = group; path = "/home"; permissions = ["jcr:read", "jcr:readAccessControl"] }
     acl.allow { authorizable = group; path = "/home/users/system"; permissions = ["jcr:read", "jcr:readAccessControl"] }
 
-
     group = acl.createGroup { id = "xyz-script-executors" }
     acl.removeFromAllGroups { authorizable = group }
     acl.removeAllMembers { authorizable = group }
     acl.addMember { authorizable = group; memberId = "ims-xyz-script-executors" }
-
 
     group = acl.createGroup { id = "xyz-all-content-authors" }
     acl.removeFromAllGroups { authorizable = group }
@@ -497,7 +488,6 @@ void doRun() {
         }
     }
 
-
     experiences[4].markets.each { market ->
         group = acl.createGroup { id = "xyz-noexp-ma-${market.code}" }
         acl.clear { authorizable = group; path = "/content" }
@@ -518,7 +508,6 @@ void doRun() {
             acl.allow { authorizable = group; path = "/conf/noexp/${market.code}/${language}"; permissions = ["rep:write"]; glob = "*com.acme.config.NotifyConfig*" }
         }
     }
-
 
     group = acl.createGroup { id = "xyz-noexp-global-content-authors" }
     acl.clear { authorizable = group; path = "/content" }
@@ -574,14 +563,11 @@ void doRun() {
     acl.allow { authorizable = group; path = "/content/noexp/zz/en/demo/authoring"; permissions = ["rep:write", "jcr:versionManagement", "jcr:lockManagement", "crx:replicate"] }
     acl.deny { authorizable = group; path = "/content/noexp/zz/en/demo/authoring"; permissions = ["jcr:removeNode"]; glob = "" }
 
-
     user = acl.createUser { id = "xyz-cf-replicator"; systemUser() }
     acl.clear { authorizable = user; path = "/content" }
     acl.allow { authorizable = user; path = "/content/dam"; permissions = ["jcr:read", "crx:replicate"] }
 
-
     acl.createUser { id = "xyz-distribution-job-user"; systemUser() }
-
 
     group = acl.createGroup { id = "test-xyz-noexp-dam-authors" }
     acl.clear { authorizable = group; path = "/content" }
