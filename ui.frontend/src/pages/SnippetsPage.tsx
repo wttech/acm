@@ -75,9 +75,11 @@ const SnippetsPage = () => {
                     <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" paddingY="size-100" paddingX="size-200" marginY="size-10">
                       <Heading level={3}>{snippet.name}</Heading>
                       <Content>{snippet.documentation}</Content>
-                      <Content>
-                        <pre style={{ fontSize: '80%' }}>{snippet.content}</pre>
-                      </Content>
+                      <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" paddingX="size-100" paddingY="size-5" marginY="size-100">
+                        <Content>
+                          <pre style={{ color: '#d4d4d4', fontFamily: `Menlo, Monaco, "Courier New", monospace`, fontWeight: 'normal', fontSize: '12px', lineHeight: '18px' }}>{snippet.content}</pre>
+                        </Content>
+                      </View>
                     </View>
                   ))}
               </Flex>
