@@ -1,3 +1,4 @@
+group: ACL
 name: acl-allow
 content: |
   acl.allow { authorizable = ${1:authorizable}; path = "${2:path}"; permissions = [${3:permissions}]; glob = "/*"; restrictions = [:] }

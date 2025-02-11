@@ -68,11 +68,20 @@ public class Snippet implements Executable, Comparable<Snippet> {
             for (SnippetType type : SnippetType.values()) {
                 if (StringUtils.startsWith(getId(), type.root() + "/")) {
                     result = StringUtils.removeEnd(StringUtils.removeStart(getId(), type.root() + "/"), FILE_EXTENSION);
+                    result = StringUtils.replace(result, "/", "-");
                 }
             }
         }
         if (StringUtils.isBlank(result)) {
             result = getId();
+        }
+        return result;
+    }
+
+    public String getGroup() {
+        String result = definition.getGroup();
+        if (StringUtils.isBlank(result)) {
+            result = StringUtils.substringBeforeLast(getPath(), "/");
         }
         return result;
     }

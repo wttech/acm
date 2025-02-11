@@ -1,3 +1,4 @@
+group: ACL
 name: acl-create-group
 content: |
   def ${1:group} = acl.createGroup { id = "${2:id}" }

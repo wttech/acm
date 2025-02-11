@@ -1,3 +1,4 @@
+group: ACL
 name: acl-create-user
 content: |
   def ${1:user} = acl.createUser { id = "${2:id}"; fullName = "${3:fullName}"; password = "${4:password}"; email = "${5:email}" }

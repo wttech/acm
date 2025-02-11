@@ -1,3 +1,4 @@
+group: ACL
 name: acl-create-system-user
 content: |
   def ${1:user} = acl.createUser { id = "${2:id}"; systemUser() }

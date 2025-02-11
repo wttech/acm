@@ -1,3 +1,4 @@
+group: ACL
 name: acl-clear
 content: |
   acl.clear { authorizable = ${1:authorizable}; path = "${2:path}" }

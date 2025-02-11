@@ -1,3 +1,4 @@
+group: ACL
 name: acl-demo
 content: |
   boolean canRun() {

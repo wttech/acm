@@ -1,3 +1,4 @@
+group: General
 name: general-demo
 content: |
   boolean canRun() {

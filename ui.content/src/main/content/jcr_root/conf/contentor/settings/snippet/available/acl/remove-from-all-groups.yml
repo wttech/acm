@@ -1,3 +1,4 @@
+group: ACL
 name: acl-remove-from-all-groups
 content: |
   acl.removeFromAllGroups { authorizable = ${1:authorizable} }
