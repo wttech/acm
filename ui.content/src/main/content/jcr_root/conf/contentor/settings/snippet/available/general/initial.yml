@@ -1,0 +1,12 @@
+group: General
+name: general_initial
+content: |
+  boolean canRun() {
+    return condition.always()
+  }
+    
+    void doRun() {
+    println "Hello World!"
+  }
+documentation: |
+  Default script - a skeleton for own scripts.
