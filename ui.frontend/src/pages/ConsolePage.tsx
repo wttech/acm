@@ -7,11 +7,13 @@ import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
+import { editor } from 'monaco-editor';
+import { useDebounce } from 'react-use';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
@@ -20,15 +22,81 @@ import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 const toastTimeout = 3000;
 const executionPollDelay = 500;
 const executionPollInterval = 500;
+const parseDebounceDelay = 1000;
 type SelectedTab = 'code' | 'output';
 
 const ConsolePage = () => {
   const [selectedTab, setSelectedTab] = useState<SelectedTab>('code');
   const [executing, setExecuting] = useState<boolean>(false);
-  const [parsing, setParsing] = useState<boolean>(false);
   const [code, setCode] = useState<string | undefined>(ConsoleCode);
   const [execution, setExecution] = useState<Execution | null>(null);
   const pollExecutionRef = useRef<number | null>(null);
+  const [isParsing, setIsParsing] = useState<boolean>(false);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const decorations = useRef<editor.IEditorDecorationsCollection | null>(null);
+  const parseCode = useCallback(async () => {
+    setIsParsing(true);
+
+    try {
+      const { data } = await apiRequest<Execution>({
+        operation: 'Code parsing',
+        url: `/apps/contentor/api/execute-code.json`,
+        method: 'post',
+        data: {
+          mode: 'parse',
+          code: {
+            id: 'console',
+            content: code,
+          },
+        },
+      });
+      const queuedExecution = data.data;
+      setExecution(queuedExecution);
+
+      if (queuedExecution.error) {
+        const [, lineText, columnText] = queuedExecution.error.match(/@ line (\d+), column (\d+)/) || [];
+
+        if (!lineText || !columnText) {
+          ToastQueue.negative('Error while extracting error info!');
+        }
+        /**
+         * This operation is a result of what is done in Executor.java's composeScript method.
+         */
+        const line = parseInt(lineText, 10) - 5;
+        const column = parseInt(columnText, 10);
+
+        if (editorRef.current) {
+          decorations.current = editorRef.current.createDecorationsCollection([
+            {
+              range: {
+                startLineNumber: line,
+                startColumn: column,
+                endColumn: column + 10,
+                endLineNumber: line,
+              },
+              options: {
+                className: 'squiggly-error',
+                minimap: { color: 'red', position: editor.MinimapPosition.Inline },
+                hoverMessage: { value: queuedExecution.error },
+                overviewRuler: {
+                  color: 'red',
+                  position: editor.OverviewRulerLane.Full,
+                },
+              },
+            },
+          ]);
+        }
+      }
+    } catch {
+      ToastQueue.negative('Code parsing failed!', {
+        timeout: toastTimeout,
+      });
+    } finally {
+      setIsParsing(false);
+    }
+  }, [code]);
+
+  useDebounce(parseCode, parseDebounceDelay, [code]);
 
   const onExecute = async () => {
     setExecuting(true);
@@ -147,43 +215,9 @@ const ConsolePage = () => {
     };
   }, []);
 
-  const onParse = () => {
-    setParsing(true);
-    apiRequest<Execution>({
-      operation: 'Code parsing',
-      url: `/apps/contentor/api/execute-code.json`,
-      method: 'post',
-      data: {
-        mode: 'parse',
-        code: {
-          id: 'console',
-          content: code,
-        },
-      },
-    })
-      .then((response) => {
-        const queuedExecution = response.data.data;
-        setExecution(queuedExecution);
-
-        if (queuedExecution.error) {
-          ToastQueue.negative('Code parsing failed!', {
-            timeout: toastTimeout,
-          });
-          setSelectedTab('output');
-        } else {
-          ToastQueue.positive('Code parsing succeeded!', {
-            timeout: toastTimeout,
-          });
-        }
-      })
-      .catch(() => {
-        setExecution(null);
-        ToastQueue.negative('Code parsing error!', { timeout: toastTimeout });
-      })
-      .finally(() => {
-        setParsing(false);
-      });
-  };
+  useEffect(() => {
+    decorations.current?.clear();
+  }, [code]);
 
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
 
@@ -231,10 +265,6 @@ const ConsolePage = () => {
                       <Gears />
                       <Text>Execute</Text>
                     </Button>
-                    <Button variant="secondary" onPress={onParse} isPending={parsing} style="fill">
-                      <Spellcheck />
-                      <Text>Parse</Text>
-                    </Button>
                   </ButtonGroup>
                   <DialogTrigger>
                     <Button variant="secondary" style="fill">
@@ -266,7 +296,18 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </View>
-              <ImmersiveEditor value={code} onChange={setCode} language="groovy" beforeMount={registerGroovyLanguage} />
+              <ImmersiveEditor
+                onMount={(editor) => {
+                  editorRef.current = editor;
+                  parseCode();
+                }}
+                inProgress={isParsing}
+                line={2}
+                value={code}
+                onChange={setCode}
+                language="groovy"
+                beforeMount={registerGroovyLanguage}
+              />
             </Flex>
           </Item>
           <Item key="output">

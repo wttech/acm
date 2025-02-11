@@ -11,7 +11,7 @@ export type Execution = {
   endDate: string;
   duration: number;
   output: string;
-  error: string;
+  error: string | null;
 };
 
 export enum ExecutionStatus {
