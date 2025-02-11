@@ -1,4 +1,5 @@
-name: general-demo
+group: General
+name: general_demo
 content: |
   boolean canRun() {
     return condition.always()

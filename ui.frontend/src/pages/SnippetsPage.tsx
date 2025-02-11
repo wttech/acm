@@ -1,8 +1,10 @@
-import { Content, Flex, Heading, IllustratedMessage, ProgressBar, View } from '@adobe/react-spectrum';
+import { Content, Flex, Heading, IllustratedMessage, Item, ProgressBar, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
+import FolderOpen from '@spectrum-icons/workflow/FolderOpen';
+import FolderOpenOutline from '@spectrum-icons/workflow/FolderOpenOutline';
 import { useEffect, useState } from 'react';
 import { toastRequest } from '../utils/api';
-import { SnippetOutput } from '../utils/api.types';
+import { Snippet, SnippetOutput } from '../utils/api.types';
 
 const SnippetsPage = () => {
   const [snippets, setSnippets] = useState<SnippetOutput | null>(null);
@@ -37,18 +39,54 @@ const SnippetsPage = () => {
     );
   }
 
+  const snippetGroups = snippets.list.reduce(
+    (groups: { [key: string]: Snippet[] }, snippet) => {
+      if (!groups[snippet.group]) {
+        groups[snippet.group] = [];
+      }
+      groups[snippet.group].push(snippet);
+      return groups;
+    },
+    {} as { [key: string]: Snippet[] },
+  );
+  const snippetGroupIcons = [<FolderOpen />, <FolderOpenOutline />];
+
   return (
-    <Flex direction="column" flex="1" gap="size-200">
-      {snippets.list.map((snippet) => (
-        <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" marginY="size-10">
-          <Heading level={3}>{snippet.name}</Heading>
-          <Content>{snippet.documentation}</Content>
-          <Content>
-            <pre style={{ fontSize: '80%' }}>{snippet.content}</pre>
-          </Content>
-        </View>
-      ))}
-    </Flex>
+    <Tabs aria-label="Snippet Groups">
+      <TabList>
+        {Object.keys(snippetGroups)
+          .sort()
+          .map((group, groupIndex) => (
+            <Item key={group}>
+              {snippetGroupIcons[groupIndex % snippetGroupIcons.length]}
+              <Text>{group}</Text>
+            </Item>
+          ))}
+      </TabList>
+      <TabPanels>
+        {Object.keys(snippetGroups)
+          .sort()
+          .map((group) => (
+            <Item key={group}>
+              <Flex direction="column" flex="1" gap="size-100" marginY="size-100">
+                {snippetGroups[group]
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((snippet) => (
+                    <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" paddingY="size-100" paddingX="size-200" marginY="size-10">
+                      <Heading level={3}>{snippet.name}</Heading>
+                      <Content>{snippet.documentation}</Content>
+                      <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" paddingX="size-100" paddingY="size-5" marginY="size-100">
+                        <Content>
+                          <pre style={{ color: '#d4d4d4', fontFamily: `Menlo, Monaco, "Courier New", monospace`, fontWeight: 'normal', fontSize: '12px', lineHeight: '18px' }}>{snippet.content}</pre>
+                        </Content>
+                      </View>
+                    </View>
+                  ))}
+              </Flex>
+            </Item>
+          ))}
+      </TabPanels>
+    </Tabs>
   );
 };
 

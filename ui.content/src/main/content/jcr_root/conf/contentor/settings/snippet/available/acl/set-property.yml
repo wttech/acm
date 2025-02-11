@@ -1,4 +1,5 @@
-name: acl-set-property
+group: ACL
+name: acl_set_property
 content: |
   acl.setProperty { authorizable = ${1:authorizable}; relPath = "${2:relPath}"; value = "${3:value}" }
 documentation: |

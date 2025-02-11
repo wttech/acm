@@ -1,4 +1,5 @@
-name: acl-get-user
+group: ACL
+name: acl_get_user
 content: |
   def ${1:varName} = acl.getUser { id = "${2:id}" }
 documentation: |

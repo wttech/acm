@@ -1,4 +1,5 @@
-name: acl-create-group
+group: ACL
+name: acl_create_group
 content: |
   def ${1:group} = acl.createGroup { id = "${2:id}" }
   acl.setProperty { authorizable = ${1}; relPath = "${3:relPath}"; value = "${4:value}" }

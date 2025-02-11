@@ -1,4 +1,5 @@
-name: acl-add-member
+group: ACL
+name: acl_add_member
 content: |
   acl.addMember { authorizable = ${1:authorizable}; member = ${2:member} }
 documentation: |

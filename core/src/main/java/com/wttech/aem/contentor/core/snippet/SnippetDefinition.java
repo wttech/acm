@@ -9,6 +9,8 @@ public class SnippetDefinition implements Serializable {
 
     private String name;
 
+    private String group;
+
     private String content;
 
     private String documentation;
@@ -25,6 +27,10 @@ public class SnippetDefinition implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public String getGroup() {
+        return group;
     }
 
     public String getContent() {
