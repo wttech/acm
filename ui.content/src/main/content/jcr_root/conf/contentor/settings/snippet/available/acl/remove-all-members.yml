@@ -1,6 +1,6 @@
 group: ACL
 name: acl_remove_all_members
 content: |
-  acl.removeAllMembers { authorizable = ${1:group} }
+  acl.removeAllMembers { groupId = "${1}" }
 documentation: |
-  Remove all members from the given group.
+  Removes all members from the given group.

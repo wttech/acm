@@ -1,6 +1,6 @@
 group: ACL
 name: acl_clear
 content: |
-  acl.clear { authorizable = ${1:authorizable}; path = "${2:path}" }
+  acl.clear { authorizableId = "${1}"; path = "${2}" }
 documentation: |
-  Clear all permissions on the given path and all its subpaths for the target authorizable.
+  Clear all permissions on the given path and all its subpaths for the target authorizable (user or group).

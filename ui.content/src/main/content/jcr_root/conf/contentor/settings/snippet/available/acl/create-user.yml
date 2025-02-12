@@ -1,17 +1,7 @@
 group: ACL
 name: acl_create_user
 content: |
-  def ${1:user} = acl.createUser { id = "${2:id}"; fullName = "${3:fullName}"; password = "${4:password}"; email = "${5:email}" }
-  acl.setProperty { authorizable = ${1}; relPath = "${6:relPath}"; value = "${7:value}" }
-  acl.removeProperty { authorizable = ${1}; relPath = "${6}" }
-  acl.removeFromAllGroups { authorizable = ${1} }
-  acl.clear { authorizable = ${1}; path = "${8:path}" }
-  acl.purge { authorizable = ${1} }
-  acl.addToGroup { authorizable = ${1}; group = ${9:parent} }
-  acl.removeFromGroup { authorizable = ${1}; group = ${9} }
-  acl.allow { authorizable = ${1}; path = "${8}"; permissions = [${10:permissions}]; glob = "/*"; restrictions = [:] }
-  acl.deny { authorizable = ${1}; path = "${8}"; permissions = [${10}]; glob = "/*"; restrictions = [:] }
+  def ${1} = acl.createUser { id = "${2}"; fullName = "${3}"; password = "${4}"; email = "${5}" }
 documentation: |
   Create or retrieve the user with the given ID, full name, password and email.
   The user will only be created if it does not already exist.
-  Then further commands are performed for this user.

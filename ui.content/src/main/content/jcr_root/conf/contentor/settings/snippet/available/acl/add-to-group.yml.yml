@@ -1,6 +1,6 @@
 group: ACL
 name: acl_add_to_group
 content: |
-  acl.addToGroup { authorizable = ${1:authorizable}; group = ${2:group} }
+  acl.addToGroup { groupId = "${1}"; authorizableId = "${2}" }
 documentation: |
-  Add the given authorizable to the target group.
+  Add the given authorizable (user or group) to the target group.
