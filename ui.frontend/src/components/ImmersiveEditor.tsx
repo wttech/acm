@@ -1,12 +1,12 @@
-import { Button, Content, Dialog, DialogContainer, Divider, Flex, ProgressCircle, View, ViewProps } from '@adobe/react-spectrum';
+import { Button, Content, Dialog, DialogContainer, Divider, Flex, View, ViewProps } from '@adobe/react-spectrum';
 import Editor, { EditorProps } from '@monaco-editor/react';
 import { ColorVersion } from '@react-types/shared';
 import FullScreenExit from '@spectrum-icons/workflow/FullScreenExit';
 import { useState } from 'react';
 
-type ImmersiveEditorProps<C extends ColorVersion> = EditorProps & { containerProps?: ViewProps<C>; inProgress?: boolean };
+type ImmersiveEditorProps<C extends ColorVersion> = EditorProps & { containerProps?: ViewProps<C> };
 
-const ImmersiveEditor = <C extends ColorVersion>({ containerProps, inProgress, ...props }: ImmersiveEditorProps<C>) => {
+const ImmersiveEditor = <C extends ColorVersion>({ containerProps, ...props }: ImmersiveEditorProps<C>) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -14,7 +14,6 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, inProgress, .
       {!isOpen && (
         <>
           <Editor theme="vs-dark" height="100%" {...props} />
-          {inProgress && <ProgressCircle staticColor="white" position="absolute" zIndex={5} bottom={10} left={10} isIndeterminate aria-label="Parsing pending...." />}
           <Button variant="primary" style="fill" position="absolute" zIndex={5} bottom={10} right={10} onPress={() => setIsOpen(true)}>
             <FullScreenExit />
           </Button>
@@ -31,7 +30,6 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, inProgress, .
                 </View>
               </Flex>
             </Content>
-            {inProgress && <ProgressCircle staticColor="white" position="absolute" zIndex={5} bottom={10} left={10} isIndeterminate aria-label="Parsing pending...." />}
             <Button variant="primary" style="fill" position="absolute" zIndex={5} bottom={10} right={10} onPress={() => setIsOpen(false)}>
               <FullScreenExit />
             </Button>

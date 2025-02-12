@@ -1,6 +1,8 @@
-import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, ProgressCircle, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import Bug from '@spectrum-icons/workflow/Bug';
 import Cancel from '@spectrum-icons/workflow/Cancel';
+import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
+import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Gears from '@spectrum-icons/workflow/Gears';
@@ -13,7 +15,7 @@ import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
@@ -24,6 +26,13 @@ const executionPollDelay = 500;
 const executionPollInterval = 500;
 const parseDebounceDelay = 1000;
 type SelectedTab = 'code' | 'output';
+type ParsingStatus = 'loading' | 'ok' | 'error';
+
+const parsingStatusMap: Record<ParsingStatus, ReactNode> = {
+  loading: <ProgressCircle size="S" isIndeterminate aria-label="Parsing pending..." />,
+  ok: <CheckmarkCircle color="positive" size="S" />,
+  error: <CloseCircle color="negative" size="S" />,
+};
 
 const ConsolePage = () => {
   const [selectedTab, setSelectedTab] = useState<SelectedTab>('code');
@@ -31,11 +40,11 @@ const ConsolePage = () => {
   const [code, setCode] = useState<string | undefined>(ConsoleCode);
   const [execution, setExecution] = useState<Execution | null>(null);
   const pollExecutionRef = useRef<number | null>(null);
-  const [isParsing, setIsParsing] = useState<boolean>(false);
+  const [parsingStatus, setParsingStatus] = useState<ParsingStatus | undefined>(undefined);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const decorations = useRef<editor.IEditorDecorationsCollection | null>(null);
   const parseCode = useCallback(async () => {
-    setIsParsing(true);
+    setParsingStatus('loading');
 
     try {
       const { data } = await apiRequest<Execution>({
@@ -57,25 +66,26 @@ const ConsolePage = () => {
         const [, lineText, columnText] = queuedExecution.error.match(/@ line (\d+), column (\d+)/) || [];
 
         if (!lineText || !columnText) {
-          ToastQueue.negative('Error while extracting error info!');
+          setParsingStatus(undefined);
+          console.warn('Failed to parse error message.');
+          return;
         }
-        /**
-         * This operation is a result of what is done in Executor.java's composeScript method.
-         */
-        const line = parseInt(lineText, 10) - 5;
+
+        const line = parseInt(lineText, 10);
         const column = parseInt(columnText, 10);
 
         if (editorRef.current) {
+          setParsingStatus('error');
           decorations.current = editorRef.current.createDecorationsCollection([
             {
               range: {
                 startLineNumber: line,
+                endLineNumber: line,
                 startColumn: column,
                 endColumn: column + 10,
-                endLineNumber: line,
               },
               options: {
-                className: 'squiggly-error',
+                className: 'squiggly-error error-underline',
                 minimap: { color: 'red', position: editor.MinimapPosition.Inline },
                 hoverMessage: { value: queuedExecution.error },
                 overviewRuler: {
@@ -86,17 +96,15 @@ const ConsolePage = () => {
             },
           ]);
         }
+      } else {
+        setParsingStatus('ok');
       }
     } catch {
-      ToastQueue.negative('Code parsing failed!', {
-        timeout: toastTimeout,
-      });
-    } finally {
-      setIsParsing(false);
+      setParsingStatus(undefined);
     }
   }, [code]);
 
-  useDebounce(parseCode, parseDebounceDelay, [code]);
+  const [, cancelParse] = useDebounce(parseCode, parseDebounceDelay, [code]);
 
   const onExecute = async () => {
     setExecuting(true);
@@ -217,7 +225,12 @@ const ConsolePage = () => {
 
   useEffect(() => {
     decorations.current?.clear();
-  }, [code]);
+    setParsingStatus('loading');
+
+    return () => {
+      cancelParse();
+    };
+  }, [cancelParse, code]);
 
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
 
@@ -259,15 +272,16 @@ const ConsolePage = () => {
           <Item key="code">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View>
-                <Flex justifyContent="space-between" alignItems="center">
+                <Flex alignItems="center" gap={10}>
                   <ButtonGroup>
-                    <Button variant="accent" onPress={onExecute} isPending={executing}>
+                    <Button variant="accent" onPress={onExecute} isPending={executing} isDisabled={!parsingStatus || parsingStatus === 'error'}>
                       <Gears />
                       <Text>Execute</Text>
                     </Button>
                   </ButtonGroup>
+                  {!!parsingStatus && parsingStatusMap[parsingStatus]}
                   <DialogTrigger>
-                    <Button variant="secondary" style="fill">
+                    <Button variant="secondary" style="fill" marginStart="auto">
                       <Help />
                       <Text>Help</Text>
                     </Button>
@@ -301,7 +315,6 @@ const ConsolePage = () => {
                   editorRef.current = editor;
                   parseCode();
                 }}
-                inProgress={isParsing}
                 line={2}
                 value={code}
                 onChange={setCode}
