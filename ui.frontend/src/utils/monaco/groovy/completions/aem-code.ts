@@ -1,5 +1,6 @@
 import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
+import { MarkdownString } from 'monaco-editor/esm/vs/base/common/htmlContent';
 import { apiRequest } from '../../../api.ts';
 import { AssistCodeOutput } from '../../../api.types.ts';
 import { LANGUAGE_ID } from '../../groovy.ts';
@@ -37,7 +38,7 @@ function registerWordCompletion(instance: Monaco) {
           insertTextRules: monacoInsertTextRules(suggestion.k),
           kind: monacoKind(suggestion.k),
           detail: suggestion.k,
-          documentation: suggestion.i,
+          documentation: new MarkdownString(suggestion.i),
           range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
 
           // TODO below does not work, Monaco bug? (we want to prioritize exact class name matches)

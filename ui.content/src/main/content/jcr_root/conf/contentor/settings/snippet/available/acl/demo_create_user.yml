@@ -1,7 +1,7 @@
 group: ACL
 name: acl_demo_create_user
 content: |
-  acl.createUser { id = "${1:acme-john-doe}"; fullName = "${2:John Doe}"; password = "${3:mysecret}"; email = "${4:john.doe@acme.com}" }.with {
+  acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "mysecret"; email = "john.doe@acme.com" }.with {
     setProperty { relPath = "myprop"; value = "myvalue" }
     removeProperty { relPath = "myprop" }
     removeFromAllGroups()
@@ -13,6 +13,4 @@ content: |
     allow { path = "/content/acme"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
   }
 documentation: |
-  Create or retrieve the user with the given ID, full name, password and email.
-  The user will only be created if it does not already exist.
-  Then further commands are performed for this user.
+  Demonstrates how to create a new, tenant-specific AEM user.

@@ -1,7 +1,7 @@
 group: ACL
 name: acl_demo_create_group
 content: |
-  acl.createGroup { id = "${1:acme-content-authors}" }.with {
+  acl.createGroup { id = "acme-content-authors" }.with {
     setProperty { relPath = "myprop"; value = "myvalue" }
     removeProperty { relPath = "myprop" }
     removeAllMembers()
@@ -10,12 +10,10 @@ content: |
     purge()
     addMember { memberId = "mymember" }
     removeMember { memberId = "mymember" }
-    addToGroup { groupId = "mygroup }
+    addToGroup { groupId = "mygroup" }
     removeFromGroup { groupId = "mygroup" }
     deny { path = "/content"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
     allow { path = "/content/acme"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
   }
 documentation: |
-  Create or retrieve the group with the given ID.
-  The group will only be created if it does not already exist.
-  Then further commands are performed for this group.
+  Demonstrates how to create a new, tenant-specific AEM group.
