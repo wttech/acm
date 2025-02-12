@@ -9,7 +9,6 @@ import groovy.lang.Closure;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -69,8 +68,8 @@ public class Acl {
         return removeMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public AclResult removeAllMembers(Closure<AuthorizableOptions> closure) {
-        return removeAllMembers(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public AclResult removeAllMembers(Closure<RemoveAllMembersOptions> closure) {
+        return removeAllMembers(GroovyUtils.with(new RemoveAllMembersOptions(), closure));
     }
 
     public AclResult clear(Closure<ClearOptions> closure) {
@@ -330,7 +329,7 @@ public class Acl {
     }
 
     public AclResult addMember(MemberOptions options) {
-        MyGroup group = context.determineGroup(options);
+        MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return group.addMember(member);
     }
@@ -354,7 +353,7 @@ public class Acl {
     }
 
     public AclResult removeMember(MemberOptions options) {
-        MyGroup group = context.determineGroup(options);
+        MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return group.removeMember(member);
     }
@@ -368,8 +367,8 @@ public class Acl {
         return group.removeMember(member);
     }
 
-    public AclResult removeAllMembers(AuthorizableOptions options) {
-        MyGroup group = context.determineGroup(options);
+    public AclResult removeAllMembers(RemoveAllMembersOptions options) {
+        MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         return group.removeAllMembers();
     }
 
@@ -583,7 +582,7 @@ public class Acl {
     }
 
     public AclResult setPassword(PasswordOptions options) {
-        MyUser user = context.determineUser(options);
+        MyUser user = context.determineUser(options.getUser(), options.getUserId());
         return user.setPassword(options.getPassword());
     }
 
@@ -596,27 +595,11 @@ public class Acl {
         return user.setPassword(password);
     }
 
-    public MyUser user(String id) {
-        return user(context.getAuthorizableManager().getUser(id));
-    }
-
     public MyUser user(User user) {
         return user == null ? null : context.determineUser(user);
     }
 
-    public MyGroup group(String id) {
-        return group(context.getAuthorizableManager().getGroup(id));
-    }
-
     public MyGroup group(Group group) {
         return group == null ? null : context.determineGroup(group);
-    }
-
-    public String id(MyAuthorizable authorizable) {
-        return authorizable.getId();
-    }
-
-    public String id(Authorizable authorizable) {
-        return id(context.determineAuthorizable(authorizable));
     }
 }
