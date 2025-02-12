@@ -61,6 +61,13 @@ export type Script = {
   content: string;
 };
 
+export type ScriptStats = {
+  scriptId: string;
+  statusCount: { [key in ExecutionStatus]: number };
+  lastExecution: Execution | null;
+};
+
 export type ScriptOutput = {
   list: Script[];
+  stats: ScriptStats[];
 };
