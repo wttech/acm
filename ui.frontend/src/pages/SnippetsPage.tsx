@@ -3,6 +3,7 @@ import NotFound from '@spectrum-icons/illustrations/NotFound';
 import FolderOpen from '@spectrum-icons/workflow/FolderOpen';
 import FolderOpenOutline from '@spectrum-icons/workflow/FolderOpenOutline';
 import { useEffect, useState } from 'react';
+import SnippetCode from '../components/SnippetCode';
 import { toastRequest } from '../utils/api';
 import { Snippet, SnippetOutput } from '../utils/api.types';
 
@@ -75,10 +76,8 @@ const SnippetsPage = () => {
                     <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" paddingY="size-100" paddingX="size-200" marginY="size-10">
                       <Heading level={3}>{snippet.name}</Heading>
                       <Content>{snippet.documentation}</Content>
-                      <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" paddingX="size-100" paddingY="size-5" marginY="size-100">
-                        <Content>
-                          <pre style={{ color: '#d4d4d4', fontFamily: `Menlo, Monaco, "Courier New", monospace`, fontWeight: 'normal', fontSize: '12px', lineHeight: '18px' }}>{snippet.content}</pre>
-                        </Content>
+                      <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" marginY="size-100">
+                        <SnippetCode content={snippet.content} />
                       </View>
                     </View>
                   ))}
