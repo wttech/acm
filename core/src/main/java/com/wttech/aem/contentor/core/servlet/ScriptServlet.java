@@ -85,8 +85,8 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                 scripts = repository.findAll(type).sorted().collect(Collectors.toList());
             }
             List<ScriptStats> stats = scripts.stream()
-                    .map(Script::getId)
-                    .map(id -> ScriptStats.computeById(request.getResourceResolver(), id, statsLimit))
+                    .map(Script::getPath)
+                    .map(path -> ScriptStats.computeByPath(request.getResourceResolver(), path, statsLimit))
                     .collect(Collectors.toList());
 
             ScriptOutput output = new ScriptOutput(scripts, stats);

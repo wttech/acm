@@ -62,7 +62,7 @@ export type Script = {
 };
 
 export type ScriptStats = {
-  scriptId: string;
+  path: string;
   statusCount: { [key in ExecutionStatus]: number };
   lastExecution: Execution | null;
 };

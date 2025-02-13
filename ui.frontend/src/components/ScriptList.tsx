@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Cell, Column, Content, Dialog, DialogTrigger, Divider, Flex, Heading, IllustratedMessage, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Cell, Column, Content, Dialog, DialogTrigger, Divider, Flex, Heading, IllustratedMessage, ContextualHelp, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import { Key, Selection } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Cancel from '@spectrum-icons/workflow/Cancel';
@@ -128,11 +128,16 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         <TableHeader>
           <Column>Name</Column>
           <Column>Last Execution</Column>
-          <Column>Successful Executions</Column>
+          <Column>
+            Successful Executions
+            <ContextualHelp variant="help">
+              <Content>At max 30 last executions are considered.</Content>
+            </ContextualHelp>
+          </Column>
         </TableHeader>
         <TableBody>
           {(scripts.list || []).map((script) => {
-            const scriptStats = (scripts.stats.find((stat) => stat.scriptId === script.id))!;
+            const scriptStats = (scripts.stats.find((stat) => stat.path === script.id))!;
             const lastExecution = scriptStats?.lastExecution;
             const successfulExecutions = scriptStats ? scriptStats.statusCount[ExecutionStatus.SUCCEEDED] : 0;
             const totalExecutions = scriptStats ? Object.values(scriptStats.statusCount).reduce((a, b) => a + b, 0) : 0;

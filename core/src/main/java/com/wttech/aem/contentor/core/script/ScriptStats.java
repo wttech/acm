@@ -9,32 +9,30 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 
 public class ScriptStats implements Serializable {
 
-    private final String scriptId;
+    private final String path;
 
     private Map<ExecutionStatus, Long> statusCount;
 
     private Execution lastExecution;
 
-    public ScriptStats(String scriptId, Map<ExecutionStatus, Long> statusCount, Execution lastExecution) {
-        this.scriptId = scriptId;
+    public ScriptStats(String path, Map<ExecutionStatus, Long> statusCount, Execution lastExecution) {
+        this.path = path;
         this.statusCount = statusCount;
         this.lastExecution = lastExecution;
     }
 
-    public static ScriptStats computeById(ResourceResolver resourceResolver, String scriptId, int limit) {
-        AtomicReference<Execution> lastExecution = new AtomicReference<>(); // TODO calculate it separately (does not rely on limit)
+    public static ScriptStats computeByPath(ResourceResolver resourceResolver, String path, int limit) {
+        AtomicReference<Execution> lastExecution = new AtomicReference<>();
         Map<ExecutionStatus, Long> statusCount =
                 Arrays.stream(ExecutionStatus.values()).collect(HashMap::new, (m, s) -> m.put(s, 0L), HashMap::putAll);
 
         ExecutionHistory history = new ExecutionHistory(resourceResolver);
         ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(
-                StringUtils.replace(scriptId, "/disabled/", "/enabled/")); // TODO change path more smartly
+        query.setExecutableId(ScriptType.ENABLED.enforcePath(path));
         history.findAll(query).limit(limit).forEach(e -> {
             if (lastExecution.get() == null) {
                 lastExecution.set(e);
@@ -42,11 +40,11 @@ public class ScriptStats implements Serializable {
             statusCount.put(e.getStatus(), statusCount.get(e.getStatus()) + 1);
         });
 
-        return new ScriptStats(scriptId, statusCount, lastExecution.get());
+        return new ScriptStats(path, statusCount, lastExecution.get());
     }
 
-    public String getScriptId() {
-        return scriptId;
+    public String getPath() {
+        return path;
     }
 
     public Map<ExecutionStatus, Long> getStatusCount() {
