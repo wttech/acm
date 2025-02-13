@@ -64,10 +64,6 @@ public class AclContext {
         return compositeNodeStore;
     }
 
-    public MyUser determineUser(AuthorizableOptions options) {
-        return determineUser(options.getAuthorizable(), options.getAuthorizableId());
-    }
-
     public MyUser determineUser(Authorizable authorizable) {
         try {
             return determineAuthorizable(authorizable, authorizable.getID(), MyUser.class);
@@ -89,10 +85,6 @@ public class AclContext {
             user = determineUser(authorizable.get());
         }
         return user;
-    }
-
-    public MyGroup determineGroup(AuthorizableOptions options) {
-        return determineGroup(options.getAuthorizable(), options.getAuthorizableId());
     }
 
     public MyGroup determineGroup(Authorizable authorizable) {

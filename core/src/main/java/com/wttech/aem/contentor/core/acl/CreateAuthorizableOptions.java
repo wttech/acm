@@ -5,7 +5,6 @@ import java.util.Map;
 
 public class CreateAuthorizableOptions {
 
-
     private String id;
 
     private String path;
@@ -18,7 +17,6 @@ public class CreateAuthorizableOptions {
 
     private Mode mode = Mode.SKIP;
 
-
     public String getId() {
         return id;
     }
@@ -26,6 +24,7 @@ public class CreateAuthorizableOptions {
     public void setId(String id) {
         this.id = id;
     }
+
     public String getPath() {
         return path;
     }
