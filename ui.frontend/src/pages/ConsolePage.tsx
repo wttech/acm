@@ -9,13 +9,12 @@ import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
-import { editor } from 'monaco-editor';
 import { useDebounce } from 'react-use';
-import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
+import ImmersiveEditor, { ParseError } from '../components/ImmersiveEditor.tsx';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
@@ -26,13 +25,6 @@ const executionPollDelay = 500;
 const executionPollInterval = 500;
 const parseDebounceDelay = 1000;
 type SelectedTab = 'code' | 'output';
-type ParsingStatus = 'loading' | 'ok' | 'error';
-
-const parsingStatusMap: Record<ParsingStatus, ReactNode> = {
-  loading: <ProgressCircle size="S" isIndeterminate aria-label="Parsing pending..." />,
-  ok: <CheckmarkCircle color="positive" size="S" />,
-  error: <CloseCircle color="negative" size="S" />,
-};
 
 const ConsolePage = () => {
   const [selectedTab, setSelectedTab] = useState<SelectedTab>('code');
@@ -40,12 +32,9 @@ const ConsolePage = () => {
   const [code, setCode] = useState<string | undefined>(ConsoleCode);
   const [execution, setExecution] = useState<Execution | null>(null);
   const pollExecutionRef = useRef<number | null>(null);
-  const [parsingStatus, setParsingStatus] = useState<ParsingStatus | undefined>(undefined);
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const decorations = useRef<editor.IEditorDecorationsCollection | null>(null);
+  const [isParsing, setIsParsing] = useState<boolean>(false);
+  const [parseError, setParseError] = useState<ParseError | undefined>(undefined);
   const parseCode = useCallback(async () => {
-    setParsingStatus('loading');
-
     try {
       const { data } = await apiRequest<Execution>({
         operation: 'Code parsing',
@@ -66,7 +55,6 @@ const ConsolePage = () => {
         const [, lineText, columnText] = queuedExecution.error.match(/@ line (\d+), column (\d+)/) || [];
 
         if (!lineText || !columnText) {
-          setParsingStatus(undefined);
           console.warn('Failed to parse error message.');
           return;
         }
@@ -74,33 +62,14 @@ const ConsolePage = () => {
         const line = parseInt(lineText, 10);
         const column = parseInt(columnText, 10);
 
-        if (editorRef.current) {
-          setParsingStatus('error');
-          decorations.current = editorRef.current.createDecorationsCollection([
-            {
-              range: {
-                startLineNumber: line,
-                endLineNumber: line,
-                startColumn: column,
-                endColumn: column + 10,
-              },
-              options: {
-                className: 'squiggly-error error-underline',
-                minimap: { color: 'red', position: editor.MinimapPosition.Inline },
-                hoverMessage: { value: queuedExecution.error },
-                overviewRuler: {
-                  color: 'red',
-                  position: editor.OverviewRulerLane.Full,
-                },
-              },
-            },
-          ]);
-        }
+        setParseError({ line, column, message: queuedExecution.error });
       } else {
-        setParsingStatus('ok');
+        setParseError(undefined);
       }
     } catch {
-      setParsingStatus(undefined);
+      console.warn('Code parsing error!');
+    } finally {
+      setIsParsing(false);
     }
   }, [code]);
 
@@ -224,8 +193,8 @@ const ConsolePage = () => {
   }, []);
 
   useEffect(() => {
-    decorations.current?.clear();
-    setParsingStatus('loading');
+    setParseError(undefined);
+    setIsParsing(true);
 
     return () => {
       cancelParse();
@@ -274,12 +243,13 @@ const ConsolePage = () => {
               <View>
                 <Flex alignItems="center" gap={10}>
                   <ButtonGroup>
-                    <Button variant="accent" onPress={onExecute} isPending={executing} isDisabled={!parsingStatus || parsingStatus === 'error'}>
+                    <Button variant="accent" onPress={onExecute} isPending={executing} isDisabled={!!parseError}>
                       <Gears />
                       <Text>Execute</Text>
                     </Button>
                   </ButtonGroup>
-                  {!!parsingStatus && parsingStatusMap[parsingStatus]}
+                  {isParsing && <ProgressCircle size="S" isIndeterminate aria-label="Parsing pending..." />}
+                  {!isParsing && (parseError ? <CloseCircle color="negative" size="S" /> : <CheckmarkCircle color="positive" size="S" />)}
                   <DialogTrigger>
                     <Button variant="secondary" style="fill" marginStart="auto">
                       <Help />
@@ -310,17 +280,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </View>
-              <ImmersiveEditor
-                onMount={(editor) => {
-                  editorRef.current = editor;
-                  parseCode();
-                }}
-                line={2}
-                value={code}
-                onChange={setCode}
-                language="groovy"
-                beforeMount={registerGroovyLanguage}
-              />
+              <ImmersiveEditor value={code} onChange={setCode} parseError={parseError} language="groovy" beforeMount={registerGroovyLanguage} />
             </Flex>
           </Item>
           <Item key="output">
