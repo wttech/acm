@@ -227,7 +227,7 @@ public class Acl {
     }
 
     public AclResult deleteUser(AuthorizableOptions options) {
-        MyUser user = context.determineUser(options.getAuthorizable(), options.getId());
+        MyUser user = context.determineUser(options);
         return deleteUser(user);
     }
 
