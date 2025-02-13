@@ -64,35 +64,24 @@ public class AclContext {
         return compositeNodeStore;
     }
 
-    public MyUser determineUser(Authorizable authorizable) {
-        try {
-            return determineAuthorizable(authorizable, authorizable.getID(), MyUser.class);
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to get authorizable ID", e);
-        }
+    public MyUser determineUser(User user) {
+        return determineAuthorizable(user, MyUser.class);
     }
 
     public MyUser determineUser(String id) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return determineAuthorizable(authorizable, id, MyUser.class);
+        User user = authorizableManager.getUser(id);
+        return determineAuthorizable(user, id, MyUser.class);
     }
 
-    public MyUser determineUser(MyAuthorizable authorizable, String id) {
-        MyUser user;
-        if (authorizable == null) {
+    public MyUser determineUser(MyUser user, String id) {
+        if (user == null) {
             user = determineUser(id);
-        } else {
-            user = determineUser(authorizable.get());
         }
         return user;
     }
 
-    public MyGroup determineGroup(Authorizable authorizable) {
-        try {
-            return determineAuthorizable(authorizable, authorizable.getID(), MyGroup.class);
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to get authorizable ID", e);
-        }
+    public MyGroup determineGroup(Group group) {
+        return determineAuthorizable(group, MyGroup.class);
     }
 
     public MyGroup determineGroup(String id) {
@@ -100,12 +89,9 @@ public class AclContext {
         return determineAuthorizable(authorizable, id, MyGroup.class);
     }
 
-    public MyGroup determineGroup(MyAuthorizable authorizable, String id) {
-        MyGroup group;
-        if (authorizable == null) {
+    public MyGroup determineGroup(MyGroup group, String id) {
+        if (group == null) {
             group = determineGroup(id);
-        } else {
-            group = determineGroup(authorizable.get());
         }
         return group;
     }
@@ -114,12 +100,11 @@ public class AclContext {
         return determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
     }
 
-    public MyAuthorizable determineAuthorizable(Authorizable authorizable) {
-        try {
-            return determineAuthorizable(authorizable, authorizable.getID(), MyAuthorizable.class);
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to get authorizable ID", e);
+    public MyAuthorizable determineAuthorizable(MyAuthorizable authorizable, String id) {
+        if (authorizable == null) {
+            authorizable = determineAuthorizable(id);
         }
+        return authorizable;
     }
 
     public MyAuthorizable determineAuthorizable(String id) {
@@ -127,13 +112,12 @@ public class AclContext {
         return determineAuthorizable(authorizable, id, MyAuthorizable.class);
     }
 
-    public MyAuthorizable determineAuthorizable(MyAuthorizable authorizable, String id) {
-        if (authorizable == null) {
-            authorizable = determineAuthorizable(id);
-        } else {
-            authorizable = determineAuthorizable(authorizable.get());
+    private <T extends MyAuthorizable> T determineAuthorizable(Authorizable authorizable, Class<T> clazz) {
+        try {
+            return determineAuthorizable(authorizable, authorizable.getID(), clazz);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get authorizable ID", e);
         }
-        return authorizable;
     }
 
     private <T extends MyAuthorizable> T determineAuthorizable(Authorizable authorizable, String id, Class<T> clazz) {
