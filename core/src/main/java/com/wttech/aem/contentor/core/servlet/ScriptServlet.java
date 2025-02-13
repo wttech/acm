@@ -42,6 +42,10 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     private static final String ACTION_PARAM = "action";
 
+    private static final String STATS_LIMIT_PARAM = "statsLimit";
+
+    private static final int STATS_LIMIT_DEFAULT = 30;
+
     private enum Action {
         ENABLE,
         DISABLE;
@@ -61,6 +65,15 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             return;
         }
 
+        int statsLimit =
+                Optional.ofNullable(intParam(request, STATS_LIMIT_PARAM)).orElse(STATS_LIMIT_DEFAULT);
+        if (statsLimit < 0) {
+            respondJson(
+                    response,
+                    error(String.format("Script stats limit '%d' cannot be a negative integer!", statsLimit)));
+            return;
+        }
+
         try {
             ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
             List<Script> scripts;
@@ -73,7 +86,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             }
             List<ScriptStats> stats = scripts.stream()
                     .map(Script::getId)
-                    .map(id -> ScriptStats.computeById(request.getResourceResolver(), id))
+                    .map(id -> ScriptStats.computeById(request.getResourceResolver(), id, statsLimit))
                     .collect(Collectors.toList());
 
             ScriptOutput output = new ScriptOutput(scripts, stats);

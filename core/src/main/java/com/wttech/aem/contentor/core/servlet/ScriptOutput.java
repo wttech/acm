@@ -2,7 +2,6 @@ package com.wttech.aem.contentor.core.servlet;
 
 import com.wttech.aem.contentor.core.script.Script;
 import com.wttech.aem.contentor.core.script.ScriptStats;
-
 import java.io.Serializable;
 import java.util.List;
 
