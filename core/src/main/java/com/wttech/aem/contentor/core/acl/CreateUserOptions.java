@@ -5,11 +5,21 @@ import java.util.Map;
 
 public class CreateUserOptions extends CreateAuthorizableOptions {
 
+    private String userId;
+
     private String password;
 
     private String familyName;
 
     private boolean systemUser;
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     public String getPassword() {
         return password;

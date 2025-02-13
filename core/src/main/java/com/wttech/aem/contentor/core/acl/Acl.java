@@ -32,12 +32,12 @@ public class Acl {
         return createGroup(GroovyUtils.with(new CreateGroupOptions(), closure));
     }
 
-    public MyUser getUser(Closure<GetAuthorizableOptions> closure) {
-        return getUser(GroovyUtils.with(new GetAuthorizableOptions(), closure));
+    public MyUser getUser(Closure<GetUserOptions> closure) {
+        return getUser(GroovyUtils.with(new GetUserOptions(), closure));
     }
 
-    public MyGroup getGroup(Closure<GetAuthorizableOptions> closure) {
-        return getGroup(GroovyUtils.with(new GetAuthorizableOptions(), closure));
+    public MyGroup getGroup(Closure<GetGroupOptions> closure) {
+        return getGroup(GroovyUtils.with(new GetGroupOptions(), closure));
     }
 
     public AclResult deleteUser(Closure<AuthorizableOptions> closure) {
@@ -111,7 +111,7 @@ public class Acl {
             boolean systemUser,
             CreateAuthorizableOptions.Mode mode) {
         CreateUserOptions options = new CreateUserOptions();
-        options.setId(id);
+        options.setUserId(id);
         options.setPassword(password);
         options.setPath(path);
         options.setGivenName(givenName);
@@ -124,17 +124,17 @@ public class Acl {
     }
 
     public MyUser createUser(CreateUserOptions options) {
-        User user = context.getAuthorizableManager().getUser(options.getId());
+        User user = context.getAuthorizableManager().getUser(options.getUserId());
         if (user == null) {
             if (options.isSystemUser()) {
-                user = context.getAuthorizableManager().createSystemUser(options.getId(), options.getPath());
+                user = context.getAuthorizableManager().createSystemUser(options.getUserId(), options.getPath());
             } else {
                 user = context.getAuthorizableManager()
-                        .createUser(options.getId(), options.getPassword(), options.getPath());
+                        .createUser(options.getUserId(), options.getPassword(), options.getPath());
             }
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
-            throw new AclException(String.format("User with id %s already exists", options.getId()));
+            throw new AclException(String.format("User with id %s already exists", options.getUserId()));
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
         }
@@ -145,13 +145,13 @@ public class Acl {
 
     public MyUser createUser(String id) {
         CreateUserOptions options = new CreateUserOptions();
-        options.setId(id);
+        options.setUserId(id);
         return createUser(options);
     }
 
     public MyUser createSystemUser(String id) {
         CreateUserOptions options = new CreateUserOptions();
-        options.setId(id);
+        options.setUserId(id);
         options.systemUser();
         return createUser(options);
     }
@@ -165,7 +165,7 @@ public class Acl {
             String aboutMe,
             CreateAuthorizableOptions.Mode mode) {
         CreateGroupOptions options = new CreateGroupOptions();
-        options.setId(id);
+        options.setGroupId(id);
         options.setExternalId(externalId);
         options.setPath(path);
         options.setGivenName(givenName);
@@ -176,13 +176,13 @@ public class Acl {
     }
 
     public MyGroup createGroup(CreateGroupOptions options) {
-        Group group = context.getAuthorizableManager().getGroup(options.getId());
+        Group group = context.getAuthorizableManager().getGroup(options.getGroupId());
         if (group == null) {
             group = context.getAuthorizableManager()
-                    .createGroup(options.getId(), options.getPath(), options.getExternalId());
+                    .createGroup(options.getGroupId(), options.getPath(), options.getExternalId());
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
-            throw new AclException(String.format("Group with id %s already exists", options.getId()));
+            throw new AclException(String.format("Group with id %s already exists", options.getGroupId()));
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
         }
@@ -193,19 +193,19 @@ public class Acl {
 
     public MyGroup createGroup(String id) {
         CreateGroupOptions options = new CreateGroupOptions();
-        options.setId(id);
+        options.setGroupId(id);
         return createGroup(options);
     }
 
     public MyGroup createGroup(String id, String externalId) {
         CreateGroupOptions options = new CreateGroupOptions();
-        options.setId(id);
+        options.setGroupId(id);
         options.setExternalId(externalId);
         return createGroup(options);
     }
 
-    public MyUser getUser(GetAuthorizableOptions options) {
-        return getUser(options.getId());
+    public MyUser getUser(GetUserOptions options) {
+        return getUser(options.getUserId());
     }
 
     public MyUser getUser(String id) {
@@ -215,8 +215,8 @@ public class Acl {
         return result == AclResult.OK ? user : null;
     }
 
-    public MyGroup getGroup(GetAuthorizableOptions options) {
-        return getGroup(options.getId());
+    public MyGroup getGroup(GetGroupOptions options) {
+        return getGroup(options.getGroupId());
     }
 
     public MyGroup getGroup(String id) {

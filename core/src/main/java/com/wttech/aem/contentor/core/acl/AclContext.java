@@ -65,7 +65,7 @@ public class AclContext {
     }
 
     public MyUser determineUser(AuthorizableOptions options) {
-        return determineUser(options.getAuthorizable(), options.getId());
+        return determineUser(options.getAuthorizable(), options.getAuthorizableId());
     }
 
     public MyUser determineUser(Authorizable authorizable) {
@@ -92,7 +92,7 @@ public class AclContext {
     }
 
     public MyGroup determineGroup(AuthorizableOptions options) {
-        return determineGroup(options.getAuthorizable(), options.getId());
+        return determineGroup(options.getAuthorizable(), options.getAuthorizableId());
     }
 
     public MyGroup determineGroup(Authorizable authorizable) {
@@ -119,7 +119,7 @@ public class AclContext {
     }
 
     public MyAuthorizable determineAuthorizable(AuthorizableOptions options) {
-        return determineAuthorizable(options.getAuthorizable(), options.getId());
+        return determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
     }
 
     public MyAuthorizable determineAuthorizable(Authorizable authorizable) {
