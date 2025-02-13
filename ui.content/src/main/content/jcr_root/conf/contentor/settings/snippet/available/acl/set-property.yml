@@ -1,6 +1,0 @@
-group: ACL
-name: acl_set_property
-content: |
-  acl.setProperty { authorizable = ${1:authorizable}; relPath = "${2:relPath}"; value = "${3:value}" }
-documentation: |
-  Set the specified value on the property at the given relative path on the target authorizable.

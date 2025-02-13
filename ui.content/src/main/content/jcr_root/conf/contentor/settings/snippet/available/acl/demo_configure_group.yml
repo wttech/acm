@@ -1,8 +1,7 @@
 group: ACL
 name: acl_demo_configure_group
 content: |
-  acl.getGroup { id = "${1:id}" }?.with {
-    /*
+  acl.getGroup { id = "acme-content-authors" }?.with {
     setProperty { relPath = "myprop"; value = "myvalue" }
     removeProperty { relPath = "myprop" }
     removeAllMembers()
@@ -11,11 +10,10 @@ content: |
     purge()
     addMember { memberId = "mymember" }
     removeMember { memberId = "mymember" }
-    addToGroup { groupId = "mygroup }
+    addToGroup { groupId = "mygroup" }
     removeFromGroup { groupId = "mygroup" }
-    allow { path = "/content/acme"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
     deny { path = "/content"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
-    */
+    allow { path = "/content/acme"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
   }
 documentation: |
-  Demonstrates how to configure OOTB AEM groups like 'administrators' or 'contributors'.
+  Demonstrates how to configure the existing AEM groups like 'administrators' or 'contributors'.

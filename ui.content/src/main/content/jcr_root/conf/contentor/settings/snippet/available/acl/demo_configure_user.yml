@@ -1,0 +1,17 @@
+group: ACL
+name: acl_demo_configure_user
+content: |
+  acl.getUser { id = "john.doe" }?.with {
+    setPassword { password = "mysecret" }
+    setProperty { relPath = "myprop"; value = "myvalue" }
+    removeProperty { relPath = "myprop" }
+    removeFromAllGroups()
+    clear { path = "/content" }
+    purge()
+    addToGroup { groupId = "mygroup" }
+    removeFromGroup { groupId = "mygroup" }
+    deny { path = "/content"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
+    allow { path = "/content/acme"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
+  }
+documentation: |
+  Demonstrates how to configure the existing AEM users like: 'admin' or 'anonymous'.

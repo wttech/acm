@@ -1,0 +1,6 @@
+group: ACL
+name: acl_set_property
+content: |
+  acl.setProperty { authorizableId = "${1}"; relPath = "${2}"; value = "${3}" }
+documentation: |
+  Set the value to the property at the given relative path for the target authorizable (user or group).

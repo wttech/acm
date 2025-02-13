@@ -1,6 +1,10 @@
 package com.wttech.aem.contentor.core.assist;
 
+import com.wttech.aem.contentor.core.code.CodeRepository;
 import com.wttech.aem.contentor.core.osgi.ClassInfo;
+import java.util.LinkedList;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 public class ClassSuggestion implements Suggestion {
 
@@ -27,6 +31,13 @@ public class ClassSuggestion implements Suggestion {
 
     @Override
     public String getInfo() {
-        return String.format("Bundle: %s", classInfo.getBundle().getSymbolicName());
+        List<String> info = new LinkedList<>();
+
+        info.add(String.format("Bundle: %s", classInfo.getBundle().getSymbolicName()));
+        CodeRepository.linkToClass(classInfo.getClassName()).ifPresent(link -> {
+            info.add(String.format("Source Code: [Open on GitHub](%s)", link));
+        });
+
+        return StringUtils.join(info, "\n\n");
     }
 }

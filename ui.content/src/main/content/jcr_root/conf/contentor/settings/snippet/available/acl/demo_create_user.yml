@@ -1,9 +1,7 @@
 group: ACL
-name: acl_demo_configure-user
+name: acl_demo_create_user
 content: |
-  acl.getUser { id = "${1:id}" }?.with {
-    /*
-    setPassword { password = "mysecret" }
+  acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "mysecret"; email = "john.doe@acme.com" }.with {
     setProperty { relPath = "myprop"; value = "myvalue" }
     removeProperty { relPath = "myprop" }
     removeFromAllGroups()
@@ -11,9 +9,8 @@ content: |
     purge()
     addToGroup { groupId = "mygroup" }
     removeFromGroup { groupId = "mygroup" }
-    allow { path = "/content/acme"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
     deny { path = "/content"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
-    */
+    allow { path = "/content/acme"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
   }
 documentation: |
-  Demonstrates how to configure OOTB AEM users like: 'admin' or 'anonymous'.
+  Demonstrates how to create a new, tenant-specific AEM user.

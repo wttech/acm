@@ -1,6 +1,10 @@
 package com.wttech.aem.contentor.core.assist;
 
+import com.wttech.aem.contentor.core.code.CodeRepository;
 import com.wttech.aem.contentor.core.code.Variable;
+import java.util.LinkedList;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 public class VariableSuggestion implements Suggestion {
 
@@ -27,6 +31,13 @@ public class VariableSuggestion implements Suggestion {
 
     @Override
     public String getInfo() {
-        return String.format("Type: %s", variable.typeName());
+        List<String> info = new LinkedList<>();
+
+        info.add(String.format("Type: %s", variable.typeName()));
+        CodeRepository.linkToClass(variable.typeName()).ifPresent(link -> {
+            info.add(String.format("Source Code: [Open on GitHub](%s)", link));
+        });
+
+        return StringUtils.join(info, "\n\n");
     }
 }

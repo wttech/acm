@@ -1,6 +1,0 @@
-group: ACL
-name: acl_add_member
-content: |
-  acl.addMember { authorizable = ${1:authorizable}; member = ${2:member} }
-documentation: |
-  Add the given member to the target authorizable.

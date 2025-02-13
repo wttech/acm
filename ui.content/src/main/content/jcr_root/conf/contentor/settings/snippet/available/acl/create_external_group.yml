@@ -1,0 +1,7 @@
+group: ACL
+name: acl_create_external_group
+content: |
+  def ${1} = acl.createGroup { id = "${2}"; externalId = "${3}" }
+documentation: |
+  Create or retrieve the group with the given ID and external ID.
+  The group will only be created if it does not already exist.
