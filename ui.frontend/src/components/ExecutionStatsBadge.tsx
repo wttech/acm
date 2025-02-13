@@ -8,8 +8,10 @@ interface ExecutionStatsBadgeProps {
     stats: ScriptStats;
 }
 
-const getBadgeVariant = (successRate: number): 'positive' | 'negative' | 'neutral' | 'info' | 'yellow' => {
-    if (successRate === 100) {
+const getBadgeVariant = (successRate: number, totalExecutions: number): 'positive' | 'negative' | 'neutral' | 'info' | 'yellow' => {
+    if (totalExecutions === 0) {
+        return 'info';
+    } else if (successRate === 100) {
         return 'positive';
     } else if (successRate > 80) {
         return 'yellow';
@@ -23,7 +25,7 @@ const ExecutionStatsBadge: React.FC<ExecutionStatsBadgeProps> = ({ script, stats
     const successfulExecutions = stats ? stats.statusCount[ExecutionStatus.SUCCEEDED] : 0;
     const totalExecutions = stats ? Object.values(stats.statusCount).reduce((a, b) => a + b, 0) : 0;
     const successRate = totalExecutions > 0 ? (successfulExecutions / totalExecutions) * 100 : 0;
-    const variant = getBadgeVariant(successRate);
+    const variant = getBadgeVariant(successRate, totalExecutions);
 
     return (
         <Badge variant={variant}>

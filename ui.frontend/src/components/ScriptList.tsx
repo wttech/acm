@@ -132,7 +132,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         </TableHeader>
         <TableBody>
           {(scripts.list || []).map((script) => {
-            const scriptStats = scripts.stats.find((stat) => stat.scriptId === script.id);
+            const scriptStats = (scripts.stats.find((stat) => stat.scriptId === script.id))!;
             const lastExecution = scriptStats?.lastExecution;
             const successfulExecutions = scriptStats ? scriptStats.statusCount[ExecutionStatus.SUCCEEDED] : 0;
             const totalExecutions = scriptStats ? Object.values(scriptStats.statusCount).reduce((a, b) => a + b, 0) : 0;
