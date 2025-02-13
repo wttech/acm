@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 
 public class ScriptStats implements Serializable {
@@ -26,13 +27,14 @@ public class ScriptStats implements Serializable {
     }
 
     public static ScriptStats computeById(ResourceResolver resourceResolver, String scriptId, int limit) {
-        AtomicReference<Execution> lastExecution = new AtomicReference<>();
+        AtomicReference<Execution> lastExecution = new AtomicReference<>(); // TODO calculate it separately (does not rely on limit)
         Map<ExecutionStatus, Long> statusCount =
                 Arrays.stream(ExecutionStatus.values()).collect(HashMap::new, (m, s) -> m.put(s, 0L), HashMap::putAll);
 
         ExecutionHistory history = new ExecutionHistory(resourceResolver);
         ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(scriptId);
+        query.setExecutableId(
+                StringUtils.replace(scriptId, "/disabled/", "/enabled/")); // TODO change path more smartly
         history.findAll(query).limit(limit).forEach(e -> {
             if (lastExecution.get() == null) {
                 lastExecution.set(e);
