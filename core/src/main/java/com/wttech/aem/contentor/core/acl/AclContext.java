@@ -65,12 +65,20 @@ public class AclContext {
     }
 
     public MyUser determineUser(User user) {
-        return determineAuthorizable(user, MyUser.class);
+        try {
+            String id = "";
+            if (user != null) {
+                id = user.getID();
+            }
+            return new MyUser(user, id, this);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get authorizable ID", e);
+        }
     }
 
     public MyUser determineUser(String id) {
         User user = authorizableManager.getUser(id);
-        return determineAuthorizable(user, id, MyUser.class);
+        return new MyUser(user, id, this);
     }
 
     public MyUser determineUser(MyUser user, String id) {
@@ -81,12 +89,20 @@ public class AclContext {
     }
 
     public MyGroup determineGroup(Group group) {
-        return determineAuthorizable(group, MyGroup.class);
+        try {
+            String id = "";
+            if (group != null) {
+                id = group.getID();
+            }
+            return new MyGroup(group, id, this);
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get authorizable ID", e);
+        }
     }
 
     public MyGroup determineGroup(String id) {
-        Group authorizable = authorizableManager.getGroup(id);
-        return determineAuthorizable(authorizable, id, MyGroup.class);
+        Group group = authorizableManager.getGroup(id);
+        return new MyGroup(group, id, this);
     }
 
     public MyGroup determineGroup(MyGroup group, String id) {
@@ -109,38 +125,7 @@ public class AclContext {
 
     public MyAuthorizable determineAuthorizable(String id) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return determineAuthorizable(authorizable, id, MyAuthorizable.class);
-    }
-
-    private <T extends MyAuthorizable> T determineAuthorizable(Authorizable authorizable, Class<T> clazz) {
-        try {
-            return determineAuthorizable(authorizable, authorizable.getID(), clazz);
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to get authorizable ID", e);
-        }
-    }
-
-    private <T extends MyAuthorizable> T determineAuthorizable(Authorizable authorizable, String id, Class<T> clazz) {
-        MyAuthorizable result;
-        if (authorizable == null) {
-            if (clazz.equals(MyGroup.class)) {
-                result = new MyGroup(null, id, this);
-            } else if (clazz.equals(MyUser.class)) {
-                result = new MyUser(null, id, this);
-            } else {
-                result = new MyAuthorizable(null, id, this);
-            }
-        } else if (authorizable.isGroup()) {
-            result = new MyGroup((Group) authorizable, id, this);
-        } else {
-            result = new MyUser((User) authorizable, id, this);
-        }
-        if (result.get() != null && !clazz.isInstance(result)) {
-            throw new AclException(String.format(
-                    "Authorizable with id %s exists but is a %s",
-                    id, result.get().getClass().getSimpleName()));
-        }
-        return clazz.cast(result);
+        return new MyAuthorizable(authorizable, id, this);
     }
 
     public void logResult(MyAuthorizable authorizable, String messagePattern, Object... args) {
