@@ -64,107 +64,68 @@ public class AclContext {
         return compositeNodeStore;
     }
 
-    public MyUser determineUser(AuthorizableOptions options) {
-        return determineUser(options.getAuthorizable(), options.getId());
-    }
-
-    public MyUser determineUser(Authorizable authorizable) {
+    public MyUser determineUser(User user) {
         try {
-            return determineAuthorizable(authorizable, authorizable.getID(), MyUser.class);
+            String id = "";
+            if (user != null) {
+                id = user.getID();
+            }
+            return new MyUser(user, id, this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
     }
 
     public MyUser determineUser(String id) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return determineAuthorizable(authorizable, id, MyUser.class);
+        User user = authorizableManager.getUser(id);
+        return new MyUser(user, id, this);
     }
 
-    public MyUser determineUser(MyAuthorizable authorizable, String id) {
-        MyUser user;
-        if (authorizable == null) {
+    public MyUser determineUser(MyUser user, String id) {
+        if (user == null) {
             user = determineUser(id);
-        } else {
-            user = determineUser(authorizable.get());
         }
         return user;
     }
 
-    public MyGroup determineGroup(AuthorizableOptions options) {
-        return determineGroup(options.getAuthorizable(), options.getId());
-    }
-
-    public MyGroup determineGroup(Authorizable authorizable) {
+    public MyGroup determineGroup(Group group) {
         try {
-            return determineAuthorizable(authorizable, authorizable.getID(), MyGroup.class);
+            String id = "";
+            if (group != null) {
+                id = group.getID();
+            }
+            return new MyGroup(group, id, this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
     }
 
     public MyGroup determineGroup(String id) {
-        Group authorizable = authorizableManager.getGroup(id);
-        return determineAuthorizable(authorizable, id, MyGroup.class);
+        Group group = authorizableManager.getGroup(id);
+        return new MyGroup(group, id, this);
     }
 
-    public MyGroup determineGroup(MyAuthorizable authorizable, String id) {
-        MyGroup group;
-        if (authorizable == null) {
+    public MyGroup determineGroup(MyGroup group, String id) {
+        if (group == null) {
             group = determineGroup(id);
-        } else {
-            group = determineGroup(authorizable.get());
         }
         return group;
     }
 
     public MyAuthorizable determineAuthorizable(AuthorizableOptions options) {
-        return determineAuthorizable(options.getAuthorizable(), options.getId());
-    }
-
-    public MyAuthorizable determineAuthorizable(Authorizable authorizable) {
-        try {
-            return determineAuthorizable(authorizable, authorizable.getID(), MyAuthorizable.class);
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to get authorizable ID", e);
-        }
-    }
-
-    public MyAuthorizable determineAuthorizable(String id) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return determineAuthorizable(authorizable, id, MyAuthorizable.class);
+        return determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
     }
 
     public MyAuthorizable determineAuthorizable(MyAuthorizable authorizable, String id) {
         if (authorizable == null) {
             authorizable = determineAuthorizable(id);
-        } else {
-            authorizable = determineAuthorizable(authorizable.get());
         }
         return authorizable;
     }
 
-    private <T extends MyAuthorizable> T determineAuthorizable(Authorizable authorizable, String id, Class<T> clazz) {
-        MyAuthorizable result;
-        if (authorizable == null) {
-            if (clazz.equals(MyGroup.class)) {
-                result = new MyGroup(null, id, this);
-            } else if (clazz.equals(MyUser.class)) {
-                result = new MyUser(null, id, this);
-            } else {
-                result = new MyAuthorizable(null, id, this);
-            }
-        } else if (authorizable.isGroup()) {
-            result = new MyGroup((Group) authorizable, id, this);
-        } else {
-            result = new MyUser((User) authorizable, id, this);
-        }
-        if (result.get() != null && !clazz.isInstance(result)) {
-            throw new AclException(String.format(
-                    "Authorizable with id %s exists but is a %s",
-                    id, result.get().getClass().getSimpleName()));
-        }
-        return clazz.cast(result);
+    public MyAuthorizable determineAuthorizable(String id) {
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        return new MyAuthorizable(authorizable, id, this);
     }
 
     public void logResult(MyAuthorizable authorizable, String messagePattern, Object... args) {

@@ -2,11 +2,11 @@ package com.wttech.aem.contentor.core.acl;
 
 import com.wttech.aem.contentor.core.acl.authorizable.MyGroup;
 
-public class GroupOptions extends AuthorizableOptions {
+public class DeleteGroupOptions {
 
     private MyGroup group;
 
-    private String groupId;
+    private String id;
 
     public MyGroup getGroup() {
         return group;
@@ -16,11 +16,11 @@ public class GroupOptions extends AuthorizableOptions {
         this.group = group;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getId() {
+        return id;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setId(String id) {
+        this.id = id;
     }
 }
