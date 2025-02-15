@@ -6,8 +6,6 @@ import com.wttech.aem.contentor.core.acl.authorizable.MyUser;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
-import java.io.IOException;
-import java.io.OutputStream;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.ValueFactory;
@@ -18,9 +16,12 @@ import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.slf4j.helpers.MessageFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AclContext {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AclContext.class);
 
     private final ResourceResolver resourceResolver;
 
@@ -30,9 +31,7 @@ public class AclContext {
 
     private final boolean compositeNodeStore;
 
-    private final OutputStream out;
-
-    public AclContext(ResourceResolver resourceResolver, OutputStream out) {
+    public AclContext(ResourceResolver resourceResolver) {
         try {
             JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
@@ -42,7 +41,6 @@ public class AclContext {
             this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
-            this.out = out;
         } catch (RepositoryException e) {
             throw new AclException("Failed to initialize acl context", e);
         }
@@ -129,12 +127,7 @@ public class AclContext {
     }
 
     public void logResult(MyAuthorizable authorizable, String messagePattern, Object... args) {
-        try {
-            String newMessagePattern = String.format("[%s] %s\n", authorizable.getId(), messagePattern);
-            String message = MessageFormatter.format(newMessagePattern, args).getMessage();
-            out.write(message.getBytes());
-        } catch (IOException e) {
-            throw new AclException("Failed to log result", e);
-        }
+        String newMessagePattern = String.format("[%s] %s", authorizable.getId(), messagePattern);
+        LOGGER.info(newMessagePattern, args);
     }
 }

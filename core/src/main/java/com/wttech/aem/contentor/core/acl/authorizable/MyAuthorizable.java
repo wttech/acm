@@ -87,7 +87,7 @@ public class MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "addToGroup {}", result, group.getId());
+        context.logResult(this, "addToGroup {} {}", result, group.getId());
         return result;
     }
 
@@ -112,7 +112,7 @@ public class MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "removeFromGroup {}", result, group.getId());
+        context.logResult(this, "removeFromGroup {} {}", result, group.getId());
         return result;
     }
 
@@ -156,7 +156,7 @@ public class MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "clear {}", result, path);
+        context.logResult(this, "clear {} {}", result, path);
         return result;
     }
 
@@ -196,7 +196,7 @@ public class MyAuthorizable {
         } else {
             result = apply(path, options.determineAllPermissions(), options.determineAllRestrictions(), allow);
         }
-        context.logResult(this, allow ? "allow {}" : "deny {}", result, path, permissions);
+        context.logResult(this, allow ? "allow {} {} {}" : "deny {} {} {}", result, path, permissions);
         return result;
     }
 
@@ -298,7 +298,7 @@ public class MyAuthorizable {
                 result = AclResult.CHANGED;
             }
         }
-        context.logResult(this, "setProperty {}", result, relPath, value);
+        context.logResult(this, "setProperty {} {} {}", result, relPath, value);
         return result;
     }
 
@@ -315,7 +315,7 @@ public class MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "removeProperty {}", result, relPath);
+        context.logResult(this, "removeProperty {} {}", result, relPath);
         return result;
     }
 

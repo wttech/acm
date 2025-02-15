@@ -2,6 +2,7 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
+import com.wttech.aem.contentor.core.utils.OutputStreamWrapper;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -62,7 +63,8 @@ public class Executor {
     private ImmediateExecution executeImmediately(ExecutionContext context) {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
-        try (OutputStream outputStream = Files.newOutputStream(ExecutionOutput.path(context.getId()))) {
+        try (OutputStream outputStream =
+                new OutputStreamWrapper(Files.newOutputStream(ExecutionOutput.path(context.getId())))) {
             context.setOutputStream(outputStream);
 
             GroovyShell shell = createShell(context);

@@ -6,7 +6,6 @@ import com.wttech.aem.contentor.core.acl.authorizable.MyUser;
 import com.wttech.aem.contentor.core.acl.check.CheckAcl;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import org.apache.jackrabbit.api.security.user.Group;
@@ -19,8 +18,8 @@ public class Acl {
 
     public final CheckAcl check;
 
-    public Acl(ResourceResolver resourceResolver, OutputStream out) {
-        this.context = new AclContext(resourceResolver, out);
+    public Acl(ResourceResolver resourceResolver) {
+        this.context = new AclContext(resourceResolver);
         this.check = new CheckAcl(context);
     }
 

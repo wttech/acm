@@ -51,7 +51,7 @@ public class MyGroup extends MyAuthorizable {
         } else {
             result = context.getAuthorizableManager().addMember(group, member.get()) ? AclResult.CHANGED : AclResult.OK;
         }
-        context.logResult(this, "addMember {}", result, member.getId());
+        context.logResult(this, "addMember {} {}", result, member.getId());
         return result;
     }
 
@@ -76,7 +76,7 @@ public class MyGroup extends MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "removeMember {}", result, member.getId());
+        context.logResult(this, "removeMember {} {}", result, member.getId());
         return result;
     }
 

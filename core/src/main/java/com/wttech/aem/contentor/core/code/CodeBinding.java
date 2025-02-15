@@ -2,6 +2,7 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.acl.Acl;
 import com.wttech.aem.contentor.core.osgi.OsgiFacade;
+import com.wttech.aem.contentor.core.utils.Utils;
 import groovy.lang.Binding;
 import java.io.OutputStream;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -22,13 +23,16 @@ public class CodeBinding {
 
     private final Condition condition;
 
+    private final Utils utils;
+
     public CodeBinding(ExecutionContext context) {
         this.log = createLogger(context.getExecutable());
         this.out = context.getOutputStream();
         this.resourceResolver = context.getResourceResolver();
-        this.acl = new Acl(resourceResolver, out);
+        this.acl = new Acl(resourceResolver);
         this.osgi = new OsgiFacade(context.getBundleContext());
         this.condition = new Condition(context);
+        this.utils = new Utils(out);
     }
 
     private Logger createLogger(Executable executable) {
@@ -43,6 +47,7 @@ public class CodeBinding {
         result.setVariable(Variable.ACL.varName(), acl);
         result.setVariable(Variable.OSGI.varName(), osgi);
         result.setVariable(Variable.CONDITION.varName(), condition);
+        result.setVariable(Variable.UTILS.varName(), utils);
         return result;
     }
 }
