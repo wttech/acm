@@ -426,7 +426,7 @@ public class Acl {
                 options.getTypes(),
                 options.getProperties(),
                 options.getRestrictions(),
-                null);
+                PermissionsOptions.Mode.cast(options.getMode()));
     }
 
     public AclResult allow(
@@ -495,7 +495,7 @@ public class Acl {
                 options.getTypes(),
                 options.getProperties(),
                 options.getRestrictions(),
-                null);
+                PermissionsOptions.Mode.cast(options.getMode()));
     }
 
     public AclResult deny(
