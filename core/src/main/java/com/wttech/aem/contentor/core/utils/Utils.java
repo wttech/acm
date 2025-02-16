@@ -15,7 +15,7 @@ public class Utils {
         this.out = (OutputStreamWrapper) out;
     }
 
-    public void redirectLogToOutput(String loggerName) {
+    public void duplicateLogToOutput(String loggerName) {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.getLoggerList().stream()
                 .filter(logger -> logger.getName().contains(loggerName))
