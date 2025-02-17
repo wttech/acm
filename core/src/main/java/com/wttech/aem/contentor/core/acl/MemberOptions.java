@@ -1,17 +1,12 @@
 package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
 import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
 
-public class MemberOptions {
+public class MemberOptions extends com.wttech.aem.contentor.core.acl.authorizable.MemberOptions {
 
     private AclGroup group;
 
     private String groupId;
-
-    private AclAuthorizable member;
-
-    private String memberId;
 
     public AclGroup getGroup() {
         return group;
@@ -27,21 +22,5 @@ public class MemberOptions {
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
-    }
-
-    public AclAuthorizable getMember() {
-        return member;
-    }
-
-    public void setMember(AclAuthorizable member) {
-        this.member = member;
-    }
-
-    public String getMemberId() {
-        return memberId;
-    }
-
-    public void setMemberId(String memberId) {
-        this.memberId = memberId;
     }
 }

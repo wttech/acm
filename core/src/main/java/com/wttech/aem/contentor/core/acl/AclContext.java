@@ -32,9 +32,8 @@ public class AclContext {
     private final boolean compositeNodeStore;
 
     public AclContext(ResourceResolver resourceResolver) {
-        this.logger = LoggerFactory.getLogger(AclContext.class);
-
         try {
+            this.logger = LoggerFactory.getLogger(AclContext.class);
             JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
             AccessControlManager accessControlManager = session.getAccessControlManager();
@@ -114,10 +113,6 @@ public class AclContext {
             group = determineGroup(id);
         }
         return group;
-    }
-
-    public AclAuthorizable determineAuthorizable(AuthorizableOptions options) {
-        return determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
     }
 
     public AclAuthorizable determineAuthorizable(AclAuthorizable authorizable, String id) {
