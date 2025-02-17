@@ -95,6 +95,8 @@ public class Executor {
 
     private String composeScript(Executable executable) throws ContentorException {
         StringBuilder builder = new StringBuilder();
+        builder.append(executable.getContent());
+        builder.append("\n");
         builder.append("void ").append(CodeSyntax.Methods.INIT.givenName).append("() {\n");
         builder.append("\tSystem.setOut(new java.io.PrintStream(")
                 .append(Variable.OUT.varName())
@@ -104,7 +106,6 @@ public class Executor {
                 .append(", true, \"UTF-8\"));\n");
         builder.append("}\n");
         builder.append("\n");
-        builder.append(executable.getContent());
         return builder.toString();
     }
 
