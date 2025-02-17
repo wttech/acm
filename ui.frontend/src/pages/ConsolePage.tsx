@@ -7,11 +7,13 @@ import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
-import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
+import { useDebounce } from 'react-use';
+import CompilationStatus from '../components/CompilationStatus.tsx';
+import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
@@ -20,15 +22,59 @@ import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 const toastTimeout = 3000;
 const executionPollDelay = 500;
 const executionPollInterval = 500;
+const parseDebounceDelay = 1000;
 type SelectedTab = 'code' | 'output';
 
 const ConsolePage = () => {
   const [selectedTab, setSelectedTab] = useState<SelectedTab>('code');
   const [executing, setExecuting] = useState<boolean>(false);
-  const [parsing, setParsing] = useState<boolean>(false);
   const [code, setCode] = useState<string | undefined>(ConsoleCode);
   const [execution, setExecution] = useState<Execution | null>(null);
   const pollExecutionRef = useRef<number | null>(null);
+  const [isCompiling, setIsCompiling] = useState<boolean>(false);
+  const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
+  const [compilationError, setCompilationError] = useState<string | undefined>(undefined);
+  const parseCode = useCallback(async () => {
+    try {
+      const { data } = await apiRequest<Execution>({
+        operation: 'Code parsing',
+        url: `/apps/contentor/api/execute-code.json`,
+        method: 'post',
+        data: {
+          mode: 'parse',
+          code: {
+            id: 'console',
+            content: code,
+          },
+        },
+      });
+      const queuedExecution = data.data;
+      setExecution(queuedExecution);
+
+      if (queuedExecution.error) {
+        const [, lineText, columnText] = queuedExecution.error.match(/@ line (\d+), column (\d+)/) || [];
+
+        if (!lineText || !columnText) {
+          setCompilationError(queuedExecution.error);
+          return;
+        }
+
+        const line = parseInt(lineText, 10);
+        const column = parseInt(columnText, 10);
+
+        setSyntaxError({ line, column, message: queuedExecution.error });
+      } else {
+        setSyntaxError(undefined);
+        setCompilationError(undefined);
+      }
+    } catch {
+      console.warn('Code parsing error!');
+    } finally {
+      setIsCompiling(false);
+    }
+  }, [code]);
+
+  const [, cancelParse] = useDebounce(parseCode, parseDebounceDelay, [code]);
 
   const onExecute = async () => {
     setExecuting(true);
@@ -147,43 +193,15 @@ const ConsolePage = () => {
     };
   }, []);
 
-  const onParse = () => {
-    setParsing(true);
-    apiRequest<Execution>({
-      operation: 'Code parsing',
-      url: `/apps/contentor/api/execute-code.json`,
-      method: 'post',
-      data: {
-        mode: 'parse',
-        code: {
-          id: 'console',
-          content: code,
-        },
-      },
-    })
-      .then((response) => {
-        const queuedExecution = response.data.data;
-        setExecution(queuedExecution);
+  useEffect(() => {
+    setSyntaxError(undefined);
+    setCompilationError(undefined);
+    setIsCompiling(true);
 
-        if (queuedExecution.error) {
-          ToastQueue.negative('Code parsing failed!', {
-            timeout: toastTimeout,
-          });
-          setSelectedTab('output');
-        } else {
-          ToastQueue.positive('Code parsing succeeded!', {
-            timeout: toastTimeout,
-          });
-        }
-      })
-      .catch(() => {
-        setExecution(null);
-        ToastQueue.negative('Code parsing error!', { timeout: toastTimeout });
-      })
-      .finally(() => {
-        setParsing(false);
-      });
-  };
+    return () => {
+      cancelParse();
+    };
+  }, [cancelParse, code]);
 
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
 
@@ -225,17 +243,14 @@ const ConsolePage = () => {
           <Item key="code">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View>
-                <Flex justifyContent="space-between" alignItems="center">
+                <Flex alignItems="center" justifyContent="space-between" gap={10}>
                   <ButtonGroup>
-                    <Button variant="accent" onPress={onExecute} isPending={executing}>
+                    <Button variant="accent" onPress={onExecute} isPending={executing} isDisabled={isCompiling || !!syntaxError || !!compilationError}>
                       <Gears />
                       <Text>Execute</Text>
                     </Button>
-                    <Button variant="secondary" onPress={onParse} isPending={parsing} style="fill">
-                      <Spellcheck />
-                      <Text>Parse</Text>
-                    </Button>
                   </ButtonGroup>
+                  <CompilationStatus onCompilationErrorClick={() => setSelectedTab('output')} isCompiling={isCompiling} syntaxError={syntaxError} compilationError={compilationError} />
                   <DialogTrigger>
                     <Button variant="secondary" style="fill">
                       <Help />
@@ -266,7 +281,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </View>
-              <ImmersiveEditor value={code} onChange={setCode} language="groovy" beforeMount={registerGroovyLanguage} />
+              <ImmersiveEditor value={code} onChange={setCode} syntaxError={syntaxError} language="groovy" beforeMount={registerGroovyLanguage} />
             </Flex>
           </Item>
           <Item key="output">
