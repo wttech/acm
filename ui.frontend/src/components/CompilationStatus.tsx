@@ -1,4 +1,4 @@
-import { Link, StatusLight, Tooltip, TooltipTrigger } from '@adobe/react-spectrum';
+import { Link, StatusLight, Text } from '@adobe/react-spectrum';
 import { SyntaxError } from './ImmersiveEditor';
 
 type CompilationStatusProps = {
@@ -10,31 +10,23 @@ type CompilationStatusProps = {
 
 const CompilationStatus = ({ isCompiling, syntaxError, compilationError, onCompilationErrorClick }: CompilationStatusProps) => {
   if (isCompiling) {
-    return (
-      <StatusLight variant="yellow" isDisabled>
-        Compiling...
-      </StatusLight>
-    );
+    return <StatusLight variant="yellow" isDisabled>Compilation in progress</StatusLight>;
   }
-
   if (syntaxError) {
-    return <StatusLight variant="negative">Syntax error</StatusLight>;
+    return <StatusLight variant="negative">Compilation failed &mdash; Syntax error</StatusLight>;
   }
 
   if (compilationError) {
     return (
       <StatusLight variant="negative">
-        <TooltipTrigger delay={0}>
-          <Link isQuiet onPress={onCompilationErrorClick}>
-            Compilation error
-          </Link>
-          <Tooltip>Click to see details</Tooltip>
-        </TooltipTrigger>
+        <Text>Compilation failed</Text>
+        <Text>&nbsp;&mdash;&nbsp;</Text>
+        <Link isQuiet onPress={onCompilationErrorClick}>See error</Link>
       </StatusLight>
     );
   }
 
-  return <StatusLight variant="positive">Success</StatusLight>;
+  return <StatusLight variant="positive">Compilation succeeded</StatusLight>;
 };
 
 export default CompilationStatus;
