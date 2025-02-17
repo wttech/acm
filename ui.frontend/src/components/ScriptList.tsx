@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Cell, Column, Content, Dialog, DialogTrigger, Divider, Flex, Heading, IllustratedMessage, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Cell, Column, Content, Dialog, DialogTrigger, Divider, Flex, Heading, IllustratedMessage, ContextualHelp, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import { Key, Selection } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Cancel from '@spectrum-icons/workflow/Cancel';
@@ -6,13 +6,17 @@ import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import PlayCircle from '@spectrum-icons/workflow/PlayCircle';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toastRequest } from '../utils/api';
-import { ScriptOutput } from '../utils/api.types';
+import { ExecutionStatus, ScriptOutput } from '../utils/api.types';
+import { useFormatter } from '../utils/hooks.ts';
+import ExecutionStatsBadge from './ExecutionStatsBadge';
 
 type ScriptListProps = {
   type: 'enabled' | 'disabled';
 };
 
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
+  const formatter = useFormatter();
+
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
   const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
@@ -124,16 +128,29 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         <TableHeader>
           <Column>Name</Column>
           <Column>Last Execution</Column>
-          <Column>Successful Executions</Column>
+          <Column>
+            Successful Executions
+            <ContextualHelp variant="help">
+              <Content>At max 30 last executions are considered.</Content>
+            </ContextualHelp>
+          </Column>
         </TableHeader>
         <TableBody>
-          {(scripts.list || []).map((script) => (
-            <Row key={script.id}>
-              <Cell>{script.name}</Cell>
-              <Cell>&mdash;</Cell>
-              <Cell>50% (1/2)</Cell>
-            </Row>
-          ))}
+          {(scripts.list || []).map((script) => {
+            const scriptStats = (scripts.stats.find((stat) => stat.path === script.id))!;
+            const lastExecution = scriptStats?.lastExecution;
+            const successfulExecutions = scriptStats ? scriptStats.statusCount[ExecutionStatus.SUCCEEDED] : 0;
+            const totalExecutions = scriptStats ? Object.values(scriptStats.statusCount).reduce((a, b) => a + b, 0) : 0;
+            const successRate = totalExecutions > 0 ? (successfulExecutions / totalExecutions) * 100 : 0;
+
+            return (
+              <Row key={script.id}>
+                <Cell>{script.name}</Cell>
+                <Cell>{lastExecution ? formatter.dateExplained(lastExecution.startDate) : '—'}</Cell>
+                <Cell><ExecutionStatsBadge script={script} stats={scriptStats} /></Cell>
+              </Row>
+            );
+          })}
         </TableBody>
       </TableView>
     </Flex>

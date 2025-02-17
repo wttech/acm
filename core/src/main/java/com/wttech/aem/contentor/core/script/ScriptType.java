@@ -26,6 +26,14 @@ public enum ScriptType {
                 .findFirst();
     }
 
+    public String enforcePath(String path) {
+        String subPath = path;
+        for (ScriptType value : values()) {
+            subPath = StringUtils.removeStart(subPath, value.root() + "/");
+        }
+        return root + "/" + subPath;
+    }
+
     public String root() {
         return root;
     }
