@@ -2,13 +2,10 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
-import com.wttech.aem.contentor.core.utils.OutputStreamWrapper;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -64,7 +61,7 @@ public class Executor {
     private ImmediateExecution executeImmediately(ExecutionContext context) {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
-        try (OutputStream outputStream = createOutputStream(context)) {
+        try (OutputStream outputStream = new CodeOutputStream(context)) {
             context.setOutputStream(outputStream);
 
             GroovyShell shell = createShell(context);
@@ -118,9 +115,5 @@ public class Executor {
         compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
 
         return new GroovyShell(binding, compiler);
-    }
-
-    private OutputStream createOutputStream(ExecutionContext context) throws IOException {
-        return new OutputStreamWrapper(Files.newOutputStream(ExecutionOutput.path(context.getId())));
     }
 }
