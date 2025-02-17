@@ -1,0 +1,6 @@
+group: ACL
+name: acl_remove_from_all_groups
+content: |
+  acl.removeFromAllGroups { authorizableId = "${1}" }
+documentation: |
+  Removes the given authorizable (user or group) from all groups.

@@ -1,6 +1,0 @@
-group: ACL
-name: acl_remove_property
-content: |
-  acl.removeProperty { authorizable = ${1:authorizable}; relPath = "${2:relPath}" }
-documentation: |
-  Remove the property at the given relative path from the target authorizable.

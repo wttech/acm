@@ -1,6 +1,0 @@
-group: ACL
-name: acl_remove_from_group
-content: |
-  acl.removeFromGroup { authorizable = ${1:authorizable}; group = ${2:parent} }
-documentation: |
-  Remove the given authorizable from the target group.

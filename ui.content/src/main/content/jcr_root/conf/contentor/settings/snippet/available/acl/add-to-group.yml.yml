@@ -1,6 +1,0 @@
-group: ACL
-name: acl_add_to_group
-content: |
-  acl.addToGroup { authorizable = ${1:authorizable}; group = ${2:group} }
-documentation: |
-  Add the given authorizable to the target group.

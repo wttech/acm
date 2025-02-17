@@ -95,7 +95,11 @@ public class ExecutionQuery {
             filters.add(String.format("ISDESCENDANTNODE(s, '%s')", path));
         }
         if (executableId != null) {
-            filters.add(String.format("s.[executableId] LIKE '%%%s%%'", executableId));
+            if (StringUtils.contains(executableId, "%")) {
+                filters.add(String.format("s.[executableId] LIKE '%s'", StringUtils.replace(executableId, "%", "%%")));
+            } else {
+                filters.add(String.format("s.[executableId] = '%s'", executableId));
+            }
         }
         if (status != null) {
             filters.add(String.format("s.[status] = '%s'", status));
@@ -119,5 +123,10 @@ public class ExecutionQuery {
                 .reduce((f1, f2) -> f1 + " AND " + f2)
                 .orElse("");
         return "SELECT * FROM [nt:base] AS s WHERE " + where + " ORDER BY s.[startDate] DESC";
+    }
+
+    @Override
+    public String toString() {
+        return toSql();
     }
 }

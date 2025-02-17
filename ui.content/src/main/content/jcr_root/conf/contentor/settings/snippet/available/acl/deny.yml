@@ -1,6 +1,6 @@
 group: ACL
 name: acl_deny
 content: |
-  acl.deny { authorizable = ${1:authorizable}; path = "${2:path}"; permissions = [${3:permissions}]; glob = "/*"; restrictions = [:] }
+  acl.deny { authorizableId = ${1}; path = "${2}"; permissions = [${3}]; glob = "/*"; restrictions = [:] }
 documentation: |
-  Deny the specified permissions, glob and restrictions on the given path for the target authorizable.
+  Deny the specified permissions, glob and restrictions on the given path for the target authorizable (user or group).

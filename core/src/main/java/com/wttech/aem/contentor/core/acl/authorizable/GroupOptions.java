@@ -2,15 +2,15 @@ package com.wttech.aem.contentor.core.acl.authorizable;
 
 public class GroupOptions {
 
-    private MyAuthorizable group;
+    private AclGroup group;
 
     private String groupId;
 
-    public MyAuthorizable getGroup() {
+    public AclGroup getGroup() {
         return group;
     }
 
-    public void setGroup(MyAuthorizable group) {
+    public void setGroup(AclGroup group) {
         this.group = group;
     }
 

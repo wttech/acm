@@ -1,0 +1,19 @@
+group: ACL
+name: acl_demo_create_group
+content: |
+  acl.createGroup { id = "acme-content-authors" }.with {
+    setProperty { relPath = "myprop"; value = "myvalue" }
+    removeProperty { relPath = "myprop" }
+    removeAllMembers()
+    removeFromAllGroups()
+    clear { path = "/content" }
+    purge()
+    addMember { memberId = "mymember" }
+    removeMember { memberId = "mymember" }
+    addToGroup { groupId = "mygroup" }
+    removeFromGroup { groupId = "mygroup" }
+    deny { path = "/content"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
+    allow { path = "/content/acme"; permissions = ["jcr:read"]; glob = "/*"; restrictions = [:] }
+  }
+documentation: |
+  Demonstrates how to create a new, tenant-specific AEM group.

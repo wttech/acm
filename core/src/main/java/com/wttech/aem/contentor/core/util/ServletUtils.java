@@ -13,6 +13,11 @@ public final class ServletUtils {
         // intentionally empty
     }
 
+    public static Integer intParam(SlingHttpServletRequest request, String name) {
+        String value = stringParam(request, name);
+        return value != null ? Integer.valueOf(value) : null;
+    }
+
     public static String stringParam(SlingHttpServletRequest request, String name) {
         return StringUtils.trimToNull(request.getParameter(name));
     }

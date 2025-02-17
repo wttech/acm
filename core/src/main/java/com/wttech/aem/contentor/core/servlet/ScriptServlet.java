@@ -6,6 +6,7 @@ import static com.wttech.aem.contentor.core.util.ServletUtils.*;
 
 import com.wttech.aem.contentor.core.script.Script;
 import com.wttech.aem.contentor.core.script.ScriptRepository;
+import com.wttech.aem.contentor.core.script.ScriptStats;
 import com.wttech.aem.contentor.core.script.ScriptType;
 import java.io.IOException;
 import java.util.Arrays;
@@ -41,6 +42,10 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     private static final String ACTION_PARAM = "action";
 
+    private static final String STATS_LIMIT_PARAM = "statsLimit";
+
+    private static final int STATS_LIMIT_DEFAULT = 30;
+
     private enum Action {
         ENABLE,
         DISABLE;
@@ -60,6 +65,15 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             return;
         }
 
+        int statsLimit =
+                Optional.ofNullable(intParam(request, STATS_LIMIT_PARAM)).orElse(STATS_LIMIT_DEFAULT);
+        if (statsLimit < 0) {
+            respondJson(
+                    response,
+                    error(String.format("Script stats limit '%d' cannot be a negative integer!", statsLimit)));
+            return;
+        }
+
         try {
             ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
             List<Script> scripts;
@@ -70,7 +84,12 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             } else {
                 scripts = repository.findAll(type).sorted().collect(Collectors.toList());
             }
-            ScriptOutput output = new ScriptOutput(scripts);
+            List<ScriptStats> stats = scripts.stream()
+                    .map(Script::getPath)
+                    .map(path -> ScriptStats.computeByPath(request.getResourceResolver(), path, statsLimit))
+                    .collect(Collectors.toList());
+
+            ScriptOutput output = new ScriptOutput(scripts, stats);
             respondJson(response, ok("Scripts listed successfully", output));
         } catch (Exception e) {
             LOG.error("Scripts cannot be read!", e);

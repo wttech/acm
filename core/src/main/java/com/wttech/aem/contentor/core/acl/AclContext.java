@@ -1,13 +1,11 @@
 package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.authorizable.MyAuthorizable;
-import com.wttech.aem.contentor.core.acl.authorizable.MyGroup;
-import com.wttech.aem.contentor.core.acl.authorizable.MyUser;
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
+import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
+import com.wttech.aem.contentor.core.acl.authorizable.AclUser;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
-import java.io.IOException;
-import java.io.OutputStream;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.ValueFactory;
@@ -18,9 +16,12 @@ import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.slf4j.helpers.MessageFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AclContext {
+
+    protected final Logger logger;
 
     private final ResourceResolver resourceResolver;
 
@@ -30,9 +31,9 @@ public class AclContext {
 
     private final boolean compositeNodeStore;
 
-    private final OutputStream out;
+    public AclContext(ResourceResolver resourceResolver) {
+        this.logger = LoggerFactory.getLogger(AclContext.class);
 
-    public AclContext(ResourceResolver resourceResolver, OutputStream out) {
         try {
             JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
@@ -42,10 +43,13 @@ public class AclContext {
             this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
-            this.out = out;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to initialize acl context", e);
+            throw new AclException("Cannot access repository while obtaining ACL context!", e);
         }
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     public ResourceResolver getResourceResolver() {
@@ -64,116 +68,67 @@ public class AclContext {
         return compositeNodeStore;
     }
 
-    public MyUser determineUser(AuthorizableOptions options) {
-        return determineUser(options.getAuthorizable(), options.getId());
-    }
-
-    public MyUser determineUser(Authorizable authorizable) {
+    public AclUser determineUser(User user) {
         try {
-            return determineAuthorizable(authorizable, authorizable.getID(), MyUser.class);
+            String id = "";
+            if (user != null) {
+                id = user.getID();
+            }
+            return new AclUser(user, id, this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
     }
 
-    public MyUser determineUser(String id) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return determineAuthorizable(authorizable, id, MyUser.class);
+    public AclUser determineUser(String id) {
+        User user = authorizableManager.getUser(id);
+        return new AclUser(user, id, this);
     }
 
-    public MyUser determineUser(MyAuthorizable authorizable, String id) {
-        MyUser user;
-        if (authorizable == null) {
+    public AclUser determineUser(AclUser user, String id) {
+        if (user == null) {
             user = determineUser(id);
-        } else {
-            user = determineUser(authorizable.get());
         }
         return user;
     }
 
-    public MyGroup determineGroup(AuthorizableOptions options) {
-        return determineGroup(options.getAuthorizable(), options.getId());
-    }
-
-    public MyGroup determineGroup(Authorizable authorizable) {
+    public AclGroup determineGroup(Group group) {
         try {
-            return determineAuthorizable(authorizable, authorizable.getID(), MyGroup.class);
+            String id = "";
+            if (group != null) {
+                id = group.getID();
+            }
+            return new AclGroup(group, id, this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
     }
 
-    public MyGroup determineGroup(String id) {
-        Group authorizable = authorizableManager.getGroup(id);
-        return determineAuthorizable(authorizable, id, MyGroup.class);
+    public AclGroup determineGroup(String id) {
+        Group group = authorizableManager.getGroup(id);
+        return new AclGroup(group, id, this);
     }
 
-    public MyGroup determineGroup(MyAuthorizable authorizable, String id) {
-        MyGroup group;
-        if (authorizable == null) {
+    public AclGroup determineGroup(AclGroup group, String id) {
+        if (group == null) {
             group = determineGroup(id);
-        } else {
-            group = determineGroup(authorizable.get());
         }
         return group;
     }
 
-    public MyAuthorizable determineAuthorizable(AuthorizableOptions options) {
-        return determineAuthorizable(options.getAuthorizable(), options.getId());
+    public AclAuthorizable determineAuthorizable(AuthorizableOptions options) {
+        return determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
     }
 
-    public MyAuthorizable determineAuthorizable(Authorizable authorizable) {
-        try {
-            return determineAuthorizable(authorizable, authorizable.getID(), MyAuthorizable.class);
-        } catch (RepositoryException e) {
-            throw new AclException("Failed to get authorizable ID", e);
-        }
-    }
-
-    public MyAuthorizable determineAuthorizable(String id) {
-        Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return determineAuthorizable(authorizable, id, MyAuthorizable.class);
-    }
-
-    public MyAuthorizable determineAuthorizable(MyAuthorizable authorizable, String id) {
+    public AclAuthorizable determineAuthorizable(AclAuthorizable authorizable, String id) {
         if (authorizable == null) {
             authorizable = determineAuthorizable(id);
-        } else {
-            authorizable = determineAuthorizable(authorizable.get());
         }
         return authorizable;
     }
 
-    private <T extends MyAuthorizable> T determineAuthorizable(Authorizable authorizable, String id, Class<T> clazz) {
-        MyAuthorizable result;
-        if (authorizable == null) {
-            if (clazz.equals(MyGroup.class)) {
-                result = new MyGroup(null, id, this);
-            } else if (clazz.equals(MyUser.class)) {
-                result = new MyUser(null, id, this);
-            } else {
-                result = new MyAuthorizable(null, id, this);
-            }
-        } else if (authorizable.isGroup()) {
-            result = new MyGroup((Group) authorizable, id, this);
-        } else {
-            result = new MyUser((User) authorizable, id, this);
-        }
-        if (result.get() != null && !clazz.isInstance(result)) {
-            throw new AclException(String.format(
-                    "Authorizable with id %s exists but is a %s",
-                    id, result.get().getClass().getSimpleName()));
-        }
-        return clazz.cast(result);
-    }
-
-    public void logResult(MyAuthorizable authorizable, String messagePattern, Object... args) {
-        try {
-            String newMessagePattern = String.format("[%s] %s\n", authorizable.getId(), messagePattern);
-            String message = MessageFormatter.format(newMessagePattern, args).getMessage();
-            out.write(message.getBytes());
-        } catch (IOException e) {
-            throw new AclException("Failed to log result", e);
-        }
+    public AclAuthorizable determineAuthorizable(String id) {
+        Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        return new AclAuthorizable(authorizable, id, this);
     }
 }

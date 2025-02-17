@@ -1,6 +1,0 @@
-group: ACL
-name: acl_get_user
-content: |
-  def ${1:varName} = acl.getUser { id = "${2:id}" }
-documentation: |
-  Get an existing AEM by its ID.
