@@ -2,15 +2,15 @@ package com.wttech.aem.contentor.core.acl.authorizable;
 
 public class MemberOptions {
 
-    private MyAuthorizable member;
+    private AclAuthorizable member;
 
     private String memberId;
 
-    public MyAuthorizable getMember() {
+    public AclAuthorizable getMember() {
         return member;
     }
 
-    public void setMember(MyAuthorizable member) {
+    public void setMember(AclAuthorizable member) {
         this.member = member;
     }
 

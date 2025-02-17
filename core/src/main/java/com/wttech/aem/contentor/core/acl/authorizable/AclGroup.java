@@ -8,14 +8,16 @@ import groovy.lang.Closure;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.jcr.RepositoryException;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 
-public class MyGroup extends MyAuthorizable {
+public class AclGroup extends AclAuthorizable {
 
     private final Group group;
 
-    public MyGroup(Group group, String id, AclContext context) {
+    public AclGroup(Group group, String id, AclContext context) {
         super(group, id, context);
         this.group = group;
     }
@@ -28,21 +30,17 @@ public class MyGroup extends MyAuthorizable {
         return removeMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public AclResult removeAllMembers(Closure<Void> closure) {
-        return removeAllMembers();
-    }
-
     public AclResult addMember(MemberOptions options) {
-        MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+        AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return addMember(member);
     }
 
     public AclResult addMember(String memberId) {
-        MyAuthorizable member = context.determineAuthorizable(memberId);
+        AclAuthorizable member = context.determineAuthorizable(memberId);
         return addMember(member);
     }
 
-    public AclResult addMember(MyAuthorizable member) {
+    public AclResult addMember(AclAuthorizable member) {
         AclResult result;
         if (group == null) {
             result = AclResult.SKIPPED;
@@ -51,21 +49,21 @@ public class MyGroup extends MyAuthorizable {
         } else {
             result = context.getAuthorizableManager().addMember(group, member.get()) ? AclResult.CHANGED : AclResult.OK;
         }
-        context.logResult(this, "addMember {}", result, member.getId());
+        context.getLogger().info("Added member '{}' to group '{}' [{}]", member.getId(), getId(), result);
         return result;
     }
 
     public AclResult removeMember(MemberOptions options) {
-        MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+        AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return removeMember(member);
     }
 
     public AclResult removeMember(String memberId) {
-        MyAuthorizable member = context.determineAuthorizable(memberId);
+        AclAuthorizable member = context.determineAuthorizable(memberId);
         return removeMember(member);
     }
 
-    public AclResult removeMember(MyAuthorizable member) {
+    public AclResult removeMember(AclAuthorizable member) {
         AclResult result;
         if (group == null) {
             result = AclResult.SKIPPED;
@@ -76,7 +74,7 @@ public class MyGroup extends MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "removeMember {}", result, member.getId());
+        context.getLogger().info("Removed member '{}' from group '{}' [{}]", member.getId(), getId(), result);
         return result;
     }
 
@@ -92,10 +90,10 @@ public class MyGroup extends MyAuthorizable {
                     context.getAuthorizableManager().removeMember(group, members.next());
                 }
             }
-            context.logResult(this, "removeAllMembers {}", result);
+            context.getLogger().info("Removed all members from group '{}' [{}]", getId(), result);
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to remove all members from group", e);
+            throw new AclException(String.format("Failed to remove all members from group '%s'", getId()), e);
         }
     }
 
@@ -110,12 +108,19 @@ public class MyGroup extends MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "purge {}", result);
+        context.getLogger().info("Purged group '{}' [{}]", getId(), result);
         return result;
     }
 
     @Override
     public Group get() {
         return group;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
+                .append("id", getId())
+                .toString();
     }
 }

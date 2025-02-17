@@ -6,7 +6,6 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -62,7 +61,7 @@ public class Executor {
     private ImmediateExecution executeImmediately(ExecutionContext context) {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
-        try (OutputStream outputStream = Files.newOutputStream(ExecutionOutput.path(context.getId()))) {
+        try (OutputStream outputStream = new CodeOutputStream(context)) {
             context.setOutputStream(outputStream);
 
             GroovyShell shell = createShell(context);

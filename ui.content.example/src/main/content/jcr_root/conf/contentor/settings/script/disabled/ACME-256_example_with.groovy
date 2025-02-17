@@ -3,6 +3,8 @@ boolean canRun() {
 }
 
 void doRun() {
+    out.fromAclLogs()
+
     def experiences = [
             [
                     name: "gokk",
