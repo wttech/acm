@@ -1,6 +1,8 @@
-package com.wttech.aem.contentor.core.acl.authorizable;
+package com.wttech.aem.contentor.core.acl;
 
-public class GroupOptions {
+import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
+
+public class RemoveAllMembersOptions {
 
     private AclGroup group;
 

@@ -3,6 +3,7 @@ package com.wttech.aem.contentor.core.acl.authorizable;
 import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclException;
 import com.wttech.aem.contentor.core.acl.AclResult;
+import com.wttech.aem.contentor.core.acl.PermissionsMode;
 import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
@@ -14,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 
-public class MyAuthorizable {
+public class AclAuthorizable {
 
     private static final String EVERYONE = "everyone";
 
@@ -24,7 +25,7 @@ public class MyAuthorizable {
 
     protected final AclContext context;
 
-    public MyAuthorizable(Authorizable authorizable, String id, AclContext context) {
+    public AclAuthorizable(Authorizable authorizable, String id, AclContext context) {
         this.authorizable = authorizable;
         this.id = id;
         this.context = context;
@@ -38,16 +39,8 @@ public class MyAuthorizable {
         return removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
     }
 
-    public AclResult removeFromAllGroups(Closure<Void> closure) {
-        return removeFromAllGroups();
-    }
-
     public AclResult clear(Closure<ClearOptions> closure) {
         return clear(GroovyUtils.with(new ClearOptions(), closure));
-    }
-
-    public AclResult purge(Closure<Void> closure) {
-        return purge();
     }
 
     public AclResult allow(Closure<PermissionsOptions> closure) {
@@ -67,16 +60,16 @@ public class MyAuthorizable {
     }
 
     public AclResult addToGroup(GroupOptions options) {
-        MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         return addToGroup(group);
     }
 
     public AclResult addToGroup(String groupId) {
-        MyGroup group = context.determineGroup(groupId);
+        AclGroup group = context.determineGroup(groupId);
         return addToGroup(group);
     }
 
-    public AclResult addToGroup(MyGroup group) {
+    public AclResult addToGroup(AclGroup group) {
         AclResult result;
         if (authorizable == null) {
             result = AclResult.SKIPPED;
@@ -87,21 +80,21 @@ public class MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "addToGroup {}", result, group.getId());
+        context.getLogger().info("Added authorizable '{}' to group '{}' [{}]", id, group.getId(), result);
         return result;
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
-        MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         return removeFromGroup(group);
     }
 
     public AclResult removeFromGroup(String groupId) {
-        MyGroup group = context.determineGroup(groupId);
+        AclGroup group = context.determineGroup(groupId);
         return removeFromGroup(group);
     }
 
-    public AclResult removeFromGroup(MyGroup group) {
+    public AclResult removeFromGroup(AclGroup group) {
         AclResult result;
         if (authorizable == null) {
             result = AclResult.SKIPPED;
@@ -112,7 +105,7 @@ public class MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "removeFromGroup {}", result, group.getId());
+        context.getLogger().info("Removed authorizable '{}' from group '{}' [{}]", id, group.getId(), result);
         return result;
     }
 
@@ -132,7 +125,7 @@ public class MyAuthorizable {
                     }
                 }
             }
-            context.logResult(this, "removeFromAllGroups {}", result);
+            context.getLogger().info("Removed authorizable '{}' from all groups [{}]", id, result);
             return result;
         } catch (RepositoryException e) {
             throw new AclException("Failed to remove authorizable from all groups", e);
@@ -156,7 +149,7 @@ public class MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "clear {}", result, path);
+        context.getLogger().info("Cleared permissions for authorizable '{}' at path '{}' [{}]", id, path, result);
         return result;
     }
 
@@ -175,7 +168,7 @@ public class MyAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode,
+            PermissionsMode mode,
             boolean allow) {
         PermissionsOptions options = new PermissionsOptions();
         options.setPermissions(permissions);
@@ -189,14 +182,14 @@ public class MyAuthorizable {
         } else if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
-            if (mode == PermissionsOptions.Mode.FAIL) {
+            if (mode == PermissionsMode.FAIL) {
                 throw new AclException(String.format("Path %s not found", path));
             }
             result = AclResult.SKIPPED;
         } else {
             result = apply(path, options.determineAllPermissions(), options.determineAllRestrictions(), allow);
         }
-        context.logResult(this, allow ? "allow {}" : "deny {}", result, path, permissions);
+        context.getLogger().info("Applied permissions for authorizable '{}' at path '{}' [{}]", id, path, result);
         return result;
     }
 
@@ -230,7 +223,7 @@ public class MyAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode) {
+            PermissionsMode mode) {
         return apply(path, permissions, glob, types, properties, restrictions, mode, true);
     }
 
@@ -265,7 +258,7 @@ public class MyAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode) {
+            PermissionsMode mode) {
         return apply(path, permissions, glob, types, properties, restrictions, mode, false);
     }
 
@@ -298,7 +291,7 @@ public class MyAuthorizable {
                 result = AclResult.CHANGED;
             }
         }
-        context.logResult(this, "setProperty {}", result, relPath, value);
+        context.getLogger().info("Set property '{}' for authorizable '{}' [{}]", relPath, id, result);
         return result;
     }
 
@@ -315,7 +308,7 @@ public class MyAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "removeProperty {}", result, relPath);
+        context.getLogger().info("Removed property '{}' for authorizable '{}' [{}]", relPath, id, result);
         return result;
     }
 

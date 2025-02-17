@@ -1,5 +1,6 @@
 package com.wttech.aem.contentor.core.acl.authorizable;
 
+import com.wttech.aem.contentor.core.acl.PermissionsMode;
 import com.wttech.aem.contentor.core.acl.utils.PrivilegeGroup;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,7 +24,7 @@ public class PermissionsOptions {
 
     private Map<String, Object> restrictions;
 
-    private Mode mode = Mode.SKIP;
+    private PermissionsMode mode = PermissionsMode.SKIP;
 
     public String getPath() {
         return path;
@@ -73,20 +74,20 @@ public class PermissionsOptions {
         this.restrictions = restrictions;
     }
 
-    public Mode getMode() {
+    public PermissionsMode getMode() {
         return mode;
     }
 
-    public void setMode(Mode mode) {
+    public void setMode(PermissionsMode mode) {
         this.mode = mode;
     }
 
     public void skipIfPathMissing() {
-        mode = Mode.SKIP;
+        mode = PermissionsMode.SKIP;
     }
 
     public void failIfPathMissing() {
-        mode = Mode.FAIL;
+        mode = PermissionsMode.FAIL;
     }
 
     public List<String> determineAllPermissions() {
@@ -106,10 +107,5 @@ public class PermissionsOptions {
             allRestrictions.putAll(restrictions);
         }
         return allRestrictions;
-    }
-
-    public enum Mode {
-        FAIL,
-        SKIP
     }
 }

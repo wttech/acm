@@ -42,7 +42,7 @@ const ExecutionList = () => {
         try {
           let url = `/apps/contentor/api/execution.json`;
           const params = new URLSearchParams();
-          if (executableId) params.append('executableId', executableId);
+          if (executableId) params.append('executableId', `%${executableId}%`);
           if (startDate) params.append('startDate', startDate.toString());
           if (endDate) params.append('endDate', endDate.toString());
           if (status && status !== 'all') params.append('status', status);

@@ -171,6 +171,14 @@ DynamicImport-Package: *
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>
         </dependency>
@@ -197,13 +205,13 @@ DynamicImport-Package: *
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-security-spi</artifactId>
-            <version>1.22.17</version>
+            <version>1.10.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-api</artifactId>
-            <version>1.22.17</version>
+            <version>1.10.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -247,19 +255,19 @@ DynamicImport-Package: *
         </dependency>
         <dependency>
             <artifactId>commons-io</artifactId>
-            <version>2.15.1</version><!-- TODO downgrade to AEM 6.5.0 compatible -->
+            <version>2.15.1</version>
             <groupId>commons-io</groupId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <artifactId>oak-jackrabbit-api</artifactId>
-            <version>1.22.20</version><!-- TODO downgrade to AEM 6.5.0 compatible  -->
+            <version>1.22.20</version>
             <groupId>org.apache.jackrabbit</groupId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <artifactId>org.apache.sling.jcr.resource</artifactId>
-            <version>3.0.18</version><!-- TODO downgrade to AEM 6.5.0 compatible -->
+            <version>3.0.18</version>
             <groupId>org.apache.sling</groupId>
             <scope>provided</scope>
         </dependency>

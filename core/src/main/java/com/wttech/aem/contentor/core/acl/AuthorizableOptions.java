@@ -1,26 +1,26 @@
 package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.authorizable.MyAuthorizable;
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
 
 public class AuthorizableOptions {
 
-    private MyAuthorizable authorizable;
+    private AclAuthorizable authorizable;
 
-    private String id;
+    private String authorizableId;
 
-    public MyAuthorizable getAuthorizable() {
+    public AclAuthorizable getAuthorizable() {
         return authorizable;
     }
 
-    public void setAuthorizable(MyAuthorizable authorizable) {
+    public void setAuthorizable(AclAuthorizable authorizable) {
         this.authorizable = authorizable;
     }
 
-    public String getId() {
-        return id;
+    public String getAuthorizableId() {
+        return authorizableId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setAuthorizableId(String authorizableId) {
+        this.authorizableId = authorizableId;
     }
 }
