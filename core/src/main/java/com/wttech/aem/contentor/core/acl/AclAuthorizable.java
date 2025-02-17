@@ -32,48 +32,43 @@ public class AclAuthorizable {
         this.context = context;
     }
 
-    public AclResult addToGroup(Closure<com.wttech.aem.contentor.core.acl.authorizable.GroupOptions> closure) {
-        return addToGroup(GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.GroupOptions(), closure));
+    public AclResult addToGroup(Closure<GroupOptions> closure) {
+        return addToGroup(GroovyUtils.with(new GroupOptions(), closure));
     }
 
-    public AclResult removeFromGroup(Closure<com.wttech.aem.contentor.core.acl.authorizable.GroupOptions> closure) {
-        return removeFromGroup(
-                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.GroupOptions(), closure));
+    public AclResult removeFromGroup(Closure<GroupOptions> closure) {
+        return removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
     }
 
     public AclResult removeFromAllGroups(Closure<Void> closure) {
         return removeFromAllGroups();
     }
 
-    public AclResult clear(Closure<com.wttech.aem.contentor.core.acl.authorizable.ClearOptions> closure) {
-        return clear(GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.ClearOptions(), closure));
+    public AclResult clear(Closure<ClearOptions> closure) {
+        return clear(GroovyUtils.with(new ClearOptions(), closure));
     }
 
     public AclResult purge(Closure<Void> closure) {
         return purge();
     }
 
-    public AclResult allow(Closure<com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions> closure) {
-        return allow(
-                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions(), closure));
+    public AclResult allow(Closure<PermissionsOptions> closure) {
+        return allow(GroovyUtils.with(new PermissionsOptions(), closure));
     }
 
-    public AclResult deny(Closure<com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions> closure) {
-        return deny(GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions(), closure));
+    public AclResult deny(Closure<PermissionsOptions> closure) {
+        return deny(GroovyUtils.with(new PermissionsOptions(), closure));
     }
 
-    public AclResult setProperty(Closure<com.wttech.aem.contentor.core.acl.authorizable.SetPropertyOptions> closure) {
-        return setProperty(
-                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.SetPropertyOptions(), closure));
+    public AclResult setProperty(Closure<SetPropertyOptions> closure) {
+        return setProperty(GroovyUtils.with(new SetPropertyOptions(), closure));
     }
 
-    public AclResult removeProperty(
-            Closure<com.wttech.aem.contentor.core.acl.authorizable.RemovePropertyOptions> closure) {
-        return removeProperty(
-                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.RemovePropertyOptions(), closure));
+    public AclResult removeProperty(Closure<RemovePropertyOptions> closure) {
+        return removeProperty(GroovyUtils.with(new RemovePropertyOptions(), closure));
     }
 
-    public AclResult addToGroup(com.wttech.aem.contentor.core.acl.authorizable.GroupOptions options) {
+    public AclResult addToGroup(GroupOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         return addToGroup(group);
     }
@@ -182,10 +177,9 @@ public class AclAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode mode,
+            PermissionsOptions.Mode mode,
             boolean allow) {
-        com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions options =
-                new com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions();
+        PermissionsOptions options = new PermissionsOptions();
         options.setPermissions(permissions);
         options.setGlob(glob);
         options.setTypes(types);
@@ -197,7 +191,7 @@ public class AclAuthorizable {
         } else if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
-            if (mode == com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode.FAIL) {
+            if (mode == PermissionsOptions.Mode.FAIL) {
                 throw new AclException(String.format("Path %s not found", path));
             }
             result = AclResult.SKIPPED;
@@ -219,7 +213,7 @@ public class AclAuthorizable {
         return result;
     }
 
-    public AclResult allow(com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions options) {
+    public AclResult allow(PermissionsOptions options) {
         return apply(
                 options.getPath(),
                 options.getPermissions(),
@@ -238,7 +232,7 @@ public class AclAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode mode) {
+            PermissionsOptions.Mode mode) {
         return apply(path, permissions, glob, types, properties, restrictions, mode, true);
     }
 
@@ -254,7 +248,7 @@ public class AclAuthorizable {
         return apply(path, permissions, null, null, null, restrictions, null, true);
     }
 
-    public AclResult deny(com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions options) {
+    public AclResult deny(PermissionsOptions options) {
         return apply(
                 options.getPath(),
                 options.getPermissions(),

@@ -18,20 +18,19 @@ public class AclGroup extends AclAuthorizable {
         this.group = group;
     }
 
-    public AclResult addMember(Closure<com.wttech.aem.contentor.core.acl.authorizable.MemberOptions> closure) {
-        return addMember(GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.MemberOptions(), closure));
+    public AclResult addMember(Closure<MemberOptions> closure) {
+        return addMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public AclResult removeMember(Closure<com.wttech.aem.contentor.core.acl.authorizable.MemberOptions> closure) {
-        return removeMember(
-                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.MemberOptions(), closure));
+    public AclResult removeMember(Closure<MemberOptions> closure) {
+        return removeMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
     public AclResult removeAllMembers(Closure<Void> closure) {
         return removeAllMembers();
     }
 
-    public AclResult addMember(com.wttech.aem.contentor.core.acl.authorizable.MemberOptions options) {
+    public AclResult addMember(MemberOptions options) {
         AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return addMember(member);
     }
