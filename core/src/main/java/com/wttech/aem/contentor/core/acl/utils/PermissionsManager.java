@@ -90,8 +90,7 @@ public class PermissionsManager {
             Map<String, Object> restrictions,
             boolean allow) {
         try {
-            JackrabbitAccessControlList jackrabbitAcl =
-                    JackrabbitAccessControlListUtils.determineModifiableAcl(accessControlManager, path);
+            JackrabbitAccessControlList jackrabbitAcl = JcrAclUtils.determineModifiableAcl(accessControlManager, path);
             AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
             boolean result = false;
             for (AccessControlEntry accessControlEntry : accessControlEntries) {
@@ -112,8 +111,7 @@ public class PermissionsManager {
             Map<String, Object> restrictions,
             boolean allow) {
         try {
-            JackrabbitAccessControlList jackrabbitAcl =
-                    JackrabbitAccessControlListUtils.determineModifiableAcl(accessControlManager, path);
+            JackrabbitAccessControlList jackrabbitAcl = JcrAclUtils.determineModifiableAcl(accessControlManager, path);
             addEntry(jackrabbitAcl, principal, permissions, restrictions, allow);
             accessControlManager.setPolicy(path, jackrabbitAcl);
         } catch (RepositoryException e) {
@@ -193,8 +191,7 @@ public class PermissionsManager {
 
     private boolean removeAll(Authorizable authorizable, String path) {
         try {
-            JackrabbitAccessControlList jackrabbitAcl =
-                    JackrabbitAccessControlListUtils.determineModifiableAcl(accessControlManager, path);
+            JackrabbitAccessControlList jackrabbitAcl = JcrAclUtils.determineModifiableAcl(accessControlManager, path);
             AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
             boolean result = false;
             for (AccessControlEntry accessControlEntry : accessControlEntries) {

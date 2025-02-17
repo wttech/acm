@@ -61,6 +61,15 @@ public class CodeOutputStream extends OutputStream {
         out.close();
     }
 
+    public void fromLogs() {
+        fromAclLogs();
+    }
+
+    public void fromAclLogs() {
+        fromLogger("com.wttech.aem.contentor.core.acl");
+    }
+
+    // TODO register logger like on http://localhost:4502/system/console/slinglog
     public List<String> fromLogger(String loggerName) {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         List<Logger> loggers = context.getLoggerList().stream()
@@ -87,9 +96,5 @@ public class CodeOutputStream extends OutputStream {
             logger.setAdditive(false);
         });
         return loggers.stream().map(Logger::getName).collect(Collectors.toList());
-    }
-
-    public void fromLogs() {
-        fromLogger("com.wttech.aem.contentor.core.acl");
     }
 }

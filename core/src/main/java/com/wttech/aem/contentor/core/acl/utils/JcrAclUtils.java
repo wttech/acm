@@ -7,9 +7,9 @@ import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.security.AccessControlPolicyIterator;
 import org.apache.jackrabbit.api.security.JackrabbitAccessControlList;
 
-public final class JackrabbitAccessControlListUtils {
+public final class JcrAclUtils {
 
-    private JackrabbitAccessControlListUtils() {
+    private JcrAclUtils() {
         // intentionally empty
     }
 
