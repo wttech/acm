@@ -23,7 +23,7 @@ public class PermissionsOptions extends AuthorizableOptions {
 
     private Map<String, Object> restrictions;
 
-    private Mode mode = Mode.SKIP;
+    private PermissionsMode mode = PermissionsMode.SKIP;
 
     public String getPath() {
         return path;
@@ -73,20 +73,20 @@ public class PermissionsOptions extends AuthorizableOptions {
         this.restrictions = restrictions;
     }
 
-    public Mode getMode() {
+    public PermissionsMode getMode() {
         return mode;
     }
 
-    public void setMode(Mode mode) {
+    public void setMode(PermissionsMode mode) {
         this.mode = mode;
     }
 
     public void skipIfPathMissing() {
-        mode = Mode.SKIP;
+        mode = PermissionsMode.SKIP;
     }
 
     public void failIfPathMissing() {
-        mode = Mode.FAIL;
+        mode = PermissionsMode.FAIL;
     }
 
     public List<String> determineAllPermissions() {
@@ -106,22 +106,5 @@ public class PermissionsOptions extends AuthorizableOptions {
             allRestrictions.putAll(restrictions);
         }
         return allRestrictions;
-    }
-
-    public enum Mode {
-        FAIL,
-        SKIP;
-
-        public static com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode cast(
-                PermissionsOptions.Mode mode) {
-            if (mode == FAIL) {
-                return com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode.FAIL;
-            } else if (mode == SKIP) {
-                return com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode.SKIP;
-            }
-            throw new IllegalArgumentException(String.format(
-                    "Cannot cast '%s' to '%s'",
-                    mode, com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode.class));
-        }
     }
 }

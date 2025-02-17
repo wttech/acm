@@ -3,6 +3,7 @@ package com.wttech.aem.contentor.core.acl.authorizable;
 import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclException;
 import com.wttech.aem.contentor.core.acl.AclResult;
+import com.wttech.aem.contentor.core.acl.PermissionsMode;
 import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
@@ -40,10 +41,6 @@ public class AclAuthorizable {
 
     public AclResult clear(Closure<ClearOptions> closure) {
         return clear(GroovyUtils.with(new ClearOptions(), closure));
-    }
-
-    public AclResult purge(Closure<Void> closure) {
-        return purge();
     }
 
     public AclResult allow(Closure<PermissionsOptions> closure) {
@@ -171,7 +168,7 @@ public class AclAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode,
+            PermissionsMode mode,
             boolean allow) {
         PermissionsOptions options = new PermissionsOptions();
         options.setPermissions(permissions);
@@ -185,7 +182,7 @@ public class AclAuthorizable {
         } else if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
-            if (mode == PermissionsOptions.Mode.FAIL) {
+            if (mode == PermissionsMode.FAIL) {
                 throw new AclException(String.format("Path %s not found", path));
             }
             result = AclResult.SKIPPED;
@@ -226,7 +223,7 @@ public class AclAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode) {
+            PermissionsMode mode) {
         return apply(path, permissions, glob, types, properties, restrictions, mode, true);
     }
 
@@ -261,7 +258,7 @@ public class AclAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode) {
+            PermissionsMode mode) {
         return apply(path, permissions, glob, types, properties, restrictions, mode, false);
     }
 

@@ -422,7 +422,7 @@ public class Acl {
                 options.getTypes(),
                 options.getProperties(),
                 options.getRestrictions(),
-                PermissionsOptions.Mode.cast(options.getMode()));
+                options.getMode());
     }
 
     public AclResult allow(
@@ -433,10 +433,9 @@ public class Acl {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode) {
+            PermissionsMode mode) {
         AclAuthorizable authorizable = context.determineAuthorizable(authorizableId);
-        return authorizable.allow(
-                path, permissions, glob, types, properties, restrictions, PermissionsOptions.Mode.cast(mode));
+        return authorizable.allow(path, permissions, glob, types, properties, restrictions, mode);
     }
 
     public AclResult allow(
@@ -447,9 +446,8 @@ public class Acl {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode) {
-        return authorizable.allow(
-                path, permissions, glob, types, properties, restrictions, PermissionsOptions.Mode.cast(mode));
+            PermissionsMode mode) {
+        return authorizable.allow(path, permissions, glob, types, properties, restrictions, mode);
     }
 
     public AclResult allow(String authorizableId, String path, List<String> permissions) {
@@ -491,7 +489,7 @@ public class Acl {
                 options.getTypes(),
                 options.getProperties(),
                 options.getRestrictions(),
-                PermissionsOptions.Mode.cast(options.getMode()));
+                options.getMode());
     }
 
     public AclResult deny(
@@ -502,10 +500,9 @@ public class Acl {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode) {
+            PermissionsMode mode) {
         AclAuthorizable authorizable = context.determineAuthorizable(authorizableId);
-        return authorizable.deny(
-                path, permissions, glob, types, properties, restrictions, PermissionsOptions.Mode.cast(mode));
+        return authorizable.deny(path, permissions, glob, types, properties, restrictions, mode);
     }
 
     public AclResult deny(
@@ -516,9 +513,8 @@ public class Acl {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode) {
-        return authorizable.deny(
-                path, permissions, glob, types, properties, restrictions, PermissionsOptions.Mode.cast(mode));
+            PermissionsMode mode) {
+        return authorizable.deny(path, permissions, glob, types, properties, restrictions, mode);
     }
 
     public AclResult deny(String authorizableId, String path, List<String> permissions) {
