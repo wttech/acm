@@ -1,5 +1,8 @@
 package com.wttech.aem.contentor.core.acl;
 
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
+import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
+import com.wttech.aem.contentor.core.acl.authorizable.AclUser;
 import com.wttech.aem.contentor.core.acl.check.CheckAcl;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
@@ -135,7 +138,7 @@ public class Acl {
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
         }
         AclUser myUser = context.determineUser(user);
-        context.logResult(myUser, "createUser");
+        context.logger.info("Created user '{}'", myUser);
         return myUser;
     }
 
@@ -182,9 +185,9 @@ public class Acl {
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
         }
-        AclGroup myGroup = context.determineGroup(group);
-        context.logResult(myGroup, "createGroup");
-        return myGroup;
+        AclGroup aclGroup = context.determineGroup(group);
+        context.getLogger().info("Created group '{}'", aclGroup);
+        return aclGroup;
     }
 
     public AclGroup createGroup(String id) {
@@ -206,9 +209,7 @@ public class Acl {
 
     public AclUser getUser(String id) {
         AclUser user = context.determineUser(id);
-        AclResult result = user.get() == null ? AclResult.SKIPPED : AclResult.OK;
-        context.logResult(user, "getUser {}", result);
-        return result == AclResult.OK ? user : null;
+        return user.get() != null ? user : null;
     }
 
     public AclGroup getGroup(GetAuthorizableOptions options) {
@@ -217,9 +218,7 @@ public class Acl {
 
     public AclGroup getGroup(String id) {
         AclGroup group = context.determineGroup(id);
-        AclResult result = group.get() == null ? AclResult.SKIPPED : AclResult.OK;
-        context.logResult(group, "getGroup {}", result);
-        return result == AclResult.OK ? group : null;
+        return group.get() != null ? group : null;
     }
 
     public AclResult deleteUser(DeleteUserOptions options) {
@@ -241,7 +240,7 @@ public class Acl {
             context.getAuthorizableManager().deleteAuthorizable(user.get());
             result = AclResult.CHANGED;
         }
-        context.logResult(user, "deleteUser {}", result);
+        context.getLogger().info("Deleted user '{}' [{}]", user.getId(), result);
         return result;
     }
 
@@ -264,7 +263,7 @@ public class Acl {
             context.getAuthorizableManager().deleteAuthorizable(group.get());
             result = AclResult.CHANGED;
         }
-        context.logResult(group, "deleteGroup {}", result);
+        context.getLogger().info("Deleted group '{}' [{}]", group.getId(), result);
         return result;
     }
 

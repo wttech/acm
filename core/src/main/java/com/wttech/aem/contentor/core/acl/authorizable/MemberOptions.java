@@ -1,7 +1,5 @@
 package com.wttech.aem.contentor.core.acl.authorizable;
 
-import com.wttech.aem.contentor.core.acl.AclAuthorizable;
-
 public class MemberOptions {
 
     private AclAuthorizable member;

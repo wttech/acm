@@ -1,11 +1,15 @@
-package com.wttech.aem.contentor.core.acl;
+package com.wttech.aem.contentor.core.acl.authorizable;
 
-import com.wttech.aem.contentor.core.acl.authorizable.MemberOptions;
+import com.wttech.aem.contentor.core.acl.AclContext;
+import com.wttech.aem.contentor.core.acl.AclException;
+import com.wttech.aem.contentor.core.acl.AclResult;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.jcr.RepositoryException;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 
@@ -18,20 +22,15 @@ public class AclGroup extends AclAuthorizable {
         this.group = group;
     }
 
-    public AclResult addMember(Closure<com.wttech.aem.contentor.core.acl.authorizable.MemberOptions> closure) {
-        return addMember(GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.MemberOptions(), closure));
+    public AclResult addMember(Closure<MemberOptions> closure) {
+        return addMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public AclResult removeMember(Closure<com.wttech.aem.contentor.core.acl.authorizable.MemberOptions> closure) {
-        return removeMember(
-                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.MemberOptions(), closure));
+    public AclResult removeMember(Closure<MemberOptions> closure) {
+        return removeMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public AclResult removeAllMembers(Closure<Void> closure) {
-        return removeAllMembers();
-    }
-
-    public AclResult addMember(com.wttech.aem.contentor.core.acl.authorizable.MemberOptions options) {
+    public AclResult addMember(MemberOptions options) {
         AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return addMember(member);
     }
@@ -50,7 +49,7 @@ public class AclGroup extends AclAuthorizable {
         } else {
             result = context.getAuthorizableManager().addMember(group, member.get()) ? AclResult.CHANGED : AclResult.OK;
         }
-        context.logResult(this, "addMember {} {}", result, member.getId());
+        context.getLogger().info("Added member '{}' to group '{}' [{}]", member.getId(), getId(), result);
         return result;
     }
 
@@ -75,7 +74,7 @@ public class AclGroup extends AclAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "removeMember {} {}", result, member.getId());
+        context.getLogger().info("Removed member '{}' from group '{}' [{}]", member.getId(), getId(), result);
         return result;
     }
 
@@ -91,10 +90,10 @@ public class AclGroup extends AclAuthorizable {
                     context.getAuthorizableManager().removeMember(group, members.next());
                 }
             }
-            context.logResult(this, "removeAllMembers {}", result);
+            context.getLogger().info("Removed all members from group '{}' [{}]", getId(), result);
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to remove all members from group", e);
+            throw new AclException(String.format("Failed to remove all members from group '%s'", getId()), e);
         }
     }
 
@@ -109,12 +108,19 @@ public class AclGroup extends AclAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "purge {}", result);
+        context.getLogger().info("Purged group '{}' [{}]", getId(), result);
         return result;
     }
 
     @Override
     public Group get() {
         return group;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
+                .append("id", getId())
+                .toString();
     }
 }

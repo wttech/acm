@@ -119,7 +119,9 @@ public class PermissionsOptions extends AuthorizableOptions {
             } else if (mode == SKIP) {
                 return com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode.SKIP;
             }
-            return null;
+            throw new IllegalArgumentException(String.format(
+                    "Cannot cast '%s' to '%s'",
+                    mode, com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode.class));
         }
     }
 }

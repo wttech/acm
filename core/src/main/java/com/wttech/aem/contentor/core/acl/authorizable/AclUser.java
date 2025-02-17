@@ -1,9 +1,12 @@
-package com.wttech.aem.contentor.core.acl;
+package com.wttech.aem.contentor.core.acl.authorizable;
 
-import com.wttech.aem.contentor.core.acl.authorizable.PasswordOptions;
+import com.wttech.aem.contentor.core.acl.AclContext;
+import com.wttech.aem.contentor.core.acl.AclResult;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Arrays;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.api.security.user.User;
 
 public class AclUser extends AclAuthorizable {
@@ -15,9 +18,8 @@ public class AclUser extends AclAuthorizable {
         this.user = user;
     }
 
-    public AclResult setPassword(Closure<com.wttech.aem.contentor.core.acl.authorizable.PasswordOptions> closure) {
-        return setPassword(
-                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.PasswordOptions(), closure));
+    public AclResult setPassword(Closure<PasswordOptions> closure) {
+        return setPassword(GroovyUtils.with(new PasswordOptions(), closure));
     }
 
     @Override
@@ -30,7 +32,7 @@ public class AclUser extends AclAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.logResult(this, "purge {}", result);
+        context.getLogger().info("Purged user '{}' [{}]", getId(), result);
         return result;
     }
 
@@ -48,12 +50,19 @@ public class AclUser extends AclAuthorizable {
             context.getAuthorizableManager().changePassword(user, password);
             result = AclResult.CHANGED;
         }
-        context.logResult(this, "setPassword {}", result);
+        context.getLogger().info("Set password for user '{}' [{}]", getId(), result);
         return result;
     }
 
     @Override
     public User get() {
         return user;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
+                .append("id", getId())
+                .toString();
     }
 }

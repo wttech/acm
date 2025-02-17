@@ -1,5 +1,8 @@
 package com.wttech.aem.contentor.core.acl;
 
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
+import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
+import com.wttech.aem.contentor.core.acl.authorizable.AclUser;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
@@ -18,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 public class AclContext {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AclContext.class);
+    protected final Logger logger;
 
     private final ResourceResolver resourceResolver;
 
@@ -29,6 +32,8 @@ public class AclContext {
     private final boolean compositeNodeStore;
 
     public AclContext(ResourceResolver resourceResolver) {
+        this.logger = LoggerFactory.getLogger(AclContext.class);
+
         try {
             JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
@@ -39,8 +44,12 @@ public class AclContext {
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
             this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
         } catch (RepositoryException e) {
-            throw new AclException("Failed to initialize acl context", e);
+            throw new AclException("Cannot access repository while obtaining ACL context!", e);
         }
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     public ResourceResolver getResourceResolver() {
@@ -121,10 +130,5 @@ public class AclContext {
     public AclAuthorizable determineAuthorizable(String id) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
         return new AclAuthorizable(authorizable, id, this);
-    }
-
-    public void logResult(AclAuthorizable authorizable, String messagePattern, Object... args) {
-        String newMessagePattern = String.format("[%s] %s", authorizable.getId(), messagePattern);
-        LOGGER.info(newMessagePattern, args);
     }
 }

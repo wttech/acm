@@ -1,5 +1,8 @@
 package com.wttech.aem.contentor.core.acl;
 
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
+import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
+
 public class MemberOptions {
 
     private AclGroup group;
