@@ -1,8 +1,10 @@
-package com.wttech.aem.contentor.core.acl.authorizable;
+package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.AclContext;
-import com.wttech.aem.contentor.core.acl.AclException;
-import com.wttech.aem.contentor.core.acl.AclResult;
+import com.wttech.aem.contentor.core.acl.authorizable.ClearOptions;
+import com.wttech.aem.contentor.core.acl.authorizable.GroupOptions;
+import com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions;
+import com.wttech.aem.contentor.core.acl.authorizable.RemovePropertyOptions;
+import com.wttech.aem.contentor.core.acl.authorizable.SetPropertyOptions;
 import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
@@ -14,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 
-public class MyAuthorizable {
+public class AclAuthorizable {
 
     private static final String EVERYONE = "everyone";
 
@@ -24,59 +26,64 @@ public class MyAuthorizable {
 
     protected final AclContext context;
 
-    public MyAuthorizable(Authorizable authorizable, String id, AclContext context) {
+    public AclAuthorizable(Authorizable authorizable, String id, AclContext context) {
         this.authorizable = authorizable;
         this.id = id;
         this.context = context;
     }
 
-    public AclResult addToGroup(Closure<GroupOptions> closure) {
-        return addToGroup(GroovyUtils.with(new GroupOptions(), closure));
+    public AclResult addToGroup(Closure<com.wttech.aem.contentor.core.acl.authorizable.GroupOptions> closure) {
+        return addToGroup(GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.GroupOptions(), closure));
     }
 
-    public AclResult removeFromGroup(Closure<GroupOptions> closure) {
-        return removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
+    public AclResult removeFromGroup(Closure<com.wttech.aem.contentor.core.acl.authorizable.GroupOptions> closure) {
+        return removeFromGroup(
+                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.GroupOptions(), closure));
     }
 
     public AclResult removeFromAllGroups(Closure<Void> closure) {
         return removeFromAllGroups();
     }
 
-    public AclResult clear(Closure<ClearOptions> closure) {
-        return clear(GroovyUtils.with(new ClearOptions(), closure));
+    public AclResult clear(Closure<com.wttech.aem.contentor.core.acl.authorizable.ClearOptions> closure) {
+        return clear(GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.ClearOptions(), closure));
     }
 
     public AclResult purge(Closure<Void> closure) {
         return purge();
     }
 
-    public AclResult allow(Closure<PermissionsOptions> closure) {
-        return allow(GroovyUtils.with(new PermissionsOptions(), closure));
+    public AclResult allow(Closure<com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions> closure) {
+        return allow(
+                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions(), closure));
     }
 
-    public AclResult deny(Closure<PermissionsOptions> closure) {
-        return deny(GroovyUtils.with(new PermissionsOptions(), closure));
+    public AclResult deny(Closure<com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions> closure) {
+        return deny(GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions(), closure));
     }
 
-    public AclResult setProperty(Closure<SetPropertyOptions> closure) {
-        return setProperty(GroovyUtils.with(new SetPropertyOptions(), closure));
+    public AclResult setProperty(Closure<com.wttech.aem.contentor.core.acl.authorizable.SetPropertyOptions> closure) {
+        return setProperty(
+                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.SetPropertyOptions(), closure));
     }
 
-    public AclResult removeProperty(Closure<RemovePropertyOptions> closure) {
-        return removeProperty(GroovyUtils.with(new RemovePropertyOptions(), closure));
+    public AclResult removeProperty(
+            Closure<com.wttech.aem.contentor.core.acl.authorizable.RemovePropertyOptions> closure) {
+        return removeProperty(
+                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.RemovePropertyOptions(), closure));
     }
 
-    public AclResult addToGroup(GroupOptions options) {
-        MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+    public AclResult addToGroup(com.wttech.aem.contentor.core.acl.authorizable.GroupOptions options) {
+        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         return addToGroup(group);
     }
 
     public AclResult addToGroup(String groupId) {
-        MyGroup group = context.determineGroup(groupId);
+        AclGroup group = context.determineGroup(groupId);
         return addToGroup(group);
     }
 
-    public AclResult addToGroup(MyGroup group) {
+    public AclResult addToGroup(AclGroup group) {
         AclResult result;
         if (authorizable == null) {
             result = AclResult.SKIPPED;
@@ -92,16 +99,16 @@ public class MyAuthorizable {
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
-        MyGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         return removeFromGroup(group);
     }
 
     public AclResult removeFromGroup(String groupId) {
-        MyGroup group = context.determineGroup(groupId);
+        AclGroup group = context.determineGroup(groupId);
         return removeFromGroup(group);
     }
 
-    public AclResult removeFromGroup(MyGroup group) {
+    public AclResult removeFromGroup(AclGroup group) {
         AclResult result;
         if (authorizable == null) {
             result = AclResult.SKIPPED;
@@ -175,9 +182,10 @@ public class MyAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode,
+            com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode mode,
             boolean allow) {
-        PermissionsOptions options = new PermissionsOptions();
+        com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions options =
+                new com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions();
         options.setPermissions(permissions);
         options.setGlob(glob);
         options.setTypes(types);
@@ -189,7 +197,7 @@ public class MyAuthorizable {
         } else if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
-            if (mode == PermissionsOptions.Mode.FAIL) {
+            if (mode == com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode.FAIL) {
                 throw new AclException(String.format("Path %s not found", path));
             }
             result = AclResult.SKIPPED;
@@ -211,7 +219,7 @@ public class MyAuthorizable {
         return result;
     }
 
-    public AclResult allow(PermissionsOptions options) {
+    public AclResult allow(com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions options) {
         return apply(
                 options.getPath(),
                 options.getPermissions(),
@@ -230,7 +238,7 @@ public class MyAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsOptions.Mode mode) {
+            com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions.Mode mode) {
         return apply(path, permissions, glob, types, properties, restrictions, mode, true);
     }
 
@@ -246,7 +254,7 @@ public class MyAuthorizable {
         return apply(path, permissions, null, null, null, restrictions, null, true);
     }
 
-    public AclResult deny(PermissionsOptions options) {
+    public AclResult deny(com.wttech.aem.contentor.core.acl.authorizable.PermissionsOptions options) {
         return apply(
                 options.getPath(),
                 options.getPermissions(),

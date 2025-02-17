@@ -1,18 +1,16 @@
 package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.authorizable.MyGroup;
-
 public class RemoveAllMembersOptions {
 
-    private MyGroup group;
+    private AclGroup group;
 
     private String groupId;
 
-    public MyGroup getGroup() {
+    public AclGroup getGroup() {
         return group;
     }
 
-    public void setGroup(MyGroup group) {
+    public void setGroup(AclGroup group) {
         this.group = group;
     }
 

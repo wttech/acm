@@ -1,8 +1,5 @@
 package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.authorizable.MyAuthorizable;
-import com.wttech.aem.contentor.core.acl.authorizable.MyGroup;
-import com.wttech.aem.contentor.core.acl.authorizable.MyUser;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
@@ -62,71 +59,71 @@ public class AclContext {
         return compositeNodeStore;
     }
 
-    public MyUser determineUser(User user) {
+    public AclUser determineUser(User user) {
         try {
             String id = "";
             if (user != null) {
                 id = user.getID();
             }
-            return new MyUser(user, id, this);
+            return new AclUser(user, id, this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
     }
 
-    public MyUser determineUser(String id) {
+    public AclUser determineUser(String id) {
         User user = authorizableManager.getUser(id);
-        return new MyUser(user, id, this);
+        return new AclUser(user, id, this);
     }
 
-    public MyUser determineUser(MyUser user, String id) {
+    public AclUser determineUser(AclUser user, String id) {
         if (user == null) {
             user = determineUser(id);
         }
         return user;
     }
 
-    public MyGroup determineGroup(Group group) {
+    public AclGroup determineGroup(Group group) {
         try {
             String id = "";
             if (group != null) {
                 id = group.getID();
             }
-            return new MyGroup(group, id, this);
+            return new AclGroup(group, id, this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
     }
 
-    public MyGroup determineGroup(String id) {
+    public AclGroup determineGroup(String id) {
         Group group = authorizableManager.getGroup(id);
-        return new MyGroup(group, id, this);
+        return new AclGroup(group, id, this);
     }
 
-    public MyGroup determineGroup(MyGroup group, String id) {
+    public AclGroup determineGroup(AclGroup group, String id) {
         if (group == null) {
             group = determineGroup(id);
         }
         return group;
     }
 
-    public MyAuthorizable determineAuthorizable(AuthorizableOptions options) {
+    public AclAuthorizable determineAuthorizable(AuthorizableOptions options) {
         return determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
     }
 
-    public MyAuthorizable determineAuthorizable(MyAuthorizable authorizable, String id) {
+    public AclAuthorizable determineAuthorizable(AclAuthorizable authorizable, String id) {
         if (authorizable == null) {
             authorizable = determineAuthorizable(id);
         }
         return authorizable;
     }
 
-    public MyAuthorizable determineAuthorizable(String id) {
+    public AclAuthorizable determineAuthorizable(String id) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        return new MyAuthorizable(authorizable, id, this);
+        return new AclAuthorizable(authorizable, id, this);
     }
 
-    public void logResult(MyAuthorizable authorizable, String messagePattern, Object... args) {
+    public void logResult(AclAuthorizable authorizable, String messagePattern, Object... args) {
         String newMessagePattern = String.format("[%s] %s", authorizable.getId(), messagePattern);
         LOGGER.info(newMessagePattern, args);
     }

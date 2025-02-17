@@ -1,8 +1,6 @@
-package com.wttech.aem.contentor.core.acl.authorizable;
+package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.AclContext;
-import com.wttech.aem.contentor.core.acl.AclException;
-import com.wttech.aem.contentor.core.acl.AclResult;
+import com.wttech.aem.contentor.core.acl.authorizable.MemberOptions;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Arrays;
@@ -11,38 +9,39 @@ import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 
-public class MyGroup extends MyAuthorizable {
+public class AclGroup extends AclAuthorizable {
 
     private final Group group;
 
-    public MyGroup(Group group, String id, AclContext context) {
+    public AclGroup(Group group, String id, AclContext context) {
         super(group, id, context);
         this.group = group;
     }
 
-    public AclResult addMember(Closure<MemberOptions> closure) {
-        return addMember(GroovyUtils.with(new MemberOptions(), closure));
+    public AclResult addMember(Closure<com.wttech.aem.contentor.core.acl.authorizable.MemberOptions> closure) {
+        return addMember(GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.MemberOptions(), closure));
     }
 
-    public AclResult removeMember(Closure<MemberOptions> closure) {
-        return removeMember(GroovyUtils.with(new MemberOptions(), closure));
+    public AclResult removeMember(Closure<com.wttech.aem.contentor.core.acl.authorizable.MemberOptions> closure) {
+        return removeMember(
+                GroovyUtils.with(new com.wttech.aem.contentor.core.acl.authorizable.MemberOptions(), closure));
     }
 
     public AclResult removeAllMembers(Closure<Void> closure) {
         return removeAllMembers();
     }
 
-    public AclResult addMember(MemberOptions options) {
-        MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+    public AclResult addMember(com.wttech.aem.contentor.core.acl.authorizable.MemberOptions options) {
+        AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return addMember(member);
     }
 
     public AclResult addMember(String memberId) {
-        MyAuthorizable member = context.determineAuthorizable(memberId);
+        AclAuthorizable member = context.determineAuthorizable(memberId);
         return addMember(member);
     }
 
-    public AclResult addMember(MyAuthorizable member) {
+    public AclResult addMember(AclAuthorizable member) {
         AclResult result;
         if (group == null) {
             result = AclResult.SKIPPED;
@@ -56,16 +55,16 @@ public class MyGroup extends MyAuthorizable {
     }
 
     public AclResult removeMember(MemberOptions options) {
-        MyAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+        AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         return removeMember(member);
     }
 
     public AclResult removeMember(String memberId) {
-        MyAuthorizable member = context.determineAuthorizable(memberId);
+        AclAuthorizable member = context.determineAuthorizable(memberId);
         return removeMember(member);
     }
 
-    public AclResult removeMember(MyAuthorizable member) {
+    public AclResult removeMember(AclAuthorizable member) {
         AclResult result;
         if (group == null) {
             result = AclResult.SKIPPED;

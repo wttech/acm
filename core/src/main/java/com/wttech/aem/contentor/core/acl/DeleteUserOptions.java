@@ -1,18 +1,16 @@
 package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.authorizable.MyUser;
-
 public class DeleteUserOptions {
 
-    private MyUser user;
+    private AclUser user;
 
     private String id;
 
-    public MyUser getUser() {
+    public AclUser getUser() {
         return user;
     }
 
-    public void setUser(MyUser user) {
+    public void setUser(AclUser user) {
         this.user = user;
     }
 
