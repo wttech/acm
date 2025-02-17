@@ -32,9 +32,8 @@ public class AclContext {
     private final boolean compositeNodeStore;
 
     public AclContext(ResourceResolver resourceResolver) {
-        this.logger = LoggerFactory.getLogger(AclContext.class);
-
         try {
+            this.logger = LoggerFactory.getLogger(AclContext.class);
             JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
             AccessControlManager accessControlManager = session.getAccessControlManager();
