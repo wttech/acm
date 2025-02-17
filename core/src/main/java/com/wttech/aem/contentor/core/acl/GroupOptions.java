@@ -1,26 +1,26 @@
 package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
 
-public class GroupOptions extends AuthorizableOptions {
+public class GroupOptions extends com.wttech.aem.contentor.core.acl.authorizable.GroupOptions {
 
-    private AclGroup group;
+    private AclAuthorizable authorizable;
 
-    private String groupId;
+    private String authorizableId;
 
-    public AclGroup getGroup() {
-        return group;
+    public AclAuthorizable getAuthorizable() {
+        return authorizable;
     }
 
-    public void setGroup(AclGroup group) {
-        this.group = group;
+    public void setAuthorizable(AclAuthorizable authorizable) {
+        this.authorizable = authorizable;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getAuthorizableId() {
+        return authorizableId;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setAuthorizableId(String authorizableId) {
+        this.authorizableId = authorizableId;
     }
 }

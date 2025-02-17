@@ -2,13 +2,11 @@ package com.wttech.aem.contentor.core.acl;
 
 import com.wttech.aem.contentor.core.acl.authorizable.AclUser;
 
-public class PasswordOptions {
+public class PasswordOptions extends com.wttech.aem.contentor.core.acl.authorizable.PasswordOptions {
 
     private AclUser user;
 
     private String userId;
-
-    private String password;
 
     public AclUser getUser() {
         return user;
@@ -24,13 +22,5 @@ public class PasswordOptions {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 }

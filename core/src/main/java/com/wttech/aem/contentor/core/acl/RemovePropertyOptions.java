@@ -1,14 +1,26 @@
 package com.wttech.aem.contentor.core.acl;
 
-public class RemovePropertyOptions extends AuthorizableOptions {
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
 
-    private String relPath;
+public class RemovePropertyOptions extends com.wttech.aem.contentor.core.acl.authorizable.RemovePropertyOptions {
 
-    public String getRelPath() {
-        return relPath;
+    private AclAuthorizable authorizable;
+
+    private String authorizableId;
+
+    public AclAuthorizable getAuthorizable() {
+        return authorizable;
     }
 
-    public void setRelPath(String relPath) {
-        this.relPath = relPath;
+    public void setAuthorizable(AclAuthorizable authorizable) {
+        this.authorizable = authorizable;
+    }
+
+    public String getAuthorizableId() {
+        return authorizableId;
+    }
+
+    public void setAuthorizableId(String authorizableId) {
+        this.authorizableId = authorizableId;
     }
 }

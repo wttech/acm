@@ -116,10 +116,6 @@ public class AclContext {
         return group;
     }
 
-    public AclAuthorizable determineAuthorizable(AuthorizableOptions options) {
-        return determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
-    }
-
     public AclAuthorizable determineAuthorizable(AclAuthorizable authorizable, String id) {
         if (authorizable == null) {
             authorizable = determineAuthorizable(id);

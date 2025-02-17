@@ -1,24 +1,26 @@
 package com.wttech.aem.contentor.core.acl;
 
-public class SetPropertyOptions extends AuthorizableOptions {
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
 
-    private String relPath;
+public class SetPropertyOptions extends com.wttech.aem.contentor.core.acl.authorizable.SetPropertyOptions {
 
-    private String value;
+    private AclAuthorizable authorizable;
 
-    public String getRelPath() {
-        return relPath;
+    private String authorizableId;
+
+    public AclAuthorizable getAuthorizable() {
+        return authorizable;
     }
 
-    public void setRelPath(String relPath) {
-        this.relPath = relPath;
+    public void setAuthorizable(AclAuthorizable authorizable) {
+        this.authorizable = authorizable;
     }
 
-    public String getValue() {
-        return value;
+    public String getAuthorizableId() {
+        return authorizableId;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setAuthorizableId(String authorizableId) {
+        this.authorizableId = authorizableId;
     }
 }

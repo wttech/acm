@@ -3,7 +3,6 @@ package com.wttech.aem.contentor.core.acl.authorizable;
 import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclException;
 import com.wttech.aem.contentor.core.acl.AclResult;
-import com.wttech.aem.contentor.core.acl.PermissionsMode;
 import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;

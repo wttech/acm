@@ -3,6 +3,7 @@ package com.wttech.aem.contentor.core.acl;
 import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
 import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
 import com.wttech.aem.contentor.core.acl.authorizable.AclUser;
+import com.wttech.aem.contentor.core.acl.authorizable.PermissionsMode;
 import com.wttech.aem.contentor.core.acl.check.CheckAcl;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
@@ -268,7 +269,8 @@ public class Acl {
     }
 
     public AclResult addToGroup(GroupOptions options) {
-        AclAuthorizable authorizable = context.determineAuthorizable(options);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         return authorizable.addToGroup(group);
     }
@@ -294,7 +296,8 @@ public class Acl {
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
-        AclAuthorizable authorizable = context.determineAuthorizable(options);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         return authorizable.removeFromGroup(group);
     }
@@ -310,7 +313,8 @@ public class Acl {
     }
 
     public AclResult removeFromAllGroups(AuthorizableOptions options) {
-        AclAuthorizable authorizable = context.determineAuthorizable(options);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         return authorizable.removeFromAllGroups();
     }
 
@@ -377,7 +381,8 @@ public class Acl {
     }
 
     public AclResult clear(ClearOptions options) {
-        AclAuthorizable authorizable = context.determineAuthorizable(options);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         return authorizable.clear(options.getPath(), options.isStrict());
     }
 
@@ -400,7 +405,8 @@ public class Acl {
     }
 
     public AclResult purge(AuthorizableOptions options) {
-        AclAuthorizable authorizable = context.determineAuthorizable(options);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         return authorizable.purge();
     }
 
@@ -414,7 +420,8 @@ public class Acl {
     }
 
     public AclResult allow(PermissionsOptions options) {
-        AclAuthorizable authorizable = context.determineAuthorizable(options);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         return authorizable.allow(
                 options.getPath(),
                 options.getPermissions(),
@@ -481,7 +488,8 @@ public class Acl {
     }
 
     public AclResult deny(PermissionsOptions options) {
-        AclAuthorizable authorizable = context.determineAuthorizable(options);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         return authorizable.deny(
                 options.getPath(),
                 options.getPermissions(),
@@ -547,7 +555,8 @@ public class Acl {
     }
 
     public AclResult setProperty(SetPropertyOptions options) {
-        AclAuthorizable authorizable = context.determineAuthorizable(options);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         return authorizable.setProperty(options.getRelPath(), options.getValue());
     }
 
@@ -561,7 +570,8 @@ public class Acl {
     }
 
     public AclResult removeProperty(RemovePropertyOptions options) {
-        AclAuthorizable authorizable = context.determineAuthorizable(options);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         return authorizable.removeProperty(options.getRelPath());
     }
 

@@ -1,28 +1,26 @@
 package com.wttech.aem.contentor.core.acl;
 
-public class ClearOptions extends AuthorizableOptions {
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
 
-    private String path;
+public class ClearOptions extends com.wttech.aem.contentor.core.acl.authorizable.ClearOptions {
 
-    private boolean strict;
+    private AclAuthorizable authorizable;
 
-    public String getPath() {
-        return path;
+    private String authorizableId;
+
+    public AclAuthorizable getAuthorizable() {
+        return authorizable;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setAuthorizable(AclAuthorizable authorizable) {
+        this.authorizable = authorizable;
     }
 
-    public boolean isStrict() {
-        return strict;
+    public String getAuthorizableId() {
+        return authorizableId;
     }
 
-    public void setStrict(boolean strict) {
-        this.strict = strict;
-    }
-
-    public void strictPath() {
-        this.strict = true;
+    public void setAuthorizableId(String authorizableId) {
+        this.authorizableId = authorizableId;
     }
 }
