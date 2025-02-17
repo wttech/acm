@@ -5,39 +5,41 @@ import FullScreenExit from '@spectrum-icons/workflow/FullScreenExit';
 import { MarkerSeverity } from 'monaco-editor';
 import { useCallback, useEffect, useState } from 'react';
 
-export type ParseError = { line: number; column: number; message: string };
-type ImmersiveEditorProps<C extends ColorVersion> = EditorProps & { containerProps?: ViewProps<C>; parseError?: ParseError };
+export type SyntaxError = { line: number; column: number; message: string };
+type ImmersiveEditorProps<C extends ColorVersion> = EditorProps & { containerProps?: ViewProps<C>; syntaxError?: SyntaxError };
 
-const ImmersiveEditor = <C extends ColorVersion>({ containerProps, parseError, ...props }: ImmersiveEditorProps<C>) => {
+const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, ...props }: ImmersiveEditorProps<C>) => {
   const [isOpen, setIsOpen] = useState(false);
   const monacoRef = useMonaco();
 
   const updateMarkers = useCallback(() => {
     if (monacoRef?.editor) {
-      const model = monacoRef.editor.getModels()[0];
+      const models = monacoRef.editor.getModels();
 
-      monacoRef?.editor.setModelMarkers(
-        model,
-        model?.id,
-        parseError
-          ? [
-              {
-                startLineNumber: parseError.line,
-                startColumn: parseError.column,
-                endLineNumber: parseError.line,
-                endColumn: parseError.column + 10,
-                message: parseError.message,
-                severity: MarkerSeverity.Error,
-              },
-            ]
-          : [],
+      models.forEach((model) =>
+        monacoRef?.editor.setModelMarkers(
+          model,
+          model?.id,
+          syntaxError
+            ? [
+                {
+                  startLineNumber: syntaxError.line,
+                  startColumn: syntaxError.column,
+                  endLineNumber: syntaxError.line,
+                  endColumn: syntaxError.column + 10,
+                  message: syntaxError.message,
+                  severity: MarkerSeverity.Error,
+                },
+              ]
+            : [],
+        ),
       );
     }
-  }, [monacoRef?.editor, parseError]);
+  }, [monacoRef?.editor, syntaxError]);
 
   useEffect(() => {
     updateMarkers();
-  }, [parseError, updateMarkers]);
+  }, [syntaxError, updateMarkers]);
 
   return (
     <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50" {...containerProps}>

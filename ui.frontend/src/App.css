@@ -3,7 +3,7 @@ body {
     min-height: 100vh;
 }
 
-/* AEM classes cause layout clipping */
+/* AEM classes cause layout clipping in Monaco editor */
 div.foundation-layout-panel-bodywrapper, div.foundation-layout-panel-content, div.foundation-layout-panel-body {
     overflow: unset;
 }

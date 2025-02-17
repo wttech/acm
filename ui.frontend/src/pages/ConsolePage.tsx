@@ -1,8 +1,6 @@
-import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, ProgressCircle, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import Bug from '@spectrum-icons/workflow/Bug';
 import Cancel from '@spectrum-icons/workflow/Cancel';
-import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
-import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Gears from '@spectrum-icons/workflow/Gears';
@@ -10,7 +8,8 @@ import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
 import { useDebounce } from 'react-use';
-import ImmersiveEditor, { ParseError } from '../components/ImmersiveEditor.tsx';
+import CompilationStatus from '../components/CompilationStatus.tsx';
+import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
@@ -32,8 +31,9 @@ const ConsolePage = () => {
   const [code, setCode] = useState<string | undefined>(ConsoleCode);
   const [execution, setExecution] = useState<Execution | null>(null);
   const pollExecutionRef = useRef<number | null>(null);
-  const [isParsing, setIsParsing] = useState<boolean>(false);
-  const [parseError, setParseError] = useState<ParseError | undefined>(undefined);
+  const [isCompiling, setIsCompiling] = useState<boolean>(false);
+  const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
+  const [compilationError, setCompilationError] = useState<string | undefined>(undefined);
   const parseCode = useCallback(async () => {
     try {
       const { data } = await apiRequest<Execution>({
@@ -55,21 +55,22 @@ const ConsolePage = () => {
         const [, lineText, columnText] = queuedExecution.error.match(/@ line (\d+), column (\d+)/) || [];
 
         if (!lineText || !columnText) {
-          console.warn('Failed to parse error message.');
+          setCompilationError(queuedExecution.error);
           return;
         }
 
         const line = parseInt(lineText, 10);
         const column = parseInt(columnText, 10);
 
-        setParseError({ line, column, message: queuedExecution.error });
+        setSyntaxError({ line, column, message: queuedExecution.error });
       } else {
-        setParseError(undefined);
+        setSyntaxError(undefined);
+        setCompilationError(undefined);
       }
     } catch {
       console.warn('Code parsing error!');
     } finally {
-      setIsParsing(false);
+      setIsCompiling(false);
     }
   }, [code]);
 
@@ -193,8 +194,9 @@ const ConsolePage = () => {
   }, []);
 
   useEffect(() => {
-    setParseError(undefined);
-    setIsParsing(true);
+    setSyntaxError(undefined);
+    setCompilationError(undefined);
+    setIsCompiling(true);
 
     return () => {
       cancelParse();
@@ -241,17 +243,16 @@ const ConsolePage = () => {
           <Item key="code">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View>
-                <Flex alignItems="center" gap={10}>
+                <Flex alignItems="center" justifyContent="space-between" gap={10}>
                   <ButtonGroup>
-                    <Button variant="accent" onPress={onExecute} isPending={executing} isDisabled={!!parseError}>
+                    <Button variant="accent" onPress={onExecute} isPending={executing} isDisabled={isCompiling || !!syntaxError || !!compilationError}>
                       <Gears />
                       <Text>Execute</Text>
                     </Button>
                   </ButtonGroup>
-                  {isParsing && <ProgressCircle size="S" isIndeterminate aria-label="Parsing pending..." />}
-                  {!isParsing && (parseError ? <CloseCircle color="negative" size="S" /> : <CheckmarkCircle color="positive" size="S" />)}
+                  <CompilationStatus onCompilationErrorClick={() => setSelectedTab('output')} isCompiling={isCompiling} syntaxError={syntaxError} compilationError={compilationError} />
                   <DialogTrigger>
-                    <Button variant="secondary" style="fill" marginStart="auto">
+                    <Button variant="secondary" style="fill">
                       <Help />
                       <Text>Help</Text>
                     </Button>
@@ -280,7 +281,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </View>
-              <ImmersiveEditor value={code} onChange={setCode} parseError={parseError} language="groovy" beforeMount={registerGroovyLanguage} />
+              <ImmersiveEditor value={code} onChange={setCode} syntaxError={syntaxError} language="groovy" beforeMount={registerGroovyLanguage} />
             </Flex>
           </Item>
           <Item key="output">
