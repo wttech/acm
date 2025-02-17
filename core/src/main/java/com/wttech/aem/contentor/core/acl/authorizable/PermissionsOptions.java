@@ -1,6 +1,5 @@
 package com.wttech.aem.contentor.core.acl.authorizable;
 
-import com.wttech.aem.contentor.core.acl.PermissionsMode;
 import com.wttech.aem.contentor.core.acl.utils.PrivilegeGroup;
 import java.util.Collection;
 import java.util.Collections;
