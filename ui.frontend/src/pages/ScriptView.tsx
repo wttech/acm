@@ -68,8 +68,8 @@ const ScriptView = () => {
             <Tabs flex="1" aria-label="Script Details">
                 <TabList>
                     <Item key="details">
-                        <History />
-                        <Text>Details</Text>
+                        <FileCode/>
+                        <Text>Script</Text>
                     </Item>
                     <Item key="code" aria-label="Code">
                         <FileCode />
