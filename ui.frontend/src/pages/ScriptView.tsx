@@ -39,7 +39,7 @@ const ScriptView = () => {
 
     if (!script) {
         return (
-            <Flex justifyContent="center" alignItems="center" height="100vh">
+            <Flex direction="column" flex="1">
                 <IllustratedMessage>
                     <NotFound />
                     <Content>Script not found</Content>

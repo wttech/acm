@@ -42,12 +42,12 @@ const ExecutionView = () => {
 
   if (!execution) {
     return (
-      <Flex justifyContent="center" alignItems="center" height="100vh">
-        <IllustratedMessage>
-          <NotFound />
-          <Content>Execution not found</Content>
-        </IllustratedMessage>
-      </Flex>
+        <Flex direction="column" flex="1">
+          <IllustratedMessage>
+            <NotFound />
+            <Content>Execution not found</Content>
+          </IllustratedMessage>
+        </Flex>
     );
   }
 
