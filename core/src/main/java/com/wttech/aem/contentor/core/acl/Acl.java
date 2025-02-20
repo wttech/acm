@@ -296,6 +296,19 @@ public class Acl {
     public AclResult addToGroup(GroupOptions options) {
         AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
                 .orElse(context.determineAuthorizable(options.getAuthorizableId()));
+        if (authorizable == null) {
+            AclGroup group =
+                    Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
+            String groupId =
+                    Optional.ofNullable(group).map(AclAuthorizable::getId).orElse(options.getGroupId());
+            context.getLogger()
+                    .info(
+                            "Added authorizable '{}' to group '{}' [{}]",
+                            options.getAuthorizableId(),
+                            groupId,
+                            AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return authorizable.addToGroup(options);
     }
 
@@ -330,6 +343,19 @@ public class Acl {
     public AclResult removeFromGroup(GroupOptions options) {
         AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
                 .orElse(context.determineAuthorizable(options.getAuthorizableId()));
+        if (authorizable == null) {
+            AclGroup group =
+                    Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
+            String groupId =
+                    Optional.ofNullable(group).map(AclAuthorizable::getId).orElse(options.getGroupId());
+            context.getLogger()
+                    .info(
+                            "Removed authorizable '{}' from group '{}' [{}]",
+                            options.getAuthorizableId(),
+                            groupId,
+                            AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return authorizable.removeFromGroup(options);
     }
 
@@ -364,6 +390,14 @@ public class Acl {
     public AclResult removeFromAllGroups(AuthorizableOptions options) {
         AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
                 .orElse(context.determineAuthorizable(options.getAuthorizableId()));
+        if (authorizable == null) {
+            context.getLogger()
+                    .info(
+                            "Removed authorizable '{}' from all groups [{}]",
+                            options.getAuthorizableId(),
+                            AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return authorizable.removeFromAllGroups();
     }
 
@@ -381,6 +415,15 @@ public class Acl {
 
     public AclResult addMember(MemberOptions options) {
         AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
+        if (group == null) {
+            AclAuthorizable member = Optional.ofNullable(options.getMember())
+                    .orElse(context.determineAuthorizable(options.getMemberId()));
+            String memberId =
+                    Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(options.getMemberId());
+            context.getLogger()
+                    .info("Added member '{}' to group '{}' [{}]", memberId, options.getGroupId(), AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return group.addMember(options);
     }
 
@@ -414,6 +457,19 @@ public class Acl {
 
     public AclResult removeMember(MemberOptions options) {
         AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
+        if (group == null) {
+            AclAuthorizable member = Optional.ofNullable(options.getMember())
+                    .orElse(context.determineAuthorizable(options.getMemberId()));
+            String memberId =
+                    Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(options.getMemberId());
+            context.getLogger()
+                    .info(
+                            "Removed member '{}' from group '{}' [{}]",
+                            memberId,
+                            options.getGroupId(),
+                            AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return group.removeMember(options);
     }
 
@@ -447,6 +503,11 @@ public class Acl {
 
     public AclResult removeAllMembers(RemoveAllMembersOptions options) {
         AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
+        if (group == null) {
+            context.getLogger()
+                    .info("Removed all members from group '{}' [{}]", options.getGroupId(), AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return group.removeAllMembers();
     }
 
@@ -462,6 +523,15 @@ public class Acl {
     public AclResult clear(ClearOptions options) {
         AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
                 .orElse(context.determineAuthorizable(options.getAuthorizableId()));
+        if (authorizable == null) {
+            context.getLogger()
+                    .info(
+                            "Cleared permissions for authorizable '{}' at path '{}' [{}]",
+                            options.getAuthorizableId(),
+                            options.getPath(),
+                            AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return authorizable.clear(options);
     }
 
@@ -498,6 +568,10 @@ public class Acl {
     public AclResult purge(AuthorizableOptions options) {
         AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
                 .orElse(context.determineAuthorizable(options.getAuthorizableId()));
+        if (authorizable == null) {
+            context.getLogger().info("Purged authorizable '{}' [{}]", options.getAuthorizableId(), AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return authorizable.purge();
     }
 
@@ -516,6 +590,15 @@ public class Acl {
     public AclResult allow(PermissionsOptions options) {
         AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
                 .orElse(context.determineAuthorizable(options.getAuthorizableId()));
+        if (authorizable == null) {
+            context.getLogger()
+                    .info(
+                            "Cleared permissions for authorizable '{}' at path '{}' [{}]",
+                            options.getAuthorizableId(),
+                            options.getPath(),
+                            AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return authorizable.allow(options);
     }
 
@@ -618,6 +701,15 @@ public class Acl {
     public AclResult deny(PermissionsOptions options) {
         AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
                 .orElse(context.determineAuthorizable(options.getAuthorizableId()));
+        if (authorizable == null) {
+            context.getLogger()
+                    .info(
+                            "Cleared permissions for authorizable '{}' at path '{}' [{}]",
+                            options.getAuthorizableId(),
+                            options.getPath(),
+                            AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return authorizable.deny(options);
     }
 
@@ -720,6 +812,15 @@ public class Acl {
     public AclResult setProperty(SetPropertyOptions options) {
         AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
                 .orElse(context.determineAuthorizable(options.getAuthorizableId()));
+        if (authorizable == null) {
+            context.getLogger()
+                    .info(
+                            "Set property '{}' for authorizable '{}' [{}]",
+                            options.getRelPath(),
+                            options.getAuthorizableId(),
+                            AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return authorizable.setProperty(options);
     }
 
@@ -742,6 +843,15 @@ public class Acl {
     public AclResult removeProperty(RemovePropertyOptions options) {
         AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
                 .orElse(context.determineAuthorizable(options.getAuthorizableId()));
+        if (authorizable == null) {
+            context.getLogger()
+                    .info(
+                            "Removed property '{}' for authorizable '{}' [{}]",
+                            options.getRelPath(),
+                            options.getAuthorizableId(),
+                            AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return authorizable.removeProperty(options);
     }
 
@@ -761,6 +871,10 @@ public class Acl {
 
     public AclResult setPassword(PasswordOptions options) {
         AclUser user = Optional.ofNullable(options.getUser()).orElse(context.determineUser(options.getUserId()));
+        if (user == null) {
+            context.getLogger().info("Set password for user '{}' [{}]", options.getUserId(), AclResult.SKIPPED);
+            return AclResult.SKIPPED;
+        }
         return user.setPassword(options);
     }
 
