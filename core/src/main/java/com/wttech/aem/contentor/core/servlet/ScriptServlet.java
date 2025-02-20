@@ -36,7 +36,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScriptServlet.class);
 
-    private static final String PATH_PARAM = "path";
+    private static final String ID_PARAM = "id";
 
     private static final String TYPE_PARAM = "type";
 
@@ -59,12 +59,6 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        ScriptType type = ScriptType.of(stringParam(request, TYPE_PARAM)).orElse(null);
-        if (type == null) {
-            respondJson(response, error("Script type parameter is not specified!"));
-            return;
-        }
-
         int statsLimit =
                 Optional.ofNullable(intParam(request, STATS_LIMIT_PARAM)).orElse(STATS_LIMIT_DEFAULT);
         if (statsLimit < 0) {
@@ -78,10 +72,16 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
             List<Script> scripts;
 
-            List<String> paths = stringsParam(request, PATH_PARAM);
-            if (!paths.isEmpty()) {
-                scripts = repository.readAll(paths).sorted().collect(Collectors.toList());
+            List<String> ids = stringsParam(request, ID_PARAM);
+            if (!ids.isEmpty()) {
+                scripts = repository.readAll(ids).sorted().collect(Collectors.toList());
             } else {
+                ScriptType type =
+                        ScriptType.of(stringParam(request, TYPE_PARAM)).orElse(null);
+                if (type == null) {
+                    respondJson(response, error("Script type parameter is not specified!"));
+                    return;
+                }
                 scripts = repository.findAll(type).sorted().collect(Collectors.toList());
             }
             List<ScriptStats> stats = scripts.stream()
@@ -102,7 +102,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        List<String> paths = stringsParam(request, PATH_PARAM);
+        List<String> paths = stringsParam(request, ID_PARAM);
         if (paths.isEmpty()) {
             respondJson(response, error("Script path parameter is not specified!"));
             return;

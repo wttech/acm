@@ -29,12 +29,12 @@ const ExecutionView = () => {
         const response = await toastRequest<ExecutionOutput>({
           method: 'GET',
           url: `/apps/contentor/api/execution.json?id=${executionId}`,
-          operation: `Executions loading`,
+          operation: `Execution loading`,
           positive: false,
         });
         setExecution(response.data.data.list[0]);
       } catch (error) {
-        console.error('Error fetching executions:', error);
+        console.error(`Execution cannot be loaded '${executionId}':`, error);
       }
     };
     fetchExecution();
