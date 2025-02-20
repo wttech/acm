@@ -7,6 +7,7 @@ import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Optional;
 import javax.jcr.RepositoryException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -31,7 +32,8 @@ public class AclGroup extends AclAuthorizable {
     }
 
     public AclResult addMember(MemberOptions options) {
-        AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+        AclAuthorizable member =
+                Optional.ofNullable(options.getMember()).orElse(context.determineAuthorizable(options.getMemberId()));
         return addMember(member);
     }
 
@@ -47,12 +49,15 @@ public class AclGroup extends AclAuthorizable {
         } else {
             result = context.getAuthorizableManager().addMember(group, member.get()) ? AclResult.CHANGED : AclResult.OK;
         }
-        context.getLogger().info("Added member '{}' to group '{}' [{}]", member.getId(), getId(), result);
+        String memberId =
+                Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(null);
+        context.getLogger().info("Added member '{}' to group '{}' [{}]", memberId, getId(), result);
         return result;
     }
 
     public AclResult removeMember(MemberOptions options) {
-        AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+        AclAuthorizable member =
+                Optional.ofNullable(options.getMember()).orElse(context.determineAuthorizable(options.getMemberId()));
         return removeMember(member);
     }
 
@@ -70,7 +75,9 @@ public class AclGroup extends AclAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.getLogger().info("Removed member '{}' from group '{}' [{}]", member.getId(), getId(), result);
+        String memberId =
+                Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(null);
+        context.getLogger().info("Removed member '{}' from group '{}' [{}]", memberId, getId(), result);
         return result;
     }
 

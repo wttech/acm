@@ -9,6 +9,7 @@ import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -134,15 +135,15 @@ public class Acl {
                         .createUser(options.getId(), options.getPassword(), options.getPath());
             }
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
-              result = AclResult.CHANGED;
+            result = AclResult.CHANGED;
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
             throw new AclException(String.format("User with id %s already exists", options.getId()));
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
-               result = AclResult.CHANGED;
+            result = AclResult.CHANGED;
         }
         AclUser aclUser = context.determineUser(user);
-        context.logger.info("Created user '{}' [{}]", aclUser, result);
+        context.getLogger().info("Created user '{}' [{}]", aclUser, result);
         return aclUser;
     }
 
@@ -180,20 +181,20 @@ public class Acl {
 
     public AclGroup createGroup(CreateGroupOptions options) {
         Group group = context.getAuthorizableManager().getGroup(options.getId());
-        AclResult result=AclResult.OK;
+        AclResult result = AclResult.OK;
         if (group == null) {
             group = context.getAuthorizableManager()
                     .createGroup(options.getId(), options.getPath(), options.getExternalId());
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
-            result=AclResult.CHANGED;
+            result = AclResult.CHANGED;
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
             throw new AclException(String.format("Group with id %s already exists", options.getId()));
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
-            result=AclResult.CHANGED;
+            result = AclResult.CHANGED;
         }
         AclGroup aclGroup = context.determineGroup(group);
-        context.logger.info("Created group '{}' [{}]", aclGroup, result);
+        context.getLogger().info("Created group '{}' [{}]", aclGroup, result);
         return aclGroup;
     }
 
@@ -227,54 +228,70 @@ public class Acl {
     }
 
     public AclResult deleteUser(DeleteUserOptions options) {
-        AclUser user = context.determineUser(options.getUser(), options.getId());
-        return deleteUser(user);
-    }
-
-    public AclResult deleteUser(String id) {
-        AclUser user = context.determineUser(id);
-        return deleteUser(user);
-    }
-
-    public AclResult deleteUser(AclUser user) {
+        AclUser user = Optional.ofNullable(options.getUser()).orElse(context.determineUser(options.getId()));
+        String id = Optional.ofNullable(options.getUser())
+                .map(AclAuthorizable::getId)
+                .orElse(options.getId());
         AclResult result;
         if (user == null) {
+            result = AclResult.OK;
+        } else if (context.getAuthorizableManager().getAuthorizable(id) == null) {
             result = AclResult.OK;
         } else {
             purge(user);
             context.getAuthorizableManager().deleteAuthorizable(user.get());
             result = AclResult.CHANGED;
         }
-        context.getLogger().info("Deleted user '{}' [{}]", user.getId(), result);
+        context.getLogger().info("Deleted user '{}' [{}]", id, result);
         return result;
     }
 
+    public AclResult deleteUser(String id) {
+        DeleteUserOptions options = new DeleteUserOptions();
+        options.setId(id);
+        return deleteUser(options);
+    }
+
+    public AclResult deleteUser(AclUser user) {
+        DeleteUserOptions options = new DeleteUserOptions();
+        options.setUser(user);
+        return deleteUser(options);
+    }
+
     public AclResult deleteGroup(DeleteGroupOptions options) {
-        AclGroup group = context.determineGroup(options.getGroup(), options.getId());
-        return deleteGroup(group);
-    }
-
-    public AclResult deleteGroup(String id) {
-        AclGroup group = context.determineGroup(id);
-        return deleteGroup(group);
-    }
-
-    public AclResult deleteGroup(AclGroup group) {
+        AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getId()));
+        String id = Optional.ofNullable(options.getGroup())
+                .map(AclAuthorizable::getId)
+                .orElse(options.getId());
         AclResult result;
         if (group == null) {
+            result = AclResult.OK;
+        } else if (context.getAuthorizableManager().getAuthorizable(id) == null) {
             result = AclResult.OK;
         } else {
             purge(group);
             context.getAuthorizableManager().deleteAuthorizable(group.get());
             result = AclResult.CHANGED;
         }
-        context.getLogger().info("Deleted group '{}' [{}]", group.getId(), result);
+        context.getLogger().info("Deleted group '{}' [{}]", id, result);
         return result;
     }
 
+    public AclResult deleteGroup(String id) {
+        DeleteGroupOptions options = new DeleteGroupOptions();
+        options.setId(id);
+        return deleteGroup(options);
+    }
+
+    public AclResult deleteGroup(AclGroup group) {
+        DeleteGroupOptions options = new DeleteGroupOptions();
+        options.setGroup(group);
+        return deleteGroup(options);
+    }
+
     public AclResult addToGroup(GroupOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
+        AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
+                .orElse(context.determineAuthorizable(options.getAuthorizableId()));
         return authorizable.addToGroup(options);
     }
 
@@ -299,8 +316,8 @@ public class Acl {
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
+        AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
+                .orElse(context.determineAuthorizable(options.getAuthorizableId()));
         return authorizable.removeFromGroup(options);
     }
 
@@ -314,8 +331,8 @@ public class Acl {
     }
 
     public AclResult removeFromAllGroups(AuthorizableOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
+        AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
+                .orElse(context.determineAuthorizable(options.getAuthorizableId()));
         return authorizable.removeFromAllGroups();
     }
 
@@ -329,7 +346,7 @@ public class Acl {
     }
 
     public AclResult addMember(MemberOptions options) {
-        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
         return group.addMember(options);
     }
 
@@ -352,7 +369,7 @@ public class Acl {
     }
 
     public AclResult removeMember(MemberOptions options) {
-        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
         return group.removeMember(options);
     }
 
@@ -366,7 +383,7 @@ public class Acl {
     }
 
     public AclResult removeAllMembers(RemoveAllMembersOptions options) {
-        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
         return group.removeAllMembers();
     }
 
@@ -380,8 +397,8 @@ public class Acl {
     }
 
     public AclResult clear(ClearOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
+        AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
+                .orElse(context.determineAuthorizable(options.getAuthorizableId()));
         return authorizable.clear(options);
     }
 
@@ -404,8 +421,8 @@ public class Acl {
     }
 
     public AclResult purge(AuthorizableOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
+        AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
+                .orElse(context.determineAuthorizable(options.getAuthorizableId()));
         return authorizable.purge();
     }
 
@@ -419,8 +436,8 @@ public class Acl {
     }
 
     public AclResult allow(PermissionsOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
+        AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
+                .orElse(context.determineAuthorizable(options.getAuthorizableId()));
         return authorizable.allow(options);
     }
 
@@ -480,8 +497,8 @@ public class Acl {
     }
 
     public AclResult deny(PermissionsOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
+        AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
+                .orElse(context.determineAuthorizable(options.getAuthorizableId()));
         return authorizable.deny(options);
     }
 
@@ -540,8 +557,8 @@ public class Acl {
     }
 
     public AclResult setProperty(SetPropertyOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
+        AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
+                .orElse(context.determineAuthorizable(options.getAuthorizableId()));
         return authorizable.setProperty(options);
     }
 
@@ -555,8 +572,8 @@ public class Acl {
     }
 
     public AclResult removeProperty(RemovePropertyOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
+        AclAuthorizable authorizable = Optional.ofNullable(options.getAuthorizable())
+                .orElse(context.determineAuthorizable(options.getAuthorizableId()));
         return authorizable.removeProperty(options);
     }
 
@@ -570,7 +587,7 @@ public class Acl {
     }
 
     public AclResult setPassword(PasswordOptions options) {
-        AclUser user = context.determineUser(options.getUser(), options.getUserId());
+        AclUser user = Optional.ofNullable(options.getUser()).orElse(context.determineUser(options.getUserId()));
         return user.setPassword(options);
     }
 

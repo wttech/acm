@@ -9,6 +9,7 @@ import groovy.lang.Closure;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.jcr.RepositoryException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -59,7 +60,7 @@ public class AclAuthorizable {
     }
 
     public AclResult addToGroup(GroupOptions options) {
-        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
         return addToGroup(group);
     }
 
@@ -77,7 +78,7 @@ public class AclAuthorizable {
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
-        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
         return removeFromGroup(group);
     }
 
@@ -95,7 +96,8 @@ public class AclAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.getLogger().info("Removed authorizable '{}' from group '{}' [{}]", id, group.getId(), result);
+        String groupId = Optional.ofNullable(group).map(AclAuthorizable::getId).orElse(null);
+        context.getLogger().info("Removed authorizable '{}' from group '{}' [{}]", id, groupId, result);
         return result;
     }
 

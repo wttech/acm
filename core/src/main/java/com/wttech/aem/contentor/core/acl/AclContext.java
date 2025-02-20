@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 public class AclContext {
 
-    protected final Logger logger;
+    private final Logger logger;
 
     private final ResourceResolver resourceResolver;
 
@@ -83,13 +83,6 @@ public class AclContext {
         return determineUser(user);
     }
 
-    public AclUser determineUser(AclUser user, String id) {
-        if (user == null) {
-            return determineUser(id);
-        }
-        return user;
-    }
-
     public AclGroup determineGroup(Group group) {
         try {
             if (group == null) {
@@ -104,20 +97,6 @@ public class AclContext {
     public AclGroup determineGroup(String id) {
         Group group = authorizableManager.getGroup(id);
         return determineGroup(group);
-    }
-
-    public AclGroup determineGroup(AclGroup group, String id) {
-        if (group == null) {
-            return determineGroup(id);
-        }
-        return group;
-    }
-
-    public AclAuthorizable determineAuthorizable(AclAuthorizable authorizable, String id) {
-        if (authorizable == null) {
-            return determineAuthorizable(id);
-        }
-        return authorizable;
     }
 
     public AclAuthorizable determineAuthorizable(String id) {
