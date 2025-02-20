@@ -24,14 +24,10 @@ public class AclUser extends AclAuthorizable {
 
     @Override
     public AclResult purge() {
-        AclResult result;
-        if (user == null) {
-            result = AclResult.SKIPPED;
-        } else {
-            result = Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.CHANGED)
-                    ? AclResult.CHANGED
-                    : AclResult.OK;
-        }
+        AclResult result =
+                Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.CHANGED)
+                        ? AclResult.CHANGED
+                        : AclResult.OK;
         context.getLogger().info("Purged user '{}' [{}]", getId(), result);
         return result;
     }
@@ -42,9 +38,7 @@ public class AclUser extends AclAuthorizable {
 
     public AclResult setPassword(String password) {
         AclResult result;
-        if (user == null) {
-            result = AclResult.SKIPPED;
-        } else if (context.getAuthorizableManager().testPassword(user, password)) {
+        if (context.getAuthorizableManager().testPassword(user, password)) {
             result = AclResult.OK;
         } else {
             context.getAuthorizableManager().changePassword(user, password);

@@ -69,16 +69,9 @@ public class AclAuthorizable {
     }
 
     public AclResult addToGroup(AclGroup group) {
-        AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else if (group.get() == null) {
-            result = AclResult.SKIPPED;
-        } else {
-            result = context.getAuthorizableManager().addMember(group.get(), authorizable)
-                    ? AclResult.CHANGED
-                    : AclResult.OK;
-        }
+        AclResult result = context.getAuthorizableManager().addMember(group.get(), authorizable)
+                ? AclResult.CHANGED
+                : AclResult.OK;
         context.getLogger().info("Added authorizable '{}' to group '{}' [{}]", id, group.getId(), result);
         return result;
     }
@@ -95,9 +88,7 @@ public class AclAuthorizable {
 
     public AclResult removeFromGroup(AclGroup group) {
         AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else if (group.get() == null) {
+        if (group == null) {
             result = AclResult.SKIPPED;
         } else {
             result = context.getAuthorizableManager().removeMember(group.get(), authorizable)
@@ -110,18 +101,13 @@ public class AclAuthorizable {
 
     public AclResult removeFromAllGroups() {
         try {
-            AclResult result;
-            if (authorizable == null) {
-                result = AclResult.SKIPPED;
-            } else {
-                Iterator<Group> groups = authorizable.memberOf();
-                result = AclResult.OK;
-                while (groups.hasNext()) {
-                    Group group = groups.next();
-                    if (!StringUtils.equals(group.getID(), EVERYONE)
-                            && context.getAuthorizableManager().removeMember(group, authorizable)) {
-                        result = AclResult.CHANGED;
-                    }
+            Iterator<Group> groups = authorizable.memberOf();
+            AclResult result = AclResult.OK;
+            while (groups.hasNext()) {
+                Group group = groups.next();
+                if (!StringUtils.equals(group.getID(), EVERYONE)
+                        && context.getAuthorizableManager().removeMember(group, authorizable)) {
+                    result = AclResult.CHANGED;
                 }
             }
             context.getLogger().info("Removed authorizable '{}' from all groups [{}]", id, result);
@@ -137,9 +123,7 @@ public class AclAuthorizable {
 
     public AclResult clear(String path, boolean strict) {
         AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
+        if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
             result = AclResult.SKIPPED;
@@ -176,9 +160,7 @@ public class AclAuthorizable {
         options.setProperties(properties);
         options.setRestrictions(restrictions);
         AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
+        if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
             if (mode == PermissionsMode.FAIL) {
@@ -299,14 +281,9 @@ public class AclAuthorizable {
     }
 
     public AclResult removeProperty(String relPath) {
-        AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else {
-            result = context.getAuthorizableManager().removeProperty(authorizable, relPath)
-                    ? AclResult.CHANGED
-                    : AclResult.OK;
-        }
+        AclResult result = context.getAuthorizableManager().removeProperty(authorizable, relPath)
+                ? AclResult.CHANGED
+                : AclResult.OK;
         context.getLogger().info("Removed property '{}' for authorizable '{}' [{}]", relPath, id, result);
         return result;
     }

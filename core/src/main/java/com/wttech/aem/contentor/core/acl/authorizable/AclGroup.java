@@ -42,9 +42,7 @@ public class AclGroup extends AclAuthorizable {
 
     public AclResult addMember(AclAuthorizable member) {
         AclResult result;
-        if (group == null) {
-            result = AclResult.SKIPPED;
-        } else if (member.get() == null) {
+        if (member == null) {
             result = AclResult.SKIPPED;
         } else {
             result = context.getAuthorizableManager().addMember(group, member.get()) ? AclResult.CHANGED : AclResult.OK;
@@ -65,9 +63,7 @@ public class AclGroup extends AclAuthorizable {
 
     public AclResult removeMember(AclAuthorizable member) {
         AclResult result;
-        if (group == null) {
-            result = AclResult.SKIPPED;
-        } else if (member.get() == null) {
+        if (member == null) {
             result = AclResult.SKIPPED;
         } else {
             result = context.getAuthorizableManager().removeMember(group, member.get())
@@ -80,15 +76,10 @@ public class AclGroup extends AclAuthorizable {
 
     public AclResult removeAllMembers() {
         try {
-            AclResult result;
-            if (group == null) {
-                result = AclResult.SKIPPED;
-            } else {
-                Iterator<Authorizable> members = group.getMembers();
-                result = members.hasNext() ? AclResult.CHANGED : AclResult.OK;
-                while (members.hasNext()) {
-                    context.getAuthorizableManager().removeMember(group, members.next());
-                }
+            Iterator<Authorizable> members = group.getMembers();
+            AclResult result = members.hasNext() ? AclResult.CHANGED : AclResult.OK;
+            while (members.hasNext()) {
+                context.getAuthorizableManager().removeMember(group, members.next());
             }
             context.getLogger().info("Removed all members from group '{}' [{}]", getId(), result);
             return result;
@@ -99,15 +90,10 @@ public class AclGroup extends AclAuthorizable {
 
     @Override
     public AclResult purge() {
-        AclResult result;
-        if (group == null) {
-            result = AclResult.SKIPPED;
-        } else {
-            result = Arrays.asList(removeAllMembers(), removeFromAllGroups(), clear("/", false))
-                            .contains(AclResult.CHANGED)
-                    ? AclResult.CHANGED
-                    : AclResult.OK;
-        }
+        AclResult result = Arrays.asList(removeAllMembers(), removeFromAllGroups(), clear("/", false))
+                        .contains(AclResult.CHANGED)
+                ? AclResult.CHANGED
+                : AclResult.OK;
         context.getLogger().info("Purged group '{}' [{}]", getId(), result);
         return result;
     }

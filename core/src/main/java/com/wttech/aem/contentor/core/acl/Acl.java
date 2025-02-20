@@ -125,6 +125,7 @@ public class Acl {
 
     public AclUser createUser(CreateUserOptions options) {
         User user = context.getAuthorizableManager().getUser(options.getId());
+        AclResult result = AclResult.OK;
         if (user == null) {
             if (options.isSystemUser()) {
                 user = context.getAuthorizableManager().createSystemUser(options.getId(), options.getPath());
@@ -133,14 +134,16 @@ public class Acl {
                         .createUser(options.getId(), options.getPassword(), options.getPath());
             }
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
+              result = AclResult.CHANGED;
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
             throw new AclException(String.format("User with id %s already exists", options.getId()));
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
+               result = AclResult.CHANGED;
         }
-        AclUser myUser = context.determineUser(user);
-        context.logger.info("Created user '{}'", myUser);
-        return myUser;
+        AclUser aclUser = context.determineUser(user);
+        context.logger.info("Created user '{}' [{}]", aclUser, result);
+        return aclUser;
     }
 
     public AclUser createUser(String id) {
@@ -177,17 +180,20 @@ public class Acl {
 
     public AclGroup createGroup(CreateGroupOptions options) {
         Group group = context.getAuthorizableManager().getGroup(options.getId());
+        AclResult result=AclResult.OK;
         if (group == null) {
             group = context.getAuthorizableManager()
                     .createGroup(options.getId(), options.getPath(), options.getExternalId());
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
+            result=AclResult.CHANGED;
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
             throw new AclException(String.format("Group with id %s already exists", options.getId()));
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
+            result=AclResult.CHANGED;
         }
         AclGroup aclGroup = context.determineGroup(group);
-        context.getLogger().info("Created group '{}'", aclGroup);
+        context.logger.info("Created group '{}' [{}]", aclGroup, result);
         return aclGroup;
     }
 
@@ -209,8 +215,7 @@ public class Acl {
     }
 
     public AclUser getUser(String id) {
-        AclUser user = context.determineUser(id);
-        return user.get() != null ? user : null;
+        return context.determineUser(id);
     }
 
     public AclGroup getGroup(GetAuthorizableOptions options) {
@@ -218,8 +223,7 @@ public class Acl {
     }
 
     public AclGroup getGroup(String id) {
-        AclGroup group = context.determineGroup(id);
-        return group.get() != null ? group : null;
+        return context.determineGroup(id);
     }
 
     public AclResult deleteUser(DeleteUserOptions options) {
@@ -234,7 +238,7 @@ public class Acl {
 
     public AclResult deleteUser(AclUser user) {
         AclResult result;
-        if (user.get() == null) {
+        if (user == null) {
             result = AclResult.OK;
         } else {
             purge(user);
@@ -257,7 +261,7 @@ public class Acl {
 
     public AclResult deleteGroup(AclGroup group) {
         AclResult result;
-        if (group.get() == null) {
+        if (group == null) {
             result = AclResult.OK;
         } else {
             purge(group);
@@ -580,10 +584,10 @@ public class Acl {
     }
 
     public AclUser user(User user) {
-        return user == null ? null : context.determineUser(user);
+        return context.determineUser(user);
     }
 
     public AclGroup group(Group group) {
-        return group == null ? null : context.determineGroup(group);
+        return context.determineGroup(group);
     }
 }

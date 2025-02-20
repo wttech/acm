@@ -69,11 +69,10 @@ public class AclContext {
 
     public AclUser determineUser(User user) {
         try {
-            String id = "";
-            if (user != null) {
-                id = user.getID();
+            if (user == null) {
+                return null;
             }
-            return new AclUser(user, id, this);
+            return new AclUser(user, user.getID(), this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
@@ -81,23 +80,22 @@ public class AclContext {
 
     public AclUser determineUser(String id) {
         User user = authorizableManager.getUser(id);
-        return new AclUser(user, id, this);
+        return determineUser(user);
     }
 
     public AclUser determineUser(AclUser user, String id) {
         if (user == null) {
-            user = determineUser(id);
+            return determineUser(id);
         }
         return user;
     }
 
     public AclGroup determineGroup(Group group) {
         try {
-            String id = "";
-            if (group != null) {
-                id = group.getID();
+            if (group == null) {
+                return null;
             }
-            return new AclGroup(group, id, this);
+            return new AclGroup(group, group.getID(), this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
@@ -105,25 +103,28 @@ public class AclContext {
 
     public AclGroup determineGroup(String id) {
         Group group = authorizableManager.getGroup(id);
-        return new AclGroup(group, id, this);
+        return determineGroup(group);
     }
 
     public AclGroup determineGroup(AclGroup group, String id) {
         if (group == null) {
-            group = determineGroup(id);
+            return determineGroup(id);
         }
         return group;
     }
 
     public AclAuthorizable determineAuthorizable(AclAuthorizable authorizable, String id) {
         if (authorizable == null) {
-            authorizable = determineAuthorizable(id);
+            return determineAuthorizable(id);
         }
         return authorizable;
     }
 
     public AclAuthorizable determineAuthorizable(String id) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
+        if (authorizable == null) {
+            return null;
+        }
         return new AclAuthorizable(authorizable, id, this);
     }
 }
