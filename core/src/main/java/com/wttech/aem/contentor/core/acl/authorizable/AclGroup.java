@@ -34,39 +34,35 @@ public class AclGroup extends AclAuthorizable {
     public AclResult addMember(MemberOptions options) {
         AclAuthorizable member =
                 Optional.ofNullable(options.getMember()).orElse(context.determineAuthorizable(options.getMemberId()));
-        return addMember(member);
-    }
-
-    public AclResult addMember(String memberId) {
-        AclAuthorizable member = context.determineAuthorizable(memberId);
-        return addMember(member);
-    }
-
-    public AclResult addMember(AclAuthorizable member) {
+        String memberId =
+                Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(options.getMemberId());
         AclResult result;
         if (member == null) {
             result = AclResult.SKIPPED;
         } else {
             result = context.getAuthorizableManager().addMember(group, member.get()) ? AclResult.CHANGED : AclResult.OK;
         }
-        String memberId =
-                Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(null);
         context.getLogger().info("Added member '{}' to group '{}' [{}]", memberId, getId(), result);
         return result;
+    }
+
+    public AclResult addMember(String memberId) {
+        MemberOptions options = new MemberOptions();
+        options.setMemberId(memberId);
+        return addMember(options);
+    }
+
+    public AclResult addMember(AclAuthorizable member) {
+        MemberOptions options = new MemberOptions();
+        options.setMember(member);
+        return addMember(options);
     }
 
     public AclResult removeMember(MemberOptions options) {
         AclAuthorizable member =
                 Optional.ofNullable(options.getMember()).orElse(context.determineAuthorizable(options.getMemberId()));
-        return removeMember(member);
-    }
-
-    public AclResult removeMember(String memberId) {
-        AclAuthorizable member = context.determineAuthorizable(memberId);
-        return removeMember(member);
-    }
-
-    public AclResult removeMember(AclAuthorizable member) {
+        String memberId =
+                Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(options.getMemberId());
         AclResult result;
         if (member == null) {
             result = AclResult.SKIPPED;
@@ -75,10 +71,20 @@ public class AclGroup extends AclAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        String memberId =
-                Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(null);
         context.getLogger().info("Removed member '{}' from group '{}' [{}]", memberId, getId(), result);
         return result;
+    }
+
+    public AclResult removeMember(String memberId) {
+        MemberOptions options = new MemberOptions();
+        options.setMemberId(memberId);
+        return addMember(options);
+    }
+
+    public AclResult removeMember(AclAuthorizable member) {
+        MemberOptions options = new MemberOptions();
+        options.setMember(member);
+        return addMember(options);
     }
 
     public AclResult removeAllMembers() {

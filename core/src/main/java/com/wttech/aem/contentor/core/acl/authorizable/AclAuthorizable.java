@@ -61,33 +61,34 @@ public class AclAuthorizable {
 
     public AclResult addToGroup(GroupOptions options) {
         AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
-        return addToGroup(group);
+        String groupId = Optional.ofNullable(group).map(AclAuthorizable::getId).orElse(options.getGroupId());
+        AclResult result;
+        if (group == null) {
+            result = AclResult.SKIPPED;
+        } else {
+            result = context.getAuthorizableManager().addMember(group.get(), authorizable)
+                    ? AclResult.CHANGED
+                    : AclResult.OK;
+        }
+        context.getLogger().info("Added authorizable '{}' to group '{}' [{}]", id, groupId, result);
+        return result;
     }
 
     public AclResult addToGroup(String groupId) {
-        AclGroup group = context.determineGroup(groupId);
-        return addToGroup(group);
+        GroupOptions options = new GroupOptions();
+        options.setGroupId(groupId);
+        return addToGroup(options);
     }
 
     public AclResult addToGroup(AclGroup group) {
-        AclResult result = context.getAuthorizableManager().addMember(group.get(), authorizable)
-                ? AclResult.CHANGED
-                : AclResult.OK;
-        context.getLogger().info("Added authorizable '{}' to group '{}' [{}]", id, group.getId(), result);
-        return result;
+        GroupOptions options = new GroupOptions();
+        options.setGroup(group);
+        return addToGroup(options);
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
         AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
-        return removeFromGroup(group);
-    }
-
-    public AclResult removeFromGroup(String groupId) {
-        AclGroup group = context.determineGroup(groupId);
-        return removeFromGroup(group);
-    }
-
-    public AclResult removeFromGroup(AclGroup group) {
+        String groupId = Optional.ofNullable(group).map(AclAuthorizable::getId).orElse(options.getGroupId());
         AclResult result;
         if (group == null) {
             result = AclResult.SKIPPED;
@@ -96,9 +97,20 @@ public class AclAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        String groupId = Optional.ofNullable(group).map(AclAuthorizable::getId).orElse(null);
         context.getLogger().info("Removed authorizable '{}' from group '{}' [{}]", id, groupId, result);
         return result;
+    }
+
+    public AclResult removeFromGroup(String groupId) {
+        GroupOptions options = new GroupOptions();
+        options.setGroupId(groupId);
+        return removeFromGroup(options);
+    }
+
+    public AclResult removeFromGroup(AclGroup group) {
+        GroupOptions options = new GroupOptions();
+        options.setGroup(group);
+        return removeFromGroup(options);
     }
 
     public AclResult removeFromAllGroups() {
