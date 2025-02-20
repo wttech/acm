@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -35,10 +34,10 @@ public class ScriptRepository {
                 .filter(Objects::nonNull);
     }
 
-    public Stream<Script> readAll(List<String> paths) {
-        return paths.stream()
+    public Stream<Script> readAll(List<String> ids) {
+        return ids.stream()
                 .filter(p -> ScriptType.byPath(p).isPresent())
-                .map(resourceResolver::getResource)
+                .map(resourceResolver::getResource) // ID is a path
                 .map(Script::from)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
@@ -62,8 +61,7 @@ public class ScriptRepository {
         }
         try {
             String sourcePath = script.getPath();
-            String targetPath =
-                    ScriptType.ENABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.DISABLED.root() + "/");
+            String targetPath = ScriptType.ENABLED.enforcePath(path);
             ResourceUtils.move(resourceResolver, sourcePath, targetPath);
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot enable script at path '%s'!", path), e);
@@ -80,8 +78,7 @@ public class ScriptRepository {
         }
         try {
             String sourcePath = script.getPath();
-            String targetPath =
-                    ScriptType.DISABLED.root() + "/" + StringUtils.removeStart(path, ScriptType.ENABLED.root() + "/");
+            String targetPath = ScriptType.DISABLED.enforcePath(path);
             ResourceUtils.move(resourceResolver, sourcePath, targetPath);
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot disable script at path '%s'!", path), e);

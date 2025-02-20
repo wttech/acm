@@ -6,15 +6,17 @@ import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import PlayCircle from '@spectrum-icons/workflow/PlayCircle';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toastRequest } from '../utils/api';
-import { ExecutionStatus, ScriptOutput } from '../utils/api.types';
+import { ScriptOutput } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks.ts';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
+import {useNavigate} from "react-router-dom";
 
 type ScriptListProps = {
   type: 'enabled' | 'disabled';
 };
 
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
+  const navigate = useNavigate();
   const formatter = useFormatter();
 
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);
@@ -36,7 +38,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
     loadScripts();
   }, [type, loadScripts]);
 
-  const selectedPaths = (selectedKeys: Selection): string[] => {
+  const selectedIds = (selectedKeys: Selection): string[] => {
     if (selectedKeys === 'all') {
       return scripts?.list.map((script) => script.id) || [];
     } else {
@@ -46,12 +48,12 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
 
   const handleConfirm = async () => {
     const action = type === 'enabled' ? 'disable' : 'enable';
-    const paths = selectedPaths(selectedKeys);
+    const ids = selectedIds(selectedKeys);
 
     const params = new URLSearchParams();
     params.append('action', action);
     params.append('type', type);
-    paths.forEach((path) => params.append('path', path));
+    ids.forEach((id) => params.append('id', id));
 
     try {
       await toastRequest({
@@ -124,7 +126,14 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           </ButtonGroup>
         </Flex>
       </View>
-      <TableView flex="1" aria-label="Scripts list" selectionMode="multiple" selectedKeys={selectedKeys} onSelectionChange={setSelectedKeys} renderEmptyState={renderEmptyState}>
+      <TableView flex="1"
+                 aria-label="Scripts list"
+                 selectionMode="multiple"
+                 selectedKeys={selectedKeys}
+                 onSelectionChange={setSelectedKeys}
+                 renderEmptyState={renderEmptyState}
+                 onAction={(key) => {navigate(`/scripts/view/${encodeURIComponent(key)}`)}}
+      >
         <TableHeader>
           <Column>Name</Column>
           <Column>Last Execution</Column>
@@ -139,14 +148,11 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           {(scripts.list || []).map((script) => {
             const scriptStats = (scripts.stats.find((stat) => stat.path === script.id))!;
             const lastExecution = scriptStats?.lastExecution;
-            const successfulExecutions = scriptStats ? scriptStats.statusCount[ExecutionStatus.SUCCEEDED] : 0;
-            const totalExecutions = scriptStats ? Object.values(scriptStats.statusCount).reduce((a, b) => a + b, 0) : 0;
-            const successRate = totalExecutions > 0 ? (successfulExecutions / totalExecutions) * 100 : 0;
 
             return (
               <Row key={script.id}>
                 <Cell>{script.name}</Cell>
-                <Cell>{lastExecution ? formatter.dateExplained(lastExecution.startDate) : '—'}</Cell>
+                <Cell>{lastExecution ? formatter.dateExplained(lastExecution.startDate) : <>&mdash;</>}</Cell>
                 <Cell><ExecutionStatsBadge script={script} stats={scriptStats} /></Cell>
               </Row>
             );

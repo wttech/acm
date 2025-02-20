@@ -29,12 +29,12 @@ const ExecutionView = () => {
         const response = await toastRequest<ExecutionOutput>({
           method: 'GET',
           url: `/apps/contentor/api/execution.json?id=${executionId}`,
-          operation: `Executions loading`,
+          operation: `Execution loading`,
           positive: false,
         });
         setExecution(response.data.data.list[0]);
       } catch (error) {
-        console.error('Error fetching executions:', error);
+        console.error(`Execution cannot be loaded '${executionId}':`, error);
       }
     };
     fetchExecution();
@@ -42,12 +42,12 @@ const ExecutionView = () => {
 
   if (!execution) {
     return (
-      <Flex justifyContent="center" alignItems="center" height="100vh">
-        <IllustratedMessage>
-          <NotFound />
-          <Content>Execution not found</Content>
-        </IllustratedMessage>
-      </Flex>
+        <Flex direction="column" flex="1">
+          <IllustratedMessage>
+            <NotFound />
+            <Content>Execution not found</Content>
+          </IllustratedMessage>
+        </Flex>
     );
   }
 
