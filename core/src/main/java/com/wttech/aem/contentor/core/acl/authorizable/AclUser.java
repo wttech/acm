@@ -5,8 +5,6 @@ import com.wttech.aem.contentor.core.acl.AclResult;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Arrays;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.api.security.user.User;
 
 public class AclUser extends AclAuthorizable {
@@ -51,12 +49,5 @@ public class AclUser extends AclAuthorizable {
     @Override
     public User get() {
         return user;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
-                .append("id", id)
-                .toString();
     }
 }

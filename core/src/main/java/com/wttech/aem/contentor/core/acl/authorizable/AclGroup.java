@@ -8,8 +8,6 @@ import groovy.lang.Closure;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.jcr.RepositoryException;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 
@@ -109,12 +107,5 @@ public class AclGroup extends AclAuthorizable {
     @Override
     public Group get() {
         return group;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
-                .append("id", id)
-                .toString();
     }
 }

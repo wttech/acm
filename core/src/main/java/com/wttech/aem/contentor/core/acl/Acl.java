@@ -142,7 +142,7 @@ public class Acl {
             result = AclResult.CHANGED;
         }
         AclUser aclUser = context.determineUser(user);
-        context.getLogger().info("Created user '{}' [{}]", aclUser, result);
+        context.getLogger().info("Created user '{}' [{}]", aclUser.getId(), result);
         return aclUser;
     }
 
@@ -193,7 +193,7 @@ public class Acl {
             result = AclResult.CHANGED;
         }
         AclGroup aclGroup = context.determineGroup(group);
-        context.getLogger().info("Created group '{}' [{}]", aclGroup, result);
+        context.getLogger().info("Created group '{}' [{}]", aclGroup.getId(), result);
         return aclGroup;
     }
 
