@@ -8,6 +8,13 @@ public class RemoveAllMembersOptions {
 
     private String groupId;
 
+    public RemoveAllMembersOptions() {}
+
+    public RemoveAllMembersOptions(AclGroup group, String groupId) {
+        this.group = group;
+        this.groupId = groupId;
+    }
+
     public AclGroup getGroup() {
         return group;
     }

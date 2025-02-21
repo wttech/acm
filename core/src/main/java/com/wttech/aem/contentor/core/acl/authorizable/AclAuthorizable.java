@@ -74,15 +74,11 @@ public class AclAuthorizable {
     }
 
     public AclResult addToGroup(String groupId) {
-        GroupOptions options = new GroupOptions();
-        options.setGroupId(groupId);
-        return addToGroup(options);
+        return addToGroup(new GroupOptions(null, groupId));
     }
 
     public AclResult addToGroup(AclGroup group) {
-        GroupOptions options = new GroupOptions();
-        options.setGroup(group);
-        return addToGroup(options);
+        return addToGroup(new GroupOptions(group, null));
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
@@ -101,15 +97,11 @@ public class AclAuthorizable {
     }
 
     public AclResult removeFromGroup(String groupId) {
-        GroupOptions options = new GroupOptions();
-        options.setGroupId(groupId);
-        return removeFromGroup(options);
+        return removeFromGroup(new GroupOptions(null, groupId));
     }
 
     public AclResult removeFromGroup(AclGroup group) {
-        GroupOptions options = new GroupOptions();
-        options.setGroup(group);
-        return removeFromGroup(options);
+        return removeFromGroup(new GroupOptions(group, null));
     }
 
     public AclResult removeFromAllGroups() {
@@ -157,36 +149,16 @@ public class AclAuthorizable {
         return AclResult.SKIPPED;
     }
 
-    private AclResult apply(
-            String path,
-            List<String> permissions,
-            String glob,
-            List<String> types,
-            List<String> properties,
-            Map<String, Object> restrictions,
-            PermissionsMode mode,
-            boolean allow) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setPath(path);
-        options.setPermissions(permissions);
-        options.setGlob(glob);
-        options.setTypes(types);
-        options.setProperties(properties);
-        options.setRestrictions(restrictions);
-        options.setMode(mode);
-        return apply(options, allow);
-    }
-
     private AclResult apply(PermissionsOptions options, boolean allow) {
         String path = options.getPath();
         List<String> permissions = options.determineAllPermissions();
         Map<String, Object> restrictions = options.determineAllRestrictions();
-        PermissionsMode mode = options.getMode();
+        PermissionsOptions.Mode mode = options.getMode();
         AclResult result;
         if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
-            if (mode == PermissionsMode.FAIL) {
+            if (mode == PermissionsOptions.Mode.FAIL) {
                 throw new AclException(String.format("Path %s not found", path));
             }
             result = AclResult.SKIPPED;
@@ -196,19 +168,18 @@ public class AclAuthorizable {
             context.getPermissionsManager().apply(authorizable, path, permissions, restrictions, allow);
             result = AclResult.CHANGED;
         }
-        if (allow) {
-            context.getLogger()
-                    .info("Applied allow permissions for authorizable '{}' at path '{}' [{}]", id, path, result);
-        } else {
-            context.getLogger()
-                    .info("Applied deny permissions for authorizable '{}' at path '{}' [{}]", id, path, result);
-        }
-
         return result;
     }
 
     public AclResult allow(PermissionsOptions options) {
-        return apply(options, true);
+        AclResult result = apply(options, true);
+        context.getLogger()
+                .info(
+                        "Applied allow permissions for authorizable '{}' at path '{}' [{}]",
+                        id,
+                        options.getPath(),
+                        result);
+        return result;
     }
 
     public AclResult allow(
@@ -218,24 +189,31 @@ public class AclAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsMode mode) {
-        return apply(path, permissions, glob, types, properties, restrictions, mode, true);
+            PermissionsOptions.Mode mode) {
+        return allow(new PermissionsOptions(path, permissions, glob, types, properties, restrictions, mode));
     }
 
     public AclResult allow(String path, List<String> permissions) {
-        return apply(path, permissions, null, null, null, null, null, true);
+        return allow(path, permissions, null, null, null, null, null);
     }
 
     public AclResult allow(String path, List<String> permissions, String glob) {
-        return apply(path, permissions, glob, null, null, null, null, true);
+        return allow(path, permissions, glob, null, null, null, null);
     }
 
     public AclResult allow(String path, List<String> permissions, Map<String, Object> restrictions) {
-        return apply(path, permissions, null, null, null, restrictions, null, true);
+        return allow(path, permissions, null, null, null, restrictions, null);
     }
 
     public AclResult deny(PermissionsOptions options) {
-        return apply(options, false);
+        AclResult result = apply(options, false);
+        context.getLogger()
+                .info(
+                        "Applied deny permissions for authorizable '{}' at path '{}' [{}]",
+                        id,
+                        options.getPath(),
+                        result);
+        return result;
     }
 
     public AclResult deny(
@@ -245,20 +223,20 @@ public class AclAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsMode mode) {
-        return apply(path, permissions, glob, types, properties, restrictions, mode, false);
+            PermissionsOptions.Mode mode) {
+        return deny(new PermissionsOptions(path, permissions, glob, types, properties, restrictions, mode));
     }
 
     public AclResult deny(String path, List<String> permissions) {
-        return apply(path, permissions, null, null, null, null, null, false);
+        return deny(path, permissions, null, null, null, null, null);
     }
 
     public AclResult deny(String path, List<String> permissions, String glob) {
-        return apply(path, permissions, glob, null, null, null, null, false);
+        return deny(path, permissions, glob, null, null, null, null);
     }
 
     public AclResult deny(String path, List<String> permissions, Map<String, Object> restrictions) {
-        return apply(path, permissions, null, null, null, restrictions, null, false);
+        return deny(path, permissions, null, null, null, restrictions, null);
     }
 
     public AclResult setProperty(SetPropertyOptions options) {

@@ -8,6 +8,13 @@ public class AuthorizableOptions {
 
     private String authorizableId;
 
+    public AuthorizableOptions() {}
+
+    public AuthorizableOptions(AclAuthorizable authorizable, String authorizableId) {
+        this.authorizable = authorizable;
+        this.authorizableId = authorizableId;
+    }
+
     public AclAuthorizable getAuthorizable() {
         return authorizable;
     }

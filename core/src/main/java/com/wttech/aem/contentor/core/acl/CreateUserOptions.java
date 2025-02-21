@@ -11,6 +11,24 @@ public class CreateUserOptions extends CreateAuthorizableOptions {
 
     private boolean systemUser;
 
+    public CreateUserOptions() {}
+
+    public CreateUserOptions(
+            String id,
+            boolean systemUser,
+            String password,
+            String path,
+            String givenName,
+            String familyName,
+            String email,
+            String aboutMe,
+            Mode mode) {
+        super(id, path, givenName, email, aboutMe, mode);
+        this.password = password;
+        this.familyName = familyName;
+        this.systemUser = systemUser;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -30,7 +48,7 @@ public class CreateUserOptions extends CreateAuthorizableOptions {
     public void setFullName(String fullName) {
         String[] parts = fullName.split(" ");
         if (parts.length == 2) {
-            givenName = parts[0];
+            setGivenName(parts[0]);
             familyName = parts[1];
         } else {
             throw new IllegalArgumentException("Full name must contain exactly two parts: given name and family name");

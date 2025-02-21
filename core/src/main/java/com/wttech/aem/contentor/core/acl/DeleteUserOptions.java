@@ -8,6 +8,13 @@ public class DeleteUserOptions {
 
     private String id;
 
+    public DeleteUserOptions() {}
+
+    public DeleteUserOptions(AclUser user, String id) {
+        this.user = user;
+        this.id = id;
+    }
+
     public AclUser getUser() {
         return user;
     }

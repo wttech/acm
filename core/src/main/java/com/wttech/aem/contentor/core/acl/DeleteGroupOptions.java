@@ -8,6 +8,13 @@ public class DeleteGroupOptions {
 
     private String id;
 
+    public DeleteGroupOptions() {}
+
+    public DeleteGroupOptions(AclGroup group, String id) {
+        this.group = group;
+        this.id = id;
+    }
+
     public AclGroup getGroup() {
         return group;
     }

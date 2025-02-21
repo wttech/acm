@@ -23,7 +23,26 @@ public class PermissionsOptions {
 
     private Map<String, Object> restrictions;
 
-    private PermissionsMode mode = PermissionsMode.SKIP;
+    private Mode mode = Mode.SKIP;
+
+    public PermissionsOptions() {}
+
+    public PermissionsOptions(
+            String path,
+            List<String> permissions,
+            String glob,
+            List<String> types,
+            List<String> properties,
+            Map<String, Object> restrictions,
+            Mode mode) {
+        this.path = path;
+        this.permissions = permissions;
+        this.glob = glob;
+        this.types = types;
+        this.properties = properties;
+        this.restrictions = restrictions;
+        this.mode = mode;
+    }
 
     public String getPath() {
         return path;
@@ -73,20 +92,20 @@ public class PermissionsOptions {
         this.restrictions = restrictions;
     }
 
-    public PermissionsMode getMode() {
+    public Mode getMode() {
         return mode;
     }
 
-    public void setMode(PermissionsMode mode) {
+    public void setMode(Mode mode) {
         this.mode = mode;
     }
 
     public void skipIfPathMissing() {
-        mode = PermissionsMode.SKIP;
+        mode = Mode.SKIP;
     }
 
     public void failIfPathMissing() {
-        mode = PermissionsMode.FAIL;
+        mode = Mode.FAIL;
     }
 
     public List<String> determineAllPermissions() {
@@ -106,5 +125,10 @@ public class PermissionsOptions {
             allRestrictions.putAll(restrictions);
         }
         return allRestrictions;
+    }
+
+    public enum Mode {
+        FAIL,
+        SKIP
     }
 }
