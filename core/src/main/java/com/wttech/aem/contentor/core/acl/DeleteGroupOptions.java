@@ -1,6 +1,8 @@
 package com.wttech.aem.contentor.core.acl;
 
+import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
 import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
+import java.util.Optional;
 
 public class DeleteGroupOptions {
 
@@ -8,16 +10,16 @@ public class DeleteGroupOptions {
 
     private String id;
 
-    public AclGroup getGroup() {
-        return group;
+    public AclGroup determineGroup(AclContext context) {
+        return Optional.ofNullable(group).orElse(context.determineGroup(id));
+    }
+
+    public String determineId() {
+        return Optional.ofNullable(group).map(AclAuthorizable::getId).orElse(id);
     }
 
     public void setGroup(AclGroup group) {
         this.group = group;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public void setId(String id) {

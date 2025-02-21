@@ -9,7 +9,6 @@ import groovy.lang.Closure;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import javax.jcr.RepositoryException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -21,7 +20,7 @@ public class AclAuthorizable {
 
     private final Authorizable authorizable;
 
-    private final String id;
+    protected final String id;
 
     protected final AclContext context;
 
@@ -60,8 +59,8 @@ public class AclAuthorizable {
     }
 
     public AclResult addToGroup(GroupOptions options) {
-        AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
-        String groupId = Optional.ofNullable(group).map(AclAuthorizable::getId).orElse(options.getGroupId());
+        AclGroup group = options.determineGroup(context);
+        String groupId = options.determineGroupId();
         AclResult result;
         if (group == null) {
             result = AclResult.SKIPPED;
@@ -87,8 +86,8 @@ public class AclAuthorizable {
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
-        AclGroup group = Optional.ofNullable(options.getGroup()).orElse(context.determineGroup(options.getGroupId()));
-        String groupId = Optional.ofNullable(group).map(AclAuthorizable::getId).orElse(options.getGroupId());
+        AclGroup group = options.determineGroup(context);
+        String groupId = options.determineGroupId();
         AclResult result;
         if (group == null) {
             result = AclResult.SKIPPED;

@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.acl;
 
 import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
+import java.util.Optional;
 
 public class RemovePropertyOptions extends com.wttech.aem.contentor.core.acl.authorizable.RemovePropertyOptions {
 
@@ -8,16 +9,16 @@ public class RemovePropertyOptions extends com.wttech.aem.contentor.core.acl.aut
 
     private String authorizableId;
 
-    public AclAuthorizable getAuthorizable() {
-        return authorizable;
+    public AclAuthorizable determineAuthorizable(AclContext context) {
+        return Optional.ofNullable(authorizable).orElse(context.determineAuthorizable(authorizableId));
+    }
+
+    public String determineAuthorizableId() {
+        return Optional.ofNullable(authorizable).map(AclAuthorizable::getId).orElse(authorizableId);
     }
 
     public void setAuthorizable(AclAuthorizable authorizable) {
         this.authorizable = authorizable;
-    }
-
-    public String getAuthorizableId() {
-        return authorizableId;
     }
 
     public void setAuthorizableId(String authorizableId) {

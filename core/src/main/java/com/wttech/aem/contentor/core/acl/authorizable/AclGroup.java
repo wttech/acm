@@ -7,7 +7,6 @@ import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Optional;
 import javax.jcr.RepositoryException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -32,17 +31,15 @@ public class AclGroup extends AclAuthorizable {
     }
 
     public AclResult addMember(MemberOptions options) {
-        AclAuthorizable member =
-                Optional.ofNullable(options.getMember()).orElse(context.determineAuthorizable(options.getMemberId()));
-        String memberId =
-                Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(options.getMemberId());
+        AclAuthorizable member = options.determineMember(context);
+        String memberId = options.determineMemberId();
         AclResult result;
         if (member == null) {
             result = AclResult.SKIPPED;
         } else {
             result = context.getAuthorizableManager().addMember(group, member.get()) ? AclResult.CHANGED : AclResult.OK;
         }
-        context.getLogger().info("Added member '{}' to group '{}' [{}]", memberId, getId(), result);
+        context.getLogger().info("Added member '{}' to group '{}' [{}]", memberId, id, result);
         return result;
     }
 
@@ -59,10 +56,8 @@ public class AclGroup extends AclAuthorizable {
     }
 
     public AclResult removeMember(MemberOptions options) {
-        AclAuthorizable member =
-                Optional.ofNullable(options.getMember()).orElse(context.determineAuthorizable(options.getMemberId()));
-        String memberId =
-                Optional.ofNullable(member).map(AclAuthorizable::getId).orElse(options.getMemberId());
+        AclAuthorizable member = options.determineMember(context);
+        String memberId = options.determineMemberId();
         AclResult result;
         if (member == null) {
             result = AclResult.SKIPPED;
@@ -71,7 +66,7 @@ public class AclGroup extends AclAuthorizable {
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.getLogger().info("Removed member '{}' from group '{}' [{}]", memberId, getId(), result);
+        context.getLogger().info("Removed member '{}' from group '{}' [{}]", memberId, id, result);
         return result;
     }
 
@@ -94,10 +89,10 @@ public class AclGroup extends AclAuthorizable {
             while (members.hasNext()) {
                 context.getAuthorizableManager().removeMember(group, members.next());
             }
-            context.getLogger().info("Removed all members from group '{}' [{}]", getId(), result);
+            context.getLogger().info("Removed all members from group '{}' [{}]", id, result);
             return result;
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Failed to remove all members from group '%s'", getId()), e);
+            throw new AclException(String.format("Failed to remove all members from group '%s'", id), e);
         }
     }
 
@@ -107,7 +102,7 @@ public class AclGroup extends AclAuthorizable {
                         .contains(AclResult.CHANGED)
                 ? AclResult.CHANGED
                 : AclResult.OK;
-        context.getLogger().info("Purged group '{}' [{}]", getId(), result);
+        context.getLogger().info("Purged group '{}' [{}]", id, result);
         return result;
     }
 
@@ -119,7 +114,7 @@ public class AclGroup extends AclAuthorizable {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
-                .append("id", getId())
+                .append("id", id)
                 .toString();
     }
 }

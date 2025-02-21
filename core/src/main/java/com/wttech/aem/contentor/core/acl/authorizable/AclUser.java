@@ -28,7 +28,7 @@ public class AclUser extends AclAuthorizable {
                 Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.CHANGED)
                         ? AclResult.CHANGED
                         : AclResult.OK;
-        context.getLogger().info("Purged user '{}' [{}]", getId(), result);
+        context.getLogger().info("Purged user '{}' [{}]", id, result);
         return result;
     }
 
@@ -44,7 +44,7 @@ public class AclUser extends AclAuthorizable {
             context.getAuthorizableManager().changePassword(user, password);
             result = AclResult.CHANGED;
         }
-        context.getLogger().info("Set password for user '{}' [{}]", getId(), result);
+        context.getLogger().info("Set password for user '{}' [{}]", id, result);
         return result;
     }
 
@@ -56,7 +56,7 @@ public class AclUser extends AclAuthorizable {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
-                .append("id", getId())
+                .append("id", id)
                 .toString();
     }
 }
