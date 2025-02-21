@@ -165,10 +165,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           <Column>
             Success Rate
             <ContextualHelp variant="help">
-              <Content>
-                Completed means execution ended with failed or succeeded status.
-                At max 30 last executions are considered.
-              </Content>
+              <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
             </ContextualHelp>
           </Column>
         </TableHeader>
@@ -183,11 +180,11 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                 <Cell>
                     {lastExecution ? (
                         <>
-                          <ActionButton onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution?.id)}`)}>
-                            <Magnify />
-                          </ActionButton>
-                          &nbsp;
                           <Text>{formatter.dateExplained(lastExecution.startDate)}</Text>
+                          &nbsp;
+                          <AppLink to={`/executions/view/${encodeURIComponent(lastExecution?.id)}`}>
+                            &rArr;
+                          </AppLink>
                         </>
                     ) : <>&mdash;</>}
                 </Cell>
