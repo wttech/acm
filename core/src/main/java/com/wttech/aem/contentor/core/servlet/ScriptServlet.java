@@ -86,7 +86,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             }
             List<ScriptStats> stats = scripts.stream()
                     .map(Script::getPath)
-                    .map(path -> ScriptStats.computeByPath(request.getResourceResolver(), path, statsLimit))
+                    .map(path -> ScriptStats.forCompletedByPath(request.getResourceResolver(), path, statsLimit))
                     .collect(Collectors.toList());
 
             ScriptOutput output = new ScriptOutput(scripts, stats);

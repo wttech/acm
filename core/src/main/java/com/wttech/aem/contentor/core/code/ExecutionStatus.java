@@ -1,7 +1,9 @@
 package com.wttech.aem.contentor.core.code;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.sling.event.jobs.Job;
 
 public enum ExecutionStatus {
@@ -12,6 +14,14 @@ public enum ExecutionStatus {
     ABORTED,
     FAILED,
     SUCCEEDED;
+
+    public static List<ExecutionStatus> manyOf(List<String> names) {
+        return names.stream()
+                .map(ExecutionStatus::of)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
 
     public static Optional<ExecutionStatus> of(String status) {
         return Arrays.stream(values())
@@ -35,5 +45,9 @@ public enum ExecutionStatus {
             default:
                 return ExecutionStatus.FAILED;
         }
+    }
+
+    public static List<ExecutionStatus> completed() {
+        return Arrays.asList(ExecutionStatus.SUCCEEDED, ExecutionStatus.FAILED);
     }
 }

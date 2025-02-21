@@ -1,4 +1,25 @@
-import { Button, ButtonGroup, Cell, Column, Content, Dialog, DialogTrigger, Divider, Flex, Heading, IllustratedMessage, ContextualHelp, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
+import {
+  Button,
+  ButtonGroup,
+  Cell,
+  Column,
+  Content,
+  Dialog,
+  DialogTrigger,
+  Divider,
+  Flex,
+  Heading,
+  IllustratedMessage,
+  ContextualHelp,
+  ProgressBar,
+  Row,
+  TableBody,
+  TableHeader,
+  TableView,
+  Text,
+  View,
+  ActionButton
+} from '@adobe/react-spectrum';
 import { Key, Selection } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Cancel from '@spectrum-icons/workflow/Cancel';
@@ -10,6 +31,10 @@ import { ScriptOutput } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks.ts';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import {useNavigate} from "react-router-dom";
+import {AppLink} from "../AppLink.tsx";
+import ArrowRight from "@spectrum-icons/workflow/ArrowRight";
+import FullScreenExit from "@spectrum-icons/workflow/FullScreenExit";
+import Magnify from "@spectrum-icons/workflow/Magnify";
 
 type ScriptListProps = {
   type: 'enabled' | 'disabled';
@@ -138,7 +163,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           <Column>Name</Column>
           <Column>Last Execution</Column>
           <Column>
-            Last Completed Executions
+            Success Rate
             <ContextualHelp variant="help">
               <Content>
                 Completed means execution ended with failed or succeeded status.
@@ -155,7 +180,17 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             return (
               <Row key={script.id}>
                 <Cell>{script.name}</Cell>
-                <Cell>{lastExecution ? formatter.dateExplained(lastExecution.startDate) : <>&mdash;</>}</Cell>
+                <Cell>
+                    {lastExecution ? (
+                        <>
+                          <ActionButton onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution?.id)}`)}>
+                            <Magnify />
+                          </ActionButton>
+                          &nbsp;
+                          <Text>{formatter.dateExplained(lastExecution.startDate)}</Text>
+                        </>
+                    ) : <>&mdash;</>}
+                </Cell>
                 <Cell><ExecutionStatsBadge stats={scriptStats} /></Cell>
               </Row>
             );

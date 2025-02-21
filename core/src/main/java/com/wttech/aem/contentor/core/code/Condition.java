@@ -18,7 +18,8 @@ public class Condition {
         this.executionHistory = new ExecutionHistory(executionContext.getResourceResolver());
     }
 
-    public boolean always() {return true;
+    public boolean always() {
+        return true;
     }
 
     public boolean never() {
