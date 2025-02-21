@@ -216,19 +216,23 @@ public class Acl {
         return context.determineGroup(id);
     }
 
-    public AclResult deleteUser(DeleteUserOptions options) {
-        AclUser user = context.determineUser(options.getUser(), options.getId());
-        String id = context.determineId(options.getUser(), options.getId());
+    private AclResult deleteAuthorizable(AclAuthorizable authorizable, String id ) {
         AclResult result;
-        if (user == null) {
+        if (authorizable == null) {
             result = AclResult.OK;
         } else if (context.getAuthorizableManager().getAuthorizable(id) == null) {
             result = AclResult.OK;
         } else {
-            purge(user);
-            context.getAuthorizableManager().deleteAuthorizable(user.get());
+            purge(authorizable);
+            context.getAuthorizableManager().deleteAuthorizable(authorizable.get());
             result = AclResult.CHANGED;
-        }
+        }return result;
+    }
+
+    public AclResult deleteUser(DeleteUserOptions options) {
+        AclUser user = context.determineUser(options.getUser(), options.getId());
+        String id = context.determineId(options.getUser(), options.getId());
+        AclResult result = deleteAuthorizable(user, id);
         context.getLogger().info("Deleted user '{}' [{}]", id, result);
         return result;
     }
@@ -248,16 +252,7 @@ public class Acl {
     public AclResult deleteGroup(DeleteGroupOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getId());
         String id = context.determineId(options.getGroup(), options.getId());
-        AclResult result;
-        if (group == null) {
-            result = AclResult.OK;
-        } else if (context.getAuthorizableManager().getAuthorizable(id) == null) {
-            result = AclResult.OK;
-        } else {
-            purge(group);
-            context.getAuthorizableManager().deleteAuthorizable(group.get());
-            result = AclResult.CHANGED;
-        }
+        AclResult result = deleteAuthorizable(group, id);
         context.getLogger().info("Deleted group '{}' [{}]", id, result);
         return result;
     }
