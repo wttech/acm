@@ -138,9 +138,12 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           <Column>Name</Column>
           <Column>Last Execution</Column>
           <Column>
-            Successful Executions
+            Last Completed Executions
             <ContextualHelp variant="help">
-              <Content>At max 30 last executions are considered.</Content>
+              <Content>
+                Completed means execution ended with failed or succeeded status.
+                At max 30 last executions are considered.
+              </Content>
             </ContextualHelp>
           </Column>
         </TableHeader>
@@ -153,7 +156,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               <Row key={script.id}>
                 <Cell>{script.name}</Cell>
                 <Cell>{lastExecution ? formatter.dateExplained(lastExecution.startDate) : <>&mdash;</>}</Cell>
-                <Cell><ExecutionStatsBadge script={script} stats={scriptStats} /></Cell>
+                <Cell><ExecutionStatsBadge stats={scriptStats} /></Cell>
               </Row>
             );
           })}
