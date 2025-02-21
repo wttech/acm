@@ -59,8 +59,8 @@ public class AclAuthorizable {
     }
 
     public AclResult addToGroup(GroupOptions options) {
-        AclGroup group = options.determineGroup(context);
-        String groupId = options.determineGroupId();
+        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        String groupId = context.determineId(options.getGroup(), options.getGroupId());
         AclResult result;
         if (group == null) {
             result = AclResult.SKIPPED;
@@ -86,8 +86,8 @@ public class AclAuthorizable {
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
-        AclGroup group = options.determineGroup(context);
-        String groupId = options.determineGroupId();
+        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
+        String groupId = context.determineId(options.getGroup(), options.getGroupId());
         AclResult result;
         if (group == null) {
             result = AclResult.SKIPPED;
@@ -157,7 +157,7 @@ public class AclAuthorizable {
         return AclResult.SKIPPED;
     }
 
-    public AclResult apply(
+    private AclResult apply(
             String path,
             List<String> permissions,
             String glob,
@@ -177,7 +177,7 @@ public class AclAuthorizable {
         return apply(options, allow);
     }
 
-    public AclResult apply(PermissionsOptions options, boolean allow) {
+    private AclResult apply(PermissionsOptions options, boolean allow) {
         String path = options.getPath();
         List<String> permissions = options.determineAllPermissions();
         Map<String, Object> restrictions = options.determineAllRestrictions();
@@ -203,6 +203,7 @@ public class AclAuthorizable {
             context.getLogger()
                     .info("Applied deny permissions for authorizable '{}' at path '{}' [{}]", id, path, result);
         }
+
         return result;
     }
 
@@ -266,16 +267,12 @@ public class AclAuthorizable {
 
     public AclResult setProperty(String relPath, String value) {
         AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
+        List<String> values = context.getAuthorizableManager().getProperty(authorizable, relPath);
+        if (values != null && values.contains(value)) {
+            result = AclResult.OK;
         } else {
-            List<String> values = context.getAuthorizableManager().getProperty(authorizable, relPath);
-            if (values != null && values.contains(value)) {
-                result = AclResult.OK;
-            } else {
-                context.getAuthorizableManager().setProperty(authorizable, relPath, value);
-                result = AclResult.CHANGED;
-            }
+            context.getAuthorizableManager().setProperty(authorizable, relPath, value);
+            result = AclResult.CHANGED;
         }
         context.getLogger().info("Set property '{}' for authorizable '{}' [{}]", relPath, id, result);
         return result;

@@ -6,6 +6,7 @@ import com.wttech.aem.contentor.core.acl.authorizable.AclUser;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
 import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
+import java.util.Optional;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.ValueFactory;
@@ -69,45 +70,50 @@ public class AclContext {
 
     public AclUser determineUser(User user) {
         try {
-            if (user == null) {
-                return null;
-            }
-            return new AclUser(user, user.getID(), this);
+            return user == null ? null : new AclUser(user, user.getID(), this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
     }
 
     public AclUser determineUser(String id) {
-        User user = authorizableManager.getUser(id);
-        return determineUser(user);
+        return determineUser(authorizableManager.getUser(id));
+    }
+
+    public AclUser determineUser(AclUser user, String id) {
+        return Optional.ofNullable(user).orElse(determineUser(id));
     }
 
     public AclGroup determineGroup(Group group) {
         try {
-            if (group == null) {
-                return null;
-            }
-            return new AclGroup(group, group.getID(), this);
+            return group == null ? null : new AclGroup(group, group.getID(), this);
         } catch (RepositoryException e) {
             throw new AclException("Failed to get authorizable ID", e);
         }
     }
 
     public AclGroup determineGroup(String id) {
-        Group group = authorizableManager.getGroup(id);
-        return determineGroup(group);
+        return determineGroup(authorizableManager.getGroup(id));
+    }
+
+    public AclGroup determineGroup(AclGroup group, String id) {
+        return Optional.ofNullable(group).orElse(determineGroup(id));
+    }
+
+    public AclAuthorizable determineAuthorizable(AclAuthorizable authorizable, String id) {
+        return Optional.ofNullable(authorizable).orElse(determineAuthorizable(id));
     }
 
     public AclAuthorizable determineAuthorizable(String id) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        if (authorizable == null) {
-            return null;
-        }
         if (authorizable.isGroup()) {
             return new AclGroup((Group) authorizable, id, this);
         } else {
             return new AclUser((User) authorizable, id, this);
         }
+    }
+
+    public String determineId(AclAuthorizable authorizable, String id) {
+        return Optional.ofNullable(authorizable).map(AclAuthorizable::getId).orElse(id);
     }
 }

@@ -1,8 +1,6 @@
 package com.wttech.aem.contentor.core.acl;
 
-import com.wttech.aem.contentor.core.acl.authorizable.AclAuthorizable;
 import com.wttech.aem.contentor.core.acl.authorizable.AclUser;
-import java.util.Optional;
 
 public class PasswordOptions extends com.wttech.aem.contentor.core.acl.authorizable.PasswordOptions {
 
@@ -10,16 +8,16 @@ public class PasswordOptions extends com.wttech.aem.contentor.core.acl.authoriza
 
     private String userId;
 
-    public AclUser determineUser(AclContext context) {
-        return Optional.ofNullable(user).orElse(context.determineUser(userId));
-    }
-
-    public String determineUserId() {
-        return Optional.ofNullable(user).map(AclAuthorizable::getId).orElse(userId);
+    public AclUser getUser() {
+        return user;
     }
 
     public void setUser(AclUser user) {
         this.user = user;
+    }
+
+    public String getUserId() {
+        return userId;
     }
 
     public void setUserId(String userId) {

@@ -217,8 +217,8 @@ public class Acl {
     }
 
     public AclResult deleteUser(DeleteUserOptions options) {
-        AclUser user = options.determineUser(context);
-        String id = options.determineId();
+        AclUser user = context.determineUser(options.getUser(), options.getId());
+        String id = context.determineId(options.getUser(), options.getId());
         AclResult result;
         if (user == null) {
             result = AclResult.OK;
@@ -246,8 +246,8 @@ public class Acl {
     }
 
     public AclResult deleteGroup(DeleteGroupOptions options) {
-        AclGroup group = options.determineGroup(context);
-        String id = options.determineId();
+        AclGroup group = context.determineGroup(options.getGroup(), options.getId());
+        String id = context.determineId(options.getGroup(), options.getId());
         AclResult result;
         if (group == null) {
             result = AclResult.OK;
@@ -275,10 +275,11 @@ public class Acl {
     }
 
     public AclResult addToGroup(GroupOptions options) {
-        AclAuthorizable authorizable = options.determineAuthorizable(context);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
-            String authorizableId = options.determineAuthorizableId();
-            String groupId = options.determineGroupId();
+            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
+            String groupId = context.determineId(options.getGroup(), options.getGroupId());
             context.getLogger()
                     .info("Added authorizable '{}' to group '{}' [{}]", authorizableId, groupId, AclResult.SKIPPED);
             return AclResult.SKIPPED;
@@ -315,10 +316,11 @@ public class Acl {
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
-        AclAuthorizable authorizable = options.determineAuthorizable(context);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
-            String authorizableId = options.determineAuthorizableId();
-            String groupId = options.determineGroupId();
+            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
+            String groupId = context.determineId(options.getGroup(), options.getGroupId());
             context.getLogger()
                     .info("Removed authorizable '{}' from group '{}' [{}]", authorizableId, groupId, AclResult.SKIPPED);
             return AclResult.SKIPPED;
@@ -355,9 +357,10 @@ public class Acl {
     }
 
     public AclResult removeFromAllGroups(AuthorizableOptions options) {
-        AclAuthorizable authorizable = options.determineAuthorizable(context);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
-            String authorizableId = options.determineAuthorizableId();
+            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info("Removed authorizable '{}' from all groups [{}]", authorizableId, AclResult.SKIPPED);
             return AclResult.SKIPPED;
@@ -378,10 +381,10 @@ public class Acl {
     }
 
     public AclResult addMember(MemberOptions options) {
-        AclGroup group = options.determineGroup(context);
+        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         if (group == null) {
-            String memberId = options.determineMemberId();
-            String groupId = options.determineGroupId();
+            String memberId = context.determineId(options.getMember(), options.getMemberId());
+            String groupId = context.determineId(options.getGroup(), options.getGroupId());
             context.getLogger().info("Added member '{}' to group '{}' [{}]", memberId, groupId, AclResult.SKIPPED);
             return AclResult.SKIPPED;
         }
@@ -417,10 +420,10 @@ public class Acl {
     }
 
     public AclResult removeMember(MemberOptions options) {
-        AclGroup group = options.determineGroup(context);
+        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         if (group == null) {
-            String memberId = options.determineMemberId();
-            String groupId = options.determineGroupId();
+            String memberId = context.determineId(options.getMember(), options.getMemberId());
+            String groupId = context.determineId(options.getGroup(), options.getGroupId());
             context.getLogger().info("Removed member '{}' from group '{}' [{}]", memberId, groupId, AclResult.SKIPPED);
             return AclResult.SKIPPED;
         }
@@ -456,9 +459,9 @@ public class Acl {
     }
 
     public AclResult removeAllMembers(RemoveAllMembersOptions options) {
-        AclGroup group = options.determineGroup(context);
+        AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         if (group == null) {
-            String groupId = options.determineGroupId();
+            String groupId = context.determineId(options.getGroup(), options.getGroupId());
             context.getLogger().info("Removed all members from group '{}' [{}]", groupId, AclResult.SKIPPED);
             return AclResult.SKIPPED;
         }
@@ -478,9 +481,10 @@ public class Acl {
     }
 
     public AclResult clear(ClearOptions options) {
-        AclAuthorizable authorizable = options.determineAuthorizable(context);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
-            String authorizableId = options.determineAuthorizableId();
+            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info(
                             "Cleared permissions for authorizable '{}' at path '{}' [{}]",
@@ -523,9 +527,10 @@ public class Acl {
     }
 
     public AclResult purge(AuthorizableOptions options) {
-        AclAuthorizable authorizable = options.determineAuthorizable(context);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
-            String authorizableId = options.determineAuthorizableId();
+            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger().info("Purged authorizable '{}' [{}]", authorizableId, AclResult.SKIPPED);
             return AclResult.SKIPPED;
         }
@@ -545,12 +550,13 @@ public class Acl {
     }
 
     public AclResult allow(PermissionsOptions options) {
-        AclAuthorizable authorizable = options.determineAuthorizable(context);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
-            String authorizableId = options.determineAuthorizableId();
+            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info(
-                            "Cleared permissions for authorizable '{}' at path '{}' [{}]",
+                            "Applied allow permissions for authorizable '{}' at path '{}' [{}]",
                             authorizableId,
                             options.getPath(),
                             AclResult.SKIPPED);
@@ -633,12 +639,13 @@ public class Acl {
     }
 
     public AclResult deny(PermissionsOptions options) {
-        AclAuthorizable authorizable = options.determineAuthorizable(context);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
-            String authorizableId = options.determineAuthorizableId();
+            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info(
-                            "Cleared permissions for authorizable '{}' at path '{}' [{}]",
+                            "Applied deny permissions for authorizable '{}' at path '{}' [{}]",
                             authorizableId,
                             options.getPath(),
                             AclResult.SKIPPED);
@@ -721,9 +728,10 @@ public class Acl {
     }
 
     public AclResult setProperty(SetPropertyOptions options) {
-        AclAuthorizable authorizable = options.determineAuthorizable(context);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
-            String authorizableId = options.determineAuthorizableId();
+            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info(
                             "Set property '{}' for authorizable '{}' [{}]",
@@ -752,9 +760,10 @@ public class Acl {
     }
 
     public AclResult removeProperty(RemovePropertyOptions options) {
-        AclAuthorizable authorizable = options.determineAuthorizable(context);
+        AclAuthorizable authorizable =
+                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
-            String authorizableId = options.determineAuthorizableId();
+            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info(
                             "Removed property '{}' for authorizable '{}' [{}]",
@@ -781,9 +790,9 @@ public class Acl {
     }
 
     public AclResult setPassword(PasswordOptions options) {
-        AclUser user = options.determineUser(context);
+        AclUser user = context.determineUser(options.getUser(), options.getUserId());
         if (user == null) {
-            String userId = options.determineUserId();
+            String userId = context.determineId(options.getUser(), options.getUserId());
             context.getLogger().info("Set password for user '{}' [{}]", userId, AclResult.SKIPPED);
             return AclResult.SKIPPED;
         }

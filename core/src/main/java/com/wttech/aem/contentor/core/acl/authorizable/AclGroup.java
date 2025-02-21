@@ -29,8 +29,8 @@ public class AclGroup extends AclAuthorizable {
     }
 
     public AclResult addMember(MemberOptions options) {
-        AclAuthorizable member = options.determineMember(context);
-        String memberId = options.determineMemberId();
+        AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+        String memberId = context.determineId(options.getMember(), options.getMemberId());
         AclResult result;
         if (member == null) {
             result = AclResult.SKIPPED;
@@ -54,8 +54,8 @@ public class AclGroup extends AclAuthorizable {
     }
 
     public AclResult removeMember(MemberOptions options) {
-        AclAuthorizable member = options.determineMember(context);
-        String memberId = options.determineMemberId();
+        AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
+        String memberId = context.determineId(options.getMember(), options.getMemberId());
         AclResult result;
         if (member == null) {
             result = AclResult.SKIPPED;
@@ -71,13 +71,13 @@ public class AclGroup extends AclAuthorizable {
     public AclResult removeMember(String memberId) {
         MemberOptions options = new MemberOptions();
         options.setMemberId(memberId);
-        return addMember(options);
+        return removeMember(options);
     }
 
     public AclResult removeMember(AclAuthorizable member) {
         MemberOptions options = new MemberOptions();
         options.setMember(member);
-        return addMember(options);
+        return removeMember(options);
     }
 
     public AclResult removeAllMembers() {
