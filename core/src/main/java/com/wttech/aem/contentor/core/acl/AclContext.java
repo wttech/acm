@@ -104,6 +104,10 @@ public class AclContext {
         if (authorizable == null) {
             return null;
         }
-        return new AclAuthorizable(authorizable, id, this);
+        if (authorizable.isGroup()) {
+            return new AclGroup((Group) authorizable, id, this);
+        } else {
+            return new AclUser((User) authorizable, id, this);
+        }
     }
 }

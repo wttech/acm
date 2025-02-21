@@ -26,7 +26,7 @@ public class AclUser extends AclAuthorizable {
                 Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.CHANGED)
                         ? AclResult.CHANGED
                         : AclResult.OK;
-        context.getLogger().info("Purged user '{}' [{}]", id, result);
+        context.getLogger().info("Purged user '{}' [{}]", getId(), result);
         return result;
     }
 
@@ -42,7 +42,7 @@ public class AclUser extends AclAuthorizable {
             context.getAuthorizableManager().changePassword(user, password);
             result = AclResult.CHANGED;
         }
-        context.getLogger().info("Set password for user '{}' [{}]", id, result);
+        context.getLogger().info("Set password for user '{}' [{}]", getId(), result);
         return result;
     }
 

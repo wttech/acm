@@ -20,7 +20,7 @@ public class AclAuthorizable {
 
     private final Authorizable authorizable;
 
-    protected final String id;
+    private final String id;
 
     protected final AclContext context;
 
@@ -157,7 +157,7 @@ public class AclAuthorizable {
         return AclResult.SKIPPED;
     }
 
-    private AclResult apply(
+    public AclResult apply(
             String path,
             List<String> permissions,
             String glob,
@@ -167,11 +167,21 @@ public class AclAuthorizable {
             PermissionsMode mode,
             boolean allow) {
         PermissionsOptions options = new PermissionsOptions();
+        options.setPath(path);
         options.setPermissions(permissions);
         options.setGlob(glob);
         options.setTypes(types);
         options.setProperties(properties);
         options.setRestrictions(restrictions);
+        options.setMode(mode);
+        return apply(options, allow);
+    }
+
+    public AclResult apply(PermissionsOptions options, boolean allow) {
+        String path = options.getPath();
+        List<String> permissions = options.determineAllPermissions();
+        Map<String, Object> restrictions = options.determineAllRestrictions();
+        PermissionsMode mode = options.getMode();
         AclResult result;
         if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
@@ -180,34 +190,24 @@ public class AclAuthorizable {
                 throw new AclException(String.format("Path %s not found", path));
             }
             result = AclResult.SKIPPED;
-        } else {
-            result = apply(path, options.determineAllPermissions(), options.determineAllRestrictions(), allow);
-        }
-        context.getLogger().info("Applied permissions for authorizable '{}' at path '{}' [{}]", id, path, result);
-        return result;
-    }
-
-    private AclResult apply(String path, List<String> permissions, Map<String, Object> restrictions, boolean allow) {
-        AclResult result;
-        if (context.getPermissionsManager().check(authorizable, path, permissions, restrictions, allow)) {
+        } else if (context.getPermissionsManager().check(authorizable, path, permissions, restrictions, allow)) {
             result = AclResult.OK;
         } else {
             context.getPermissionsManager().apply(authorizable, path, permissions, restrictions, allow);
             result = AclResult.CHANGED;
         }
+        if (allow) {
+            context.getLogger()
+                    .info("Applied allow permissions for authorizable '{}' at path '{}' [{}]", id, path, result);
+        } else {
+            context.getLogger()
+                    .info("Applied deny permissions for authorizable '{}' at path '{}' [{}]", id, path, result);
+        }
         return result;
     }
 
     public AclResult allow(PermissionsOptions options) {
-        return apply(
-                options.getPath(),
-                options.getPermissions(),
-                options.getGlob(),
-                options.getTypes(),
-                options.getProperties(),
-                options.getRestrictions(),
-                options.getMode(),
-                true);
+        return apply(options, true);
     }
 
     public AclResult allow(
@@ -234,15 +234,7 @@ public class AclAuthorizable {
     }
 
     public AclResult deny(PermissionsOptions options) {
-        return apply(
-                options.getPath(),
-                options.getPermissions(),
-                options.getGlob(),
-                options.getTypes(),
-                options.getProperties(),
-                options.getRestrictions(),
-                options.getMode(),
-                false);
+        return apply(options, false);
     }
 
     public AclResult deny(
