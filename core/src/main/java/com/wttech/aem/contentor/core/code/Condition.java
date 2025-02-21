@@ -1,5 +1,12 @@
 package com.wttech.aem.contentor.core.code;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+
 public class Condition {
 
     private final ExecutionContext executionContext;
@@ -11,8 +18,7 @@ public class Condition {
         this.executionHistory = new ExecutionHistory(executionContext.getResourceResolver());
     }
 
-    public boolean always() {
-        return true;
+    public boolean always() {return true;
     }
 
     public boolean never() {
@@ -20,26 +26,33 @@ public class Condition {
     }
 
     public boolean once() {
-        return oncePerExecutableContent();
+        return oncePerExecutableIdAndContent();
     }
 
-    // TODO check content and path
-    public boolean oncePerExecutable() {
-        return !executionHistory.contains(executionContext.getExecutable().getId());
-    }
-
-    // TODO check path only
     public boolean oncePerExecutableId() {
         return !executionHistory.contains(executionContext.getExecutable().getId());
     }
 
-    // TODO check content only
-    public boolean oncePerExecutableContent() {
-        return false; // TOOD ...
+    public boolean oncePerExecutableIdAndContent() {
+        ExecutionQuery query = new ExecutionQuery();
+        query.setExecutableId(executionContext.getExecutable().getId());
+        return executionHistory
+                .findAll(query)
+                .anyMatch(e -> StringUtils.equals(
+                        e.getExecutable().getContent(),
+                        executionContext.getExecutable().getContent()));
     }
 
     public boolean daily() {
-        // TODO check if history contains entry with this executable for today
-        return false;
+        ExecutionQuery query = new ExecutionQuery();
+        query.setExecutableId(executionContext.getExecutable().getId());
+        query.setStartDate(
+                Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        query.setEndDate(Date.from(LocalDate.now()
+                .atTime(LocalTime.MAX)
+                .atZone(ZoneId.systemDefault())
+                .toInstant()));
+        Optional<Execution> executionFromToday = executionHistory.findAll(query).findAny();
+        return !executionFromToday.isPresent();
     }
 }
