@@ -61,10 +61,6 @@ public class CodeOutputStream extends OutputStream {
         out.close();
     }
 
-    public void fromLogs() {
-        fromAclLogs();
-    }
-
     public void fromAclLogs() {
         fromLogger("com.wttech.aem.contentor.core.acl");
     }

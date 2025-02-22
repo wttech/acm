@@ -22,10 +22,9 @@ public class AclUser extends AclAuthorizable {
 
     @Override
     public AclResult purge() {
-        AclResult result =
-                Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.CHANGED)
-                        ? AclResult.CHANGED
-                        : AclResult.OK;
+        AclResult result = Arrays.asList(removeFromAllGroups(), clear("/")).contains(AclResult.CHANGED)
+                ? AclResult.CHANGED
+                : AclResult.OK;
         context.getLogger().info("Purged user '{}' [{}]", getId(), result);
         return result;
     }

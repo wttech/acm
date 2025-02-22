@@ -265,12 +265,12 @@ public class Acl {
         return addToGroup(new GroupOptions(null, authorizableId, null, groupId));
     }
 
-    public AclResult addToGroup(String authorizableId, AclGroup group) {
-        return addToGroup(new GroupOptions(null, authorizableId, group, null));
-    }
-
     public AclResult addToGroup(AclAuthorizable authorizable, String groupId) {
         return addToGroup(new GroupOptions(authorizable, null, null, groupId));
+    }
+
+    public AclResult addToGroup(String authorizableId, AclGroup group) {
+        return addToGroup(new GroupOptions(null, authorizableId, group, null));
     }
 
     public AclResult addToGroup(AclAuthorizable authorizable, AclGroup group) {
@@ -294,12 +294,12 @@ public class Acl {
         return removeFromGroup(new GroupOptions(null, authorizableId, null, groupId));
     }
 
-    public AclResult removeFromGroup(String authorizableId, AclGroup group) {
-        return removeFromGroup(new GroupOptions(null, authorizableId, group, null));
-    }
-
     public AclResult removeFromGroup(AclAuthorizable authorizable, String groupId) {
         return removeFromGroup(new GroupOptions(authorizable, null, null, groupId));
+    }
+
+    public AclResult removeFromGroup(String authorizableId, AclGroup group) {
+        return removeFromGroup(new GroupOptions(null, authorizableId, group, null));
     }
 
     public AclResult removeFromGroup(AclAuthorizable authorizable, AclGroup group) {
@@ -341,12 +341,12 @@ public class Acl {
         return addMember(new MemberOptions(null, groupId, null, memberId));
     }
 
-    public AclResult addMember(String groupId, AclAuthorizable member) {
-        return addMember(new MemberOptions(null, groupId, member, null));
-    }
-
     public AclResult addMember(AclGroup group, String memberId) {
         return addMember(new MemberOptions(group, null, null, memberId));
+    }
+
+    public AclResult addMember(String groupId, AclAuthorizable member) {
+        return addMember(new MemberOptions(null, groupId, member, null));
     }
 
     public AclResult addMember(AclGroup group, AclAuthorizable member) {
@@ -368,12 +368,12 @@ public class Acl {
         return removeMember(new MemberOptions(null, groupId, null, memberId));
     }
 
-    public AclResult removeMember(String groupId, AclAuthorizable member) {
-        return removeMember(new MemberOptions(null, groupId, member, null));
-    }
-
     public AclResult removeMember(AclGroup group, String memberId) {
         return removeMember(new MemberOptions(group, null, null, memberId));
+    }
+
+    public AclResult removeMember(String groupId, AclAuthorizable member) {
+        return removeMember(new MemberOptions(null, groupId, member, null));
     }
 
     public AclResult removeMember(AclGroup group, AclAuthorizable member) {
@@ -418,12 +418,12 @@ public class Acl {
         return clear(new ClearOptions(null, authorizableId, path, strict));
     }
 
-    public AclResult clear(String authorizableId, String path) {
-        return clear(new ClearOptions(null, authorizableId, path, false));
-    }
-
     public AclResult clear(AclAuthorizable authorizable, String path, boolean strict) {
         return clear(new ClearOptions(authorizable, null, path, strict));
+    }
+
+    public AclResult clear(String authorizableId, String path) {
+        return clear(new ClearOptions(null, authorizableId, path, false));
     }
 
     public AclResult clear(AclAuthorizable authorizable, String path) {

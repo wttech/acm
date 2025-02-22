@@ -88,7 +88,7 @@ public class AclGroup extends AclAuthorizable {
 
     @Override
     public AclResult purge() {
-        AclResult result = Arrays.asList(removeAllMembers(), removeFromAllGroups(), clear("/", false))
+        AclResult result = Arrays.asList(removeAllMembers(), removeFromAllGroups(), clear("/"))
                         .contains(AclResult.CHANGED)
                 ? AclResult.CHANGED
                 : AclResult.OK;

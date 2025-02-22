@@ -32,4 +32,8 @@ public class ClearOptions extends com.wttech.aem.contentor.core.acl.authorizable
     public void setAuthorizableId(String authorizableId) {
         this.authorizableId = authorizableId;
     }
+
+    public void setId(String id) {
+        setAuthorizableId(id);
+    }
 }

@@ -32,4 +32,8 @@ public class SetPropertyOptions extends com.wttech.aem.contentor.core.acl.author
     public void setAuthorizableId(String authorizableId) {
         this.authorizableId = authorizableId;
     }
+
+    public void setId(String id) {
+        setAuthorizableId(id);
+    }
 }

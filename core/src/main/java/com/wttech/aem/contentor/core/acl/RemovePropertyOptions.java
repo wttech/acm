@@ -31,4 +31,8 @@ public class RemovePropertyOptions extends com.wttech.aem.contentor.core.acl.aut
     public void setAuthorizableId(String authorizableId) {
         this.authorizableId = authorizableId;
     }
+
+    public void setId(String id) {
+        setAuthorizableId(id);
+    }
 }
