@@ -1,0 +1,6 @@
+group: General
+name: condition_yearly
+content: condition.yearly()
+documentation: |
+  Execute the script only once a year.
+  The script content is not considered.
