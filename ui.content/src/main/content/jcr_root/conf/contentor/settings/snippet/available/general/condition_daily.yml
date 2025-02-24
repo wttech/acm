@@ -1,0 +1,6 @@
+group: General
+name: condition_daily
+content: condition.daily()
+documentation: |
+  Execute the script only once a day.
+  The script content is not considered.

@@ -1,0 +1,7 @@
+group: General
+name: condition_changed
+content: condition.changed()
+documentation: |
+  Execute the script only once per its path.
+  When the script content is changed, the script will be executed again.
+  Alias for `condition.oncePerExecutableIdAndContent()`.
