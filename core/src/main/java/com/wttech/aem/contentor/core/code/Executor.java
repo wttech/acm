@@ -48,7 +48,9 @@ public class Executor {
     public Execution execute(ExecutionContext context) throws ContentorException {
         try {
             ImmediateExecution execution = executeImmediately(context);
-            if (context.isHistory() && context.getMode() == ExecutionMode.EVALUATE) {
+            if (context.isHistory()
+                    && (context.getMode() == ExecutionMode.EVALUATE)
+                    && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
                 ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
                 history.save(execution);
             }

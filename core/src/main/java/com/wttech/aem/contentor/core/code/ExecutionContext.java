@@ -18,6 +18,8 @@ public class ExecutionContext {
 
     private boolean history = true;
 
+    private boolean debug = false;
+
     private String id = ExecutionId.generate();
 
     public ExecutionContext(Executable executable, BundleContext bundleContext, ResourceResolver resourceResolver) {
@@ -68,5 +70,13 @@ public class ExecutionContext {
 
     public void setHistory(boolean history) {
         this.history = history;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 }

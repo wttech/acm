@@ -31,6 +31,12 @@ public class ScriptExecutor implements Runnable {
         boolean enabled() default true;
 
         @AttributeDefinition(
+                name = "Debug mode",
+                description =
+                        "Enables debug mode for troubleshooting. Changed behaviors include: start saving skipped executions in history.")
+        boolean debug() default false;
+
+        @AttributeDefinition(
                 name = "Scheduler expression",
                 description =
                         "How often the scripts should be executed. Default is every 30 seconds (0/30 * * * * ?). Quartz cron expression format.",
@@ -66,7 +72,7 @@ public class ScriptExecutor implements Runnable {
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
                 try {
                     ExecutionContext context = executor.createContext(script, resourceResolver);
-                    // TODO skip history for skipped executions (useful for troubleshooting)
+                    context.setDebug(config.debug());
                     Execution execution = executor.execute(context);
                     LOG.info("Execution of script '{}' ended with result '{}'", script.getId(), execution);
                 } catch (Exception e) {
