@@ -27,11 +27,17 @@ public class Condition {
     }
 
     public boolean once() {
+        return oncePerExecutableId();
+    }
+
+    public boolean changed() {
         return oncePerExecutableIdAndContent();
     }
 
     public boolean oncePerExecutableId() {
-        return !executionHistory.contains(executionContext.getExecutable().getId());
+        ExecutionQuery query = new ExecutionQuery();
+        query.setExecutableId(executionContext.getExecutable().getId());
+        return !executionHistory.findAll(query).findAny().isPresent();
     }
 
     public boolean oncePerExecutableIdAndContent() {
@@ -39,7 +45,7 @@ public class Condition {
         query.setExecutableId(executionContext.getExecutable().getId());
         return executionHistory
                 .findAll(query)
-                .anyMatch(e -> StringUtils.equals(
+                .noneMatch(e -> StringUtils.equals(
                         e.getExecutable().getContent(),
                         executionContext.getExecutable().getContent()));
     }
