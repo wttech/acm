@@ -51,7 +51,9 @@ public class CreateUserOptions extends CreateAuthorizableOptions {
             setGivenName(parts[0]);
             familyName = parts[1];
         } else {
-            throw new IllegalArgumentException("Full name must contain exactly two parts: given name and family name");
+            throw new IllegalArgumentException(String.format(
+                    "Full name '%s' must contain exactly two parts space-delimited: given name and family name",
+                    fullName));
         }
     }
 

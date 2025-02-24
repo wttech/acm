@@ -4,7 +4,6 @@ import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclResult;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import java.util.Arrays;
 import org.apache.jackrabbit.api.security.user.User;
 
 public class AclUser extends AclAuthorizable {
@@ -22,9 +21,7 @@ public class AclUser extends AclAuthorizable {
 
     @Override
     public AclResult purge() {
-        AclResult result = Arrays.asList(removeFromAllGroups(), clear("/")).contains(AclResult.CHANGED)
-                ? AclResult.CHANGED
-                : AclResult.OK;
+        AclResult result = AclResult.of(removeFromAllGroups(), clear("/"));
         context.getLogger().info("Purged user '{}' [{}]", getId(), result);
         return result;
     }

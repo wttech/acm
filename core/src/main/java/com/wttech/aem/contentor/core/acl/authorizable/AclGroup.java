@@ -5,7 +5,6 @@ import com.wttech.aem.contentor.core.acl.AclException;
 import com.wttech.aem.contentor.core.acl.AclResult;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import java.util.Arrays;
 import java.util.Iterator;
 import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -88,10 +87,7 @@ public class AclGroup extends AclAuthorizable {
 
     @Override
     public AclResult purge() {
-        AclResult result = Arrays.asList(removeAllMembers(), removeFromAllGroups(), clear("/"))
-                        .contains(AclResult.CHANGED)
-                ? AclResult.CHANGED
-                : AclResult.OK;
+        AclResult result = AclResult.of(removeAllMembers(), removeFromAllGroups(), clear("/"));
         context.getLogger().info("Purged group '{}' [{}]", getId(), result);
         return result;
     }

@@ -106,7 +106,9 @@ public class AclContext {
 
     public AclAuthorizable determineAuthorizable(String id) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
-        if (authorizable.isGroup()) {
+        if (authorizable == null) {
+            return null;
+        } else if (authorizable.isGroup()) {
             return new AclGroup((Group) authorizable, id, this);
         } else {
             return new AclUser((User) authorizable, id, this);
