@@ -10,6 +10,7 @@ import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
 import { useDebounce } from 'react-use';
 import CompilationStatus from '../components/CompilationStatus.tsx';
 import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
+import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
@@ -22,19 +23,21 @@ import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 const toastTimeout = 3000;
 const executionPollDelay = 500;
 const executionPollInterval = 500;
-const parseDebounceDelay = 1000;
+const compileDelay = 1000;
 type SelectedTab = 'code' | 'output';
 
 const ConsolePage = () => {
   const [selectedTab, setSelectedTab] = useState<SelectedTab>('code');
   const [executing, setExecuting] = useState<boolean>(false);
-  const [code, setCode] = useState<string | undefined>(ConsoleCode);
+  const [code, setCode] = useState<string | undefined>(localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCode);
   const [execution, setExecution] = useState<Execution | null>(null);
   const pollExecutionRef = useRef<number | null>(null);
   const [isCompiling, setIsCompiling] = useState<boolean>(false);
   const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
   const [compilationError, setCompilationError] = useState<string | undefined>(undefined);
-  const parseCode = useCallback(async () => {
+  const compileCode = useCallback(async () => {
+    localStorage.setItem(StorageKeys.EDITOR_CODE, code || '');
+
     try {
       const { data } = await apiRequest<Execution>({
         operation: 'Code parsing',
@@ -74,7 +77,7 @@ const ConsolePage = () => {
     }
   }, [code]);
 
-  const [, cancelParse] = useDebounce(parseCode, parseDebounceDelay, [code]);
+  const [, cancelCompilation] = useDebounce(compileCode, compileDelay, [code]);
 
   const onExecute = async () => {
     setExecuting(true);
@@ -199,9 +202,9 @@ const ConsolePage = () => {
     setIsCompiling(true);
 
     return () => {
-      cancelParse();
+      cancelCompilation();
     };
-  }, [cancelParse, code]);
+  }, [cancelCompilation, code]);
 
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
 
