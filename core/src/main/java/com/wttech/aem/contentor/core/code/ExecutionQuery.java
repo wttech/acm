@@ -3,9 +3,8 @@ package com.wttech.aem.contentor.core.code;
 import com.wttech.aem.contentor.core.util.DateUtils;
 import com.wttech.aem.contentor.core.util.Range;
 import com.wttech.aem.contentor.core.util.ServletUtils;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
@@ -20,7 +19,7 @@ public class ExecutionQuery {
 
     private Date endDate;
 
-    private ExecutionStatus status;
+    private List<ExecutionStatus> statuses = new LinkedList<>();
 
     private Range<Integer> duration;
 
@@ -29,8 +28,7 @@ public class ExecutionQuery {
         result.setExecutableId(ServletUtils.stringParam(request, "executableId"));
         result.setStartDate(DateUtils.fromString(ServletUtils.stringParam(request, "startDate")));
         result.setEndDate(DateUtils.fromString(ServletUtils.stringParam(request, "endDate")));
-        result.setStatus(
-                ExecutionStatus.of(ServletUtils.stringParam(request, "status")).orElse(null));
+        result.setStatuses(ExecutionStatus.manyOf(ServletUtils.stringsParam(request, "status")));
         result.setDuration(Range.integersParse(ServletUtils.stringParam(request, "duration")));
         return result;
     }
@@ -71,12 +69,16 @@ public class ExecutionQuery {
         this.endDate = endDate;
     }
 
-    public ExecutionStatus getStatus() {
-        return status;
+    public List<ExecutionStatus> getStatuses() {
+        return statuses;
     }
 
     public void setStatus(ExecutionStatus status) {
-        this.status = status;
+        setStatuses(Collections.singletonList(status));
+    }
+
+    public void setStatuses(List<ExecutionStatus> status) {
+        this.statuses = status;
     }
 
     public Range<Integer> getDuration() {
@@ -101,8 +103,11 @@ public class ExecutionQuery {
                 filters.add(String.format("s.[executableId] = '%s'", executableId));
             }
         }
-        if (status != null) {
-            filters.add(String.format("s.[status] = '%s'", status));
+        if (CollectionUtils.isNotEmpty(statuses)) {
+            filters.add(statuses.stream()
+                    .map(s -> String.format("s.[status] = '%s'", s))
+                    .reduce((s1, s2) -> String.format("%s OR %s", s1, s2))
+                    .orElse(StringUtils.EMPTY));
         }
         if (startDate != null) {
             filters.add(String.format("s.[startDate] >= CAST('%s' AS DATE)", DateUtils.toString(startDate)));
@@ -122,6 +127,7 @@ public class ExecutionQuery {
                 .map(f -> "(" + f + ")")
                 .reduce((f1, f2) -> f1 + " AND " + f2)
                 .orElse("");
+
         return "SELECT * FROM [nt:base] AS s WHERE " + where + " ORDER BY s.[startDate] DESC";
     }
 

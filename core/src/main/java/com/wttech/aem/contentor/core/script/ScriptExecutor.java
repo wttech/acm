@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.script;
 
 import com.wttech.aem.contentor.core.code.Execution;
+import com.wttech.aem.contentor.core.code.ExecutionContext;
 import com.wttech.aem.contentor.core.code.Executor;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -28,6 +29,12 @@ public class ScriptExecutor implements Runnable {
 
         @AttributeDefinition(name = "Enabled", description = "Allows to temporarily disable the script executor")
         boolean enabled() default true;
+
+        @AttributeDefinition(
+                name = "Debug mode",
+                description =
+                        "Enables debug mode for troubleshooting. Changed behaviors include: start saving skipped executions in history.")
+        boolean debug() default false;
 
         @AttributeDefinition(
                 name = "Scheduler expression",
@@ -64,7 +71,9 @@ public class ScriptExecutor implements Runnable {
             LOG.debug("Executing scripts");
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
                 try {
-                    Execution execution = executor.execute(script);
+                    ExecutionContext context = executor.createContext(script, resourceResolver);
+                    context.setDebug(config.debug());
+                    Execution execution = executor.execute(context);
                     LOG.info("Execution of script '{}' ended with result '{}'", script.getId(), execution);
                 } catch (Exception e) {
                     LOG.error("Failed to execute script '{}'", script.getId(), e);

@@ -1,10 +1,8 @@
 import { Badge, Text } from '@adobe/react-spectrum';
 import React from 'react';
-import { ExecutionStatus, Script, ScriptStats } from '../utils/api.types';
-import { useFormatter } from '../utils/hooks.ts';
+import { ExecutionStatus, isExecutionCompleted, ScriptStats } from '../utils/api.types';
 
 interface ExecutionStatsBadgeProps {
-    script: Script;
     stats: ScriptStats;
 }
 
@@ -20,16 +18,18 @@ const getBadgeVariant = (successRate: number, totalExecutions: number): 'positiv
     }
 };
 
-const ExecutionStatsBadge: React.FC<ExecutionStatsBadgeProps> = ({ script, stats }) => {
-    const formatter = useFormatter();
+const ExecutionStatsBadge: React.FC<ExecutionStatsBadgeProps> = ({ stats }) => {
+    const completedExecutions = stats ? Object.entries(stats.statusCount)
+        .filter(([status]) => isExecutionCompleted(status as ExecutionStatus))
+        .reduce((acc, [_, count]) => acc + count, 0) : 0;
+
     const successfulExecutions = stats ? stats.statusCount[ExecutionStatus.SUCCEEDED] : 0;
-    const totalExecutions = stats ? Object.values(stats.statusCount).reduce((a, b) => a + b, 0) : 0;
-    const successRate = totalExecutions > 0 ? (successfulExecutions / totalExecutions) * 100 : 0;
-    const variant = getBadgeVariant(successRate, totalExecutions);
+    const successRate = completedExecutions > 0 ? (successfulExecutions / completedExecutions) * 100 : 0;
+    const variant = getBadgeVariant(successRate, completedExecutions);
 
     return (
         <Badge variant={variant}>
-            <Text>{`${successRate.toFixed(0)}% (${successfulExecutions}/${totalExecutions})`}</Text>
+            <Text>{`${successRate.toFixed(0)}% (${successfulExecutions}/${completedExecutions})`}</Text>
         </Badge>
     );
 };
