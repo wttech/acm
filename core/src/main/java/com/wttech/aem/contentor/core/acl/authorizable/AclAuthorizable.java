@@ -168,18 +168,18 @@ public class AclAuthorizable {
             context.getPermissionsManager().apply(authorizable, path, permissions, restrictions, allow);
             result = AclResult.CHANGED;
         }
-        return result;
-    }
-
-    public AclResult allow(PermissionsOptions options) {
-        AclResult result = apply(options, true);
         context.getLogger()
                 .info(
-                        "Applied allow permissions for authorizable '{}' at path '{}' [{}]",
+                        "Applied {} permissions for authorizable '{}' at path '{}' [{}]",
+                        allow ? "allow" : "deny",
                         id,
                         options.getPath(),
                         result);
         return result;
+    }
+
+    public AclResult allow(PermissionsOptions options) {
+        return apply(options, true);
     }
 
     public AclResult allow(
@@ -206,14 +206,7 @@ public class AclAuthorizable {
     }
 
     public AclResult deny(PermissionsOptions options) {
-        AclResult result = apply(options, false);
-        context.getLogger()
-                .info(
-                        "Applied deny permissions for authorizable '{}' at path '{}' [{}]",
-                        id,
-                        options.getPath(),
-                        result);
-        return result;
+        return apply(options, false);
     }
 
     public AclResult deny(

@@ -449,20 +449,25 @@ public class Acl {
         return purge(new AuthorizableOptions(authorizable, null));
     }
 
-    public AclResult allow(PermissionsOptions options) {
+    private AclResult apply(PermissionsOptions options, boolean allow) {
         AclAuthorizable authorizable =
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info(
-                            "Applied allow permissions for authorizable '{}' at path '{}' [{}]",
+                            "Applied {} permissions for authorizable '{}' at path '{}' [{}]",
+                            allow ? "allow" : "deny",
                             authorizableId,
                             options.getPath(),
                             AclResult.SKIPPED);
             return AclResult.SKIPPED;
         }
-        return authorizable.allow(options);
+        return allow ? authorizable.allow(options) : authorizable.deny(options);
+    }
+
+    public AclResult allow(PermissionsOptions options) {
+        return apply(options, true);
     }
 
     public AclResult allow(
@@ -518,19 +523,7 @@ public class Acl {
     }
 
     public AclResult deny(PermissionsOptions options) {
-        AclAuthorizable authorizable =
-                context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
-        if (authorizable == null) {
-            String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
-            context.getLogger()
-                    .info(
-                            "Applied deny permissions for authorizable '{}' at path '{}' [{}]",
-                            authorizableId,
-                            options.getPath(),
-                            AclResult.SKIPPED);
-            return AclResult.SKIPPED;
-        }
-        return authorizable.deny(options);
+        return apply(options, false);
     }
 
     public AclResult deny(

@@ -104,7 +104,7 @@ public class AclContext {
         return Optional.ofNullable(authorizable).orElse(determineAuthorizable(id));
     }
 
-    public AclAuthorizable determineAuthorizable(String id) {
+    private AclAuthorizable determineAuthorizable(String id) {
         Authorizable authorizable = authorizableManager.getAuthorizable(id);
         if (authorizable == null) {
             return null;
