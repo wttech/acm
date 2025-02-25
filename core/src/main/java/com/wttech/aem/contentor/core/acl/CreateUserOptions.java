@@ -11,9 +11,7 @@ public class CreateUserOptions extends CreateAuthorizableOptions {
 
     private boolean systemUser;
 
-    public CreateUserOptions() {}
-
-    public CreateUserOptions(
+    public static CreateUserOptions of(
             String id,
             boolean systemUser,
             String password,
@@ -23,10 +21,25 @@ public class CreateUserOptions extends CreateAuthorizableOptions {
             String email,
             String aboutMe,
             Mode mode) {
-        super(id, path, givenName, email, aboutMe, mode);
-        this.password = password;
-        this.familyName = familyName;
-        this.systemUser = systemUser;
+        CreateUserOptions options = new CreateUserOptions();
+        options.setId(id);
+        options.systemUser = systemUser;
+        options.password = password;
+        options.setPath(path);
+        options.setGivenName(givenName);
+        options.familyName = familyName;
+        options.setEmail(email);
+        options.setAboutMe(aboutMe);
+        options.setMode(mode);
+        return options;
+    }
+
+    public static CreateUserOptions of(String id, boolean systemUser, String password) {
+        CreateUserOptions options = new CreateUserOptions();
+        options.setId(id);
+        options.systemUser = systemUser;
+        options.password = password;
+        return options;
     }
 
     public String getPassword() {

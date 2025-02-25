@@ -4,12 +4,24 @@ public class CreateGroupOptions extends CreateAuthorizableOptions {
 
     private String externalId;
 
-    public CreateGroupOptions() {}
-
-    public CreateGroupOptions(
+    public static CreateGroupOptions of(
             String id, String externalId, String path, String givenName, String email, String aboutMe, Mode mode) {
-        super(id, path, givenName, email, aboutMe, mode);
-        this.externalId = externalId;
+        CreateGroupOptions options = new CreateGroupOptions();
+        options.setId(id);
+        options.externalId = externalId;
+        options.setPath(path);
+        options.setGivenName(givenName);
+        options.setEmail(email);
+        options.setAboutMe(aboutMe);
+        options.setMode(mode);
+        return options;
+    }
+
+    public static CreateGroupOptions of(String id, String externalId) {
+        CreateGroupOptions options = new CreateGroupOptions();
+        options.setId(id);
+        options.externalId = externalId;
+        return options;
     }
 
     public String getExternalId() {

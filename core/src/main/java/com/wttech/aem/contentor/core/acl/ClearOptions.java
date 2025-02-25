@@ -8,13 +8,13 @@ public class ClearOptions extends com.wttech.aem.contentor.core.acl.authorizable
 
     private String authorizableId;
 
-    public ClearOptions() {}
-
-    public ClearOptions(AclAuthorizable authorizable, String authorizableId, String path, boolean strict) {
-        this.authorizable = authorizable;
-        this.authorizableId = authorizableId;
-        setPath(path);
-        setStrict(strict);
+    public static ClearOptions of(AclAuthorizable authorizable, String authorizableId, String path, boolean strict) {
+        ClearOptions options = new ClearOptions();
+        options.authorizable = authorizable;
+        options.authorizableId = authorizableId;
+        options.setPath(path);
+        options.setStrict(strict);
+        return options;
     }
 
     public AclAuthorizable getAuthorizable() {

@@ -9,12 +9,13 @@ public class MemberOptions extends com.wttech.aem.contentor.core.acl.authorizabl
 
     private String groupId;
 
-    public MemberOptions() {}
-
-    public MemberOptions(AclGroup group, String groupId, AclAuthorizable member, String memberId) {
-        super(member, memberId);
-        this.group = group;
-        this.groupId = groupId;
+    public static MemberOptions of(AclGroup group, String groupId, AclAuthorizable member, String memberId) {
+        MemberOptions options = new MemberOptions();
+        options.group = group;
+        options.groupId = groupId;
+        options.setMember(member);
+        options.setMemberId(memberId);
+        return options;
     }
 
     public AclGroup getGroup() {

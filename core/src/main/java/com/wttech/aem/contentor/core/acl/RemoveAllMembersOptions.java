@@ -8,11 +8,11 @@ public class RemoveAllMembersOptions {
 
     private String groupId;
 
-    public RemoveAllMembersOptions() {}
-
-    public RemoveAllMembersOptions(AclGroup group, String groupId) {
-        this.group = group;
-        this.groupId = groupId;
+    public static RemoveAllMembersOptions of(AclGroup group, String groupId) {
+        RemoveAllMembersOptions options = new RemoveAllMembersOptions();
+        options.group = group;
+        options.groupId = groupId;
+        return options;
     }
 
     public AclGroup getGroup() {

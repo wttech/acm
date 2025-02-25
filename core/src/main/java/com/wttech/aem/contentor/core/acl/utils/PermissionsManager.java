@@ -55,23 +55,25 @@ public class PermissionsManager {
 
     public void apply(
             Authorizable authorizable,
+            String id,
             String path,
             List<String> permissions,
             Map<String, Object> restrictions,
             boolean allow) {
         try {
-            updateAccessControlList(authorizable.getPrincipal(), path, permissions, restrictions, allow);
+            updateAccessControlList(authorizable.getPrincipal(), id, path, permissions, restrictions, allow);
             if (permissions.contains("MODIFY")) {
                 List<String> modifyPermissions = Collections.singletonList("MODIFY_PAGE");
                 Map<String, Object> modifyRestrictions = new HashMap<>(restrictions);
                 modifyRestrictions.computeIfPresent(
                         AccessControlConstants.REP_GLOB, (key, glob) -> recalculateGlob((String) glob));
                 updateAccessControlList(
-                        authorizable.getPrincipal(), path, modifyPermissions, modifyRestrictions, allow);
+                        authorizable.getPrincipal(), id, path, modifyPermissions, modifyRestrictions, allow);
             }
             session.save();
         } catch (RepositoryException e) {
-            throw new AclException("Failed to apply permissions", e);
+            throw new AclException(
+                    String.format("Failed to apply permissions for authorizable '%s' at path '%s'", id, path), e);
         }
     }
 
@@ -85,6 +87,7 @@ public class PermissionsManager {
 
     public boolean check(
             Authorizable authorizable,
+            String id,
             String path,
             List<String> permissions,
             Map<String, Object> restrictions,
@@ -100,12 +103,14 @@ public class PermissionsManager {
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to check permissions", e);
+            throw new AclException(
+                    String.format("Failed to check permissions for authorizable '%s' at path '%s'", id, path), e);
         }
     }
 
     private void updateAccessControlList(
             Principal principal,
+            String id,
             String path,
             List<String> permissions,
             Map<String, Object> restrictions,
@@ -115,7 +120,8 @@ public class PermissionsManager {
             addEntry(jackrabbitAcl, principal, permissions, restrictions, allow);
             accessControlManager.setPolicy(path, jackrabbitAcl);
         } catch (RepositoryException e) {
-            throw new AclException("Failed to update access control list", e);
+            throw new AclException(
+                    String.format("Failed to update ACL for authorizable '%s' at path '%s'", id, path), e);
         }
     }
 
@@ -206,7 +212,7 @@ public class PermissionsManager {
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to remove all privileges from path", e);
+            throw new AclException(String.format("Failed to remove all privileges from %s", path), e);
         }
     }
 

@@ -8,11 +8,11 @@ public class DeleteGroupOptions {
 
     private String id;
 
-    public DeleteGroupOptions() {}
-
-    public DeleteGroupOptions(AclGroup group, String id) {
-        this.group = group;
-        this.id = id;
+    public static DeleteGroupOptions of(AclGroup group, String id) {
+        DeleteGroupOptions options = new DeleteGroupOptions();
+        options.group = group;
+        options.id = id;
+        return options;
     }
 
     public AclGroup getGroup() {

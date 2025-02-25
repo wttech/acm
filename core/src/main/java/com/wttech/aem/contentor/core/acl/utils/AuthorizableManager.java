@@ -44,7 +44,7 @@ public class AuthorizableManager {
             save();
             return user;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to create user", e);
+            throw new AclException(String.format("Failed to create user '%s'", id), e);
         }
     }
 
@@ -58,7 +58,7 @@ public class AuthorizableManager {
             save();
             return group;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to create group", e);
+            throw new AclException(String.format("Failed to create group '%s'", id), e);
         }
     }
 
@@ -68,7 +68,7 @@ public class AuthorizableManager {
             save();
             return user;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to create system user", e);
+            throw new AclException(String.format("Failed to create system user '%s'", id), e);
         }
     }
 
@@ -84,16 +84,22 @@ public class AuthorizableManager {
     }
 
     public void deleteAuthorizable(Authorizable authorizable) {
+        String id = null;
         try {
+            id = authorizable.getID();
             authorizable.remove();
             save();
         } catch (RepositoryException e) {
-            throw new AclException("Failed to delete authorizable", e);
+            throw new AclException(String.format("Failed to delete authorizable '%s'", id), e);
         }
     }
 
     public boolean addMember(Group group, Authorizable member) {
+        String groupId = null;
+        String memberId = null;
         try {
+            groupId = group.getID();
+            memberId = member.getID();
             boolean result = false;
             if (!group.isMember(member)) {
                 result = group.addMember(member);
@@ -103,12 +109,16 @@ public class AuthorizableManager {
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to add member to group", e);
+            throw new AclException(String.format("Failed to add member '%s' to group '%s'", memberId, groupId), e);
         }
     }
 
     public boolean removeMember(Group group, Authorizable member) {
+        String groupId = null;
+        String memberId = null;
         try {
+            groupId = group.getID();
+            memberId = member.getID();
             boolean result = false;
             if (group.isMember(member)) {
                 result = group.removeMember(member);
@@ -118,7 +128,7 @@ public class AuthorizableManager {
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to remove member from group", e);
+            throw new AclException(String.format("Failed to remove member '%s' to group '%s'", memberId, groupId), e);
         }
     }
 
@@ -126,7 +136,7 @@ public class AuthorizableManager {
         try {
             return userManager.getAuthorizable(id);
         } catch (RepositoryException e) {
-            throw new AclException("Failed to get authorizable", e);
+            throw new AclException(String.format("Failed to get authorizable '%s'", id), e);
         }
     }
 
@@ -134,7 +144,7 @@ public class AuthorizableManager {
         Authorizable authorizable = getAuthorizable(id);
         if (authorizable != null && !clazz.isInstance(authorizable)) {
             throw new AclException(String.format(
-                    "Authorizable with id %s exists but is a %s",
+                    "Authorizable '%s' exists but is a %s",
                     id, authorizable.getClass().getSimpleName()));
         }
         return clazz.cast(authorizable);

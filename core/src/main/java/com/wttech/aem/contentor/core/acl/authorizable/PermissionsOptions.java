@@ -25,9 +25,7 @@ public class PermissionsOptions {
 
     private Mode mode = Mode.SKIP;
 
-    public PermissionsOptions() {}
-
-    public PermissionsOptions(
+    public static PermissionsOptions of(
             String path,
             List<String> permissions,
             String glob,
@@ -35,13 +33,25 @@ public class PermissionsOptions {
             List<String> properties,
             Map<String, Object> restrictions,
             Mode mode) {
-        this.path = path;
-        this.permissions = permissions;
-        this.glob = glob;
-        this.types = types;
-        this.properties = properties;
-        this.restrictions = restrictions;
-        this.mode = mode;
+        PermissionsOptions options = new PermissionsOptions();
+        options.path = path;
+        options.permissions = permissions;
+        options.glob = glob;
+        options.types = types;
+        options.properties = properties;
+        options.restrictions = restrictions;
+        options.mode = mode;
+        return options;
+    }
+
+    public static PermissionsOptions of(
+            String path, List<String> permissions, String glob, Map<String, Object> restrictions) {
+        PermissionsOptions options = new PermissionsOptions();
+        options.path = path;
+        options.permissions = permissions;
+        options.glob = glob;
+        options.restrictions = restrictions;
+        return options;
     }
 
     public String getPath() {

@@ -15,18 +15,6 @@ public class CreateAuthorizableOptions {
 
     private String aboutMe;
 
-    public CreateAuthorizableOptions() {}
-
-    public CreateAuthorizableOptions(
-            String id, String path, String givenName, String email, String aboutMe, Mode mode) {
-        this.id = id;
-        this.path = path;
-        this.givenName = givenName;
-        this.email = email;
-        this.aboutMe = aboutMe;
-        this.mode = mode;
-    }
-
     private Mode mode = Mode.SKIP;
 
     public String getId() {

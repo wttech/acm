@@ -8,13 +8,14 @@ public class SetPropertyOptions extends com.wttech.aem.contentor.core.acl.author
 
     private String authorizableId;
 
-    public SetPropertyOptions() {}
-
-    public SetPropertyOptions(AclAuthorizable authorizable, String authorizableId, String relPath, String valie) {
-        this.authorizable = authorizable;
-        this.authorizableId = authorizableId;
-        setRelPath(relPath);
-        setValue(valie);
+    public static SetPropertyOptions of(
+            AclAuthorizable authorizable, String authorizableId, String relPath, String value) {
+        SetPropertyOptions options = new SetPropertyOptions();
+        options.authorizable = authorizable;
+        options.authorizableId = authorizableId;
+        options.setRelPath(relPath);
+        options.setValue(value);
+        return options;
     }
 
     public AclAuthorizable getAuthorizable() {
