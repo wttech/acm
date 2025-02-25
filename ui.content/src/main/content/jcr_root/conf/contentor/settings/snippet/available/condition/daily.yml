@@ -1,4 +1,4 @@
-group: General
+group: Condition
 name: condition_daily
 content: condition.daily()
 documentation: |

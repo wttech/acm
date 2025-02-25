@@ -1,4 +1,4 @@
-group: General
+group: Condition
 name: condition_monthly
 content: condition.monthly()
 documentation: |

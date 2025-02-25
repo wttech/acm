@@ -1,7 +1,7 @@
-group: General
+group: Condition
 name: condition_once
 content: condition.once()
 documentation: |
   Execute the script only once per its path.
   When the script content is changed, the script will not be executed again.
-  Alias for `condition.oncePerExecutableId()`.
+  Alias for `!condition.isExecutionWithId()`.

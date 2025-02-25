@@ -1,0 +1,6 @@
+group: Condition
+name: condition_hourly_in_minute_range
+content: condition.hourlyInMinuteRange(${1:startMinute}, ${2:endMinute})
+documentation: |
+  Execute the script only once a day within a given time range.
+  For example: `condition.hourlyInMinuteRange(30, 35)`.

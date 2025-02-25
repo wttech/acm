@@ -1,4 +1,4 @@
-group: General
+group: Condition
 name: condition_weekly
 content: condition.weekly()
 documentation: |

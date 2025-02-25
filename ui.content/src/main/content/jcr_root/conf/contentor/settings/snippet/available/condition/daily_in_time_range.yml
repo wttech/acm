@@ -1,0 +1,6 @@
+group: Condition
+name: condition_daily_in_time_range
+content: condition.dailyInTimeRange('${1:startTime}', '${2:endTime}')
+documentation: |
+  Execute the script only once a day within a given time range.
+  For example: `condition.dailyInTimeRange('2:00', '3:00')`.
