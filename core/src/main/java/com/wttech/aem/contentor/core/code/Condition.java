@@ -28,195 +28,102 @@ public class Condition {
     }
 
     public boolean once() {
-        return oncePerExecutableId();
+        return !isAnyExecutionForExecutable();
     }
 
     public boolean changed() {
-        return oncePerExecutableIdAndContent();
+        return !isAnyExecutionForExecutableAndContent();
     }
 
-    public boolean oncePerExecutableId() {
+    public boolean isAnyExecutionForExecutable() {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
-        return !executionHistory.findAll(query).findAny().isPresent();
+        return executionHistory.findAll(query).findAny().isPresent();
     }
 
-    public boolean oncePerExecutableIdAndContent() {
+    public boolean isAnyExecutionForExecutableAndContent() {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
         return executionHistory
                 .findAll(query)
-                .noneMatch(e -> StringUtils.equals(
+                .anyMatch(e -> StringUtils.equals(
                         e.getExecutable().getContent(),
                         executionContext.getExecutable().getContent()));
     }
 
     public boolean hourly() {
-        ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(Date.from(LocalDate.now()
-                .atTime(LocalTime.now().withMinute(0).withSecond(0).withNano(0))
-                .atZone(ZoneId.systemDefault())
-                .toInstant()));
-        query.setEndDate(Date.from(LocalDate.now()
-                .atTime(LocalTime.now().withMinute(59).withSecond(59).withNano(999999999))
-                .atZone(ZoneId.systemDefault())
-                .toInstant()));
-        Optional<Execution> executionThisHour = executionHistory.findAll(query).findAny();
-        return !executionThisHour.isPresent();
+        LocalTime startTime = LocalTime.now().withMinute(0).withSecond(0).withNano(0);
+        LocalTime endTime = LocalTime.now().withMinute(59).withSecond(59).withNano(999999999);
+        return isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean hourlyBetweenMinutes(int startMinute, int endMinute) {
-        LocalTime startTime =
-                LocalTime.now().withMinute(startMinute).withSecond(0).withNano(0);
+        LocalTime startTime = LocalTime.now().withMinute(startMinute).withSecond(0).withNano(0);
         LocalTime endTime = LocalTime.now().withMinute(endMinute).withSecond(59).withNano(999999999);
-
-        ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(Date.from(
-                LocalDate.now().atTime(startTime).atZone(ZoneId.systemDefault()).toInstant()));
-        query.setEndDate(Date.from(
-                LocalDate.now().atTime(endTime).atZone(ZoneId.systemDefault()).toInstant()));
-        Optional<Execution> executionInTimeRange =
-                executionHistory.findAll(query).findAny();
-        return !executionInTimeRange.isPresent();
+        return isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean daily() {
-        ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(
-                Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        query.setEndDate(Date.from(LocalDate.now()
-                .atTime(LocalTime.MAX)
-                .atZone(ZoneId.systemDefault())
-                .toInstant()));
-        Optional<Execution> executionFromToday = executionHistory.findAll(query).findAny();
-        return !executionFromToday.isPresent();
+    public boolean dailyBetweenTime(LocalTime startTime, LocalTime endTime) {
+        return isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean dailyBetweenTime(String timeRange) {
-        String[] times = timeRange.split("-");
-        LocalTime startTime = LocalTime.parse(times[0]);
-        LocalTime endTime = LocalTime.parse(times[1]);
-
-        ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(Date.from(
-                LocalDate.now().atTime(startTime).atZone(ZoneId.systemDefault()).toInstant()));
-        query.setEndDate(Date.from(
-                LocalDate.now().atTime(endTime).atZone(ZoneId.systemDefault()).toInstant()));
-        Optional<Execution> executionInTimeRange =
-                executionHistory.findAll(query).findAny();
-        return !executionInTimeRange.isPresent();
+    public boolean dailyBetweenTime(String startTime, String endTime) {
+        return dailyBetweenTime(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
-    public boolean weekly() {
+    public boolean weeklyBetweenTime(LocalTime startTime, LocalTime endTime) {
         LocalDate now = LocalDate.now();
         LocalDate startOfWeek = now.with(DayOfWeek.MONDAY);
         LocalDate endOfWeek = now.with(DayOfWeek.SUNDAY);
-
-        ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(
-                Date.from(startOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        query.setEndDate(Date.from(
-                endOfWeek.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant()));
-        Optional<Execution> executionThisWeek = executionHistory.findAll(query).findAny();
-        return !executionThisWeek.isPresent();
+        return isExecutionInTimeRange(startOfWeek, endOfWeek, startTime, endTime);
     }
 
-    public boolean weeklyBetweenTime(String timeRange) {
-        String[] times = timeRange.split("-");
-        LocalTime startTime = LocalTime.parse(times[0]);
-        LocalTime endTime = LocalTime.parse(times[1]);
+    public boolean weeklyBetweenTime(String startTime, String endTime) {
+        return weeklyBetweenTime(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    }
 
+    public boolean monthlyBetweenTime(LocalTime startTime, LocalTime endTime) {
         LocalDate now = LocalDate.now();
-        LocalDate startOfWeek = now.with(DayOfWeek.MONDAY);
-        LocalDate endOfWeek = now.with(DayOfWeek.SUNDAY);
-
-        ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(Date.from(
-                startOfWeek.atTime(startTime).atZone(ZoneId.systemDefault()).toInstant()));
-        query.setEndDate(Date.from(
-                endOfWeek.atTime(endTime).atZone(ZoneId.systemDefault()).toInstant()));
-        Optional<Execution> executionInTimeRange =
-                executionHistory.findAll(query).findAny();
-        return !executionInTimeRange.isPresent();
+        LocalDate startOfMonth = now.withDayOfMonth(1);
+        LocalDate endOfMonth = now.withDayOfMonth(now.lengthOfMonth());
+        return isExecutionInTimeRange(startOfMonth, endOfMonth, startTime, endTime);
     }
 
-    public boolean monthly() {
-        ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(Date.from(LocalDate.now()
-                .withDayOfMonth(1)
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant()));
-        query.setEndDate(Date.from(LocalDate.now()
-                .withDayOfMonth(LocalDate.now().lengthOfMonth())
-                .atTime(LocalTime.MAX)
-                .atZone(ZoneId.systemDefault())
-                .toInstant()));
-        Optional<Execution> executionThisMonth = executionHistory.findAll(query).findAny();
-        return !executionThisMonth.isPresent();
+    public boolean monthlyBetweenTime(String startTime, String endTime) {
+        return monthlyBetweenTime(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
-    public boolean monthlyBetweenTime(String timeRange) {
-        String[] times = timeRange.split("-");
-        LocalTime startTime = LocalTime.parse(times[0]);
-        LocalTime endTime = LocalTime.parse(times[1]);
-
-        ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(Date.from(LocalDate.now()
-                .withDayOfMonth(1)
-                .atTime(startTime)
-                .atZone(ZoneId.systemDefault())
-                .toInstant()));
-        query.setEndDate(Date.from(LocalDate.now()
-                .withDayOfMonth(LocalDate.now().lengthOfMonth())
-                .atTime(endTime)
-                .atZone(ZoneId.systemDefault())
-                .toInstant()));
-        Optional<Execution> executionInTimeRange =
-                executionHistory.findAll(query).findAny();
-        return !executionInTimeRange.isPresent();
-    }
-
-    public boolean yearly() {
+    public boolean yearlyBetweenTime(LocalTime startTime, LocalTime endTime) {
         LocalDate now = LocalDate.now();
         LocalDate startOfYear = now.withDayOfYear(1);
         LocalDate endOfYear = now.withDayOfYear(now.lengthOfYear());
-
-        ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(
-                Date.from(startOfYear.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        query.setEndDate(Date.from(
-                endOfYear.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant()));
-        Optional<Execution> executionThisYear = executionHistory.findAll(query).findAny();
-        return !executionThisYear.isPresent();
+        return isExecutionInTimeRange(startOfYear, endOfYear, startTime, endTime);
     }
 
-    // TODO separate time range into two parameters
-    public boolean yearlyBetweenTime(String timeRange) {
-        String[] times = timeRange.split("-");
-        LocalTime startTime = LocalTime.parse(times[0]);
-        LocalTime endTime = LocalTime.parse(times[1]);
+    public boolean yearlyBetweenTime(String startTime, String endTime) {
+        return yearlyBetweenTime(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    }
 
-        LocalDate now = LocalDate.now();
-        LocalDate startOfYear = now.withDayOfYear(1);
-        LocalDate endOfYear = now.withDayOfYear(now.lengthOfYear());
+    private boolean isExecutionInTimeRange(LocalDate date, LocalTime startTime, LocalTime endTime) {
+        return isExecutionInTimeRange(date, date, startTime, endTime);
+    }
 
+    private boolean isExecutionInTimeRange(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(Date.from(
-                startOfYear.atTime(startTime).atZone(ZoneId.systemDefault()).toInstant()));
-        query.setEndDate(Date.from(
-                endOfYear.atTime(endTime).atZone(ZoneId.systemDefault()).toInstant()));
-        Optional<Execution> executionInTimeRange =
-                executionHistory.findAll(query).findAny();
+        query.setStartDate(Date.from(startDate.atTime(startTime).atZone(ZoneId.systemDefault()).toInstant()));
+        query.setEndDate(Date.from(endDate.atTime(endTime).atZone(ZoneId.systemDefault()).toInstant()));
+        Optional<Execution> executionInTimeRange = executionHistory.findAll(query).findAny();
         return !executionInTimeRange.isPresent();
+    }
+
+    public boolean isWeekend() {
+        DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
+        return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY;
+    }
+
+    public boolean isWeekday() {
+        DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
+        return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY;
     }
 }
