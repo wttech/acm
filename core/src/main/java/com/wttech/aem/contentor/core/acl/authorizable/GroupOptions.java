@@ -6,13 +6,6 @@ public class GroupOptions {
 
     private String groupId;
 
-    public static GroupOptions of(AclGroup group, String groupId) {
-        GroupOptions options = new GroupOptions();
-        options.group = group;
-        options.groupId = groupId;
-        return options;
-    }
-
     public AclGroup getGroup() {
         return group;
     }

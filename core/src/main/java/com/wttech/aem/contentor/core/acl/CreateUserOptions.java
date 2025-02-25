@@ -11,37 +11,6 @@ public class CreateUserOptions extends CreateAuthorizableOptions {
 
     private boolean systemUser;
 
-    public static CreateUserOptions of(
-            String id,
-            boolean systemUser,
-            String password,
-            String path,
-            String givenName,
-            String familyName,
-            String email,
-            String aboutMe,
-            Mode mode) {
-        CreateUserOptions options = new CreateUserOptions();
-        options.setId(id);
-        options.systemUser = systemUser;
-        options.password = password;
-        options.setPath(path);
-        options.setGivenName(givenName);
-        options.familyName = familyName;
-        options.setEmail(email);
-        options.setAboutMe(aboutMe);
-        options.setMode(mode);
-        return options;
-    }
-
-    public static CreateUserOptions of(String id, boolean systemUser, String password) {
-        CreateUserOptions options = new CreateUserOptions();
-        options.setId(id);
-        options.systemUser = systemUser;
-        options.password = password;
-        return options;
-    }
-
     public String getPassword() {
         return password;
     }

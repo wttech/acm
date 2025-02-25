@@ -6,13 +6,6 @@ public class MemberOptions {
 
     private String memberId;
 
-    public static MemberOptions of(AclAuthorizable member, String memberId) {
-        MemberOptions options = new MemberOptions();
-        options.member = member;
-        options.memberId = memberId;
-        return options;
-    }
-
     public AclAuthorizable getMember() {
         return member;
     }
