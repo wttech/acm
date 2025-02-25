@@ -65,22 +65,21 @@ public class Executor {
 
         try (OutputStream outputStream = new CodeOutputStream(context)) {
             context.setOutputStream(outputStream);
-
             GroovyShell shell = createShell(context);
-            Script script = shell.parse(composeScript(context.getExecutable()), CodeSyntax.MAIN_CLASS);
-            script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
 
             execution.start();
 
-            boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
-            if (!runnable) {
-                return execution.end(ExecutionStatus.SKIPPED);
-            }
+            Script script = shell.parse(composeScript(context.getExecutable()), CodeSyntax.MAIN_CLASS);
+            script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
 
             switch (context.getMode()) {
                 case PARSE:
                     break;
                 case EVALUATE:
+                    boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
+                    if (!runnable) {
+                        return execution.end(ExecutionStatus.SKIPPED);
+                    }
                     script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
                     break;
             }

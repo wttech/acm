@@ -33,19 +33,27 @@ public class Condition {
     }
 
     public boolean isExecutionWithId() {
+        return isExecutionWithId(executionContext.getExecutable().getId());
+    }
+
+    public boolean isExecutionWithId(String id) {
         ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
+        query.setExecutableId(id);
         return executionHistory.findAll(query).findAny().isPresent();
     }
 
     public boolean isExecutionWithIdAndContent() {
+        return isExecutionWithIdAndContent(
+                executionContext.getExecutable().getId(),
+                executionContext.getExecutable().getContent());
+    }
+
+    public boolean isExecutionWithIdAndContent(String id, String content) {
         ExecutionQuery query = new ExecutionQuery();
-        query.setExecutableId(executionContext.getExecutable().getId());
-        return executionHistory
-                .findAll(query)
-                .anyMatch(e -> StringUtils.equals(
-                        e.getExecutable().getContent(),
-                        executionContext.getExecutable().getContent()));
+        query.setExecutableId(id);
+        return executionHistory.findAll(query).anyMatch(e -> {
+            return StringUtils.equals(e.getExecutable().getContent(), content);
+        });
     }
 
     public boolean hourly() {
