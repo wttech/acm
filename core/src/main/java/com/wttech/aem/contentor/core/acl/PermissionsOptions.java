@@ -10,9 +10,7 @@ public class PermissionsOptions extends com.wttech.aem.contentor.core.acl.author
 
     private String authorizableId;
 
-    public PermissionsOptions() {}
-
-    public PermissionsOptions(
+    public static PermissionsOptions of(
             AclAuthorizable authorizable,
             String authorizableId,
             String path,
@@ -22,9 +20,34 @@ public class PermissionsOptions extends com.wttech.aem.contentor.core.acl.author
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        super(path, permissions, glob, types, properties, restrictions, mode);
-        this.authorizable = authorizable;
-        this.authorizableId = authorizableId;
+        PermissionsOptions options = new PermissionsOptions();
+        options.authorizable = authorizable;
+        options.authorizableId = authorizableId;
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        options.setTypes(types);
+        options.setProperties(properties);
+        options.setRestrictions(restrictions);
+        options.setMode(mode);
+        return options;
+    }
+
+    public static PermissionsOptions of(
+            AclAuthorizable authorizable,
+            String authorizableId,
+            String path,
+            List<String> permissions,
+            String glob,
+            Map<String, Object> restrictions) {
+        PermissionsOptions options = new PermissionsOptions();
+        options.authorizable = authorizable;
+        options.authorizableId = authorizableId;
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        options.setRestrictions(restrictions);
+        return options;
     }
 
     public AclAuthorizable getAuthorizable() {

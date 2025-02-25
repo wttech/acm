@@ -110,7 +110,7 @@ public class Acl {
             String aboutMe,
             CreateAuthorizableOptions.Mode mode) {
         return createUser(
-                new CreateUserOptions(id, systemUser, password, path, givenName, familyName, email, aboutMe, mode));
+                CreateUserOptions.of(id, systemUser, password, path, givenName, familyName, email, aboutMe, mode));
     }
 
     public AclUser createUser(CreateUserOptions options) {
@@ -137,15 +137,15 @@ public class Acl {
     }
 
     public AclUser createUser(String id) {
-        return createUser(new CreateUserOptions(id, false, null, null, null, null, null, null, null));
+        return createUser(CreateUserOptions.of(id, false, null));
     }
 
     public AclUser createUser(String id, String password) {
-        return createUser(new CreateUserOptions(id, false, password, null, null, null, null, null, null));
+        return createUser(CreateUserOptions.of(id, false, password));
     }
 
     public AclUser createSystemUser(String id) {
-        return createUser(new CreateUserOptions(id, true, null, null, null, null, null, null, null));
+        return createUser(CreateUserOptions.of(id, true, null));
     }
 
     public AclGroup createGroup(
@@ -156,7 +156,7 @@ public class Acl {
             String email,
             String aboutMe,
             CreateAuthorizableOptions.Mode mode) {
-        return createGroup(new CreateGroupOptions(id, externalId, path, givenName, email, aboutMe, mode));
+        return createGroup(CreateGroupOptions.of(id, externalId, path, givenName, email, aboutMe, mode));
     }
 
     public AclGroup createGroup(CreateGroupOptions options) {
@@ -179,11 +179,11 @@ public class Acl {
     }
 
     public AclGroup createGroup(String id) {
-        return createGroup(new CreateGroupOptions(id, null, null, null, null, null, null));
+        return createGroup(CreateGroupOptions.of(id, null));
     }
 
     public AclGroup createGroup(String id, String externalId) {
-        return createGroup(new CreateGroupOptions(id, externalId, null, null, null, null, null));
+        return createGroup(CreateGroupOptions.of(id, externalId));
     }
 
     public AclUser getUser(GetAuthorizableOptions options) {
@@ -225,11 +225,11 @@ public class Acl {
     }
 
     public AclResult deleteUser(String id) {
-        return deleteUser(new DeleteUserOptions(null, id));
+        return deleteUser(DeleteUserOptions.of(null, id));
     }
 
     public AclResult deleteUser(AclUser user) {
-        return deleteUser(new DeleteUserOptions(user, null));
+        return deleteUser(DeleteUserOptions.of(user, null));
     }
 
     public AclResult deleteGroup(DeleteGroupOptions options) {
@@ -241,11 +241,11 @@ public class Acl {
     }
 
     public AclResult deleteGroup(String id) {
-        return deleteGroup(new DeleteGroupOptions(null, id));
+        return deleteGroup(DeleteGroupOptions.of(null, id));
     }
 
     public AclResult deleteGroup(AclGroup group) {
-        return deleteGroup(new DeleteGroupOptions(group, null));
+        return deleteGroup(DeleteGroupOptions.of(group, null));
     }
 
     public AclResult addToGroup(GroupOptions options) {
@@ -262,19 +262,19 @@ public class Acl {
     }
 
     public AclResult addToGroup(String authorizableId, String groupId) {
-        return addToGroup(new GroupOptions(null, authorizableId, null, groupId));
+        return addToGroup(GroupOptions.of(null, authorizableId, null, groupId));
     }
 
     public AclResult addToGroup(AclAuthorizable authorizable, String groupId) {
-        return addToGroup(new GroupOptions(authorizable, null, null, groupId));
+        return addToGroup(GroupOptions.of(authorizable, null, null, groupId));
     }
 
     public AclResult addToGroup(String authorizableId, AclGroup group) {
-        return addToGroup(new GroupOptions(null, authorizableId, group, null));
+        return addToGroup(GroupOptions.of(null, authorizableId, group, null));
     }
 
     public AclResult addToGroup(AclAuthorizable authorizable, AclGroup group) {
-        return addToGroup(new GroupOptions(authorizable, null, group, null));
+        return addToGroup(GroupOptions.of(authorizable, null, group, null));
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
@@ -291,19 +291,19 @@ public class Acl {
     }
 
     public AclResult removeFromGroup(String authorizableId, String groupId) {
-        return removeFromGroup(new GroupOptions(null, authorizableId, null, groupId));
+        return removeFromGroup(GroupOptions.of(null, authorizableId, null, groupId));
     }
 
     public AclResult removeFromGroup(AclAuthorizable authorizable, String groupId) {
-        return removeFromGroup(new GroupOptions(authorizable, null, null, groupId));
+        return removeFromGroup(GroupOptions.of(authorizable, null, null, groupId));
     }
 
     public AclResult removeFromGroup(String authorizableId, AclGroup group) {
-        return removeFromGroup(new GroupOptions(null, authorizableId, group, null));
+        return removeFromGroup(GroupOptions.of(null, authorizableId, group, null));
     }
 
     public AclResult removeFromGroup(AclAuthorizable authorizable, AclGroup group) {
-        return removeFromGroup(new GroupOptions(authorizable, null, group, null));
+        return removeFromGroup(GroupOptions.of(authorizable, null, group, null));
     }
 
     public AclResult removeFromAllGroups(AuthorizableOptions options) {
@@ -319,11 +319,11 @@ public class Acl {
     }
 
     public AclResult removeFromAllGroups(String authorizableId) {
-        return removeFromAllGroups(new AuthorizableOptions(null, authorizableId));
+        return removeFromAllGroups(AuthorizableOptions.of(null, authorizableId));
     }
 
     public AclResult removeFromAllGroups(AclAuthorizable authorizable) {
-        return removeFromAllGroups(new AuthorizableOptions(authorizable, null));
+        return removeFromAllGroups(AuthorizableOptions.of(authorizable, null));
     }
 
     public AclResult addMember(MemberOptions options) {
@@ -338,19 +338,19 @@ public class Acl {
     }
 
     public AclResult addMember(String groupId, String memberId) {
-        return addMember(new MemberOptions(null, groupId, null, memberId));
+        return addMember(MemberOptions.of(null, groupId, null, memberId));
     }
 
     public AclResult addMember(AclGroup group, String memberId) {
-        return addMember(new MemberOptions(group, null, null, memberId));
+        return addMember(MemberOptions.of(group, null, null, memberId));
     }
 
     public AclResult addMember(String groupId, AclAuthorizable member) {
-        return addMember(new MemberOptions(null, groupId, member, null));
+        return addMember(MemberOptions.of(null, groupId, member, null));
     }
 
     public AclResult addMember(AclGroup group, AclAuthorizable member) {
-        return addMember(new MemberOptions(group, null, member, null));
+        return addMember(MemberOptions.of(group, null, member, null));
     }
 
     public AclResult removeMember(MemberOptions options) {
@@ -365,19 +365,19 @@ public class Acl {
     }
 
     public AclResult removeMember(String groupId, String memberId) {
-        return removeMember(new MemberOptions(null, groupId, null, memberId));
+        return removeMember(MemberOptions.of(null, groupId, null, memberId));
     }
 
     public AclResult removeMember(AclGroup group, String memberId) {
-        return removeMember(new MemberOptions(group, null, null, memberId));
+        return removeMember(MemberOptions.of(group, null, null, memberId));
     }
 
     public AclResult removeMember(String groupId, AclAuthorizable member) {
-        return removeMember(new MemberOptions(null, groupId, member, null));
+        return removeMember(MemberOptions.of(null, groupId, member, null));
     }
 
     public AclResult removeMember(AclGroup group, AclAuthorizable member) {
-        return removeMember(new MemberOptions(group, null, member, null));
+        return removeMember(MemberOptions.of(group, null, member, null));
     }
 
     public AclResult removeAllMembers(RemoveAllMembersOptions options) {
@@ -391,11 +391,11 @@ public class Acl {
     }
 
     public AclResult removeAllMembers(String groupId) {
-        return removeAllMembers(new RemoveAllMembersOptions(null, groupId));
+        return removeAllMembers(RemoveAllMembersOptions.of(null, groupId));
     }
 
     public AclResult removeAllMembers(AclGroup group) {
-        return removeAllMembers(new RemoveAllMembersOptions(group, null));
+        return removeAllMembers(RemoveAllMembersOptions.of(group, null));
     }
 
     public AclResult clear(ClearOptions options) {
@@ -415,19 +415,19 @@ public class Acl {
     }
 
     public AclResult clear(String authorizableId, String path, boolean strict) {
-        return clear(new ClearOptions(null, authorizableId, path, strict));
+        return clear(ClearOptions.of(null, authorizableId, path, strict));
     }
 
     public AclResult clear(AclAuthorizable authorizable, String path, boolean strict) {
-        return clear(new ClearOptions(authorizable, null, path, strict));
+        return clear(ClearOptions.of(authorizable, null, path, strict));
     }
 
     public AclResult clear(String authorizableId, String path) {
-        return clear(new ClearOptions(null, authorizableId, path, false));
+        return clear(ClearOptions.of(null, authorizableId, path, false));
     }
 
     public AclResult clear(AclAuthorizable authorizable, String path) {
-        return clear(new ClearOptions(authorizable, null, path, false));
+        return clear(ClearOptions.of(authorizable, null, path, false));
     }
 
     public AclResult purge(AuthorizableOptions options) {
@@ -442,11 +442,11 @@ public class Acl {
     }
 
     public AclResult purge(String authorizableId) {
-        return purge(new AuthorizableOptions(null, authorizableId));
+        return purge(AuthorizableOptions.of(null, authorizableId));
     }
 
     public AclResult purge(AclAuthorizable authorizable) {
-        return purge(new AuthorizableOptions(authorizable, null));
+        return purge(AuthorizableOptions.of(authorizable, null));
     }
 
     private AclResult apply(PermissionsOptions options, boolean allow) {
@@ -479,7 +479,7 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        return allow(new PermissionsOptions(
+        return allow(PermissionsOptions.of(
                 null, authorizableId, path, permissions, glob, types, properties, restrictions, mode));
     }
 
@@ -492,34 +492,34 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        return allow(new PermissionsOptions(
+        return allow(PermissionsOptions.of(
                 authorizable, null, path, permissions, glob, types, properties, restrictions, mode));
     }
 
     public AclResult allow(String authorizableId, String path, List<String> permissions) {
-        return allow(authorizableId, path, permissions, null, null, null, null, null);
+        return allow(PermissionsOptions.of(null, authorizableId, path, permissions, null, null));
     }
 
     public AclResult allow(AclAuthorizable authorizable, String path, List<String> permissions) {
-        return allow(authorizable, path, permissions, null, null, null, null, null);
+        return allow(PermissionsOptions.of(authorizable, null, path, permissions, null, null));
     }
 
     public AclResult allow(String authorizableId, String path, List<String> permissions, String glob) {
-        return allow(authorizableId, path, permissions, glob, null, null, null, null);
+        return allow(PermissionsOptions.of(null, authorizableId, path, permissions, glob, null));
     }
 
     public AclResult allow(AclAuthorizable authorizable, String path, List<String> permissions, String glob) {
-        return allow(authorizable, path, permissions, glob, null, null, null, null);
+        return allow(PermissionsOptions.of(authorizable, null, path, permissions, glob, null));
     }
 
     public AclResult allow(
             String authorizableId, String path, List<String> permissions, Map<String, Object> restrictions) {
-        return allow(authorizableId, path, permissions, null, null, null, restrictions, null);
+        return allow(PermissionsOptions.of(null, authorizableId, path, permissions, null, restrictions));
     }
 
     public AclResult allow(
             AclAuthorizable authorizable, String path, List<String> permissions, Map<String, Object> restrictions) {
-        return allow(authorizable, path, permissions, null, null, null, restrictions, null);
+        return allow(PermissionsOptions.of(authorizable, null, path, permissions, null, restrictions));
     }
 
     public AclResult deny(PermissionsOptions options) {
@@ -535,7 +535,7 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        return deny(new PermissionsOptions(
+        return deny(PermissionsOptions.of(
                 null, authorizableId, path, permissions, glob, types, properties, restrictions, mode));
     }
 
@@ -548,34 +548,34 @@ public class Acl {
             List<String> properties,
             Map<String, Object> restrictions,
             PermissionsOptions.Mode mode) {
-        return deny(new PermissionsOptions(
+        return deny(PermissionsOptions.of(
                 authorizable, null, path, permissions, glob, types, properties, restrictions, mode));
     }
 
     public AclResult deny(String authorizableId, String path, List<String> permissions) {
-        return deny(authorizableId, path, permissions, null, null, null, null, null);
+        return deny(PermissionsOptions.of(null, authorizableId, path, permissions, null, null));
     }
 
     public AclResult deny(AclAuthorizable authorizable, String path, List<String> permissions) {
-        return deny(authorizable, path, permissions, null, null, null, null, null);
+        return deny(PermissionsOptions.of(authorizable, null, path, permissions, null, null));
     }
 
     public AclResult deny(String authorizableId, String path, List<String> permissions, String glob) {
-        return deny(authorizableId, path, permissions, glob, null, null, null, null);
+        return deny(PermissionsOptions.of(null, authorizableId, path, permissions, glob, null));
     }
 
     public AclResult deny(AclAuthorizable authorizable, String path, List<String> permissions, String glob) {
-        return deny(authorizable, path, permissions, glob, null, null, null, null);
+        return deny(PermissionsOptions.of(authorizable, null, path, permissions, glob, null));
     }
 
     public AclResult deny(
             String authorizableId, String path, List<String> permissions, Map<String, Object> restrictions) {
-        return deny(authorizableId, path, permissions, null, null, null, restrictions, null);
+        return deny(PermissionsOptions.of(null, authorizableId, path, permissions, null, restrictions));
     }
 
     public AclResult deny(
             AclAuthorizable authorizable, String path, List<String> permissions, Map<String, Object> restrictions) {
-        return deny(authorizable, path, permissions, null, null, null, restrictions, null);
+        return deny(PermissionsOptions.of(authorizable, null, path, permissions, null, restrictions));
     }
 
     public AclResult setProperty(SetPropertyOptions options) {
@@ -595,11 +595,11 @@ public class Acl {
     }
 
     public AclResult setProperty(String authorizableId, String relPath, String value) {
-        return setProperty(new SetPropertyOptions(null, authorizableId, relPath, value));
+        return setProperty(SetPropertyOptions.of(null, authorizableId, relPath, value));
     }
 
     public AclResult setProperty(AclAuthorizable authorizable, String relPath, String value) {
-        return setProperty(new SetPropertyOptions(authorizable, null, relPath, value));
+        return setProperty(SetPropertyOptions.of(authorizable, null, relPath, value));
     }
 
     public AclResult removeProperty(RemovePropertyOptions options) {
@@ -619,11 +619,11 @@ public class Acl {
     }
 
     public AclResult removeProperty(String authorizableId, String relPath) {
-        return removeProperty(new RemovePropertyOptions(null, authorizableId, relPath));
+        return removeProperty(RemovePropertyOptions.of(null, authorizableId, relPath));
     }
 
     public AclResult removeProperty(AclAuthorizable authorizable, String relPath) {
-        return removeProperty(new RemovePropertyOptions(authorizable, null, relPath));
+        return removeProperty(RemovePropertyOptions.of(authorizable, null, relPath));
     }
 
     public AclResult setPassword(PasswordOptions options) {
@@ -637,11 +637,11 @@ public class Acl {
     }
 
     public AclResult setPassword(String userId, String password) {
-        return setPassword(new PasswordOptions(null, userId, password));
+        return setPassword(PasswordOptions.of(null, userId, password));
     }
 
     public AclResult setPassword(AclUser user, String password) {
-        return setPassword(new PasswordOptions(user, null, password));
+        return setPassword(PasswordOptions.of(user, null, password));
     }
 
     public AclUser user(User user) {

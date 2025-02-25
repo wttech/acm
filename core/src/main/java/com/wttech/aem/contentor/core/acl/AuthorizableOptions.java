@@ -8,11 +8,11 @@ public class AuthorizableOptions {
 
     private String authorizableId;
 
-    public AuthorizableOptions() {}
-
-    public AuthorizableOptions(AclAuthorizable authorizable, String authorizableId) {
-        this.authorizable = authorizable;
-        this.authorizableId = authorizableId;
+    public static AuthorizableOptions of(AclAuthorizable authorizable, String authorizableId) {
+        AuthorizableOptions options = new AuthorizableOptions();
+        options.authorizable = authorizable;
+        options.authorizableId = authorizableId;
+        return options;
     }
 
     public AclAuthorizable getAuthorizable() {

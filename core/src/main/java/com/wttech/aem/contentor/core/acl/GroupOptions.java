@@ -9,12 +9,13 @@ public class GroupOptions extends com.wttech.aem.contentor.core.acl.authorizable
 
     private String authorizableId;
 
-    public GroupOptions() {}
-
-    public GroupOptions(AclAuthorizable authorizable, String authorizableId, AclGroup group, String groupId) {
-        super(group, groupId);
-        this.authorizable = authorizable;
-        this.authorizableId = authorizableId;
+    public static GroupOptions of(AclAuthorizable authorizable, String authorizableId, AclGroup group, String groupId) {
+        GroupOptions options = new GroupOptions();
+        options.authorizable = authorizable;
+        options.authorizableId = authorizableId;
+        options.setGroup(group);
+        options.setGroupId(groupId);
+        return options;
     }
 
     public AclAuthorizable getAuthorizable() {

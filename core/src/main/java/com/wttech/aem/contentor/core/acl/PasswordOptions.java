@@ -8,12 +8,12 @@ public class PasswordOptions extends com.wttech.aem.contentor.core.acl.authoriza
 
     private String userId;
 
-    public PasswordOptions() {}
-
-    public PasswordOptions(AclUser user, String userId, String password) {
-        this.user = user;
-        this.userId = userId;
-        setPassword(password);
+    public static PasswordOptions of(AclUser user, String userId, String password) {
+        PasswordOptions options = new PasswordOptions();
+        options.user = user;
+        options.userId = userId;
+        options.setPassword(password);
+        return options;
     }
 
     public AclUser getUser() {

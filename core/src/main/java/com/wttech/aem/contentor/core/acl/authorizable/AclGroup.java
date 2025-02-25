@@ -41,11 +41,11 @@ public class AclGroup extends AclAuthorizable {
     }
 
     public AclResult addMember(String memberId) {
-        return addMember(new MemberOptions(null, memberId));
+        return addMember(MemberOptions.of(null, memberId));
     }
 
     public AclResult addMember(AclAuthorizable member) {
-        return addMember(new MemberOptions(member, null));
+        return addMember(MemberOptions.of(member, null));
     }
 
     public AclResult removeMember(MemberOptions options) {
@@ -64,11 +64,11 @@ public class AclGroup extends AclAuthorizable {
     }
 
     public AclResult removeMember(String memberId) {
-        return removeMember(new MemberOptions(null, memberId));
+        return removeMember(MemberOptions.of(null, memberId));
     }
 
     public AclResult removeMember(AclAuthorizable member) {
-        return removeMember(new MemberOptions(member, null));
+        return removeMember(MemberOptions.of(member, null));
     }
 
     public AclResult removeAllMembers() {
