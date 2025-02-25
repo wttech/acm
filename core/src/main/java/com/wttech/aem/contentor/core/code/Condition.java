@@ -51,17 +51,17 @@ public class Condition {
     public boolean hourly() {
         LocalTime startTime = LocalTime.now().withMinute(0).withSecond(0).withNano(0);
         LocalTime endTime = LocalTime.now().withMinute(59).withSecond(59).withNano(999999999);
-        return isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
+        return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean hourlyBetweenMinutes(int startMinute, int endMinute) {
         LocalTime startTime = LocalTime.now().withMinute(startMinute).withSecond(0).withNano(0);
         LocalTime endTime = LocalTime.now().withMinute(endMinute).withSecond(59).withNano(999999999);
-        return isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
+        return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean dailyInTimeRange(LocalTime startTime, LocalTime endTime) {
-        return isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
+        return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean dailyInTimeRange(String startTime, String endTime) {
@@ -72,7 +72,7 @@ public class Condition {
         LocalDate now = LocalDate.now();
         LocalDate startOfWeek = now.with(DayOfWeek.MONDAY);
         LocalDate endOfWeek = now.with(DayOfWeek.SUNDAY);
-        return isExecutionInTimeRange(startOfWeek, startTime, endOfWeek, endTime);
+        return !isExecutionInTimeRange(startOfWeek, startTime, endOfWeek, endTime);
     }
 
     public boolean weeklyInTimeRange(String startTime, String endTime) {
@@ -83,7 +83,7 @@ public class Condition {
         LocalDate now = LocalDate.now();
         LocalDate startOfMonth = now.withDayOfMonth(1);
         LocalDate endOfMonth = now.withDayOfMonth(now.lengthOfMonth());
-        return isExecutionInTimeRange(startOfMonth, startTime, endOfMonth, endTime);
+        return !isExecutionInTimeRange(startOfMonth, startTime, endOfMonth, endTime);
     }
 
     public boolean monthlyInTimeRange(String startTime, String endTime) {
@@ -94,7 +94,7 @@ public class Condition {
         LocalDate now = LocalDate.now();
         LocalDate startOfYear = now.withDayOfYear(1);
         LocalDate endOfYear = now.withDayOfYear(now.lengthOfYear());
-        return isExecutionInTimeRange(startOfYear, startTime, endOfYear, endTime);
+        return !isExecutionInTimeRange(startOfYear, startTime, endOfYear, endTime);
     }
 
     public boolean yearlyInTimeRange(String startTime, String endTime) {
@@ -111,7 +111,7 @@ public class Condition {
         query.setStartDate(Date.from(startDate.atTime(startTime).atZone(ZoneId.systemDefault()).toInstant()));
         query.setEndDate(Date.from(endDate.atTime(endTime).atZone(ZoneId.systemDefault()).toInstant()));
         Optional<Execution> executionInTimeRange = executionHistory.findAll(query).findAny();
-        return !executionInTimeRange.isPresent();
+        return executionInTimeRange.isPresent();
     }
 
     public boolean isExecutionInTimeRange(String startDateTime, String endDateTime) {
@@ -124,7 +124,7 @@ public class Condition {
         query.setStartDate(Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant()));
         query.setEndDate(Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant()));
         Optional<Execution> executionInTimeRange = executionHistory.findAll(query).findAny();
-        return !executionInTimeRange.isPresent();
+        return executionInTimeRange.isPresent();
     }
 
     public boolean isWeekend() {
