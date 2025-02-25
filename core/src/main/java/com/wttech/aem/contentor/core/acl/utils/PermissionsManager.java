@@ -55,20 +55,21 @@ public class PermissionsManager {
 
     public void apply(
             Authorizable authorizable,
-            String id,
             String path,
             List<String> permissions,
             Map<String, Object> restrictions,
             boolean allow) {
+        String id = null;
         try {
-            updateAccessControlList(authorizable.getPrincipal(), id, path, permissions, restrictions, allow);
+            id = authorizable.getID();
+            updateAccessControlList(authorizable.getPrincipal(), path, permissions, restrictions, allow);
             if (permissions.contains("MODIFY")) {
                 List<String> modifyPermissions = Collections.singletonList("MODIFY_PAGE");
                 Map<String, Object> modifyRestrictions = new HashMap<>(restrictions);
                 modifyRestrictions.computeIfPresent(
                         AccessControlConstants.REP_GLOB, (key, glob) -> recalculateGlob((String) glob));
                 updateAccessControlList(
-                        authorizable.getPrincipal(), id, path, modifyPermissions, modifyRestrictions, allow);
+                        authorizable.getPrincipal(), path, modifyPermissions, modifyRestrictions, allow);
             }
             session.save();
         } catch (RepositoryException e) {
@@ -87,12 +88,13 @@ public class PermissionsManager {
 
     public boolean check(
             Authorizable authorizable,
-            String id,
             String path,
             List<String> permissions,
             Map<String, Object> restrictions,
             boolean allow) {
+        String id = null;
         try {
+            id = authorizable.getID();
             JackrabbitAccessControlList jackrabbitAcl = JcrAclUtils.determineModifiableAcl(accessControlManager, path);
             AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
             boolean result = false;
@@ -110,12 +112,13 @@ public class PermissionsManager {
 
     private void updateAccessControlList(
             Principal principal,
-            String id,
             String path,
             List<String> permissions,
             Map<String, Object> restrictions,
             boolean allow) {
+        String id = null;
         try {
+            id = principal.getName();
             JackrabbitAccessControlList jackrabbitAcl = JcrAclUtils.determineModifiableAcl(accessControlManager, path);
             addEntry(jackrabbitAcl, principal, permissions, restrictions, allow);
             accessControlManager.setPolicy(path, jackrabbitAcl);
@@ -151,7 +154,7 @@ public class PermissionsManager {
                     singleValueRestrictions,
                     multiValueRestrictions);
         } catch (RepositoryException e) {
-            throw new AclException("Failed to add entry to acl", e);
+            throw new AclException("Failed to add entry to ACL", e);
         }
     }
 

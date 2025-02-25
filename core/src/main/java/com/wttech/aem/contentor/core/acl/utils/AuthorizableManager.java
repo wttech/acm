@@ -158,30 +158,36 @@ public class AuthorizableManager {
         return getAuthorizable(id, Group.class);
     }
 
-    public boolean testPassword(Authorizable authorizable, String password) {
+    public boolean testPassword(User user, String password) {
+        String userId = null;
         try {
+            userId = user.getID();
             Repository repository = session.getRepository();
-            Credentials credentials = new SimpleCredentials(authorizable.getID(), password.toCharArray());
+            Credentials credentials = new SimpleCredentials(userId, password.toCharArray());
             repository.login(credentials).logout();
             return true;
         } catch (LoginException e) {
             return false;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to test password", e);
+            throw new AclException(String.format("Failed to test password for user '%s'", userId), e);
         }
     }
 
     public void changePassword(User user, String password) {
+        String userId = null;
         try {
+            userId = user.getID();
             user.changePassword(password);
             save();
         } catch (RepositoryException e) {
-            throw new AclException("Failed to change password", e);
+            throw new AclException(String.format("Failed to set password for user '%s'", userId), e);
         }
     }
 
     public List<String> getProperty(Authorizable authorizable, String relPath) {
+        String id = null;
         try {
+            id = authorizable.getID();
             List<String> result = null;
             Value[] values = authorizable.getProperty(relPath);
             if (values != null) {
@@ -192,21 +198,25 @@ public class AuthorizableManager {
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to get property", e);
+            throw new AclException(String.format("Failed to get property '%s' for authorizable '%s'", relPath, id), e);
         }
     }
 
     public void setProperty(Authorizable authorizable, String relPath, String value) {
+        String id = null;
         try {
+            id = authorizable.getID();
             authorizable.setProperty(relPath, valueFactory.createValue(value));
             save();
         } catch (RepositoryException e) {
-            throw new AclException("Failed to set property", e);
+            throw new AclException(String.format("Failed to set property '%s' for authorizable '%s'", relPath, id), e);
         }
     }
 
     public boolean removeProperty(Authorizable authorizable, String relPath) {
+        String id = null;
         try {
+            id = authorizable.getID();
             if (authorizable.hasProperty(relPath)) {
                 authorizable.removeProperty(relPath);
                 save();
@@ -214,7 +224,8 @@ public class AuthorizableManager {
             }
             return false;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to remove property", e);
+            throw new AclException(
+                    String.format("Failed to remove property '%s' for authorizable '%s'", relPath, id), e);
         }
     }
 

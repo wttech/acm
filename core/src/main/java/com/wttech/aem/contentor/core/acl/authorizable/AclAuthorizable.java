@@ -162,10 +162,10 @@ public class AclAuthorizable {
                 throw new AclException(String.format("Path '%s' not found", path));
             }
             result = AclResult.SKIPPED;
-        } else if (context.getPermissionsManager().check(authorizable, id, path, permissions, restrictions, allow)) {
+        } else if (context.getPermissionsManager().check(authorizable, path, permissions, restrictions, allow)) {
             result = AclResult.OK;
         } else {
-            context.getPermissionsManager().apply(authorizable, id, path, permissions, restrictions, allow);
+            context.getPermissionsManager().apply(authorizable, path, permissions, restrictions, allow);
             result = AclResult.CHANGED;
         }
         context.getLogger()
