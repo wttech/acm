@@ -145,12 +145,16 @@ public class Condition {
         return isExecutionInTimeRange(date, startTime, date, endTime);
     }
 
-    public boolean isExecutionInTimeRange(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
+    public boolean isExecutionInTimeRange(
+            LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(Date.from(startDate.atTime(startTime).atZone(ZoneId.systemDefault()).toInstant()));
-        query.setEndDate(Date.from(endDate.atTime(endTime).atZone(ZoneId.systemDefault()).toInstant()));
-        Optional<Execution> executionInTimeRange = executionHistory.findAll(query).findAny();
+        query.setStartDate(Date.from(
+                startDate.atTime(startTime).atZone(ZoneId.systemDefault()).toInstant()));
+        query.setEndDate(
+                Date.from(endDate.atTime(endTime).atZone(ZoneId.systemDefault()).toInstant()));
+        Optional<Execution> executionInTimeRange =
+                executionHistory.findAll(query).findAny();
         return executionInTimeRange.isPresent();
     }
 
@@ -161,9 +165,11 @@ public class Condition {
     public boolean isExecutionInTimeRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
-        query.setStartDate(Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant()));
+        query.setStartDate(
+                Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant()));
         query.setEndDate(Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant()));
-        Optional<Execution> executionInTimeRange = executionHistory.findAll(query).findAny();
+        Optional<Execution> executionInTimeRange =
+                executionHistory.findAll(query).findAny();
         return executionInTimeRange.isPresent();
     }
 

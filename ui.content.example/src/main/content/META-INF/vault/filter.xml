@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
-    <filter root="/conf/contentor/settings/script/enabled"/>
-    <filter root="/conf/contentor/settings/script/disabled"/>
+    <filter root="/conf/contentor/settings/script/enabled" mode="update"/>
+    <filter root="/conf/contentor/settings/script/disabled" mode="update"/>
 </workspaceFilter>
