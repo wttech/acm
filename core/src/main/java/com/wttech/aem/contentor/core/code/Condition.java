@@ -49,18 +49,30 @@ public class Condition {
     }
 
     public boolean hourly() {
-        LocalTime startTime = LocalTime.now().withMinute(0).withSecond(0).withNano(0);
-        LocalTime endTime = LocalTime.now().withMinute(59).withSecond(59).withNano(999999999);
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = now.withMinute(0).withSecond(0).withNano(0);
+        LocalTime endTime = now.withMinute(59).withSecond(59).withNano(999999999);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean hourlyBetweenMinutes(int startMinute, int endMinute) {
-        LocalTime startTime = LocalTime.now().withMinute(startMinute).withSecond(0).withNano(0);
-        LocalTime endTime = LocalTime.now().withMinute(endMinute).withSecond(59).withNano(999999999);
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = now.withMinute(startMinute).withSecond(0).withNano(0);
+        LocalTime endTime = now.withMinute(endMinute).withSecond(59).withNano(999999999);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean dailyInTimeRange(LocalTime startTime, LocalTime endTime) {
+        LocalTime now = LocalTime.now();
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
@@ -69,9 +81,13 @@ public class Condition {
     }
 
     public boolean weeklyInTimeRange(LocalTime startTime, LocalTime endTime) {
-        LocalDate now = LocalDate.now();
-        LocalDate startOfWeek = now.with(DayOfWeek.MONDAY);
-        LocalDate endOfWeek = now.with(DayOfWeek.SUNDAY);
+        LocalTime now = LocalTime.now();
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.with(DayOfWeek.MONDAY);
+        LocalDate endOfWeek = today.with(DayOfWeek.SUNDAY);
         return !isExecutionInTimeRange(startOfWeek, startTime, endOfWeek, endTime);
     }
 
@@ -80,9 +96,13 @@ public class Condition {
     }
 
     public boolean monthlyInTimeRange(LocalTime startTime, LocalTime endTime) {
-        LocalDate now = LocalDate.now();
-        LocalDate startOfMonth = now.withDayOfMonth(1);
-        LocalDate endOfMonth = now.withDayOfMonth(now.lengthOfMonth());
+        LocalTime now = LocalTime.now();
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate startOfMonth = today.withDayOfMonth(1);
+        LocalDate endOfMonth = today.withDayOfMonth(today.lengthOfMonth());
         return !isExecutionInTimeRange(startOfMonth, startTime, endOfMonth, endTime);
     }
 
@@ -91,9 +111,13 @@ public class Condition {
     }
 
     public boolean yearlyInTimeRange(LocalTime startTime, LocalTime endTime) {
-        LocalDate now = LocalDate.now();
-        LocalDate startOfYear = now.withDayOfYear(1);
-        LocalDate endOfYear = now.withDayOfYear(now.lengthOfYear());
+        LocalTime now = LocalTime.now();
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate startOfYear = today.withDayOfYear(1);
+        LocalDate endOfYear = today.withDayOfYear(today.lengthOfYear());
         return !isExecutionInTimeRange(startOfYear, startTime, endOfYear, endTime);
     }
 
