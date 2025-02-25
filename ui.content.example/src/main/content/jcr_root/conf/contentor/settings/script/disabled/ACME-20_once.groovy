@@ -3,5 +3,5 @@ boolean canRun() {
 }
 
 void doRun() {
-    println("Hello World!")
+    println("I should run only once!")
 }

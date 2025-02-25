@@ -58,7 +58,7 @@ public class Condition {
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean hourlyBetweenMinutes(int startMinute, int endMinute) {
+    public boolean hourlyInMinuteRange(int startMinute, int endMinute) {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withMinute(startMinute).withSecond(0).withNano(0);
         LocalTime endTime = now.withMinute(endMinute).withSecond(59).withNano(999999999);
@@ -66,6 +66,10 @@ public class Condition {
             return false;
         }
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
+    }
+
+    public boolean daily() {
+        return dailyInTimeRange(dayStartTime(), dayEndTime());
     }
 
     public boolean dailyInTimeRange(LocalTime startTime, LocalTime endTime) {
@@ -78,6 +82,10 @@ public class Condition {
 
     public boolean dailyInTimeRange(String startTime, String endTime) {
         return dailyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    }
+
+    public boolean weekly() {
+        return weeklyInTimeRange(dayStartTime(), dayEndTime());
     }
 
     public boolean weeklyInTimeRange(LocalTime startTime, LocalTime endTime) {
@@ -95,6 +103,10 @@ public class Condition {
         return weeklyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
+    public boolean monthly() {
+        return monthlyInTimeRange(dayStartTime(), dayEndTime());
+    }
+
     public boolean monthlyInTimeRange(LocalTime startTime, LocalTime endTime) {
         LocalTime now = LocalTime.now();
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
@@ -108,6 +120,10 @@ public class Condition {
 
     public boolean monthlyInTimeRange(String startTime, String endTime) {
         return monthlyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    }
+
+    public boolean yearly() {
+        return yearlyInTimeRange(dayStartTime(), dayEndTime());
     }
 
     public boolean yearlyInTimeRange(LocalTime startTime, LocalTime endTime) {
@@ -196,5 +212,13 @@ public class Condition {
 
     public boolean isSunday() {
         return isDay(DayOfWeek.SUNDAY);
+    }
+
+    public LocalTime dayStartTime() {
+        return LocalTime.MIDNIGHT;
+    }
+
+    public LocalTime dayEndTime() {
+        return LocalTime.of(23, 59, 59, 999999999);
     }
 }
