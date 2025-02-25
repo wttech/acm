@@ -25,20 +25,20 @@ public class Condition {
     }
 
     public boolean once() {
-        return !isAnyExecutionForId();
+        return !isExecutionWithId();
     }
 
     public boolean changed() {
-        return !isAnyExecutionForIdAndContent();
+        return !isExecutionWithIdAndContent();
     }
 
-    public boolean isAnyExecutionForId() {
+    public boolean isExecutionWithId() {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
         return executionHistory.findAll(query).findAny().isPresent();
     }
 
-    public boolean isAnyExecutionForIdAndContent() {
+    public boolean isExecutionWithIdAndContent() {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
         return executionHistory
@@ -60,45 +60,45 @@ public class Condition {
         return isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean dailyBetweenTime(LocalTime startTime, LocalTime endTime) {
+    public boolean dailyInTimeRange(LocalTime startTime, LocalTime endTime) {
         return isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean dailyBetweenTime(String startTime, String endTime) {
-        return dailyBetweenTime(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    public boolean dailyInTimeRange(String startTime, String endTime) {
+        return dailyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
-    public boolean weeklyBetweenTime(LocalTime startTime, LocalTime endTime) {
+    public boolean weeklyInTimeRange(LocalTime startTime, LocalTime endTime) {
         LocalDate now = LocalDate.now();
         LocalDate startOfWeek = now.with(DayOfWeek.MONDAY);
         LocalDate endOfWeek = now.with(DayOfWeek.SUNDAY);
         return isExecutionInTimeRange(startOfWeek, startTime, endOfWeek, endTime);
     }
 
-    public boolean weeklyBetweenTime(String startTime, String endTime) {
-        return weeklyBetweenTime(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    public boolean weeklyInTimeRange(String startTime, String endTime) {
+        return weeklyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
-    public boolean monthlyBetweenTime(LocalTime startTime, LocalTime endTime) {
+    public boolean monthlyInTimeRange(LocalTime startTime, LocalTime endTime) {
         LocalDate now = LocalDate.now();
         LocalDate startOfMonth = now.withDayOfMonth(1);
         LocalDate endOfMonth = now.withDayOfMonth(now.lengthOfMonth());
         return isExecutionInTimeRange(startOfMonth, startTime, endOfMonth, endTime);
     }
 
-    public boolean monthlyBetweenTime(String startTime, String endTime) {
-        return monthlyBetweenTime(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    public boolean monthlyInTimeRange(String startTime, String endTime) {
+        return monthlyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
-    public boolean yearlyBetweenTime(LocalTime startTime, LocalTime endTime) {
+    public boolean yearlyInTimeRange(LocalTime startTime, LocalTime endTime) {
         LocalDate now = LocalDate.now();
         LocalDate startOfYear = now.withDayOfYear(1);
         LocalDate endOfYear = now.withDayOfYear(now.lengthOfYear());
         return isExecutionInTimeRange(startOfYear, startTime, endOfYear, endTime);
     }
 
-    public boolean yearlyBetweenTime(String startTime, String endTime) {
-        return yearlyBetweenTime(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    public boolean yearlyInTimeRange(String startTime, String endTime) {
+        return yearlyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
     public boolean isExecutionInTimeRange(LocalDate date, LocalTime startTime, LocalTime endTime) {
