@@ -134,7 +134,9 @@ public class PermissionsManager {
             List<String> permissions,
             Map<String, Object> restrictions,
             boolean allow) {
+        String id = null;
         try {
+            id = principal.getName();
             List<Privilege> privileges = createPrivileges(permissions);
             Map<String, Value[]> multiValueRestrictions = new HashMap<>();
             Map<String, Value> singleValueRestrictions = new HashMap<>();
@@ -154,7 +156,7 @@ public class PermissionsManager {
                     singleValueRestrictions,
                     multiValueRestrictions);
         } catch (RepositoryException e) {
-            throw new AclException("Failed to add entry to ACL", e);
+            throw new AclException(String.format("Failed to add entry to ACL for authorizable '%s'", id), e);
         }
     }
 
@@ -192,14 +194,16 @@ public class PermissionsManager {
         try {
             return accessControlManager.privilegeFromName(permission);
         } catch (AccessControlException e) {
-            throw new AclException("Unknown permission " + permission, e);
+            throw new AclException(String.format("Unknown permission '%s'", permission), e);
         } catch (RepositoryException e) {
             throw new AclException(String.format("Failed to determine privilege for '%s'", permission), e);
         }
     }
 
     private boolean removeAll(Authorizable authorizable, String path) {
+        String id = null;
         try {
+            id = authorizable.getID();
             JackrabbitAccessControlList jackrabbitAcl = JcrAclUtils.determineModifiableAcl(accessControlManager, path);
             AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
             boolean result = false;
@@ -215,7 +219,8 @@ public class PermissionsManager {
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Failed to remove all privileges from %s", path), e);
+            throw new AclException(
+                    String.format("Failed to clear permissions for authorizable '%s' at path '%s'", id, path), e);
         }
     }
 
