@@ -196,7 +196,7 @@ public class PermissionsManager {
         } catch (AccessControlException e) {
             throw new AclException(String.format("Unknown permission '%s'", permission), e);
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Failed to determine privilege for '%s'", permission), e);
+            throw new AclException(String.format("Failed to determine privilege from permission '%s'", permission), e);
         }
     }
 
