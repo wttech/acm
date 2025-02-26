@@ -3,7 +3,6 @@ package com.wttech.aem.contentor.core.acl.authorizable;
 import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclException;
 import com.wttech.aem.contentor.core.acl.AclResult;
-import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Iterator;
@@ -136,7 +135,7 @@ public class AclAuthorizable {
 
     public AclResult clear(String path, boolean strict) {
         AclResult result;
-        if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
+        if (context.isCompositeNodeStore() && isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
             result = AclResult.SKIPPED;
@@ -163,7 +162,7 @@ public class AclAuthorizable {
         Map<String, Object> restrictions = options.determineAllRestrictions();
         PermissionsOptions.Mode mode = options.getMode();
         AclResult result;
-        if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
+        if (context.isCompositeNodeStore() && isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
             if (mode == PermissionsOptions.Mode.FAIL) {
@@ -313,5 +312,9 @@ public class AclAuthorizable {
 
     public String getId() {
         return id;
+    }
+
+    private boolean isAppsOrLibsPath(String path) {
+        return StringUtils.startsWithAny(path, "/apps", "/libs");
     }
 }

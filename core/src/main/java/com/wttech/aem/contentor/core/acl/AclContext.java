@@ -5,8 +5,8 @@ import com.wttech.aem.contentor.core.acl.authorizable.AclGroup;
 import com.wttech.aem.contentor.core.acl.authorizable.AclUser;
 import com.wttech.aem.contentor.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.contentor.core.acl.utils.PermissionsManager;
-import com.wttech.aem.contentor.core.acl.utils.RuntimeUtils;
 import java.util.Optional;
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.ValueFactory;
@@ -42,7 +42,7 @@ public class AclContext {
             this.resourceResolver = resourceResolver;
             this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
-            this.compositeNodeStore = RuntimeUtils.determineCompositeNodeStore(session);
+            this.compositeNodeStore = determineCompositeNodeStore(session);
         } catch (RepositoryException e) {
             throw new AclException("Cannot access repository while obtaining ACL context!", e);
         }
@@ -66,6 +66,17 @@ public class AclContext {
 
     public boolean isCompositeNodeStore() {
         return compositeNodeStore;
+    }
+
+    private boolean determineCompositeNodeStore(Session session) {
+        try {
+            Node node = session.getNode("/apps");
+            boolean hasPermission = session.hasPermission("/", Session.ACTION_SET_PROPERTY);
+            boolean hasCapability = session.hasCapability("addNode", node, new Object[] {"nt:folder"});
+            return hasPermission && !hasCapability;
+        } catch (Exception e) {
+            throw new AclException("Failed to check if session is connected to a composite node store", e);
+        }
     }
 
     public AclUser determineUser(User user) {

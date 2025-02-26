@@ -39,8 +39,7 @@ public class AuthorizableManager {
             if (StringUtils.isEmpty(password)) {
                 password = PasswordUtils.generateRandomPassword();
             }
-            User user = userManager.createUser(
-                    id, StringUtils.defaultString(password, PasswordUtils.generateRandomPassword()), principal, path);
+            User user = userManager.createUser(id, password, principal, path);
             save();
             return user;
         } catch (RepositoryException e) {
