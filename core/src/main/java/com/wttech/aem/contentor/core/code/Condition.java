@@ -58,7 +58,7 @@ public class Condition {
 
     // Time period-based
 
-    public boolean minutely() {
+    public boolean everyMinute() {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withSecond(0).withNano(0);
         LocalTime endTime = now.withSecond(59).withNano(999999999);
@@ -68,7 +68,7 @@ public class Condition {
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean minutelyInSecondRange(int startSecond, int endSecond) {
+    public boolean everyMinuteInSecondRange(int startSecond, int endSecond) {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withSecond(startSecond).withNano(0);
         LocalTime endTime = now.withSecond(endSecond).withNano(999999999);
@@ -78,7 +78,7 @@ public class Condition {
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean hourly() {
+    public boolean everyHour() {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withMinute(0).withSecond(0).withNano(0);
         LocalTime endTime = now.withMinute(59).withSecond(59).withNano(999999999);
@@ -88,7 +88,7 @@ public class Condition {
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean hourlyInMinuteRange(int startMinute, int endMinute) {
+    public boolean everyHourInMinuteRange(int startMinute, int endMinute) {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withMinute(startMinute).withSecond(0).withNano(0);
         LocalTime endTime = now.withMinute(endMinute).withSecond(59).withNano(999999999);
@@ -98,11 +98,11 @@ public class Condition {
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean daily() {
-        return dailyInTimeRange(dayStartTime(), dayEndTime());
+    public boolean everyDay() {
+        return everyDayInTimeRange(dayStartTime(), dayEndTime());
     }
 
-    public boolean dailyInTimeRange(LocalTime startTime, LocalTime endTime) {
+    public boolean everyDayInTimeRange(LocalTime startTime, LocalTime endTime) {
         LocalTime now = LocalTime.now();
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
@@ -110,15 +110,15 @@ public class Condition {
         return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
     }
 
-    public boolean dailyInTimeRange(String startTime, String endTime) {
-        return dailyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    public boolean everyDayInTimeRange(String startTime, String endTime) {
+        return everyDayInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
-    public boolean weekly() {
-        return weeklyInTimeRange(dayStartTime(), dayEndTime());
+    public boolean everyWeek() {
+        return everyWeekInTimeRange(dayStartTime(), dayEndTime());
     }
 
-    public boolean weeklyInTimeRange(LocalTime startTime, LocalTime endTime) {
+    public boolean everyWeekInTimeRange(LocalTime startTime, LocalTime endTime) {
         LocalTime now = LocalTime.now();
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
@@ -129,15 +129,15 @@ public class Condition {
         return !isExecutionInTimeRange(startOfWeek, startTime, endOfWeek, endTime);
     }
 
-    public boolean weeklyInTimeRange(String startTime, String endTime) {
-        return weeklyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    public boolean everyWeekInTimeRange(String startTime, String endTime) {
+        return everyWeekInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
-    public boolean monthly() {
-        return monthlyInTimeRange(dayStartTime(), dayEndTime());
+    public boolean everyMonth() {
+        return everyMonthInTimeRange(dayStartTime(), dayEndTime());
     }
 
-    public boolean monthlyInTimeRange(LocalTime startTime, LocalTime endTime) {
+    public boolean everyMonthInTimeRange(LocalTime startTime, LocalTime endTime) {
         LocalTime now = LocalTime.now();
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
@@ -148,15 +148,15 @@ public class Condition {
         return !isExecutionInTimeRange(startOfMonth, startTime, endOfMonth, endTime);
     }
 
-    public boolean monthlyInTimeRange(String startTime, String endTime) {
-        return monthlyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    public boolean everyMonthInTimeRange(String startTime, String endTime) {
+        return everyMonthInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
-    public boolean yearly() {
-        return yearlyInTimeRange(dayStartTime(), dayEndTime());
+    public boolean everyYear() {
+        return everyYearInTimeRange(dayStartTime(), dayEndTime());
     }
 
-    public boolean yearlyInTimeRange(LocalTime startTime, LocalTime endTime) {
+    public boolean everyYearInTimeRange(LocalTime startTime, LocalTime endTime) {
         LocalTime now = LocalTime.now();
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
@@ -167,8 +167,8 @@ public class Condition {
         return !isExecutionInTimeRange(startOfYear, startTime, endOfYear, endTime);
     }
 
-    public boolean yearlyInTimeRange(String startTime, String endTime) {
-        return yearlyInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    public boolean everyYearInTimeRange(String startTime, String endTime) {
+        return everyYearInTimeRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
     public boolean isExecutionInTimeRange(LocalDate date, LocalTime startTime, LocalTime endTime) {
@@ -262,37 +262,37 @@ public class Condition {
 
     // Duration-based since last execution
 
-    public Execution lastExecution() {
+    public Execution passedExecution() {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
         return executionHistory.findAll(query).findFirst().orElse(null);
     }
 
-    public Duration sinceLastExecution() {
-        Execution lastExecution = lastExecution();
+    public Duration passed() {
+        Execution lastExecution = passedExecution();
         if (lastExecution == null) {
             return null;
         }
         return Duration.between(lastExecution.getEndDate().toInstant(), Instant.now());
     }
 
-    public boolean secondsPassed(long seconds) {
-        Duration duration = sinceLastExecution();
+    public boolean passedSeconds(long seconds) {
+        Duration duration = passed();
         return duration == null || duration.getSeconds() >= seconds;
     }
 
-    public boolean minutesPassed(long minutes) {
-        Duration duration = sinceLastExecution();
+    public boolean passedMinutes(long minutes) {
+        Duration duration = passed();
         return duration == null || duration.toMinutes() >= minutes;
     }
 
-    public boolean hoursPassed(long hours) {
-        Duration duration = sinceLastExecution();
+    public boolean passedHours(long hours) {
+        Duration duration = passed();
         return duration == null || duration.toHours() >= hours;
     }
 
-    public boolean daysPassed(long days) {
-        Duration duration = sinceLastExecution();
+    public boolean passedDays(long days) {
+        Duration duration = passed();
         return duration == null || duration.toDays() >= days;
     }
 }
