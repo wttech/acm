@@ -1,9 +1,8 @@
 package com.wttech.aem.contentor.core.snippet;
 
+import com.wttech.aem.contentor.core.util.YamlUtils;
 import java.io.InputStream;
 import java.io.Serializable;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.introspector.BeanAccess;
 
 public class SnippetDefinition implements Serializable {
 
@@ -20,9 +19,7 @@ public class SnippetDefinition implements Serializable {
     }
 
     public static SnippetDefinition fromYaml(InputStream inputStream) {
-        Yaml yaml = new Yaml();
-        yaml.setBeanAccess(BeanAccess.FIELD);
-        return yaml.loadAs(inputStream, SnippetDefinition.class);
+        return YamlUtils.readYaml(inputStream, SnippetDefinition.class);
     }
 
     public String getName() {

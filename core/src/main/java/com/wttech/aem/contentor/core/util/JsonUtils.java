@@ -26,12 +26,23 @@ public final class JsonUtils {
         // intentionally empty
     }
 
-    public static <T> T readJson(InputStream inputStream, Class<T> clazz) throws IOException {
+    public static <T> T read(InputStream inputStream, Class<T> clazz) throws IOException {
         return MAPPER.readValue(inputStream, clazz);
     }
 
-    public static void writeJson(OutputStream outputStream, Object data) throws IOException {
+    public static <T> T readFromString(String json, Class<T> clazz) throws IOException {
+        if (StringUtils.isBlank(json)) {
+            return null;
+        }
+        return MAPPER.readValue(json, clazz);
+    }
+
+    public static void write(OutputStream outputStream, Object data) throws IOException {
         COMPACT_WRITER.writeValue(outputStream, data);
+    }
+
+    public static String writeToString(Object data) throws IOException {
+        return COMPACT_WRITER.writeValueAsString(data);
     }
 
     public static String mapToString(Map<String, Object> object) throws IOException {

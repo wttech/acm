@@ -56,6 +56,28 @@ public class Condition {
         });
     }
 
+    // Time period-based
+
+    public boolean minutely() {
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = now.withSecond(0).withNano(0);
+        LocalTime endTime = now.withSecond(59).withNano(999999999);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
+    }
+
+    public boolean minutelyInSecondRange(int startSecond, int endSecond) {
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = now.withSecond(startSecond).withNano(0);
+        LocalTime endTime = now.withSecond(endSecond).withNano(999999999);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        return !isExecutionInTimeRange(LocalDate.now(), startTime, endTime);
+    }
+
     public boolean hourly() {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withMinute(0).withSecond(0).withNano(0);
@@ -181,6 +203,8 @@ public class Condition {
         return executionInTimeRange.isPresent();
     }
 
+    // Current time-based
+
     public boolean isWeekend() {
         DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
         return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY;
@@ -234,5 +258,41 @@ public class Condition {
 
     public LocalTime dayEndTime() {
         return LocalTime.of(23, 59, 59, 999999999);
+    }
+
+    // Duration-based since last execution
+
+    public Execution lastExecution() {
+        ExecutionQuery query = new ExecutionQuery();
+        query.setExecutableId(executionContext.getExecutable().getId());
+        return executionHistory.findAll(query).findFirst().orElse(null);
+    }
+
+    public Duration sinceLastExecution() {
+        Execution lastExecution = lastExecution();
+        if (lastExecution == null) {
+            return null;
+        }
+        return Duration.between(lastExecution.getEndDate().toInstant(), Instant.now());
+    }
+
+    public boolean secondsPassed(long seconds) {
+        Duration duration = sinceLastExecution();
+        return duration == null || duration.getSeconds() >= seconds;
+    }
+
+    public boolean minutesPassed(long minutes) {
+        Duration duration = sinceLastExecution();
+        return duration == null || duration.toMinutes() >= minutes;
+    }
+
+    public boolean hoursPassed(long hours) {
+        Duration duration = sinceLastExecution();
+        return duration == null || duration.toHours() >= hours;
+    }
+
+    public boolean daysPassed(long days) {
+        Duration duration = sinceLastExecution();
+        return duration == null || duration.toDays() >= days;
     }
 }

@@ -128,14 +128,18 @@ public class ExecutionQueue implements JobExecutor {
 
             if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
                 LOG.info("Execution skipped '{}'", immediateExecution);
-                return context.result().cancelled();
+                return context.result()
+                        .message(QueuedMessage.of(ExecutionStatus.SKIPPED).toJson())
+                        .cancelled();
             } else {
                 LOG.info("Execution succeeded '{}'", immediateExecution);
                 return context.result().succeeded();
             }
         } catch (CancellationException e) {
             LOG.info("Execution aborted '{}'", queuedExecution);
-            return context.result().cancelled();
+            return context.result()
+                    .message(QueuedMessage.of(ExecutionStatus.ABORTED).toJson())
+                    .cancelled();
         } catch (Exception e) {
             LOG.error("Execution failed '{}'", queuedExecution, e);
             return context.result().failed();

@@ -30,6 +30,14 @@ public enum ExecutionStatus {
     }
 
     public static ExecutionStatus of(Job job) {
+        ExecutionStatus status = Optional.ofNullable(job.getResultMessage())
+                .map(QueuedMessage::fromJson)
+                .map(QueuedMessage::getStatus)
+                .orElse(null);
+        if (status != null) {
+            return status;
+        }
+
         switch (job.getJobState()) {
             case QUEUED:
                 return ExecutionStatus.QUEUED;
