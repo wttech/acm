@@ -1,6 +1,0 @@
-group: Condition
-name: condition_monthly_in_time_range
-content: condition.monthlyInTimeRange('${1:startTime}', '${2:endTime}')
-documentation: |
-  Execute the script only once a month within a given time range.
-  For example: `condition.monthlyInTimeRange('2:00', '3:00')`.

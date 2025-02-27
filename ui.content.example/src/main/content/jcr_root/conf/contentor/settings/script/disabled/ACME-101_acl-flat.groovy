@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.daily()
+    return condition.everyDay()
 }
 
 void doRun() {

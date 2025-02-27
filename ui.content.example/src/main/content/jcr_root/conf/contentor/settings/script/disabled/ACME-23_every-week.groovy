@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.weekly()
+    return condition.everyWeek()
 }
 
 void doRun() {

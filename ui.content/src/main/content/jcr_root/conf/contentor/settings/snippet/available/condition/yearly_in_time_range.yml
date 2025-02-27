@@ -1,6 +1,0 @@
-group: Condition
-name: condition_yearly_in_time_range
-content: condition.yearlyInTimeRange('${1:startTime}', '${2:endTime}')
-documentation: |
-  Execute the script only once a year within a given time range.
-  For example: `condition.yearlyInTimeRange('2:00', '3:00')`.
