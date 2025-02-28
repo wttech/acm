@@ -2,6 +2,6 @@ group: Condition
 name: condition_changed
 content: condition.changed()
 documentation: |
-  Execute the script only once per its path.
-  When the script content is changed, the script will be executed again.
+  Execute the script only once per its path.<br>
+  When the script content is changed, the script will be executed again.<br>
   Alias for `!condition.isExecutionWithIdAndContent()`.

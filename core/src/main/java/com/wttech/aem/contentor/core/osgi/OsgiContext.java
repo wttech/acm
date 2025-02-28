@@ -10,7 +10,7 @@ import org.osgi.service.component.annotations.Reference;
 public class OsgiContext {
 
     @Reference
-    private InstanceManager instanceManager;
+    private InstanceInfo instanceInfo;
 
     private BundleContext bundleContext;
 
@@ -20,8 +20,8 @@ public class OsgiContext {
         this.bundleContext = bundleContext;
     }
 
-    public InstanceManager getInstanceManager() {
-        return instanceManager;
+    public InstanceInfo getInstanceInfo() {
+        return instanceInfo;
     }
 
     public BundleContext getBundleContext() {

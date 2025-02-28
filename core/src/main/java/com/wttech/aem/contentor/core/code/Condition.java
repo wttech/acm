@@ -298,11 +298,15 @@ public class Condition {
 
     // Instance-based
 
+    public boolean isInstanceRunMode(String runMode) {
+        return executionContext.getOsgiContext().getInstanceInfo().isRunMode(runMode);
+    }
+
     public boolean isInstanceAuthor() {
-        return executionContext.getOsgiContext().getInstanceManager().isAuthor();
+        return executionContext.getOsgiContext().getInstanceInfo().isAuthor();
     }
 
     public boolean isInstancePublish() {
-        return executionContext.getOsgiContext().getInstanceManager().isPublish();
+        return executionContext.getOsgiContext().getInstanceInfo().isPublish();
     }
 }
