@@ -1,14 +1,13 @@
 package com.wttech.aem.contentor.core.osgi;
 
 import java.util.Optional;
-import org.osgi.framework.BundleContext;
 
 public class OsgiFacade {
 
-    private final BundleContext bundleContext;
+    private final OsgiContext context;
 
-    public OsgiFacade(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
+    public OsgiFacade(OsgiContext context) {
+        this.context = context;
     }
 
     public <T> T requireService(Class<T> clazz) {
@@ -17,6 +16,6 @@ public class OsgiFacade {
 
     @SuppressWarnings("unchecked")
     public <T> Optional<T> getService(Class<T> clazz) {
-        return Optional.ofNullable((T) bundleContext.getServiceReference(clazz));
+        return Optional.ofNullable((T) context.getBundleContext().getServiceReference(clazz));
     }
 }

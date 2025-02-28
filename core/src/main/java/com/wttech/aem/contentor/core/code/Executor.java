@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
+import com.wttech.aem.contentor.core.osgi.OsgiContext;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -12,10 +13,7 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 @Component(immediate = true, service = Executor.class)
@@ -24,16 +22,11 @@ public class Executor {
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    @Modified
-    protected void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
+    @Reference
+    private OsgiContext osgiContext;
 
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return new ExecutionContext(executable, bundleContext, resourceResolver);
+        return new ExecutionContext(executable, osgiContext, resourceResolver);
     }
 
     public Execution execute(Executable executable) throws ContentorException {

@@ -7,9 +7,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ScriptRepository {
 
@@ -62,6 +65,7 @@ public class ScriptRepository {
         try {
             String sourcePath = script.getPath();
             String targetPath = ScriptType.ENABLED.enforcePath(path);
+            ensureParentFolder(targetPath);
             ResourceUtils.move(resourceResolver, sourcePath, targetPath);
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot enable script at path '%s'!", path), e);
@@ -79,9 +83,24 @@ public class ScriptRepository {
         try {
             String sourcePath = script.getPath();
             String targetPath = ScriptType.DISABLED.enforcePath(path);
+            ensureParentFolder(targetPath);
             ResourceUtils.move(resourceResolver, sourcePath, targetPath);
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot disable script at path '%s'!", path), e);
+        }
+    }
+
+    private void ensureParentFolder(String path) {
+        try {
+            String parentPath = StringUtils.substringBeforeLast(path, "/");
+            ResourceUtil.getOrCreateResource(
+                    resourceResolver,
+                    parentPath,
+                    JcrResourceConstants.NT_SLING_ORDERED_FOLDER,
+                    JcrResourceConstants.NT_SLING_ORDERED_FOLDER,
+                    true);
+        } catch (PersistenceException e) {
+            throw new ContentorException(String.format("Cannot create parent folder for path '%s'!", path), e);
         }
     }
 }

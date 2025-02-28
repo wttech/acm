@@ -295,4 +295,18 @@ public class Condition {
         Duration duration = passed();
         return duration == null || duration.toDays() >= days;
     }
+
+    // Instance-based
+
+    public boolean isInstanceRunMode(String runMode) {
+        return executionContext.getOsgiContext().getInstanceInfo().isRunMode(runMode);
+    }
+
+    public boolean isInstanceAuthor() {
+        return executionContext.getOsgiContext().getInstanceInfo().isAuthor();
+    }
+
+    public boolean isInstancePublish() {
+        return executionContext.getOsgiContext().getInstanceInfo().isPublish();
+    }
 }

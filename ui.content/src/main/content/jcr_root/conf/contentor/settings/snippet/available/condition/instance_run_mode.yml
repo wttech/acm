@@ -1,0 +1,6 @@
+group: Condition
+name: condition_instance_run_mode
+content: condition.isInstanceRunMode('${1:runMode}')
+documentation: |
+  Execute the script only if instance is in the specified run mode.<br>
+  For example `condition.isInstanceRunMode('prod')`.

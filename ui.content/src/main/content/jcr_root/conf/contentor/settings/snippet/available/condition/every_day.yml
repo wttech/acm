@@ -2,5 +2,5 @@ group: Condition
 name: condition_every_day
 content: condition.everyDay()
 documentation: |
-  Execute the script only once a day.
+  Execute the script only once a day.<br>
   The script content is not considered.

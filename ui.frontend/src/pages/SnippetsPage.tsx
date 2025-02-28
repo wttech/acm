@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import SnippetCode from '../components/SnippetCode';
 import { toastRequest } from '../utils/api';
 import { Snippet, SnippetOutput } from '../utils/api.types';
-
+import Markdown from '../components/Markdown';
 const SnippetsPage = () => {
   const [snippets, setSnippets] = useState<SnippetOutput | null>(null);
 
@@ -75,7 +75,7 @@ const SnippetsPage = () => {
                   .map((snippet) => (
                     <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" paddingY="size-100" paddingX="size-200" marginY="size-10">
                       <Heading level={3}>{snippet.name}</Heading>
-                      <Content>{snippet.documentation}</Content>
+                      <Content><Markdown>{snippet.documentation}</Markdown></Content>
                       <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" marginY="size-100">
                         <SnippetCode content={snippet.content} />
                       </View>

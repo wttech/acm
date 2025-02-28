@@ -2,5 +2,5 @@ group: Condition
 name: condition_every_hour_in_minute_range
 content: condition.everyHourInMinuteRange(${1:startMinute}, ${2:endMinute})
 documentation: |
-  Execute the script only once a day within a given time range.
+  Execute the script only once a day within a given time range.<br>
   For example: `condition.everyHourInMinuteRange(30, 35)`.

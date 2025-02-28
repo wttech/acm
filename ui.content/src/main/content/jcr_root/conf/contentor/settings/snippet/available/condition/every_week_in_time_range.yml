@@ -2,5 +2,5 @@ group: Condition
 name: condition_every_week_in_time_range
 content: condition.everyWeekInTimeRange('${1:startTime}', '${2:endTime}')
 documentation: |
-  Execute the script only once a week within a given time range.
+  Execute the script only once a week within a given time range.<br>
   For example: `condition.everyWeekInTimeRange('2:00', '3:00')`.
