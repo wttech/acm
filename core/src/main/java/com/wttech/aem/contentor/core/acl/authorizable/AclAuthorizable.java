@@ -3,7 +3,6 @@ package com.wttech.aem.contentor.core.acl.authorizable;
 import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclException;
 import com.wttech.aem.contentor.core.acl.AclResult;
-import com.wttech.aem.contentor.core.acl.utils.PathUtils;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.Iterator;
@@ -60,74 +59,73 @@ public class AclAuthorizable {
 
     public AclResult addToGroup(GroupOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
-        return addToGroup(group);
-    }
-
-    public AclResult addToGroup(String groupId) {
-        AclGroup group = context.determineGroup(groupId);
-        return addToGroup(group);
-    }
-
-    public AclResult addToGroup(AclGroup group) {
+        String groupId = context.determineId(options.getGroup(), options.getGroupId());
         AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else if (group.get() == null) {
+        if (group == null) {
             result = AclResult.SKIPPED;
         } else {
             result = context.getAuthorizableManager().addMember(group.get(), authorizable)
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.getLogger().info("Added authorizable '{}' to group '{}' [{}]", id, group.getId(), result);
+        context.getLogger().info("Added authorizable '{}' to group '{}' [{}]", id, groupId, result);
         return result;
+    }
+
+    public AclResult addToGroup(String groupId) {
+        GroupOptions options = new GroupOptions();
+        options.setGroupId(groupId);
+        return addToGroup(options);
+    }
+
+    public AclResult addToGroup(AclGroup group) {
+        GroupOptions options = new GroupOptions();
+        options.setGroup(group);
+        return addToGroup(options);
     }
 
     public AclResult removeFromGroup(GroupOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
-        return removeFromGroup(group);
-    }
-
-    public AclResult removeFromGroup(String groupId) {
-        AclGroup group = context.determineGroup(groupId);
-        return removeFromGroup(group);
-    }
-
-    public AclResult removeFromGroup(AclGroup group) {
+        String groupId = context.determineId(options.getGroup(), options.getGroupId());
         AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else if (group.get() == null) {
+        if (group == null) {
             result = AclResult.SKIPPED;
         } else {
             result = context.getAuthorizableManager().removeMember(group.get(), authorizable)
                     ? AclResult.CHANGED
                     : AclResult.OK;
         }
-        context.getLogger().info("Removed authorizable '{}' from group '{}' [{}]", id, group.getId(), result);
+        context.getLogger().info("Removed authorizable '{}' from group '{}' [{}]", id, groupId, result);
         return result;
+    }
+
+    public AclResult removeFromGroup(String groupId) {
+        GroupOptions options = new GroupOptions();
+        options.setGroupId(groupId);
+        return removeFromGroup(options);
+    }
+
+    public AclResult removeFromGroup(AclGroup group) {
+        GroupOptions options = new GroupOptions();
+        options.setGroup(group);
+        return removeFromGroup(options);
     }
 
     public AclResult removeFromAllGroups() {
         try {
-            AclResult result;
-            if (authorizable == null) {
-                result = AclResult.SKIPPED;
-            } else {
-                Iterator<Group> groups = authorizable.memberOf();
-                result = AclResult.OK;
-                while (groups.hasNext()) {
-                    Group group = groups.next();
-                    if (!StringUtils.equals(group.getID(), EVERYONE)
-                            && context.getAuthorizableManager().removeMember(group, authorizable)) {
-                        result = AclResult.CHANGED;
-                    }
+            Iterator<Group> groups = authorizable.memberOf();
+            AclResult result = AclResult.OK;
+            while (groups.hasNext()) {
+                Group group = groups.next();
+                if (!StringUtils.equals(group.getID(), EVERYONE)
+                        && context.getAuthorizableManager().removeMember(group, authorizable)) {
+                    result = AclResult.CHANGED;
                 }
             }
             context.getLogger().info("Removed authorizable '{}' from all groups [{}]", id, result);
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to remove authorizable from all groups", e);
+            throw new AclException(String.format("Failed to remove authorizable '%s' from all groups", id), e);
         }
     }
 
@@ -137,9 +135,7 @@ public class AclAuthorizable {
 
     public AclResult clear(String path, boolean strict) {
         AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
+        if (context.isCompositeNodeStore() && isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
             result = AclResult.SKIPPED;
@@ -160,59 +156,37 @@ public class AclAuthorizable {
         return AclResult.SKIPPED;
     }
 
-    private AclResult apply(
-            String path,
-            List<String> permissions,
-            String glob,
-            List<String> types,
-            List<String> properties,
-            Map<String, Object> restrictions,
-            PermissionsMode mode,
-            boolean allow) {
-        PermissionsOptions options = new PermissionsOptions();
-        options.setPermissions(permissions);
-        options.setGlob(glob);
-        options.setTypes(types);
-        options.setProperties(properties);
-        options.setRestrictions(restrictions);
+    private AclResult apply(PermissionsOptions options, boolean allow) {
+        String path = options.getPath();
+        List<String> permissions = options.determineAllPermissions();
+        Map<String, Object> restrictions = options.determineAllRestrictions();
+        PermissionsOptions.Mode mode = options.getMode();
         AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else if (context.isCompositeNodeStore() && PathUtils.isAppsOrLibsPath(path)) {
+        if (context.isCompositeNodeStore() && isAppsOrLibsPath(path)) {
             result = AclResult.SKIPPED;
         } else if (context.getResourceResolver().getResource(path) == null) {
-            if (mode == PermissionsMode.FAIL) {
-                throw new AclException(String.format("Path %s not found", path));
+            if (mode == PermissionsOptions.Mode.FAIL) {
+                throw new AclException(String.format("Path '%s' not found", path));
             }
             result = AclResult.SKIPPED;
-        } else {
-            result = apply(path, options.determineAllPermissions(), options.determineAllRestrictions(), allow);
-        }
-        context.getLogger().info("Applied permissions for authorizable '{}' at path '{}' [{}]", id, path, result);
-        return result;
-    }
-
-    private AclResult apply(String path, List<String> permissions, Map<String, Object> restrictions, boolean allow) {
-        AclResult result;
-        if (context.getPermissionsManager().check(authorizable, path, permissions, restrictions, allow)) {
+        } else if (context.getPermissionsManager().check(authorizable, path, permissions, restrictions, allow)) {
             result = AclResult.OK;
         } else {
             context.getPermissionsManager().apply(authorizable, path, permissions, restrictions, allow);
             result = AclResult.CHANGED;
         }
+        context.getLogger()
+                .info(
+                        "Applied {} permissions for authorizable '{}' at path '{}' [{}]",
+                        allow ? "allow" : "deny",
+                        id,
+                        options.getPath(),
+                        result);
         return result;
     }
 
     public AclResult allow(PermissionsOptions options) {
-        return apply(
-                options.getPath(),
-                options.getPermissions(),
-                options.getGlob(),
-                options.getTypes(),
-                options.getProperties(),
-                options.getRestrictions(),
-                options.getMode(),
-                true);
+        return apply(options, true);
     }
 
     public AclResult allow(
@@ -222,32 +196,43 @@ public class AclAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsMode mode) {
-        return apply(path, permissions, glob, types, properties, restrictions, mode, true);
+            PermissionsOptions.Mode mode) {
+        PermissionsOptions options = new PermissionsOptions();
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        options.setTypes(types);
+        options.setProperties(properties);
+        options.setRestrictions(restrictions);
+        options.setMode(mode);
+        return allow(options);
     }
 
     public AclResult allow(String path, List<String> permissions) {
-        return apply(path, permissions, null, null, null, null, null, true);
+        PermissionsOptions options = new PermissionsOptions();
+        options.setPath(path);
+        options.setPermissions(permissions);
+        return allow(options);
     }
 
     public AclResult allow(String path, List<String> permissions, String glob) {
-        return apply(path, permissions, glob, null, null, null, null, true);
+        PermissionsOptions options = new PermissionsOptions();
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        return allow(options);
     }
 
     public AclResult allow(String path, List<String> permissions, Map<String, Object> restrictions) {
-        return apply(path, permissions, null, null, null, restrictions, null, true);
+        PermissionsOptions options = new PermissionsOptions();
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setRestrictions(restrictions);
+        return allow(options);
     }
 
     public AclResult deny(PermissionsOptions options) {
-        return apply(
-                options.getPath(),
-                options.getPermissions(),
-                options.getGlob(),
-                options.getTypes(),
-                options.getProperties(),
-                options.getRestrictions(),
-                options.getMode(),
-                false);
+        return apply(options, false);
     }
 
     public AclResult deny(
@@ -257,20 +242,39 @@ public class AclAuthorizable {
             List<String> types,
             List<String> properties,
             Map<String, Object> restrictions,
-            PermissionsMode mode) {
-        return apply(path, permissions, glob, types, properties, restrictions, mode, false);
+            PermissionsOptions.Mode mode) {
+        PermissionsOptions options = new PermissionsOptions();
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        options.setTypes(types);
+        options.setProperties(properties);
+        options.setRestrictions(restrictions);
+        options.setMode(mode);
+        return deny(options);
     }
 
     public AclResult deny(String path, List<String> permissions) {
-        return apply(path, permissions, null, null, null, null, null, false);
+        PermissionsOptions options = new PermissionsOptions();
+        options.setPath(path);
+        options.setPermissions(permissions);
+        return deny(options);
     }
 
     public AclResult deny(String path, List<String> permissions, String glob) {
-        return apply(path, permissions, glob, null, null, null, null, false);
+        PermissionsOptions options = new PermissionsOptions();
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setGlob(glob);
+        return deny(options);
     }
 
     public AclResult deny(String path, List<String> permissions, Map<String, Object> restrictions) {
-        return apply(path, permissions, null, null, null, restrictions, null, false);
+        PermissionsOptions options = new PermissionsOptions();
+        options.setPath(path);
+        options.setPermissions(permissions);
+        options.setRestrictions(restrictions);
+        return deny(options);
     }
 
     public AclResult setProperty(SetPropertyOptions options) {
@@ -279,16 +283,12 @@ public class AclAuthorizable {
 
     public AclResult setProperty(String relPath, String value) {
         AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
+        List<String> values = context.getAuthorizableManager().getProperty(authorizable, relPath);
+        if (values != null && values.contains(value)) {
+            result = AclResult.OK;
         } else {
-            List<String> values = context.getAuthorizableManager().getProperty(authorizable, relPath);
-            if (values != null && values.contains(value)) {
-                result = AclResult.OK;
-            } else {
-                context.getAuthorizableManager().setProperty(authorizable, relPath, value);
-                result = AclResult.CHANGED;
-            }
+            context.getAuthorizableManager().setProperty(authorizable, relPath, value);
+            result = AclResult.CHANGED;
         }
         context.getLogger().info("Set property '{}' for authorizable '{}' [{}]", relPath, id, result);
         return result;
@@ -299,14 +299,9 @@ public class AclAuthorizable {
     }
 
     public AclResult removeProperty(String relPath) {
-        AclResult result;
-        if (authorizable == null) {
-            result = AclResult.SKIPPED;
-        } else {
-            result = context.getAuthorizableManager().removeProperty(authorizable, relPath)
-                    ? AclResult.CHANGED
-                    : AclResult.OK;
-        }
+        AclResult result = context.getAuthorizableManager().removeProperty(authorizable, relPath)
+                ? AclResult.CHANGED
+                : AclResult.OK;
         context.getLogger().info("Removed property '{}' for authorizable '{}' [{}]", relPath, id, result);
         return result;
     }
@@ -317,5 +312,9 @@ public class AclAuthorizable {
 
     public String getId() {
         return id;
+    }
+
+    private boolean isAppsOrLibsPath(String path) {
+        return StringUtils.startsWithAny(path, "/apps", "/libs");
     }
 }

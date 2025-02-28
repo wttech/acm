@@ -23,7 +23,7 @@ public final class JcrAclUtils {
         if (applicableAcl != null) {
             return applicableAcl;
         }
-        throw new AclException("Failed to determine modifiable ACL at " + path);
+        throw new AclException(String.format("Failed to determine modifiable ACL at path '%s'", path));
     }
 
     private static JackrabbitAccessControlList determineAcl(AccessControlManager accessControlManager, String path) {
@@ -36,7 +36,7 @@ public final class JcrAclUtils {
             }
             return null;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to determine acl", e);
+            throw new AclException(String.format("Failed to determine ACL at path '%s'", path));
         }
     }
 
@@ -52,7 +52,7 @@ public final class JcrAclUtils {
             }
             return null;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to determine applicable acl", e);
+            throw new AclException(String.format("Failed to determine applicable ACL at path '%s'", path));
         }
     }
 }

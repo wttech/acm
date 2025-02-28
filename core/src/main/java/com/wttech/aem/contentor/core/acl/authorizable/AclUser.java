@@ -4,9 +4,6 @@ import com.wttech.aem.contentor.core.acl.AclContext;
 import com.wttech.aem.contentor.core.acl.AclResult;
 import com.wttech.aem.contentor.core.util.GroovyUtils;
 import groovy.lang.Closure;
-import java.util.Arrays;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.api.security.user.User;
 
 public class AclUser extends AclAuthorizable {
@@ -24,14 +21,7 @@ public class AclUser extends AclAuthorizable {
 
     @Override
     public AclResult purge() {
-        AclResult result;
-        if (user == null) {
-            result = AclResult.SKIPPED;
-        } else {
-            result = Arrays.asList(removeFromAllGroups(), clear("/", false)).contains(AclResult.CHANGED)
-                    ? AclResult.CHANGED
-                    : AclResult.OK;
-        }
+        AclResult result = AclResult.of(removeFromAllGroups(), clear("/"));
         context.getLogger().info("Purged user '{}' [{}]", getId(), result);
         return result;
     }
@@ -42,9 +32,7 @@ public class AclUser extends AclAuthorizable {
 
     public AclResult setPassword(String password) {
         AclResult result;
-        if (user == null) {
-            result = AclResult.SKIPPED;
-        } else if (context.getAuthorizableManager().testPassword(user, password)) {
+        if (context.getAuthorizableManager().testPassword(user, password)) {
             result = AclResult.OK;
         } else {
             context.getAuthorizableManager().changePassword(user, password);
@@ -57,12 +45,5 @@ public class AclUser extends AclAuthorizable {
     @Override
     public User get() {
         return user;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
-                .append("id", getId())
-                .toString();
     }
 }

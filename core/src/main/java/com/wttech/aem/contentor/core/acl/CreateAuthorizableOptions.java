@@ -9,7 +9,7 @@ public class CreateAuthorizableOptions {
 
     private String path;
 
-    protected String givenName;
+    private String givenName;
 
     private String email;
 

@@ -59,7 +59,9 @@ public class PermissionsManager {
             List<String> permissions,
             Map<String, Object> restrictions,
             boolean allow) {
+        String id = null;
         try {
+            id = authorizable.getID();
             updateAccessControlList(authorizable.getPrincipal(), path, permissions, restrictions, allow);
             if (permissions.contains("MODIFY")) {
                 List<String> modifyPermissions = Collections.singletonList("MODIFY_PAGE");
@@ -71,7 +73,8 @@ public class PermissionsManager {
             }
             session.save();
         } catch (RepositoryException e) {
-            throw new AclException("Failed to apply permissions", e);
+            throw new AclException(
+                    String.format("Failed to apply permissions for authorizable '%s' at path '%s'", id, path), e);
         }
     }
 
@@ -89,7 +92,9 @@ public class PermissionsManager {
             List<String> permissions,
             Map<String, Object> restrictions,
             boolean allow) {
+        String id = null;
         try {
+            id = authorizable.getID();
             JackrabbitAccessControlList jackrabbitAcl = JcrAclUtils.determineModifiableAcl(accessControlManager, path);
             AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
             boolean result = false;
@@ -100,7 +105,8 @@ public class PermissionsManager {
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to check permissions", e);
+            throw new AclException(
+                    String.format("Failed to check permissions for authorizable '%s' at path '%s'", id, path), e);
         }
     }
 
@@ -110,12 +116,15 @@ public class PermissionsManager {
             List<String> permissions,
             Map<String, Object> restrictions,
             boolean allow) {
+        String id = null;
         try {
+            id = principal.getName();
             JackrabbitAccessControlList jackrabbitAcl = JcrAclUtils.determineModifiableAcl(accessControlManager, path);
             addEntry(jackrabbitAcl, principal, permissions, restrictions, allow);
             accessControlManager.setPolicy(path, jackrabbitAcl);
         } catch (RepositoryException e) {
-            throw new AclException("Failed to update access control list", e);
+            throw new AclException(
+                    String.format("Failed to update ACL for authorizable '%s' at path '%s'", id, path), e);
         }
     }
 
@@ -125,7 +134,9 @@ public class PermissionsManager {
             List<String> permissions,
             Map<String, Object> restrictions,
             boolean allow) {
+        String id = null;
         try {
+            id = principal.getName();
             List<Privilege> privileges = createPrivileges(permissions);
             Map<String, Value[]> multiValueRestrictions = new HashMap<>();
             Map<String, Value> singleValueRestrictions = new HashMap<>();
@@ -145,7 +156,7 @@ public class PermissionsManager {
                     singleValueRestrictions,
                     multiValueRestrictions);
         } catch (RepositoryException e) {
-            throw new AclException("Failed to add entry to acl", e);
+            throw new AclException(String.format("Failed to add entry to ACL for authorizable '%s'", id), e);
         }
     }
 
@@ -183,14 +194,16 @@ public class PermissionsManager {
         try {
             return accessControlManager.privilegeFromName(permission);
         } catch (AccessControlException e) {
-            throw new AclException("Unknown permission " + permission, e);
+            throw new AclException(String.format("Unknown permission '%s'", permission), e);
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Failed to determine privilege for '%s'", permission), e);
+            throw new AclException(String.format("Failed to determine privilege from permission '%s'", permission), e);
         }
     }
 
     private boolean removeAll(Authorizable authorizable, String path) {
+        String id = null;
         try {
+            id = authorizable.getID();
             JackrabbitAccessControlList jackrabbitAcl = JcrAclUtils.determineModifiableAcl(accessControlManager, path);
             AccessControlEntry[] accessControlEntries = jackrabbitAcl.getAccessControlEntries();
             boolean result = false;
@@ -206,7 +219,8 @@ public class PermissionsManager {
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to remove all privileges from path", e);
+            throw new AclException(
+                    String.format("Failed to clear permissions for authorizable '%s' at path '%s'", id, path), e);
         }
     }
 
