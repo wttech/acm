@@ -27,7 +27,7 @@ public class CodeBinding {
         this.out = context.getOutputStream();
         this.resourceResolver = context.getResourceResolver();
         this.acl = new Acl(resourceResolver);
-        this.osgi = new OsgiFacade(context.getBundleContext());
+        this.osgi = new OsgiFacade(context.getOsgiContext());
         this.condition = new Condition(context);
     }
 
