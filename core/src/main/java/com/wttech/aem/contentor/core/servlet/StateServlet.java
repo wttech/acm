@@ -1,5 +1,11 @@
 package com.wttech.aem.contentor.core.servlet;
 
+import static com.wttech.aem.contentor.core.util.ServletResult.error;
+import static com.wttech.aem.contentor.core.util.ServletResult.ok;
+import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
+
+import java.io.IOException;
+import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -7,13 +13,6 @@ import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.Servlet;
-import java.io.IOException;
-
-import static com.wttech.aem.contentor.core.util.ServletResult.error;
-import static com.wttech.aem.contentor.core.util.ServletResult.ok;
-import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
 
 @Component(
         service = {Servlet.class},
@@ -37,7 +36,10 @@ public class StateServlet extends SlingAllMethodsServlet {
         } catch (Exception e) {
             LOG.error("State cannot be read!", e);
 
-            respondJson(response, error(String.format("State cannot be read! %s", e.getMessage()).trim()));
+            respondJson(
+                    response,
+                    error(String.format("State cannot be read! %s", e.getMessage())
+                            .trim()));
         }
     }
 }
