@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -29,11 +30,16 @@ public class Assistancer {
 
     private List<ClassInfo> classCache = Collections.emptyList();
 
+    private String checksum;
+
     @Activate
     @Modified
     protected void activate() {
-        // TODO invalidate it based on bundles checksums (lastModified + symbolicName + version)
-        this.classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
+        String newChecksum = osgiScanner.determineChecksum();
+        if (!StringUtils.equals(checksum, newChecksum)) {
+            classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
+            checksum = newChecksum;
+        }
     }
 
     public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word)

@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.stream.Stream;
+import java.util.zip.CRC32;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
@@ -31,6 +32,17 @@ public class OsgiScanner {
         return Arrays.stream(bundleContext.getBundles())
                 .filter(this::isBundleOrFragmentReady)
                 .flatMap(this::scanClasses);
+    }
+
+    public String determineChecksum() {
+        CRC32 crc32 = new CRC32();
+        Arrays.stream(bundleContext.getBundles())
+                .filter(this::isBundleOrFragmentReady)
+                .map(bundle -> String.format(
+                        "%s:%s:%d", bundle.getSymbolicName(), bundle.getVersion(), bundle.getLastModified()))
+                .map(String::getBytes)
+                .forEach(input -> crc32.update(input, 0, input.length));
+        return Long.toHexString(crc32.getValue());
     }
 
     private boolean isBundleOrFragmentReady(Bundle bundle) {
