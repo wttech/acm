@@ -108,15 +108,15 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        List<String> paths = stringsParam(request, ID_PARAM);
-        if (paths.isEmpty()) {
-            respondJson(response, error("Script path parameter is not specified!"));
-            return;
-        }
-
         Optional<Action> action = Action.of(stringParam(request, ACTION_PARAM));
         if (!action.isPresent()) {
             respondJson(response, error("Invalid action parameter! Must be either 'enable' or 'disable'"));
+            return;
+        }
+
+        List<String> paths = stringsParam(request, ID_PARAM);
+        if (paths.isEmpty() && action.get() != Action.SYNC_ALL) {
+            respondJson(response, error("Script path parameter is not specified!"));
             return;
         }
 
@@ -133,7 +133,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     respondJson(response, ok(String.format("%d script(s) disabled successfully", paths.size())));
                     break;
                 case SYNC_ALL:
-                    paths.forEach(path -> repository.syncAll(replicator));
+                    repository.syncAll(replicator);
                     respondJson(response, ok("All scripts sync successfully"));
                     break;
             }
