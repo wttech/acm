@@ -23,4 +23,8 @@ public class PasswordOptions extends com.wttech.aem.contentor.core.acl.authoriza
     public void setUserId(String userId) {
         this.userId = userId;
     }
+
+    public void setId(String id) {
+        setUserId(id);
+    }
 }

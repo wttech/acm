@@ -2,6 +2,7 @@ group: ACL
 name: acl_demo_create_user
 content: |
   acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "mysecret"; email = "john.doe@acme.com" }.with {
+    setPassword { password = "mysecret" }
     setProperty { relPath = "myprop"; value = "myvalue" }
     removeProperty { relPath = "myprop" }
     removeFromAllGroups()

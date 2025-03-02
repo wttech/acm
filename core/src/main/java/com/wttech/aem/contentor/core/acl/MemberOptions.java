@@ -23,4 +23,8 @@ public class MemberOptions extends com.wttech.aem.contentor.core.acl.authorizabl
     public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
+
+    public void setId(String id) {
+        setGroupId(id);
+    }
 }
