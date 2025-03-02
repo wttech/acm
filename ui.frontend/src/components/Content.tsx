@@ -8,6 +8,7 @@ import ExecutionList from '../pages/ExecutionList.tsx';
 import ExecutionView from '../pages/ExecutionView.tsx';
 import SnippetsPage from '../pages/SnippetsPage.tsx';
 import ScriptView from "../pages/ScriptView.tsx";
+import SettingsPage from "../pages/SettingsPage.tsx";
 
 const Content = () => {
   return (
@@ -19,6 +20,7 @@ const Content = () => {
       <Route path="/console" element={<ConsolePage />} />
       <Route path="/executions" element={<ExecutionList />} />
       <Route path="/executions/view/:executionId" element={<ExecutionView />} />
+      <Route path="/settings" element={<SettingsPage />} />
     </Routes>
   );
 };
