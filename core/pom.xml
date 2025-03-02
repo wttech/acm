@@ -250,6 +250,12 @@ DynamicImport-Package: *
             <groupId>com.fasterxml.jackson.core</groupId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.day.cq</groupId>
+            <artifactId>cq-replication</artifactId>
+            <version>5.4.24</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Custom Dependencies -->
 

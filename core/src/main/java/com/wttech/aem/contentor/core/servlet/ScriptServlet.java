@@ -4,6 +4,7 @@ import static com.wttech.aem.contentor.core.util.ServletResult.error;
 import static com.wttech.aem.contentor.core.util.ServletResult.ok;
 import static com.wttech.aem.contentor.core.util.ServletUtils.*;
 
+import com.day.cq.replication.Replicator;
 import com.wttech.aem.contentor.core.script.Script;
 import com.wttech.aem.contentor.core.script.ScriptRepository;
 import com.wttech.aem.contentor.core.script.ScriptStats;
@@ -19,6 +20,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +50,8 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     private enum Action {
         ENABLE,
-        DISABLE;
+        DISABLE,
+        SYNC_ALL;
 
         public static Optional<Action> of(String name) {
             return Arrays.stream(Action.values())
@@ -56,6 +59,9 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     .findFirst();
         }
     }
+
+    @Reference
+    private Replicator replicator;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
@@ -119,12 +125,16 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
             switch (action.get()) {
                 case ENABLE:
-                    paths.forEach(repository::enable);
+                    paths.forEach(path -> repository.enable(path, replicator));
                     respondJson(response, ok(String.format("%d script(s) enabled successfully", paths.size())));
                     break;
                 case DISABLE:
-                    paths.forEach(repository::disable);
+                    paths.forEach(path -> repository.disable(path, replicator));
                     respondJson(response, ok(String.format("%d script(s) disabled successfully", paths.size())));
+                    break;
+                case SYNC_ALL:
+                    paths.forEach(path -> repository.syncAll(replicator));
+                    respondJson(response, ok("All scripts sync successfully"));
                     break;
             }
         } catch (Exception e) {

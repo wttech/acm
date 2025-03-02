@@ -88,8 +88,9 @@ public class ExecutionHistory {
     }
 
     private Stream<Execution> toExecutions(Stream<Resource> entries) {
-        return entries.map(r -> HistoricalExecution.from(r).orElse(null))
-                .filter(Objects::nonNull)
+        return entries.map(HistoricalExecution::from)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(Execution.class::cast);
     }
 }

@@ -1,5 +1,8 @@
 package com.wttech.aem.contentor.core.util;
 
+import com.day.cq.replication.ReplicationActionType;
+import com.day.cq.replication.ReplicationException;
+import com.day.cq.replication.Replicator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -24,19 +27,23 @@ public final class ResourceUtils {
         return resourceResolverFactory.getServiceResourceResolver(serviceParams);
     }
 
-    public static void move(ResourceResolver resolver, String sourcePath, String targetPath)
+    public static void move(ResourceResolver resolver, Replicator replicator, String sourcePath, String targetPath)
             throws PersistenceException {
-        Workspace workspace = Optional.ofNullable(resolver)
-                .map(r -> r.adaptTo(Session.class))
-                .map(Session::getWorkspace)
-                .orElse(null);
+        Session session =
+                Optional.ofNullable(resolver).map(r -> r.adaptTo(Session.class)).orElse(null);
+        Workspace workspace =
+                Optional.ofNullable(session).map(Session::getWorkspace).orElse(null);
         if (workspace == null) {
             throw new PersistenceException(String.format(
                     "Cannot move resource from '%s' to '%s' as cannot access workspace!", sourcePath, targetPath));
         }
         try {
             workspace.move(sourcePath, targetPath);
-        } catch (RepositoryException e) {
+            if (replicator != null) {
+                replicator.replicate(session, ReplicationActionType.ACTIVATE, targetPath);
+                replicator.replicate(session, ReplicationActionType.DELETE, sourcePath);
+            }
+        } catch (RepositoryException | ReplicationException e) {
             throw new PersistenceException(
                     String.format(
                             "Cannot move resource from '%s' to '%s' due to workspace move error!",
