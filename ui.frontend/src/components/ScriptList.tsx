@@ -178,15 +178,12 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               <Row key={script.id}>
                 <Cell>{script.name}</Cell>
                 <Cell>
-                    {lastExecution ? (
-                        <>
-                          <Text>{formatter.dateExplained(lastExecution.startDate)}</Text>
-                          &nbsp;
-                          <AppLink to={`/executions/view/${encodeURIComponent(lastExecution?.id)}`}>
-                            &rArr;
-                          </AppLink>
-                        </>
-                    ) : <>&mdash;</>}
+                  <Flex justifyContent="space-between" alignItems="center">
+                    <Text>{lastExecution ? formatter.dateExplained(lastExecution.startDate) : '—'}</Text>
+                    {lastExecution && (
+                        <ActionButton onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution"><Magnify /></ActionButton>
+                    )}
+                  </Flex>
                 </Cell>
                 <Cell><ExecutionStatsBadge stats={scriptStats} /></Cell>
               </Row>
