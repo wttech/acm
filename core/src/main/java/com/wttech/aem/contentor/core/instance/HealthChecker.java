@@ -24,6 +24,10 @@ public class HealthChecker {
         // https://github.com/wttech/aemc/blob/main/pkg/instance_manager_check.go
     }
 
+    public HealthStatus checkStatus() {
+        return HealthStatus.mock();
+    }
+
     @ObjectClassDefinition(name = "AEM Contentor - Health Checker")
     public @interface Config {
 
