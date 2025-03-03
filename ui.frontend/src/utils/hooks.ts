@@ -59,7 +59,11 @@ class Formatter {
   }
 
   public dateRelative(value: string): string {
-    return formatDistance(value, new Date(), {
+    const date = new Date(value);
+    const zonedDate = toZonedTime(date, this.userTimeZoneId);
+    const now = toZonedTime(new Date(), this.userTimeZoneId);
+
+    return formatDistance(zonedDate, now, {
       addSuffix: true,
       includeSeconds: true,
     });
