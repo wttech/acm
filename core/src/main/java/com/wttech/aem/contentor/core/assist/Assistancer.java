@@ -30,15 +30,15 @@ public class Assistancer {
 
     private List<ClassInfo> classCache = Collections.emptyList();
 
-    private String checksum;
+    private String bundlesChecksum;
 
     @Activate
     @Modified
     protected void activate() {
-        String newChecksum = osgiScanner.determineChecksum();
-        if (!StringUtils.equals(checksum, newChecksum)) {
+        String newBundlesChecksum = osgiScanner.determineBundlesChecksum();
+        if (!StringUtils.equals(bundlesChecksum, newBundlesChecksum)) {
             classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
-            checksum = newChecksum;
+            bundlesChecksum = newBundlesChecksum;
         }
     }
 
