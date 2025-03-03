@@ -88,7 +88,7 @@ export type InstanceSettings = {
 
 export type HealthStatus = {
   healthy: boolean;
-  issues: HealthIssue
+  issues: HealthIssue[];
 }
 
 export type HealthIssue = {

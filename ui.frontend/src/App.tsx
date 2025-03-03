@@ -11,7 +11,16 @@ import { AppContext } from './AppContext';
 import { apiRequest } from './utils/api';
 
 function App() {
-  const [state, setState] = useState<State | undefined>(undefined);
+  const [state, setState] = useState<State>({
+    healthStatus: {
+      healthy: true,
+      issues: [],
+    },
+    instanceSettings: {
+        id: 'default',
+        timezoneId: 'UTC'
+    }
+  });
 
   useEffect(() => {
     const fetchState = async () => {

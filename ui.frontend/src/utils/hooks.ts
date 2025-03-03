@@ -1,21 +1,38 @@
 import { useDateFormatter } from '@react-aria/i18n';
 import { formatDistance, formatDuration, intervalToDuration } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
+import {useContext} from "react";
+import {AppContext} from "../AppContext.tsx";
 
 class Formatter {
   dateFormatter: Intl.DateTimeFormat;
+  instanceTimezoneId: string;
+  userTimeZoneId: string;
 
-  constructor() {
+  constructor(timezoneId: string) {
+    this.instanceTimezoneId = timezoneId;
+    this.userTimeZoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
     this.dateFormatter = useDateFormatter({
       dateStyle: 'long',
       timeStyle: 'short',
+      timeZone: timezoneId,
     });
   }
 
-  public date(value: string | Date) {
-    if (value instanceof Date) {
-      return this.dateFormatter.format(value);
-    }
-    return this.dateFormatter.format(new Date(value));
+  public isTimezoneDifference(): boolean {
+    return this.instanceTimezoneId !== this.userTimeZoneId;
+  }
+
+  public dateAtInstance(value: string | Date) {
+    const date = value instanceof Date ? value : new Date(value);
+    const zonedDate = toZonedTime(date, this.instanceTimezoneId);
+    return this.dateFormatter.format(zonedDate);
+  }
+
+  public dateAtUser(value: string | Date) {
+    const date = value instanceof Date ? value : new Date(value);
+    const zonedDate = toZonedTime(date, this.userTimeZoneId);
+    return this.dateFormatter.format(zonedDate);
   }
 
   public duration(milliseconds: number): string {
@@ -49,10 +66,13 @@ class Formatter {
   }
 
   public dateExplained(value: string): string {
-    return `${this.date(value)} (${this.dateRelative(value)})`;
+    return `${this.dateAtInstance(value)} (${this.dateRelative(value)})`;
   }
 }
 
 export function useFormatter() {
-  return new Formatter();
+  const context = useContext(AppContext)!;
+  const instanceTimezoneId =  context.instanceSettings.timezoneId;
+
+  return new Formatter(instanceTimezoneId);
 }

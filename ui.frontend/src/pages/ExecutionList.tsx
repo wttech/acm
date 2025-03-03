@@ -125,7 +125,7 @@ const ExecutionList = () => {
                 <Cell>
                   <ExecutableValue value={execution.executable} />
                 </Cell>
-                <Cell>{formatter.date(execution.startDate)}</Cell>
+                <Cell>{formatter.dateAtInstance(execution.startDate)}</Cell>
                 <Cell>{formatter.duration(execution.duration)}</Cell>
                 <Cell>
                   <ExecutionStatusBadge value={execution.status} />
