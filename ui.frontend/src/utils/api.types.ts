@@ -75,3 +75,23 @@ export type ScriptOutput = {
   list: Script[];
   stats: ScriptStats[];
 };
+
+export type State = {
+  healthStatus: HealthStatus;
+  instanceSettings: InstanceSettings;
+}
+
+export type InstanceSettings = {
+  id: string;
+  timezoneId: string;
+}
+
+export type HealthStatus = {
+  healthy: boolean;
+  issues: HealthIssue[];
+}
+
+export type HealthIssue = {
+  message: string;
+  severity: string;
+}
