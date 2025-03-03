@@ -75,7 +75,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
+            ScriptRepository repository = new ScriptRepository(request.getResourceResolver(), replicator);
             List<Script> scripts;
 
             List<String> ids = stringsParam(request, ID_PARAM);
@@ -121,19 +121,19 @@ public class ScriptServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
+            ScriptRepository repository = new ScriptRepository(request.getResourceResolver(), replicator);
 
             switch (action.get()) {
                 case ENABLE:
-                    paths.forEach(path -> repository.enable(path, replicator));
+                    paths.forEach(repository::enable);
                     respondJson(response, ok(String.format("%d script(s) enabled successfully", paths.size())));
                     break;
                 case DISABLE:
-                    paths.forEach(path -> repository.disable(path, replicator));
+                    paths.forEach(repository::disable);
                     respondJson(response, ok(String.format("%d script(s) disabled successfully", paths.size())));
                     break;
                 case SYNC_ALL:
-                    repository.syncAll(replicator);
+                    repository.syncAll();
                     respondJson(response, ok("All scripts sync successfully"));
                     break;
             }

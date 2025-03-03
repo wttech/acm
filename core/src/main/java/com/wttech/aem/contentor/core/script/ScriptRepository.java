@@ -24,8 +24,11 @@ public class ScriptRepository {
 
     private final ResourceResolver resourceResolver;
 
-    public ScriptRepository(ResourceResolver resourceResolver) {
+    private final Replicator replicator;
+
+    public ScriptRepository(ResourceResolver resourceResolver, Replicator replicator) {
         this.resourceResolver = resourceResolver;
+        this.replicator = replicator;
     }
 
     public Optional<Script> read(String path) {
@@ -59,7 +62,7 @@ public class ScriptRepository {
         return root;
     }
 
-    public void enable(String path, Replicator replicator) throws ContentorException {
+    public void enable(String path) throws ContentorException {
         Script script = read(path).orElse(null);
         if (script == null) {
             throw new ContentorException(String.format("Script at path '%s' does not exist!", path));
@@ -71,13 +74,13 @@ public class ScriptRepository {
             String sourcePath = script.getPath();
             String targetPath = ScriptType.ENABLED.enforcePath(path);
             ensureParentFolder(targetPath);
-            ResourceUtils.move(resourceResolver, replicator, sourcePath, targetPath);
+            ResourceUtils.move(resourceResolver, sourcePath, targetPath);
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot enable script at path '%s'!", path), e);
         }
     }
 
-    public void disable(String path, Replicator replicator) throws ContentorException {
+    public void disable(String path) throws ContentorException {
         Script script = read(path).orElse(null);
         if (script == null) {
             throw new ContentorException(String.format("Script at path '%s' does not exist!", path));
@@ -89,7 +92,7 @@ public class ScriptRepository {
             String sourcePath = script.getPath();
             String targetPath = ScriptType.DISABLED.enforcePath(path);
             ensureParentFolder(targetPath);
-            ResourceUtils.move(resourceResolver, replicator, sourcePath, targetPath);
+            ResourceUtils.move(resourceResolver, sourcePath, targetPath);
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot disable script at path '%s'!", path), e);
         }
@@ -109,7 +112,7 @@ public class ScriptRepository {
         }
     }
 
-    public void syncAll(Replicator replicator) {
+    public void syncAll() {
         Session session = Optional.ofNullable(resourceResolver)
                 .map(r -> r.adaptTo(Session.class))
                 .orElse(null);
