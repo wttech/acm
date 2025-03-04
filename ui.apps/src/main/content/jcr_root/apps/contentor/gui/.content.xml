@@ -4,10 +4,10 @@
     jcr:primaryType="cq:Page">
     <jcr:content
         jcr:primaryType="nt:unstructured"
-        jcr:title="Contentor"
+        jcr:title="Content Manager"
         sling:resourceType="granite/ui/components/shell/page"
-        sling:vanityPath="/contentor"
-        consoleId="aem-contentor">
+        sling:vanityPath="/content-manager"
+        consoleId="content-manager">
         <head jcr:primaryType="nt:unstructured">
             <viewport
                 jcr:primaryType="nt:unstructured"
@@ -23,7 +23,7 @@
         </head>
         <title
             jcr:primaryType="nt:unstructured"
-            jcr:title="Contentor"
+            jcr:title="Content Manager"
             sling:resourceType="granite/ui/components/shell/title"/>
         <content
             jcr:primaryType="nt:unstructured"
