@@ -9,7 +9,7 @@
 
 <!--
 <p>
-  <img src="docs/logo-text.svg" alt="AEM Contentor" width="300"/>
+  <img src="docs/logo-text.svg" alt="AEM Content Manager" width="300"/>
 </p>
 -->
 
@@ -18,18 +18,32 @@ Tool for doing live content and permission updates for AEM applications in a sim
 Simply [install](#installation) ready-to-use CRX package on AEM instance and start migrating!
 
 <p>
-  <img src="docs/screenshot-console-code.png" alt="AEM Contentor - Console Code (Screenshot)" width="640"/>
+  <img src="docs/screenshot-console-code.png" alt="AEM Content Manager - Console Code (Screenshot)" width="640"/>
 </p>
 
 <p>
-  <img src="docs/screenshot-console-output.png" alt="AEM Contentor - Console Output (Screenshot)" width="640"/>
+  <img src="docs/screenshot-console-output.png" alt="AEM Content Manager - Console Output (Screenshot)" width="640"/>
 </p>
+
+<p>
+  <img src="docs/screenshot-executions.png" alt="AEM Content Manager - Executions  (Screenshot)" width="640"/>
+</p>
+
+<p>
+  <img src="docs/screenshot-scripts-enabled.png" alt="AEM Content Manager - Scripts Enabled (Screenshot)" width="640"/>
+</p>
+
+<p>
+  <img src="docs/screenshot-snippets.png" alt="AEM Content Manager - Snippets (Screenshot)" width="640"/>
+</p>
+
+---
 
 Main concepts of AEM Contentor tool are:
 
 * **Simplicity**
     * Creating migration scripts should be as much simple as it is possible (no need to learn custom YML syntax or configuration language, just well-known Groovy),
-    * No extra configuration needed - no hooks to needed to be configured in a AEM build (just provide Groovy scripts, the tool will do the rest),
+    * No extra configuration needed - no hooks to needed to be configured in an AEM build (just provide Groovy scripts, the tool will do the rest),
 * **Stability**
     * Executed always at optimal moment - safely use any classes from any OSGi bundles including your own,
 
