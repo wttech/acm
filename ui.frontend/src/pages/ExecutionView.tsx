@@ -14,7 +14,6 @@ import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import { toastRequest } from '../utils/api';
 import { Execution, ExecutionOutput } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks.ts';
-import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 
 const toastTimeout = 3000;
 
@@ -42,12 +41,12 @@ const ExecutionView = () => {
 
   if (!execution) {
     return (
-        <Flex direction="column" flex="1">
-          <IllustratedMessage>
-            <NotFound />
-            <Content>Execution not found</Content>
-          </IllustratedMessage>
-        </Flex>
+      <Flex direction="column" flex="1">
+        <IllustratedMessage>
+          <NotFound />
+          <Content>Execution not found</Content>
+        </IllustratedMessage>
+      </Flex>
     );
   }
 
@@ -147,7 +146,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <ImmersiveEditor value={execution.executable.content} language="groovy" beforeMount={registerGroovyLanguage} options={{ readOnly: true }} />
+              <ImmersiveEditor value={execution.executable.content} language="groovy" readOnly />
             </Flex>
           </Item>
           <Item key="output">
@@ -162,7 +161,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <ImmersiveEditor value={executionOutput} options={{ readOnly: true }} />
+              <ImmersiveEditor value={executionOutput} readOnly />
             </Flex>
           </Item>
         </TabPanels>

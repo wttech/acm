@@ -18,7 +18,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
-import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
@@ -284,7 +283,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </View>
-              <ImmersiveEditor value={code} onChange={setCode} syntaxError={syntaxError} language="groovy" beforeMount={registerGroovyLanguage} />
+              <ImmersiveEditor persistenceId="code-editor" value={code} onChange={setCode} syntaxError={syntaxError} language="groovy" />
             </Flex>
           </Item>
           <Item key="output">
@@ -347,7 +346,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </Flex>
-              <ImmersiveEditor value={executionOutput} options={{ readOnly: true }} />
+              <ImmersiveEditor value={executionOutput} readOnly />
             </Flex>
           </Item>
         </TabPanels>

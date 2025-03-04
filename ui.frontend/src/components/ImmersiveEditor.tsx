@@ -1,51 +1,92 @@
 import { Button, Content, Dialog, DialogContainer, Divider, Flex, View, ViewProps } from '@adobe/react-spectrum';
-import { Editor, EditorProps, useMonaco } from '@monaco-editor/react';
+import { useMonaco } from '@monaco-editor/react';
 import { ColorVersion } from '@react-types/shared';
 import FullScreenExit from '@spectrum-icons/workflow/FullScreenExit';
-import { MarkerSeverity } from 'monaco-editor';
-import { useCallback, useEffect, useState } from 'react';
+import { MarkerSeverity, editor } from 'monaco-editor';
+import { useEffect, useRef, useState } from 'react';
+import { modelStorage } from '../utils/modelStorage.ts';
+import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 
 export type SyntaxError = { line: number; column: number; message: string };
-type ImmersiveEditorProps<C extends ColorVersion> = EditorProps & { containerProps?: ViewProps<C>; syntaxError?: SyntaxError };
+type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & { persistenceId?: string; containerProps?: ViewProps<C>; syntaxError?: SyntaxError; onChange?: (code: string) => void };
 
-const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, ...props }: ImmersiveEditorProps<C>) => {
+const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, persistenceId, language, value, ...props }: ImmersiveEditorProps<C>) => {
   const [isOpen, setIsOpen] = useState(false);
   const monacoRef = useMonaco();
-
-  const updateMarkers = useCallback(() => {
-    if (monacoRef?.editor) {
-      const models = monacoRef.editor.getModels();
-
-      models.forEach((model) =>
-        monacoRef?.editor.setModelMarkers(
-          model,
-          model?.id,
-          syntaxError
-            ? [
-                {
-                  startLineNumber: syntaxError.line,
-                  startColumn: syntaxError.column,
-                  endLineNumber: syntaxError.line,
-                  endColumn: syntaxError.column + 10,
-                  message: syntaxError.message,
-                  severity: MarkerSeverity.Error,
-                },
-              ]
-            : [],
-        ),
-      );
-    }
-  }, [monacoRef?.editor, syntaxError]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    updateMarkers();
-  }, [syntaxError, updateMarkers]);
+    if (!containerRef.current || !monacoRef) {
+      return;
+    }
+
+    if (language === 'groovy') {
+      registerGroovyLanguage(monacoRef);
+    }
+
+    const storedModel = persistenceId ? modelStorage.getModel(persistenceId) : null;
+    const textModel = storedModel?.textModel || monacoRef.editor.createModel(value ?? '', language);
+
+    const mountedEditor = monacoRef.editor.create(containerRef.current, {
+      model: textModel,
+      theme: 'vs-dark',
+      value,
+      ...props,
+    });
+
+    if (storedModel?.viewState) {
+      mountedEditor.restoreViewState(storedModel.viewState);
+    }
+
+    mountedEditor.focus();
+
+    const changeListener = mountedEditor.onDidChangeCursorPosition(() => {
+      if (persistenceId) {
+        modelStorage.updateViewState(persistenceId, mountedEditor.saveViewState());
+      }
+
+      onChange?.(mountedEditor.getValue());
+    });
+
+    if (persistenceId) {
+      modelStorage.updateModel(persistenceId, textModel, mountedEditor.saveViewState());
+    }
+
+    return () => {
+      mountedEditor.dispose();
+      changeListener?.dispose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monacoRef, isOpen]);
+
+  useEffect(() => {
+    const textModel = persistenceId ? modelStorage.getModel(persistenceId)?.textModel : null;
+
+    if (monacoRef?.editor && persistenceId && textModel) {
+      monacoRef?.editor.setModelMarkers(
+        textModel,
+        persistenceId,
+        syntaxError
+          ? [
+              {
+                startLineNumber: syntaxError.line,
+                startColumn: syntaxError.column,
+                endLineNumber: syntaxError.line,
+                endColumn: syntaxError.column + 10,
+                message: syntaxError.message,
+                severity: MarkerSeverity.Error,
+              },
+            ]
+          : [],
+      );
+    }
+  }, [persistenceId, monacoRef?.editor, syntaxError]);
 
   return (
     <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50" {...containerProps}>
       {!isOpen && (
         <>
-          <Editor theme="vs-dark" height="100%" onMount={() => updateMarkers()} {...props} />
+          <div ref={containerRef} style={{ height: '100%' }} />
           <Button variant="primary" style="fill" position="absolute" zIndex={5} bottom={10} right={10} onPress={() => setIsOpen(true)}>
             <FullScreenExit />
           </Button>
@@ -58,7 +99,7 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
               <Flex height="100%" direction="column">
                 <Divider size="M" orientation="horizontal" />
                 <View backgroundColor="gray-800" paddingTop={10} height="100%">
-                  <Editor theme="vs-dark" height="100%" onMount={() => updateMarkers()} {...props} />
+                  <div ref={containerRef} style={{ height: '100%' }} />
                 </View>
               </Flex>
             </Content>
