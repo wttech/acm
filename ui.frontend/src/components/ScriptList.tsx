@@ -35,6 +35,7 @@ import {AppLink} from "../AppLink.tsx";
 import ArrowRight from "@spectrum-icons/workflow/ArrowRight";
 import FullScreenExit from "@spectrum-icons/workflow/FullScreenExit";
 import Magnify from "@spectrum-icons/workflow/Magnify";
+import DateExplained from "./DateExplained.tsx";
 
 type ScriptListProps = {
   type: 'enabled' | 'disabled';
@@ -165,6 +166,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           <Column>
             Success Rate
             <ContextualHelp variant="help">
+              <Heading>Explanation</Heading>
               <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
             </ContextualHelp>
           </Column>
@@ -179,7 +181,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                 <Cell>{script.name}</Cell>
                 <Cell>
                   <Flex justifyContent="space-between" alignItems="center">
-                    <Text>{lastExecution ? formatter.dateExplained(lastExecution.startDate) : '—'}</Text>
+                    <Text>{lastExecution ? <DateExplained value={lastExecution.startDate}/> : '—'}</Text>
                     {lastExecution && (
                         <ActionButton onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution"><Magnify /></ActionButton>
                     )}

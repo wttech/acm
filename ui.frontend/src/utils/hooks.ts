@@ -3,19 +3,26 @@ import { formatDistance, formatDuration, intervalToDuration } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import {useContext} from "react";
 import {AppContext} from "../AppContext.tsx";
+import {DateFormatter} from "@adobe/react-spectrum";
 
 class Formatter {
-  dateFormatter: Intl.DateTimeFormat;
   instanceTimezoneId: string;
+  instanceDateFormatter: DateFormatter;
   userTimeZoneId: string;
+  userDateFormatter: DateFormatter;
 
   constructor(timezoneId: string) {
     this.instanceTimezoneId = timezoneId;
-    this.userTimeZoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    this.dateFormatter = useDateFormatter({
+    this.instanceDateFormatter = useDateFormatter({
       dateStyle: 'long',
       timeStyle: 'short',
-      timeZone: timezoneId,
+      timeZone: this.instanceTimezoneId,
+    });
+    this.userTimeZoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    this.userDateFormatter = useDateFormatter({
+      dateStyle: 'long',
+      timeStyle: 'short',
+      timeZone: this.userTimeZoneId,
     });
   }
 
@@ -25,14 +32,12 @@ class Formatter {
 
   public dateAtInstance(value: string | Date) {
     const date = value instanceof Date ? value : new Date(value);
-    const zonedDate = toZonedTime(date, this.instanceTimezoneId);
-    return this.dateFormatter.format(zonedDate);
+    return this.instanceDateFormatter.format(date);
   }
 
   public dateAtUser(value: string | Date) {
     const date = value instanceof Date ? value : new Date(value);
-    const zonedDate = toZonedTime(date, this.userTimeZoneId);
-    return this.dateFormatter.format(zonedDate);
+    return this.userDateFormatter.format(date);
   }
 
   public duration(milliseconds: number): string {
@@ -58,8 +63,8 @@ class Formatter {
     return result;
   }
 
-  public dateRelative(value: string): string {
-    const date = new Date(value);
+  public dateRelative(value: string | Date): string {
+    const date = value instanceof Date ? value : new Date(value);
     const zonedDate = toZonedTime(date, this.userTimeZoneId);
     const now = toZonedTime(new Date(), this.userTimeZoneId);
 
@@ -71,6 +76,14 @@ class Formatter {
 
   public dateExplained(value: string): string {
     return `${this.dateAtInstance(value)} (${this.dateRelative(value)})`;
+  }
+
+  public instanceTimezone(): string {
+    return this.instanceTimezoneId;
+  }
+
+  public userTimezone(): string {
+      return this.userTimeZoneId;
   }
 }
 
