@@ -88,9 +88,11 @@ TODO
 
 ## Authors
 
-* [Krystian Panek](mailto:krystian.panek@vml.com) - Project Founder, Main Developer,
-* [Dominik Przybył](mailto:dominik.przybyl@vml.com) - Developer,
-* [Mariusz Pacyga](mailto:mariusz.pacyga@vml.com) - Developer.
+- Founder, owner, and maintainer: [Krystian Panek](mailto:krystian.panek@vml.com)
+- Developers: [Dominik Przybył](mailto:dominik.przybyl@vml.com), [Mariusz Pacyga](mailto:mariusz.pacyga@vml.com)
+- Consultancy: [Tomasz Sobczyk](mailto:tomasz.sobczyk@vml.com)
+- Contributors: [&lt;see all&gt;](https://github.com/wttech/aemc/graphs/contributors)
+
 
 ## Contributing
 
