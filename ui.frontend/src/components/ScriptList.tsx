@@ -166,6 +166,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           <Column>
             Success Rate
             <ContextualHelp variant="help">
+              <Heading>Explanation</Heading>
               <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
             </ContextualHelp>
           </Column>
