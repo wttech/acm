@@ -1,7 +1,6 @@
 import React from 'react';
 import { ContextualHelp, Heading, Content, Text } from '@adobe/react-spectrum';
 import { useFormatter } from '../utils/hooks.ts';
-import styles from './DateExplained.module.css';
 
 interface DateExplainedProps {
     value: string | Date;
@@ -17,27 +16,11 @@ const DateExplained: React.FC<DateExplainedProps> = ({ value }) => {
                 <ContextualHelp variant="info">
                     <Heading>Timezone Difference</Heading>
                     <Content>
-                        <table className={styles.table}>
-                            <thead>
-                            <tr>
-                                <th>Location</th>
-                                <th>Timezone</th>
-                                <th>Date</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>Client</td>
-                                <td>{formatter.userTimezone()}</td>
-                                <td>{formatter.dateAtUser(value)}</td>
-                            </tr>
-                            <tr>
-                                <td>Instance</td>
-                                <td>{formatter.instanceTimezone()}</td>
-                                <td>{formatter.dateAtInstance(value)}</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                        <Text>
+                            <p>The date and time shown are based on the instance timezone ({formatter.instanceTimezone()}).</p>
+                            <p>In your local timezone ({formatter.userTimezone()}), the date and time are {formatter.dateAtUser(value)}.</p>
+                            <p>This was {formatter.dateRelative(value)}.</p>
+                        </Text>
                     </Content>
                 </ContextualHelp>
             </>

@@ -63,8 +63,8 @@ class Formatter {
     return result;
   }
 
-  public dateRelative(value: string): string {
-    const date = new Date(value);
+  public dateRelative(value: string | Date): string {
+    const date = value instanceof Date ? value : new Date(value);
     const zonedDate = toZonedTime(date, this.userTimeZoneId);
     const now = toZonedTime(new Date(), this.userTimeZoneId);
 
