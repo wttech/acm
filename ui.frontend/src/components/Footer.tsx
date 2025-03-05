@@ -20,7 +20,7 @@ const Footer = () => {
           <Link href="https://github.com/wunderman-thompson/wtpl-aem-contentor" target="_blank">
             <Flex alignItems="center" gap="size-75">
               <img src="/apps/contentor/spa/github-mark.svg" alt="GitHub" width="16" height="16" style={{ color: 'var(--spectrum-global-color-gray-800)' }} />
-              <View>View &apos;Contentor&apos; on GitHub</View>
+              <View>View &apos;Content Manager&apos; on GitHub</View>
             </Flex>
           </Link>
         </Flex>

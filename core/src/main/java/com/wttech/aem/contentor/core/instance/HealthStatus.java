@@ -8,7 +8,7 @@ public class HealthStatus {
 
     private boolean healthy;
 
-    private List<HealthIssue> issues = new LinkedList<>();
+    List<HealthIssue> issues = new LinkedList<>();
 
     public static HealthStatus mock() {
         HealthStatus result = new HealthStatus();

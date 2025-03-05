@@ -27,15 +27,28 @@ public class OsgiScanner {
         this.bundleContext = bundleContext;
     }
 
-    public Stream<ClassInfo> scanClasses() {
-        return Arrays.stream(bundleContext.getBundles())
-                .filter(this::isBundleOrFragmentReady)
-                .flatMap(this::scanClasses);
+    public Stream<Bundle> scanBundles() {
+        return Arrays.stream(bundleContext.getBundles());
     }
 
-    private boolean isBundleOrFragmentReady(Bundle bundle) {
-        return bundle.getState() == Bundle.ACTIVE
-                || (bundle.getState() == Bundle.RESOLVED && bundle.getHeaders().get("Fragment-Host") != null);
+    public Stream<ClassInfo> scanClasses() {
+        return scanBundles().filter(this::isBundleOrFragmentReady).flatMap(this::scanClasses);
+    }
+
+    public boolean isBundleActive(Bundle bundle) {
+        return bundle.getState() == Bundle.ACTIVE;
+    }
+
+    public boolean isBundleResolved(Bundle bundle) {
+        return bundle.getState() == Bundle.RESOLVED;
+    }
+
+    public boolean isFragment(Bundle bundle) {
+        return bundle.getHeaders().get("Fragment-Host") != null;
+    }
+
+    public boolean isBundleOrFragmentReady(Bundle bundle) {
+        return isBundleActive(bundle) || (isFragment(bundle) && isBundleResolved(bundle));
     }
 
     private Stream<ClassInfo> scanClasses(Bundle bundle) {

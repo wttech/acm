@@ -7,6 +7,7 @@ import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
+import Close from "@spectrum-icons/workflow/Close";
 import { useDebounce } from 'react-use';
 import CompilationStatus from '../components/CompilationStatus.tsx';
 import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
@@ -14,7 +15,7 @@ import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
@@ -276,7 +277,8 @@ const ConsolePage = () => {
                         </Content>
                         <ButtonGroup>
                           <Button variant="secondary" onPress={close}>
-                            Close
+                            <Close size="XS" />
+                            <Text>Close</Text>
                           </Button>
                         </ButtonGroup>
                       </Dialog>
@@ -339,7 +341,8 @@ const ConsolePage = () => {
                         </Content>
                         <ButtonGroup>
                           <Button variant="secondary" onPress={close}>
-                            Close
+                            <Close size="XS" />
+                            <Text>Close</Text>
                           </Button>
                         </ButtonGroup>
                       </Dialog>
