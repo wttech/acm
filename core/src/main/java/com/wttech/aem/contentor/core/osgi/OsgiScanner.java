@@ -5,7 +5,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
@@ -32,18 +31,6 @@ public class OsgiScanner {
         return Arrays.stream(bundleContext.getBundles())
                 .filter(this::isBundleOrFragmentReady)
                 .flatMap(this::scanClasses);
-    }
-
-    public String determineBundlesChecksum() {
-        HashCodeBuilder hashCodeBuilder = new HashCodeBuilder();
-        Arrays.stream(bundleContext.getBundles())
-                .filter(this::isBundleOrFragmentReady)
-                .forEach(bundle -> {
-                    hashCodeBuilder.append(bundle.getSymbolicName());
-                    hashCodeBuilder.append(bundle.getVersion());
-                    hashCodeBuilder.append(bundle.getLastModified());
-                });
-        return Integer.toHexString(hashCodeBuilder.toHashCode());
     }
 
     private boolean isBundleOrFragmentReady(Bundle bundle) {

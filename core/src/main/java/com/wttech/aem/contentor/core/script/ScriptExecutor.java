@@ -1,6 +1,5 @@
 package com.wttech.aem.contentor.core.script;
 
-import com.day.cq.replication.Replicator;
 import com.wttech.aem.contentor.core.code.Execution;
 import com.wttech.aem.contentor.core.code.ExecutionContext;
 import com.wttech.aem.contentor.core.code.Executor;
@@ -51,9 +50,6 @@ public class ScriptExecutor implements Runnable {
     @Reference
     private Executor executor;
 
-    @Reference
-    private Replicator replicator;
-
     private Config config;
 
     @Activate
@@ -70,7 +66,7 @@ public class ScriptExecutor implements Runnable {
         }
 
         try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
-            ScriptRepository scriptRepository = new ScriptRepository(resourceResolver, replicator);
+            ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
 
             LOG.debug("Executing scripts");
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {

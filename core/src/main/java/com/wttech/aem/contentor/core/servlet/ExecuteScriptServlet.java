@@ -4,7 +4,6 @@ import static com.wttech.aem.contentor.core.util.ServletResult.*;
 import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
 import static com.wttech.aem.contentor.core.util.ServletUtils.stringParam;
 
-import com.day.cq.replication.Replicator;
 import com.wttech.aem.contentor.core.code.Execution;
 import com.wttech.aem.contentor.core.code.ExecutionContext;
 import com.wttech.aem.contentor.core.code.Executor;
@@ -40,15 +39,12 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
     @Reference
     private Executor executor;
 
-    @Reference
-    private Replicator replicator;
-
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         String path = stringParam(request, PATH_PARAM);
 
         try {
-            Script script = new ScriptRepository(request.getResourceResolver(), replicator)
+            Script script = new ScriptRepository(request.getResourceResolver())
                     .read(path)
                     .orElse(null);
             if (script == null) {

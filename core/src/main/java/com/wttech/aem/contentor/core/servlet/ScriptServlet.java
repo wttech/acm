@@ -9,6 +9,7 @@ import com.wttech.aem.contentor.core.script.Script;
 import com.wttech.aem.contentor.core.script.ScriptRepository;
 import com.wttech.aem.contentor.core.script.ScriptStats;
 import com.wttech.aem.contentor.core.script.ScriptType;
+import com.wttech.aem.contentor.core.util.ReplicationUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -75,7 +76,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            ScriptRepository repository = new ScriptRepository(request.getResourceResolver(), replicator);
+            ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
             List<Script> scripts;
 
             List<String> ids = stringsParam(request, ID_PARAM);
@@ -121,7 +122,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            ScriptRepository repository = new ScriptRepository(request.getResourceResolver(), replicator);
+            ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
 
             switch (action.get()) {
                 case ENABLE:
@@ -133,7 +134,8 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     respondJson(response, ok(String.format("%d script(s) disabled successfully", paths.size())));
                     break;
                 case SYNC_ALL:
-                    repository.syncAll();
+                    ReplicationUtils.unpublish(request.getResourceResolver(), replicator, ScriptRepository.ROOT);
+                    ReplicationUtils.publishTree(request.getResourceResolver(), replicator, ScriptRepository.ROOT);
                     respondJson(response, ok("All scripts sync successfully"));
                     break;
             }

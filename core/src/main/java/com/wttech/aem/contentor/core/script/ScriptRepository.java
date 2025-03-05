@@ -1,16 +1,11 @@
 package com.wttech.aem.contentor.core.script;
 
-import com.day.cq.replication.ReplicationActionType;
-import com.day.cq.replication.ReplicationException;
-import com.day.cq.replication.Replicator;
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceSpliterator;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.jcr.Session;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -24,11 +19,8 @@ public class ScriptRepository {
 
     private final ResourceResolver resourceResolver;
 
-    private final Replicator replicator;
-
-    public ScriptRepository(ResourceResolver resourceResolver, Replicator replicator) {
+    public ScriptRepository(ResourceResolver resourceResolver) {
         this.resourceResolver = resourceResolver;
-        this.replicator = replicator;
     }
 
     public Optional<Script> read(String path) {
@@ -109,36 +101,6 @@ public class ScriptRepository {
                     true);
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Cannot create parent folder for path '%s'!", path), e);
-        }
-    }
-
-    public void syncAll() {
-        Session session = Optional.ofNullable(resourceResolver)
-                .map(r -> r.adaptTo(Session.class))
-                .orElse(null);
-        if (session == null) {
-            throw new ContentorException("Cannot sync all scripts as cannot access session!");
-        }
-        try {
-            replicator.replicate(session, ReplicationActionType.DELETE, ROOT);
-            replicator.replicate(session, ReplicationActionType.ACTIVATE, ROOT);
-            replicator.replicate(session, ReplicationActionType.ACTIVATE, ScriptType.ENABLED.root());
-            replicator.replicate(session, ReplicationActionType.ACTIVATE, ScriptType.DISABLED.root());
-
-            Resource root = resourceResolver.getResource(ROOT);
-            if (root == null) {
-                throw new ContentorException(String.format("Script root path '%s' does not exist!", ROOT));
-            }
-            List<Script> scripts = ResourceSpliterator.stream(root)
-                    .map(Script::from)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toList());
-            for (Script script : scripts) {
-                replicator.replicate(session, ReplicationActionType.ACTIVATE, script.getPath());
-            }
-        } catch (ReplicationException e) {
-            throw new ContentorException("Cannot sync all scripts due to workspace replication error!", e);
         }
     }
 }
