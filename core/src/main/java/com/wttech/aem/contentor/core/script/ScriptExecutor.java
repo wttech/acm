@@ -3,6 +3,8 @@ package com.wttech.aem.contentor.core.script;
 import com.wttech.aem.contentor.core.code.Execution;
 import com.wttech.aem.contentor.core.code.ExecutionContext;
 import com.wttech.aem.contentor.core.code.Executor;
+import com.wttech.aem.contentor.core.instance.HealthChecker;
+import com.wttech.aem.contentor.core.instance.HealthStatus;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -50,6 +52,9 @@ public class ScriptExecutor implements Runnable {
     @Reference
     private Executor executor;
 
+    @Reference
+    private HealthChecker healthChecker;
+
     private Config config;
 
     @Activate
@@ -62,6 +67,11 @@ public class ScriptExecutor implements Runnable {
     public void run() {
         if (!config.enabled()) {
             LOG.debug("Script executor is disabled");
+            return;
+        }
+        HealthStatus healthStatus = healthChecker.checkStatus();
+        if (!healthStatus.isHealthy()) {
+            LOG.error("Script executor is paused due to health status: {}", healthStatus);
             return;
         }
 

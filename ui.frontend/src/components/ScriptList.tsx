@@ -41,6 +41,7 @@ import Heart from "@spectrum-icons/workflow/Heart";
 import Code from "@spectrum-icons/workflow/Code";
 import Close from "@spectrum-icons/workflow/Close";
 import Box from "@spectrum-icons/workflow/Box";
+import UploadToCloud from "@spectrum-icons/workflow/UploadToCloud";
 
 type ScriptListProps = {
   type: 'enabled' | 'disabled';
@@ -155,6 +156,10 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               </Button>
               <Dialog>{renderToggleDialog()}</Dialog>
             </DialogTrigger>
+            <Button variant="primary" isDisabled={true}>
+              <UploadToCloud/>
+              <Text>Publish All</Text>
+            </Button>
           </ButtonGroup>
           {appContext && (
               <StatusLight variant={appContext.healthStatus.healthy ? 'positive' : 'negative'}>
