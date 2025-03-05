@@ -67,9 +67,18 @@ public final class ReplicationUtils {
     public static void unpublish(ResourceResolver resolver, Replicator replicator, String path) {
         try {
             Session session = getSession(resolver);
-            replicator.replicate(session, ReplicationActionType.DELETE, path);
+            replicator.replicate(session, ReplicationActionType.DEACTIVATE, path);
         } catch (ReplicationException e) {
             throw new ContentorException(String.format("Cannot unpublish path '%s'", path), e);
+        }
+    }
+
+    public static void delete(ResourceResolver resolver, Replicator replicator, String path) {
+        try {
+            Session session = getSession(resolver);
+            replicator.replicate(session, ReplicationActionType.DELETE, path);
+        } catch (ReplicationException e) {
+            throw new ContentorException(String.format("Cannot delete path '%s'", path), e);
         }
     }
 
