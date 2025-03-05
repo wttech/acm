@@ -245,47 +245,51 @@ const ConsolePage = () => {
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="code">
-            <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-              <View>
-                <Flex alignItems="center" justifyContent="space-between" gap={10}>
+            <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
+              <Flex direction="row" justifyContent="space-between" alignItems="center">
+                <Flex flex="1" alignItems="center">
                   <ButtonGroup>
                     <Button variant="accent" onPress={onExecute} isPending={executing} isDisabled={isCompiling || !!syntaxError || !!compilationError}>
                       <Gears />
                       <Text>Execute</Text>
                     </Button>
                   </ButtonGroup>
+                </Flex>
+                <Flex flex="1" justifyContent="center" alignItems="center">
                   <CompilationStatus onCompilationErrorClick={() => setSelectedTab('output')} isCompiling={isCompiling} syntaxError={syntaxError} compilationError={compilationError} />
+                </Flex>
+                <Flex flex="1" justifyContent="end" alignItems="center">
                   <DialogTrigger>
                     <Button variant="secondary" style="fill">
                       <Help />
                       <Text>Help</Text>
                     </Button>
                     {(close) => (
-                      <Dialog>
-                        <Heading>Keyboard Shortcuts</Heading>
-                        <Divider />
-                        <Content>
-                          <p>
-                            <Keyboard>Fn</Keyboard> + <Keyboard>F1</Keyboard> &mdash; Command&nbsp;Palette
-                          </p>
-                          <p>
-                            <Keyboard>⌃</Keyboard> + <Keyboard>Space</Keyboard> &mdash; Code&nbsp;Completions
-                          </p>
-                          <p>
-                            <Keyboard>⌘</Keyboard> + <Keyboard>.</Keyboard> &mdash; Quick Fixes
-                          </p>
-                        </Content>
-                        <ButtonGroup>
-                          <Button variant="secondary" onPress={close}>
-                            <Close size="XS" />
-                            <Text>Close</Text>
-                          </Button>
-                        </ButtonGroup>
-                      </Dialog>
+                        <Dialog>
+                          <Heading>Keyboard Shortcuts</Heading>
+                          <Divider />
+                          <Content>
+                            <p>
+                              <Keyboard>Fn</Keyboard> + <Keyboard>F1</Keyboard> &mdash; Command&nbsp;Palette
+                            </p>
+                            <p>
+                              <Keyboard>⌃</Keyboard> + <Keyboard>Space</Keyboard> &mdash; Code&nbsp;Completions
+                            </p>
+                            <p>
+                              <Keyboard>⌘</Keyboard> + <Keyboard>.</Keyboard> &mdash; Quick Fixes
+                            </p>
+                          </Content>
+                          <ButtonGroup>
+                            <Button variant="secondary" onPress={close}>
+                              <Close size="XS" />
+                              <Text>Close</Text>
+                            </Button>
+                          </ButtonGroup>
+                        </Dialog>
                     )}
                   </DialogTrigger>
                 </Flex>
-              </View>
+              </Flex>
               <ImmersiveEditor value={code} onChange={setCode} syntaxError={syntaxError} language="groovy" beforeMount={registerGroovyLanguage} />
             </Flex>
           </Item>
