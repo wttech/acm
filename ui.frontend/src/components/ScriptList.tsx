@@ -56,6 +56,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
   const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false);
 
   const loadScripts = useCallback(() => {
     toastRequest<ScriptOutput>({
@@ -64,8 +65,8 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
       operation: `Scripts loading (${type})`,
       positive: false,
     })
-      .then((data) => setScripts(data.data.data))
-      .catch((error) => console.error(`Scripts loading (${type}) error:`, error));
+        .then((data) => setScripts(data.data.data))
+        .catch((error) => console.error(`Scripts loading (${type}) error:`, error));
   }, [type]);
 
   useEffect(() => {
@@ -104,51 +105,89 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
     }
   };
 
+  const handleSyncConfirm = async () => {
+    try {
+      await toastRequest({
+        method: 'POST',
+        url: `/apps/contentor/api/script.json?action=sync_all`,
+        operation: `Synchronize scripts`,
+      });
+      loadScripts();
+    } catch (error) {
+      console.error(`Synchronize scripts error:`, error);
+    } finally {
+      setSyncDialogOpen(false);
+    }
+  };
+
   const renderEmptyState = () => (
-    <IllustratedMessage>
-      <NotFound />
-      <Content>No scripts found</Content>
-    </IllustratedMessage>
+      <IllustratedMessage>
+        <NotFound />
+        <Content>No scripts found</Content>
+      </IllustratedMessage>
   );
 
   const renderToggleDialog = () => (
-    <>
-      <Heading>
-        <Text>Confirmation</Text>
-      </Heading>
-      <Divider />
-      <Content>
-        {type === 'enabled' ? (
-          <Text>Disabling scripts will stop their automatic execution. To execute them again, you need to enable them or reinstall the package with scripts.</Text>
-        ) : (
-          <Text>Enabling scripts can cause changes in the repository and potential data loss. Ensure the script is ready to use. It is recommended to provide enabled scripts via a package, not manually.</Text>
-        )}
-      </Content>
-      <ButtonGroup>
-        <Button variant="secondary" onPress={() => setToggleDialogOpen(false)}>
-          <Cancel />
-          <Text>Cancel</Text>
-        </Button>
-        <Button variant="negative" style="fill" onPress={handleConfirm}>
-          <Checkmark />
-          <Text>Confirm</Text>
-        </Button>
-      </ButtonGroup>
-    </>
+      <>
+        <Heading>
+          <Text>Confirmation</Text>
+        </Heading>
+        <Divider />
+        <Content>
+          {type === 'enabled' ? (
+              <Text>Disabling scripts will stop their automatic execution. To execute them again, you need to enable them or reinstall the package with scripts.</Text>
+          ) : (
+              <Text>Enabling scripts can cause changes in the repository and potential data loss. Ensure the script is ready to use. It is recommended to provide enabled scripts via a package, not manually.</Text>
+          )}
+        </Content>
+        <ButtonGroup>
+          <Button variant="secondary" onPress={() => setToggleDialogOpen(false)}>
+            <Cancel />
+            <Text>Cancel</Text>
+          </Button>
+          <Button variant="negative" style="fill" onPress={handleConfirm}>
+            <Checkmark />
+            <Text>Confirm</Text>
+          </Button>
+        </ButtonGroup>
+      </>
+  );
+
+  const renderSyncDialog = () => (
+      <>
+        <Heading>
+          <Text>Confirmation</Text>
+        </Heading>
+        <Divider />
+        <Content>
+          <p>This action will synchronize all scripts between the author and publish instances. This ensures consistency across the whole environment.</p>
+          <p>Notice that <strong>both enabled and disabled</strong> scripts will be synchronized.</p>
+        </Content>
+        <ButtonGroup>
+          <Button variant="secondary" onPress={() => setSyncDialogOpen(false)}>
+            <Cancel />
+            <Text>Cancel</Text>
+          </Button>
+          <Button variant="negative" style="fill" onPress={handleSyncConfirm}>
+            <Checkmark />
+            <Text>Confirm</Text>
+          </Button>
+        </ButtonGroup>
+      </>
   );
 
   if (scripts === null) {
     return (
-      <Flex flex="1" justifyContent="center" alignItems="center">
-        <ProgressBar label="Loading..." isIndeterminate />
-      </Flex>
+        <Flex flex="1" justifyContent="center" alignItems="center">
+          <ProgressBar label="Loading..." isIndeterminate />
+        </Flex>
     );
   }
 
   return (
-    <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-      <View>
-        <Flex direction="row" justifyContent="space-between" alignItems="center">
+      <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+        <View>
+          <Flex direction="row" justifyContent="space-between" alignItems="center">
             <Flex flex="1" alignItems="center">
               <ButtonGroup>
                 <DialogTrigger isOpen={toggleDialogOpen} onOpenChange={setToggleDialogOpen}>
@@ -158,10 +197,13 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                   </Button>
                   <Dialog>{renderToggleDialog()}</Dialog>
                 </DialogTrigger>
-                <Button variant="primary" isDisabled={true}>
-                  <UploadToCloud/>
-                  <Text>Publish All</Text>
-                </Button>
+                <DialogTrigger isOpen={syncDialogOpen} onOpenChange={setSyncDialogOpen}>
+                  <Button variant="primary" onPress={() => setSyncDialogOpen(true)}>
+                    <UploadToCloud />
+                    <Text>Synchronize</Text>
+                  </Button>
+                  <Dialog>{renderSyncDialog()}</Dialog>
+                </DialogTrigger>
               </ButtonGroup>
             </Flex>
             <Flex flex="1" justifyContent="center" alignItems="center">
@@ -221,49 +263,49 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               </DialogTrigger>
             </Flex>
           </Flex>
-      </View>
-      <TableView flex="1"
-                 aria-label="Scripts list"
-                 selectionMode="multiple"
-                 selectedKeys={selectedKeys}
-                 onSelectionChange={setSelectedKeys}
-                 renderEmptyState={renderEmptyState}
-                 onAction={(key) => {navigate(`/scripts/view/${encodeURIComponent(key)}`)}}
-      >
-        <TableHeader>
-          <Column>Name</Column>
-          <Column>Last Execution</Column>
-          <Column>
-            Success Rate
-            <ContextualHelp variant="help">
-              <Heading>Explanation</Heading>
-              <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
-            </ContextualHelp>
-          </Column>
-        </TableHeader>
-        <TableBody>
-          {(scripts.list || []).map((script) => {
-            const scriptStats = (scripts.stats.find((stat) => stat.path === script.id))!;
-            const lastExecution = scriptStats?.lastExecution;
+        </View>
+        <TableView flex="1"
+                   aria-label="Scripts list"
+                   selectionMode="multiple"
+                   selectedKeys={selectedKeys}
+                   onSelectionChange={setSelectedKeys}
+                   renderEmptyState={renderEmptyState}
+                   onAction={(key) => {navigate(`/scripts/view/${encodeURIComponent(key)}`)}}
+        >
+          <TableHeader>
+            <Column>Name</Column>
+            <Column>Last Execution</Column>
+            <Column>
+              Success Rate
+              <ContextualHelp variant="help">
+                <Heading>Explanation</Heading>
+                <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
+              </ContextualHelp>
+            </Column>
+          </TableHeader>
+          <TableBody>
+            {(scripts.list || []).map((script) => {
+              const scriptStats = (scripts.stats.find((stat) => stat.path === script.id))!;
+              const lastExecution = scriptStats?.lastExecution;
 
-            return (
-              <Row key={script.id}>
-                <Cell>{script.name}</Cell>
-                <Cell>
-                  <Flex justifyContent="space-between" alignItems="center">
-                    <Text>{lastExecution ? <DateExplained value={lastExecution.startDate}/> : '—'}</Text>
-                    {lastExecution && (
-                        <ActionButton onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution"><Magnify /></ActionButton>
-                    )}
-                  </Flex>
-                </Cell>
-                <Cell><ExecutionStatsBadge stats={scriptStats} /></Cell>
-              </Row>
-            );
-          })}
-        </TableBody>
-      </TableView>
-    </Flex>
+              return (
+                  <Row key={script.id}>
+                    <Cell>{script.name}</Cell>
+                    <Cell>
+                      <Flex justifyContent="space-between" alignItems="center">
+                        <Text>{lastExecution ? <DateExplained value={lastExecution.startDate}/> : '—'}</Text>
+                        {lastExecution && (
+                            <ActionButton onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution"><Magnify /></ActionButton>
+                        )}
+                      </Flex>
+                    </Cell>
+                    <Cell><ExecutionStatsBadge stats={scriptStats} /></Cell>
+                  </Row>
+              );
+            })}
+          </TableBody>
+        </TableView>
+      </Flex>
   );
 };
 
