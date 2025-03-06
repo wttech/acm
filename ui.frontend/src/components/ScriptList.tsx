@@ -25,11 +25,9 @@ import { Key, Selection } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
-import PlayCircle from '@spectrum-icons/workflow/PlayCircle';
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import { toastRequest } from '../utils/api';
 import { ScriptOutput } from '../utils/api.types';
-import { useFormatter } from '../utils/hooks.ts';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import {useNavigate} from "react-router-dom";
 import Magnify from "@spectrum-icons/workflow/Magnify";
@@ -41,8 +39,8 @@ import Heart from "@spectrum-icons/workflow/Heart";
 import Code from "@spectrum-icons/workflow/Code";
 import Close from "@spectrum-icons/workflow/Close";
 import Box from "@spectrum-icons/workflow/Box";
-import UploadToCloud from "@spectrum-icons/workflow/UploadToCloud";
-import ImmersiveEditor from "./ImmersiveEditor.tsx";
+import ScriptSyncAllDialog from './ScriptSyncAllDialog';
+import ScriptToggleDialog from './ScriptToggleDialog';
 
 type ScriptListProps = {
   type: 'enabled' | 'disabled';
@@ -51,12 +49,9 @@ type ScriptListProps = {
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
   const appContext = useContext(AppContext);
   const navigate = useNavigate();
-  const formatter = useFormatter();
 
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
-  const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
-  const [syncDialogOpen, setSyncDialogOpen] = useState(false);
 
   const loadScripts = useCallback(() => {
     toastRequest<ScriptOutput>({
@@ -81,99 +76,11 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
     }
   };
 
-  const handleConfirm = async () => {
-    const action = type === 'enabled' ? 'disable' : 'enable';
-    const ids = selectedIds(selectedKeys);
-
-    const params = new URLSearchParams();
-    params.append('action', action);
-    params.append('type', type);
-    ids.forEach((id) => params.append('id', id));
-
-    try {
-      await toastRequest({
-        method: 'POST',
-        url: `/apps/contentor/api/script.json?${params.toString()}`,
-        operation: `${action} scripts`,
-      });
-      loadScripts();
-      setSelectedKeys(new Set<Key>());
-    } catch (error) {
-      console.error(`${action} scripts error:`, error);
-    } finally {
-      setToggleDialogOpen(false);
-    }
-  };
-
-  const handleSyncConfirm = async () => {
-    try {
-      await toastRequest({
-        method: 'POST',
-        url: `/apps/contentor/api/script.json?action=sync_all`,
-        operation: `Synchronize scripts`,
-      });
-      loadScripts();
-    } catch (error) {
-      console.error(`Synchronize scripts error:`, error);
-    } finally {
-      setSyncDialogOpen(false);
-    }
-  };
-
   const renderEmptyState = () => (
       <IllustratedMessage>
         <NotFound />
         <Content>No scripts found</Content>
       </IllustratedMessage>
-  );
-
-  const renderToggleDialog = () => (
-      <>
-        <Heading>
-          <Text>Confirmation</Text>
-        </Heading>
-        <Divider />
-        <Content>
-          {type === 'enabled' ? (
-              <Text>Disabling scripts will stop their automatic execution. To execute them again, you need to enable them or reinstall the package with scripts.</Text>
-          ) : (
-              <Text>Enabling scripts can cause changes in the repository and potential data loss. Ensure the script is ready to use. It is recommended to provide enabled scripts via a package, not manually.</Text>
-          )}
-        </Content>
-        <ButtonGroup>
-          <Button variant="secondary" onPress={() => setToggleDialogOpen(false)}>
-            <Cancel />
-            <Text>Cancel</Text>
-          </Button>
-          <Button variant="negative" style="fill" onPress={handleConfirm}>
-            <Checkmark />
-            <Text>Confirm</Text>
-          </Button>
-        </ButtonGroup>
-      </>
-  );
-
-  const renderSyncDialog = () => (
-      <>
-        <Heading>
-          <Text>Confirmation</Text>
-        </Heading>
-        <Divider />
-        <Content>
-          <p>This action will synchronize all scripts between the author and publish instances. This ensures consistency across the whole environment.</p>
-          <p>Notice that <strong>both enabled and disabled</strong> scripts will be synchronized.</p>
-        </Content>
-        <ButtonGroup>
-          <Button variant="secondary" onPress={() => setSyncDialogOpen(false)}>
-            <Cancel />
-            <Text>Cancel</Text>
-          </Button>
-          <Button variant="negative" style="fill" onPress={handleSyncConfirm}>
-            <Checkmark />
-            <Text>Confirm</Text>
-          </Button>
-        </ButtonGroup>
-      </>
   );
 
   if (scripts === null) {
@@ -190,20 +97,8 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           <Flex direction="row" justifyContent="space-between" alignItems="center">
             <Flex flex="1" alignItems="center">
               <ButtonGroup>
-                <DialogTrigger isOpen={toggleDialogOpen} onOpenChange={setToggleDialogOpen}>
-                  <Button variant={type === 'enabled' ? 'negative' : 'accent'} style="fill" isDisabled={selectedKeys === 'all' ? false : (selectedKeys as Set<Key>).size === 0} onPress={() => setToggleDialogOpen(true)}>
-                    {type === 'enabled' ? <Cancel /> : <PlayCircle />}
-                    <Text>{type === 'enabled' ? 'Disable' : 'Enable'}</Text>
-                  </Button>
-                  <Dialog>{renderToggleDialog()}</Dialog>
-                </DialogTrigger>
-                <DialogTrigger isOpen={syncDialogOpen} onOpenChange={setSyncDialogOpen}>
-                  <Button variant="primary" onPress={() => setSyncDialogOpen(true)}>
-                    <UploadToCloud />
-                    <Text>Synchronize</Text>
-                  </Button>
-                  <Dialog>{renderSyncDialog()}</Dialog>
-                </DialogTrigger>
+                <ScriptToggleDialog type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
+                <ScriptSyncAllDialog onSync={loadScripts} />
               </ButtonGroup>
             </Flex>
             <Flex flex="1" justifyContent="center" alignItems="center">
