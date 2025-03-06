@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
 import Bug from '@spectrum-icons/workflow/Bug';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Copy from '@spectrum-icons/workflow/Copy';
