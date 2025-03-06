@@ -110,7 +110,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         Optional<Action> action = Action.of(stringParam(request, ACTION_PARAM));
         if (!action.isPresent()) {
-            respondJson(response, error("Invalid action parameter! Must be either 'enable' or 'disable'"));
+            respondJson(response, error("Invalid action parameter! Must be either 'enable', 'disable' or 'sync_all'"));
             return;
         }
 
