@@ -1,60 +1,76 @@
 [![WTT logo](docs/wtt-logo.png)](https://www.wundermanthompson.com)
 
 <!--
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/aem-contentor)](https://github.com/wttech/aem-contentor/releases)
-[![GitHub All Releases](https://img.shields.io/github/downloads/wttech/aem-contentor/total)](https://github.com/wttech/aem-contentor/releases)
-[![Check](https://github.com/wttech/aem-contentor/workflows/Check/badge.svg)](https://github.com/wttech/aem-contentor/actions/workflows/check.yml)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/acm)](https://github.com/wttech/acm/releases)
+[![GitHub All Releases](https://img.shields.io/github/downloads/wttech/acm/total)](https://github.com/wttech/acm/releases)
+[![Check](https://github.com/wttech/acm/workflows/Check/badge.svg)](https://github.com/wttech/acm/actions/workflows/check.yml)
 -->
 [![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
 
 <!--
 <p>
-  <img src="docs/logo-text.svg" alt="AEM Contentor" width="300"/>
+  <img src="docs/logo-text.svg" alt="AEM Content Manager" width="300"/>
 </p>
 -->
+
+**AEM Content Manager (ACM)**
 
 Tool for doing live content and permission updates for AEM applications in a simple and flexible way.
 
 Simply [install](#installation) ready-to-use CRX package on AEM instance and start migrating!
 
 <p>
-  <img src="docs/screenshot-console-code.png" alt="AEM Contentor - Console Code (Screenshot)" width="640"/>
+  <img src="docs/screenshot-console-code.png" alt="AEM Content Manager - Console Code (Screenshot)" width="640"/>
 </p>
 
 <p>
-  <img src="docs/screenshot-console-output.png" alt="AEM Contentor - Console Output (Screenshot)" width="640"/>
+  <img src="docs/screenshot-console-output.png" alt="AEM Content Manager - Console Output (Screenshot)" width="640"/>
 </p>
 
-Main concepts of AEM Contentor tool are:
+<p>
+  <img src="docs/screenshot-executions.png" alt="AEM Content Manager - Executions  (Screenshot)" width="640"/>
+</p>
+
+<p>
+  <img src="docs/screenshot-scripts-enabled.png" alt="AEM Content Manager - Scripts Enabled (Screenshot)" width="640"/>
+</p>
+
+<p>
+  <img src="docs/screenshot-snippets.png" alt="AEM Content Manager - Snippets (Screenshot)" width="640"/>
+</p>
+
+---
+
+Main concepts of AEM Content Manager tool are:
 
 * **Simplicity**
     * Creating migration scripts should be as much simple as it is possible (no need to learn custom YML syntax or configuration language, just well-known Groovy),
-    * No extra configuration needed - no hooks to needed to be configured in a AEM build (just provide Groovy scripts, the tool will do the rest),
+    * No extra configuration needed - no hooks to needed to be configured in an AEM build (just provide Groovy scripts, the tool will do the rest),
 * **Stability**
     * Executed always at optimal moment - safely use any classes from any OSGi bundles including your own,
 
 ## Installation
 
-The ready-to-install AEM packages are available on [GitHub releases](https://github.com/wttech/aem-contentor/releases).
+The ready-to-install AEM packages are available on [GitHub releases](https://github.com/wttech/acm/releases).
 
-There are two ways to install AEM Contentor on your AEM instances:
+There are two ways to install AEM Content Manager on your AEM instances:
 
 1. Using the 'all' package:
     * Recommended for fresh AEM instances.
-    * This package will also install AEM Groovy Console and AEM Contentor examples.
+    * This package will also install AEM Groovy Console and AEM Content Manager examples.
 2. Using the 'minimal' package:
     * Recommended for AEM instances that already contain some dependencies shared with other tools.
     * This package does not include Groovy bundles, which can be provided by other tools like [AEM Easy Content Upgrade](https://github.com/valtech/aem-easy-content-upgrade/releases) (AECU) or [AEM Groovy Console](https://github.com/orbinson/aem-groovy-console/releases).
 
 ## Compatibility
 
-| AEM Contentor | AEM        | Java  | Groovy |
-|--------------|------------|-------|--------|
-| 1.0.0        | 6.5, cloud | 8, 11 | 4.x    |
+| AEM Content Manager | AEM        | Java  | Groovy |
+|---------------------|------------|-------|--------|
+| 1.0.0               | 6.5, cloud | 8, 11 | 4.x    |
 
-Note that AEM Contentor is using Groovy scripts concept. However it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
-AEM Contentor tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
-It is compatible with AEM Groovy Console - simply install one of AEM Contentor distributions without Groovy console OSGi bundle included as it is usually provided by Groovy Console AEM package.
+Note that AEM Content Manager is using Groovy scripts concept. However it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
+AEM Content Manager tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
+It is compatible with AEM Groovy Console - simply install one of AEM Content Manager distributions without Groovy console OSGi bundle included as it is usually provided by Groovy Console AEM package.
 
 ## Documentation
 
@@ -72,8 +88,11 @@ TODO
 
 ## Authors
 
-* [Krystian Panek](mailto:krystian.panek@vml.com) - Project Founder, Main Developer,
-* [Dominik Przybył](mailto:dominik.przybyl@vml.com) - Main Developer.
+- Founder, owner, and maintainer: [Krystian Panek](mailto:krystian.panek@vml.com)
+- Developers: [Dominik Przybył](mailto:dominik.przybyl@vml.com), [Mariusz Pacyga](mailto:mariusz.pacyga@vml.com)
+- Consultancy: [Tomasz Sobczyk](mailto:tomasz.sobczyk@vml.com)
+- Contributors: [&lt;see all&gt;](https://github.com/wttech/aemc/graphs/contributors)
+
 
 ## Contributing
 
@@ -111,4 +130,4 @@ Or to deploy only a single content package, run in the sub-module directory (i.e
 
 ## License
 
-**AEM Contentor** is licensed under the [Apache License, Version 2.0 (the "License")](https://www.apache.org/licenses/LICENSE-2.0.txt)
+**AEM Content Manager** is licensed under the [Apache License, Version 2.0 (the "License")](https://www.apache.org/licenses/LICENSE-2.0.txt)

@@ -1,26 +1,30 @@
 package com.wttech.aem.contentor.core.instance;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
-public class HealthStatus {
+public class HealthStatus implements Serializable {
 
-    private boolean healthy;
+    boolean healthy;
 
-    private List<HealthIssue> issues = new LinkedList<>();
-
-    public static HealthStatus mock() {
-        HealthStatus result = new HealthStatus();
-        result.issues.add(new HealthIssue("OSGi bundle 'com.acme.aem.core' is not active!"));
-        return result;
-    }
+    List<HealthIssue> issues = new LinkedList<>();
 
     public List<HealthIssue> getIssues() {
         return issues;
     }
 
     public boolean isHealthy() {
-        return CollectionUtils.isEmpty(issues);
+        return healthy;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("healthy", healthy)
+                .append("issues", issues)
+                .toString();
     }
 }

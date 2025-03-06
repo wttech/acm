@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
@@ -27,15 +28,40 @@ public class OsgiScanner {
         this.bundleContext = bundleContext;
     }
 
-    public Stream<ClassInfo> scanClasses() {
-        return Arrays.stream(bundleContext.getBundles())
-                .filter(this::isBundleOrFragmentReady)
-                .flatMap(this::scanClasses);
+    public Stream<Bundle> scanBundles() {
+        return Arrays.stream(bundleContext.getBundles());
     }
 
-    private boolean isBundleOrFragmentReady(Bundle bundle) {
-        return bundle.getState() == Bundle.ACTIVE
-                || (bundle.getState() == Bundle.RESOLVED && bundle.getHeaders().get("Fragment-Host") != null);
+    public Stream<ClassInfo> scanClasses() {
+        return scanBundles().filter(this::isBundleOrFragmentReady).flatMap(this::scanClasses);
+    }
+
+    public int computeBundlesHashCode() {
+        HashCodeBuilder builder = new HashCodeBuilder();
+        Arrays.stream(bundleContext.getBundles())
+                .filter(this::isBundleOrFragmentReady)
+                .forEach(bundle -> {
+                    builder.append(bundle.getSymbolicName());
+                    builder.append(bundle.getVersion());
+                    builder.append(bundle.getLastModified());
+                });
+        return builder.toHashCode();
+    }
+
+    public boolean isBundleActive(Bundle bundle) {
+        return bundle.getState() == Bundle.ACTIVE;
+    }
+
+    public boolean isBundleResolved(Bundle bundle) {
+        return bundle.getState() == Bundle.RESOLVED;
+    }
+
+    public boolean isFragment(Bundle bundle) {
+        return bundle.getHeaders().get("Fragment-Host") != null;
+    }
+
+    public boolean isBundleOrFragmentReady(Bundle bundle) {
+        return isBundleActive(bundle) || (isFragment(bundle) && isBundleResolved(bundle));
     }
 
     private Stream<ClassInfo> scanClasses(Bundle bundle) {

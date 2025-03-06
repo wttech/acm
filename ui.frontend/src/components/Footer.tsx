@@ -17,10 +17,10 @@ const Footer = () => {
               <View marginTop="size-50">Copyright {new Date().getFullYear() === 2024 ? '2024' : `2024 - ${new Date().getFullYear()}`} &copy; Licensed under the Apache License, Version 2.0.</View>
             </View>
           </Flex>
-          <Link href="https://github.com/wunderman-thompson/wtpl-aem-contentor" target="_blank">
+          <Link href="https://github.com/wttech/acm" target="_blank">
             <Flex alignItems="center" gap="size-75">
               <img src="/apps/contentor/spa/github-mark.svg" alt="GitHub" width="16" height="16" style={{ color: 'var(--spectrum-global-color-gray-800)' }} />
-              <View>View &apos;Contentor&apos; on GitHub</View>
+              <View>View &apos;Content Manager&apos; on GitHub</View>
             </Flex>
           </Link>
         </Flex>

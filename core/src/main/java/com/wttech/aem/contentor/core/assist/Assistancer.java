@@ -13,8 +13,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleListener;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
@@ -27,13 +30,41 @@ public class Assistancer {
     @Reference
     private transient ResourceScanner resourceScanner;
 
+    private BundleContext bundleContext;
+
+    private BundleListener bundleListener;
+
     private List<ClassInfo> classCache = Collections.emptyList();
 
+    private int bundlesHashCode;
+
     @Activate
+    protected void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+        this.bundleListener = event -> updateCache();
+        this.bundleContext.addBundleListener(bundleListener);
+
+        updateCache();
+    }
+
     @Modified
-    protected void activate() {
-        // TODO invalidate it based on bundles checksums (lastModified + symbolicName + version)
-        this.classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
+    protected void modified() {
+        updateCache();
+    }
+
+    @Deactivate
+    protected void deactivate() {
+        if (bundleListener != null) {
+            bundleContext.removeBundleListener(bundleListener);
+        }
+    }
+
+    private synchronized void updateCache() {
+        int bundlesHashCodeCurrent = osgiScanner.computeBundlesHashCode();
+        if (bundlesHashCode != bundlesHashCodeCurrent) {
+            classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
+            bundlesHashCode = bundlesHashCodeCurrent;
+        }
     }
 
     public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word)

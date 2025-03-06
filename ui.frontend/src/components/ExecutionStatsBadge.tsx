@@ -11,7 +11,7 @@ const getBadgeVariant = (successRate: number, totalExecutions: number): 'positiv
         return 'info';
     } else if (successRate === 100) {
         return 'positive';
-    } else if (successRate > 80) {
+    } else if (successRate >= 50) {
         return 'yellow';
     } else {
         return 'negative';

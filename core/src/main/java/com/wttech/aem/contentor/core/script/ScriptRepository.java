@@ -4,7 +4,6 @@ import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceSpliterator;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -33,8 +32,9 @@ public class ScriptRepository {
 
     public Stream<Script> findAll(ScriptType type) throws ContentorException {
         return ResourceSpliterator.stream(readRoot(type))
-                .map(r -> Script.from(r).orElse(null))
-                .filter(Objects::nonNull);
+                .map(Script::from)
+                .filter(Optional::isPresent)
+                .map(Optional::get);
     }
 
     public Stream<Script> readAll(List<String> ids) {
@@ -49,7 +49,7 @@ public class ScriptRepository {
     private Resource readRoot(ScriptType type) throws ContentorException {
         Resource root = resourceResolver.getResource(type.root());
         if (root == null) {
-            throw new ContentorException(String.format("Script root path '%s' does not exist!", ROOT));
+            throw new ContentorException(String.format("Script root path '%s' does not exist!", type.root()));
         }
         return root;
     }

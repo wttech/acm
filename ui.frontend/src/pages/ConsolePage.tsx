@@ -7,6 +7,7 @@ import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
+import Close from "@spectrum-icons/workflow/Close";
 import { useDebounce } from 'react-use';
 import CompilationStatus from '../components/CompilationStatus.tsx';
 import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
@@ -14,7 +15,7 @@ import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
@@ -243,46 +244,51 @@ const ConsolePage = () => {
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="code">
-            <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-              <View>
-                <Flex alignItems="center" justifyContent="space-between" gap={10}>
+            <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
+              <Flex direction="row" justifyContent="space-between" alignItems="center">
+                <Flex flex="1" alignItems="center">
                   <ButtonGroup>
                     <Button variant="accent" onPress={onExecute} isPending={executing} isDisabled={isCompiling || !!syntaxError || !!compilationError}>
                       <Gears />
                       <Text>Execute</Text>
                     </Button>
                   </ButtonGroup>
+                </Flex>
+                <Flex flex="1" justifyContent="center" alignItems="center">
                   <CompilationStatus onCompilationErrorClick={() => setSelectedTab('output')} isCompiling={isCompiling} syntaxError={syntaxError} compilationError={compilationError} />
+                </Flex>
+                <Flex flex="1" justifyContent="end" alignItems="center">
                   <DialogTrigger>
                     <Button variant="secondary" style="fill">
                       <Help />
                       <Text>Help</Text>
                     </Button>
                     {(close) => (
-                      <Dialog>
-                        <Heading>Keyboard Shortcuts</Heading>
-                        <Divider />
-                        <Content>
-                          <p>
-                            <Keyboard>Fn</Keyboard> + <Keyboard>F1</Keyboard> &mdash; Command&nbsp;Palette
-                          </p>
-                          <p>
-                            <Keyboard>⌃</Keyboard> + <Keyboard>Space</Keyboard> &mdash; Code&nbsp;Completions
-                          </p>
-                          <p>
-                            <Keyboard>⌘</Keyboard> + <Keyboard>.</Keyboard> &mdash; Quick Fixes
-                          </p>
-                        </Content>
-                        <ButtonGroup>
-                          <Button variant="secondary" onPress={close}>
-                            Close
-                          </Button>
-                        </ButtonGroup>
-                      </Dialog>
+                        <Dialog>
+                          <Heading>Keyboard Shortcuts</Heading>
+                          <Divider />
+                          <Content>
+                            <p>
+                              <Keyboard>Fn</Keyboard> + <Keyboard>F1</Keyboard> &mdash; Command&nbsp;Palette
+                            </p>
+                            <p>
+                              <Keyboard>⌃</Keyboard> + <Keyboard>Space</Keyboard> &mdash; Code&nbsp;Completions
+                            </p>
+                            <p>
+                              <Keyboard>⌘</Keyboard> + <Keyboard>.</Keyboard> &mdash; Quick Fixes
+                            </p>
+                          </Content>
+                          <ButtonGroup>
+                            <Button variant="secondary" onPress={close}>
+                              <Close size="XS" />
+                              <Text>Close</Text>
+                            </Button>
+                          </ButtonGroup>
+                        </Dialog>
                     )}
                   </DialogTrigger>
                 </Flex>
-              </View>
+              </Flex>
               <ImmersiveEditor id="code-editor" initialValue={localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCode} onChange={setCode} syntaxError={syntaxError} language="groovy" />
             </Flex>
           </Item>
@@ -338,7 +344,8 @@ const ConsolePage = () => {
                         </Content>
                         <ButtonGroup>
                           <Button variant="secondary" onPress={close}>
-                            Close
+                            <Close size="XS" />
+                            <Text>Close</Text>
                           </Button>
                         </ButtonGroup>
                       </Dialog>

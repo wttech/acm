@@ -4,10 +4,12 @@ import static com.wttech.aem.contentor.core.util.ServletResult.error;
 import static com.wttech.aem.contentor.core.util.ServletResult.ok;
 import static com.wttech.aem.contentor.core.util.ServletUtils.*;
 
+import com.day.cq.replication.Replicator;
 import com.wttech.aem.contentor.core.script.Script;
 import com.wttech.aem.contentor.core.script.ScriptRepository;
 import com.wttech.aem.contentor.core.script.ScriptStats;
 import com.wttech.aem.contentor.core.script.ScriptType;
+import com.wttech.aem.contentor.core.util.ReplicationUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +21,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +51,8 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     private enum Action {
         ENABLE,
-        DISABLE;
+        DISABLE,
+        SYNC_ALL;
 
         public static Optional<Action> of(String name) {
             return Arrays.stream(Action.values())
@@ -56,6 +60,9 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     .findFirst();
         }
     }
+
+    @Reference
+    private Replicator replicator;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
@@ -102,15 +109,15 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        List<String> paths = stringsParam(request, ID_PARAM);
-        if (paths.isEmpty()) {
-            respondJson(response, error("Script path parameter is not specified!"));
-            return;
-        }
-
         Optional<Action> action = Action.of(stringParam(request, ACTION_PARAM));
         if (!action.isPresent()) {
             respondJson(response, error("Invalid action parameter! Must be either 'enable' or 'disable'"));
+            return;
+        }
+
+        List<String> paths = stringsParam(request, ID_PARAM);
+        if (paths.isEmpty() && action.get() != Action.SYNC_ALL) {
+            respondJson(response, error("Script path parameter is not specified!"));
             return;
         }
 
@@ -125,6 +132,11 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                 case DISABLE:
                     paths.forEach(repository::disable);
                     respondJson(response, ok(String.format("%d script(s) disabled successfully", paths.size())));
+                    break;
+                case SYNC_ALL:
+                    ReplicationUtils.unpublish(request.getResourceResolver(), replicator, ScriptRepository.ROOT);
+                    ReplicationUtils.publishTree(request.getResourceResolver(), replicator, ScriptRepository.ROOT);
+                    respondJson(response, ok("All scripts sync successfully"));
                     break;
             }
         } catch (Exception e) {

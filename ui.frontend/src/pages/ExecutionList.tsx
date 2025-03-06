@@ -16,6 +16,7 @@ import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import { toastRequest } from '../utils/api';
 import { ExecutionOutput, ExecutionStatus } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks.ts';
+import DateExplained from '../components/DateExplained';
 
 const ExecutionList = () => {
   const navigate = useNavigate();
@@ -125,7 +126,7 @@ const ExecutionList = () => {
                 <Cell>
                   <ExecutableValue value={execution.executable} />
                 </Cell>
-                <Cell>{formatter.dateAtInstance(execution.startDate)}</Cell>
+                <Cell><DateExplained value={execution.startDate}/></Cell>
                 <Cell>{formatter.duration(execution.duration)}</Cell>
                 <Cell>
                   <ExecutionStatusBadge value={execution.status} />
