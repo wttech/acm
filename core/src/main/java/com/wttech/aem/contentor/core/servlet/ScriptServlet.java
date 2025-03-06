@@ -136,7 +136,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                 case SYNC_ALL:
                     ReplicationUtils.unpublish(request.getResourceResolver(), replicator, ScriptRepository.ROOT);
                     ReplicationUtils.publishTree(request.getResourceResolver(), replicator, ScriptRepository.ROOT);
-                    respondJson(response, ok("All scripts sync successfully"));
+                    respondJson(response, ok("Scripts synchronized successfully"));
                     break;
             }
         } catch (Exception e) {

@@ -21,8 +21,10 @@ type ScriptToggleDialogProps = {
 
 const ScriptToggleDialog: React.FC<ScriptToggleDialogProps> = ({ type, selectedKeys, onToggle }) => {
     const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleConfirm = async () => {
+        setIsLoading(true);
         const action = type === 'enabled' ? 'disable' : 'enable';
         const ids = Array.from(selectedKeys);
 
@@ -41,6 +43,7 @@ const ScriptToggleDialog: React.FC<ScriptToggleDialogProps> = ({ type, selectedK
         } catch (error) {
             console.error(`${action} scripts error:`, error);
         } finally {
+            setIsLoading(false);
             setToggleDialogOpen(false);
         }
     };
@@ -59,11 +62,11 @@ const ScriptToggleDialog: React.FC<ScriptToggleDialogProps> = ({ type, selectedK
                 )}
             </Content>
             <ButtonGroup>
-                <Button variant="secondary" onPress={() => setToggleDialogOpen(false)}>
+                <Button variant="secondary" onPress={() => setToggleDialogOpen(false)} isDisabled={isLoading}>
                     <Cancel />
                     <Text>Cancel</Text>
                 </Button>
-                <Button variant="negative" style="fill" onPress={handleConfirm}>
+                <Button variant="negative" style="fill" onPress={handleConfirm} isPending={isLoading}>
                     <Checkmark />
                     <Text>Confirm</Text>
                 </Button>

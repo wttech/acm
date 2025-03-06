@@ -20,8 +20,10 @@ type ScriptSyncAllDialogProps = {
 
 const ScriptSyncAllDialog: React.FC<ScriptSyncAllDialogProps> = ({ onSync }) => {
     const [syncDialogOpen, setSyncDialogOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSyncConfirm = async () => {
+        setIsLoading(true);
         try {
             await toastRequest({
                 method: 'POST',
@@ -32,6 +34,7 @@ const ScriptSyncAllDialog: React.FC<ScriptSyncAllDialogProps> = ({ onSync }) => 
         } catch (error) {
             console.error(`Synchronize scripts error:`, error);
         } finally {
+            setIsLoading(false);
             setSyncDialogOpen(false);
         }
     };
@@ -47,11 +50,11 @@ const ScriptSyncAllDialog: React.FC<ScriptSyncAllDialogProps> = ({ onSync }) => 
                 <p>Notice that <strong>both enabled and disabled</strong> scripts will be synchronized.</p>
             </Content>
             <ButtonGroup>
-                <Button variant="secondary" onPress={() => setSyncDialogOpen(false)}>
+                <Button variant="secondary" onPress={() => setSyncDialogOpen(false)} isDisabled={isLoading}>
                     <Cancel />
                     <Text>Cancel</Text>
                 </Button>
-                <Button variant="negative" style="fill" onPress={handleSyncConfirm}>
+                <Button variant="negative" style="fill" onPress={handleSyncConfirm} isPending={isLoading}>
                     <Checkmark />
                     <Text>Confirm</Text>
                 </Button>
