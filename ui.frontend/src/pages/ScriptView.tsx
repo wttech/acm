@@ -99,7 +99,7 @@ const ScriptView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <ImmersiveEditor value={script.content} language="groovy" readOnly />
+              <ImmersiveEditor id="script-view" value={script.content} language="groovy" readOnly />
             </Flex>
           </Item>
         </TabPanels>

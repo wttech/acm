@@ -283,7 +283,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </View>
-              <ImmersiveEditor persistenceId="code-editor" value={code} onChange={setCode} syntaxError={syntaxError} language="groovy" />
+              <ImmersiveEditor id="code-editor" initialValue={localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCode} onChange={setCode} syntaxError={syntaxError} language="groovy" />
             </Flex>
           </Item>
           <Item key="output">
@@ -346,7 +346,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </Flex>
-              <ImmersiveEditor value={executionOutput} readOnly />
+              <ImmersiveEditor id="output-preview" value={executionOutput} readOnly />
             </Flex>
           </Item>
         </TabPanels>

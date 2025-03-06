@@ -146,7 +146,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <ImmersiveEditor value={execution.executable.content} language="groovy" readOnly />
+              <ImmersiveEditor id="execution-view" value={execution.executable.content} language="groovy" readOnly />
             </Flex>
           </Item>
           <Item key="output">
@@ -161,7 +161,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <ImmersiveEditor value={executionOutput} readOnly />
+              <ImmersiveEditor id="execution-output" value={executionOutput} readOnly />
             </Flex>
           </Item>
         </TabPanels>

@@ -4,16 +4,28 @@ import { ColorVersion } from '@react-types/shared';
 import FullScreenExit from '@spectrum-icons/workflow/FullScreenExit';
 import { MarkerSeverity, editor } from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
+import { debounce } from '../utils/debounce.ts';
 import { modelStorage } from '../utils/modelStorage.ts';
 import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 
 export type SyntaxError = { line: number; column: number; message: string };
-type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & { persistenceId?: string; containerProps?: ViewProps<C>; syntaxError?: SyntaxError; onChange?: (code: string) => void };
+type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & { id: string; initialValue?: string; containerProps?: ViewProps<C>; syntaxError?: SyntaxError; onChange?: (code: string) => void };
 
-const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, persistenceId, language, value, ...props }: ImmersiveEditorProps<C>) => {
+const saveViewStateDebounce = 1000;
+
+const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, id, language, value, initialValue, ...props }: ImmersiveEditorProps<C>) => {
   const [isOpen, setIsOpen] = useState(false);
   const monacoRef = useMonaco();
   const containerRef = useRef<HTMLDivElement>(null);
+  const debouncedViewStateUpdate = debounce((mountedEditor: editor.IStandaloneCodeEditor) => {
+    modelStorage.updateViewState(id, mountedEditor.saveViewState());
+  }, saveViewStateDebounce);
+
+  useEffect(() => {
+    if (value) {
+      modelStorage.getModel(id)?.textModel.setValue(value);
+    }
+  }, [id, monacoRef?.editor, value]);
 
   useEffect(() => {
     if (!containerRef.current || !monacoRef) {
@@ -24,13 +36,13 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
       registerGroovyLanguage(monacoRef);
     }
 
-    const storedModel = persistenceId ? modelStorage.getModel(persistenceId) : null;
-    const textModel = storedModel?.textModel || monacoRef.editor.createModel(value ?? '', language);
+    const storedModel = modelStorage.getModel(id);
+    const textModel = storedModel?.textModel || monacoRef.editor.createModel(initialValue ?? value ?? '', language);
 
     const mountedEditor = monacoRef.editor.create(containerRef.current, {
       model: textModel,
       theme: 'vs-dark',
-      value,
+      value: initialValue ?? value,
       ...props,
     });
 
@@ -38,19 +50,14 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
       mountedEditor.restoreViewState(storedModel.viewState);
     }
 
-    mountedEditor.focus();
-
-    const changeListener = mountedEditor.onDidChangeCursorPosition(() => {
-      if (persistenceId) {
-        modelStorage.updateViewState(persistenceId, mountedEditor.saveViewState());
-      }
-
+    const changeListener = textModel.onDidChangeContent(() => {
+      debouncedViewStateUpdate(mountedEditor);
       onChange?.(mountedEditor.getValue());
     });
 
-    if (persistenceId) {
-      modelStorage.updateModel(persistenceId, textModel, mountedEditor.saveViewState());
-    }
+    modelStorage.updateModel(id, textModel, mountedEditor.saveViewState());
+
+    mountedEditor.focus();
 
     return () => {
       mountedEditor.dispose();
@@ -60,12 +67,12 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
   }, [monacoRef, isOpen]);
 
   useEffect(() => {
-    const textModel = persistenceId ? modelStorage.getModel(persistenceId)?.textModel : null;
+    const textModel = modelStorage.getModel(id)?.textModel;
 
-    if (monacoRef?.editor && persistenceId && textModel) {
+    if (monacoRef?.editor && textModel) {
       monacoRef?.editor.setModelMarkers(
         textModel,
-        persistenceId,
+        id,
         syntaxError
           ? [
               {
@@ -80,7 +87,7 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
           : [],
       );
     }
-  }, [persistenceId, monacoRef?.editor, syntaxError]);
+  }, [id, monacoRef?.editor, syntaxError]);
 
   return (
     <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50" {...containerProps}>
