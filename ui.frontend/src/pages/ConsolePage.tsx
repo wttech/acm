@@ -1,13 +1,13 @@
-import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, Switch, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
 import Bug from '@spectrum-icons/workflow/Bug';
 import Cancel from '@spectrum-icons/workflow/Cancel';
+import Close from '@spectrum-icons/workflow/Close';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
-import Close from "@spectrum-icons/workflow/Close";
 import { useDebounce } from 'react-use';
 import CompilationStatus from '../components/CompilationStatus.tsx';
 import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
@@ -15,7 +15,7 @@ import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
 
 import { ToastQueue } from '@react-spectrum/toast';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
@@ -23,7 +23,7 @@ import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.typ
 const toastTimeout = 3000;
 const executionPollDelay = 500;
 const executionPollInterval = 500;
-const compileDelay = 1000;
+const compilationDelay = 1000;
 type SelectedTab = 'code' | 'output';
 
 const ConsolePage = () => {
@@ -34,10 +34,9 @@ const ConsolePage = () => {
   const pollExecutionRef = useRef<number | null>(null);
   const [isCompiling, setIsCompiling] = useState<boolean>(false);
   const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
+  const [autoscroll, setAutoscroll] = useState<boolean>(true);
   const [compilationError, setCompilationError] = useState<string | undefined>(undefined);
   const compileCode = useCallback(async () => {
-    localStorage.setItem(StorageKeys.EDITOR_CODE, code || '');
-
     try {
       const { data } = await apiRequest<Execution>({
         operation: 'Code parsing',
@@ -77,7 +76,8 @@ const ConsolePage = () => {
     }
   }, [code]);
 
-  const [, cancelCompilation] = useDebounce(compileCode, compileDelay, [code]);
+  const [, cancelCompilation] = useDebounce(compileCode, compilationDelay, [code]);
+  useDebounce(() => localStorage.setItem(StorageKeys.EDITOR_CODE, code || ''), compilationDelay, [code]);
 
   const onExecute = async () => {
     setExecuting(true);
@@ -264,32 +264,32 @@ const ConsolePage = () => {
                       <Text>Help</Text>
                     </Button>
                     {(close) => (
-                        <Dialog>
-                          <Heading>Keyboard Shortcuts</Heading>
-                          <Divider />
-                          <Content>
-                            <p>
-                              <Keyboard>Fn</Keyboard> + <Keyboard>F1</Keyboard> &mdash; Command&nbsp;Palette
-                            </p>
-                            <p>
-                              <Keyboard>⌃</Keyboard> + <Keyboard>Space</Keyboard> &mdash; Code&nbsp;Completions
-                            </p>
-                            <p>
-                              <Keyboard>⌘</Keyboard> + <Keyboard>.</Keyboard> &mdash; Quick Fixes
-                            </p>
-                          </Content>
-                          <ButtonGroup>
-                            <Button variant="secondary" onPress={close}>
-                              <Close size="XS" />
-                              <Text>Close</Text>
-                            </Button>
-                          </ButtonGroup>
-                        </Dialog>
+                      <Dialog>
+                        <Heading>Keyboard Shortcuts</Heading>
+                        <Divider />
+                        <Content>
+                          <p>
+                            <Keyboard>Fn</Keyboard> + <Keyboard>F1</Keyboard> &mdash; Command&nbsp;Palette
+                          </p>
+                          <p>
+                            <Keyboard>⌃</Keyboard> + <Keyboard>Space</Keyboard> &mdash; Code&nbsp;Completions
+                          </p>
+                          <p>
+                            <Keyboard>⌘</Keyboard> + <Keyboard>.</Keyboard> &mdash; Quick Fixes
+                          </p>
+                        </Content>
+                        <ButtonGroup>
+                          <Button variant="secondary" onPress={close}>
+                            <Close size="XS" />
+                            <Text>Close</Text>
+                          </Button>
+                        </ButtonGroup>
+                      </Dialog>
                     )}
                   </DialogTrigger>
                 </Flex>
               </Flex>
-              <ImmersiveEditor id="code-editor" initialValue={localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCode} onChange={setCode} syntaxError={syntaxError} language="groovy" />
+              <ImmersiveEditor id="code-editor" initialValue={code} onChange={setCode} syntaxError={syntaxError} language="groovy" />
             </Flex>
           </Item>
           <Item key="output">
@@ -306,6 +306,9 @@ const ConsolePage = () => {
                       <Text>Copy</Text>
                     </Button>
                   </ButtonGroup>
+                  <Switch isSelected={autoscroll} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
+                    <Text>Autoscroll</Text>
+                  </Switch>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">
                   <ExecutionProgressBar execution={execution} active={executing} />
@@ -353,7 +356,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </Flex>
-              <ImmersiveEditor id="output-preview" value={executionOutput} readOnly />
+              <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
             </Flex>
           </Item>
         </TabPanels>

@@ -1,12 +1,12 @@
 import { editor } from 'monaco-editor';
 
-export type StoredModel = { textModel: editor.ITextModel; viewState: editor.ICodeEditorViewState | null };
+export type StoredModel = { editor: editor.IStandaloneCodeEditor; textModel: editor.ITextModel; viewState: editor.ICodeEditorViewState | null };
 
 class ModelStorage {
   private models: Record<string, StoredModel> = {};
 
-  public updateModel(id: string, textModel: editor.ITextModel, viewState: editor.ICodeEditorViewState | null) {
-    this.models[id] = { textModel, viewState };
+  public updateModel(id: string, model: StoredModel) {
+    this.models[id] = model;
   }
 
   public updateViewState(id: string, viewState: editor.ICodeEditorViewState | null) {

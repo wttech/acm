@@ -9,11 +9,18 @@ import { modelStorage } from '../utils/modelStorage.ts';
 import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 
 export type SyntaxError = { line: number; column: number; message: string };
-type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & { id: string; initialValue?: string; containerProps?: ViewProps<C>; syntaxError?: SyntaxError; onChange?: (code: string) => void };
+type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & {
+  id: string;
+  scrollToBottomOnUpdate?: boolean;
+  initialValue?: string;
+  containerProps?: ViewProps<C>;
+  syntaxError?: SyntaxError;
+  onChange?: (code: string) => void;
+};
 
 const saveViewStateDebounce = 1000;
 
-const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, id, language, value, initialValue, ...props }: ImmersiveEditorProps<C>) => {
+const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, id, language, value, initialValue, scrollToBottomOnUpdate, ...props }: ImmersiveEditorProps<C>) => {
   const [isOpen, setIsOpen] = useState(false);
   const monacoRef = useMonaco();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -23,9 +30,16 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
 
   useEffect(() => {
     if (value) {
-      modelStorage.getModel(id)?.textModel.setValue(value);
+      const storedModel = modelStorage.getModel(id);
+      storedModel?.textModel.setValue(value);
+
+      if (scrollToBottomOnUpdate) {
+        const lines = storedModel?.textModel.getLineCount() ?? 1;
+
+        storedModel?.editor.revealLine(lines);
+      }
     }
-  }, [id, monacoRef?.editor, value]);
+  }, [id, scrollToBottomOnUpdate, value]);
 
   useEffect(() => {
     if (!containerRef.current || !monacoRef) {
@@ -55,7 +69,7 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
       onChange?.(mountedEditor.getValue());
     });
 
-    modelStorage.updateModel(id, textModel, mountedEditor.saveViewState());
+    modelStorage.updateModel(id, { textModel, viewState: mountedEditor.saveViewState(), editor: mountedEditor });
 
     mountedEditor.focus();
 
