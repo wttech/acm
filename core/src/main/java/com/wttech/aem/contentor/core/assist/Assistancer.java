@@ -41,36 +41,29 @@ public class Assistancer {
     @Activate
     protected void activate(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
-        registerBundleListener();
-        invalidateCache();
+        this.bundleListener = event -> updateCache();
+        this.bundleContext.addBundleListener(bundleListener);
+
+        updateCache();
     }
 
     @Modified
     protected void modified() {
-        invalidateCache();
+        updateCache();
     }
 
     @Deactivate
     protected void deactivate() {
-        unregisterBundleListener();
-    }
-
-    private void registerBundleListener() {
-        bundleListener = event -> invalidateCache();
-        bundleContext.addBundleListener(bundleListener);
-    }
-
-    private void unregisterBundleListener() {
         if (bundleListener != null) {
             bundleContext.removeBundleListener(bundleListener);
         }
     }
 
-    private synchronized void invalidateCache() {
-        int newBundlesHashCode = osgiScanner.determineBundlesHashCode();
-        if (bundlesHashCode != newBundlesHashCode) {
+    private synchronized void updateCache() {
+        int bundlesHashCodeCurrent = osgiScanner.computeBundlesHashCode();
+        if (bundlesHashCode != bundlesHashCodeCurrent) {
             classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
-            bundlesHashCode = newBundlesHashCode;
+            bundlesHashCode = bundlesHashCodeCurrent;
         }
     }
 

@@ -1,6 +1,7 @@
 package com.wttech.aem.contentor.core.instance;
 
 import com.wttech.aem.contentor.core.osgi.OsgiScanner;
+import org.apache.commons.collections.CollectionUtils;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -39,6 +40,7 @@ public class HealthChecker {
                 }
             }
         });
+        result.healthy = CollectionUtils.isEmpty(result.issues);
         return result;
     }
 

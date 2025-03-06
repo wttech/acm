@@ -5,7 +5,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -22,8 +21,6 @@ public class OsgiScanner {
 
     private static final String BUNDLE_WIRING_PACKAGE = "osgi.wiring.package";
 
-    private static final String SNAPSHOT = "-SNAPSHOT";
-
     private BundleContext bundleContext;
 
     @Activate
@@ -39,18 +36,16 @@ public class OsgiScanner {
         return scanBundles().filter(this::isBundleOrFragmentReady).flatMap(this::scanClasses);
     }
 
-    public int determineBundlesHashCode() {
-        HashCodeBuilder hashCodeBuilder = new HashCodeBuilder();
+    public int computeBundlesHashCode() {
+        HashCodeBuilder builder = new HashCodeBuilder();
         Arrays.stream(bundleContext.getBundles())
                 .filter(this::isBundleOrFragmentReady)
                 .forEach(bundle -> {
-                    hashCodeBuilder.append(bundle.getSymbolicName());
-                    hashCodeBuilder.append(bundle.getVersion());
-                    if (StringUtils.endsWith(bundle.getVersion().toString(), SNAPSHOT)) {
-                        hashCodeBuilder.append(bundle.getLastModified());
-                    }
+                    builder.append(bundle.getSymbolicName());
+                    builder.append(bundle.getVersion());
+                    builder.append(bundle.getLastModified());
                 });
-        return hashCodeBuilder.toHashCode();
+        return builder.toHashCode();
     }
 
     public boolean isBundleActive(Bundle bundle) {
