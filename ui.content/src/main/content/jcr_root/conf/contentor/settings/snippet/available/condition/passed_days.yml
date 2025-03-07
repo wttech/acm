@@ -1,6 +1,7 @@
 group: Condition
 name: condition_passed_days
-content: condition.passedDays(${1:hours})
+content: |
+  condition.passedDays(${1:hours})
 documentation: |
   Execute the script only after a certain number of days have passed since the last execution.<br>
   The script content is not considered.

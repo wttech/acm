@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import SnippetCode from '../components/SnippetCode';
 import { toastRequest } from '../utils/api';
 import { Snippet, SnippetOutput } from '../utils/api.types';
-import { useNavigationTab } from '../utils/hooks/navigationTab';
+import { useNavigationTab } from '../utils/hooks/navigation';
 import Markdown from '../components/Markdown';
 
 const SnippetsPage = () => {

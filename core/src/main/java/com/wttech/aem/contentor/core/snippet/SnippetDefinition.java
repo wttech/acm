@@ -18,8 +18,13 @@ public class SnippetDefinition implements Serializable {
         // for deserialization
     }
 
-    public static SnippetDefinition fromYaml(InputStream inputStream) {
-        return YamlUtils.readYaml(inputStream, SnippetDefinition.class);
+    public static SnippetDefinition fromYaml(String path, InputStream inputStream) {
+        try {
+            return YamlUtils.readYaml(inputStream, SnippetDefinition.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    String.format("Snippet definition at path '%s' cannot be parsed as YML!", path), e);
+        }
     }
 
     public String getName() {

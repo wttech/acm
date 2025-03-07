@@ -17,7 +17,7 @@ import Heart from "@spectrum-icons/workflow/Heart";
 import User from "@spectrum-icons/workflow/User";
 import Data from "@spectrum-icons/workflow/Data";
 import { isProduction } from "../utils/node";
-import {useNavigationTab} from '../utils/hooks/navigationTab';
+import {useNavigationTab} from '../utils/hooks/navigation';
 
 const SettingsPage = () => {
     const [selectedTab, setSelectedTab] = useNavigationTab('/settings', 'user-preferences');
