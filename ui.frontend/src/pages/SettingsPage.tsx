@@ -12,11 +12,15 @@ import {
     TabPanels,
     Tabs,
     Text,
-    View
+    View,
+    TableView,
+    TableBody,
+    TableHeader,
+    Badge,
+    Column, Cell, Row
 } from '@adobe/react-spectrum';
 import Code from '@spectrum-icons/workflow/Code';
 import ScriptIcon from '@spectrum-icons/workflow/Code';
-import Heart from "@spectrum-icons/workflow/Heart";
 import HeartIcon from "@spectrum-icons/workflow/Heart";
 import User from "@spectrum-icons/workflow/User";
 import Data from "@spectrum-icons/workflow/Data";
@@ -83,16 +87,26 @@ const SettingsPage = () => {
                                     </StatusLight>
                                 </Flex>
                                 {healthIssues.length > 0 && (
-                                    <ListView aria-label="Health Issues" selectionMode="none" marginY="size-200">
-                                        {healthIssues.map((issue, index) => (
-                                            <Item key={index} textValue={issue.message}>
-                                                <Flex alignItems="center" gap="size-100">
-                                                    <Heart color={getSeverityColor(issue.severity)} />
-                                                    <Text>{issue.message}</Text>
-                                                </Flex>
-                                            </Item>
-                                        ))}
-                                    </ListView>
+                                    <TableView aria-label="Health Issues" selectionMode="none" marginY="size-200">
+                                        <TableHeader>
+                                            <Column width="0.1fr">#</Column>
+                                            <Column width="0.2fr">Severity</Column>
+                                            <Column>Message</Column>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {healthIssues.map((issue, index) => (
+                                                <Row key={index}>
+                                                    <Cell>{index + 1}</Cell>
+                                                    <Cell>
+                                                        <Badge variant={getSeverityColor(issue.severity)}>
+                                                            {issue.severity}
+                                                        </Badge>
+                                                    </Cell>
+                                                    <Cell>{issue.message}</Cell>
+                                                </Row>
+                                            ))}
+                                        </TableBody>
+                                    </TableView>
                                 )}
                             </View>
                             <View
