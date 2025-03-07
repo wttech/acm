@@ -14,11 +14,12 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import UploadToCloud from "@spectrum-icons/workflow/UploadToCloud";
 
-type ScriptSyncAllDialogProps = {
+type ScriptSynchronizeButtonProps = {
+    selectedKeys: string[];
     onSync: () => void;
 };
 
-const ScriptSyncAllDialog: React.FC<ScriptSyncAllDialogProps> = ({ onSync }) => {
+const ScriptSynchronizeButton: React.FC<ScriptSynchronizeButtonProps> = ({ selectedKeys, onSync }) => {
     const [syncDialogOpen, setSyncDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -64,7 +65,7 @@ const ScriptSyncAllDialog: React.FC<ScriptSyncAllDialogProps> = ({ onSync }) => 
 
     return (
         <DialogTrigger isOpen={syncDialogOpen} onOpenChange={setSyncDialogOpen}>
-            <Button variant="primary" onPress={() => setSyncDialogOpen(true)}>
+            <Button variant="primary" onPress={() => setSyncDialogOpen(true)} isDisabled={selectedKeys.length > 0}>
                 <UploadToCloud />
                 <Text>Synchronize</Text>
             </Button>
@@ -73,4 +74,4 @@ const ScriptSyncAllDialog: React.FC<ScriptSyncAllDialogProps> = ({ onSync }) => 
     );
 };
 
-export default ScriptSyncAllDialog;
+export default ScriptSynchronizeButton;

@@ -13,13 +13,13 @@ import { toastRequest } from '../utils/api';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 
-type ScriptToggleDialogProps = {
+type ScriptToggleButtonProps = {
     type: 'enabled' | 'disabled';
     selectedKeys: string[];
     onToggle: () => void;
 };
 
-const ScriptToggleDialog: React.FC<ScriptToggleDialogProps> = ({ type, selectedKeys, onToggle }) => {
+const ScriptToggleButton: React.FC<ScriptToggleButtonProps> = ({ type, selectedKeys, onToggle }) => {
     const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -85,4 +85,4 @@ const ScriptToggleDialog: React.FC<ScriptToggleDialogProps> = ({ type, selectedK
     );
 };
 
-export default ScriptToggleDialog;
+export default ScriptToggleButton;

@@ -39,8 +39,8 @@ import Heart from "@spectrum-icons/workflow/Heart";
 import Code from "@spectrum-icons/workflow/Code";
 import Close from "@spectrum-icons/workflow/Close";
 import Box from "@spectrum-icons/workflow/Box";
-import ScriptSyncAllDialog from './ScriptSyncAllDialog';
-import ScriptToggleDialog from './ScriptToggleDialog';
+import ScriptSynchronizeButton from './ScriptSynchronizeButton';
+import ScriptToggleButton from './ScriptToggleButton';
 
 type ScriptListProps = {
   type: 'enabled' | 'disabled';
@@ -97,8 +97,8 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           <Flex direction="row" justifyContent="space-between" alignItems="center">
             <Flex flex="1" alignItems="center">
               <ButtonGroup>
-                <ScriptToggleDialog type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-                <ScriptSyncAllDialog onSync={loadScripts} />
+                <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
+                <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
               </ButtonGroup>
             </Flex>
             <Flex flex="1" justifyContent="center" alignItems="center">
