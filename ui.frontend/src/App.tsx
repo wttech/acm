@@ -8,6 +8,7 @@ import Header from './components/Header';
 import { State } from './utils/api.types';
 import { AppContext } from './AppContext';
 import { apiRequest } from './utils/api';
+import router from "./router";
 
 function App() {
   const [state, setState] = useState<State>({
@@ -42,6 +43,7 @@ function App() {
   return (
       <Provider
           theme={defaultTheme}
+          router={router}
           colorScheme={'light'}
           locale={'en-uk'}
           UNSAFE_style={{

@@ -19,6 +19,7 @@ import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
 import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
+import {useNavigationPrevention} from "../utils/hooks/navigation.ts";
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
@@ -230,8 +231,7 @@ const ConsolePage = () => {
     }
   };
 
-  // TODO does not work ; probably due to '<AppLink>'
-  // useNavigationPrevention(executing, 'Execution in progress. Wait for execution to complete or abort it.');
+  useNavigationPrevention(executing, 'Execution in progress. Wait for completion or abort it.');
 
   return (
       <Flex direction="column" flex="1" gap="size-200">

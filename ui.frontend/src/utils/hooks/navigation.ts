@@ -21,7 +21,6 @@ export function useNavigationTab(basePath: string, defaultTab: string = '') {
   return [selectedTab, handleTabChange] as const;
 }
 
-// TODO https://github.com/wunderman-thompson/wtpl-aem-content-manager/issues/87
 export function useNavigationPrevention(isExecuting: boolean, message: string){
   const isExecutingRef = useRef(isExecuting);
 
@@ -40,6 +39,8 @@ export function useNavigationPrevention(isExecuting: boolean, message: string){
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
+  // TODO https://github.com/wunderman-thompson/wtpl-aem-content-manager/issues/87
+  /*
   useBlocker(() => {
     if (isExecutingRef.current) {
       ToastQueue.info(message, { timeout: 5000 });
@@ -47,4 +48,5 @@ export function useNavigationPrevention(isExecuting: boolean, message: string){
     }
     return false;
   });
+  */
 }
