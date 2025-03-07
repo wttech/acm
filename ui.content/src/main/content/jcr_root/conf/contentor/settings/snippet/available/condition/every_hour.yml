@@ -1,6 +1,7 @@
 group: Condition
 name: condition_every_hour
-content: condition.everyHour()
+content: |
+  condition.everyHour()
 documentation: |
   Execute the script only once an hour.<br>
   The script content is not considered.

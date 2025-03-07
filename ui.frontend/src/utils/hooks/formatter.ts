@@ -2,7 +2,7 @@ import { useDateFormatter } from '@react-aria/i18n';
 import { formatDistance, formatDuration, intervalToDuration } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import {useContext} from "react";
-import {AppContext} from "../AppContext.tsx";
+import {AppContext} from "../../AppContext.tsx";
 import {DateFormatter} from "@adobe/react-spectrum";
 
 class Formatter {

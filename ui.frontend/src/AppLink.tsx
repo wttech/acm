@@ -13,6 +13,6 @@ export function AppLink({ to, children, ...rest }: AppLinkProps) {
   return (
     <SpectrumLink {...rest}>
       <RouterLink to={isHashRouter ? `#${to}` : to}>{children}</RouterLink>
-    </SpectrumLink>
+      </SpectrumLink>
   );
 }

@@ -4,12 +4,11 @@ import static com.wttech.aem.contentor.core.util.ServletResult.error;
 import static com.wttech.aem.contentor.core.util.ServletResult.ok;
 import static com.wttech.aem.contentor.core.util.ServletUtils.*;
 
-import com.day.cq.replication.Replicator;
+import com.wttech.aem.contentor.core.replication.Replicator;
 import com.wttech.aem.contentor.core.script.Script;
 import com.wttech.aem.contentor.core.script.ScriptRepository;
 import com.wttech.aem.contentor.core.script.ScriptStats;
 import com.wttech.aem.contentor.core.script.ScriptType;
-import com.wttech.aem.contentor.core.util.ReplicationUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -62,7 +61,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
     }
 
     @Reference
-    private Replicator replicator;
+    private com.day.cq.replication.Replicator replicatorService;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
@@ -111,7 +110,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         Optional<Action> action = Action.of(stringParam(request, ACTION_PARAM));
         if (!action.isPresent()) {
-            respondJson(response, error("Invalid action parameter! Must be either 'enable' or 'disable'"));
+            respondJson(response, error("Invalid action parameter! Must be either 'enable', 'disable' or 'sync_all'"));
             return;
         }
 
@@ -123,6 +122,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
         try {
             ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
+            Replicator replicator = new Replicator(request.getResourceResolver(), replicatorService);
 
             switch (action.get()) {
                 case ENABLE:
@@ -134,9 +134,8 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     respondJson(response, ok(String.format("%d script(s) disabled successfully", paths.size())));
                     break;
                 case SYNC_ALL:
-                    ReplicationUtils.unpublish(request.getResourceResolver(), replicator, ScriptRepository.ROOT);
-                    ReplicationUtils.publishTree(request.getResourceResolver(), replicator, ScriptRepository.ROOT);
-                    respondJson(response, ok("All scripts sync successfully"));
+                    replicator.reactivateTree(ScriptRepository.ROOT);
+                    respondJson(response, ok("Scripts synchronized successfully"));
                     break;
             }
         } catch (Exception e) {

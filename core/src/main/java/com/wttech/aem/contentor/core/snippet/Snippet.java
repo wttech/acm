@@ -37,10 +37,9 @@ public class Snippet implements Executable, Comparable<Snippet> {
 
     private SnippetDefinition readDefinition() throws ContentorException {
         return Optional.ofNullable(resource.getChild(JcrUtils.JCR_CONTENT))
-                .map(r -> r.adaptTo(InputStream.class))
-                .map(SnippetDefinition::fromYaml)
+                .map(r -> SnippetDefinition.fromYaml(r.getPath(), r.adaptTo(InputStream.class)))
                 .orElseThrow(() -> new ContentorException(
-                        String.format("Snippet definition '%s' cannot be read found!", resource.getPath())));
+                        String.format("Snippet definition '%s' cannot be read!", resource.getPath())));
     }
 
     @Override

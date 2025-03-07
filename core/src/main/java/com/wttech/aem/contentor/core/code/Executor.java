@@ -1,5 +1,6 @@
 package com.wttech.aem.contentor.core.code;
 
+import com.day.cq.replication.Replicator;
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.osgi.OsgiContext;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
@@ -25,8 +26,11 @@ public class Executor {
     @Reference
     private OsgiContext osgiContext;
 
+    @Reference
+    private Replicator replicator;
+
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return new ExecutionContext(executable, osgiContext, resourceResolver);
+        return new ExecutionContext(executable, osgiContext, resourceResolver, replicator);
     }
 
     public Execution execute(Executable executable) throws ContentorException {

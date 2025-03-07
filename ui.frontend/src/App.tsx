@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { defaultTheme, Flex, Provider, View } from '@adobe/react-spectrum';
-import { HashRouter } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import './App.css';
 import { ToastContainer } from '@react-spectrum/toast';
-import Content from './components/Content';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import { State } from './utils/api.types';
 import { AppContext } from './AppContext';
 import { apiRequest } from './utils/api';
+import router from "./router";
 
 function App() {
   const [state, setState] = useState<State>({
@@ -17,8 +17,8 @@ function App() {
       issues: [],
     },
     instanceSettings: {
-        id: 'default',
-        timezoneId: 'UTC'
+      id: 'default',
+      timezoneId: 'UTC'
     }
   });
 
@@ -43,6 +43,7 @@ function App() {
   return (
       <Provider
           theme={defaultTheme}
+          router={router}
           colorScheme={'light'}
           locale={'en-uk'}
           UNSAFE_style={{
@@ -52,19 +53,17 @@ function App() {
           }}
       >
         <AppContext.Provider value={state}>
-          <HashRouter>
-            <Flex direction="column" flex="1">
-              <View paddingX="size-200" paddingTop="size-200">
-                <Header />
-              </View>
-              <View paddingX="size-200" flex="1" UNSAFE_style={{ display: 'flex' }}>
-                <Content />
-              </View>
-              <View paddingX="size-200" paddingBottom="size-200">
-                <Footer />
-              </View>
-            </Flex>
-          </HashRouter>
+          <Flex direction="column" flex="1">
+            <View paddingX="size-200" paddingTop="size-200">
+              <Header />
+            </View>
+            <View paddingX="size-200" flex="1" UNSAFE_style={{ display: 'flex' }}>
+              <Outlet />
+            </View>
+            <View paddingX="size-200" paddingBottom="size-200">
+              <Footer />
+            </View>
+          </Flex>
           <ToastContainer />
         </AppContext.Provider>
       </Provider>

@@ -13,12 +13,12 @@ import CompilationStatus from '../components/CompilationStatus.tsx';
 import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
 import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
-
 import { ToastQueue } from '@react-spectrum/toast';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
+import {useNavigationPrevention} from "../utils/hooks/navigation.ts";
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
@@ -36,6 +36,7 @@ const ConsolePage = () => {
   const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
   const [compilationError, setCompilationError] = useState<string | undefined>(undefined);
+
   const compileCode = useCallback(async () => {
     try {
       const { data } = await apiRequest<Execution>({
@@ -211,23 +212,25 @@ const ConsolePage = () => {
   const onCopyExecutionOutput = () => {
     if (executionOutput) {
       navigator.clipboard
-        .writeText(executionOutput)
-        .then(() => {
-          ToastQueue.info('Execution output copied to clipboard!', {
-            timeout: toastTimeout,
+          .writeText(executionOutput)
+          .then(() => {
+            ToastQueue.info('Execution output copied to clipboard!', {
+              timeout: toastTimeout,
+            });
+          })
+          .catch(() => {
+            ToastQueue.negative('Failed to copy execution output!', {
+              timeout: toastTimeout,
+            });
           });
-        })
-        .catch(() => {
-          ToastQueue.negative('Failed to copy execution output!', {
-            timeout: toastTimeout,
-          });
-        });
     } else {
       ToastQueue.negative('No execution output to copy!', {
         timeout: toastTimeout,
       });
     }
   };
+
+  useNavigationPrevention(executing, 'Execution in progress. Wait for completion or abort it.');
 
   return (
     <Flex direction="column" flex="1" gap="size-200">
@@ -310,58 +313,58 @@ const ConsolePage = () => {
                     <Text>Autoscroll</Text>
                   </Switch>
                 </Flex>
-                <Flex flex="1" justifyContent="center" alignItems="center">
-                  <ExecutionProgressBar execution={execution} active={executing} />
+                  <Flex flex="1" justifyContent="center" alignItems="center">
+                    <ExecutionProgressBar execution={execution} active={executing} />
+                  </Flex>
+                  <Flex flex="1" justifyContent="end" alignItems="center">
+                    <DialogTrigger>
+                      <Button variant="secondary" style="fill">
+                        <Help />
+                        <Text>Help</Text>
+                      </Button>
+                      {(close) => (
+                          <Dialog>
+                            <Heading>Code execution</Heading>
+                            <Divider />
+                            <Content>
+                              <p>
+                                <Print size="XS" /> Output is printed live.
+                              </p>
+                              <p>
+                                <Cancel size="XS" /> <Text>Abort if the execution:</Text>
+                                <ul style={{ listStyleType: 'none' }}>
+                                  <li>
+                                    <Spellcheck size="XS" /> is taking too long
+                                  </li>
+                                  <li>
+                                    <Bug size="XS" /> is stuck in an infinite loop
+                                  </li>
+                                  <li>
+                                    <Gears size="XS" /> makes the instance unresponsive
+                                  </li>
+                                </ul>
+                              </p>
+                              <p>
+                                <Help size="XS" /> Be aware that aborting execution may leave data in an inconsistent state.
+                              </p>
+                            </Content>
+                            <ButtonGroup>
+                              <Button variant="secondary" onPress={close}>
+                                <Close size="XS" />
+                                <Text>Close</Text>
+                              </Button>
+                            </ButtonGroup>
+                          </Dialog>
+                      )}
+                    </DialogTrigger>
+                  </Flex>
                 </Flex>
-                <Flex flex="1" justifyContent="end" alignItems="center">
-                  <DialogTrigger>
-                    <Button variant="secondary" style="fill">
-                      <Help />
-                      <Text>Help</Text>
-                    </Button>
-                    {(close) => (
-                      <Dialog>
-                        <Heading>Code execution</Heading>
-                        <Divider />
-                        <Content>
-                          <p>
-                            <Print size="XS" /> Output is printed live.
-                          </p>
-                          <p>
-                            <Cancel size="XS" /> <Text>Abort if the execution:</Text>
-                            <ul style={{ listStyleType: 'none' }}>
-                              <li>
-                                <Spellcheck size="XS" /> is taking too long
-                              </li>
-                              <li>
-                                <Bug size="XS" /> is stuck in an infinite loop
-                              </li>
-                              <li>
-                                <Gears size="XS" /> makes the instance unresponsive
-                              </li>
-                            </ul>
-                          </p>
-                          <p>
-                            <Help size="XS" /> Be aware that aborting execution may leave data in an inconsistent state.
-                          </p>
-                        </Content>
-                        <ButtonGroup>
-                          <Button variant="secondary" onPress={close}>
-                            <Close size="XS" />
-                            <Text>Close</Text>
-                          </Button>
-                        </ButtonGroup>
-                      </Dialog>
-                    )}
-                  </DialogTrigger>
-                </Flex>
+                <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
               </Flex>
-              <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
-            </Flex>
-          </Item>
-        </TabPanels>
-      </Tabs>
-    </Flex>
+            </Item>
+          </TabPanels>
+        </Tabs>
+      </Flex>
   );
 };
 

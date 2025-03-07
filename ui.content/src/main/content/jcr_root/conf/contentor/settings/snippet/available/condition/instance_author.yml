@@ -1,5 +1,6 @@
 group: Condition
 name: condition_instance_author
-content: condition.isInstanceAuthor()
+content: |
+  condition.isInstanceAuthor()
 documentation: |
   Execute the script only on author instance.

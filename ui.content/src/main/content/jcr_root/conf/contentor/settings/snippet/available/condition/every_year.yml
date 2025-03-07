@@ -1,6 +1,7 @@
 group: Condition
 name: condition_every_year
-content: condition.everyYear()
+content: |
+  condition.everyYear()
 documentation: |
   Execute the script only once a year.<br>
   The script content is not considered.
