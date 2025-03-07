@@ -135,7 +135,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     break;
                 case SYNC_ALL:
                     replicator.reactivateTree(ScriptRepository.ROOT);
-                    respondJson(response, ok("All scripts sync successfully"));
+                    respondJson(response, ok("Scripts synchronized successfully"));
                     break;
             }
         } catch (Exception e) {
