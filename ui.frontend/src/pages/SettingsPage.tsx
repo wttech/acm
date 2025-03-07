@@ -1,3 +1,4 @@
+import React from 'react';
 import {
     Flex,
     Text,
@@ -7,21 +8,28 @@ import {
     Checkbox,
     Tabs,
     TabList,
-    TabPanels, Heading, Content
+    TabPanels,
+    Heading,
+    Content
 } from '@adobe/react-spectrum';
 import Code from '@spectrum-icons/workflow/Code';
 import Heart from "@spectrum-icons/workflow/Heart";
 import User from "@spectrum-icons/workflow/User";
 import Data from "@spectrum-icons/workflow/Data";
-import {isProduction} from "../utils/node.ts";
+import { isProduction } from "../utils/node";
+import {useNavigationTab} from '../utils/hooks/navigationTab';
 
 const SettingsPage = () => {
-
+    const [selectedTab, setSelectedTab] = useNavigationTab('/settings', 'user-preferences');
     const prefix = isProduction() ? '' : 'http://localhost:4502';
 
     return (
         <Flex direction="column" flex="1" gap="size-200">
-            <Tabs aria-label="Settings Tabs">
+            <Tabs
+                aria-label="Settings Tabs"
+                selectedKey={selectedTab}
+                onSelectionChange={setSelectedTab}
+            >
                 <TabList>
                     <Item key="user-preferences">
                         <User />

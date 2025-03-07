@@ -4,13 +4,11 @@ import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
-import History from '@spectrum-icons/workflow/History';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import { toastRequest } from '../utils/api';
 import {Script, ScriptOutput} from '../utils/api.types';
-import { useFormatter } from '../utils/hooks.ts';
 import {registerGroovyLanguage} from "../utils/monaco/groovy.ts";
 
 const toastTimeout = 3000;
@@ -18,7 +16,6 @@ const toastTimeout = 3000;
 const ScriptView = () => {
     const [script, setScript] = useState<Script | null>(null);
     const scriptId = decodeURIComponent(useParams<{ scriptId: string }>().scriptId as string);
-    const formatter = useFormatter();
 
     useEffect(() => {
         const fetchScript = async () => {

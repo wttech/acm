@@ -11,18 +11,18 @@ import ScriptView from "../pages/ScriptView.tsx";
 import SettingsPage from "../pages/SettingsPage.tsx";
 
 const Content = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/console" />} />
-      <Route path="/scripts" element={<ScriptsPage />} />
-      <Route path="/scripts/view/:scriptId" element={<ScriptView />} />
-      <Route path="/snippets" element={<SnippetsPage />} />
-      <Route path="/console" element={<ConsolePage />} />
-      <Route path="/executions" element={<ExecutionList />} />
-      <Route path="/executions/view/:executionId" element={<ExecutionView />} />
-      <Route path="/settings" element={<SettingsPage />} />
-    </Routes>
-  );
+    return (
+        <Routes>
+            <Route path="/" element={<Navigate to="/console" />} />
+            <Route path="/scripts" element={<ScriptsPage />} />
+            <Route path="/scripts/view/:scriptId" element={<ScriptView />} />
+            <Route path="/snippets/:tab?" element={<SnippetsPage />} />
+            <Route path="/console" element={<ConsolePage />} />
+            <Route path="/executions" element={<ExecutionList />} />
+            <Route path="/executions/view/:executionId" element={<ExecutionView />} />
+            <Route path="/settings/:tab?" element={<SettingsPage />} />
+        </Routes>
+    );
 };
 
 export default Content;

@@ -6,87 +6,92 @@ import { useEffect, useState } from 'react';
 import SnippetCode from '../components/SnippetCode';
 import { toastRequest } from '../utils/api';
 import { Snippet, SnippetOutput } from '../utils/api.types';
+import { useNavigationTab } from '../utils/hooks/navigationTab';
 import Markdown from '../components/Markdown';
+
 const SnippetsPage = () => {
-  const [snippets, setSnippets] = useState<SnippetOutput | null>(null);
+    const [snippets, setSnippets] = useState<SnippetOutput | null>(null);
 
-  useEffect(() => {
-    toastRequest<SnippetOutput>({
-      method: 'GET',
-      url: `/apps/contentor/api/snippet.json`,
-      operation: 'Snippets loading',
-      positive: false,
-    })
-      .then((data) => setSnippets(data.data.data))
-      .catch((error) => console.error('Snippets loading error:', error));
-  }, []);
+    useEffect(() => {
+        toastRequest<SnippetOutput>({
+            method: 'GET',
+            url: `/apps/contentor/api/snippet.json`,
+            operation: 'Snippets loading',
+            positive: false,
+        })
+            .then((data) => setSnippets(data.data.data))
+            .catch((error) => console.error('Snippets loading error:', error));
+    }, []);
 
-  if (snippets === null) {
-    return (
-      <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
-        <ProgressBar label="Loading..." isIndeterminate />
-      </Flex>
+    const defaultTab = snippets?.list[0]?.group;
+    const [selectedTab, handleTabChange] = useNavigationTab('/snippets', defaultTab);
+
+    if (snippets === null) {
+        return (
+            <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
+                <ProgressBar label="Loading..." isIndeterminate />
+            </Flex>
+        );
+    }
+
+    if (snippets.list.length === 0) {
+        return (
+            <Flex direction="column" flex="1">
+                <IllustratedMessage>
+                    <NotFound />
+                    <Content>No snippets found</Content>
+                </IllustratedMessage>
+            </Flex>
+        );
+    }
+
+    const snippetGroups = snippets.list.reduce(
+        (groups: { [key: string]: Snippet[] }, snippet) => {
+            if (!groups[snippet.group]) {
+                groups[snippet.group] = [];
+            }
+            groups[snippet.group].push(snippet);
+            return groups;
+        },
+        {} as { [key: string]: Snippet[] },
     );
-  }
+    const snippetGroupIcons = [<FolderOpen />, <FolderOpenOutline />];
 
-  if (snippets.list.length === 0) {
     return (
-      <Flex direction="column" flex="1">
-        <IllustratedMessage>
-          <NotFound />
-          <Content>No snippets found</Content>
-        </IllustratedMessage>
-      </Flex>
+        <Tabs aria-label="Snippet Groups" selectedKey={selectedTab} onSelectionChange={handleTabChange}>
+            <TabList>
+                {Object.keys(snippetGroups)
+                    .sort()
+                    .map((group, groupIndex) => (
+                        <Item key={group}>
+                            {snippetGroupIcons[groupIndex % snippetGroupIcons.length]}
+                            <Text>{group}</Text>
+                        </Item>
+                    ))}
+            </TabList>
+            <TabPanels>
+                {Object.keys(snippetGroups)
+                    .sort()
+                    .map((group) => (
+                        <Item key={group}>
+                            <Flex direction="column" flex="1" gap="size-100" marginY="size-100">
+                                {snippetGroups[group]
+                                    .sort((a, b) => a.name.localeCompare(b.name))
+                                    .map((snippet) => (
+                                        <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" paddingY="size-100" paddingX="size-200" marginY="size-10">
+                                            <Heading level={3}>{snippet.name}</Heading>
+                                            <Content><Markdown>{snippet.documentation}</Markdown></Content>
+                                            <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" marginY="size-100">
+                                                <SnippetCode content={snippet.content} />
+                                            </View>
+                                        </View>
+                                    ))}
+                            </Flex>
+                        </Item>
+                    ))}
+            </TabPanels>
+        </Tabs>
     );
-  }
-
-  const snippetGroups = snippets.list.reduce(
-    (groups: { [key: string]: Snippet[] }, snippet) => {
-      if (!groups[snippet.group]) {
-        groups[snippet.group] = [];
-      }
-      groups[snippet.group].push(snippet);
-      return groups;
-    },
-    {} as { [key: string]: Snippet[] },
-  );
-  const snippetGroupIcons = [<FolderOpen />, <FolderOpenOutline />];
-
-  return (
-    <Tabs aria-label="Snippet Groups">
-      <TabList>
-        {Object.keys(snippetGroups)
-          .sort()
-          .map((group, groupIndex) => (
-            <Item key={group}>
-              {snippetGroupIcons[groupIndex % snippetGroupIcons.length]}
-              <Text>{group}</Text>
-            </Item>
-          ))}
-      </TabList>
-      <TabPanels>
-        {Object.keys(snippetGroups)
-          .sort()
-          .map((group) => (
-            <Item key={group}>
-              <Flex direction="column" flex="1" gap="size-100" marginY="size-100">
-                {snippetGroups[group]
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((snippet) => (
-                    <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" paddingY="size-100" paddingX="size-200" marginY="size-10">
-                      <Heading level={3}>{snippet.name}</Heading>
-                      <Content><Markdown>{snippet.documentation}</Markdown></Content>
-                      <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" marginY="size-100">
-                        <SnippetCode content={snippet.content} />
-                      </View>
-                    </View>
-                  ))}
-              </Flex>
-            </Item>
-          ))}
-      </TabPanels>
-    </Tabs>
-  );
 };
 
 export default SnippetsPage;

@@ -13,7 +13,7 @@ import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import { toastRequest } from '../utils/api';
 import { Execution, ExecutionOutput } from '../utils/api.types';
-import { useFormatter } from '../utils/hooks.ts';
+import { useFormatter } from '../utils/hooks/formatter';
 import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 
 const toastTimeout = 3000;

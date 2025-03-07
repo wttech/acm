@@ -110,7 +110,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                         <>
                           <Text>Executor paused</Text>
                           <Text>&nbsp;&mdash;&nbsp;</Text>
-                          <Link isQuiet onPress={() => navigate('/settings')}>See health issues</Link>
+                          <Link isQuiet onPress={() => navigate('/settings/instance-configuration')}>See health issues</Link>
                         </>
                     )}
 
