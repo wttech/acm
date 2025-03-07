@@ -1,27 +1,42 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
-    Flex,
-    Text,
-    View,
-    ListView,
-    Item,
+    Button,
     Checkbox,
-    Tabs,
+    Content,
+    Flex,
+    Heading,
+    Item,
+    ListView,
+    StatusLight,
     TabList,
     TabPanels,
-    Heading,
-    Content
+    Tabs,
+    Text,
+    View
 } from '@adobe/react-spectrum';
 import Code from '@spectrum-icons/workflow/Code';
+import ScriptIcon from '@spectrum-icons/workflow/Code';
 import Heart from "@spectrum-icons/workflow/Heart";
+import HeartIcon from "@spectrum-icons/workflow/Heart";
 import User from "@spectrum-icons/workflow/User";
 import Data from "@spectrum-icons/workflow/Data";
-import { isProduction } from "../utils/node";
+import Settings from "@spectrum-icons/workflow/Settings";
+import {isProduction} from "../utils/node";
 import {useNavigationTab} from '../utils/hooks/navigation';
+import {AppContext} from '../AppContext';
+import {Execution, ExecutionStatus, HealthIssueSeverity} from '../utils/api.types';
+import { IconColorValue } from '@react-types/shared';
 
 const SettingsPage = () => {
-    const [selectedTab, setSelectedTab] = useNavigationTab('/settings', 'user-preferences');
+    const [selectedTab, setSelectedTab] = useNavigationTab('/settings', 'instance-configuration');
     const prefix = isProduction() ? '' : 'http://localhost:4502';
+    const context = useContext(AppContext);
+
+    const healthIssues = context?.healthStatus.issues || [];
+    const queuedExecutions: Execution[] = [
+        { id: '1', executable: { id: '1', content: 'Backup Script' }, status: ExecutionStatus.QUEUED, startDate: '', endDate: '', duration: 0, output: '', error: null },
+        { id: '2', executable: { id: '2', content: 'Cleanup Script' }, status: ExecutionStatus.QUEUED, startDate: '', endDate: '', duration: 0, output: '', error: null }
+    ];
 
     return (
         <Flex direction="column" flex="1" gap="size-200">
@@ -31,16 +46,94 @@ const SettingsPage = () => {
                 onSelectionChange={setSelectedTab}
             >
                 <TabList>
-                    <Item key="user-preferences">
-                        <User />
-                        <Text>User Preferences</Text>
-                    </Item>
                     <Item key="instance-configuration">
                         <Data />
                         <Text>Instance Configuration</Text>
                     </Item>
+                    <Item key="user-preferences">
+                        <User />
+                        <Text>User Preferences</Text>
+                    </Item>
                 </TabList>
                 <TabPanels>
+                    <Item key="instance-configuration">
+                        <Flex direction="column" flex="1" gap="size-100" marginY="size-100">
+                            <View
+                                backgroundColor="gray-50"
+                                borderWidth="thin"
+                                borderColor="dark"
+                                borderRadius="medium"
+                                paddingY="size-100"
+                                paddingX="size-200"
+                            >
+                                <Flex alignItems="center" gap="size-100">
+                                    <HeartIcon />
+                                    <Heading level={3}>Health Checker</Heading>
+                                </Flex>
+                                <Flex alignItems="center" gap="size-100">
+                                    <Button
+                                        variant="cta"
+                                        onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.instance.HealthChecker`, '_blank')}
+                                    >
+                                        <Settings />
+                                        <Text>Configure</Text>
+                                    </Button>
+                                    <StatusLight variant={healthIssues.length === 0 ? 'positive' : 'negative'}>
+                                        {healthIssues.length === 0 ? <>Healthy &mdash; 0 issue(s)</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}
+                                    </StatusLight>
+                                </Flex>
+                                {healthIssues.length > 0 && (
+                                    <ListView aria-label="Health Issues" selectionMode="none" marginY="size-200">
+                                        {healthIssues.map((issue, index) => (
+                                            <Item key={index} textValue={issue.message}>
+                                                <Flex alignItems="center" gap="size-100">
+                                                    <Heart color={getSeverityColor(issue.severity)} />
+                                                    <Text>{issue.message}</Text>
+                                                </Flex>
+                                            </Item>
+                                        ))}
+                                    </ListView>
+                                )}
+                            </View>
+                            <View
+                                backgroundColor="gray-50"
+                                borderWidth="thin"
+                                borderColor="dark"
+                                borderRadius="medium"
+                                paddingY="size-100"
+                                paddingX="size-200"
+                            >
+                                <Flex alignItems="center" gap="size-100">
+                                    <ScriptIcon />
+                                    <Heading level={3}>Script Executor</Heading>
+                                </Flex>
+                                <Flex alignItems="center" gap="size-100">
+                                    <Button
+                                        variant="cta"
+                                        onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.script.ScriptExecutor`, '_blank')}
+                                    >
+                                        <Settings />
+                                        <Text>Configure</Text>
+                                    </Button>
+                                    <StatusLight variant={queuedExecutions.length === 0 ? 'positive' : 'info'}>
+                                        {queuedExecutions.length === 0 ? <>No Executions &mdash; 0 script(s)</> : <>Queued &mdash; {queuedExecutions.length} script(s)</>}
+                                    </StatusLight>
+                                </Flex>
+                                {queuedExecutions.length > 0 && (
+                                    <ListView aria-label="Queued Executions" selectionMode="none" marginY="size-200">
+                                        {queuedExecutions.map(execution => (
+                                            <Item key={execution.id} textValue={execution.executable.content}>
+                                                <Flex alignItems="center" gap="size-100">
+                                                    <Code />
+                                                    <Text>{execution.executable.content}</Text>
+                                                </Flex>
+                                            </Item>
+                                        ))}
+                                    </ListView>
+                                )}
+                            </View>
+                        </Flex>
+                    </Item>
                     <Item key="user-preferences">
                         <Flex direction="column" flex="1" gap="size-100" marginY="size-100">
                             <View
@@ -58,38 +151,21 @@ const SettingsPage = () => {
                             </View>
                         </Flex>
                     </Item>
-                    <Item key="instance-configuration">
-                        <Flex direction="column" flex="1" gap="size-100" marginY="size-100">
-                            <View
-                                backgroundColor="gray-50"
-                                borderWidth="thin"
-                                borderColor="dark"
-                                borderRadius="medium"
-                                paddingY="size-100"
-                                paddingX="size-200"
-                            >
-                                <Heading level={3}>OSGi Configurations</Heading>
-                                <ListView aria-label="Links" selectionMode="none">
-                                    <Item textValue="Health Checker" href={`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.instance.HealthChecker`} target="_blank" rel="noopener noreferrer">
-                                        <Flex alignItems="center" gap="size-100">
-                                            <Heart />
-                                            <Text>Health Checker</Text>
-                                        </Flex>
-                                    </Item>
-                                    <Item textValue="Script Executor" href={`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.script.ScriptExecutor`} target="_blank" rel="noopener noreferrer">
-                                        <Flex alignItems="center" gap="size-100">
-                                            <Code />
-                                            <Text>Script Executor</Text>
-                                        </Flex>
-                                    </Item>
-                                </ListView>
-                            </View>
-                        </Flex>
-                    </Item>
                 </TabPanels>
             </Tabs>
         </Flex>
     );
+};
+
+const getSeverityColor = (severity: HealthIssueSeverity): IconColorValue => {
+    switch (severity) {
+        case HealthIssueSeverity.CRITICAL:
+            return 'negative';
+        case HealthIssueSeverity.WARNING:
+            return 'notice';
+        default:
+            return 'informative';
+    }
 };
 
 export default SettingsPage;
