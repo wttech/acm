@@ -47,7 +47,7 @@ const ScriptSynchronizeButton: React.FC<ScriptSynchronizeButtonProps> = ({ selec
             </Heading>
             <Divider />
             <Content>
-                <p>This action will synchronize all scripts between the author and publish instances. This ensures consistency across the whole environment.</p>
+                <p>This action will synchronize <strong>all scripts</strong> between the author and publish instances. This ensures consistency across the whole environment.</p>
                 <p>Notice that <strong>both enabled and disabled</strong> scripts will be synchronized.</p>
             </Content>
             <ButtonGroup>
