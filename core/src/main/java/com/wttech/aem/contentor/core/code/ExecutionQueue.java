@@ -90,23 +90,16 @@ public class ExecutionQueue implements JobExecutor {
                 .map(QueuedExecution::new);
     }
 
-    public Stream<Execution> readAll(Collection<String> jobIds, ResourceResolver resourceResolver)
-            throws ContentorException {
+    public Stream<Execution> readAll(Collection<String> jobIds) throws ContentorException {
         return jobIds.stream()
                 .filter(StringUtils::isNotBlank)
-                .map(jobId -> this.read(jobId, resourceResolver))
+                .map(this::read)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }
 
-    public Optional<Execution> read(String jobId, ResourceResolver resourceResolver) throws ContentorException {
-        Execution result = new ExecutionHistory(resourceResolver).read(jobId).orElse(null);
-        if (result == null) {
-            result = Optional.ofNullable(jobManager.getJobById(jobId))
-                    .map(QueuedExecution::new)
-                    .orElse(null);
-        }
-        return Optional.ofNullable(result);
+    public Optional<Execution> read(String jobId) throws ContentorException {
+        return Optional.ofNullable(jobManager.getJobById(jobId)).map(QueuedExecution::new);
     }
 
     public void stop(String jobId) {

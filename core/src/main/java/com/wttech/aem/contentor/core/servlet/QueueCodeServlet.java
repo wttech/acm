@@ -90,9 +90,9 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             if (jobIds == null) {
                 executions = executionQueue.findAll().collect(Collectors.toList());
             } else {
-                executions = executionQueue
-                        .readAll(jobIds, request.getResourceResolver())
-                        .collect(Collectors.toList());
+                ExecutionResolver executionResolver =
+                        new ExecutionResolver(executionQueue, request.getResourceResolver());
+                executions = executionResolver.readAll(jobIds).collect(Collectors.toList());
                 if (executions.isEmpty()) {
                     respondJson(
                             response,
@@ -121,9 +121,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            List<Execution> executions = executionQueue
-                    .readAll(jobIds, request.getResourceResolver())
-                    .collect(Collectors.toList());
+            List<Execution> executions = executionQueue.readAll(jobIds).collect(Collectors.toList());
             if (executions.isEmpty()) {
                 respondJson(
                         response,

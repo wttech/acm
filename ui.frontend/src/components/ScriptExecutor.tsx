@@ -19,9 +19,12 @@ import NoSearchResults from "@spectrum-icons/illustrations/NoSearchResults";
 import ExecutionStatusBadge from "./ExecutionStatusBadge";
 import DateExplained from "./DateExplained";
 import {AppContext} from "../AppContext.tsx";
+import {useNavigate} from "react-router-dom";
+import {Key} from "@react-types/shared";
 
 const ScriptExecutor = () => {
     const prefix = isProduction() ? '' : 'http://localhost:4502';
+    const navigate = useNavigate();
 
     const context = useContext(AppContext);
     const executions = context?.queuedExecutions || [];
@@ -54,7 +57,7 @@ const ScriptExecutor = () => {
                     <Flex flex="1" justifyContent="end" alignItems="center">&nbsp;</Flex>
                 </Flex>
             </View>
-            <TableView aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
+            <TableView aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400" onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
                 <TableHeader>
                     <Column width="5%">#</Column>
                     <Column>Executable</Column>

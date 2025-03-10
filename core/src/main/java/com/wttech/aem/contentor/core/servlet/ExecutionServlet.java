@@ -3,9 +3,7 @@ package com.wttech.aem.contentor.core.servlet;
 import static com.wttech.aem.contentor.core.util.ServletResult.*;
 import static com.wttech.aem.contentor.core.util.ServletUtils.*;
 
-import com.wttech.aem.contentor.core.code.Execution;
-import com.wttech.aem.contentor.core.code.ExecutionHistory;
-import com.wttech.aem.contentor.core.code.ExecutionQuery;
+import com.wttech.aem.contentor.core.code.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,6 +13,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +33,9 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
 
     private static final String ID_PARAM = "id";
 
+    @Reference
+    private ExecutionQueue queue;
+
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
@@ -42,7 +44,8 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
 
             List<String> ids = stringsParam(request, ID_PARAM);
             if (ids != null) {
-                executions = executionHistory.readAll(ids).collect(Collectors.toList());
+                ExecutionResolver executionResolver = new ExecutionResolver(queue, request.getResourceResolver());
+                executions = executionResolver.readAll(ids).collect(Collectors.toList());
             } else {
                 ExecutionQuery criteria = ExecutionQuery.from(request);
                 executions = executionHistory.findAll(criteria).collect(Collectors.toList());
