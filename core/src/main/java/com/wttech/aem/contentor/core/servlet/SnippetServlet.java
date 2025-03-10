@@ -43,7 +43,7 @@ public class SnippetServlet extends SlingAllMethodsServlet {
             List<Snippet> snippets;
 
             List<String> paths = stringsParam(request, PATH_PARAM);
-            if (!paths.isEmpty()) {
+            if (paths != null) {
                 snippets = repository.readAll(paths).sorted().collect(Collectors.toList());
             } else {
                 snippets = repository.findAll().sorted().collect(Collectors.toList());

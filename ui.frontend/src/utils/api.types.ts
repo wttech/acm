@@ -32,6 +32,10 @@ export function isExecutionCompleted(status: ExecutionStatus | null) {
     return status === ExecutionStatus.FAILED || status === ExecutionStatus.SUCCEEDED;
 }
 
+export type QueueOutput = {
+    executions: Execution[];
+};
+
 export type ExecutionOutput = {
     list: Execution[];
 };

@@ -2,11 +2,15 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -78,6 +82,21 @@ public class ExecutionQueue implements JobExecutor {
             return Optional.empty();
         }
         return Optional.of(new QueuedExecution(job));
+    }
+
+    @SuppressWarnings("unchecked")
+    public Stream<Execution> findAll() {
+        return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream()
+                .map(QueuedExecution::new);
+    }
+
+    public Stream<Execution> readAll(Collection<String> jobIds, ResourceResolver resourceResolver)
+            throws ContentorException {
+        return jobIds.stream()
+                .filter(StringUtils::isNotBlank)
+                .map(jobId -> this.read(jobId, resourceResolver))
+                .filter(Optional::isPresent)
+                .map(Optional::get);
     }
 
     public Optional<Execution> read(String jobId, ResourceResolver resourceResolver) throws ContentorException {

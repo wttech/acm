@@ -41,7 +41,7 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
             List<Execution> executions;
 
             List<String> ids = stringsParam(request, ID_PARAM);
-            if (!ids.isEmpty()) {
+            if (ids != null) {
                 executions = executionHistory.readAll(ids).collect(Collectors.toList());
             } else {
                 ExecutionQuery criteria = ExecutionQuery.from(request);

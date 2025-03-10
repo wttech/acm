@@ -1,13 +1,16 @@
 package com.wttech.aem.contentor.core.servlet;
 
 import static com.wttech.aem.contentor.core.util.ServletResult.*;
-import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
-import static com.wttech.aem.contentor.core.util.ServletUtils.stringParam;
+import static com.wttech.aem.contentor.core.util.ServletUtils.*;
 
 import com.wttech.aem.contentor.core.code.*;
 import com.wttech.aem.contentor.core.util.JsonUtils;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.Servlet;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -65,9 +68,10 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                 return;
             }
 
+            QueueOutput output = new QueueOutput(Collections.singletonList(execution));
             respondJson(
                     response,
-                    ok(String.format("Code from '%s' queued for execution successfully", code.getId()), execution));
+                    ok(String.format("Code from '%s' queued for execution successfully", code.getId()), output));
         } catch (Exception e) {
             LOG.error("Job cannot be queued!", e);
             respondJson(
@@ -79,21 +83,26 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        String jobId = stringParam(request, JOB_ID_PARAM);
-        if (jobId == null) {
-            respondJson(response, badRequest("Job ID is not specified!"));
-            return;
-        }
-
         try {
-            Execution execution =
-                    executionQueue.read(jobId, request.getResourceResolver()).orElse(null);
-            if (execution == null) {
-                respondJson(response, notFound(String.format("Job with ID '%s' not found!", jobId)));
-                return;
+            List<String> jobIds = stringsParam(request, JOB_ID_PARAM);
+
+            List<Execution> executions;
+            if (jobIds == null) {
+                executions = executionQueue.findAll().collect(Collectors.toList());
+            } else {
+                executions = executionQueue
+                        .readAll(jobIds, request.getResourceResolver())
+                        .collect(Collectors.toList());
+                if (executions.isEmpty()) {
+                    respondJson(
+                            response,
+                            notFound(String.format("Job with ID '%s' not found!", StringUtils.join(jobIds, ","))));
+                    return;
+                }
             }
 
-            respondJson(response, ok("Job found successfully", execution));
+            QueueOutput output = new QueueOutput(executions);
+            respondJson(response, ok("Job found successfully", output));
         } catch (Exception e) {
             LOG.error("Job cannot be read!", e);
             respondJson(
@@ -105,23 +114,27 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doDelete(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        String jobId = stringParam(request, JOB_ID_PARAM);
-        if (jobId == null) {
+        List<String> jobIds = stringsParam(request, JOB_ID_PARAM);
+        if (jobIds == null) {
             respondJson(response, badRequest("Job ID is not specified!"));
             return;
         }
 
         try {
-            Execution execution =
-                    executionQueue.read(jobId, request.getResourceResolver()).orElse(null);
-            if (execution == null) {
-                respondJson(response, notFound(String.format("Job with ID '%s' not found!", jobId)));
+            List<Execution> executions = executionQueue
+                    .readAll(jobIds, request.getResourceResolver())
+                    .collect(Collectors.toList());
+            if (executions.isEmpty()) {
+                respondJson(
+                        response,
+                        notFound(String.format("Job with ID '%s' not found!", StringUtils.join(jobIds, ","))));
                 return;
             }
 
-            executionQueue.stop(jobId);
+            executions.forEach(e -> executionQueue.stop(e.getId()));
 
-            respondJson(response, ok("Job stopped successfully", execution));
+            QueueOutput output = new QueueOutput(executions);
+            respondJson(response, ok("Job stopped successfully", output));
         } catch (Exception e) {
             LOG.error("Job cannot be stopped!", e);
             respondJson(

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.sling.event.jobs.Job;
 
 public enum ExecutionStatus {
@@ -16,7 +17,7 @@ public enum ExecutionStatus {
     SUCCEEDED;
 
     public static List<ExecutionStatus> manyOf(List<String> names) {
-        return names.stream()
+        return (names != null ? names.stream() : Stream.<String>empty())
                 .map(ExecutionStatus::of)
                 .filter(Optional::isPresent)
                 .map(Optional::get)

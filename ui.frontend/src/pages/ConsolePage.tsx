@@ -17,7 +17,7 @@ import { ToastQueue } from '@react-spectrum/toast';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
-import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
+import {Execution, ExecutionStatus, isExecutionPending, QueueOutput} from '../utils/api.types.ts';
 import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
 import {useNavigationPrevention} from "../utils/hooks/navigation.ts";
 
@@ -86,7 +86,7 @@ const ConsolePage = () => {
     setExecution(null);
 
     try {
-      const response = await apiRequest<Execution>({
+      const response = await apiRequest<QueueOutput>({
         operation: 'Code execution',
         url: `/apps/contentor/api/queue-code.json`,
         method: 'post',
@@ -98,7 +98,7 @@ const ConsolePage = () => {
           },
         },
       });
-      const queuedExecution = response.data.data;
+      const queuedExecution = response.data.data.executions[0]!;
       setExecution(queuedExecution);
       setSelectedTab('output');
 
@@ -116,12 +116,12 @@ const ConsolePage = () => {
 
   const pollExecutionState = async (jobId: string) => {
     try {
-      const response = await apiRequest<Execution>({
+      const response = await apiRequest<QueueOutput>({
         operation: 'Code execution state',
         url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
         method: 'get',
       });
-      const queuedExecution = response.data.data;
+      const queuedExecution = response.data.data.executions.find((e: Execution) => e.id === jobId)!;
       setExecution(queuedExecution);
 
       if (!isExecutionPending(queuedExecution.status)) {
