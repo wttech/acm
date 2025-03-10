@@ -83,6 +83,7 @@ export type ScriptOutput = {
 export type State = {
     healthStatus: HealthStatus;
     instanceSettings: InstanceSettings;
+    queuedExecutions: Execution[];
 }
 
 export type InstanceSettings = {

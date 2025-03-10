@@ -15,9 +15,7 @@ import {
     Text,
     IllustratedMessage,
     Content,
-    ProgressBar
 } from '@adobe/react-spectrum';
-import HeartIcon from "@spectrum-icons/workflow/Heart";
 import Settings from "@spectrum-icons/workflow/Settings";
 import { AppContext } from '../AppContext';
 import { HealthIssueSeverity } from '../utils/api.types';
