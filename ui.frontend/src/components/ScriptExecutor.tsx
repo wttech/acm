@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, { useContext, useState } from 'react';
 import {
     Button,
     Flex,
@@ -10,7 +10,14 @@ import {
     Column,
     Cell,
     Row,
-    Text, IllustratedMessage, Content, ButtonGroup
+    Text,
+    IllustratedMessage,
+    Content,
+    ButtonGroup,
+    Dialog,
+    DialogTrigger,
+    Heading,
+    Divider
 } from '@adobe/react-spectrum';
 import Clock from "@spectrum-icons/workflow/Clock";
 import ExecutableValue from "../components/ExecutableValue";
@@ -18,10 +25,18 @@ import { isProduction } from "../utils/node";
 import NoSearchResults from "@spectrum-icons/illustrations/NoSearchResults";
 import ExecutionStatusBadge from "./ExecutionStatusBadge";
 import DateExplained from "./DateExplained";
-import {AppContext} from "../AppContext.tsx";
-import {useNavigate} from "react-router-dom";
-import {Key} from "@react-types/shared";
+import { AppContext } from "../AppContext.tsx";
+import { useNavigate } from "react-router-dom";
+import { Key } from "@react-types/shared";
 import ApplicationDelivery from "@spectrum-icons/workflow/ApplicationDelivery";
+import Help from "@spectrum-icons/workflow/Help";
+import Close from "@spectrum-icons/workflow/Close";
+import Replay from "@spectrum-icons/workflow/Replay";
+import Checkmark from "@spectrum-icons/workflow/Checkmark";
+import Cancel from "@spectrum-icons/workflow/Cancel";
+import Heart from "@spectrum-icons/workflow/Heart";
+import Code from "@spectrum-icons/workflow/Code";
+import Box from "@spectrum-icons/workflow/Box";
 
 const ScriptExecutor = () => {
     const prefix = isProduction() ? '' : 'http://localhost:4502';
@@ -64,7 +79,37 @@ const ScriptExecutor = () => {
                             {executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}
                         </StatusLight>
                     </Flex>
-                    <Flex flex="1" justifyContent="end" alignItems="center">&nbsp;</Flex>
+                    <Flex flex="1" justifyContent="end" alignItems="center">
+                        <DialogTrigger>
+                            <Button variant="secondary" style="fill">
+                                <Help />
+                                <Text>Help</Text>
+                            </Button>
+                            {(close) => (
+                                <Dialog>
+                                    <Heading>Script Executor</Heading>
+                                    <Divider />
+                                    <Content>
+                                        <p>
+                                            <Replay size="XS" /> Here you can preview queued and active executions. You can also abort them if they were run in the background by other users or in separate browser tabs/windows.
+                                        </p>
+                                        <p>
+                                            <Checkmark size="XS" /> It allows you to freely hit the &apos;Execute&apos; button in the console, close the browser, and get back to the script output anytime. Once an execution ends, it is saved in history.
+                                        </p>
+                                        <p>
+                                            <Cancel size="XS" /> Remember that aborting executions may leave data in an inconsistent state.
+                                        </p>
+                                    </Content>
+                                    <ButtonGroup>
+                                        <Button variant="secondary" onPress={close}>
+                                            <Close size="XS" />
+                                            <Text>Close</Text>
+                                        </Button>
+                                    </ButtonGroup>
+                                </Dialog>
+                            )}
+                        </DialogTrigger>
+                    </Flex>
                 </Flex>
             </View>
             <TableView flex="1" aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400" onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>

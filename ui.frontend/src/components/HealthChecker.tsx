@@ -14,13 +14,17 @@ import {
     Badge,
     Text,
     IllustratedMessage,
-    Content,
+    Content, Dialog, Divider, ButtonGroup, DialogTrigger,
 } from '@adobe/react-spectrum';
 import Settings from "@spectrum-icons/workflow/Settings";
 import { AppContext } from '../AppContext';
 import { HealthIssueSeverity } from '../utils/api.types';
 import { isProduction } from "../utils/node.ts";
 import NoSearchResults from "@spectrum-icons/illustrations/NoSearchResults";
+import Help from "@spectrum-icons/workflow/Help";
+import Replay from "@spectrum-icons/workflow/Replay";
+import Checkmark from "@spectrum-icons/workflow/Checkmark";
+import Close from "@spectrum-icons/workflow/Close";
 
 const HealthChecker = () => {
     const context = useContext(AppContext);
@@ -63,7 +67,37 @@ const HealthChecker = () => {
                             {healthIssues.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}
                         </StatusLight>
                     </Flex>
-                    <Flex flex="1" justifyContent="end" alignItems="center">&nbsp;</Flex>
+                    <Flex flex="1" justifyContent="end" alignItems="center">
+                        <DialogTrigger>
+                            <Button variant="secondary" style="fill">
+                                <Help />
+                                <Text>Help</Text>
+                            </Button>
+                            {(close) => (
+                                <Dialog>
+                                    <Heading>Health Checker</Heading>
+                                    <Divider />
+                                    <Content>
+                                        <p>
+                                            <Help size="XS" /> All detected health issues will be comprehensively listed here for your review.
+                                        </p>
+                                        <p>
+                                            <Replay size="XS" /> If needed, configure which OSGi bundles should be ignored when determining the healthy state of the instance.
+                                        </p>
+                                        <p>
+                                            <Checkmark size="XS" /> Additionally, you can configure OSGi event topics to be checked within a recent time window.
+                                        </p>
+                                    </Content>
+                                    <ButtonGroup>
+                                        <Button variant="secondary" onPress={close}>
+                                            <Close size="XS" />
+                                            <Text>Close</Text>
+                                        </Button>
+                                    </ButtonGroup>
+                                </Dialog>
+                            )}
+                        </DialogTrigger>
+                    </Flex>
                 </Flex>
             </View>
 

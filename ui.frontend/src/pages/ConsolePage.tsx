@@ -19,7 +19,6 @@ import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
 import {Execution, ExecutionStatus, isExecutionPending, QueueOutput} from '../utils/api.types.ts';
 import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
-import {useNavigationPrevention} from "../utils/hooks/navigation.ts";
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
@@ -231,8 +230,6 @@ const ConsolePage = () => {
     }
   };
 
-  useNavigationPrevention(executing, 'Execution in progress. Wait for completion or abort it.');
-
   return (
       <Flex direction="column" flex="1" gap="size-200">
         <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
@@ -293,7 +290,7 @@ const ConsolePage = () => {
                     </DialogTrigger>
                   </Flex>
                 </Flex>
-                <ImmersiveEditor value={code} onChange={setCode} syntaxError={syntaxError} language="groovy" beforeMount={registerGroovyLanguage} />
+                <ImmersiveEditor value={code} options={{ readOnly: executing }} onChange={setCode} syntaxError={syntaxError} language="groovy" beforeMount={registerGroovyLanguage} />
               </Flex>
             </Item>
             <Item key="output">
