@@ -1,6 +1,5 @@
 package com.wttech.aem.contentor.core.code;
 
-import com.day.cq.replication.Replicator;
 import com.wttech.aem.contentor.core.osgi.OsgiContext;
 import java.io.OutputStream;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -13,8 +12,6 @@ public class ExecutionContext {
 
     private final ResourceResolver resourceResolver;
 
-    private final Replicator replicator;
-
     private OutputStream outputStream = null;
 
     private ExecutionMode mode = ExecutionMode.EVALUATE;
@@ -25,12 +22,10 @@ public class ExecutionContext {
 
     private String id = ExecutionId.generate();
 
-    public ExecutionContext(
-            Executable executable, OsgiContext osgiContext, ResourceResolver resourceResolver, Replicator replicator) {
+    public ExecutionContext(Executable executable, OsgiContext osgiContext, ResourceResolver resourceResolver) {
         this.executable = executable;
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
-        this.replicator = replicator;
     }
 
     public Executable getExecutable() {
@@ -39,10 +34,6 @@ public class ExecutionContext {
 
     public ResourceResolver getResourceResolver() {
         return resourceResolver;
-    }
-
-    public Replicator getReplicator() {
-        return replicator;
     }
 
     public OsgiContext getOsgiContext() {

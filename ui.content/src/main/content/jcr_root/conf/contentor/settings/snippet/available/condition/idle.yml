@@ -1,0 +1,7 @@
+group: Condition
+name: condition_idle
+content: |
+  condition.idle()
+documentation: |
+  Execute the script only if it is not already queued, active, etc.<br>
+  Protects against multiple queueing and parallel executions.

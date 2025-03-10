@@ -4,7 +4,6 @@ import java.time.*;
 import java.util.Date;
 import java.util.Optional;
 import java.util.stream.Stream;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class Condition {
@@ -32,7 +31,9 @@ public class Condition {
 
     public boolean changed() {
         return passedExecutions().noneMatch(e -> {
-            return StringUtils.equals(e.getExecutable().getContent(), executionContext.getExecutable().getContent());
+            return StringUtils.equals(
+                    e.getExecutable().getContent(),
+                    executionContext.getExecutable().getContent());
         });
     }
 
@@ -44,6 +45,24 @@ public class Condition {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
         return executionHistory.findAll(query);
+    }
+
+    public boolean idle() {
+        return !queuedExecutions().findFirst().isPresent();
+    }
+
+    public boolean inactive() {
+        return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.ACTIVE);
+    }
+
+    public Stream<Execution> queuedExecutions() {
+        return executionContext
+                .getOsgiContext()
+                .getExecutionQueue()
+                .findAll()
+                .filter(e -> StringUtils.equals(
+                        e.getExecutable().getId(),
+                        executionContext.getExecutable().getId()));
     }
 
     // Time period-based
@@ -165,8 +184,7 @@ public class Condition {
         return executedInTimeRange(date, startTime, date, endTime);
     }
 
-    public boolean executedInTimeRange(
-            LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
+    public boolean executedInTimeRange(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
         query.setStartDate(Date.from(

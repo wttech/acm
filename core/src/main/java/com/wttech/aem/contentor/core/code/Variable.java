@@ -1,7 +1,7 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.acl.Acl;
-import com.wttech.aem.contentor.core.osgi.OsgiFacade;
+import com.wttech.aem.contentor.core.osgi.OsgiContext;
 import com.wttech.aem.contentor.core.replication.Replicator;
 import java.io.PrintStream;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -14,7 +14,7 @@ public enum Variable {
     RESOURCE_RESOLVER("resourceResolver", ResourceResolver.class.getName()),
     ACL("acl", Acl.class.getName()),
     REPLICATOR("replicator", Replicator.class.getName()),
-    OSGI("osgi", OsgiFacade.class.getName());
+    OSGI("osgi", OsgiContext.class.getName());
 
     final String varName;
 

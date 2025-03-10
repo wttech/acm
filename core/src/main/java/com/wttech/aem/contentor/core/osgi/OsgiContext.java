@@ -1,5 +1,8 @@
 package com.wttech.aem.contentor.core.osgi;
 
+import com.day.cq.replication.Replicator;
+import com.wttech.aem.contentor.core.code.ExecutionQueue;
+import java.util.Optional;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -20,11 +23,30 @@ public class OsgiContext {
         this.bundleContext = bundleContext;
     }
 
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
+
     public InstanceInfo getInstanceInfo() {
         return instanceInfo;
     }
 
-    public BundleContext getBundleContext() {
-        return bundleContext;
+    @SuppressWarnings("unchecked")
+    public <T> Optional<T> findService(Class<T> clazz) {
+        return Optional.ofNullable(clazz)
+                .map(c -> bundleContext.getServiceReference(clazz))
+                .map(sf -> bundleContext.getService(sf));
+    }
+
+    public <T> T getService(Class<T> clazz) {
+        return findService(clazz).orElseThrow(() -> new IllegalStateException("Service not found: " + clazz.getName()));
+    }
+
+    public Replicator getReplicator() {
+        return getService(Replicator.class);
+    }
+
+    public ExecutionQueue getExecutionQueue() {
+        return getService(ExecutionQueue.class);
     }
 }
