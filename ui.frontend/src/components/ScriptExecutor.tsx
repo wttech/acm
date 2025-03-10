@@ -10,9 +10,9 @@ import {
     Column,
     Cell,
     Row,
-    Text, IllustratedMessage, Content
+    Text, IllustratedMessage, Content, ButtonGroup
 } from '@adobe/react-spectrum';
-import Settings from "@spectrum-icons/workflow/Settings";
+import Clock from "@spectrum-icons/workflow/Clock";
 import ExecutableValue from "../components/ExecutableValue";
 import { isProduction } from "../utils/node";
 import NoSearchResults from "@spectrum-icons/illustrations/NoSearchResults";
@@ -21,6 +21,7 @@ import DateExplained from "./DateExplained";
 import {AppContext} from "../AppContext.tsx";
 import {useNavigate} from "react-router-dom";
 import {Key} from "@react-types/shared";
+import ApplicationDelivery from "@spectrum-icons/workflow/ApplicationDelivery";
 
 const ScriptExecutor = () => {
     const prefix = isProduction() ? '' : 'http://localhost:4502';
@@ -41,13 +42,22 @@ const ScriptExecutor = () => {
             <View>
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                     <Flex flex="1" alignItems="center">
-                        <Button
-                            variant="cta"
-                            onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.script.ScriptExecutor`, '_blank')}
-                        >
-                            <Settings />
-                            <Text>Configure</Text>
-                        </Button>
+                        <ButtonGroup>
+                            <Button
+                                variant="negative"
+                                onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.script.ScriptExecutor`, '_blank')}
+                            >
+                                <ApplicationDelivery />
+                                <Text>Engine</Text>
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                onPress={() => window.open(`${prefix}/system/console/configMgr/org.apache.sling.event.jobs.QueueConfiguration~contentorexecutionqueue`, '_blank')}
+                            >
+                                <Clock />
+                                <Text>Queue</Text>
+                            </Button>
+                        </ButtonGroup>
                     </Flex>
                     <Flex flex="1" justifyContent="center" alignItems="center">
                         <StatusLight variant={executions.length === 0 ? 'positive' : 'notice'}>

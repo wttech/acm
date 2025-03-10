@@ -51,11 +51,11 @@ const HealthChecker = () => {
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                     <Flex flex="1" alignItems="center">
                         <Button
-                            variant="cta"
+                            variant="negative"
                             onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.instance.HealthChecker`, '_blank')}
                         >
                             <Settings />
-                            <Text>Configure</Text>
+                            <Text>Configuration</Text>
                         </Button>
                     </Flex>
                     <Flex flex="1" justifyContent="center" alignItems="center">
