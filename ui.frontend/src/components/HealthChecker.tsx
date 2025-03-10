@@ -67,7 +67,7 @@ const HealthChecker = () => {
                 </Flex>
             </View>
 
-            <TableView aria-label="Health Issues" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
+            <TableView flex="1" aria-label="Health Issues" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
                 <TableHeader>
                     <Column width="5%">#</Column>
                     <Column>Severity</Column>

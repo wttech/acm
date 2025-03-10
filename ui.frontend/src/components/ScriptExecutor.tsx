@@ -67,7 +67,7 @@ const ScriptExecutor = () => {
                     <Flex flex="1" justifyContent="end" alignItems="center">&nbsp;</Flex>
                 </Flex>
             </View>
-            <TableView aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400" onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
+            <TableView flex="1" aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400" onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
                 <TableHeader>
                     <Column width="5%">#</Column>
                     <Column>Executable</Column>
