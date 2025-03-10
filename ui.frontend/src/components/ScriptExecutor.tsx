@@ -17,7 +17,7 @@ import {
     Dialog,
     DialogTrigger,
     Heading,
-    Divider
+    Divider, Item, Menu, MenuTrigger
 } from '@adobe/react-spectrum';
 import Clock from "@spectrum-icons/workflow/Clock";
 import ExecutableValue from "../components/ExecutableValue";
@@ -34,9 +34,7 @@ import Close from "@spectrum-icons/workflow/Close";
 import Replay from "@spectrum-icons/workflow/Replay";
 import Checkmark from "@spectrum-icons/workflow/Checkmark";
 import Cancel from "@spectrum-icons/workflow/Cancel";
-import Heart from "@spectrum-icons/workflow/Heart";
-import Code from "@spectrum-icons/workflow/Code";
-import Box from "@spectrum-icons/workflow/Box";
+import Settings from "@spectrum-icons/workflow/Settings";
 
 const ScriptExecutor = () => {
     const prefix = isProduction() ? '' : 'http://localhost:4502';
@@ -57,22 +55,16 @@ const ScriptExecutor = () => {
             <View>
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                     <Flex flex="1" alignItems="center">
-                        <ButtonGroup>
-                            <Button
-                                variant="negative"
-                                onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.script.ScriptExecutor`, '_blank')}
-                            >
-                                <ApplicationDelivery />
-                                <Text>Engine</Text>
+                        <MenuTrigger>
+                            <Button variant="negative">
+                                <Settings />
+                                <Text>Configure</Text>
                             </Button>
-                            <Button
-                                variant="secondary"
-                                onPress={() => window.open(`${prefix}/system/console/configMgr/org.apache.sling.event.jobs.QueueConfiguration~contentorexecutionqueue`, '_blank')}
-                            >
-                                <Clock />
-                                <Text>Queue</Text>
-                            </Button>
-                        </ButtonGroup>
+                            <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
+                                <Item key="com.wttech.aem.contentor.core.script.ScriptExecutor"><ApplicationDelivery /><Text>Engine</Text></Item>
+                                <Item key="org.apache.sling.event.jobs.QueueConfiguration~contentorexecutionqueue"><Clock/><Text>Queue</Text></Item>
+                            </Menu>
+                        </MenuTrigger>
                     </Flex>
                     <Flex flex="1" justifyContent="center" alignItems="center">
                         <StatusLight variant={executions.length === 0 ? 'positive' : 'notice'}>
