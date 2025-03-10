@@ -34,14 +34,7 @@ const ScriptExecutor = () => {
     );
 
     return (
-        <View
-            backgroundColor="gray-50"
-            borderWidth="thin"
-            borderColor="dark"
-            borderRadius="medium"
-            paddingY="size-100"
-            paddingX="size-200"
-        >
+        <View>
             <Flex alignItems="center" gap="size-100">
                 <ScriptIcon />
                 <Heading level={3}>Script Executor</Heading>
