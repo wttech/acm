@@ -21,11 +21,11 @@ public class ExecutionResolver {
     }
 
     public Optional<Execution> read(String id) {
-        Optional<Execution> execution = queue.read(id);
+        Optional<Execution> execution = history.read(id);
         if (execution.isPresent()) {
             return execution;
         } else {
-            return history.read(id);
+            return queue.read(id);
         }
     }
 

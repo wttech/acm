@@ -12,6 +12,7 @@ import {
 import { toastRequest } from '../utils/api';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
+import {QueueOutput} from "../utils/api.types.ts";
 
 type ExecutionAbortButtonProps = {
     selectedKeys: string[];
@@ -30,7 +31,7 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ selectedKey
         ids.forEach((id) => params.append('jobId', id));
 
         try {
-            await toastRequest({
+            await toastRequest<QueueOutput>({
                 method: 'DELETE',
                 url: `/apps/contentor/api/queue-code.json?${params.toString()}`,
                 operation: 'Abort executions',

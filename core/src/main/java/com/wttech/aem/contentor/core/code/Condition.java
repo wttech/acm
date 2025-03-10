@@ -51,6 +51,7 @@ public class Condition {
         return !queuedExecutions().findFirst().isPresent();
     }
 
+    // TODO does not work, test it
     public boolean inactive() {
         return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.ACTIVE);
     }

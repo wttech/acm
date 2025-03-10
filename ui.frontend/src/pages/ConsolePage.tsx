@@ -151,7 +151,7 @@ const ConsolePage = () => {
       return;
     }
     try {
-      await apiRequest({
+      await apiRequest<QueueOutput>({
         operation: 'Code execution aborting',
         url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
         method: 'delete',
@@ -161,12 +161,12 @@ const ConsolePage = () => {
 
       let queuedExecution: Execution | null = null;
       while (queuedExecution === null || isExecutionPending(queuedExecution.status)) {
-        const response = await apiRequest<Execution>({
+        const response = await apiRequest<QueueOutput>({
           operation: 'Code execution state',
           url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
           method: 'get',
         });
-        queuedExecution = response.data.data;
+        queuedExecution = response.data.data.executions[0]!;
         setExecution(queuedExecution);
         await new Promise((resolve) => setTimeout(resolve, executionPollInterval));
       }
