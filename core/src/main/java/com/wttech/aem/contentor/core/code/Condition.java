@@ -2,7 +2,9 @@ package com.wttech.aem.contentor.core.code;
 
 import java.time.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,19 +53,22 @@ public class Condition {
         return !queuedExecutions().findFirst().isPresent();
     }
 
-    // TODO does not work, test it
     public boolean inactive() {
         return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.ACTIVE);
     }
 
     public Stream<Execution> queuedExecutions() {
-        return executionContext
-                .getOsgiContext()
-                .getExecutionQueue()
-                .findAll()
-                .filter(e -> StringUtils.equals(
-                        e.getExecutable().getId(),
-                        executionContext.getExecutable().getId()));
+        return executionContext.getOsgiContext().getExecutionQueue().findAll()
+                .filter(e -> !isSelfExecution(e) && isSameExecutable(e));
+    }
+
+    private boolean isSelfExecution(Execution e) {
+        return StringUtils.equals(e.getId(), executionContext.getId());
+    }
+
+    private boolean isSameExecutable(Execution e) {
+        return StringUtils.equals(
+                e.getExecutable().getId(), executionContext.getExecutable().getId());
     }
 
     // Time period-based
