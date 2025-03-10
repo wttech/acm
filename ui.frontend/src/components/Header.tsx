@@ -5,7 +5,7 @@ import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
 import { useLocation } from 'react-router-dom';
 import { AppLink } from '../AppLink.tsx';
-import Settings from "@spectrum-icons/workflow/Settings";
+import Maintenance from "@spectrum-icons/workflow/Settings";
 
 const Header = () => {
   const location = useLocation();
@@ -36,10 +36,10 @@ const Header = () => {
           <Text>Executions</Text>
         </Button>
       </AppLink>
-      <AppLink to="/settings">
-        <Button variant={location.pathname === '/settings' ? 'accent' : 'primary'} style="outline">
-            <Settings/>
-            <Text>Settings</Text>
+      <AppLink to="/maintenance">
+        <Button variant={location.pathname === '/maintenance' ? 'accent' : 'primary'} style="outline">
+            <Maintenance/>
+            <Text>Maintenance</Text>
         </Button>
       </AppLink>
     </Flex>

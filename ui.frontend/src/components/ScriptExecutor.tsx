@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Button,
     Flex,
@@ -11,20 +11,42 @@ import {
     Column,
     Cell,
     Row,
-    Text, IllustratedMessage, Content
+    Text, IllustratedMessage, Content, ProgressBar
 } from '@adobe/react-spectrum';
 import ScriptIcon from '@spectrum-icons/workflow/Code';
 import Settings from "@spectrum-icons/workflow/Settings";
-import {Execution} from '../utils/api.types';
-import ExecutableValue from "../components/ExecutableValue.tsx";
+import {Execution, QueueOutput} from '../utils/api.types';
+import ExecutableValue from "../components/ExecutableValue";
 import { isProduction } from "../utils/node";
 import NoSearchResults from "@spectrum-icons/illustrations/NoSearchResults";
-import ExecutionStatusBadge from "./ExecutionStatusBadge.tsx";
+import ExecutionStatusBadge from "./ExecutionStatusBadge";
+import { toastRequest } from '../utils/api';
+import DateExplained from "./DateExplained";
 
 const ScriptExecutor = () => {
     const prefix = isProduction() ? '' : 'http://localhost:4502';
+    const [executions, setExecutions] = useState<Execution[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
 
-    const queuedExecutions: Execution[] = [];
+    useEffect(() => {
+        const fetchExecutions = async () => {
+            setLoading(true);
+            try {
+                const response = await toastRequest<QueueOutput>({
+                    method: 'GET',
+                    url: `/apps/contentor/api/queue-code.json`,
+                    operation: `Queued executions loading`,
+                    positive: false,
+                });
+                setExecutions(response.data.data.executions);
+            } catch (error) {
+                console.error('Cannot load queued executions:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchExecutions();
+    }, [prefix]);
 
     const renderEmptyState = () => (
         <IllustratedMessage>
@@ -52,30 +74,38 @@ const ScriptExecutor = () => {
                         </Button>
                     </Flex>
                     <Flex flex="1" justifyContent="center" alignItems="center">
-                        <StatusLight variant={queuedExecutions.length === 0 ? 'positive' : 'info'}>
-                            {queuedExecutions.length === 0 ? <>Idle</> : <>Busy &mdash; {queuedExecutions.length} execution(s)</>}
+                        <StatusLight variant={executions.length === 0 ? 'positive' : 'info'}>
+                            {executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}
                         </StatusLight>
                     </Flex>
                     <Flex flex="1" justifyContent="end" alignItems="center">&nbsp;</Flex>
                 </Flex>
             </View>
 
-            <TableView aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
-                <TableHeader>
-                    <Column width="1fr">#</Column>
-                    <Column width="12fr">Executable</Column>
-                    <Column width="3fr">Status</Column>
-                </TableHeader>
-                <TableBody>
-                    {queuedExecutions.map((execution, index) => (
-                        <Row key={execution.id}>
-                            <Cell>{index + 1}</Cell>
-                            <Cell><ExecutableValue value={execution.executable} /></Cell>
-                            <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
-                        </Row>
-                    ))}
-                </TableBody>
-            </TableView>
+            {loading ? (
+                <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
+                    <ProgressBar label="Loading..." isIndeterminate />
+                </Flex>
+            ) : (
+                <TableView aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
+                    <TableHeader>
+                        <Column width="5%">#</Column>
+                        <Column>Executable</Column>
+                        <Column>Started At</Column>
+                        <Column>Status</Column>
+                    </TableHeader>
+                    <TableBody>
+                        {executions.map((execution, index) => (
+                            <Row key={execution.id}>
+                                <Cell>{index + 1}</Cell>
+                                <Cell><ExecutableValue value={execution.executable} /></Cell>
+                                <Cell><DateExplained value={execution.startDate}/></Cell>
+                                <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
+                            </Row>
+                        ))}
+                    </TableBody>
+                </TableView>
+            )}
         </View>
     );
 };

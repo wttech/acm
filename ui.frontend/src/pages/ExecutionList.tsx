@@ -37,7 +37,6 @@ const ExecutionList = () => {
 
   useDebounce(
     () => {
-      // TODO use apiRequest
       const fetchExecutions = async () => {
         setLoading(true);
         try {
@@ -57,7 +56,7 @@ const ExecutionList = () => {
           });
           setExecutions(response.data.data);
         } catch (error) {
-          console.error('Error fetching executions:', error);
+          console.error('Cannot load executions:', error);
         } finally {
           setLoading(false);
         }

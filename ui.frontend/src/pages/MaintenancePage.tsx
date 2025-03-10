@@ -1,13 +1,5 @@
-import React, { useContext } from 'react';
-import {
-    Flex,
-    Item,
-    Tabs,
-    TabList,
-    TabPanels,
-    Text,
-    View
-} from '@adobe/react-spectrum';
+import React from 'react';
+import {Flex, Item, Tabs, TabList, TabPanels, Text} from '@adobe/react-spectrum';
 import User from "@spectrum-icons/workflow/User";
 import Data from "@spectrum-icons/workflow/Data";
 import { useNavigationTab } from '../utils/hooks/navigation';
@@ -15,13 +7,13 @@ import HealthChecker from '../components/HealthChecker';
 import ScriptExecutor from '../components/ScriptExecutor';
 import UserPreferencesConsole from '../components/UserPreferencesConsole';
 
-const SettingsPage = () => {
-    const [selectedTab, setSelectedTab] = useNavigationTab('/settings', 'instance-configuration');
+const MaintenancePage = () => {
+    const [selectedTab, setSelectedTab] = useNavigationTab('/maintenance', 'instance-configuration');
 
     return (
         <Flex direction="column" flex="1" gap="size-200">
             <Tabs
-                aria-label="Settings Tabs"
+                aria-label="Maintenance tabs"
                 selectedKey={selectedTab}
                 onSelectionChange={setSelectedTab}
             >
@@ -38,8 +30,8 @@ const SettingsPage = () => {
                 <TabPanels>
                     <Item key="instance-configuration">
                         <Flex direction="column" flex="1" gap="size-100" marginY="size-100">
-                            <HealthChecker />
                             <ScriptExecutor />
+                            <HealthChecker />
                         </Flex>
                     </Item>
                     <Item key="user-preferences">
@@ -53,4 +45,4 @@ const SettingsPage = () => {
     );
 };
 
-export default SettingsPage;
+export default MaintenancePage;

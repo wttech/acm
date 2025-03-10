@@ -6,7 +6,7 @@ import ExecutionList from './pages/ExecutionList';
 import ExecutionView from './pages/ExecutionView';
 import SnippetsPage from './pages/SnippetsPage';
 import ScriptView from './pages/ScriptView';
-import SettingsPage from './pages/SettingsPage';
+import MaintenancePage from './pages/MaintenancePage.tsx';
 import { Navigate } from 'react-router-dom';
 
 const router = createHashRouter([
@@ -21,7 +21,7 @@ const router = createHashRouter([
             { path: '/console', element: <ConsolePage /> },
             { path: '/executions', element: <ExecutionList /> },
             { path: '/executions/view/:executionId', element: <ExecutionView /> },
-            { path: '/settings/:tab?', element: <SettingsPage /> },
+            { path: '/maintenance/:tab?', element: <MaintenancePage /> },
         ],
     },
 ]);

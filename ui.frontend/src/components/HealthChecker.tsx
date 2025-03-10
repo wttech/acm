@@ -76,9 +76,9 @@ const HealthChecker = () => {
 
             <TableView aria-label="Health Issues" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
                 <TableHeader>
-                    <Column width="1fr">#</Column>
-                    <Column width="1fr">Severity</Column>
-                    <Column width="12fr">Message</Column>
+                    <Column width="5%">#</Column>
+                    <Column>Severity</Column>
+                    <Column >Message</Column>
                 </TableHeader>
                 <TableBody>
                     {(healthIssues || []).map((issue, index) => (
