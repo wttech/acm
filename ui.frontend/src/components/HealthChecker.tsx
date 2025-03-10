@@ -48,12 +48,7 @@ const HealthChecker = () => {
     );
 
     return (
-        <View>
-            <Flex alignItems="center" gap="size-100">
-                <HeartIcon />
-                <Heading level={3}>Health Checker</Heading>
-            </Flex>
-
+        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
             <View>
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                     <Flex flex="1" alignItems="center">
@@ -92,7 +87,7 @@ const HealthChecker = () => {
                     ))}
                 </TableBody>
             </TableView>
-        </View>
+        </Flex>
     );
 };
 

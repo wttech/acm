@@ -13,7 +13,6 @@ import {
     Row,
     Text, IllustratedMessage, Content, ProgressBar
 } from '@adobe/react-spectrum';
-import ScriptIcon from '@spectrum-icons/workflow/Code';
 import Settings from "@spectrum-icons/workflow/Settings";
 import {Execution, QueueOutput} from '../utils/api.types';
 import ExecutableValue from "../components/ExecutableValue";
@@ -56,12 +55,7 @@ const ScriptExecutor = () => {
     );
 
     return (
-        <View>
-            <Flex alignItems="center" gap="size-100">
-                <ScriptIcon />
-                <Heading level={3}>Script Executor</Heading>
-            </Flex>
-
+        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
             <View>
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                     <Flex flex="1" alignItems="center">
@@ -74,7 +68,7 @@ const ScriptExecutor = () => {
                         </Button>
                     </Flex>
                     <Flex flex="1" justifyContent="center" alignItems="center">
-                        <StatusLight variant={executions.length === 0 ? 'positive' : 'info'}>
+                        <StatusLight variant={executions.length === 0 ? 'positive' : 'notice'}>
                             {executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}
                         </StatusLight>
                     </Flex>
@@ -91,7 +85,7 @@ const ScriptExecutor = () => {
                     <TableHeader>
                         <Column width="5%">#</Column>
                         <Column>Executable</Column>
-                        <Column>Started At</Column>
+                        <Column>Started</Column>
                         <Column>Status</Column>
                     </TableHeader>
                     <TableBody>
@@ -106,7 +100,7 @@ const ScriptExecutor = () => {
                     </TableBody>
                 </TableView>
             )}
-        </View>
+        </Flex>
     );
 };
 
