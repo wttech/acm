@@ -4,30 +4,30 @@ import {
   Cell,
   Column,
   Content,
+  ContextualHelp,
   Dialog,
   DialogTrigger,
   Divider,
   Flex,
   Heading,
   IllustratedMessage,
-  ContextualHelp,
+  Link,
   ProgressBar,
-  StatusLight,
   Row,
+  StatusLight,
   TableBody,
   TableHeader,
   TableView,
   Text,
-  View,
-  ActionButton, Link, Item
+  View
 } from '@adobe/react-spectrum';
-import { Key, Selection } from '@react-types/shared';
+import {Key, Selection} from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import { toastRequest } from '../utils/api';
-import { ScriptOutput } from '../utils/api.types';
+import {toastRequest} from '../utils/api';
+import {ExecutionStatus, isExecutionNegative, ScriptOutput} from '../utils/api.types';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import {useNavigate} from "react-router-dom";
 import Magnify from "@spectrum-icons/workflow/Magnify";
@@ -190,7 +190,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                       <Flex justifyContent="space-between" alignItems="center">
                         <Text>{lastExecution ? <DateExplained value={lastExecution.startDate}/> : '—'}</Text>
                         {lastExecution && (
-                            <ActionButton onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution"><Magnify /></ActionButton>
+                            <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution"><Magnify /></Button>
                         )}
                       </Flex>
                     </Cell>
