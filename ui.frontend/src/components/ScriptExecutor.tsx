@@ -17,7 +17,10 @@ import {
     Dialog,
     DialogTrigger,
     Heading,
-    Divider, Item, Menu, MenuTrigger
+    Divider,
+    Item,
+    Menu,
+    MenuTrigger,
 } from '@adobe/react-spectrum';
 import Clock from "@spectrum-icons/workflow/Clock";
 import ExecutableValue from "../components/ExecutableValue";
@@ -27,7 +30,7 @@ import ExecutionStatusBadge from "./ExecutionStatusBadge";
 import DateExplained from "./DateExplained";
 import { AppContext } from "../AppContext.tsx";
 import { useNavigate } from "react-router-dom";
-import { Key } from "@react-types/shared";
+import { Key, Selection } from "@react-types/shared";
 import ApplicationDelivery from "@spectrum-icons/workflow/ApplicationDelivery";
 import Help from "@spectrum-icons/workflow/Help";
 import Close from "@spectrum-icons/workflow/Close";
@@ -35,6 +38,7 @@ import Replay from "@spectrum-icons/workflow/Replay";
 import Checkmark from "@spectrum-icons/workflow/Checkmark";
 import Cancel from "@spectrum-icons/workflow/Cancel";
 import Settings from "@spectrum-icons/workflow/Settings";
+import ExecutionAbortButton from './ExecutionAbortButton';
 
 const ScriptExecutor = () => {
     const prefix = isProduction() ? '' : 'http://localhost:4502';
@@ -42,6 +46,15 @@ const ScriptExecutor = () => {
 
     const context = useContext(AppContext);
     const executions = context?.queuedExecutions || [];
+
+    const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
+    const selectedIds = (selectedKeys: Selection): string[] => {
+        if (selectedKeys === 'all') {
+            return executions?.map((execution) => execution.id) || [];
+        } else {
+            return Array.from(selectedKeys as Set<Key>).map((key) => key.toString());
+        }
+    };
 
     const renderEmptyState = () => (
         <IllustratedMessage>
@@ -55,16 +68,20 @@ const ScriptExecutor = () => {
             <View>
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                     <Flex flex="1" alignItems="center">
-                        <MenuTrigger>
-                            <Button variant="negative">
-                                <Settings />
-                                <Text>Configure</Text>
-                            </Button>
-                            <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
-                                <Item key="com.wttech.aem.contentor.core.script.ScriptExecutor"><ApplicationDelivery /><Text>Engine</Text></Item>
-                                <Item key="org.apache.sling.event.jobs.QueueConfiguration~contentorexecutionqueue"><Clock/><Text>Queue</Text></Item>
-                            </Menu>
-                        </MenuTrigger>
+                        <ButtonGroup>
+                            <ExecutionAbortButton selectedKeys={selectedIds(selectedKeys)}/>
+                            <MenuTrigger>
+                                <Button variant="negative">
+                                    <Settings />
+                                    <Text>Configure</Text>
+                                </Button>
+                                <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
+                                    <Item key="com.wttech.aem.contentor.core.script.ScriptExecutor"><ApplicationDelivery /><Text>Engine</Text></Item>
+                                    <Item key="org.apache.sling.event.jobs.QueueConfiguration~contentorexecutionqueue"><Clock/><Text>Queue</Text></Item>
+                                </Menu>
+                            </MenuTrigger>
+                        </ButtonGroup>
+
                     </Flex>
                     <Flex flex="1" justifyContent="center" alignItems="center">
                         <StatusLight variant={executions.length === 0 ? 'positive' : 'notice'}>
@@ -104,7 +121,7 @@ const ScriptExecutor = () => {
                     </Flex>
                 </Flex>
             </View>
-            <TableView flex="1" aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400" onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
+            <TableView flex="1" aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="multiple" selectedKeys={selectedKeys} onSelectionChange={setSelectedKeys} marginY="size-200" minHeight="size-3400" onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
                 <TableHeader>
                     <Column width="5%">#</Column>
                     <Column>Executable</Column>

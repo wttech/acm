@@ -1,4 +1,4 @@
-import { Badge, Text } from '@adobe/react-spectrum';
+import {Badge, ProgressCircle, Text} from '@adobe/react-spectrum';
 import Alert from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
@@ -11,7 +11,7 @@ interface ExecutionStatusProps {
   value: ExecutionStatus;
 }
 
-const getBadgeVariant = (status: ExecutionStatus): 'positive' | 'negative' | 'neutral' | 'info' | 'yellow' => {
+const getVariant = (status: ExecutionStatus): 'positive' | 'negative' | 'neutral' | 'info' | 'yellow' => {
   switch (status) {
     case ExecutionStatus.SUCCEEDED:
       return 'positive';
@@ -38,7 +38,7 @@ const getIcon = (status: ExecutionStatus) => {
     case ExecutionStatus.FAILED:
       return <Alert />;
     case ExecutionStatus.ACTIVE:
-      return <Clock />;
+      return <ProgressCircle size="S" aria-label="Loading…" isIndeterminate marginX="size-100" />;
     case ExecutionStatus.QUEUED:
       return <Clock />;
     case ExecutionStatus.STOPPED:
@@ -53,7 +53,7 @@ const getIcon = (status: ExecutionStatus) => {
 };
 
 const ExecutionStatusBadge: React.FC<ExecutionStatusProps> = ({ value }) => {
-  const variant = getBadgeVariant(value);
+  const variant = getVariant(value);
   const icon = getIcon(value);
 
   return (
