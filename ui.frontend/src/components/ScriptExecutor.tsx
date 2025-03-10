@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import {
     Button,
     Flex,
-    Heading,
     StatusLight,
     View,
     TableView,
@@ -11,20 +10,40 @@ import {
     Column,
     Cell,
     Row,
-    Text, IllustratedMessage, Content
+    Text,
+    IllustratedMessage,
+    Content,
+    ButtonGroup,
+    Dialog,
+    DialogTrigger,
+    Heading,
+    Divider
 } from '@adobe/react-spectrum';
-import ScriptIcon from '@spectrum-icons/workflow/Code';
-import Settings from "@spectrum-icons/workflow/Settings";
-import {Execution} from '../utils/api.types';
-import ExecutableValue from "../components/ExecutableValue.tsx";
+import Clock from "@spectrum-icons/workflow/Clock";
+import ExecutableValue from "../components/ExecutableValue";
 import { isProduction } from "../utils/node";
 import NoSearchResults from "@spectrum-icons/illustrations/NoSearchResults";
-import ExecutionStatusBadge from "./ExecutionStatusBadge.tsx";
+import ExecutionStatusBadge from "./ExecutionStatusBadge";
+import DateExplained from "./DateExplained";
+import { AppContext } from "../AppContext.tsx";
+import { useNavigate } from "react-router-dom";
+import { Key } from "@react-types/shared";
+import ApplicationDelivery from "@spectrum-icons/workflow/ApplicationDelivery";
+import Help from "@spectrum-icons/workflow/Help";
+import Close from "@spectrum-icons/workflow/Close";
+import Replay from "@spectrum-icons/workflow/Replay";
+import Checkmark from "@spectrum-icons/workflow/Checkmark";
+import Cancel from "@spectrum-icons/workflow/Cancel";
+import Heart from "@spectrum-icons/workflow/Heart";
+import Code from "@spectrum-icons/workflow/Code";
+import Box from "@spectrum-icons/workflow/Box";
 
 const ScriptExecutor = () => {
     const prefix = isProduction() ? '' : 'http://localhost:4502';
+    const navigate = useNavigate();
 
-    const queuedExecutions: Execution[] = [];
+    const context = useContext(AppContext);
+    const executions = context?.queuedExecutions || [];
 
     const renderEmptyState = () => (
         <IllustratedMessage>
@@ -34,49 +53,84 @@ const ScriptExecutor = () => {
     );
 
     return (
-        <View>
-            <Flex alignItems="center" gap="size-100">
-                <ScriptIcon />
-                <Heading level={3}>Script Executor</Heading>
-            </Flex>
-
+        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
             <View>
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                     <Flex flex="1" alignItems="center">
-                        <Button
-                            variant="cta"
-                            onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.script.ScriptExecutor`, '_blank')}
-                        >
-                            <Settings />
-                            <Text>Configure</Text>
-                        </Button>
+                        <ButtonGroup>
+                            <Button
+                                variant="negative"
+                                onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.script.ScriptExecutor`, '_blank')}
+                            >
+                                <ApplicationDelivery />
+                                <Text>Engine</Text>
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                onPress={() => window.open(`${prefix}/system/console/configMgr/org.apache.sling.event.jobs.QueueConfiguration~contentorexecutionqueue`, '_blank')}
+                            >
+                                <Clock />
+                                <Text>Queue</Text>
+                            </Button>
+                        </ButtonGroup>
                     </Flex>
                     <Flex flex="1" justifyContent="center" alignItems="center">
-                        <StatusLight variant={queuedExecutions.length === 0 ? 'positive' : 'info'}>
-                            {queuedExecutions.length === 0 ? <>Idle</> : <>Busy &mdash; {queuedExecutions.length} execution(s)</>}
+                        <StatusLight variant={executions.length === 0 ? 'positive' : 'notice'}>
+                            {executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}
                         </StatusLight>
                     </Flex>
-                    <Flex flex="1" justifyContent="end" alignItems="center">&nbsp;</Flex>
+                    <Flex flex="1" justifyContent="end" alignItems="center">
+                        <DialogTrigger>
+                            <Button variant="secondary" style="fill">
+                                <Help />
+                                <Text>Help</Text>
+                            </Button>
+                            {(close) => (
+                                <Dialog>
+                                    <Heading>Script Executor</Heading>
+                                    <Divider />
+                                    <Content>
+                                        <p>
+                                            <Replay size="XS" /> Here you can preview queued and active executions. You can also abort them if they were run in the background by other users or in separate browser tabs/windows.
+                                        </p>
+                                        <p>
+                                            <Checkmark size="XS" /> It allows you to freely hit the &apos;Execute&apos; button in the console, close the browser, and get back to the script output anytime. Once an execution ends, it is saved in history.
+                                        </p>
+                                        <p>
+                                            <Cancel size="XS" /> Remember that aborting executions may leave data in an inconsistent state.
+                                        </p>
+                                    </Content>
+                                    <ButtonGroup>
+                                        <Button variant="secondary" onPress={close}>
+                                            <Close size="XS" />
+                                            <Text>Close</Text>
+                                        </Button>
+                                    </ButtonGroup>
+                                </Dialog>
+                            )}
+                        </DialogTrigger>
+                    </Flex>
                 </Flex>
             </View>
-
-            <TableView aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
+            <TableView flex="1" aria-label="Queued Executions" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400" onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
                 <TableHeader>
-                    <Column width="1fr">#</Column>
-                    <Column width="12fr">Executable</Column>
-                    <Column width="3fr">Status</Column>
+                    <Column width="5%">#</Column>
+                    <Column>Executable</Column>
+                    <Column>Started</Column>
+                    <Column>Status</Column>
                 </TableHeader>
                 <TableBody>
-                    {queuedExecutions.map((execution, index) => (
+                    {executions.map((execution, index) => (
                         <Row key={execution.id}>
                             <Cell>{index + 1}</Cell>
                             <Cell><ExecutableValue value={execution.executable} /></Cell>
+                            <Cell><DateExplained value={execution.startDate}/></Cell>
                             <Cell><ExecutionStatusBadge value={execution.status}/></Cell>
                         </Row>
                     ))}
                 </TableBody>
             </TableView>
-        </View>
+        </Flex>
     );
 };
 

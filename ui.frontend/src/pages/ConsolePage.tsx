@@ -17,9 +17,8 @@ import { ToastQueue } from '@react-spectrum/toast';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import { apiRequest } from '../utils/api.ts';
-import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
+import {Execution, ExecutionStatus, isExecutionPending, QueueOutput} from '../utils/api.types.ts';
 import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
-import {useNavigationPrevention} from "../utils/hooks/navigation.ts";
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
@@ -86,7 +85,7 @@ const ConsolePage = () => {
     setExecution(null);
 
     try {
-      const response = await apiRequest<Execution>({
+      const response = await apiRequest<QueueOutput>({
         operation: 'Code execution',
         url: `/apps/contentor/api/queue-code.json`,
         method: 'post',
@@ -98,7 +97,7 @@ const ConsolePage = () => {
           },
         },
       });
-      const queuedExecution = response.data.data;
+      const queuedExecution = response.data.data.executions[0]!;
       setExecution(queuedExecution);
       setSelectedTab('output');
 
@@ -116,12 +115,12 @@ const ConsolePage = () => {
 
   const pollExecutionState = async (jobId: string) => {
     try {
-      const response = await apiRequest<Execution>({
+      const response = await apiRequest<QueueOutput>({
         operation: 'Code execution state',
         url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
         method: 'get',
       });
-      const queuedExecution = response.data.data;
+      const queuedExecution = response.data.data.executions.find((e: Execution) => e.id === jobId)!;
       setExecution(queuedExecution);
 
       if (!isExecutionPending(queuedExecution.status)) {
@@ -231,8 +230,6 @@ const ConsolePage = () => {
     }
   };
 
-  useNavigationPrevention(executing, 'Execution in progress. Wait for completion or abort it.');
-
   return (
       <Flex direction="column" flex="1" gap="size-200">
         <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
@@ -293,7 +290,7 @@ const ConsolePage = () => {
                     </DialogTrigger>
                   </Flex>
                 </Flex>
-                <ImmersiveEditor value={code} onChange={setCode} syntaxError={syntaxError} language="groovy" beforeMount={registerGroovyLanguage} />
+                <ImmersiveEditor value={code} options={{ readOnly: executing }} onChange={setCode} syntaxError={syntaxError} language="groovy" beforeMount={registerGroovyLanguage} />
               </Flex>
             </Item>
             <Item key="output">

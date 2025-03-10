@@ -4,11 +4,15 @@ import static com.wttech.aem.contentor.core.util.ServletResult.error;
 import static com.wttech.aem.contentor.core.util.ServletResult.ok;
 import static com.wttech.aem.contentor.core.util.ServletUtils.respondJson;
 
+import com.wttech.aem.contentor.core.code.Execution;
+import com.wttech.aem.contentor.core.code.ExecutionQueue;
 import com.wttech.aem.contentor.core.instance.HealthChecker;
 import com.wttech.aem.contentor.core.instance.HealthStatus;
 import com.wttech.aem.contentor.core.instance.InstanceSettings;
 import com.wttech.aem.contentor.core.state.State;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -35,20 +39,25 @@ public class StateServlet extends SlingAllMethodsServlet {
     @Reference
     private HealthChecker healthChecker;
 
+    @Reference
+    private ExecutionQueue executionQueue;
+
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
             InstanceSettings instanceSettings = InstanceSettings.current();
-            State state = new State(healthStatus, instanceSettings);
+            List<Execution> queuedExecutions = executionQueue.findAll().collect(Collectors.toList());
+
+            State state = new State(healthStatus, instanceSettings, queuedExecutions);
 
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {
             LOG.error("State cannot be read!", e);
             respondJson(
                     response,
-                    error(String.format("State cannot be read! %s", e.getMessage())
-                            .trim()));
+                    error(String.format(
+                            "State cannot be read! %s", e.getMessage().trim())));
         }
     }
 }

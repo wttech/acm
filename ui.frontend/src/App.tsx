@@ -19,7 +19,8 @@ function App() {
     instanceSettings: {
       id: 'default',
       timezoneId: 'UTC'
-    }
+    },
+    queuedExecutions: []
   });
 
   useEffect(() => {
