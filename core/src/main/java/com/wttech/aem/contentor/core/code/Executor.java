@@ -14,9 +14,26 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.osgi.service.component.annotations.*;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @Component(immediate = true, service = Executor.class)
+@Designate(ocd = Executor.Config.class)
 public class Executor {
+
+    @ObjectClassDefinition(name = "AEM Contentor - Executor")
+    public @interface Config {
+
+        @AttributeDefinition(name = "Keep history", description = "Save executions in history.")
+        boolean history() default true;
+
+        @AttributeDefinition(
+                name = "Debug mode",
+                description =
+                        "Enables debug mode for troubleshooting. Changed behaviors include: start saving skipped executions in history.")
+        boolean debug() default false;
+    }
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
@@ -24,8 +41,19 @@ public class Executor {
     @Reference
     private OsgiContext osgiContext;
 
+    private Config config;
+
+    @Activate
+    @Modified
+    protected void activate(Config config) {
+        this.config = config;
+    }
+
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return new ExecutionContext(executable, osgiContext, resourceResolver);
+        ExecutionContext result = new ExecutionContext(executable, osgiContext, resourceResolver);
+        result.setDebug(config.debug());
+        result.setHistory(config.history());
+        return result;
     }
 
     public Execution execute(Executable executable) throws ContentorException {
@@ -61,8 +89,7 @@ public class Executor {
 
             execution.start();
 
-            Script script = shell.parse(composeScript(context.getExecutable()), CodeSyntax.MAIN_CLASS);
-            script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
+            Script script = shell.parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
 
             switch (context.getMode()) {
                 case PARSE:
@@ -84,22 +111,6 @@ public class Executor {
             }
             return execution.end(ExecutionStatus.FAILED);
         }
-    }
-
-    private String composeScript(Executable executable) throws ContentorException {
-        StringBuilder builder = new StringBuilder();
-        builder.append(executable.getContent());
-        builder.append("\n");
-        builder.append("void ").append(CodeSyntax.Methods.INIT.givenName).append("() {\n");
-        builder.append("\tSystem.setOut(new java.io.PrintStream(")
-                .append(Variable.OUT.varName())
-                .append(", true, \"UTF-8\"));\n");
-        builder.append("\tSystem.setErr(new java.io.PrintStream(")
-                .append(Variable.OUT.varName())
-                .append(", true, \"UTF-8\"));\n");
-        builder.append("}\n");
-        builder.append("\n");
-        return builder.toString();
     }
 
     private GroovyShell createShell(ExecutionContext context) {

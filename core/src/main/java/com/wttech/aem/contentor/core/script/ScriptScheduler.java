@@ -1,7 +1,6 @@
 package com.wttech.aem.contentor.core.script;
 
-import com.wttech.aem.contentor.core.code.Execution;
-import com.wttech.aem.contentor.core.code.ExecutionContext;
+import com.wttech.aem.contentor.core.code.ExecutionQueue;
 import com.wttech.aem.contentor.core.code.Executor;
 import com.wttech.aem.contentor.core.instance.HealthChecker;
 import com.wttech.aem.contentor.core.instance.HealthStatus;
@@ -21,22 +20,16 @@ import org.slf4j.LoggerFactory;
 @Component(
         immediate = true,
         service = {Runnable.class})
-@Designate(ocd = ScriptExecutor.Config.class)
-public class ScriptExecutor implements Runnable {
+@Designate(ocd = ScriptScheduler.Config.class)
+public class ScriptScheduler implements Runnable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptExecutor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptScheduler.class);
 
-    @ObjectClassDefinition(name = "AEM Contentor - Script Executor")
+    @ObjectClassDefinition(name = "AEM Contentor - Script Scheduler")
     public @interface Config {
 
         @AttributeDefinition(name = "Enabled", description = "Allows to temporarily disable the script executor")
         boolean enabled() default true;
-
-        @AttributeDefinition(
-                name = "Debug mode",
-                description =
-                        "Enables debug mode for troubleshooting. Changed behaviors include: start saving skipped executions in history.")
-        boolean debug() default false;
 
         @AttributeDefinition(
                 name = "Scheduler expression",
@@ -54,6 +47,9 @@ public class ScriptExecutor implements Runnable {
 
     @Reference
     private HealthChecker healthChecker;
+
+    @Reference
+    private ExecutionQueue queue;
 
     private Config config;
 
@@ -77,21 +73,11 @@ public class ScriptExecutor implements Runnable {
 
         try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-
-            LOG.debug("Executing scripts");
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
-                try {
-                    ExecutionContext context = executor.createContext(script, resourceResolver);
-                    context.setDebug(config.debug());
-                    Execution execution = executor.execute(context);
-                    LOG.info("Execution of script '{}' ended with result '{}'", script.getId(), execution);
-                } catch (Exception e) {
-                    LOG.error("Failed to execute script '{}'", script.getId(), e);
-                }
+                queue.submit(script);
             });
-            LOG.debug("Executed scripts");
         } catch (Exception e) {
-            LOG.error("Failed to execute scripts", e);
+            LOG.error("Failed to access repository while submitting enabled scripts to execution queue", e);
         }
     }
 }

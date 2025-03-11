@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.once()
+    return condition.idle() && condition.once()
 }
 
 void doRun() {

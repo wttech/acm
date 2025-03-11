@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.everyMonth()
+    return condition.idle() && condition.everyMonth()
 }
 
 void doRun() {

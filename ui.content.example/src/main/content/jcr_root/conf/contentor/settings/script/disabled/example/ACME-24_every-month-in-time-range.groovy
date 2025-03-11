@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.everyMonthInTimeRange("10:00", "11:00")
+    return condition.idle() && condition.everyMonthInTimeRange("10:00", "11:00")
 }
 
 void doRun() {

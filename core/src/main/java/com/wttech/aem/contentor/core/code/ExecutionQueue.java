@@ -40,9 +40,6 @@ public class ExecutionQueue implements JobExecutor {
 
         @AttributeDefinition(name = "Async Poll Interval")
         long asyncPollInterval() default 500L;
-
-        @AttributeDefinition(name = "Clean Poll Delay")
-        long cleanPollDelay() default 3000L;
     }
 
     @Reference
@@ -62,7 +59,7 @@ public class ExecutionQueue implements JobExecutor {
     @Modified
     protected void activate(Config config) {
         this.config = config;
-        this.jobAsyncExecutor = Executors.newSingleThreadExecutor();
+        this.jobAsyncExecutor = Executors.newCachedThreadPool();
     }
 
     @Deactivate
