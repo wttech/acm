@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.everyHourInMinuteRange(30, 35)
+    return condition.idle() && condition.everyHourInMinuteRange(30, 35)
 }
 
 void doRun() {

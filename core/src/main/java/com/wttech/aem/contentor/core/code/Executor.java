@@ -14,9 +14,26 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.osgi.service.component.annotations.*;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @Component(immediate = true, service = Executor.class)
+@Designate(ocd = Executor.Config.class)
 public class Executor {
+
+    @ObjectClassDefinition(name = "AEM Contentor - Executor")
+    public @interface Config {
+
+        @AttributeDefinition(name = "Keep history", description = "Save executions in history.")
+        boolean history() default true;
+
+        @AttributeDefinition(
+                name = "Debug mode",
+                description =
+                        "Enables debug mode for troubleshooting. Changed behaviors include: start saving skipped executions in history.")
+        boolean debug() default false;
+    }
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
@@ -24,8 +41,19 @@ public class Executor {
     @Reference
     private OsgiContext osgiContext;
 
+    private Config config;
+
+    @Activate
+    @Modified
+    protected void activate(Config config) {
+        this.config = config;
+    }
+
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return new ExecutionContext(executable, osgiContext, resourceResolver);
+        ExecutionContext result = new ExecutionContext(executable, osgiContext, resourceResolver);
+        result.setDebug(config.debug());
+        result.setHistory(config.history());
+        return result;
     }
 
     public Execution execute(Executable executable) throws ContentorException {
