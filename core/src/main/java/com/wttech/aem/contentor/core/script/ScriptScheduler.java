@@ -20,22 +20,16 @@ import org.slf4j.LoggerFactory;
 @Component(
         immediate = true,
         service = {Runnable.class})
-@Designate(ocd = ScriptExecutor.Config.class)
-public class ScriptExecutor implements Runnable {
+@Designate(ocd = ScriptScheduler.Config.class)
+public class ScriptScheduler implements Runnable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptExecutor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptScheduler.class);
 
-    @ObjectClassDefinition(name = "AEM Contentor - Script Executor")
+    @ObjectClassDefinition(name = "AEM Contentor - Script Scheduler")
     public @interface Config {
 
         @AttributeDefinition(name = "Enabled", description = "Allows to temporarily disable the script executor")
         boolean enabled() default true;
-
-        @AttributeDefinition(
-                name = "Debug mode",
-                description =
-                        "Enables debug mode for troubleshooting. Changed behaviors include: start saving skipped executions in history.")
-        boolean debug() default false;
 
         @AttributeDefinition(
                 name = "Scheduler expression",
