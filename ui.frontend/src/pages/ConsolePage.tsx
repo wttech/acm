@@ -1,4 +1,5 @@
 import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Keyboard, Switch, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
+import { ToastQueue } from '@react-spectrum/toast';
 import Bug from '@spectrum-icons/workflow/Bug';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Close from '@spectrum-icons/workflow/Close';
@@ -8,16 +9,15 @@ import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDebounce } from 'react-use';
 import CompilationStatus from '../components/CompilationStatus.tsx';
-import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
-import { StorageKeys } from '../utils/storage.ts';
-import ConsoleCode from './ConsoleCode.groovy';
-import { ToastQueue } from '@react-spectrum/toast';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
+import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types.ts';
+import { StorageKeys } from '../utils/storage.ts';
+import ConsoleCode from './ConsoleCode.groovy';
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
@@ -211,17 +211,17 @@ const ConsolePage = () => {
   const onCopyExecutionOutput = () => {
     if (executionOutput) {
       navigator.clipboard
-          .writeText(executionOutput)
-          .then(() => {
-            ToastQueue.info('Execution output copied to clipboard!', {
-              timeout: toastTimeout,
-            });
-          })
-          .catch(() => {
-            ToastQueue.negative('Failed to copy execution output!', {
-              timeout: toastTimeout,
-            });
+        .writeText(executionOutput)
+        .then(() => {
+          ToastQueue.info('Execution output copied to clipboard!', {
+            timeout: toastTimeout,
           });
+        })
+        .catch(() => {
+          ToastQueue.negative('Failed to copy execution output!', {
+            timeout: toastTimeout,
+          });
+        });
     } else {
       ToastQueue.negative('No execution output to copy!', {
         timeout: toastTimeout,
@@ -289,7 +289,7 @@ const ConsolePage = () => {
                   </DialogTrigger>
                 </Flex>
               </Flex>
-              <ImmersiveEditor id="code-editor" initialValue={code} options={{ readOnly: executing }} onChange={setCode} syntaxError={syntaxError} language="groovy" />
+              <ImmersiveEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
             </Flex>
           </Item>
           <Item key="output">
@@ -310,58 +310,58 @@ const ConsolePage = () => {
                     <Text>Autoscroll</Text>
                   </Switch>
                 </Flex>
-                  <Flex flex="1" justifyContent="center" alignItems="center">
-                    <ExecutionProgressBar execution={execution} active={executing} />
-                  </Flex>
-                  <Flex flex="1" justifyContent="end" alignItems="center">
-                    <DialogTrigger>
-                      <Button variant="secondary" style="fill">
-                        <Help />
-                        <Text>Help</Text>
-                      </Button>
-                      {(close) => (
-                          <Dialog>
-                            <Heading>Code execution</Heading>
-                            <Divider />
-                            <Content>
-                              <p>
-                                <Print size="XS" /> Output is printed live.
-                              </p>
-                              <p>
-                                <Cancel size="XS" /> <Text>Abort if the execution:</Text>
-                                <ul style={{ listStyleType: 'none' }}>
-                                  <li>
-                                    <Spellcheck size="XS" /> is taking too long
-                                  </li>
-                                  <li>
-                                    <Bug size="XS" /> is stuck in an infinite loop
-                                  </li>
-                                  <li>
-                                    <Gears size="XS" /> makes the instance unresponsive
-                                  </li>
-                                </ul>
-                              </p>
-                              <p>
-                                <Help size="XS" /> Be aware that aborting execution may leave data in an inconsistent state.
-                              </p>
-                            </Content>
-                            <ButtonGroup>
-                              <Button variant="secondary" onPress={close}>
-                                <Close size="XS" />
-                                <Text>Close</Text>
-                              </Button>
-                            </ButtonGroup>
-                          </Dialog>
-                      )}
-                    </DialogTrigger>
-                  </Flex>
+                <Flex flex="1" justifyContent="center" alignItems="center">
+                  <ExecutionProgressBar execution={execution} active={executing} />
                 </Flex>
-                <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
+                <Flex flex="1" justifyContent="end" alignItems="center">
+                  <DialogTrigger>
+                    <Button variant="secondary" style="fill">
+                      <Help />
+                      <Text>Help</Text>
+                    </Button>
+                    {(close) => (
+                      <Dialog>
+                        <Heading>Code execution</Heading>
+                        <Divider />
+                        <Content>
+                          <p>
+                            <Print size="XS" /> Output is printed live.
+                          </p>
+                          <p>
+                            <Cancel size="XS" /> <Text>Abort if the execution:</Text>
+                            <ul style={{ listStyleType: 'none' }}>
+                              <li>
+                                <Spellcheck size="XS" /> is taking too long
+                              </li>
+                              <li>
+                                <Bug size="XS" /> is stuck in an infinite loop
+                              </li>
+                              <li>
+                                <Gears size="XS" /> makes the instance unresponsive
+                              </li>
+                            </ul>
+                          </p>
+                          <p>
+                            <Help size="XS" /> Be aware that aborting execution may leave data in an inconsistent state.
+                          </p>
+                        </Content>
+                        <ButtonGroup>
+                          <Button variant="secondary" onPress={close}>
+                            <Close size="XS" />
+                            <Text>Close</Text>
+                          </Button>
+                        </ButtonGroup>
+                      </Dialog>
+                    )}
+                  </DialogTrigger>
+                </Flex>
               </Flex>
-            </Item>
-          </TabPanels>
-        </Tabs>
-      </Flex>
+              <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
+            </Flex>
+          </Item>
+        </TabPanels>
+      </Tabs>
+    </Flex>
   );
 };
 
