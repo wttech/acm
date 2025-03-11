@@ -62,7 +62,6 @@ public class CodeSyntax extends AbstractASTTransformation {
     }
 
     enum Methods {
-        INIT("doInit", "void"),
         RUN("doRun", "void"),
         CHECK("canRun", "boolean");
 

@@ -8,7 +8,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 
 public enum Variable {
-    OUT("out", PrintStream.class.getName()),
+    OUT("out", PrintStream.class.getName()), // capturing output of 'groovy.lang.Script' requires 'out' to be 'java.io.PrintStream'
     LOG("log", Logger.class.getName()),
     CONDITION("condition", Condition.class.getName()),
     RESOURCE_RESOLVER("resourceResolver", ResourceResolver.class.getName()),

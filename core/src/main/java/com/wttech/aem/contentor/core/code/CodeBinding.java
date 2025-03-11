@@ -4,7 +4,7 @@ import com.wttech.aem.contentor.core.acl.Acl;
 import com.wttech.aem.contentor.core.osgi.OsgiContext;
 import com.wttech.aem.contentor.core.replication.Replicator;
 import groovy.lang.Binding;
-import java.io.OutputStream;
+import java.io.PrintStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ public class CodeBinding {
 
     private final Logger log;
 
-    private final OutputStream out;
+    private final PrintStream out;
 
     private final ResourceResolver resourceResolver;
 
@@ -27,7 +27,7 @@ public class CodeBinding {
 
     public CodeBinding(ExecutionContext context) {
         this.log = createLogger(context.getExecutable());
-        this.out = context.getOutputStream();
+        this.out = new PrintStream(context.getOutputStream());
         this.resourceResolver = context.getResourceResolver();
         this.acl = new Acl(resourceResolver);
         this.replicator = new Replicator(

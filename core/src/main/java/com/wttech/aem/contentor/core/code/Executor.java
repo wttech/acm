@@ -61,8 +61,7 @@ public class Executor {
 
             execution.start();
 
-            Script script = shell.parse(composeScript(context.getExecutable()), CodeSyntax.MAIN_CLASS);
-            script.invokeMethod(CodeSyntax.Methods.INIT.givenName, null);
+            Script script = shell.parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
 
             switch (context.getMode()) {
                 case PARSE:
@@ -84,22 +83,6 @@ public class Executor {
             }
             return execution.end(ExecutionStatus.FAILED);
         }
-    }
-
-    private String composeScript(Executable executable) throws ContentorException {
-        StringBuilder builder = new StringBuilder();
-        builder.append(executable.getContent());
-        builder.append("\n");
-        builder.append("void ").append(CodeSyntax.Methods.INIT.givenName).append("() {\n");
-        builder.append("\tSystem.setOut(new java.io.PrintStream(")
-                .append(Variable.OUT.varName())
-                .append(", true, \"UTF-8\"));\n");
-        builder.append("\tSystem.setErr(new java.io.PrintStream(")
-                .append(Variable.OUT.varName())
-                .append(", true, \"UTF-8\"));\n");
-        builder.append("}\n");
-        builder.append("\n");
-        return builder.toString();
     }
 
     private GroovyShell createShell(ExecutionContext context) {
