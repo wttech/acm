@@ -39,6 +39,7 @@ import Checkmark from "@spectrum-icons/workflow/Checkmark";
 import Cancel from "@spectrum-icons/workflow/Cancel";
 import Settings from "@spectrum-icons/workflow/Settings";
 import ExecutionAbortButton from './ExecutionAbortButton';
+import Code from "@spectrum-icons/workflow/Code";
 
 const ScriptExecutor = () => {
     const prefix = isProduction() ? '' : 'http://localhost:4502';
@@ -77,8 +78,8 @@ const ScriptExecutor = () => {
                                 </Button>
                                 <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
                                     <Item key="com.wttech.aem.contentor.core.script.ScriptScheduler"><ApplicationDelivery /><Text>Script Scheduler</Text></Item>
-                                    <Item key="com.wttech.aem.contentor.core.code.Executor"><Clock/><Text>Code Executor</Text></Item>
                                     <Item key="org.apache.sling.event.jobs.QueueConfiguration~contentorexecutionqueue"><Clock/><Text>Execution Queue</Text></Item>
+                                    <Item key="com.wttech.aem.contentor.core.code.Executor"><Code/><Text>Code Executor</Text></Item>
                                 </Menu>
                             </MenuTrigger>
                         </ButtonGroup>
