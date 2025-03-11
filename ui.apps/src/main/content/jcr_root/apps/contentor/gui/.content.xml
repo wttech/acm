@@ -6,7 +6,7 @@
         jcr:primaryType="nt:unstructured"
         jcr:title="Content Manager"
         sling:resourceType="granite/ui/components/shell/page"
-        sling:vanityPath="/content-manager"
+        sling:vanityPath="[/acm,/content-manager]"
         consoleId="content-manager">
         <head jcr:primaryType="nt:unstructured">
             <viewport

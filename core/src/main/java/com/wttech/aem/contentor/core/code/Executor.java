@@ -1,6 +1,5 @@
 package com.wttech.aem.contentor.core.code;
 
-import com.day.cq.replication.Replicator;
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.osgi.OsgiContext;
 import com.wttech.aem.contentor.core.util.ResourceUtils;
@@ -14,8 +13,7 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.*;
 
 @Component(immediate = true, service = Executor.class)
 public class Executor {
@@ -26,11 +24,8 @@ public class Executor {
     @Reference
     private OsgiContext osgiContext;
 
-    @Reference
-    private Replicator replicator;
-
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return new ExecutionContext(executable, osgiContext, resourceResolver, replicator);
+        return new ExecutionContext(executable, osgiContext, resourceResolver);
     }
 
     public Execution execute(Executable executable) throws ContentorException {

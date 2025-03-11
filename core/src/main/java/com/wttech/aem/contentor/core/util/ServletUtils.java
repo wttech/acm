@@ -25,7 +25,7 @@ public final class ServletUtils {
     public static List<String> stringsParam(SlingHttpServletRequest request, String name) {
         String[] values = request.getParameterValues(name);
         if (values == null) {
-            return Collections.emptyList();
+            return null;
         }
         return Arrays.stream(values)
                 .map(StringUtils::trimToNull)

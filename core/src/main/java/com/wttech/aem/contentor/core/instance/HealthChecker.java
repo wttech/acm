@@ -31,12 +31,14 @@ public class HealthChecker {
             if (osgiScanner.isFragment(bundle)) {
                 if (!osgiScanner.isBundleResolved(bundle)) {
                     result.issues.add(new HealthIssue(
+                            HealthIssueSeverity.CRITICAL,
                             String.format("Bundle fragment '%s' is not resolved!", bundle.getSymbolicName())));
                 }
             } else {
                 if (!osgiScanner.isBundleActive(bundle)) {
-                    result.issues.add(
-                            new HealthIssue(String.format("Bundle '%s' is not active!", bundle.getSymbolicName())));
+                    result.issues.add(new HealthIssue(
+                            HealthIssueSeverity.CRITICAL,
+                            String.format("Bundle '%s' is not active!", bundle.getSymbolicName())));
                 }
             }
         });

@@ -1,0 +1,7 @@
+group: Condition
+name: condition_inactive
+content: |
+  condition.inactive()
+documentation: |
+  Execute the script only if it is not already active, etc.<br>
+  Protects against parallel executions.

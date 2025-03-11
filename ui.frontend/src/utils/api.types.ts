@@ -1,97 +1,112 @@
 export type Executable = {
-  id: string;
-  content: string;
+    id: string;
+    content: string;
 };
 
 export type Execution = {
-  id: string;
-  executable: Executable;
-  status: ExecutionStatus;
-  startDate: string;
-  endDate: string;
-  duration: number;
-  output: string;
-  error: string | null;
+    id: string;
+    executable: Executable;
+    status: ExecutionStatus;
+    startDate: string;
+    endDate: string;
+    duration: number;
+    output: string;
+    error: string | null;
 };
 
 export enum ExecutionStatus {
-  QUEUED = 'QUEUED',
-  ACTIVE = 'ACTIVE',
-  STOPPED = 'STOPPED',
-  FAILED = 'FAILED',
-  SKIPPED = 'SKIPPED',
-  ABORTED = 'ABORTED',
-  SUCCEEDED = 'SUCCEEDED',
+    QUEUED = 'QUEUED',
+    ACTIVE = 'ACTIVE',
+    STOPPED = 'STOPPED',
+    FAILED = 'FAILED',
+    SKIPPED = 'SKIPPED',
+    ABORTED = 'ABORTED',
+    SUCCEEDED = 'SUCCEEDED',
+}
+
+export function isExecutionNegative(status: ExecutionStatus | null) {
+    return status === ExecutionStatus.FAILED || status === ExecutionStatus.ABORTED;
 }
 
 export function isExecutionPending(status: ExecutionStatus | null) {
-  return status === ExecutionStatus.QUEUED || status === ExecutionStatus.ACTIVE;
+    return status === ExecutionStatus.QUEUED || status === ExecutionStatus.ACTIVE;
 }
 
 export function isExecutionCompleted(status: ExecutionStatus | null) {
-  return status === ExecutionStatus.FAILED || status === ExecutionStatus.SUCCEEDED;
+    return status === ExecutionStatus.FAILED || status === ExecutionStatus.SUCCEEDED;
 }
 
+export type QueueOutput = {
+    executions: Execution[];
+};
+
 export type ExecutionOutput = {
-  list: Execution[];
+    list: Execution[];
 };
 
 export type AssistCodeOutput = {
-  code: string;
-  suggestions: {
-    k: string; // kind
-    l: string; // label
-    it: string; // insert text
-    i: string; // info
-  }[];
+    code: string;
+    suggestions: {
+        k: string; // kind
+        l: string; // label
+        it: string; // insert text
+        i: string; // info
+    }[];
 };
 
 export type SnippetOutput = {
-  list: Snippet[];
+    list: Snippet[];
 };
 
 export type Snippet = {
-  name: string;
-  id: string;
-  group: string;
-  content: string;
-  documentation: string;
+    name: string;
+    id: string;
+    group: string;
+    content: string;
+    documentation: string;
 };
 
 export type Script = {
-  id: string;
-  path: string;
-  name: string;
-  content: string;
+    id: string;
+    path: string;
+    name: string;
+    content: string;
 };
 
 export type ScriptStats = {
-  path: string;
-  statusCount: { [key in ExecutionStatus]: number };
-  lastExecution: Execution | null;
+    path: string;
+    statusCount: { [key in ExecutionStatus]: number };
+    lastExecution: Execution | null;
 };
 
 export type ScriptOutput = {
-  list: Script[];
-  stats: ScriptStats[];
+    list: Script[];
+    stats: ScriptStats[];
 };
 
 export type State = {
-  healthStatus: HealthStatus;
-  instanceSettings: InstanceSettings;
+    healthStatus: HealthStatus;
+    instanceSettings: InstanceSettings;
+    queuedExecutions: Execution[];
 }
 
 export type InstanceSettings = {
-  id: string;
-  timezoneId: string;
+    id: string;
+    timezoneId: string;
 }
 
 export type HealthStatus = {
-  healthy: boolean;
-  issues: HealthIssue[];
+    healthy: boolean;
+    issues: HealthIssue[];
 }
 
 export type HealthIssue = {
-  message: string;
-  severity: string;
+    message: string;
+    severity: HealthIssueSeverity;
+}
+
+export enum HealthIssueSeverity {
+    CRITICAL = 'CRITICAL',
+    WARNING = 'WARNING',
+    INFO = 'INFO',
 }

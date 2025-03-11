@@ -7,6 +7,10 @@ interface DateExplainedProps {
 }
 
 const DateExplained: React.FC<DateExplainedProps> = ({ value }) => {
+    if (!value) {
+        return <Text>&mdash;</Text>;
+    }
+
     const formatter = useFormatter();
 
     if (formatter.isTimezoneDifference()) {

@@ -1,7 +1,7 @@
 package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.acl.Acl;
-import com.wttech.aem.contentor.core.osgi.OsgiFacade;
+import com.wttech.aem.contentor.core.osgi.OsgiContext;
 import com.wttech.aem.contentor.core.replication.Replicator;
 import groovy.lang.Binding;
 import java.io.OutputStream;
@@ -21,7 +21,7 @@ public class CodeBinding {
 
     private final Replicator replicator;
 
-    private final OsgiFacade osgi;
+    private final OsgiContext osgi;
 
     private final Condition condition;
 
@@ -30,8 +30,9 @@ public class CodeBinding {
         this.out = context.getOutputStream();
         this.resourceResolver = context.getResourceResolver();
         this.acl = new Acl(resourceResolver);
-        this.replicator = new Replicator(context.getResourceResolver(), context.getReplicator());
-        this.osgi = new OsgiFacade(context.getOsgiContext());
+        this.replicator = new Replicator(
+                context.getResourceResolver(), context.getOsgiContext().getReplicator());
+        this.osgi = context.getOsgiContext();
         this.condition = new Condition(context);
     }
 

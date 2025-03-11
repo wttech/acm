@@ -2,9 +2,11 @@ package com.wttech.aem.contentor.core.code;
 
 import com.wttech.aem.contentor.core.ContentorException;
 import com.wttech.aem.contentor.core.util.StreamUtils;
+import java.io.Closeable;
 import java.util.*;
 import java.util.stream.Stream;
 import javax.jcr.query.Query;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -43,6 +45,12 @@ public class ExecutionHistory {
             resourceResolver.commit();
         } catch (PersistenceException e) {
             throw new ContentorException(String.format("Failed to save execution '%s'", execution.getId()), e);
+        } finally {
+            props.values().forEach(value -> {
+                if (value instanceof Closeable) {
+                    IOUtils.closeQuietly((Closeable) value);
+                }
+            });
         }
     }
 

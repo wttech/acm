@@ -8,8 +8,15 @@ public class HealthIssue implements Serializable {
 
     private final String message;
 
-    public HealthIssue(String message) {
+    private final HealthIssueSeverity severity;
+
+    public HealthIssue(HealthIssueSeverity severity, String message) {
+        this.severity = severity;
         this.message = message;
+    }
+
+    public HealthIssueSeverity getSeverity() {
+        return severity;
     }
 
     public String getMessage() {
@@ -19,6 +26,7 @@ public class HealthIssue implements Serializable {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("severity", severity)
                 .append("message", message)
                 .toString();
     }

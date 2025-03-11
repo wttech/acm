@@ -79,7 +79,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             List<Script> scripts;
 
             List<String> ids = stringsParam(request, ID_PARAM);
-            if (!ids.isEmpty()) {
+            if (ids != null) {
                 scripts = repository.readAll(ids).sorted().collect(Collectors.toList());
             } else {
                 ScriptType type =
@@ -115,7 +115,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
         }
 
         List<String> paths = stringsParam(request, ID_PARAM);
-        if (paths.isEmpty() && action.get() != Action.SYNC_ALL) {
+        if ((action.get() == Action.ENABLE || action.get() == Action.DISABLE) && paths == null) {
             respondJson(response, error("Script path parameter is not specified!"));
             return;
         }
