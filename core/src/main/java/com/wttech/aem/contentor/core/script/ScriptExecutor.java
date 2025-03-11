@@ -1,7 +1,6 @@
 package com.wttech.aem.contentor.core.script;
 
-import com.wttech.aem.contentor.core.code.Execution;
-import com.wttech.aem.contentor.core.code.ExecutionContext;
+import com.wttech.aem.contentor.core.code.ExecutionQueue;
 import com.wttech.aem.contentor.core.code.Executor;
 import com.wttech.aem.contentor.core.instance.HealthChecker;
 import com.wttech.aem.contentor.core.instance.HealthStatus;
@@ -55,6 +54,9 @@ public class ScriptExecutor implements Runnable {
     @Reference
     private HealthChecker healthChecker;
 
+    @Reference
+    private ExecutionQueue queue;
+
     private Config config;
 
     @Activate
@@ -77,21 +79,11 @@ public class ScriptExecutor implements Runnable {
 
         try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-
-            LOG.debug("Executing scripts");
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
-                try {
-                    ExecutionContext context = executor.createContext(script, resourceResolver);
-                    context.setDebug(config.debug());
-                    Execution execution = executor.execute(context);
-                    LOG.info("Execution of script '{}' ended with result '{}'", script.getId(), execution);
-                } catch (Exception e) {
-                    LOG.error("Failed to execute script '{}'", script.getId(), e);
-                }
+                queue.submit(script);
             });
-            LOG.debug("Executed scripts");
         } catch (Exception e) {
-            LOG.error("Failed to execute scripts", e);
+            LOG.error("Failed to access repository while submitting enabled scripts to execution queue", e);
         }
     }
 }

@@ -2,7 +2,7 @@ group: ACL
 name: acl_demo
 content: |
   boolean canRun() {
-    return condition.always()
+    return condition.idle()
   }
     
   void doRun() {
