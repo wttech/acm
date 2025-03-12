@@ -5,30 +5,26 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.util.ArrayList;
+import java.io.PrintStream;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.LoggerFactory;
 
-public class CodeOutputStream extends OutputStream {
+public class CodePrintStream extends PrintStream {
 
-    private final ExecutionContext context;
-
-    private final OutputStream out;
+    private final ExecutionContext executionContext;
 
     private final List<Logger> loggers;
 
-    public CodeOutputStream(ExecutionContext context) throws IOException {
-        this.context = context;
-        this.out = Files.newOutputStream(ExecutionOutput.path(context.getId()));
-        this.loggers = new ArrayList<>();
+    public CodePrintStream(ExecutionContext executionContext) {
+        super(executionContext.getOutputStream());
+        this.executionContext = executionContext;
+        this.loggers = new LinkedList<>();
     }
 
     public String getAppenderName() {
-        return context.getId();
+        return executionContext.getId();
     }
 
     public void registerLogger(Logger logger) {
@@ -36,29 +32,9 @@ public class CodeOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(int b) throws IOException {
-        out.write(b);
-    }
-
-    @Override
-    public void write(byte b[]) throws IOException {
-        out.write(b);
-    }
-
-    @Override
-    public void write(byte b[], int off, int len) throws IOException {
-        out.write(b, off, len);
-    }
-
-    @Override
-    public void flush() throws IOException {
-        out.flush();
-    }
-
-    @Override
-    public void close() throws IOException {
+    public void close() {
         loggers.forEach(logger -> logger.detachAppender(getAppenderName()));
-        out.close();
+        super.close();
     }
 
     public void fromLogs() {
@@ -69,10 +45,9 @@ public class CodeOutputStream extends OutputStream {
         fromLogger("com.wttech.aem.contentor.core.acl");
     }
 
-    // TODO register logger like on http://localhost:4502/system/console/slinglog
     public List<String> fromLogger(String loggerName) {
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        List<Logger> loggers = context.getLoggerList().stream()
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        List<Logger> loggers = loggerContext.getLoggerList().stream()
                 .filter(logger -> logger.getName().contains(loggerName))
                 .filter(logger -> logger.getAppender(getAppenderName()) == null)
                 .collect(Collectors.toList());
@@ -81,11 +56,11 @@ public class CodeOutputStream extends OutputStream {
 
             OutputStreamAppender<ILoggingEvent> appender = new OutputStreamAppender<>();
             appender.setName(getAppenderName());
-            appender.setContext(context);
-            appender.setOutputStream(out);
+            appender.setContext(loggerContext);
+            appender.setOutputStream(this);
 
             PatternLayout layout = new PatternLayout();
-            layout.setContext(context);
+            layout.setContext(loggerContext);
             layout.setPattern("%msg%n");
             layout.start();
 

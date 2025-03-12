@@ -71,11 +71,11 @@ public class ImmediateExecution implements Execution {
 
     @Override
     public String getOutput() {
-        return ExecutionOutput.readString(getId()).orElse(null);
+        return new ExecutionFileOutput(getId()).readString().orElse(null);
     }
 
     public InputStream readOutput() throws ContentorException {
-        return ExecutionOutput.read(getId());
+        return new ExecutionFileOutput(getId()).read();
     }
 
     @Override

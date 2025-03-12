@@ -76,14 +76,14 @@ public class Executor {
             }
             return execution;
         } finally {
-            ExecutionOutput.delete(context.getId());
+            new ExecutionFileOutput(context.getId()).delete();
         }
     }
 
     private ImmediateExecution executeImmediately(ExecutionContext context) {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
-        try (OutputStream outputStream = new CodeOutputStream(context)) {
+        try (OutputStream outputStream = new ExecutionFileOutput(context.getId()).write()) {
             context.setOutputStream(outputStream);
             GroovyShell shell = createShell(context);
 
