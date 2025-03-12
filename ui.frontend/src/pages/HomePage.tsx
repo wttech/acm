@@ -16,7 +16,7 @@ const HomePage = () => {
         >
             <View gridArea="welcome" backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" minHeight="size-2400">
                 <Flex direction="row" alignItems="center" gap="size-200">
-                    <View minWidth="size-800">
+                    <View minWidth="size-800" alignSelf="start" marginTop="size-200">
                         <Dashboard size="L" />
                     </View>
                     <Flex direction="column" gap="size-100">
@@ -27,7 +27,7 @@ const HomePage = () => {
             </View>
             <View gridArea="newApproach" backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" minHeight="size-2400">
                 <Flex direction="row" alignItems="center" gap="size-200">
-                    <View minWidth="size-800">
+                    <View minWidth="size-800" alignSelf="start" marginTop="size-200">
                         <Code size="L" />
                     </View>
                     <Flex direction="column" gap="size-100">
@@ -38,7 +38,7 @@ const HomePage = () => {
             </View>
             <View gridArea="allInOne" backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" minHeight="size-2400">
                 <Flex direction="row" alignItems="center" gap="size-200">
-                    <View minWidth="size-800">
+                    <View minWidth="size-800" alignSelf="start" marginTop="size-200">
                         <Star size="L" />
                     </View>
                     <Flex direction="column" gap="size-100">
@@ -49,7 +49,7 @@ const HomePage = () => {
             </View>
             <View gridArea="contentManagement" backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" minHeight="size-2400">
                 <Flex direction="row" alignItems="center" gap="size-200">
-                    <View minWidth="size-800">
+                    <View minWidth="size-800" alignSelf="start" marginTop="size-200">
                         <FolderOpen size="L" />
                     </View>
                     <Flex direction="column" gap="size-100">
@@ -60,7 +60,7 @@ const HomePage = () => {
             </View>
             <View gridArea="permissionsManagement" backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" minHeight="size-2400">
                 <Flex direction="row" alignItems="center" gap="size-200">
-                    <View minWidth="size-800">
+                    <View minWidth="size-800" alignSelf="start" marginTop="size-200">
                         <LockClosed size="L" />
                     </View>
                     <Flex direction="column" gap="size-100">
@@ -71,7 +71,7 @@ const HomePage = () => {
             </View>
             <View gridArea="dataImports" backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" minHeight="size-2400">
                 <Flex direction="row" alignItems="center" gap="size-200">
-                    <View minWidth="size-800">
+                    <View minWidth="size-800" alignSelf="start" marginTop="size-200">
                         <Download size="L" />
                     </View>
                     <Flex direction="column" gap="size-100">
