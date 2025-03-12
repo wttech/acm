@@ -32,7 +32,7 @@ const HomePage = () => {
                     </View>
                     <Flex direction="column" gap="size-100">
                         <Heading level={3}>New Approach</Heading>
-                        <Content>Experience a different way of using Groovy scripts. ACM ensures the instance is healthy before scripts decide when to run: once, periodically, or at an exact date and time. Execute scripts in parallel or sequentially, offering a complete change in paradigm. Unlike traditional methods, ACM allows scripts to run at specific moments, ensuring a healthy instance and offering unmatched flexibility and control.</Content>
+                        <Content>Experience a different way of using Groovy scripts. ACM ensures the instance is healthy before scripts decide when to run: once, periodically, or at an exact date and time. Execute scripts in parallel or sequentially, offering a complete change in paradigm. Unlike traditional methods, ACM allows scripts to run at specific moments offering unmatched flexibility and control.</Content>
                     </Flex>
                 </Flex>
             </View>
