@@ -55,6 +55,7 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
 
     const mountedEditor = monacoRef.editor.create(containerRef.current, {
       model: textModel,
+      scrollBeyondLastLine: false,
       theme: 'vs-dark',
       value: initialValue ?? value,
       ...props,
