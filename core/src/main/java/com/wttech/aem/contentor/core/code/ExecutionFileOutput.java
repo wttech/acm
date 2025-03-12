@@ -4,6 +4,7 @@ import com.wttech.aem.contentor.core.ContentorException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,11 +13,17 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public class ExecutionOutput {
+public class ExecutionFileOutput {
 
     public static final String TMP_DIR = "contentor";
 
-    public static Path path(String jobId) {
+    private final String jobId;
+
+    public ExecutionFileOutput(String jobId) {
+        this.jobId = jobId;
+    }
+
+    public Path path() {
         File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
         if (!dir.exists()) {
             dir.mkdirs();
@@ -24,13 +31,13 @@ public class ExecutionOutput {
         return dir.toPath().resolve(String.format("%s_output.txt", StringUtils.replace(jobId, "/", "-")));
     }
 
-    public static Optional<String> readString(String jobId) throws ContentorException {
-        Path path = path(jobId);
+    public Optional<String> readString() throws ContentorException {
+        Path path = path();
         if (!path.toFile().exists()) {
             return Optional.empty();
         }
 
-        try (InputStream input = Files.newInputStream(path)) {
+        try (InputStream input = read()) {
             return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new ContentorException(
@@ -38,17 +45,27 @@ public class ExecutionOutput {
         }
     }
 
-    public static InputStream read(String jobId) {
+    public InputStream read() {
         try {
-            return Files.newInputStream(path(jobId));
+            return Files.newInputStream(path());
         } catch (IOException e) {
-            throw new ContentorException(String.format("Execution output file cannot be read for job '%s'", jobId), e);
+            throw new ContentorException(
+                    String.format("Execution output file cannot open for reading for job '%s'", jobId), e);
         }
     }
 
-    public static void delete(String jobId) throws ContentorException {
+    public OutputStream write() {
         try {
-            Files.deleteIfExists(path(jobId));
+            return Files.newOutputStream(path());
+        } catch (IOException e) {
+            throw new ContentorException(
+                    String.format("Execution output file cannot be open for writing for job '%s'", jobId), e);
+        }
+    }
+
+    public void delete() throws ContentorException {
+        try {
+            Files.deleteIfExists(path());
         } catch (IOException e) {
             throw new ContentorException(String.format("Execution output file clean up failed for job '%s'", jobId), e);
         }

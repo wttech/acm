@@ -27,7 +27,7 @@ public class CodeBinding {
 
     public CodeBinding(ExecutionContext context) {
         this.log = createLogger(context.getExecutable());
-        this.out = new PrintStream(context.getOutputStream());
+        this.out = new CodePrintStream(context);
         this.resourceResolver = context.getResourceResolver();
         this.acl = new Acl(resourceResolver);
         this.replicator = new Replicator(
