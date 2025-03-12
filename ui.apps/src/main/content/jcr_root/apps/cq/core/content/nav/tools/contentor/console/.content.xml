@@ -4,5 +4,5 @@
     jcr:title="Console"
     jcr:description="Do live content and permission updates via ad-hoc Groovy Scripts."
     icon="draft"
-    href="/contentor.html/#console"
-    id="contentor-console"/>
+    href="/acm#/console"
+    id="acm-console"/>

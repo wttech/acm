@@ -4,5 +4,5 @@
     jcr:title="Executions"
     jcr:description="Check history of auto-executed scripts and within console."
     icon="history"
-    href="/contentor.html/#executions"
-    id="contentor-executions"/>
+    href="/acm#/executions"
+    id="acm-executions"/>

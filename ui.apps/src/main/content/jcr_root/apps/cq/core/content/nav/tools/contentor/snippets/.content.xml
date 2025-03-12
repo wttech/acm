@@ -4,5 +4,5 @@
     jcr:title="Snippets"
     jcr:description="Review partial, parameterized scripts that can be used in console."
     icon="code"
-    href="/contentor.html/#snippets"
-    id="contentor-snippets"/>
+    href="/acm#/snippets"
+    id="acm-snippets"/>

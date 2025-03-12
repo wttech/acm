@@ -7,14 +7,14 @@ import ExecutionView from './pages/ExecutionView';
 import SnippetsPage from './pages/SnippetsPage';
 import ScriptView from './pages/ScriptView';
 import MaintenancePage from './pages/MaintenancePage.tsx';
-import HomePage from "./pages/HomePage.tsx";
+import DashboardPage from "./pages/DashboardPage.tsx";
 
 const router = createHashRouter([
     {
         path: '/',
         element: <App />,
         children: [
-            { path: '/', element: <HomePage/> },
+            { path: '/', element: <DashboardPage/> },
             { path: '/scripts/:tab?', element: <ScriptsPage /> },
             { path: '/scripts/view/:scriptId', element: <ScriptView /> },
             { path: '/snippets/:tab?', element: <SnippetsPage /> },

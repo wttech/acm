@@ -6,7 +6,7 @@ import Dashboard from '@spectrum-icons/workflow/Dashboard';
 import Code from '@spectrum-icons/workflow/Code';
 import Star from '@spectrum-icons/workflow/Star';
 
-const HomePage = () => {
+const DashboardPage = () => {
     return (
         <Grid
             areas={['welcome newApproach allInOne', 'contentManagement permissionsManagement dataImports']}
@@ -84,4 +84,4 @@ const HomePage = () => {
     );
 };
 
-export default HomePage;
+export default DashboardPage;
