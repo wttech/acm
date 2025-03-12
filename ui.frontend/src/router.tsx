@@ -7,14 +7,14 @@ import ExecutionView from './pages/ExecutionView';
 import SnippetsPage from './pages/SnippetsPage';
 import ScriptView from './pages/ScriptView';
 import MaintenancePage from './pages/MaintenancePage.tsx';
-import { Navigate } from 'react-router-dom';
+import HomePage from "./pages/HomePage.tsx";
 
 const router = createHashRouter([
     {
         path: '/',
         element: <App />,
         children: [
-            { path: '/', element: <Navigate to="/console" /> },
+            { path: '/', element: <HomePage/> },
             { path: '/scripts/:tab?', element: <ScriptsPage /> },
             { path: '/scripts/view/:scriptId', element: <ScriptView /> },
             { path: '/snippets/:tab?', element: <SnippetsPage /> },
