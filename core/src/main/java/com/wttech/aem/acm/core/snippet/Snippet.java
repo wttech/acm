@@ -38,8 +38,8 @@ public class Snippet implements Executable, Comparable<Snippet> {
     private SnippetDefinition readDefinition() throws AcmException {
         return Optional.ofNullable(resource.getChild(JcrUtils.JCR_CONTENT))
                 .map(r -> SnippetDefinition.fromYaml(r.getPath(), r.adaptTo(InputStream.class)))
-                .orElseThrow(() -> new AcmException(
-                        String.format("Snippet definition '%s' cannot be read!", resource.getPath())));
+                .orElseThrow(() ->
+                        new AcmException(String.format("Snippet definition '%s' cannot be read!", resource.getPath())));
     }
 
     @Override

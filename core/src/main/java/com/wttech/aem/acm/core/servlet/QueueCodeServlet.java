@@ -4,8 +4,6 @@ import static com.wttech.aem.acm.core.util.ServletResult.*;
 import static com.wttech.aem.acm.core.util.ServletUtils.*;
 
 import com.wttech.aem.acm.core.code.*;
-import com.wttech.aem.cm.core.code.*;
-import com.wttech.aem.acm.core.code.*;
 import com.wttech.aem.acm.core.util.JsonUtils;
 import java.io.IOException;
 import java.util.Collections;

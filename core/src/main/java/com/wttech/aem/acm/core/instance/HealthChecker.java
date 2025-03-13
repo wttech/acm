@@ -58,7 +58,7 @@ public class HealthChecker {
     private boolean isBundleIgnored(Bundle bundle) {
         return ArrayUtils.isNotEmpty(config.bundleSymbolicNamesIgnored())
                 && Arrays.stream(config.bundleSymbolicNamesIgnored())
-                .anyMatch(sn -> FilenameUtils.wildcardMatch(bundle.getSymbolicName(), sn));
+                        .anyMatch(sn -> FilenameUtils.wildcardMatch(bundle.getSymbolicName(), sn));
     }
 
     /**
@@ -68,7 +68,6 @@ public class HealthChecker {
     private void checkEvents(HealthStatus result) {
         // TODO implement OSGi events checking; leverage 'config.eventTopicsUnstable'
     }
-
 
     @ObjectClassDefinition(name = "AEM Content Manager - Health Checker")
     public @interface Config {

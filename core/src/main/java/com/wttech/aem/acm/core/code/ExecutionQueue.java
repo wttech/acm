@@ -161,8 +161,7 @@ public class ExecutionQueue implements JobExecutor {
             context.setId(execution.getJob().getId());
             return executor.execute(context);
         } catch (LoginException e) {
-            throw new AcmException(
-                    String.format("Cannot access repository for execution '%s'", execution.getId()), e);
+            throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         }
     }
 }

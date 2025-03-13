@@ -11,9 +11,7 @@ public class CodeRepository {
     private static final Map<String, String> CLASS_LINKS = new HashMap<>();
 
     static {
-        CLASS_LINKS.put(
-                "com.wttech.aem.acm.core",
-                "https://github.com/wttech/acm/blob/main/core/src/main/java");
+        CLASS_LINKS.put("com.wttech.aem.acm.core", "https://github.com/wttech/acm/blob/main/core/src/main/java");
         CLASS_LINKS.put(
                 "org.apache.sling.api",
                 "https://github.com/apache/sling-org-apache-sling-api/tree/master/src/main/java");

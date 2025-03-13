@@ -95,8 +95,7 @@ public class Assistancer {
                 .map(VariableSuggestion::new);
     }
 
-    private Stream<SnippetSuggestion> snippetSuggestions(ResourceResolver resolver, String word)
-            throws AcmException {
+    private Stream<SnippetSuggestion> snippetSuggestions(ResourceResolver resolver, String word) throws AcmException {
         return new SnippetRepository(resolver)
                 .findAll()
                 .filter(s -> SearchUtils.containsWord(s.getName(), word))
