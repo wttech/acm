@@ -18,7 +18,7 @@ import { ExecutionOutput, ExecutionStatus } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks/formatter';
 import DateExplained from '../components/DateExplained';
 
-const ExecutionList = () => {
+const HistoryPage = () => {
   const navigate = useNavigate();
   const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -139,4 +139,4 @@ const ExecutionList = () => {
   );
 };
 
-export default ExecutionList;
+export default HistoryPage;

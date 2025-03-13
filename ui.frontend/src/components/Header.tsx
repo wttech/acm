@@ -36,10 +36,10 @@ const Header = () => {
           <Text>Scripts</Text>
         </Button>
       </AppLink>
-      <AppLink to="/executions">
-        <Button variant={location.pathname.startsWith('/executions') ? 'accent' : 'primary'} style="outline">
+      <AppLink to="/history">
+        <Button variant={location.pathname.startsWith('/history') ? 'accent' : 'primary'} style="outline">
           <History />
-          <Text>Executions</Text>
+          <Text>History</Text>
         </Button>
       </AppLink>
       <AppLink to="/maintenance">
