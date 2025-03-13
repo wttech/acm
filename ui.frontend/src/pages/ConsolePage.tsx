@@ -40,7 +40,7 @@ const ConsolePage = () => {
     try {
       const { data } = await apiRequest<Execution>({
         operation: 'Code parsing',
-        url: `/apps/contentor/api/execute-code.json`,
+        url: `/apps/acm/api/execute-code.json`,
         method: 'post',
         data: {
           mode: 'parse',
@@ -86,7 +86,7 @@ const ConsolePage = () => {
     try {
       const response = await apiRequest<QueueOutput>({
         operation: 'Code execution',
-        url: `/apps/contentor/api/queue-code.json`,
+        url: `/apps/acm/api/queue-code.json`,
         method: 'post',
         data: {
           mode: 'evaluate',
@@ -116,7 +116,7 @@ const ConsolePage = () => {
     try {
       const response = await apiRequest<QueueOutput>({
         operation: 'Code execution state',
-        url: `/apps/contentor/api/queue-code.json?jobId=${jobId}`,
+        url: `/apps/acm/api/queue-code.json?jobId=${jobId}`,
         method: 'get',
       });
       const queuedExecution = response.data.data.executions.find((e: Execution) => e.id === jobId)!;
@@ -152,7 +152,7 @@ const ConsolePage = () => {
     try {
       await apiRequest<QueueOutput>({
         operation: 'Code execution aborting',
-        url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
+        url: `/apps/acm/api/queue-code.json?jobId=${execution.id}`,
         method: 'delete',
       });
       clearInterval(pollExecutionRef.current!);
@@ -162,7 +162,7 @@ const ConsolePage = () => {
       while (queuedExecution === null || isExecutionPending(queuedExecution.status)) {
         const response = await apiRequest<QueueOutput>({
           operation: 'Code execution state',
-          url: `/apps/contentor/api/queue-code.json?jobId=${execution.id}`,
+          url: `/apps/acm/api/queue-code.json?jobId=${execution.id}`,
           method: 'get',
         });
         queuedExecution = response.data.data.executions[0]!;

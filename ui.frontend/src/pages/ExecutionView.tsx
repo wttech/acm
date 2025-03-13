@@ -28,7 +28,7 @@ const ExecutionView = () => {
       try {
         const response = await toastRequest<ExecutionOutput>({
           method: 'GET',
-          url: `/apps/contentor/api/execution.json?id=${executionId}`,
+          url: `/apps/acm/api/execution.json?id=${executionId}`,
           operation: `Execution loading`,
           positive: false,
         });

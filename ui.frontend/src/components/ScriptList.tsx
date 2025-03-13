@@ -56,7 +56,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
   const loadScripts = useCallback(() => {
     toastRequest<ScriptOutput>({
       method: 'GET',
-      url: `/apps/contentor/api/script.json?type=${type}`,
+      url: `/apps/acm/api/script.json?type=${type}`,
       operation: `Scripts loading (${type})`,
       positive: false,
     })

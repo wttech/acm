@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
-    <filter root="/apps/contentor"/>
+    <filter root="/apps/acm"/>
     <filter root="/apps/cq" mode="update"/>
 </workspaceFilter>

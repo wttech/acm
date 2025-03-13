@@ -17,12 +17,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.wttech.aem.contentor</groupId>
-    <artifactId>contentor</artifactId>
+    <groupId>com.wttech.aem.acm</groupId>
+    <artifactId>root</artifactId>
     <packaging>pom</packaging>
     <version>0.1.0-SNAPSHOT</version>
-    <name>AEM Contentor</name>
-    <description>AEM Contentor</description>
+    <name>AEM Content Manager</name>
+    <description>AEM Content Manager</description>
     <modules>
         <module>all</module>
         <module>min</module>
@@ -170,7 +170,7 @@
                             <configuration>
                                 <bnd>
                                     <![CDATA[
-Bundle-Category: contentor
+Bundle-Category: acm
 # export all versioned packages except for conditional ones (https://github.com/bndtools/bnd/issues/3721#issuecomment-579026778)
 -exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
 # reproducible builds (https://github.com/bndtools/bnd/issues/3521)

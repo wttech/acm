@@ -21,7 +21,7 @@ const ScriptView = () => {
       try {
         const response = await toastRequest<ScriptOutput>({
           method: 'GET',
-          url: `/apps/contentor/api/script.json?id=${scriptId}`,
+          url: `/apps/acm/api/script.json?id=${scriptId}`,
           operation: `Script loading ${scriptId}`,
           positive: false,
         });

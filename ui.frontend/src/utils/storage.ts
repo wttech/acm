@@ -1,4 +1,4 @@
 export enum StorageKeys {
-  EDITOR_CODE = 'contentor:editor-code',
-  VIEW_STATE = 'contentor:view-state',
+  EDITOR_CODE = 'acm:editor-code',
+  VIEW_STATE = 'acm:view-state',
 }
