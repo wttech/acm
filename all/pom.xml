@@ -18,7 +18,7 @@
     <!-- ====================================================================== -->
     <artifactId>acm.all</artifactId>
     <packaging>content-package</packaging>
-    <name>AEM Acm - All</name>
+    <name>AEM Content Manager - All</name>
     <description>Complete distribution package for AEM Content Manager</description>
 
     <!-- ====================================================================== -->
