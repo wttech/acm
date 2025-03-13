@@ -14,6 +14,7 @@ import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import { toastRequest } from '../utils/api';
 import { Execution, ExecutionOutput } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks/formatter';
+import { useNavigationTab } from '../utils/hooks/navigation';
 
 const toastTimeout = 3000;
 
@@ -39,14 +40,16 @@ const ExecutionView = () => {
     fetchExecution();
   }, [executionId]);
 
+  const [selectedTab, handleTabChange] = useNavigationTab(executionId ? `/executions/view/${encodeURIComponent(executionId)}` : null, 'details');
+
   if (!execution) {
     return (
-      <Flex direction="column" flex="1">
-        <IllustratedMessage>
-          <NotFound />
-          <Content>Execution not found</Content>
-        </IllustratedMessage>
-      </Flex>
+        <Flex direction="column" flex="1">
+          <IllustratedMessage>
+            <NotFound />
+            <Content>Execution not found</Content>
+          </IllustratedMessage>
+        </Flex>
     );
   }
 
@@ -55,17 +58,17 @@ const ExecutionView = () => {
   const onCopyExecutionOutput = () => {
     if (executionOutput) {
       navigator.clipboard
-        .writeText(executionOutput)
-        .then(() => {
-          ToastQueue.info('Execution output copied to clipboard!', {
-            timeout: toastTimeout,
+          .writeText(executionOutput)
+          .then(() => {
+            ToastQueue.info('Execution output copied to clipboard!', {
+              timeout: toastTimeout,
+            });
+          })
+          .catch(() => {
+            ToastQueue.negative('Failed to copy execution output!', {
+              timeout: toastTimeout,
+            });
           });
-        })
-        .catch(() => {
-          ToastQueue.negative('Failed to copy execution output!', {
-            timeout: toastTimeout,
-          });
-        });
     } else {
       ToastQueue.negative('No execution output to copy!', {
         timeout: toastTimeout,
@@ -75,98 +78,98 @@ const ExecutionView = () => {
 
   const onCopyExecutableCode = () => {
     navigator.clipboard
-      .writeText(execution.executable.content)
-      .then(() => {
-        ToastQueue.info('Execution code copied to clipboard!', {
-          timeout: toastTimeout,
+        .writeText(execution.executable.content)
+        .then(() => {
+          ToastQueue.info('Execution code copied to clipboard!', {
+            timeout: toastTimeout,
+          });
+        })
+        .catch(() => {
+          ToastQueue.negative('Failed to copy execution code!', {
+            timeout: toastTimeout,
+          });
         });
-      })
-      .catch(() => {
-        ToastQueue.negative('Failed to copy execution code!', {
-          timeout: toastTimeout,
-        });
-      });
   };
 
   return (
-    <Flex direction="column" flex="1" gap="size-400">
-      <Tabs flex="1" aria-label="Executions">
-        <TabList>
-          <Item key="details">
-            <History />
-            <Text>Execution</Text>
-          </Item>
-          <Item key="code" aria-label="Code">
-            <FileCode />
-            <Text>Code</Text>
-          </Item>
-          <Item key="output" aria-label="Execution">
-            <Print />
-            <Text>Output</Text>
-          </Item>
-        </TabList>
-        <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-          <Item key="details">
-            <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                <Flex direction="row" justifyContent="space-between" gap="size-200">
-                  <LabeledValue label="ID" value={execution.id} />
-                  <Field label="Status">
+      <Flex direction="column" flex="1" gap="size-400">
+        <Tabs flex="1" aria-label="Executions" selectedKey={selectedTab} onSelectionChange={handleTabChange}>
+          <TabList>
+            <Item key="details">
+              <History />
+              <Text>Execution</Text>
+            </Item>
+            <Item key="code" aria-label="Code">
+              <FileCode />
+              <Text>Code</Text>
+            </Item>
+            <Item key="output" aria-label="Execution">
+              <Print />
+              <Text>Output</Text>
+            </Item>
+          </TabList>
+          <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
+            <Item key="details">
+              <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+                <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
+                  <Flex direction="row" justifyContent="space-between" gap="size-200">
+                    <LabeledValue label="ID" value={execution.id} />
+                    <Field label="Status">
+                      <div>
+                        <ExecutionStatusBadge value={execution.status} />
+                      </div>
+                    </Field>
+                  </Flex>
+                </View>
+                <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
+                  <Field label="Executable" width="100%">
                     <div>
-                      <ExecutionStatusBadge value={execution.status} />
+                      <ExecutableValue value={execution.executable} />
                     </div>
                   </Field>
-                </Flex>
-              </View>
-              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                <Field label="Executable" width="100%">
-                  <div>
-                    <ExecutableValue value={execution.executable} />
-                  </div>
-                </Field>
-              </View>
-              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                <Flex direction="row" justifyContent="space-between" gap="size-200">
-                  <LabeledValue label="Started At" value={formatter.dateExplained(execution.startDate)} />
-                  <LabeledValue label="Duration" value={formatter.durationExplained(execution.duration)} />
-                  <LabeledValue label="Ended At" value={formatter.dateExplained(execution.endDate)} />
-                </Flex>
-              </View>
-            </Flex>
-          </Item>
-          <Item key="code">
-            <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-              <View>
-                <Flex justifyContent="space-between" alignItems="center">
-                  <ButtonGroup>
-                    <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutableCode}>
-                      <Copy />
-                      <Text>Copy</Text>
-                    </Button>
-                  </ButtonGroup>
-                </Flex>
-              </View>
-              <ImmersiveEditor id="execution-view" value={execution.executable.content} language="groovy" readOnly />
-            </Flex>
-          </Item>
-          <Item key="output">
-            <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-              <View>
-                <Flex justifyContent="space-between" alignItems="center">
-                  <ButtonGroup>
-                    <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}>
-                      <Copy />
-                      <Text>Copy</Text>
-                    </Button>
-                  </ButtonGroup>
-                </Flex>
-              </View>
-              <ImmersiveEditor id="execution-output" value={executionOutput} readOnly />
-            </Flex>
-          </Item>
-        </TabPanels>
-      </Tabs>
-    </Flex>
+                </View>
+                <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
+                  <Flex direction="row" justifyContent="space-between" gap="size-200">
+                    <LabeledValue label="Started At" value={formatter.dateExplained(execution.startDate)} />
+                    <LabeledValue label="Duration" value={formatter.durationExplained(execution.duration)} />
+                    <LabeledValue label="Ended At" value={formatter.dateExplained(execution.endDate)} />
+                  </Flex>
+                </View>
+              </Flex>
+            </Item>
+            <Item key="code">
+              <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+                <View>
+                  <Flex justifyContent="space-between" alignItems="center">
+                    <ButtonGroup>
+                      <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutableCode}>
+                        <Copy />
+                        <Text>Copy</Text>
+                      </Button>
+                    </ButtonGroup>
+                  </Flex>
+                </View>
+                <ImmersiveEditor id="execution-view" value={execution.executable.content} language="groovy" readOnly />
+              </Flex>
+            </Item>
+            <Item key="output">
+              <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+                <View>
+                  <Flex justifyContent="space-between" alignItems="center">
+                    <ButtonGroup>
+                      <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}>
+                        <Copy />
+                        <Text>Copy</Text>
+                      </Button>
+                    </ButtonGroup>
+                  </Flex>
+                </View>
+                <ImmersiveEditor id="execution-output" value={executionOutput} readOnly />
+              </Flex>
+            </Item>
+          </TabPanels>
+        </Tabs>
+      </Flex>
   );
 };
 

@@ -21,7 +21,7 @@ const router = createHashRouter([
             { path: '/console', element: <ConsolePage /> },
             { path: '/history', element: <HistoryPage /> },
             { path: '/executions', element: <HistoryPage /> },
-            { path: '/executions/view/:executionId', element: <ExecutionView /> },
+            { path: '/executions/view/:executionId/:tab?', element: <ExecutionView /> }, // Add :tab?
             { path: '/maintenance/:tab?', element: <MaintenancePage /> },
         ],
     },
