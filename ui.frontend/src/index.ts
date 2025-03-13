@@ -27,6 +27,6 @@ axios.interceptors.request.use(
 // Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
 monacoLoader.config({
   paths: {
-    vs: isProduction() ? '/apps/contentor/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs',
+    vs: isProduction() ? '/apps/acm/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs',
   },
 });

@@ -40,7 +40,7 @@ const HistoryPage = () => {
       const fetchExecutions = async () => {
         setLoading(true);
         try {
-          let url = `/apps/contentor/api/execution.json`;
+          let url = `/apps/acm/api/execution.json`;
           const params = new URLSearchParams();
           if (executableId) params.append('executableId', `%${executableId}%`);
           if (startDate) params.append('startDate', startDate.toString());

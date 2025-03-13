@@ -10,7 +10,7 @@
             "request": "attach",
             "hostName": "localhost",
             "port": "14502",
-            "projectName": "contentor.core",
+            "projectName": "acm.core"
         }
     ]
 }

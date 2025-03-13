@@ -15,7 +15,7 @@ const SnippetsPage = () => {
     useEffect(() => {
         toastRequest<SnippetOutput>({
             method: 'GET',
-            url: `/apps/contentor/api/snippet.json`,
+            url: `/apps/acm/api/snippet.json`,
             operation: 'Snippets loading',
             positive: false,
         })

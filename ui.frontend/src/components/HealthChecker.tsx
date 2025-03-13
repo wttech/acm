@@ -56,7 +56,7 @@ const HealthChecker = () => {
                     <Flex flex="1" alignItems="center">
                         <Button
                             variant="negative"
-                            onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.contentor.core.instance.HealthChecker`, '_blank')}
+                            onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.acm.core.instance.HealthChecker`, '_blank')}
                         >
                             <Settings />
                             <Text>Configure</Text>

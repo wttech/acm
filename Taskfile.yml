@@ -115,11 +115,11 @@ tasks:
 
   deploy:all:
     desc: deploy all AEM package to AEM instances
-    cmd: sh aemw package deploy --file "all/target/contentor.all-*.zip"
+    cmd: sh aemw package deploy --file "all/target/acm.all-*.zip"
 
   deploy:min:
     desc: deploy minimal AEM package to AEM instances
-    cmd: sh aemw package deploy --file "min/target/contentor.min-*.zip"
+    cmd: sh aemw package deploy --file "min/target/acm.min-*.zip"
 
   develop:all:
     desc: build & deploy all AEM package to instances
@@ -133,31 +133,31 @@ tasks:
 #    cmds:
 #      #- sh aemw package deploy --url 'https://github.com/orbinson/aem-groovy-console/releases/download/19.0.5/aem-groovy-console-all-19.0.5.zip'
 #      - task: deploy:min
-#      - sh aemw package deploy --file 'ui.content/target/contentor.ui.content-*.zip'
+#      - sh aemw package deploy --file 'ui.content/target/acm.ui.content-*.zip'
 
   develop:core:
     desc: build & deploy core OSGi bundle to instances
     cmds:
       - (cd core && sh ../mvnw clean package)
-      - sh aemw osgi bundle install --file 'core/target/contentor.core-*.jar'
+      - sh aemw osgi bundle install --file 'core/target/acm.core-*.jar'
 
   develop:content:
     desc: build & deploy content AEM package to instances
     cmds:
       - (cd ui.content && sh ../mvnw clean package)
-      - sh aemw package deploy --file 'ui.content/target/contentor.ui.content-*.zip'
+      - sh aemw package deploy --file 'ui.content/target/acm.ui.content-*.zip'
 
   develop:content:example:
     desc: build & deploy example content AEM package to instances
     cmds:
       - (cd ui.content.example && sh ../mvnw clean package)
-      - sh aemw package deploy --file 'ui.content.example/target/contentor.ui.content.example-*.zip'
+      - sh aemw package deploy --file 'ui.content.example/target/acm.ui.content.example-*.zip'
 
   develop:frontend:
     desc: build & deploy frontend to instances
     cmds:
       - (cd ui.frontend && npm install && npm run build)
-      - sh aemw content push --dir 'ui.apps/src/main/content/jcr_root/apps/contentor/spa'
+      - sh aemw content push --dir 'ui.apps/src/main/content/jcr_root/apps/acm/spa'
 
   develop:frontend:dev:
     desc: build & deploy frontend to instances in development mode

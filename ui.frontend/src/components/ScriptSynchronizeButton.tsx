@@ -28,7 +28,7 @@ const ScriptSynchronizeButton: React.FC<ScriptSynchronizeButtonProps> = ({ selec
         try {
             await toastRequest({
                 method: 'POST',
-                url: `/apps/contentor/api/script.json?action=sync_all`,
+                url: `/apps/acm/api/script.json?action=sync_all`,
                 operation: `Synchronize scripts`,
             });
             onSync();

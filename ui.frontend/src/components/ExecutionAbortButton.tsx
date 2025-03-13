@@ -33,7 +33,7 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ selectedKey
         try {
             await toastRequest<QueueOutput>({
                 method: 'DELETE',
-                url: `/apps/contentor/api/queue-code.json?${params.toString()}`,
+                url: `/apps/acm/api/queue-code.json?${params.toString()}`,
                 operation: 'Abort executions',
             });
             if (onAbort) onAbort();

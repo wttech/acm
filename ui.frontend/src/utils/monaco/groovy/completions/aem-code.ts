@@ -28,7 +28,7 @@ function registerWordCompletion(instance: Monaco) {
       try {
         const response = await apiRequest<AssistCodeOutput>({
           method: 'GET',
-          url: `/apps/contentor/api/assist-code.json?type=all&word=${encodeURIComponent(wordText)}`,
+          url: `/apps/acm/api/assist-code.json?type=all&word=${encodeURIComponent(wordText)}`,
           operation: 'Code assistance',
         });
         const assistance = response.data.data;
@@ -73,7 +73,7 @@ function registerResourceCompletion(instance: Monaco) {
       try {
         const response = await apiRequest<AssistCodeOutput>({
           method: 'GET',
-          url: `/apps/contentor/api/assist-code.json?type=resource&word=${encodeURIComponent(wordText)}`,
+          url: `/apps/acm/api/assist-code.json?type=resource&word=${encodeURIComponent(wordText)}`,
           operation: 'Code assistance',
         });
         const assistance = response.data.data;

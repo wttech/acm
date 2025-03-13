@@ -18,7 +18,7 @@ function serverProxyConfig() {
 }
 
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/apps/contentor/spa/' : '/',
+  base: process.env.NODE_ENV === 'production' ? '/apps/acm/spa/' : '/',
   plugins: [
     react(),
     viteStaticCopy({
@@ -36,13 +36,13 @@ export default defineConfig({
       allow: ['node_modules', 'src'],
     },
     proxy: {
-      '/apps/contentor/api': serverProxyConfig(),
-      '/apps/contentor/spa': serverProxyConfig(),
+      '/apps/acm/api': serverProxyConfig(),
+      '/apps/acm/spa': serverProxyConfig(),
       '/libs/granite/csrf/token.json': serverProxyConfig(),
     },
   },
   build: {
-    outDir: '../ui.apps/src/main/content/jcr_root/apps/contentor/spa',
+    outDir: '../ui.apps/src/main/content/jcr_root/apps/acm/spa',
     emptyOutDir: true,
   },
 });

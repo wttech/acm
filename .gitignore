@@ -1,6 +1,6 @@
 ### Project-specific
 
-ui.apps/src/main/content/jcr_root/apps/contentor/spa
+ui.apps/src/main/content/jcr_root/apps/acm/spa
 /var
 
 # Created by https://www.gitignore.io/api/eclipse,java,maven

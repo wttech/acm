@@ -77,9 +77,9 @@ const ScriptExecutor = () => {
                                     <Text>Configure</Text>
                                 </Button>
                                 <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
-                                    <Item key="com.wttech.aem.contentor.core.script.ScriptScheduler"><ApplicationDelivery /><Text>Script Scheduler</Text></Item>
-                                    <Item key="org.apache.sling.event.jobs.QueueConfiguration~contentorexecutionqueue"><Clock/><Text>Execution Queue</Text></Item>
-                                    <Item key="com.wttech.aem.contentor.core.code.Executor"><Code/><Text>Code Executor</Text></Item>
+                                    <Item key="com.wttech.aem.acm.core.script.ScriptScheduler"><ApplicationDelivery /><Text>Script Scheduler</Text></Item>
+                                    <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue"><Clock/><Text>Execution Queue</Text></Item>
+                                    <Item key="com.wttech.aem.acm.core.code.Executor"><Code/><Text>Code Executor</Text></Item>
                                 </Menu>
                             </MenuTrigger>
                         </ButtonGroup>

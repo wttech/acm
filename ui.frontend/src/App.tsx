@@ -28,7 +28,7 @@ function App() {
       try {
         const response = await apiRequest<State>({
           operation: 'Fetch state',
-          url: '/apps/contentor/api/state.json',
+          url: '/apps/acm/api/state.json',
           method: 'get',
         });
         setState(response.data.data);

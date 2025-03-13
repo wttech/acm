@@ -36,7 +36,7 @@ const ScriptToggleButton: React.FC<ScriptToggleButtonProps> = ({ type, selectedK
         try {
             await toastRequest({
                 method: 'POST',
-                url: `/apps/contentor/api/script.json?${params.toString()}`,
+                url: `/apps/acm/api/script.json?${params.toString()}`,
                 operation: `${action} scripts`,
             });
             onToggle();
