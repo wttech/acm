@@ -1,7 +1,11 @@
 package com.wttech.aem.contentor.core.instance;
 
 import com.wttech.aem.contentor.core.osgi.OsgiScanner;
+import java.util.Arrays;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.osgi.framework.Bundle;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -27,7 +31,14 @@ public class HealthChecker {
 
     public HealthStatus checkStatus() {
         HealthStatus result = new HealthStatus();
-        osgiScanner.scanBundles().forEach(bundle -> {
+        checkBundles(result);
+        checkEvents(result);
+        result.healthy = CollectionUtils.isEmpty(result.issues);
+        return result;
+    }
+
+    private void checkBundles(HealthStatus result) {
+        osgiScanner.scanBundles().filter(b -> !isBundleIgnored(b)).forEach(bundle -> {
             if (osgiScanner.isFragment(bundle)) {
                 if (!osgiScanner.isBundleResolved(bundle)) {
                     result.issues.add(new HealthIssue(
@@ -42,9 +53,22 @@ public class HealthChecker {
                 }
             }
         });
-        result.healthy = CollectionUtils.isEmpty(result.issues);
-        return result;
     }
+
+    private boolean isBundleIgnored(Bundle bundle) {
+        return ArrayUtils.isNotEmpty(config.bundleSymbolicNamesIgnored())
+                && Arrays.stream(config.bundleSymbolicNamesIgnored())
+                .anyMatch(sn -> FilenameUtils.wildcardMatch(bundle.getSymbolicName(), sn));
+    }
+
+    /**
+     * https://github.com/apache/felix-dev/blob/master/webconsole-plugins/event/src/main/java/org/apache/felix/webconsole/plugins/event/internal/EventHandler.java
+     * https://github.com/apache/felix-dev/blob/master/webconsole-plugins/event/src/main/java/org/apache/felix/webconsole/plugins/event/internal/EventCollector.java
+     */
+    private void checkEvents(HealthStatus result) {
+        // TODO implement OSGi events checking; leverage 'config.eventTopicsUnstable'
+    }
+
 
     @ObjectClassDefinition(name = "AEM Contentor - Health Checker")
     public @interface Config {
