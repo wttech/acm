@@ -129,7 +129,7 @@ public class HealthChecker implements EventHandler {
         @AttributeDefinition(name = "Event Unstable Time Window (ms)")
         long eventTimeWindow() default 1000 * 10;
 
-        @AttributeDefinition(name = "Max Event Size")
+        @AttributeDefinition(name = "Event Unstable Queue Size")
         int maxEventSize() default 250;
     }
 }
