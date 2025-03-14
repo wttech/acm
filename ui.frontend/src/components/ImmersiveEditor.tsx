@@ -61,6 +61,10 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
       ...props,
     });
 
+    mountedEditor.addCommand(monacoRef.KeyMod.CtrlCmd | monacoRef.KeyMod.Shift | monacoRef.KeyCode.KeyF, () => setIsOpen((prev) => !prev));
+    mountedEditor.addCommand(monacoRef.KeyMod.CtrlCmd | monacoRef.KeyCode.Equal, () => mountedEditor.updateOptions({ fontSize: mountedEditor.getOption(monacoRef.editor.EditorOption.fontSize) + 1 }));
+    mountedEditor.addCommand(monacoRef.KeyMod.CtrlCmd | monacoRef.KeyCode.Minus, () => mountedEditor.updateOptions({ fontSize: mountedEditor.getOption(monacoRef.editor.EditorOption.fontSize) - 1 }));
+
     if (storedModel?.viewState) {
       mountedEditor.restoreViewState(storedModel.viewState);
     }
@@ -86,52 +90,52 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
 
     if (monacoRef?.editor && textModel) {
       monacoRef?.editor.setModelMarkers(
-        textModel,
-        id,
-        syntaxError
+          textModel,
+          id,
+          syntaxError
           ? [
-              {
-                startLineNumber: syntaxError.line,
-                startColumn: syntaxError.column,
-                endLineNumber: syntaxError.line,
-                endColumn: syntaxError.column + 10,
-                message: syntaxError.message,
-                severity: MarkerSeverity.Error,
-              },
-            ]
+                {
+                  startLineNumber: syntaxError.line,
+                  startColumn: syntaxError.column,
+                  endLineNumber: syntaxError.line,
+                  endColumn: syntaxError.column + 10,
+                  message: syntaxError.message,
+                  severity: MarkerSeverity.Error,
+                },
+              ]
           : [],
       );
     }
   }, [id, monacoRef?.editor, syntaxError]);
 
   return (
-    <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50" {...containerProps}>
-      {!isOpen && (
-        <>
-          <div ref={containerRef} style={{ height: '100%' }} />
-          <Button variant="primary" style="fill" position="absolute" zIndex={5} bottom={10} right={10} onPress={() => setIsOpen(true)}>
-            <FullScreenExit />
-          </Button>
-        </>
-      )}
-      <DialogContainer onDismiss={() => setIsOpen(false)} type="fullscreenTakeover">
-        {isOpen && (
-          <Dialog marginTop={8}>
-            <Content gridColumn="1 / span 5" gridRow="2 / span 4" height="100%">
-              <Flex height="100%" direction="column">
-                <Divider size="M" orientation="horizontal" />
-                <View backgroundColor="gray-800" paddingTop={10} height="100%">
-                  <div ref={containerRef} style={{ height: '100%' }} />
-                </View>
-              </Flex>
-            </Content>
-            <Button variant="primary" style="fill" position="absolute" zIndex={5} bottom={10} right={10} onPress={() => setIsOpen(false)}>
-              <FullScreenExit />
-            </Button>
-          </Dialog>
+      <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50" {...containerProps}>
+        {!isOpen && (
+            <>
+              <div ref={containerRef} style={{ height: '100%' }} />
+              <Button variant="primary" style="fill" position="absolute" zIndex={5} bottom={10} right={10} onPress={() => setIsOpen(true)}>
+                <FullScreenExit />
+              </Button>
+            </>
         )}
-      </DialogContainer>
-    </View>
+        <DialogContainer onDismiss={() => setIsOpen(false)} type="fullscreenTakeover">
+          {isOpen && (
+              <Dialog marginTop={8}>
+                <Content gridColumn="1 / span 5" gridRow="2 / span 4" height="100%">
+                  <Flex height="100%" direction="column">
+                    <Divider size="M" orientation="horizontal" />
+                    <View backgroundColor="gray-800" paddingTop={10} height="100%">
+                      <div ref={containerRef} style={{ height: '100%' }} />
+                    </View>
+                  </Flex>
+                </Content>
+                <Button variant="primary" style="fill" position="absolute" zIndex={5} bottom={10} right={10} onPress={() => setIsOpen(false)}>
+                  <FullScreenExit />
+                </Button>
+              </Dialog>
+          )}
+        </DialogContainer>
+      </View>
   );
 };
 
