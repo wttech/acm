@@ -130,6 +130,6 @@ public class HealthChecker implements EventHandler {
         long eventTimeWindow() default 1000 * 10;
 
         @AttributeDefinition(name = "Max Event Size")
-        int maxEventSize() default 1000;
+        int maxEventSize() default 250;
     }
 }
