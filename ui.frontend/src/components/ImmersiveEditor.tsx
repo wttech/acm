@@ -61,6 +61,10 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
       ...props,
     });
 
+    mountedEditor.addCommand(monacoRef.KeyMod.CtrlCmd | monacoRef.KeyMod.Shift | monacoRef.KeyCode.KeyF, () => setIsOpen((prev) => !prev));
+    mountedEditor.addCommand(monacoRef.KeyMod.CtrlCmd | monacoRef.KeyCode.Equal, () => mountedEditor.updateOptions({ fontSize: mountedEditor.getOption(monacoRef.editor.EditorOption.fontSize) + 1 }));
+    mountedEditor.addCommand(monacoRef.KeyMod.CtrlCmd | monacoRef.KeyCode.Minus, () => mountedEditor.updateOptions({ fontSize: mountedEditor.getOption(monacoRef.editor.EditorOption.fontSize) - 1 }));
+
     if (storedModel?.viewState) {
       mountedEditor.restoreViewState(storedModel.viewState);
     }
@@ -70,7 +74,11 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
       onChange?.(mountedEditor.getValue());
     });
 
-    modelStorage.updateModel(id, { textModel, viewState: mountedEditor.saveViewState(), editor: mountedEditor });
+    modelStorage.updateModel(id, {
+      textModel,
+      viewState: mountedEditor.saveViewState(),
+      editor: mountedEditor,
+    });
 
     mountedEditor.focus();
 
