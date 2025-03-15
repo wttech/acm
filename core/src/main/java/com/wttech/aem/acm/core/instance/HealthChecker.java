@@ -3,11 +3,16 @@ package com.wttech.aem.acm.core.instance;
 import com.wttech.aem.acm.core.osgi.OsgiEvent;
 import com.wttech.aem.acm.core.osgi.OsgiEventCollector;
 import com.wttech.aem.acm.core.osgi.OsgiScanner;
+import com.wttech.aem.acm.core.repository.Repository;
+import com.wttech.aem.acm.core.util.ResourceUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -25,6 +30,9 @@ public class HealthChecker implements EventHandler {
 
     @Reference
     private OsgiScanner osgiScanner;
+
+    @Reference
+    private ResourceResolverFactory resourceResolverFactory;
 
     private Config config;
 
@@ -48,11 +56,41 @@ public class HealthChecker implements EventHandler {
     }
 
     public HealthStatus checkStatus() {
+        try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
+            return checkStatus(resourceResolver);
+        } catch (LoginException e) {
+            return HealthStatus.error(e);
+        }
+    }
+
+    private HealthStatus checkStatus(ResourceResolver resourceResolver) {
         HealthStatus result = new HealthStatus();
+        checkRepository(result, resourceResolver);
+        checkInstaller(result);
         checkBundles(result);
         checkEvents(result);
         result.healthy = CollectionUtils.isEmpty(result.issues);
         return result;
+    }
+
+    private void checkInstaller(HealthStatus result) {
+        // TODO check JMX for activeResourceCount etc
+    }
+
+    private void checkRepository(HealthStatus result, ResourceResolver resourceResolver) {
+        Repository repository = new Repository(resourceResolver);
+        if (repository.isCompositeNodeStore()) {
+            result.issues.add(new HealthIssue(
+                    HealthIssueSeverity.CRITICAL, "Repository with composite node store is not supported"));
+        }
+        if (ArrayUtils.isNotEmpty(config.repositoryPathsExisted())) {
+            Arrays.stream(config.repositoryPathsExisted()).forEach(path -> {
+                if (!repository.exists(path)) {
+                    result.issues.add(new HealthIssue(
+                            HealthIssueSeverity.CRITICAL, String.format("Repository path '%s' does not exist", path)));
+                }
+            });
+        }
     }
 
     private void checkBundles(HealthStatus result) {
@@ -116,20 +154,31 @@ public class HealthChecker implements EventHandler {
     @ObjectClassDefinition(name = "AEM Content Manager - Health Checker")
     public @interface Config {
 
-        @AttributeDefinition(name = "Bundle Symbolic Names Ignored")
+        @AttributeDefinition(
+                name = "Bundle Symbolic Names Ignored",
+                description = "Allows to exclude certain OSGi bundles from health check (to address known issues)")
         String[] bundleSymbolicNamesIgnored();
 
-        @AttributeDefinition(name = "Event Unstable Topics")
+        @AttributeDefinition(
+                name = "Event Unstable Topics",
+                description = "Allows to specify OSGi event topics to be considered unstable")
         String[] eventTopicsUnstable() default {
             "org/osgi/framework/ServiceEvent/*",
             "org/osgi/framework/FrameworkEvent/*",
             "org/osgi/framework/BundleEvent/*"
         };
 
-        @AttributeDefinition(name = "Event Unstable Time Window (ms)")
+        @AttributeDefinition(
+                name = "Event Unstable Time Window (ms)",
+                description = "Max age of unstable events to be considered")
         long eventTimeWindow() default 1000 * 10;
 
-        @AttributeDefinition(name = "Event Unstable Queue Size")
+        @AttributeDefinition(name = "Event Unstable Queue Size", description = "Max number of unstable events to store")
         int maxEventSize() default 250;
+
+        @AttributeDefinition(
+                name = "Repository Paths Existed",
+                description = "Paths to check for the existence in the repository")
+        String[] repositoryPathsExisted();
     }
 }
