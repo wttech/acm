@@ -4,4 +4,4 @@ content: |
   condition.idle()
 documentation: |
   Execute the script only if it is not already queued, active, etc.<br>
-  Protects against multiple queueing and parallel executions.
+  Ensures that the script is not executed in parallel (including other scripts).<br>

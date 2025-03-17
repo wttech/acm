@@ -51,8 +51,16 @@ public class Condition {
         return !queuedExecutions().findFirst().isPresent();
     }
 
+    public boolean idleSelf() {
+        return !queuedSelfExecutions().findFirst().isPresent();
+    }
+
     public boolean inactive() {
         return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.ACTIVE);
+    }
+
+    public boolean inactiveSelf() {
+        return queuedSelfExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.ACTIVE);
     }
 
     public Stream<Execution> queuedExecutions() {
@@ -60,14 +68,22 @@ public class Condition {
                 .getOsgiContext()
                 .getExecutionQueue()
                 .findAll()
+                .filter(e -> !isSelfExecution(e));
+    }
+
+    public Stream<Execution> queuedSelfExecutions() {
+        return executionContext
+                .getOsgiContext()
+                .getExecutionQueue()
+                .findAll()
                 .filter(e -> !isSelfExecution(e) && isSameExecutable(e));
     }
 
-    private boolean isSelfExecution(Execution e) {
+    public boolean isSelfExecution(Execution e) {
         return StringUtils.equals(e.getId(), executionContext.getId());
     }
 
-    private boolean isSameExecutable(Execution e) {
+    public boolean isSameExecutable(Execution e) {
         return StringUtils.equals(
                 e.getExecutable().getId(), executionContext.getExecutable().getId());
     }

@@ -62,12 +62,12 @@ public class ScriptScheduler implements Runnable {
     @Override
     public void run() {
         if (!config.enabled()) {
-            LOG.debug("Script executor is disabled");
+            LOG.debug("Script scheduler is disabled");
             return;
         }
         HealthStatus healthStatus = healthChecker.checkStatus();
         if (!healthStatus.isHealthy()) {
-            LOG.error("Script executor is paused due to health status: {}", healthStatus);
+            LOG.error("Script scheduler is paused due to health status: {}", healthStatus);
             return;
         }
 
@@ -77,7 +77,7 @@ public class ScriptScheduler implements Runnable {
                 queue.submit(script);
             });
         } catch (Exception e) {
-            LOG.error("Failed to access repository while submitting enabled scripts to execution queue", e);
+            LOG.error("Failed to access repository while scheduling enabled scripts to execution queue", e);
         }
     }
 }
