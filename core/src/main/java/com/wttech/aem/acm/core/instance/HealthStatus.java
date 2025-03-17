@@ -15,8 +15,8 @@ public class HealthStatus implements Serializable {
     public static HealthStatus error(Exception e) {
         HealthStatus result = new HealthStatus();
         result.healthy = false;
-        result.issues.add(new HealthIssue(
-                HealthIssueSeverity.CRITICAL, String.format("Internal error : %s", e.getMessage())));
+        result.issues.add(
+                new HealthIssue(HealthIssueSeverity.CRITICAL, String.format("Internal error : %s", e.getMessage())));
         return result;
     }
 

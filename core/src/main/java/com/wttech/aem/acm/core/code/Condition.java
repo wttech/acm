@@ -64,11 +64,7 @@ public class Condition {
     }
 
     public Stream<Execution> queuedExecutions() {
-        return executionContext
-                .getOsgiContext()
-                .getExecutionQueue()
-                .findAll()
-                .filter(e -> !isSelfExecution(e));
+        return executionContext.getOsgiContext().getExecutionQueue().findAll().filter(e -> !isSelfExecution(e));
     }
 
     public Stream<Execution> queuedSelfExecutions() {
