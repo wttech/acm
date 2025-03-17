@@ -1,12 +1,12 @@
 package com.wttech.aem.acm.core.instance;
 
 import com.wttech.aem.acm.core.AcmException;
+import com.wttech.aem.acm.core.util.ObjectUtils;
 import com.wttech.aem.acm.core.util.StreamUtils;
 import java.util.Optional;
 import java.util.Set;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -33,9 +33,9 @@ public class SlingInstaller {
             }
             ObjectName mbean = mbeans.iterator().next();
 
-            boolean active = BooleanUtils.toBoolean((Boolean) mBeanServer.getAttribute(mbean, MBEAN_ACTIVE_ATTR));
+            boolean active = ObjectUtils.toBool(mBeanServer.getAttribute(mbean, MBEAN_ACTIVE_ATTR));
             long activeResourceCount =
-                    Long.parseLong((String) mBeanServer.getAttribute(mbean, MBEAN_ACTIVE_RESOURCE_COUNT_ATTR));
+                    ObjectUtils.toLong(mBeanServer.getAttribute(mbean, MBEAN_ACTIVE_RESOURCE_COUNT_ATTR));
 
             return new SlingInstallerState(active, activeResourceCount, fetchPauseCount(resourceResolver));
         } catch (Exception e) {
