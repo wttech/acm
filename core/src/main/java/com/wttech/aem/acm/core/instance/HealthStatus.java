@@ -12,6 +12,14 @@ public class HealthStatus implements Serializable {
 
     List<HealthIssue> issues = new LinkedList<>();
 
+    public static HealthStatus error(Exception e) {
+        HealthStatus result = new HealthStatus();
+        result.healthy = false;
+        result.issues.add(new HealthIssue(
+                HealthIssueSeverity.CRITICAL, String.format("Internal error : %s", e.getMessage())));
+        return result;
+    }
+
     public List<HealthIssue> getIssues() {
         return issues;
     }
