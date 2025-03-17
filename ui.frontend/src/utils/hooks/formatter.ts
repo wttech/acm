@@ -74,7 +74,11 @@ class Formatter {
     });
   }
 
-  public dateExplained(value: string): string {
+  public dateExplained(value: string | Date): string {
+    if (!value) {
+      return '';
+    }
+
     return `${this.dateAtInstance(value)} (${this.dateRelative(value)})`;
   }
 

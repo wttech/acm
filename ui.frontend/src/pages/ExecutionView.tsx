@@ -130,9 +130,9 @@ const ExecutionView = () => {
                 </View>
                 <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                   <Flex direction="row" justifyContent="space-between" gap="size-200">
-                    <LabeledValue label="Started At" value={formatter.dateExplained(execution.startDate)} />
+                    <LabeledValue label="Started At" value={execution.startDate ? formatter.dateExplained(execution.startDate) : '—'} />
                     <LabeledValue label="Duration" value={formatter.durationExplained(execution.duration)} />
-                    <LabeledValue label="Ended At" value={formatter.dateExplained(execution.endDate)} />
+                    <LabeledValue label="Ended At" value={execution.endDate ? formatter.dateExplained(execution.endDate) : '—'} />
                   </Flex>
                 </View>
               </Flex>
