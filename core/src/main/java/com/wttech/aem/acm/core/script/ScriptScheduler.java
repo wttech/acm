@@ -67,12 +67,14 @@ public class ScriptScheduler implements Runnable {
         }
         HealthStatus healthStatus = healthChecker.checkStatus();
         if (!healthStatus.isHealthy()) {
-            LOG.error("Script scheduler is paused due to health status: {}", healthStatus);
+            LOG.warn("Script scheduler is paused due to health status: {}", healthStatus);
             return;
         }
 
         try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
+
+            scriptRepository.clean();
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
                 queue.submit(script);
             });

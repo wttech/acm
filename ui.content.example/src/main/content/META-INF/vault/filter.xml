@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
+    <filter root="/conf/acm/settings/script/enabled/example"/>
     <filter root="/conf/acm/settings/script/disabled/example"/>
 </workspaceFilter>

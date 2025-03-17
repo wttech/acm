@@ -136,7 +136,7 @@ public class ExecutionQueue implements JobExecutor {
             Execution immediateExecution = future.get();
 
             if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
-                LOG.info("Execution skipped '{}'", immediateExecution);
+                LOG.debug("Execution skipped '{}'", immediateExecution);
                 return context.result()
                         .message(QueuedMessage.of(ExecutionStatus.SKIPPED).toJson())
                         .cancelled();

@@ -2,7 +2,7 @@ package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.acl.Acl;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
-import com.wttech.aem.acm.core.replication.Replicator;
+import com.wttech.aem.acm.core.replication.Activator;
 import java.io.PrintStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ public enum Variable {
     CONDITION("condition", Condition.class.getName()),
     RESOURCE_RESOLVER("resourceResolver", ResourceResolver.class.getName()),
     ACL("acl", Acl.class.getName()),
-    REPLICATOR("replicator", Replicator.class.getName()),
+    ACTIVATOR("activator", Activator.class.getName()),
     OSGI("osgi", OsgiContext.class.getName());
 
     final String varName;

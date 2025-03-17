@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.replication;
 
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
+import com.day.cq.replication.Replicator;
 import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.util.ResourceSpliterator;
 import java.util.Optional;
@@ -12,7 +13,7 @@ import javax.jcr.Session;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 
-public class Replicator {
+public class Activator {
 
     private final ResourceResolver resolver;
 
@@ -20,7 +21,7 @@ public class Replicator {
 
     private final com.day.cq.replication.Replicator replicator;
 
-    public Replicator(ResourceResolver resolver, com.day.cq.replication.Replicator replicator) {
+    public Activator(ResourceResolver resolver, Replicator replicator) {
         this.resolver = resolver;
         this.session = Optional.ofNullable(resolver)
                 .map(r -> r.adaptTo(Session.class))

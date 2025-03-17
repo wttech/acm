@@ -5,6 +5,7 @@ import com.wttech.aem.acm.core.util.ResourceSpliterator;
 import com.wttech.aem.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
@@ -12,8 +13,12 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ScriptRepository {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptRepository.class);
 
     public static final String ROOT = "/conf/acm/settings/script";
 
@@ -101,6 +106,38 @@ public class ScriptRepository {
                     true);
         } catch (PersistenceException e) {
             throw new AcmException(String.format("Cannot create parent folder for path '%s'!", path), e);
+        }
+    }
+
+    public void clean() {
+        List<String> disabledPaths =
+                findAll(ScriptType.DISABLED).map(Script::getPath).collect(Collectors.toList());
+        List<Script> duplicatedScripts = findAll(ScriptType.ENABLED)
+                .filter(s -> disabledPaths.contains(ScriptType.DISABLED.enforcePath(s.getPath())))
+                .collect(Collectors.toList());
+
+        if (!duplicatedScripts.isEmpty()) {
+            String duplicatedPaths =
+                    duplicatedScripts.stream().map(Script::getPath).collect(Collectors.joining(","));
+            LOG.warn("Detected script duplicates ({}): {}", duplicatedScripts.size(), duplicatedPaths);
+            LOG.warn(
+                    "Scripts cannot be enabled & disabled at the same time so check Vault filters of package with scripts deployed to instance.");
+            duplicatedScripts.forEach(s -> delete(s.getPath()));
+            LOG.info("Removed script duplicates ({}): {}", duplicatedScripts.size(), duplicatedPaths);
+        }
+    }
+
+    private void delete(String path) {
+        Resource resource = resourceResolver.getResource(path);
+        if (resource == null) {
+            throw new AcmException(
+                    String.format("Cannot delete script at path '%s' as it does not exist already!", path));
+        }
+        try {
+            resourceResolver.delete(resource);
+            resourceResolver.commit();
+        } catch (PersistenceException e) {
+            throw new AcmException(String.format("Cannot delete script at path '%s'!", path), e);
         }
     }
 }

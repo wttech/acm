@@ -4,7 +4,8 @@ import static com.wttech.aem.acm.core.util.ServletResult.error;
 import static com.wttech.aem.acm.core.util.ServletResult.ok;
 import static com.wttech.aem.acm.core.util.ServletUtils.*;
 
-import com.wttech.aem.acm.core.replication.Replicator;
+import com.day.cq.replication.Replicator;
+import com.wttech.aem.acm.core.replication.Activator;
 import com.wttech.aem.acm.core.script.Script;
 import com.wttech.aem.acm.core.script.ScriptRepository;
 import com.wttech.aem.acm.core.script.ScriptStats;
@@ -61,7 +62,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
     }
 
     @Reference
-    private com.day.cq.replication.Replicator replicatorService;
+    private Replicator replicator;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
@@ -122,7 +123,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
         try {
             ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
-            Replicator replicator = new Replicator(request.getResourceResolver(), replicatorService);
+            Activator activator = new Activator(request.getResourceResolver(), replicator);
 
             switch (action.get()) {
                 case ENABLE:
@@ -134,7 +135,8 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     respondJson(response, ok(String.format("%d script(s) disabled successfully", paths.size())));
                     break;
                 case SYNC_ALL:
-                    replicator.reactivateTree(ScriptRepository.ROOT);
+                    repository.clean();
+                    activator.reactivateTree(ScriptRepository.ROOT);
                     respondJson(response, ok("Scripts synchronized successfully"));
                     break;
             }
