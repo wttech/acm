@@ -278,6 +278,7 @@ Bundle-DocURL:
                                 <options>
                                     <!-- use the nodetypes and namespaces from the aem-nodetypes.jar provided in the plugin dependencies -->
                                     <cnds>tccl:aem.cnd</cnds>
+                                    <immutableRootNodeNames>apps,libs,oak:index</immutableRootNodeNames>
                                 </options>
                             </jackrabbit-nodetypes>
                         </validatorsSettings>

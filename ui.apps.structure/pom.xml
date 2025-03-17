@@ -31,6 +31,7 @@
                 <configuration>
                     <properties>
                         <cloudManagerTarget>none</cloudManagerTarget>
+                        <noIntermediateSaves>true</noIntermediateSaves>
                     </properties>
                     <filters>
                         <!-- /apps root -->
@@ -49,6 +50,8 @@
                         <!-- DAM folder root, will be created via repoinit -->
                         <filter><root>/content/dam/acm</root></filter>
 
+                        <!-- Custom OAK:Index -->
+                        <filter><root>/oak:index</root></filter>
                     </filters>
                 </configuration>
             </plugin>
