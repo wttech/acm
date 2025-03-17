@@ -34,6 +34,9 @@ public class HealthChecker implements EventHandler {
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
 
+    @Reference
+    private SlingInstaller slingInstaller;
+
     private Config config;
 
     private ServiceRegistration<EventHandler> eventHandlerRegistration;
@@ -44,7 +47,7 @@ public class HealthChecker implements EventHandler {
     @Modified
     protected void activate(BundleContext context, Config config) {
         this.config = config;
-        this.eventCollector = new OsgiEventCollector(config.maxEventSize());
+        this.eventCollector = new OsgiEventCollector(config.eventQueueSize());
 
         unregisterEventHandler();
         registerEventHandler(context, config);
@@ -66,15 +69,25 @@ public class HealthChecker implements EventHandler {
     private HealthStatus checkStatus(ResourceResolver resourceResolver) {
         HealthStatus result = new HealthStatus();
         checkRepository(result, resourceResolver);
-        checkInstaller(result);
+        checkInstaller(result, resourceResolver);
         checkBundles(result);
         checkEvents(result);
         result.healthy = CollectionUtils.isEmpty(result.issues);
         return result;
     }
 
-    private void checkInstaller(HealthStatus result) {
-        // TODO check JMX for activeResourceCount etc
+    private void checkInstaller(HealthStatus result, ResourceResolver resourceResolver) {
+        SlingInstallerState state = slingInstaller.checkState(resourceResolver);
+        if (state.isActive()) {
+            result.issues.add(new HealthIssue(
+                    HealthIssueSeverity.CRITICAL,
+                    String.format("Sling Installer is active (%d)", state.getActiveResourceCount())));
+        }
+        if (state.isPaused()) {
+            result.issues.add(new HealthIssue(
+                    HealthIssueSeverity.CRITICAL,
+                    String.format("Sling Installer is paused (%d)", state.getPauseCount())));
+        }
     }
 
     private void checkRepository(HealthStatus result, ResourceResolver resourceResolver) {
@@ -174,7 +187,7 @@ public class HealthChecker implements EventHandler {
         long eventTimeWindow() default 1000 * 10;
 
         @AttributeDefinition(name = "Event Unstable Queue Size", description = "Max number of unstable events to store")
-        int maxEventSize() default 250;
+        int eventQueueSize() default 250;
 
         @AttributeDefinition(
                 name = "Repository Paths Existed",
