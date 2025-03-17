@@ -72,6 +72,7 @@ public class HealthChecker implements EventHandler {
         checkInstaller(result, resourceResolver);
         checkBundles(result);
         checkEvents(result);
+        checkComponents(result);
         result.healthy = CollectionUtils.isEmpty(result.issues);
         return result;
     }
@@ -162,6 +163,10 @@ public class HealthChecker implements EventHandler {
         if (eventHandlerRegistration != null) {
             eventHandlerRegistration.unregister();
         }
+    }
+
+    private void checkComponents(HealthStatus result) {
+        // TODO ...
     }
 
     @ObjectClassDefinition(name = "AEM Content Manager - Health Checker")
