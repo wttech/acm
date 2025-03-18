@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, TabList, TabPanels, Tabs, Text, View, ProgressBar } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
@@ -6,7 +6,7 @@ import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
 import Print from '@spectrum-icons/workflow/Print';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AppContext } from '../AppContext.tsx';
 import ExecutableValue from '../components/ExecutableValue.tsx';
@@ -20,28 +20,28 @@ import { useNavigationTab } from '../utils/hooks/navigation';
 const toastTimeout = 3000;
 
 const ExecutionView = () => {
-    const [fetchedExecution, setFetchedExecution] = useState<Execution | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const executionId = decodeURIComponent(useParams<{ executionId: string }>().executionId as string);
-    const formatter = useFormatter();
+  const [fetchedExecution, setFetchedExecution] = useState<Execution | null>(null);
+  const executionId = decodeURIComponent(useParams<{ executionId: string }>().executionId as string);
+  const formatter = useFormatter();
   const appState = useContext(AppContext);
   const execution = appState?.queuedExecutions.find((execution) => execution.id === executionId) ?? fetchedExecution;
+  const [loading, setLoading] = useState<boolean>(!execution);
 
-    useEffect(() => {
-        const fetchExecution = async () => {
-            setLoading(true);
-            try {
-                const response = await toastRequest<ExecutionOutput>({
-                    method: 'GET',
-                    url: `/apps/acm/api/execution.json?id=${executionId}`,
-                    operation: `Execution loading`,
-                    positive: false,
-                });
-                setFetchedExecution(response.data.data.list[0]);
-            } catch (error) {
-                console.error(`Execution cannot be loaded '${executionId}':`, error);
-            } finally {
-                setLoading(false);
+  useEffect(() => {
+    const fetchExecution = async () => {
+      setLoading(true);
+      try {
+        const response = await toastRequest<ExecutionOutput>({
+          method: 'GET',
+          url: `/apps/acm/api/execution.json?id=${executionId}`,
+          operation: `Execution loading`,
+          positive: false,
+        });
+        setFetchedExecution(response.data.data.list[0]);
+      } catch (error) {
+        console.error(`Execution cannot be loaded '${executionId}':`, error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -50,15 +50,17 @@ const ExecutionView = () => {
     }
   }, [execution?.status, executionId]);
 
-    const [selectedTab, handleTabChange] = useNavigationTab(executionId ? `/executions/view/${encodeURIComponent(executionId)}` : null, 'details');
+  const [selectedTab, handleTabChange] = useNavigationTab(executionId ? `/executions/view/${encodeURIComponent(executionId)}` : null, 'details');
 
-    if (loading) {
-        return (
-            <Flex flex="1" justifyContent="center" alignItems="center">
-                <ProgressBar label="Loading..." isIndeterminate />
-            </Flex>
-        );
-    }if (!execution) {
+  if (loading) {
+    return (
+      <Flex flex="1" justifyContent="center" alignItems="center">
+        <ProgressBar label="Loading..." isIndeterminate />
+      </Flex>
+    );
+  }
+
+  if (!execution) {
     return (
       <Flex direction="column" flex="1">
         <IllustratedMessage>
@@ -69,7 +71,7 @@ const ExecutionView = () => {
     );
   }
 
-    const executionOutput = ((execution.output ?? '') + '\n' + (execution.error ?? '')).trim();
+  const executionOutput = ((execution.output ?? '') + '\n' + (execution.error ?? '')).trim();
 
   const onCopyExecutionOutput = () => {
     if (executionOutput) {
