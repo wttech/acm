@@ -16,6 +16,7 @@ import { toastRequest } from '../utils/api';
 import { Execution, ExecutionOutput } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks/formatter';
 import { useNavigationTab } from '../utils/hooks/navigation';
+import ExecutionProgressBar from "../components/ExecutionProgressBar.tsx";
 
 const toastTimeout = 3000;
 
@@ -169,7 +170,6 @@ const ExecutionView = () => {
                       <Text>Copy</Text>
                     </Button>
                   </ButtonGroup>
-                  <ExecutionStatusBadge value={execution.status} />
                 </Flex>
               </View>
               <ImmersiveEditor id="execution-view" value={execution.executable.content} language="groovy" readOnly />
@@ -177,8 +177,8 @@ const ExecutionView = () => {
           </Item>
           <Item key="output">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-              <View>
-                <Flex alignItems="center">
+              <Flex direction="row" justifyContent="space-between" alignItems="center">
+                <Flex flex="1" alignItems="center">
                   <ButtonGroup>
                     <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}>
                       <Copy />
@@ -188,9 +188,14 @@ const ExecutionView = () => {
                   <Switch isSelected={autoscrollOutput} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}>
                     <Text>Autoscroll</Text>
                   </Switch>
-                  <ExecutionStatusBadge value={execution.status} marginStart="auto" />
                 </Flex>
-              </View>
+                <Flex flex="1" justifyContent="center" alignItems="center">
+                  <ExecutionProgressBar execution={execution}/>
+                </Flex>
+                <Flex flex="1" justifyContent="end" alignItems="center">
+                  &nbsp;
+                </Flex>
+              </Flex>
               <ImmersiveEditor id="execution-output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} />
             </Flex>
           </Item>
