@@ -187,11 +187,11 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                   <Row key={script.id}>
                     <Cell>{script.name}</Cell>
                     <Cell>
-                      <Flex justifyContent="space-between" alignItems="center">
-                        <Text>{lastExecution ? <DateExplained value={lastExecution.startDate}/> : '—'}</Text>
+                      <Flex alignItems="center" gap="size-100">
                         {lastExecution && (
                             <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution"><Magnify /></Button>
                         )}
+                        <Text>{lastExecution ? <DateExplained value={lastExecution.startDate}/> : '—'}</Text>
                       </Flex>
                     </Cell>
                     <Cell><ExecutionStatsBadge stats={scriptStats} /></Cell>
