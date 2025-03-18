@@ -1,80 +1,70 @@
 import React, { useState } from 'react';
-import {
-    Button,
-    ButtonGroup,
-    Content,
-    Dialog,
-    DialogTrigger,
-    Divider,
-    Heading,
-    Text
-} from '@adobe/react-spectrum';
-import { toastRequest } from '../utils/api';
+import { Button, Text } from '@adobe/react-spectrum';
 import Cancel from '@spectrum-icons/workflow/Cancel';
-import Checkmark from '@spectrum-icons/workflow/Checkmark';
-import {QueueOutput} from "../utils/api.types.ts";
+import { ToastQueue } from '@react-spectrum/toast';
+import { apiRequest } from '../utils/api';
+import {Execution, ExecutionStatus, isExecutionPending, QueueOutput} from '../utils/api.types';
 
-type ExecutionAbortButtonProps = {
-    selectedKeys: string[];
-    onAbort?: () => void;
-};
+const executionPollInterval = 1000;
+const toastTimeout = 3000;
 
-const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ selectedKeys, onAbort }) => {
-    const [abortDialogOpen, setAbortDialogOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+interface ExecutionAbortButtonProps {
+    execution: Execution | null;
+    onComplete: (execution: Execution | null) => void;
+}
 
-    const handleConfirm = async () => {
-        setIsLoading(true);
-        const ids = Array.from(selectedKeys);
+const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, onComplete }) => {
+    const [isAborting, setIsAborting] = useState(false);
 
-        const params = new URLSearchParams();
-        ids.forEach((id) => params.append('jobId', id));
-
+    const onAbort = async () => {
+        if (!execution?.id) {
+            console.warn('Code execution cannot be aborted as it is not running!');
+            return;
+        }
+        setIsAborting(true);
         try {
-            await toastRequest<QueueOutput>({
-                method: 'DELETE',
-                url: `/apps/acm/api/queue-code.json?${params.toString()}`,
-                operation: 'Abort executions',
+            await apiRequest<QueueOutput>({
+                operation: 'Code execution aborting',
+                url: `/apps/acm/api/queue-code.json?jobId=${execution.id}`,
+                method: 'delete',
             });
-            if (onAbort) onAbort();
+
+            let queuedExecution: Execution | null = null;
+            while (queuedExecution === null || isExecutionPending(queuedExecution.status)) {
+                const response = await apiRequest<QueueOutput>({
+                    operation: 'Code execution state',
+                    url: `/apps/acm/api/queue-code.json?jobId=${execution.id}`,
+                    method: 'get',
+                });
+                queuedExecution = response.data.data.executions[0]!;
+                onComplete(queuedExecution);
+                await new Promise((resolve) => setTimeout(resolve, executionPollInterval));
+            }
+            if (queuedExecution.status === ExecutionStatus.ABORTED) {
+                ToastQueue.positive('Code execution aborted successfully!', {
+                    timeout: toastTimeout,
+                });
+            } else {
+                console.warn('Code execution aborting failed!');
+                ToastQueue.negative('Code execution aborting failed!', {
+                    timeout: toastTimeout,
+                });
+            }
         } catch (error) {
-            console.error('Abort executions error:', error);
+            console.error('Code execution aborting error:', error);
+            ToastQueue.negative('Code execution aborting failed!', {
+                timeout: toastTimeout,
+            });
         } finally {
-            setIsLoading(false);
-            setAbortDialogOpen(false);
+            setIsAborting(false);
         }
     };
 
-    const renderAbortDialog = () => (
-        <>
-            <Heading>
-                <Text>Confirmation</Text>
-            </Heading>
-            <Divider />
-            <Content>
-                <Text>Are you sure you want to abort the selected executions? This action cannot be undone.</Text>
-            </Content>
-            <ButtonGroup>
-                <Button variant="secondary" onPress={() => setAbortDialogOpen(false)} isDisabled={isLoading}>
-                    <Cancel />
-                    <Text>Cancel</Text>
-                </Button>
-                <Button variant="negative" style="fill" onPress={handleConfirm} isPending={isLoading}>
-                    <Checkmark />
-                    <Text>Confirm</Text>
-                </Button>
-            </ButtonGroup>
-        </>
-    );
-
     return (
-        <DialogTrigger isOpen={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
-            <Button variant="negative" style="fill" isDisabled={selectedKeys.length === 0} onPress={() => setAbortDialogOpen(true)}>
-                <Cancel />
-                <Text>Abort</Text>
-            </Button>
-            <Dialog>{renderAbortDialog()}</Dialog>
-        </DialogTrigger>
+        <Button variant="negative" isDisabled={!execution || !isExecutionPending(execution.status) || isAborting} onPress={onAbort}>
+            <Cancel />
+            <Text>Abort</Text>
+        </Button>
     );
 };
 

@@ -38,7 +38,7 @@ import Replay from "@spectrum-icons/workflow/Replay";
 import Checkmark from "@spectrum-icons/workflow/Checkmark";
 import Cancel from "@spectrum-icons/workflow/Cancel";
 import Settings from "@spectrum-icons/workflow/Settings";
-import ExecutionAbortButton from './ExecutionAbortButton';
+import ExecutionsAbortButton from './ExecutionsAbortButton.tsx';
 import Code from "@spectrum-icons/workflow/Code";
 
 const ScriptExecutor = () => {
@@ -70,7 +70,7 @@ const ScriptExecutor = () => {
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                     <Flex flex="1" alignItems="center">
                         <ButtonGroup>
-                            <ExecutionAbortButton selectedKeys={selectedIds(selectedKeys)}/>
+                            <ExecutionsAbortButton selectedKeys={selectedIds(selectedKeys)}/>
                             <MenuTrigger>
                                 <Button variant="negative">
                                     <Settings />

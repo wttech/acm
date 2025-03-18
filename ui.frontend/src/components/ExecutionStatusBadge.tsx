@@ -1,4 +1,4 @@
-import {Badge, ProgressCircle, Text} from '@adobe/react-spectrum';
+import { Badge, ProgressCircle, SpectrumBadgeProps, Text } from '@adobe/react-spectrum';
 import Alert from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
@@ -7,9 +7,9 @@ import Pause from '@spectrum-icons/workflow/Pause';
 import React from 'react';
 import { ExecutionStatus } from '../utils/api.types';
 
-interface ExecutionStatusProps {
+type ExecutionStatusProps = {
   value: ExecutionStatus;
-}
+} & Partial<SpectrumBadgeProps>;
 
 const getVariant = (status: ExecutionStatus): 'positive' | 'negative' | 'neutral' | 'info' | 'yellow' => {
   switch (status) {
@@ -52,12 +52,12 @@ const getIcon = (status: ExecutionStatus) => {
   }
 };
 
-const ExecutionStatusBadge: React.FC<ExecutionStatusProps> = ({ value }) => {
+const ExecutionStatusBadge: React.FC<ExecutionStatusProps> = ({ value, ...props }) => {
   const variant = getVariant(value);
   const icon = getIcon(value);
 
   return (
-    <Badge variant={variant}>
+    <Badge variant={variant} {...props}>
       <Text>{value.toLowerCase()}</Text>
       {icon}
     </Badge>

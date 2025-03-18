@@ -24,15 +24,15 @@ export enum ExecutionStatus {
     SUCCEEDED = 'SUCCEEDED',
 }
 
-export function isExecutionNegative(status: ExecutionStatus | null) {
+export function isExecutionNegative(status: ExecutionStatus | null | undefined) {
     return status === ExecutionStatus.FAILED || status === ExecutionStatus.ABORTED;
 }
 
-export function isExecutionPending(status: ExecutionStatus | null) {
+export function isExecutionPending(status: ExecutionStatus | null | undefined) {
     return status === ExecutionStatus.QUEUED || status === ExecutionStatus.ACTIVE;
 }
 
-export function isExecutionCompleted(status: ExecutionStatus | null) {
+export function isExecutionCompleted(status: ExecutionStatus | null | undefined) {
     return status === ExecutionStatus.FAILED || status === ExecutionStatus.SUCCEEDED;
 }
 

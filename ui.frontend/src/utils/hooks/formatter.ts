@@ -51,6 +51,19 @@ class Formatter {
     return result;
   }
 
+  public durationShort(milliseconds: number): string {
+    if (milliseconds < 1000) {
+      return `${milliseconds} ms`;
+    }
+    const duration = intervalToDuration({ start: 0, end: milliseconds });
+    const parts = [];
+    if (duration.days) parts.push(`${duration.days}d`);
+    if (duration.hours) parts.push(`${duration.hours}h`);
+    if (duration.minutes) parts.push(`${duration.minutes}m`);
+    if (duration.seconds) parts.push(`${duration.seconds}s`);
+    return parts.join(' ');
+  }
+
   public durationExplained(milliseconds: number): string {
     const duration = intervalToDuration({ start: 0, end: milliseconds });
     let result = `${milliseconds} ms`;
