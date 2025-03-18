@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, Switch, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
@@ -20,16 +20,16 @@ import { useNavigationTab } from '../utils/hooks/navigation';
 const toastTimeout = 3000;
 
 const ExecutionView = () => {
-  const [fetchedExecution, setFetchedExecution] = useState<Execution | null>(null);
+  const [execution, setExecution] = useState<Execution | null>(null);
+  const [autoscrollOutput, setAutoscrollOutput] = useState<boolean>(true);
   const executionId = decodeURIComponent(useParams<{ executionId: string }>().executionId as string);
   const formatter = useFormatter();
   const appState = useContext(AppContext);
-  const execution = appState?.queuedExecutions.find((execution) => execution.id === executionId) ?? fetchedExecution;
-  const [loading, setLoading] = useState<boolean>(!execution);
+  const executionInQueue = !!appState?.queuedExecutions.find((execution) => execution.id === executionId);
+  const [loading, setLoading] = useState<boolean>(executionInQueue);
 
   useEffect(() => {
     const fetchExecution = async () => {
-      setLoading(true);
       try {
         const response = await toastRequest<ExecutionOutput>({
           method: 'GET',
@@ -37,18 +37,22 @@ const ExecutionView = () => {
           operation: `Execution loading`,
           positive: false,
         });
-        setFetchedExecution(response.data.data.list[0]);
+
+        setExecution(response.data.data.list[0]);
       } catch (error) {
         console.error(`Execution cannot be loaded '${executionId}':`, error);
       } finally {
         setLoading(false);
       }
     };
+    fetchExecution();
 
-    if (!execution?.status) {
-      fetchExecution();
+    if (executionInQueue) {
+      const intervalId = setInterval(fetchExecution, 5000);
+
+      return () => clearInterval(intervalId);
     }
-  }, [execution?.status, executionId]);
+  }, [executionInQueue, executionId]);
 
   const [selectedTab, handleTabChange] = useNavigationTab(executionId ? `/executions/view/${encodeURIComponent(executionId)}` : null, 'details');
 
@@ -165,6 +169,7 @@ const ExecutionView = () => {
                       <Text>Copy</Text>
                     </Button>
                   </ButtonGroup>
+                  <ExecutionStatusBadge value={execution.status} />
                 </Flex>
               </View>
               <ImmersiveEditor id="execution-view" value={execution.executable.content} language="groovy" readOnly />
@@ -173,16 +178,20 @@ const ExecutionView = () => {
           <Item key="output">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View>
-                <Flex justifyContent="space-between" alignItems="center">
+                <Flex alignItems="center">
                   <ButtonGroup>
                     <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}>
                       <Copy />
                       <Text>Copy</Text>
                     </Button>
                   </ButtonGroup>
+                  <Switch isSelected={autoscrollOutput} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}>
+                    <Text>Autoscroll</Text>
+                  </Switch>
+                  <ExecutionStatusBadge value={execution.status} marginStart="auto" />
                 </Flex>
               </View>
-              <ImmersiveEditor id="execution-output" value={executionOutput} readOnly scrollToBottomOnUpdate />
+              <ImmersiveEditor id="execution-output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} />
             </Flex>
           </Item>
         </TabPanels>
