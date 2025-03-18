@@ -52,6 +52,9 @@ class Formatter {
   }
 
   public durationShort(milliseconds: number): string {
+    if (milliseconds < 1000) {
+      return `${milliseconds} ms`;
+    }
     const duration = intervalToDuration({ start: 0, end: milliseconds });
     const parts = [];
     if (duration.days) parts.push(`${duration.days}d`);
