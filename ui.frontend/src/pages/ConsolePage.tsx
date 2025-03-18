@@ -279,7 +279,7 @@ const ConsolePage = () => {
                       <Text>Copy</Text>
                     </Button>
                   </ButtonGroup>
-                  <Switch isSelected={autoscroll} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
+                  <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
                     <Text>Autoscroll</Text>
                   </Switch>
                 </Flex>

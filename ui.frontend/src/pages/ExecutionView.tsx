@@ -13,7 +13,7 @@ import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import { toastRequest } from '../utils/api';
-import { Execution, ExecutionOutput } from '../utils/api.types';
+import {Execution, ExecutionOutput, isExecutionPending} from '../utils/api.types';
 import { useFormatter } from '../utils/hooks/formatter';
 import { useNavigationTab } from '../utils/hooks/navigation';
 import ExecutionProgressBar from "../components/ExecutionProgressBar.tsx";
@@ -49,7 +49,7 @@ const ExecutionView = () => {
     fetchExecution();
 
     if (executionInQueue) {
-      const intervalId = setInterval(fetchExecution, 5000);
+      const intervalId = setInterval(fetchExecution, 500);
 
       return () => clearInterval(intervalId);
     }
@@ -185,7 +185,7 @@ const ExecutionView = () => {
                       <Text>Copy</Text>
                     </Button>
                   </ButtonGroup>
-                  <Switch isSelected={autoscrollOutput} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}>
+                  <Switch isSelected={autoscrollOutput} isDisabled={!isExecutionPending(execution.status)} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}>
                     <Text>Autoscroll</Text>
                   </Switch>
                 </Flex>
