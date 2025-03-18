@@ -29,8 +29,10 @@
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>filevault-package-maven-plugin</artifactId>
                 <configuration>
+                    <allowIndexDefinitions>true</allowIndexDefinitions>
                     <properties>
                         <cloudManagerTarget>none</cloudManagerTarget>
+                        <noIntermediateSaves>true</noIntermediateSaves>
                     </properties>
                     <filters>
                         <!-- /apps root -->
@@ -49,6 +51,8 @@
                         <!-- DAM folder root, will be created via repoinit -->
                         <filter><root>/content/dam/acm</root></filter>
 
+                        <!-- Custom OAK:Index -->
+                        <filter><root>/oak:index</root></filter>
                     </filters>
                 </configuration>
             </plugin>

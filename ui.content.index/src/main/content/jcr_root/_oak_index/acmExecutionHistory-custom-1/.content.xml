@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:oak="http://jackrabbit.apache.org/oak/ns/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+    jcr:primaryType="oak:QueryIndexDefinition"
+    async="async"
+    compatVersion="{Long}2"
+    evaluatePathRestrictions="{Boolean}true"
+    reindexCount="{Long}0"
+    type="lucene"
+    includedPaths="[/var/acm/execution/history]"
+    queryPaths="[/var/acm/execution/history]">
+    <indexRules jcr:primaryType="nt:unstructured">
+        <nt:base jcr:primaryType="nt:unstructured">
+            <properties jcr:primaryType="nt:unstructured">
+                <id
+                    jcr:primaryType="nt:unstructured"
+                    name="id"
+                    nodeScopeIndex="{Boolean}true"
+                    propertyIndex="{Boolean}true"
+                    index="{Boolean}true"
+                />
+                <executableId
+                    jcr:primaryType="nt:unstructured"
+                    name="executableId"
+                    nodeScopeIndex="{Boolean}true"
+                    propertyIndex="{Boolean}true"
+                    index="{Boolean}true"
+                />
+                <status
+                    jcr:primaryType="nt:unstructured"
+                    name="status"
+                    nodeScopeIndex="{Boolean}true"
+                    propertyIndex="{Boolean}true"
+                    index="{Boolean}true"
+                />
+                <startDate
+                    jcr:primaryType="nt:unstructured"
+                    name="startDate"
+                    nodeScopeIndex="{Boolean}true"
+                    propertyIndex="{Boolean}true"
+                    index="{Boolean}true"
+                />
+                <endDate
+                    jcr:primaryType="nt:unstructured"
+                    name="endDate"
+                    nodeScopeIndex="{Boolean}true"
+                    propertyIndex="{Boolean}true"
+                    index="{Boolean}true"
+                />
+                <duration
+                    jcr:primaryType="nt:unstructured"
+                    name="duration"
+                    nodeScopeIndex="{Boolean}true"
+                    propertyIndex="{Boolean}true"
+                    index="{Boolean}true"
+                />
+                <error
+                    jcr:primaryType="nt:unstructured"
+                    name="error"
+                    nodeScopeIndex="{Boolean}true"
+                    propertyIndex="{Boolean}true"
+                    index="{Boolean}true"
+                />
+            </properties>
+        </nt:base>
+    </indexRules>
+</jcr:root>
