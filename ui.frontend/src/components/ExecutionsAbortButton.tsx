@@ -14,12 +14,12 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import {QueueOutput} from "../utils/api.types.ts";
 
-type ExecutionAbortButtonProps = {
+type ExecutionsAbortButtonProps = {
     selectedKeys: string[];
     onAbort?: () => void;
 };
 
-const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ selectedKeys, onAbort }) => {
+const ExecutionsAbortButton: React.FC<ExecutionsAbortButtonProps> = ({ selectedKeys, onAbort }) => {
     const [abortDialogOpen, setAbortDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -78,4 +78,4 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ selectedKey
     );
 };
 
-export default ExecutionAbortButton;
+export default ExecutionsAbortButton;

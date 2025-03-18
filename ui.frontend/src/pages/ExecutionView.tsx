@@ -17,6 +17,7 @@ import {Execution, ExecutionOutput, isExecutionPending} from '../utils/api.types
 import { useFormatter } from '../utils/hooks/formatter';
 import { useNavigationTab } from '../utils/hooks/navigation';
 import ExecutionProgressBar from "../components/ExecutionProgressBar.tsx";
+import ExecutionCopyOutputButton from "../components/ExecutionCopyOutputButton.tsx";
 
 const toastTimeout = 3000;
 
@@ -77,27 +78,6 @@ const ExecutionView = () => {
   }
 
   const executionOutput = ((execution.output ?? '') + '\n' + (execution.error ?? '')).trim();
-
-  const onCopyExecutionOutput = () => {
-    if (executionOutput) {
-      navigator.clipboard
-        .writeText(executionOutput)
-        .then(() => {
-          ToastQueue.info('Execution output copied to clipboard!', {
-            timeout: toastTimeout,
-          });
-        })
-        .catch(() => {
-          ToastQueue.negative('Failed to copy execution output!', {
-            timeout: toastTimeout,
-          });
-        });
-    } else {
-      ToastQueue.negative('No execution output to copy!', {
-        timeout: toastTimeout,
-      });
-    }
-  };
 
   const onCopyExecutableCode = () => {
     navigator.clipboard
@@ -180,10 +160,7 @@ const ExecutionView = () => {
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
-                    <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}>
-                      <Copy />
-                      <Text>Copy</Text>
-                    </Button>
+                    <ExecutionCopyOutputButton output={executionOutput}/>
                   </ButtonGroup>
                   <Switch isSelected={autoscrollOutput} isDisabled={!isExecutionPending(execution.status)} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}>
                     <Text>Autoscroll</Text>

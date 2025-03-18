@@ -3,7 +3,6 @@ import { ToastQueue } from '@react-spectrum/toast';
 import Bug from '@spectrum-icons/workflow/Bug';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Close from '@spectrum-icons/workflow/Close';
-import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
@@ -19,6 +18,7 @@ import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types.ts';
 import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
+import ExecutionCopyOutputButton from "../components/ExecutionCopyOutputButton";
 
 const toastTimeout = 3000;
 const executionPollDelay = 500;
@@ -209,27 +209,6 @@ const ConsolePage = () => {
 
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
 
-  const onCopyExecutionOutput = () => {
-    if (executionOutput) {
-      navigator.clipboard
-        .writeText(executionOutput)
-        .then(() => {
-          ToastQueue.info('Execution output copied to clipboard!', {
-            timeout: toastTimeout,
-          });
-        })
-        .catch(() => {
-          ToastQueue.negative('Failed to copy execution output!', {
-            timeout: toastTimeout,
-          });
-        });
-    } else {
-      ToastQueue.negative('No execution output to copy!', {
-        timeout: toastTimeout,
-      });
-    }
-  };
-
   return (
     <Flex direction="column" flex="1" gap="size-200">
       <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
@@ -274,10 +253,7 @@ const ConsolePage = () => {
                       <Cancel />
                       <Text>Abort</Text>
                     </Button>
-                    <Button variant="secondary" isDisabled={!executionOutput} onPress={onCopyExecutionOutput}>
-                      <Copy />
-                      <Text>Copy</Text>
-                    </Button>
+                    <ExecutionCopyOutputButton output={executionOutput}/>
                   </ButtonGroup>
                   <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
                     <Text>Autoscroll</Text>
