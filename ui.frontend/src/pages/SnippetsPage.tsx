@@ -2,7 +2,7 @@ import { Content, Flex, Heading, IllustratedMessage, Item, ProgressBar, TabList,
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import FolderOpen from '@spectrum-icons/workflow/FolderOpen';
 import FolderOpenOutline from '@spectrum-icons/workflow/FolderOpenOutline';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SnippetCode from '../components/SnippetCode';
 import { toastRequest } from '../utils/api';
 import { Snippet, SnippetOutput } from '../utils/api.types';
@@ -28,7 +28,7 @@ const SnippetsPage = () => {
 
     if (snippets === null) {
         return (
-            <Flex flex="1" justifyContent="center" alignItems="center" height="100vh">
+            <Flex flex="1" justifyContent="center" alignItems="center">
                 <ProgressBar label="Loading..." isIndeterminate />
             </Flex>
         );
