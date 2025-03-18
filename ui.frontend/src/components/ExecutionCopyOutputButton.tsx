@@ -32,12 +32,10 @@ const ExecutionCopyOutputButton: React.FC<ExecutionCopyOutputButtonProps> = ({ o
     };
 
     return (
-        <ButtonGroup>
-            <Button variant="secondary" isDisabled={!output} onPress={onCopyExecutionOutput}>
-                <Copy />
-                <Text>Copy</Text>
-            </Button>
-        </ButtonGroup>
+        <Button variant="secondary" isDisabled={!output} onPress={onCopyExecutionOutput}>
+            <Copy />
+            <Text>Copy</Text>
+        </Button>
     );
 };
 

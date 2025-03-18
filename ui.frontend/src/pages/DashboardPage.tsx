@@ -9,7 +9,7 @@ import Star from '@spectrum-icons/workflow/Star';
 const DashboardPage = () => {
     return (
         <Grid
-            areas={['welcome newApproach allInOne', 'contentManagement permissionsManagement dataImports']}
+            areas={['welcome allInOne newApproach', 'contentManagement permissionsManagement dataImports']}
             columns={['1fr', '1fr', '1fr']}
             gap="size-200"
             marginY="size-200"
@@ -25,17 +25,6 @@ const DashboardPage = () => {
                     </Flex>
                 </Flex>
             </View>
-            <View gridArea="newApproach" backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" minHeight="size-2400">
-                <Flex direction="row" alignItems="center" gap="size-200">
-                    <View minWidth="size-800" alignSelf="start" marginTop="size-200">
-                        <Code size="L" />
-                    </View>
-                    <Flex direction="column" gap="size-100">
-                        <Heading level={3}>New Approach</Heading>
-                        <Content>Experience a different way of using Groovy scripts. ACM ensures the instance is healthy before scripts decide when to run: once, periodically, or at an exact date and time. Execute scripts in parallel or sequentially, offering a complete change in paradigm. Unlike traditional methods, ACM allows scripts to run at specific moments offering unmatched flexibility and control.</Content>
-                    </Flex>
-                </Flex>
-            </View>
             <View gridArea="allInOne" backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" minHeight="size-2400">
                 <Flex direction="row" alignItems="center" gap="size-200">
                     <View minWidth="size-800" alignSelf="start" marginTop="size-200">
@@ -44,6 +33,17 @@ const DashboardPage = () => {
                     <Flex direction="column" gap="size-100">
                         <Heading level={3}>All-in-one</Heading>
                         <Content>ACM may be a good alternative to tools like APM, AECU, AEM Groovy Console, and AC Tool. Groovy language is ideal to manage all things in content including permissions. In tools like APM/AC Tool, there is a need to learn custom YAML syntax or languages/grammars. In ACM, you only need Groovy, which almost every Java developer knows! Enjoy a single, painless tool setup in AEM projects with no hooks and POM updates.</Content>
+                    </Flex>
+                </Flex>
+            </View>
+            <View gridArea="newApproach" backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" padding="size-200" minHeight="size-2400">
+                <Flex direction="row" alignItems="center" gap="size-200">
+                    <View minWidth="size-800" alignSelf="start" marginTop="size-200">
+                        <Code size="L" />
+                    </View>
+                    <Flex direction="column" gap="size-100">
+                        <Heading level={3}>New Approach</Heading>
+                        <Content>Experience a different way of using Groovy scripts. ACM ensures the instance is healthy before scripts decide when to run: once, periodically, or at an exact date and time. Execute scripts in parallel or sequentially, offering a complete change in paradigm. Unlike traditional methods, ACM allows scripts to run at specific moments offering unmatched flexibility and control.</Content>
                     </Flex>
                 </Flex>
             </View>
