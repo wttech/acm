@@ -61,7 +61,7 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
     };
 
     return (
-        <Button variant="negative" isDisabled={!execution || isAborting} onPress={onAbort}>
+        <Button variant="negative" isDisabled={!execution || !isExecutionPending(execution.status) || isAborting} onPress={onAbort}>
             <Cancel />
             <Text>Abort</Text>
         </Button>
