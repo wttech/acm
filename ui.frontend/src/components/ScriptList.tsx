@@ -27,7 +27,7 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {toastRequest} from '../utils/api';
-import {ExecutionStatus, isExecutionNegative, ScriptOutput} from '../utils/api.types';
+import {isExecutionNegative, ScriptOutput} from '../utils/api.types';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import {useNavigate} from "react-router-dom";
 import Magnify from "@spectrum-icons/workflow/Magnify";
@@ -51,9 +51,11 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
   const navigate = useNavigate();
 
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
 
   const loadScripts = useCallback(() => {
+    setLoading(true);
     toastRequest<ScriptOutput>({
       method: 'GET',
       url: `/apps/acm/api/script.json?type=${type}`,
@@ -61,7 +63,8 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
       positive: false,
     })
         .then((data) => setScripts(data.data.data))
-        .catch((error) => console.error(`Scripts loading (${type}) error:`, error));
+        .catch((error) => console.error(`Scripts loading (${type}) error:`, error))
+        .finally(() => setLoading(false));
   }, [type]);
 
   useEffect(() => {
@@ -83,7 +86,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
       </IllustratedMessage>
   );
 
-  if (scripts === null) {
+  if (scripts === null || loading) {
     return (
         <Flex flex="1" justifyContent="center" alignItems="center">
           <ProgressBar label="Loading..." isIndeterminate />
@@ -113,7 +116,6 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                           <Link isQuiet onPress={() => navigate('/maintenance/health-checker')}>See health issues</Link>
                         </>
                     )}
-
                   </StatusLight>
               )}
             </Flex>
