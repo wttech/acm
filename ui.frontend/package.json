@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "patch": "patch-package"
+    "patch": "patch-package",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@adobe/react-spectrum": "^3.37.1",
@@ -51,6 +52,5 @@
     "vite": "^5.4.14",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-static-copy": "^2.0.0"
-  },
-  "postinstall": "patch-package"
+  }
 }
