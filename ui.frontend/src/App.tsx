@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
 import { defaultTheme, Flex, Provider, View } from '@adobe/react-spectrum';
+import { ToastContainer } from '@react-spectrum/toast';
+import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import './App.css';
-import { ToastContainer } from '@react-spectrum/toast';
+import { AppContext } from './AppContext';
 import Footer from './components/Footer';
 import Header from './components/Header';
-import { State } from './utils/api.types';
-import { AppContext } from './AppContext';
+import router from './router';
 import { apiRequest } from './utils/api';
-import router from "./router";
+import { State } from './utils/api.types';
 
 function App() {
   const [state, setState] = useState<State>({
@@ -18,9 +18,9 @@ function App() {
     },
     instanceSettings: {
       id: 'default',
-      timezoneId: 'UTC'
+      timezoneId: 'UTC',
     },
-    queuedExecutions: []
+    queuedExecutions: [],
   });
 
   useEffect(() => {
@@ -42,32 +42,32 @@ function App() {
   }, []);
 
   return (
-      <Provider
-          theme={defaultTheme}
-          router={router}
-          colorScheme={'light'}
-          locale={'en-uk'}
-          UNSAFE_style={{
-            display: 'flex',
-            height: '100%',
-            flexDirection: 'column',
-          }}
-      >
-        <AppContext.Provider value={state}>
-          <Flex direction="column" flex="1">
-            <View paddingX="size-200" paddingTop="size-200">
-              <Header />
-            </View>
-            <View paddingX="size-200" flex="1" UNSAFE_style={{ display: 'flex' }}>
-              <Outlet />
-            </View>
-            <View paddingX="size-200" paddingBottom="size-200">
-              <Footer />
-            </View>
-          </Flex>
-          <ToastContainer />
-        </AppContext.Provider>
-      </Provider>
+    <Provider
+      theme={defaultTheme}
+      router={router}
+      colorScheme={'light'}
+      locale={'en-uk'}
+      UNSAFE_style={{
+        display: 'flex',
+        height: '100%',
+        flexDirection: 'column',
+      }}
+    >
+      <AppContext.Provider value={state}>
+        <Flex direction="column" flex="1">
+          <View paddingX="size-200" paddingTop="size-200">
+            <Header />
+          </View>
+          <View paddingX="size-200" flex="1" UNSAFE_style={{ display: 'flex' }}>
+            <Outlet />
+          </View>
+          <View paddingX="size-200" paddingBottom="size-200">
+            <Footer />
+          </View>
+        </Flex>
+        <ToastContainer />
+      </AppContext.Provider>
+    </Provider>
   );
 }
 

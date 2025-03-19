@@ -11,12 +11,12 @@ import Star from '@spectrum-icons/workflow/Star';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
+import DateExplained from '../components/DateExplained';
 import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import { toastRequest } from '../utils/api';
 import { ExecutionOutput, ExecutionStatus } from '../utils/api.types';
 import { useFormatter } from '../utils/hooks/formatter';
-import DateExplained from '../components/DateExplained';
 
 const HistoryPage = () => {
   const navigate = useNavigate();
@@ -125,7 +125,9 @@ const HistoryPage = () => {
                 <Cell>
                   <ExecutableValue value={execution.executable} />
                 </Cell>
-                <Cell><DateExplained value={execution.startDate}/></Cell>
+                <Cell>
+                  <DateExplained value={execution.startDate} />
+                </Cell>
                 <Cell>{formatter.duration(execution.duration)}</Cell>
                 <Cell>
                   <ExecutionStatusBadge value={execution.status} />

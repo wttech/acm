@@ -1,126 +1,105 @@
-import React, { useContext } from 'react';
-import {
-    Button,
-    Flex,
-    Heading,
-    StatusLight,
-    View,
-    TableView,
-    TableBody,
-    TableHeader,
-    Column,
-    Cell,
-    Row,
-    Badge,
-    Text,
-    IllustratedMessage,
-    Content, Dialog, Divider, ButtonGroup, DialogTrigger,
-} from '@adobe/react-spectrum';
-import Settings from "@spectrum-icons/workflow/Settings";
+import { Badge, Button, ButtonGroup, Cell, Column, Content, Dialog, DialogTrigger, Divider, Flex, Heading, IllustratedMessage, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
+import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
+import Checkmark from '@spectrum-icons/workflow/Checkmark';
+import Close from '@spectrum-icons/workflow/Close';
+import Help from '@spectrum-icons/workflow/Help';
+import Replay from '@spectrum-icons/workflow/Replay';
+import Settings from '@spectrum-icons/workflow/Settings';
+import { useContext } from 'react';
 import { AppContext } from '../AppContext';
 import { HealthIssueSeverity } from '../utils/api.types';
-import { isProduction } from "../utils/node.ts";
-import NoSearchResults from "@spectrum-icons/illustrations/NoSearchResults";
-import Help from "@spectrum-icons/workflow/Help";
-import Replay from "@spectrum-icons/workflow/Replay";
-import Checkmark from "@spectrum-icons/workflow/Checkmark";
-import Close from "@spectrum-icons/workflow/Close";
+import { isProduction } from '../utils/node.ts';
 
 const HealthChecker = () => {
-    const context = useContext(AppContext);
-    const healthIssues = context?.healthStatus.issues || [];
-    const prefix = isProduction() ? '' : 'http://localhost:4502';
+  const context = useContext(AppContext);
+  const healthIssues = context?.healthStatus.issues || [];
+  const prefix = isProduction() ? '' : 'http://localhost:4502';
 
-    const getSeverityVariant = (severity: HealthIssueSeverity): 'negative' | 'yellow' | 'neutral' => {
-        switch (severity) {
-            case HealthIssueSeverity.CRITICAL:
-                return 'negative';
-            case HealthIssueSeverity.WARNING:
-                return 'yellow';
-            default:
-                return 'neutral';
-        }
-    };
+  const getSeverityVariant = (severity: HealthIssueSeverity): 'negative' | 'yellow' | 'neutral' => {
+    switch (severity) {
+      case HealthIssueSeverity.CRITICAL:
+        return 'negative';
+      case HealthIssueSeverity.WARNING:
+        return 'yellow';
+      default:
+        return 'neutral';
+    }
+  };
 
-    const renderEmptyState = () => (
-        <IllustratedMessage>
-            <NoSearchResults/>
-            <Content>No issues</Content>
-        </IllustratedMessage>
-    );
+  const renderEmptyState = () => (
+    <IllustratedMessage>
+      <NoSearchResults />
+      <Content>No issues</Content>
+    </IllustratedMessage>
+  );
 
-    return (
-        <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-            <View>
-                <Flex direction="row" justifyContent="space-between" alignItems="center">
-                    <Flex flex="1" alignItems="center">
-                        <Button
-                            variant="negative"
-                            onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.acm.core.instance.HealthChecker`, '_blank')}
-                        >
-                            <Settings />
-                            <Text>Configure</Text>
-                        </Button>
-                    </Flex>
-                    <Flex flex="1" justifyContent="center" alignItems="center">
-                        <StatusLight variant={healthIssues.length === 0 ? 'positive' : 'negative'}>
-                            {healthIssues.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}
-                        </StatusLight>
-                    </Flex>
-                    <Flex flex="1" justifyContent="end" alignItems="center">
-                        <DialogTrigger>
-                            <Button variant="secondary" style="fill">
-                                <Help />
-                                <Text>Help</Text>
-                            </Button>
-                            {(close) => (
-                                <Dialog>
-                                    <Heading>Health Checker</Heading>
-                                    <Divider />
-                                    <Content>
-                                        <p>
-                                            <Help size="XS" /> All detected health issues will be comprehensively listed here for your review.
-                                        </p>
-                                        <p>
-                                            <Replay size="XS" /> If needed, configure which OSGi bundles should be ignored when determining the healthy state of the instance.
-                                        </p>
-                                        <p>
-                                            <Checkmark size="XS" /> Additionally, you can configure OSGi event topics to be checked within a recent time window.
-                                        </p>
-                                    </Content>
-                                    <ButtonGroup>
-                                        <Button variant="secondary" onPress={close}>
-                                            <Close size="XS" />
-                                            <Text>Close</Text>
-                                        </Button>
-                                    </ButtonGroup>
-                                </Dialog>
-                            )}
-                        </DialogTrigger>
-                    </Flex>
-                </Flex>
-            </View>
-
-            <TableView flex="1" aria-label="Health Issues" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
-                <TableHeader>
-                    <Column width="5%">#</Column>
-                    <Column>Severity</Column>
-                    <Column >Message</Column>
-                </TableHeader>
-                <TableBody>
-                    {(healthIssues || []).map((issue, index) => (
-                        <Row key={index}>
-                            <Cell>{index + 1}</Cell>
-                            <Cell>
-                                <Badge variant={getSeverityVariant(issue.severity)}>{issue.severity}</Badge>
-                            </Cell>
-                            <Cell>{issue.message}</Cell>
-                        </Row>
-                    ))}
-                </TableBody>
-            </TableView>
+  return (
+    <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+      <View>
+        <Flex direction="row" justifyContent="space-between" alignItems="center">
+          <Flex flex="1" alignItems="center">
+            <Button variant="negative" onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.acm.core.instance.HealthChecker`, '_blank')}>
+              <Settings />
+              <Text>Configure</Text>
+            </Button>
+          </Flex>
+          <Flex flex="1" justifyContent="center" alignItems="center">
+            <StatusLight variant={healthIssues.length === 0 ? 'positive' : 'negative'}>{healthIssues.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}</StatusLight>
+          </Flex>
+          <Flex flex="1" justifyContent="end" alignItems="center">
+            <DialogTrigger>
+              <Button variant="secondary" style="fill">
+                <Help />
+                <Text>Help</Text>
+              </Button>
+              {(close) => (
+                <Dialog>
+                  <Heading>Health Checker</Heading>
+                  <Divider />
+                  <Content>
+                    <p>
+                      <Help size="XS" /> All detected health issues will be comprehensively listed here for your review.
+                    </p>
+                    <p>
+                      <Replay size="XS" /> If needed, configure which OSGi bundles should be ignored when determining the healthy state of the instance.
+                    </p>
+                    <p>
+                      <Checkmark size="XS" /> Additionally, you can configure OSGi event topics to be checked within a recent time window.
+                    </p>
+                  </Content>
+                  <ButtonGroup>
+                    <Button variant="secondary" onPress={close}>
+                      <Close size="XS" />
+                      <Text>Close</Text>
+                    </Button>
+                  </ButtonGroup>
+                </Dialog>
+              )}
+            </DialogTrigger>
+          </Flex>
         </Flex>
-    );
+      </View>
+
+      <TableView flex="1" aria-label="Health Issues" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
+        <TableHeader>
+          <Column width="5%">#</Column>
+          <Column>Severity</Column>
+          <Column>Message</Column>
+        </TableHeader>
+        <TableBody>
+          {(healthIssues || []).map((issue, index) => (
+            <Row key={index}>
+              <Cell>{index + 1}</Cell>
+              <Cell>
+                <Badge variant={getSeverityVariant(issue.severity)}>{issue.severity}</Badge>
+              </Cell>
+              <Cell>{issue.message}</Cell>
+            </Row>
+          ))}
+        </TableBody>
+      </TableView>
+    </Flex>
+  );
 };
 
 export default HealthChecker;

@@ -1,11 +1,11 @@
 .snippet-code-groovy {
-    display: block;
-    color: #d4d4d4;
-    font-family: Menlo, Monaco, "Courier New", monospace;
-    font-weight: normal;
-    font-size: 12px;
-    line-height: 18px;
-    unicode-bidi: isolate;
-    white-space: pre;
-    margin: var(--spectrum-global-dimension-size-125);
+  display: block;
+  color: #d4d4d4;
+  font-family: Menlo, Monaco, 'Courier New', monospace;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 18px;
+  unicode-bidi: isolate;
+  white-space: pre;
+  margin: var(--spectrum-global-dimension-size-125);
 }

@@ -252,3 +252,8 @@ tasks:
     cmds:
       - sh npmw install
       - sh npmw run dev
+
+  develop:frontend:format:
+    desc: format frontend code
+    dir: ui.frontend
+    cmd: sh npmw run format

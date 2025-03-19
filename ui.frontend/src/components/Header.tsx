@@ -1,12 +1,12 @@
-import {ActionGroup, Button, Flex, Item, Text} from '@adobe/react-spectrum';
+import { Button, Flex, Text } from '@adobe/react-spectrum';
 import Code from '@spectrum-icons/workflow/Code';
 import Draft from '@spectrum-icons/workflow/Draft';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
+import Home from '@spectrum-icons/workflow/Home';
+import Maintenance from '@spectrum-icons/workflow/Settings';
 import { useLocation } from 'react-router-dom';
 import { AppLink } from '../AppLink.tsx';
-import Maintenance from "@spectrum-icons/workflow/Settings";
-import Home from "@spectrum-icons/workflow/Home";
 
 const Header = () => {
   const location = useLocation();
@@ -15,7 +15,7 @@ const Header = () => {
     <Flex justifyContent="center" gap="size-100" marginBottom="size-200">
       <AppLink to="/">
         <Button variant={location.pathname === '/' ? 'accent' : 'primary'} style="outline">
-            <Home />
+          <Home />
         </Button>
       </AppLink>
       <AppLink to="/console">
@@ -44,7 +44,7 @@ const Header = () => {
       </AppLink>
       <AppLink to="/maintenance">
         <Button variant={location.pathname.startsWith('/maintenance') ? 'accent' : 'primary'} style="outline">
-            <Maintenance/>
+          <Maintenance />
         </Button>
       </AppLink>
     </Flex>

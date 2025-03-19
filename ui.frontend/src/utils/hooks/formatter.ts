@@ -1,9 +1,9 @@
+import { DateFormatter } from '@adobe/react-spectrum';
 import { useDateFormatter } from '@react-aria/i18n';
 import { formatDistance, formatDuration, intervalToDuration } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import {useContext} from "react";
-import {AppContext} from "../../AppContext.tsx";
-import {DateFormatter} from "@adobe/react-spectrum";
+import { useContext } from 'react';
+import { AppContext } from '../../AppContext.tsx';
 
 class Formatter {
   instanceTimezoneId: string;
@@ -100,13 +100,13 @@ class Formatter {
   }
 
   public userTimezone(): string {
-      return this.userTimeZoneId;
+    return this.userTimeZoneId;
   }
 }
 
 export function useFormatter() {
   const context = useContext(AppContext)!;
-  const instanceTimezoneId =  context.instanceSettings.timezoneId;
+  const instanceTimezoneId = context.instanceSettings.timezoneId;
 
   return new Formatter(instanceTimezoneId);
 }
