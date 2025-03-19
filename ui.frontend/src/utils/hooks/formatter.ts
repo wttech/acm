@@ -11,19 +11,11 @@ class Formatter {
   userTimeZoneId: string;
   userDateFormatter: DateFormatter;
 
-  constructor(timezoneId: string) {
+  constructor(timezoneId: string, instanceDateFormatter: DateFormatter, userTimeZoneId: string, userDateFormatter: DateFormatter) {
     this.instanceTimezoneId = timezoneId;
-    this.instanceDateFormatter = useDateFormatter({
-      dateStyle: 'long',
-      timeStyle: 'short',
-      timeZone: this.instanceTimezoneId,
-    });
-    this.userTimeZoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    this.userDateFormatter = useDateFormatter({
-      dateStyle: 'long',
-      timeStyle: 'short',
-      timeZone: this.userTimeZoneId,
-    });
+    this.instanceDateFormatter = instanceDateFormatter;
+    this.userTimeZoneId = userTimeZoneId;
+    this.userDateFormatter = userDateFormatter;
   }
 
   public isTimezoneDifference(): boolean {
@@ -106,7 +98,20 @@ class Formatter {
 
 export function useFormatter() {
   const context = useContext(AppContext)!;
-  const instanceTimezoneId = context.instanceSettings.timezoneId;
 
-  return new Formatter(instanceTimezoneId);
+  const instanceTimezoneId = context.instanceSettings.timezoneId;
+  const instanceDateFormatter = useDateFormatter({
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: instanceTimezoneId,
+  });
+
+  const userTimezoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userDateFormatter = useDateFormatter({
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: userTimezoneId,
+  });
+
+  return new Formatter(instanceTimezoneId, instanceDateFormatter, userTimezoneId, userDateFormatter);
 }

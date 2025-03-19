@@ -7,6 +7,7 @@ export type ApiResponse<T> = {
   data: T;
 };
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function apiRequest<D>(config: ToastRequestConfig): Promise<AxiosResponse<ApiResponse<D>>> {
   try {
     const response = await axios<ApiResponse<D>>(config);

@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react';
 import { ClientRequest } from 'node:http';
 import path from 'path';
 import { defineConfig, HttpProxy } from 'vite';
+import eslint from 'vite-plugin-eslint'; // TODO fixed by workaround: https://github.com/gxmari007/vite-plugin-eslint/issues/74#issuecomment-1647431890
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 function serverProxyConfig() {
@@ -21,6 +22,7 @@ export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? '/apps/acm/spa/' : '/',
   plugins: [
     react(),
+    eslint(),
     viteStaticCopy({
       targets: [
         // { src: 'public/*', dest: '../' },

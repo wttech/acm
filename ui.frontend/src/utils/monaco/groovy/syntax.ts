@@ -32,14 +32,14 @@ export function registerSyntax(instance: Monaco) {
     ],
 
     gstring: [
-      [/\$\{[^}]+\}/, 'variable'],
+      [/\$\{[^}]+}/, 'variable'],
       [/[^\\"]+/, 'string'],
       [/\\./, 'string.escape'],
       [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
     ],
 
     closure: [
-      [/[^\{\}]+/, ''],
+      [/[^{}]+/, ''],
       [/\{/, 'delimiter.curly', '@push'],
       [/\}/, 'delimiter.curly', '@pop'],
     ],

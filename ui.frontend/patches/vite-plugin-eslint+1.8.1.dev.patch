@@ -1,0 +1,12 @@
+diff --git a/node_modules/vite-plugin-eslint/package.json b/node_modules/vite-plugin-eslint/package.json
+index afbc41c..5f6d8f7 100644
+--- a/node_modules/vite-plugin-eslint/package.json
++++ b/node_modules/vite-plugin-eslint/package.json
+@@ -9,6 +9,7 @@
+   "types": "./dist/index.d.ts",
+   "exports": {
+     ".": {
++      "types": "./dist/index.d.ts",
+       "import": "./dist/index.mjs",
+       "require": "./dist/index.js"
+     }

@@ -22,7 +22,7 @@ const ExecutionStatsBadge: React.FC<ExecutionStatsBadgeProps> = ({ stats }) => {
   const completedExecutions = stats
     ? Object.entries(stats.statusCount)
         .filter(([status]) => isExecutionCompleted(status as ExecutionStatus))
-        .reduce((acc, [_, count]) => acc + count, 0)
+        .reduce((acc, [, count]) => acc + count, 0)
     : 0;
 
   const successfulExecutions = stats ? stats.statusCount[ExecutionStatus.SUCCEEDED] : 0;
