@@ -12,7 +12,7 @@ function serverProxyConfig() {
     configure: (proxy: HttpProxy.Server) => {
       proxy.on('proxyReq', (proxyReq: ClientRequest) => {
         proxyReq.setHeader('Authorization', `Basic ${btoa('admin:admin')}`);
-        // proxyReq.setHeader('User-Agent', 'curl/8.7.1'); // use it to trick AEM's CSRF Filter
+        proxyReq.setHeader('Origin', 'http://localhost:4502'); // use it to trick AEM's CSRF Filter
       });
     },
   };
