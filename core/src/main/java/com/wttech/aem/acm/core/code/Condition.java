@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 public class Condition {
 
     private final ExecutionContext executionContext;
-
     private final ExecutionHistory executionHistory;
 
     public Condition(ExecutionContext executionContext) {
@@ -90,6 +89,7 @@ public class Condition {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withSecond(0).withNano(0);
         LocalTime endTime = now.withSecond(59).withNano(999999999);
+        checkStartAndEndTime(startTime, endTime);
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
         }
@@ -100,6 +100,7 @@ public class Condition {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withSecond(startSecond).withNano(0);
         LocalTime endTime = now.withSecond(endSecond).withNano(999999999);
+        checkStartAndEndTime(startTime, endTime);
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
         }
@@ -110,6 +111,7 @@ public class Condition {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withMinute(0).withSecond(0).withNano(0);
         LocalTime endTime = now.withMinute(59).withSecond(59).withNano(999999999);
+        checkStartAndEndTime(startTime, endTime);
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
         }
@@ -120,6 +122,7 @@ public class Condition {
         LocalTime now = LocalTime.now();
         LocalTime startTime = now.withMinute(startMinute).withSecond(0).withNano(0);
         LocalTime endTime = now.withMinute(endMinute).withSecond(59).withNano(999999999);
+        checkStartAndEndTime(startTime, endTime);
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
         }
@@ -131,6 +134,7 @@ public class Condition {
     }
 
     public boolean everyDayInTimeRange(LocalTime startTime, LocalTime endTime) {
+        checkStartAndEndTime(startTime, endTime);
         LocalTime now = LocalTime.now();
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
@@ -147,6 +151,7 @@ public class Condition {
     }
 
     public boolean everyWeekInTimeRange(LocalTime startTime, LocalTime endTime) {
+        checkStartAndEndTime(startTime, endTime);
         LocalTime now = LocalTime.now();
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
@@ -166,6 +171,7 @@ public class Condition {
     }
 
     public boolean everyMonthInTimeRange(LocalTime startTime, LocalTime endTime) {
+        checkStartAndEndTime(startTime, endTime);
         LocalTime now = LocalTime.now();
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
@@ -185,6 +191,7 @@ public class Condition {
     }
 
     public boolean everyYearInTimeRange(LocalTime startTime, LocalTime endTime) {
+        checkStartAndEndTime(startTime, endTime);
         LocalTime now = LocalTime.now();
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
@@ -220,6 +227,7 @@ public class Condition {
     }
 
     public boolean executedInTimeRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        checkStartAndEndDateTime(startDateTime, endDateTime);
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
         query.setStartDate(
@@ -228,6 +236,20 @@ public class Condition {
         Optional<Execution> executionInTimeRange =
                 executionHistory.findAll(query).findAny();
         return executionInTimeRange.isPresent();
+    }
+
+    private void checkStartAndEndTime(LocalTime start, LocalTime end) {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException(
+                    String.format("Start time '%s' must be before end time '%s'!", start, end));
+        }
+    }
+
+    private void checkStartAndEndDateTime(LocalDateTime start, LocalDateTime end) {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException(
+                    String.format("Start date-time '%s' must be before end date-time '%s'!", start, end));
+        }
     }
 
     // Current time-based
