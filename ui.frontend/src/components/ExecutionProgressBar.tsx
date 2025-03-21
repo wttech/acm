@@ -10,7 +10,9 @@ interface ExecutionProgressBarProps {
 }
 
 const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, active }) => {
-  const variant = (): 'positive' | 'informative' | 'warning' | 'critical' | undefined => {
+  const formatter = useFormatter();
+
+  const variant = ((): 'positive' | 'informative' | 'warning' | 'critical' | undefined => {
     switch (execution?.status) {
       case ExecutionStatus.SUCCEEDED:
         return 'positive';
@@ -22,27 +24,18 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
       default:
         return 'informative';
     }
-  };
+  })();
+  const label = execution ? Strings.capitalize(execution.status) + '…' : 'Not executing';
 
-  const progressBarLabel = (): string => {
-    return execution ? Strings.capitalize(execution.status) + '…' : 'Executing…';
-  };
+  if (!execution) {
+    return <Meter aria-label={label} label={label} showValueLabel={false} value={0} />;
+  }
 
-  const formatter = useFormatter();
+  if (active || isExecutionPending(execution.status)) {
+    return <ProgressBar aria-label={label} showValueLabel={false} label={label} isIndeterminate />;
+  }
 
-  return (
-    <>
-      {execution ? (
-        active || isExecutionPending(execution.status) ? (
-          <ProgressBar aria-label="Executing" showValueLabel={false} label={progressBarLabel()} isIndeterminate />
-        ) : (
-          <Meter aria-label="Executed" variant={variant()} showValueLabel={false} value={100} label={`${Strings.capitalize(execution.status)} after ${formatter.durationShort(execution.duration)}`} />
-        )
-      ) : (
-        <Meter aria-label="Not executing" label="Not executing" showValueLabel={false} value={0} />
-      )}
-    </>
-  );
+  return <Meter aria-label={label} variant={variant} showValueLabel={false} value={100} label={`${label} after ${formatter.durationShort(execution.duration)}`} />;
 };
 
 export default ExecutionProgressBar;
