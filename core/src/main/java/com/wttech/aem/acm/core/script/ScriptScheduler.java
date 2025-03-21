@@ -75,6 +75,7 @@ public class ScriptScheduler implements Runnable {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
 
             scriptRepository.clean();
+
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
                 queue.submit(script);
             });

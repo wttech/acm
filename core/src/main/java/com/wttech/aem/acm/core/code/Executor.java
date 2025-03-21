@@ -7,6 +7,8 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import java.io.OutputStream;
+
+import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -76,14 +78,20 @@ public class Executor {
             }
             return execution;
         } finally {
-            new ExecutionFileOutput(context.getId()).delete();
+            context.getFileOutput().delete();
         }
     }
 
     private ImmediateExecution executeImmediately(ExecutionContext context) {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
-        try (OutputStream outputStream = new ExecutionFileOutput(context.getId()).write()) {
+        try (OutputStream outputStream = context.getFileOutput().write()) {
+            if (context.getOutputStream() != null) {
+                context.setOutputStream(new TeeOutputStream(outputStream, context.getOutputStream()));
+            } else {
+                context.setOutputStream(outputStream);
+            }
+
             context.setOutputStream(outputStream);
             GroovyShell shell = createShell(context);
 

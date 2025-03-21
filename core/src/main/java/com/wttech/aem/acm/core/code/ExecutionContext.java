@@ -40,6 +40,10 @@ public class ExecutionContext {
         return osgiContext;
     }
 
+    public ExecutionFileOutput getFileOutput() {
+        return new ExecutionFileOutput(id);
+    }
+
     public OutputStream getOutputStream() {
         return outputStream;
     }
