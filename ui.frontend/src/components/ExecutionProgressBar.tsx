@@ -25,7 +25,7 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
         return 'informative';
     }
   })();
-  const label = execution ? Strings.capitalize(execution.status) + '…' : 'Not executing';
+  const label = execution ? Strings.capitalize(execution.status) : 'Not executing';
 
   if (!execution) {
     return <Meter aria-label={label} label={label} showValueLabel={false} value={0} />;
