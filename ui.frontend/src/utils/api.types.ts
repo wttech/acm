@@ -17,6 +17,9 @@ export type Execution = {
 export enum ExecutionStatus {
   QUEUED = 'QUEUED',
   ACTIVE = 'ACTIVE',
+  PARSING = 'PARSING',
+  CHECKING = 'CHECKING',
+  RUNNING = 'RUNNING',
   STOPPED = 'STOPPED',
   FAILED = 'FAILED',
   SKIPPED = 'SKIPPED',
@@ -25,15 +28,19 @@ export enum ExecutionStatus {
 }
 
 export function isExecutionNegative(status: ExecutionStatus | null | undefined) {
-  return status === ExecutionStatus.FAILED || status === ExecutionStatus.ABORTED;
+  return status && [ExecutionStatus.FAILED, ExecutionStatus.ABORTED].includes(status);
 }
 
 export function isExecutionPending(status: ExecutionStatus | null | undefined) {
-  return status === ExecutionStatus.QUEUED || status === ExecutionStatus.ACTIVE;
+  return status === ExecutionStatus.QUEUED || isExecutionActive(status);
+}
+
+export function isExecutionActive(status: ExecutionStatus | null | undefined) {
+  return status && [ExecutionStatus.ACTIVE, ExecutionStatus.PARSING, ExecutionStatus.CHECKING, ExecutionStatus.RUNNING].includes(status);
 }
 
 export function isExecutionCompleted(status: ExecutionStatus | null | undefined) {
-  return status === ExecutionStatus.FAILED || status === ExecutionStatus.SUCCEEDED;
+  return status && [ExecutionStatus.FAILED, ExecutionStatus.SUCCEEDED].includes(status);
 }
 
 export type QueueOutput = {

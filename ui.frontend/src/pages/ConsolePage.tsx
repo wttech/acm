@@ -89,7 +89,7 @@ const ConsolePage = () => {
         url: `/apps/acm/api/queue-code.json`,
         method: 'post',
         data: {
-          mode: 'evaluate',
+          mode: 'run',
           code: {
             id: 'console',
             content: code,

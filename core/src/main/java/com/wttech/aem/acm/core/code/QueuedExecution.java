@@ -10,9 +10,13 @@ import org.apache.sling.event.jobs.Job;
 public class QueuedExecution implements Execution {
 
     @JsonIgnore
+    private final Executor executor;
+
+    @JsonIgnore
     private final Job job;
 
-    public QueuedExecution(Job job) {
+    public QueuedExecution(Executor executor, Job job) {
+        this.executor = executor;
         this.job = job;
     }
 
@@ -32,7 +36,7 @@ public class QueuedExecution implements Execution {
 
     @Override
     public ExecutionStatus getStatus() {
-        return ExecutionStatus.of(job);
+        return ExecutionStatus.of(job, executor);
     }
 
     @Override

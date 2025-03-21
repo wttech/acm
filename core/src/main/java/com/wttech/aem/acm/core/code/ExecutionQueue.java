@@ -78,13 +78,13 @@ public class ExecutionQueue implements JobExecutor {
         if (job == null) {
             return Optional.empty();
         }
-        return Optional.of(new QueuedExecution(job));
+        return Optional.of(new QueuedExecution(executor, job));
     }
 
     @SuppressWarnings("unchecked")
     public Stream<Execution> findAll() {
         return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream()
-                .map(QueuedExecution::new);
+                .map(job -> new QueuedExecution(executor, job));
     }
 
     public Stream<Execution> readAll(Collection<String> jobIds) throws AcmException {
@@ -96,7 +96,7 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public Optional<Execution> read(String jobId) throws AcmException {
-        return Optional.ofNullable(jobManager.getJobById(jobId)).map(QueuedExecution::new);
+        return Optional.ofNullable(jobManager.getJobById(jobId)).map(job -> new QueuedExecution(executor, job));
     }
 
     public void stop(String jobId) {
@@ -105,9 +105,9 @@ public class ExecutionQueue implements JobExecutor {
 
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
-        QueuedExecution queuedExecution = new QueuedExecution(job);
+        QueuedExecution queuedExecution = new QueuedExecution(executor, job);
 
-        LOG.info("Execution started '{}'", queuedExecution);
+        LOG.debug("Execution started '{}'", queuedExecution);
 
         Future<Execution> future = jobAsyncExecutor.submit(() -> {
             try {
@@ -120,14 +120,14 @@ public class ExecutionQueue implements JobExecutor {
         while (!future.isDone()) {
             if (context.isStopped() || Thread.currentThread().isInterrupted()) {
                 future.cancel(true);
-                LOG.info("Execution is cancelling '{}'", queuedExecution);
+                LOG.debug("Execution is cancelling '{}'", queuedExecution);
                 break;
             }
             try {
                 Thread.sleep(config.asyncPollInterval());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.info("Execution is interrupted '{}'", queuedExecution);
+                LOG.debug("Execution is interrupted '{}'", queuedExecution);
                 return context.result().cancelled();
             }
         }
@@ -145,7 +145,7 @@ public class ExecutionQueue implements JobExecutor {
                 return context.result().succeeded();
             }
         } catch (CancellationException e) {
-            LOG.info("Execution aborted '{}'", queuedExecution);
+            LOG.warn("Execution aborted '{}'", queuedExecution);
             return context.result()
                     .message(QueuedMessage.of(ExecutionStatus.ABORTED).toJson())
                     .cancelled();
