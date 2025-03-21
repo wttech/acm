@@ -10,6 +10,7 @@ import org.apache.sling.event.jobs.Job;
 public enum ExecutionStatus {
     // queued execution only statuses
     QUEUED,
+    ACTIVE,
     PARSING,
     CHECKING,
     RUNNING,
@@ -42,7 +43,7 @@ public enum ExecutionStatus {
                 .findFirst();
     }
 
-    public static ExecutionStatus of(Executor executor, Job job) {
+    public static ExecutionStatus of(Job job, Executor executor) {
         ExecutionStatus jobStatus = Optional.ofNullable(job.getResultMessage())
                 .map(QueuedMessage::fromJson)
                 .map(QueuedMessage::getStatus)
@@ -55,7 +56,7 @@ public enum ExecutionStatus {
             case QUEUED:
                 return ExecutionStatus.QUEUED;
             case ACTIVE:
-                return executor.checkStatus(job.getId()).orElse(ExecutionStatus.PARSING);
+                return executor.checkStatus(job.getId()).orElse(ExecutionStatus.ACTIVE);
             case STOPPED:
                 return ExecutionStatus.STOPPED;
             case SUCCEEDED:

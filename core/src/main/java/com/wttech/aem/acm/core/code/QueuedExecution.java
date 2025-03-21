@@ -36,7 +36,7 @@ public class QueuedExecution implements Execution {
 
     @Override
     public ExecutionStatus getStatus() {
-        return ExecutionStatus.of(executor, job);
+        return ExecutionStatus.of(job, executor);
     }
 
     @Override

@@ -16,6 +16,7 @@ export type Execution = {
 
 export enum ExecutionStatus {
   QUEUED = 'QUEUED',
+  ACTIVE = 'ACTIVE',
   PARSING = 'PARSING',
   CHECKING = 'CHECKING',
   RUNNING = 'RUNNING',
@@ -35,7 +36,7 @@ export function isExecutionPending(status: ExecutionStatus | null | undefined) {
 }
 
 export function isExecutionActive(status: ExecutionStatus | null | undefined) {
-  return status && [ExecutionStatus.PARSING, ExecutionStatus.CHECKING, ExecutionStatus.RUNNING].includes(status);
+  return status && [ExecutionStatus.ACTIVE, ExecutionStatus.PARSING, ExecutionStatus.CHECKING, ExecutionStatus.RUNNING].includes(status);
 }
 
 export function isExecutionCompleted(status: ExecutionStatus | null | undefined) {

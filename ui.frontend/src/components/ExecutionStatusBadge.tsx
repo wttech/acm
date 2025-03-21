@@ -17,6 +17,7 @@ const getVariant = (status: ExecutionStatus): 'positive' | 'negative' | 'neutral
       return 'positive';
     case ExecutionStatus.FAILED:
       return 'negative';
+    case ExecutionStatus.ACTIVE:
     case ExecutionStatus.PARSING:
     case ExecutionStatus.CHECKING:
     case ExecutionStatus.RUNNING:
@@ -39,6 +40,7 @@ const getIcon = (status: ExecutionStatus) => {
       return <Checkmark />;
     case ExecutionStatus.FAILED:
       return <Alert />;
+    case ExecutionStatus.ACTIVE:
     case ExecutionStatus.PARSING:
     case ExecutionStatus.CHECKING:
     case ExecutionStatus.RUNNING:
