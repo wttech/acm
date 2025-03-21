@@ -107,7 +107,7 @@ public class ExecutionQueue implements JobExecutor {
     public JobExecutionResult process(Job job, JobExecutionContext context) {
         QueuedExecution queuedExecution = new QueuedExecution(executor, job);
 
-        LOG.info("Execution started '{}'", queuedExecution);
+        LOG.debug("Execution started '{}'", queuedExecution);
 
         Future<Execution> future = jobAsyncExecutor.submit(() -> {
             try {
@@ -120,14 +120,14 @@ public class ExecutionQueue implements JobExecutor {
         while (!future.isDone()) {
             if (context.isStopped() || Thread.currentThread().isInterrupted()) {
                 future.cancel(true);
-                LOG.info("Execution is cancelling '{}'", queuedExecution);
+                LOG.debug("Execution is cancelling '{}'", queuedExecution);
                 break;
             }
             try {
                 Thread.sleep(config.asyncPollInterval());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.info("Execution is interrupted '{}'", queuedExecution);
+                LOG.debug("Execution is interrupted '{}'", queuedExecution);
                 return context.result().cancelled();
             }
         }
@@ -145,7 +145,7 @@ public class ExecutionQueue implements JobExecutor {
                 return context.result().succeeded();
             }
         } catch (CancellationException e) {
-            LOG.info("Execution aborted '{}'", queuedExecution);
+            LOG.warn("Execution aborted '{}'", queuedExecution);
             return context.result()
                     .message(QueuedMessage.of(ExecutionStatus.ABORTED).toJson())
                     .cancelled();
