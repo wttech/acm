@@ -7,7 +7,9 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import java.io.OutputStream;
-
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -45,6 +47,8 @@ public class Executor {
 
     private Config config;
 
+    private final Map<String, ExecutionStatus> statuses = new ConcurrentHashMap<>();
+
     @Activate
     @Modified
     protected void activate(Config config) {
@@ -52,7 +56,7 @@ public class Executor {
     }
 
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        ExecutionContext result = new ExecutionContext(executable, osgiContext, resourceResolver);
+        ExecutionContext result = new ExecutionContext(this, executable, osgiContext, resourceResolver);
         result.setDebug(config.debug());
         result.setHistory(config.history());
         return result;
@@ -63,7 +67,7 @@ public class Executor {
             return execute(createContext(executable, resourceResolver));
         } catch (LoginException e) {
             throw new AcmException(
-                    String.format("Failed to access repository while executing '%s'", executable.getId()), e);
+                    String.format("Cannot access repository while executing '%s'", executable.getId()), e);
         }
     }
 
@@ -71,7 +75,7 @@ public class Executor {
         try {
             ImmediateExecution execution = executeImmediately(context);
             if (context.isHistory()
-                    && (context.getMode() == ExecutionMode.EVALUATE)
+                    && (context.getMode() == ExecutionMode.RUN)
                     && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
                 ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
                 history.save(execution);
@@ -86,6 +90,8 @@ public class Executor {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
         try (OutputStream outputStream = context.getFileOutput().write()) {
+            statuses.put(context.getId(), ExecutionStatus.PARSING);
+
             if (context.getOutputStream() != null) {
                 context.setOutputStream(new TeeOutputStream(outputStream, context.getOutputStream()));
             } else {
@@ -98,19 +104,20 @@ public class Executor {
             execution.start();
 
             Script script = shell.parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
-
-            switch (context.getMode()) {
-                case PARSE:
-                    break;
-                case EVALUATE:
-                    boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
-                    if (!runnable) {
-                        return execution.end(ExecutionStatus.SKIPPED);
-                    }
-                    script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
-                    break;
+            if (context.getMode() == ExecutionMode.PARSE) {
+                return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
+            statuses.put(context.getId(), ExecutionStatus.CHECKING);
+            boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
+            if (!canRun) {
+                return execution.end(ExecutionStatus.SKIPPED);
+            } else if (context.getMode() == ExecutionMode.CHECK) {
+                return execution.end(ExecutionStatus.SUCCEEDED);
+            }
+
+            statuses.put(context.getId(), ExecutionStatus.RUNNING);
+            script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
             return execution.end(ExecutionStatus.SUCCEEDED);
         } catch (Throwable e) {
             execution.error(e);
@@ -118,6 +125,8 @@ public class Executor {
                 return execution.end(ExecutionStatus.ABORTED);
             }
             return execution.end(ExecutionStatus.FAILED);
+        } finally {
+            statuses.remove(context.getId());
         }
     }
 
@@ -128,5 +137,9 @@ public class Executor {
         compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
 
         return new GroovyShell(binding, compiler);
+    }
+
+    public Optional<ExecutionStatus> checkStatus(String executionId) {
+        return Optional.ofNullable(statuses.get(executionId));
     }
 }

@@ -78,13 +78,13 @@ public class ExecutionQueue implements JobExecutor {
         if (job == null) {
             return Optional.empty();
         }
-        return Optional.of(new QueuedExecution(job));
+        return Optional.of(new QueuedExecution(executor, job));
     }
 
     @SuppressWarnings("unchecked")
     public Stream<Execution> findAll() {
         return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream()
-                .map(QueuedExecution::new);
+                .map(job -> new QueuedExecution(executor, job));
     }
 
     public Stream<Execution> readAll(Collection<String> jobIds) throws AcmException {
@@ -96,7 +96,7 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public Optional<Execution> read(String jobId) throws AcmException {
-        return Optional.ofNullable(jobManager.getJobById(jobId)).map(QueuedExecution::new);
+        return Optional.ofNullable(jobManager.getJobById(jobId)).map(job -> new QueuedExecution(executor, job));
     }
 
     public void stop(String jobId) {
@@ -105,7 +105,7 @@ public class ExecutionQueue implements JobExecutor {
 
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
-        QueuedExecution queuedExecution = new QueuedExecution(job);
+        QueuedExecution queuedExecution = new QueuedExecution(executor, job);
 
         LOG.info("Execution started '{}'", queuedExecution);
 

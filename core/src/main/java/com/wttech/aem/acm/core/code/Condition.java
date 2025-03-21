@@ -55,12 +55,12 @@ public class Condition {
         return !queuedSelfExecutions().findFirst().isPresent();
     }
 
-    public boolean inactive() {
-        return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.ACTIVE);
+    public boolean notRunning() {
+        return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
     }
 
-    public boolean inactiveSelf() {
-        return queuedSelfExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.ACTIVE);
+    public boolean notRunningSelf() {
+        return queuedSelfExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
     }
 
     public Stream<Execution> queuedExecutions() {
