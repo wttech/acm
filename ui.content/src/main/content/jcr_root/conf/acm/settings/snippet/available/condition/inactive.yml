@@ -1,7 +1,0 @@
-group: Condition
-name: condition_inactive
-content: |
-  condition.inactive()
-documentation: |
-  Execute the script only if it is not already active.<br>
-  Ensures that the script is not executed in parallel (including other scripts).<br>

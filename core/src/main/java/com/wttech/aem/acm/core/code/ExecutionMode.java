@@ -5,7 +5,8 @@ import java.util.Optional;
 
 public enum ExecutionMode {
     PARSE,
-    EVALUATE;
+    CHECK,
+    RUN;
 
     public static Optional<ExecutionMode> of(String text) {
         return Arrays.stream(values())

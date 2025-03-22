@@ -9,7 +9,6 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "patch": "patch-package",
     "postinstall": "patch-package"
   },
   "dependencies": {

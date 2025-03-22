@@ -8,13 +8,26 @@ import java.util.stream.Stream;
 import org.apache.sling.event.jobs.Job;
 
 public enum ExecutionStatus {
+    // queued execution only statuses
     QUEUED,
     ACTIVE,
+    PARSING,
+    CHECKING,
+    RUNNING,
+    // queued & immediate execution statuses
     SKIPPED,
     STOPPED,
     ABORTED,
     FAILED,
     SUCCEEDED;
+
+    public boolean isPending() {
+        return this == QUEUED || isActive();
+    }
+
+    public boolean isActive() {
+        return this == PARSING || this == CHECKING || this == RUNNING;
+    }
 
     public static List<ExecutionStatus> manyOf(List<String> names) {
         return (names != null ? names.stream() : Stream.<String>empty())
@@ -30,20 +43,20 @@ public enum ExecutionStatus {
                 .findFirst();
     }
 
-    public static ExecutionStatus of(Job job) {
-        ExecutionStatus status = Optional.ofNullable(job.getResultMessage())
+    public static ExecutionStatus of(Job job, Executor executor) {
+        ExecutionStatus jobStatus = Optional.ofNullable(job.getResultMessage())
                 .map(QueuedMessage::fromJson)
                 .map(QueuedMessage::getStatus)
                 .orElse(null);
-        if (status != null) {
-            return status;
+        if (jobStatus != null) {
+            return jobStatus;
         }
 
         switch (job.getJobState()) {
             case QUEUED:
                 return ExecutionStatus.QUEUED;
             case ACTIVE:
-                return ExecutionStatus.ACTIVE;
+                return executor.checkStatus(job.getId()).orElse(ExecutionStatus.ACTIVE);
             case STOPPED:
                 return ExecutionStatus.STOPPED;
             case SUCCEEDED:

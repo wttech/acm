@@ -140,11 +140,11 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                       existence, instance run mode, previous executions, etc.
                     </p>
                     <p>
-                      <Cancel size="XS" /> Scripts that cannot run are marked and skipped. Skipped executions are saved in the history only if debug mode is enabled. All other script executions are always saved for auditing purposes.
+                      <Cancel size="XS" /> Scripts that cannot run are skipped. Skipped executions are saved in the history only if debug mode is enabled. All other script executions are always saved for auditing purposes.
                     </p>
                     <p>
-                      <Heart size="XS" /> Script executor is active only when the instance is healthy, meaning all OSGi bundles are active, and no recent core OSGi events have occurred. Some bundles may be enforced, requiring their
-                      deployment for the instance to be considered healthy.
+                      <Heart size="XS" /> Script executor is active only when the instance is healthy, meaning all OSGi bundles are active, and no recent core OSGi events have occurred. Some bundles may be ignored, which may be useful to
+                      address known issues and still consider the instance as healthy.
                     </p>
                     <p>
                       <Code size="XS" /> This ensures that script dependencies are met, allowing the use of custom project-specific code and classes.

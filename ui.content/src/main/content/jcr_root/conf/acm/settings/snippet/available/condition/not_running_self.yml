@@ -1,0 +1,7 @@
+group: Condition
+name: condition_not_running_self
+content: |
+  condition.notRunningSelf()
+documentation: |
+  Execute the script only if it is not already running.<br>
+  Ensures that the script is not running in parallel (but other scripts may be).<br>
