@@ -23,9 +23,12 @@ public class CodeBinding {
 
     private final OsgiContext osgi;
 
+    private final Arguments args;
+
     private final Condition condition;
 
     public CodeBinding(ExecutionContext context) {
+        this.args = new Arguments(context);
         this.log = createLogger(context.getExecutable());
         this.out = new CodePrintStream(context);
         this.resourceResolver = context.getResourceResolver();
@@ -42,6 +45,7 @@ public class CodeBinding {
 
     public Binding toBinding() {
         Binding result = new Binding();
+        result.setVariable(Variable.ARGS.varName(), args);
         result.setVariable(Variable.LOG.varName(), log);
         result.setVariable(Variable.OUT.varName(), out);
         result.setVariable(Variable.RESOURCE_RESOLVER.varName(), resourceResolver);

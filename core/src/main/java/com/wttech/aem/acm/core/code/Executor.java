@@ -109,7 +109,7 @@ public class Executor {
             }
 
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
-            boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
+            boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Method.CHECK.givenName, null);
             if (!canRun) {
                 return execution.end(ExecutionStatus.SKIPPED);
             } else if (context.getMode() == ExecutionMode.CHECK) {
@@ -117,7 +117,7 @@ public class Executor {
             }
 
             statuses.put(context.getId(), ExecutionStatus.RUNNING);
-            script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
+            script.invokeMethod(CodeSyntax.Method.RUN.givenName, null);
             return execution.end(ExecutionStatus.SUCCEEDED);
         } catch (Throwable e) {
             execution.error(e);

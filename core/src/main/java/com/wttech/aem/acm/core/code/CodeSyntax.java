@@ -24,12 +24,14 @@ public class CodeSyntax extends AbstractASTTransformation {
         this.sourceUnit = source;
 
         ClassNode mainClass = requireMainClass(source.getAST().getClasses());
-        for (Methods methodValue : Methods.values()) {
-            if (!hasMethod(mainClass, methodValue)) {
-                addError(
-                        String.format(
-                                "Top-level '%s %s()' method not found!", methodValue.returnType, methodValue.givenName),
-                        mainClass);
+        for (Method methodValue : Method.values()) {
+            if (methodValue.required || hasMethod(mainClass, methodValue)) {
+                if (!isMethodValid(mainClass, methodValue)) {
+                    addError(
+                            String.format(
+                                    "Top-level '%s %s()' method not found or has incorrect signature!", methodValue.returnType, methodValue.givenName),
+                            mainClass);
+                }
             }
         }
     }
@@ -50,7 +52,16 @@ public class CodeSyntax extends AbstractASTTransformation {
         return mainClass;
     }
 
-    private boolean hasMethod(ClassNode mainClass, Methods methodValue) {
+    private boolean hasMethod(ClassNode mainClass, Method methodValue) {
+        for (MethodNode method : mainClass.getMethods()) {
+            if (methodValue.givenName.equals(method.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isMethodValid(ClassNode mainClass, Method methodValue) {
         for (MethodNode method : mainClass.getMethods()) {
             if (methodValue.givenName.equals(method.getName())
                     && methodValue.returnType.equals(method.getReturnType().getName())
@@ -61,17 +72,21 @@ public class CodeSyntax extends AbstractASTTransformation {
         return false;
     }
 
-    enum Methods {
-        RUN("doRun", "void"),
-        CHECK("canRun", "boolean");
+    enum Method {
+        DESCRIBE("describeRun", "void", false),
+        RUN("doRun", "void", true),
+        CHECK("canRun", "boolean", true);
 
         final String givenName;
 
         final String returnType;
 
-        Methods(String givenName, String returnType) {
+        final boolean required;
+
+        Method(String givenName, String returnType, boolean required) {
             this.givenName = givenName;
             this.returnType = returnType;
+            this.required = required;
         }
     }
 }
