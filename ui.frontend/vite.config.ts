@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react';
 import { ClientRequest } from 'node:http';
 import path from 'path';
-import { defineConfig, HttpProxy } from 'vite';
+import { defineConfig, HttpProxy, normalizePath } from 'vite';
 import eslint from 'vite-plugin-eslint'; // TODO fixed by workaround: https://github.com/gxmari007/vite-plugin-eslint/issues/74#issuecomment-1647431890
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
@@ -27,7 +27,7 @@ export default defineConfig({
       targets: [
         // { src: 'public/*', dest: '../' },
         {
-          src: path.join(__dirname, 'node_modules', 'monaco-editor', 'min', 'vs'),
+          src: normalizePath(path.join(__dirname, 'node_modules', 'monaco-editor', 'min', 'vs')),
           dest: 'js/monaco-editor',
         },
       ],
