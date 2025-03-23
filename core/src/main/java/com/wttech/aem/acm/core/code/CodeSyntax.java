@@ -29,7 +29,8 @@ public class CodeSyntax extends AbstractASTTransformation {
                 if (!isMethodValid(mainClass, methodValue)) {
                     addError(
                             String.format(
-                                    "Top-level '%s %s()' method not found or has incorrect signature!", methodValue.returnType, methodValue.givenName),
+                                    "Top-level '%s %s()' method not found or has incorrect signature!",
+                                    methodValue.returnType, methodValue.givenName),
                             mainClass);
                 }
             }

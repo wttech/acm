@@ -1,6 +1,7 @@
 package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.acl.Acl;
+import com.wttech.aem.acm.core.acl.AclGroovy;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.replication.Activator;
 import groovy.lang.Binding;
@@ -32,7 +33,7 @@ public class CodeBinding {
         this.log = createLogger(context.getExecutable());
         this.out = new CodePrintStream(context);
         this.resourceResolver = context.getResourceResolver();
-        this.acl = new Acl(resourceResolver);
+        this.acl = new AclGroovy(resourceResolver);
         this.activator = new Activator(
                 context.getResourceResolver(), context.getOsgiContext().getReplicator());
         this.osgi = context.getOsgiContext();
