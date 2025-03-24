@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
         service = Servlet.class,
         property = {
             ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
-            ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
             ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
             ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ExecuteCodeServlet.RT
         })
@@ -33,11 +32,6 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
 
     @Reference
     private Executor executor;
-
-    @Override
-    protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        // TODO ... describeRun etc
-    }
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

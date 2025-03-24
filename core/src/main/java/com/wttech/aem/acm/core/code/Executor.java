@@ -99,11 +99,11 @@ public class Executor {
             }
 
             context.setOutputStream(outputStream);
-            GroovyShell shell = createShell(context);
+            CodeShell shell = createShell(context);
 
             execution.start();
 
-            Script script = shell.parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
             if (context.getMode() == ExecutionMode.PARSE) {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
@@ -130,16 +130,38 @@ public class Executor {
         }
     }
 
-    private GroovyShell createShell(ExecutionContext context) {
-        Binding binding = new CodeBinding(context).toBinding();
+    private CodeShell createShell(ExecutionContext context) {
+        CodeBinding codeBinding = new CodeBinding(context);
+        Binding binding = codeBinding.toBinding();
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
         compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
-
-        return new GroovyShell(binding, compiler);
+        GroovyShell groovyShell = new GroovyShell(binding, compiler);
+        return new CodeShell(groovyShell, codeBinding);
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {
         return Optional.ofNullable(statuses.get(executionId));
+    }
+
+    public Description describe(Executable executable, ResourceResolver resourceResolver) {
+        return describe(createContext(executable, resourceResolver));
+    }
+
+    public Description describe(ExecutionContext context) {
+        try {
+            CodeShell shell = createShell(context);
+            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+            script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+
+            return new Description(
+                    context.getExecutable(), shell.getCodeBinding().getArgs());
+        } catch (Exception e) {
+            throw new AcmException(
+                    String.format(
+                            "Cannot describe executable '%s'!",
+                            context.getExecutable().getId()),
+                    e);
+        }
     }
 }

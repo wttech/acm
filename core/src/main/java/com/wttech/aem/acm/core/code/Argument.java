@@ -1,22 +1,28 @@
 package com.wttech.aem.acm.core.code;
 
-import java.io.Serializable;
-import java.util.Map;
-
-public class Argument<V> implements Serializable {
+public abstract class Argument<V> {
 
     private final String name;
 
+    private final ArgumentType type;
+
     private V value;
 
-    private Map<String, Object> metadata;
+    private String label;
 
-    public Argument(String name) {
+    private boolean required;
+
+    public Argument(String name, ArgumentType type) {
         this.name = name;
+        this.type = type;
     }
 
     public String getName() {
         return name;
+    }
+
+    public ArgumentType getType() {
+        return type;
     }
 
     public V getValue() {
@@ -27,11 +33,19 @@ public class Argument<V> implements Serializable {
         this.value = value;
     }
 
-    public void setMetadata(String key, Object value) {
-        metadata.put(key, value);
+    public String getLabel() {
+        return label;
     }
 
-    public Map<String, Object> getMetadata() {
-        return metadata;
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
     }
 }

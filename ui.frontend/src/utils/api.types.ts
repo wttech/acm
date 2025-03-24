@@ -3,6 +3,29 @@ export type Executable = {
   content: string;
 };
 
+export type Description = {
+  arguments: {
+    [name: string]: Argument;
+  };
+};
+
+export type Argument = {
+  name: string;
+  type: string;
+  value: object;
+  label: string;
+  required: boolean;
+};
+
+export type TextArgument = Argument & {
+  language: string;
+};
+
+export type NumberArgument = Argument & {
+  min: number;
+  max: number;
+};
+
 export type Execution = {
   id: string;
   executable: Executable;

@@ -40,6 +40,10 @@ public class CodeBinding {
         this.condition = new Condition(context);
     }
 
+    protected Arguments getArgs() {
+        return args;
+    }
+
     private Logger createLogger(Executable executable) {
         return LoggerFactory.getLogger(String.format("%s(%s)", getClass().getName(), executable.getId()));
     }

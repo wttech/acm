@@ -83,6 +83,8 @@ const ConsolePage = () => {
     setExecuting(true);
     setExecution(null);
 
+    // TODO do here '/apps/acm/api/describe-code.json' request
+
     try {
       const response = await apiRequest<QueueOutput>({
         operation: 'Code execution',
@@ -94,6 +96,7 @@ const ConsolePage = () => {
             id: 'console',
             content: code,
           },
+          arguments: {}, // TODO
         },
       });
       const queuedExecution = response.data.data.executions[0]!;
