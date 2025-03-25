@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Button, Text, Dialog, Heading, Divider, Content, ButtonGroup, DialogContainer } from '@adobe/react-spectrum';
+import { Button, Text, Dialog, Heading, Divider, Content, ButtonGroup, DialogContainer, TextField, Checkbox, NumberField, Picker, Item } from '@adobe/react-spectrum';
 import Gears from '@spectrum-icons/workflow/Gears';
 import { apiRequest } from '../utils/api.ts';
-import { Argument, Description } from '../utils/api.types.ts';
+import { Argument, Description, isToggleArgument, isStringArgument, isTextArgument, isSelectArgument, isNumberArgument } from '../utils/api.types.ts';
 
 type ArgumentValue = string | number | boolean | null | undefined;
 
@@ -57,6 +57,70 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
         setDescription(null);
     };
 
+    const renderArgumentField = (arg: Argument) => {
+        if (isToggleArgument(arg)) {
+            return (
+                <div key={arg.name} style={{ marginBottom: '1rem' }}>
+                    <Checkbox
+                        isSelected={args[arg.name] as boolean}
+                        onChange={(value) => setArgs({ ...args, [arg.name]: value })}
+                    >
+                        {arg.label || arg.name}
+                    </Checkbox>
+                </div>
+            );
+        } else if (isStringArgument(arg)) {
+            return (
+                <div key={arg.name} style={{ marginBottom: '1rem' }}>
+                    <TextField
+                        label={arg.label || arg.name}
+                        value={args[arg.name]?.toString() || ''}
+                        onChange={(value) => setArgs({ ...args, [arg.name]: value })}
+                    />
+                </div>
+            );
+        } else if (isTextArgument(arg)) {
+            return (
+                <div key={arg.name} style={{ marginBottom: '1rem' }}>
+                    <TextField
+                        label={arg.label || arg.name}
+                        value={args[arg.name]?.toString() || ''}
+                        onChange={(value) => setArgs({ ...args, [arg.name]: value })}
+                        multiline
+                    />
+                </div>
+            );
+        } else if (isSelectArgument(arg)) {
+            return (
+                <div key={arg.name} style={{ marginBottom: '1rem' }}>
+                    <Picker
+                        label={arg.label || arg.name}
+                        selectedKey={args[arg.name]?.toString() || ''}
+                        onSelectionChange={(value) => setArgs({ ...args, [arg.name]: value })}
+                    >
+                        {Object.entries(arg.options).map(([key, value]) => (
+                            <Item key={key}>{value}</Item>
+                        ))}
+                    </Picker>
+                </div>
+            );
+        } else if (isNumberArgument(arg)) {
+            return (
+                <div key={arg.name} style={{ marginBottom: '1rem' }}>
+                    <NumberField
+                        label={arg.label || arg.name}
+                        value={args[arg.name] as number}
+                        onChange={(value) => setArgs({ ...args, [arg.name]: value })}
+                        minValue={arg.min}
+                        maxValue={arg.max}
+                    />
+                </div>
+            );
+        } else {
+            return null;
+        }
+    };
+
     const descriptionArguments = Object.values(description?.arguments || []);
 
     return (
@@ -71,12 +135,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                         <Heading>Provide Arguments</Heading>
                         <Divider />
                         <Content>
-                            {descriptionArguments.map((arg: Argument) => (
-                                <div key={arg.name}>
-                                    <label>{arg.name}</label>
-                                    <input type="text" value={args[arg.name]?.toString() || ''} onChange={(e) => setArgs({ ...args, [arg.name]: e.target.value })} />
-                                </div>
-                            ))}
+                            {descriptionArguments.map((arg: Argument) => renderArgumentField(arg))}
                         </Content>
                         <ButtonGroup>
                             <Button variant="secondary" onPress={handleCloseDialog}>

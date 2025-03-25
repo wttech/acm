@@ -17,6 +17,15 @@ export type Argument = {
   required: boolean;
 };
 
+export enum ArgumentType {
+  TOGGLE = 'TOGGLE',
+  STRING = 'STRING',
+  TEXT = 'TEXT',
+  SELECT = 'SELECT',
+  INTEGER = 'INTEGER',
+  DOUBLE = 'DOUBLE',
+}
+
 export type TextArgument = Argument & {
   language: string;
 };
@@ -25,6 +34,26 @@ export type NumberArgument = Argument & {
   min: number;
   max: number;
 };
+
+export function isToggleArgument(arg: Argument): arg is Argument {
+  return arg.type === ArgumentType.TOGGLE;
+}
+
+export function isStringArgument(arg: Argument): arg is Argument {
+  return arg.type === ArgumentType.STRING;
+}
+
+export function isTextArgument(arg: Argument): arg is TextArgument {
+  return arg.type === ArgumentType.TEXT;
+}
+
+export function isSelectArgument(arg: Argument): arg is Argument {
+  return arg.type === ArgumentType.SELECT;
+}
+
+export function isNumberArgument(arg: Argument): arg is NumberArgument {
+  return arg.type === ArgumentType.INTEGER || arg.type === ArgumentType.DOUBLE;
+}
 
 export type Execution = {
   id: string;
