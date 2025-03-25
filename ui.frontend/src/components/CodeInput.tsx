@@ -1,6 +1,8 @@
 import React from 'react';
 import { TextField, Checkbox, NumberField, Picker, Item, View } from '@adobe/react-spectrum';
 import { Argument, ArgumentValue, isToggleArgument, isStringArgument, isTextArgument, isSelectArgument, isNumberArgument } from '../utils/api.types.ts';
+import { Editor } from '@monaco-editor/react';
+import {Field} from '@react-spectrum/label';
 
 interface CodeInputProps {
     arg: Argument;
@@ -32,12 +34,28 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
         );
     } else if (isTextArgument(arg)) {
         return (
-            <View key={arg.name} marginBottom="size-200">
-                <TextField
-                    label={arg.label || arg.name}
-                    value={value?.toString() || ''}
-                    onChange={(val) => onChange(arg.name, val)}
-                />
+            <View key={arg.name} marginY="size-100">
+                {arg.language ? (
+                    <>
+                        <Field label={arg.label || arg.name} width="100%">
+                            <div>
+                                <Editor
+                                    language={arg.language}
+                                    theme="vs-dark"
+                                    height="200px"
+                                    value={value?.toString() || ''}
+                                    onChange={(val) => onChange(arg.name, val || '')}
+                                />
+                            </div>
+                        </Field>
+                    </>
+                ) : (
+                    <TextField
+                        label={arg.label || arg.name}
+                        value={value?.toString() || ''}
+                        onChange={(val) => onChange(arg.name, val)}
+                    />
+                )}
             </View>
         );
     } else if (isSelectArgument(arg)) {

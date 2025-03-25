@@ -29,7 +29,7 @@ export type Argument = {
 };
 
 export type TextArgument = Argument & {
-  language: string;
+  language?: string;
 };
 
 export type SelectArgument = Argument & {
