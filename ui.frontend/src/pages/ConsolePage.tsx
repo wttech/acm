@@ -14,12 +14,13 @@ import CompilationStatus from '../components/CompilationStatus.tsx';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
-import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor.tsx';
-import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton.tsx';
+import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor';
+import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import { apiRequest } from '../utils/api.ts';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types.ts';
 import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
+import CodeExecuteButton from "../components/CodeExecuteButton";
 
 const toastTimeout = 3000;
 const executionPollInterval = 500;
@@ -180,10 +181,7 @@ const ConsolePage = () => {
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
-                    <Button variant="accent" onPress={onExecute} isPending={executing} isDisabled={compiling || !!syntaxError || !!compileError}>
-                      <Gears />
-                      <Text>Execute</Text>
-                    </Button>
+                    <CodeExecuteButton code={code || ''} onExecute={onExecute} isPending={executing || compiling || !!syntaxError || !!compileError}/>
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">

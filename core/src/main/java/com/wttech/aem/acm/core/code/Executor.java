@@ -5,6 +5,7 @@ import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import groovy.lang.MissingMethodException;
 import groovy.lang.Script;
 import java.io.OutputStream;
 import java.util.Map;
@@ -156,6 +157,8 @@ public class Executor {
 
             return new Description(
                     context.getExecutable(), shell.getCodeBinding().getArgs());
+        } catch (MissingMethodException e) {
+            return new Description(context.getExecutable(), new Arguments(context));
         } catch (Exception e) {
             throw new AcmException(
                     String.format(

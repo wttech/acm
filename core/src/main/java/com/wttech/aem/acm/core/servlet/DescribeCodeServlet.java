@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
         immediate = true,
         service = Servlet.class,
         property = {
-            ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
             ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
             ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + DescribeCodeServlet.RT
         })
@@ -34,7 +34,7 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
     private Executor executor;
 
     @Override
-    protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+    protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             DescribeCodeInput input = JsonUtils.read(request.getInputStream(), DescribeCodeInput.class);
             if (input == null) {
@@ -49,7 +49,8 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
                 Description description = executor.describe(context);
 
                 respondJson(
-                        response, ok(String.format("Code from '%s' described successfully", code.getId()), description));
+                        response,
+                        ok(String.format("Code from '%s' described successfully", code.getId()), description));
             } catch (Exception e) {
                 LOG.error("Code from '{}' cannot be described!", code.getId(), e);
                 respondJson(
