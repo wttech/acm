@@ -43,6 +43,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
                                     language={arg.language}
                                     theme="vs-dark"
                                     height="200px"
+                                    options={{scrollBeyondLastLine: false}}
                                     value={value?.toString() || ''}
                                     onChange={(val) => onChange(arg.name, val || '')}
                                 />
