@@ -10,6 +10,8 @@ public abstract class Argument<V> {
 
     private String label;
 
+    private String group = "default";
+
     private boolean required;
 
     public Argument(String name, ArgumentType type) {
@@ -47,5 +49,13 @@ public abstract class Argument<V> {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
     }
 }

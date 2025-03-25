@@ -8,11 +8,16 @@ import {
     Content,
     ButtonGroup,
     DialogContainer,
+    Tabs,
+    TabList,
+    TabPanels,
+    Item, View,
 } from '@adobe/react-spectrum';
 import Gears from '@spectrum-icons/workflow/Gears';
 import { apiRequest } from '../utils/api.ts';
-import {Argument, ArgumentValue, ArgumentValues, Description} from '../utils/api.types.ts';
+import { Argument, ArgumentValue, ArgumentValues, Description } from '../utils/api.types.ts';
 import CodeInput from './CodeInput';
+import { Strings } from '../utils/strings.ts';
 
 interface CodeExecuteButtonProps {
     code: string;
@@ -71,6 +76,8 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
     };
 
     const descriptionArguments: Argument[] = Object.values(description?.arguments || []);
+    const groups = Array.from(new Set(descriptionArguments.map(arg => arg.group)));
+    const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== 'default');
 
     return (
         <>
@@ -84,14 +91,42 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                         <Heading>Provide Arguments</Heading>
                         <Divider />
                         <Content>
-                            {descriptionArguments.map((arg: Argument) => (
-                                <CodeInput
-                                    key={arg.name}
-                                    arg={arg}
-                                    value={args[arg.name]}
-                                    onChange={handleArgumentChange}
-                                />
-                            ))}
+                            {shouldRenderTabs ? (
+                                <Tabs>
+                                    <TabList>
+                                        {groups.map(group => (
+                                            <Item key={group}>{Strings.capitalize(group)}</Item>
+                                        ))}
+                                    </TabList>
+                                    <TabPanels>
+                                        {groups.map(group => (
+                                            <Item key={group}>
+                                                <View marginY="size-200">
+                                                    {descriptionArguments
+                                                        .filter(arg => arg.group === group)
+                                                        .map(arg => (
+                                                            <CodeInput
+                                                                key={arg.name}
+                                                                arg={arg}
+                                                                value={args[arg.name]}
+                                                                onChange={handleArgumentChange}
+                                                            />
+                                                        ))}
+                                                </View>
+                                            </Item>
+                                        ))}
+                                    </TabPanels>
+                                </Tabs>
+                            ) : (
+                                descriptionArguments.map(arg => (
+                                    <CodeInput
+                                        key={arg.name}
+                                        arg={arg}
+                                        value={args[arg.name]}
+                                        onChange={handleArgumentChange}
+                                    />
+                                ))
+                            )}
                         </Content>
                         <ButtonGroup>
                             <Button variant="secondary" onPress={handleCloseDialog}>

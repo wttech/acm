@@ -27,6 +27,7 @@ export type Argument = {
   value: object;
   label: string;
   required: boolean;
+  group: string;
 };
 
 export type TextArgument = Argument & {
