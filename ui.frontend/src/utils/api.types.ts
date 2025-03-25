@@ -5,7 +5,7 @@ export type Executable = {
 
 export type Description = {
   arguments: {
-    [name: string]: Argument;
+    [name: string]: Argument<ArgumentValue>;
   };
 };
 
@@ -21,45 +21,45 @@ export enum ArgumentType {
 export type ArgumentValue = string | number | boolean | null | undefined;
 export type ArgumentValues = Record<string, ArgumentValue>
 
-export type Argument = {
+export type Argument<T> = {
   name: string;
   type: ArgumentType;
-  value: object;
+  value: T;
   label: string;
   required: boolean;
   group: string;
 };
 
-export type TextArgument = Argument & {
+export type TextArgument = Argument<string> & {
   language?: string;
 };
 
-export type SelectArgument = Argument & {
+export type SelectArgument = Argument<ArgumentValue> & {
   options: Record<string, ArgumentValue>;
 };
 
-export type NumberArgument = Argument & {
+export type NumberArgument = Argument<number> & {
   min: number;
   max: number;
 };
 
-export function isToggleArgument(arg: Argument): arg is Argument & { type: ArgumentType.TOGGLE } {
+export function isToggleArgument(arg: Argument<ArgumentValue>): arg is Argument<boolean> & { type: ArgumentType.TOGGLE } {
   return arg.type === ArgumentType.TOGGLE;
 }
 
-export function isStringArgument(arg: Argument): arg is Argument & { type: ArgumentType.STRING } {
+export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> & { type: ArgumentType.STRING } {
   return arg.type === ArgumentType.STRING;
 }
 
-export function isTextArgument(arg: Argument): arg is TextArgument {
+export function isTextArgument(arg: Argument<ArgumentValue>): arg is TextArgument {
   return arg.type === ArgumentType.TEXT;
 }
 
-export function isSelectArgument(arg: Argument): arg is SelectArgument {
+export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArgument {
   return arg.type === ArgumentType.SELECT;
 }
 
-export function isNumberArgument(arg: Argument): arg is NumberArgument {
+export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
   return arg.type === ArgumentType.INTEGER || arg.type === ArgumentType.DOUBLE;
 }
 

@@ -47,6 +47,11 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
             const description = response.data.data;
             setDescription(description);
 
+            const initialArgs = description.arguments
+                ? Object.fromEntries(Object.entries(description.arguments).map(([key, arg]) => [key, arg.value]))
+                : {};
+            setArgs(initialArgs);
+
             const argumentsRequired = description.arguments && Object.keys(description.arguments).length > 0;
             if (argumentsRequired) {
                 setDialogOpen(true);
@@ -75,7 +80,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
         setArgs({ ...args, [name]: value });
     };
 
-    const descriptionArguments: Argument[] = Object.values(description?.arguments || []);
+    const descriptionArguments: Argument<ArgumentValue>[] = Object.values(description?.arguments || []);
     const groups = Array.from(new Set(descriptionArguments.map(arg => arg.group)));
     const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== 'default');
 

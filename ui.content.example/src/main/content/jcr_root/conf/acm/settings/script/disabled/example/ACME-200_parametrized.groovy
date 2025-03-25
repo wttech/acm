@@ -16,6 +16,5 @@ boolean canRun() {
 }
 
 void doRun() {
-    println "Hello World!"
-    // println "Hello ${args.value("name")} ${args.value("surname")}!"
+    println "Hello ${args.value("name")} ${args.value("surname")}!"
 }

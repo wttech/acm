@@ -1,14 +1,22 @@
 package com.wttech.aem.acm.core.code;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.acm.core.code.arg.*;
 import com.wttech.aem.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.wrappers.ValueMapDecorator;
 
-public class Arguments extends LinkedHashMap<String, Argument<?>> implements Serializable {
+public class Arguments implements Serializable {
 
     private final ExecutionContext context;
+
+    private final Map<String, Argument<?>> definitions = new LinkedHashMap<>();
 
     public Arguments(ExecutionContext context) {
         super();
@@ -16,7 +24,27 @@ public class Arguments extends LinkedHashMap<String, Argument<?>> implements Ser
     }
 
     private void add(Argument<?> argument) {
-        put(argument.getName(), argument);
+        definitions.put(argument.getName(), argument);
+    }
+
+    @JsonAnyGetter
+    public Map<String, Argument<?>> getDefinitions() {
+        return definitions;
+    }
+
+    @JsonIgnore
+    public ValueMap getValues() {
+        return new ValueMapDecorator(
+                definitions.values().stream().collect(Collectors.toMap(Argument::getName, Argument::getValue)));
+    }
+
+    public <T> T value(String name, Class<T> type) {
+        return getValues().get(name, type);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T value(String name) {
+        return (T) getValues().get(name);
     }
 
     public void toggle(String name) {

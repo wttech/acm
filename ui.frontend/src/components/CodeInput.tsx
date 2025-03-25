@@ -1,11 +1,20 @@
 import React from 'react';
 import { TextField, Checkbox, NumberField, Picker, Item, View } from '@adobe/react-spectrum';
-import { Argument, ArgumentValue, isToggleArgument, isStringArgument, isTextArgument, isSelectArgument, isNumberArgument } from '../utils/api.types.ts';
+import {
+    Argument,
+    ArgumentValue,
+    isToggleArgument,
+    isStringArgument,
+    isTextArgument,
+    isSelectArgument,
+    isNumberArgument,
+    ArgumentType
+} from '../utils/api.types.ts';
 import { Editor } from '@monaco-editor/react';
 import {Field} from '@react-spectrum/label';
 
 interface CodeInputProps {
-    arg: Argument;
+    arg: Argument<ArgumentValue>;
     value: ArgumentValue;
     onChange: (name: string, value: ArgumentValue) => void;
 }
@@ -67,8 +76,8 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
                     selectedKey={value?.toString() || ''}
                     onSelectionChange={(val) => onChange(arg.name, val)}
                 >
-                    {Object.entries(arg.options).map(([key, val]) => (
-                        <Item key={key}>{val}</Item>
+                    {Object.entries(arg.options).map(([label, val]) => (
+                        <Item key={val?.toString()}>{label}</Item>
                     ))}
                 </Picker>
             </View>
@@ -82,6 +91,8 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
                     onChange={(val) => onChange(arg.name, val)}
                     minValue={arg.min}
                     maxValue={arg.max}
+                    hideStepper={arg.type === ArgumentType.DOUBLE}
+                    formatOptions={arg.type === ArgumentType.INTEGER ? { maximumFractionDigits: 0 } : undefined}
                 />
             </View>
         );

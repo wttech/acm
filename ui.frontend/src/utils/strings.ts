@@ -1,5 +1,8 @@
 export class Strings {
   static capitalize(text: string): string {
+    if (!text) {
+      return text;
+    }
     return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
   }
   static removeEnd(text: string, suffix: string) {
