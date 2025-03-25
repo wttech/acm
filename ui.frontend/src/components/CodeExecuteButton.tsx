@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
-import { Button, Text, Dialog, Heading, Divider, Content, ButtonGroup, DialogContainer } from '@adobe/react-spectrum';
+import {
+    Button,
+    Text,
+    Dialog,
+    Heading,
+    Divider,
+    Content,
+    ButtonGroup,
+    DialogContainer,
+} from '@adobe/react-spectrum';
 import Gears from '@spectrum-icons/workflow/Gears';
 import { apiRequest } from '../utils/api.ts';
-import { Argument, Description } from '../utils/api.types.ts';
+import {Argument, ArgumentValue, ArgumentValues, Description} from '../utils/api.types.ts';
 import CodeInput from './CodeInput';
-
-type ArgumentValue = string | number | boolean | null | undefined;
 
 interface CodeExecuteButtonProps {
     code: string;
-    onExecute: (args: Record<string, ArgumentValue>) => void;
+    onExecute: (args: ArgumentValues) => void;
+    isDisabled: boolean;
     isPending: boolean;
 }
 
-const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, isPending }) => {
+const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, isDisabled, isPending }) => {
     const [description, setDescription] = useState<Description | null>(null);
-    const [args, setArgs] = useState<Record<string, ArgumentValue>>({});
+    const [args, setArgs] = useState<ArgumentValues>({});
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const fetchDescription = async () => {
@@ -66,7 +74,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
 
     return (
         <>
-            <Button variant="accent" onPress={handleExecute} isPending={isPending} isDisabled={isPending}>
+            <Button variant="accent" onPress={handleExecute} isPending={isPending} isDisabled={isDisabled}>
                 <Gears />
                 <Text>Execute</Text>
             </Button>

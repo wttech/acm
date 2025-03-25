@@ -19,6 +19,7 @@ export enum ArgumentType {
 }
 
 export type ArgumentValue = string | number | boolean | null | undefined;
+export type ArgumentValues = Record<string, ArgumentValue>
 
 export type Argument = {
   name: string;

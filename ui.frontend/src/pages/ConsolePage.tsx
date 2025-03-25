@@ -17,7 +17,7 @@ import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import { apiRequest } from '../utils/api.ts';
-import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types.ts';
+import {ArgumentValues, Execution, ExecutionStatus, isExecutionPending, QueueOutput} from '../utils/api.types.ts';
 import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
 import CodeExecuteButton from "../components/CodeExecuteButton";
@@ -80,11 +80,9 @@ const ConsolePage = () => {
   const [, cancelCompilation] = useDebounce(compileCode, compilationDelay, [code]);
   useDebounce(() => localStorage.setItem(StorageKeys.EDITOR_CODE, code || ''), compilationDelay, [code]);
 
-  const onExecute = async () => {
+  const onExecute = async (args: ArgumentValues) => {
     setExecuting(true);
     setExecution(null);
-
-    // TODO do here '/apps/acm/api/describe-code.json' request
 
     try {
       const response = await apiRequest<QueueOutput>({
@@ -97,7 +95,7 @@ const ConsolePage = () => {
             id: 'console',
             content: code,
           },
-          arguments: {}, // TODO
+          arguments: args
         },
       });
       const queuedExecution = response.data.data.executions[0]!;
@@ -142,12 +140,12 @@ const ConsolePage = () => {
   };
 
   useInterval(
-    () => {
-      if (execution && isExecutionPending(execution.status)) {
-        pollExecutionState(execution.id);
-      }
-    },
-    execution && isExecutionPending(execution.status) ? executionPollInterval : null,
+      () => {
+        if (execution && isExecutionPending(execution.status)) {
+          pollExecutionState(execution.id);
+        }
+      },
+      execution && isExecutionPending(execution.status) ? executionPollInterval : null,
   );
 
   useEffect(() => {
@@ -163,101 +161,101 @@ const ConsolePage = () => {
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
 
   return (
-    <Flex direction="column" flex="1" gap="size-200">
-      <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
-        <TabList>
-          <Item key="code" aria-label="Code">
-            <FileCode />
-            <Text>Code</Text>
-          </Item>
-          <Item key="output" aria-label="Execution">
-            <Print />
-            <Text>Output</Text>
-          </Item>
-        </TabList>
-        <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-          <Item key="code">
-            <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
-              <Flex direction="row" justifyContent="space-between" alignItems="center">
-                <Flex flex="1" alignItems="center">
-                  <ButtonGroup>
-                    <CodeExecuteButton code={code || ''} onExecute={onExecute} isPending={executing || compiling || !!syntaxError || !!compileError}/>
-                  </ButtonGroup>
+      <Flex direction="column" flex="1" gap="size-200">
+        <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as SelectedTab)}>
+          <TabList>
+            <Item key="code" aria-label="Code">
+              <FileCode />
+              <Text>Code</Text>
+            </Item>
+            <Item key="output" aria-label="Execution">
+              <Print />
+              <Text>Output</Text>
+            </Item>
+          </TabList>
+          <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
+            <Item key="code">
+              <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
+                <Flex direction="row" justifyContent="space-between" alignItems="center">
+                  <Flex flex="1" alignItems="center">
+                    <ButtonGroup>
+                      <CodeExecuteButton code={code || ''} onExecute={onExecute} isPending={executing || compiling} isDisabled={!!syntaxError || !!compileError}/>
+                    </ButtonGroup>
+                  </Flex>
+                  <Flex flex="1" justifyContent="center" alignItems="center">
+                    <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />
+                  </Flex>
+                  <Flex flex="1" justifyContent="end" alignItems="center">
+                    <KeyboardShortcutsButton />
+                  </Flex>
                 </Flex>
-                <Flex flex="1" justifyContent="center" alignItems="center">
-                  <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />
-                </Flex>
-                <Flex flex="1" justifyContent="end" alignItems="center">
-                  <KeyboardShortcutsButton />
-                </Flex>
+                <ImmersiveEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
               </Flex>
-              <ImmersiveEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
-            </Flex>
-          </Item>
-          <Item key="output">
-            <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
-              <Flex direction="row" justifyContent="space-between" alignItems="center">
-                <Flex flex="1" alignItems="center">
-                  <ButtonGroup>
-                    <ExecutionAbortButton execution={execution} onComplete={setExecution} />
-                    <ExecutionCopyOutputButton output={executionOutput} />
-                  </ButtonGroup>
-                  <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
-                    <Text>Autoscroll</Text>
-                  </Switch>
+            </Item>
+            <Item key="output">
+              <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
+                <Flex direction="row" justifyContent="space-between" alignItems="center">
+                  <Flex flex="1" alignItems="center">
+                    <ButtonGroup>
+                      <ExecutionAbortButton execution={execution} onComplete={setExecution} />
+                      <ExecutionCopyOutputButton output={executionOutput} />
+                    </ButtonGroup>
+                    <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
+                      <Text>Autoscroll</Text>
+                    </Switch>
+                  </Flex>
+                  <Flex flex="1" justifyContent="center" alignItems="center">
+                    <ExecutionProgressBar execution={execution} active={executing} />
+                  </Flex>
+                  <Flex flex="1" justifyContent="end" alignItems="center">
+                    <DialogTrigger>
+                      <Button variant="secondary" style="fill">
+                        <Help />
+                        <Text>Help</Text>
+                      </Button>
+                      {(close) => (
+                          <Dialog>
+                            <Heading>Code execution</Heading>
+                            <Divider />
+                            <Content>
+                              <p>
+                                <Print size="XS" /> Output is printed live.
+                              </p>
+                              <p>
+                                <Cancel size="XS" /> <Text>Abort if the execution:</Text>
+                                <ul style={{ listStyleType: 'none' }}>
+                                  <li>
+                                    <Spellcheck size="XS" /> is taking too long
+                                  </li>
+                                  <li>
+                                    <Bug size="XS" /> is stuck in an infinite loop
+                                  </li>
+                                  <li>
+                                    <Gears size="XS" /> makes the instance unresponsive
+                                  </li>
+                                </ul>
+                              </p>
+                              <p>
+                                <Help size="XS" /> Be aware that aborting execution may leave data in an inconsistent state.
+                              </p>
+                            </Content>
+                            <ButtonGroup>
+                              <Button variant="secondary" onPress={close}>
+                                <Close size="XS" />
+                                <Text>Close</Text>
+                              </Button>
+                            </ButtonGroup>
+                          </Dialog>
+                      )}
+                    </DialogTrigger>
+                  </Flex>
                 </Flex>
-                <Flex flex="1" justifyContent="center" alignItems="center">
-                  <ExecutionProgressBar execution={execution} active={executing} />
-                </Flex>
-                <Flex flex="1" justifyContent="end" alignItems="center">
-                  <DialogTrigger>
-                    <Button variant="secondary" style="fill">
-                      <Help />
-                      <Text>Help</Text>
-                    </Button>
-                    {(close) => (
-                      <Dialog>
-                        <Heading>Code execution</Heading>
-                        <Divider />
-                        <Content>
-                          <p>
-                            <Print size="XS" /> Output is printed live.
-                          </p>
-                          <p>
-                            <Cancel size="XS" /> <Text>Abort if the execution:</Text>
-                            <ul style={{ listStyleType: 'none' }}>
-                              <li>
-                                <Spellcheck size="XS" /> is taking too long
-                              </li>
-                              <li>
-                                <Bug size="XS" /> is stuck in an infinite loop
-                              </li>
-                              <li>
-                                <Gears size="XS" /> makes the instance unresponsive
-                              </li>
-                            </ul>
-                          </p>
-                          <p>
-                            <Help size="XS" /> Be aware that aborting execution may leave data in an inconsistent state.
-                          </p>
-                        </Content>
-                        <ButtonGroup>
-                          <Button variant="secondary" onPress={close}>
-                            <Close size="XS" />
-                            <Text>Close</Text>
-                          </Button>
-                        </ButtonGroup>
-                      </Dialog>
-                    )}
-                  </DialogTrigger>
-                </Flex>
+                <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
               </Flex>
-              <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
-            </Flex>
-          </Item>
-        </TabPanels>
-      </Tabs>
-    </Flex>
+            </Item>
+          </TabPanels>
+        </Tabs>
+      </Flex>
   );
 };
 
