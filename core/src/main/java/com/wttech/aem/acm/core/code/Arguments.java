@@ -4,25 +4,23 @@ import com.wttech.aem.acm.core.code.arg.*;
 import com.wttech.aem.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
-public class Arguments implements Serializable {
+public class Arguments extends LinkedHashMap<String, Argument<?>> implements Serializable {
 
     private final ExecutionContext context;
 
-    private final Map<String, Argument<?>> arguments = new HashMap<>();
-
     public Arguments(ExecutionContext context) {
+        super();
         this.context = context;
     }
 
-    public Map<String, Argument<?>> getArguments() {
-        return arguments;
+    private void add(Argument<?> argument) {
+        put(argument.getName(), argument);
     }
 
-    private void add(Argument<?> argument) {
-        arguments.put(argument.getName(), argument);
+    public void toggle(String name) {
+        toggle(name, null);
     }
 
     public void toggle(String name, Closure<ToggleArgument> options) {
@@ -31,10 +29,18 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
+    public void string(String name) {
+        string(name, null);
+    }
+
     public void string(String name, Closure<StringArgument> options) {
         StringArgument argument = new StringArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
+    }
+
+    public void text(String name) {
+        text(name, null);
     }
 
     public void text(String name, Closure<TextArgument> options) {
@@ -43,16 +49,28 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void select(String name, Closure<SelectArgument> options) {
-        SelectArgument argument = new SelectArgument(name);
+    public void select(String name) {
+        select(name, null);
+    }
+
+    public <V> void select(String name, Closure<SelectArgument<V>> options) {
+        SelectArgument<V> argument = new SelectArgument<>(name);
         GroovyUtils.with(argument, options);
         add(argument);
+    }
+
+    public void integerNumber(String name) {
+        integerNumber(name, null);
     }
 
     public void integerNumber(String name, Closure<IntegerArgument> options) {
         IntegerArgument argument = new IntegerArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
+    }
+
+    public void doubleNumber(String name) {
+        doubleNumber(name, null);
     }
 
     public void doubleNumber(String name, Closure<DoubleArgument> options) {

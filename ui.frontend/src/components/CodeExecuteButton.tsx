@@ -32,7 +32,9 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
             });
             const description = response.data.data;
             setDescription(description);
-            if (description.arguments && Object.keys(description.arguments).length > 0) {
+
+            const argumentsRequired = description.arguments && Object.keys(description.arguments).length > 0;
+            if (argumentsRequired) {
                 setDialogOpen(true);
             } else {
                 onExecute({});
@@ -55,6 +57,8 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
         setDescription(null);
     };
 
+    const descriptionArguments = Object.values(description?.arguments || []);
+
     return (
         <>
             <Button variant="accent" onPress={handleExecute} isPending={isPending} isDisabled={isPending}>
@@ -67,7 +71,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                         <Heading>Provide Arguments</Heading>
                         <Divider />
                         <Content>
-                            {(Object.values(description?.arguments || []) || []).map((arg: Argument) => (
+                            {descriptionArguments.map((arg: Argument) => (
                                 <div key={arg.name}>
                                     <label>{arg.name}</label>
                                     <input type="text" value={args[arg.name]?.toString() || ''} onChange={(e) => setArgs({ ...args, [arg.name]: e.target.value })} />
