@@ -1,0 +1,74 @@
+import React from 'react';
+import { TextField, Checkbox, NumberField, Picker, Item, View } from '@adobe/react-spectrum';
+import { Argument, ArgumentValue, isToggleArgument, isStringArgument, isTextArgument, isSelectArgument, isNumberArgument } from '../utils/api.types.ts';
+
+interface CodeInputProps {
+    arg: Argument;
+    value: ArgumentValue;
+    onChange: (name: string, value: ArgumentValue) => void;
+}
+
+const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
+    if (isToggleArgument(arg)) {
+        return (
+            <View key={arg.name} marginBottom="size-200">
+                <Checkbox
+                    isSelected={value as boolean}
+                    onChange={(val) => onChange(arg.name, val)}
+                >
+                    {arg.label || arg.name}
+                </Checkbox>
+            </View>
+        );
+    } else if (isStringArgument(arg)) {
+        return (
+            <View key={arg.name} marginBottom="size-200">
+                <TextField
+                    label={arg.label || arg.name}
+                    value={value?.toString() || ''}
+                    onChange={(val) => onChange(arg.name, val)}
+                />
+            </View>
+        );
+    } else if (isTextArgument(arg)) {
+        return (
+            <View key={arg.name} marginBottom="size-200">
+                <TextField
+                    label={arg.label || arg.name}
+                    value={value?.toString() || ''}
+                    onChange={(val) => onChange(arg.name, val)}
+                />
+            </View>
+        );
+    } else if (isSelectArgument(arg)) {
+        return (
+            <View key={arg.name} marginBottom="size-200">
+                <Picker
+                    label={arg.label || arg.name}
+                    selectedKey={value?.toString() || ''}
+                    onSelectionChange={(val) => onChange(arg.name, val)}
+                >
+                    {Object.entries(arg.options).map(([key, val]) => (
+                        <Item key={key}>{val}</Item>
+                    ))}
+                </Picker>
+            </View>
+        );
+    } else if (isNumberArgument(arg)) {
+        return (
+            <View key={arg.name} marginBottom="size-200">
+                <NumberField
+                    label={arg.label || arg.name}
+                    value={value as number}
+                    onChange={(val) => onChange(arg.name, val)}
+                    minValue={arg.min}
+                    maxValue={arg.max}
+                />
+            </View>
+        );
+    } else {
+        return null;
+    }
+};
+
+export default CodeInput;

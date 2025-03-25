@@ -9,14 +9,6 @@ export type Description = {
   };
 };
 
-export type Argument = {
-  name: string;
-  type: string;
-  value: object;
-  label: string;
-  required: boolean;
-};
-
 export enum ArgumentType {
   TOGGLE = 'TOGGLE',
   STRING = 'STRING',
@@ -26,8 +18,22 @@ export enum ArgumentType {
   DOUBLE = 'DOUBLE',
 }
 
+export type ArgumentValue = string | number | boolean | null | undefined;
+
+export type Argument = {
+  name: string;
+  type: ArgumentType;
+  value: object;
+  label: string;
+  required: boolean;
+};
+
 export type TextArgument = Argument & {
   language: string;
+};
+
+export type SelectArgument = Argument & {
+  options: Record<string, ArgumentValue>;
 };
 
 export type NumberArgument = Argument & {
@@ -35,11 +41,11 @@ export type NumberArgument = Argument & {
   max: number;
 };
 
-export function isToggleArgument(arg: Argument): arg is Argument {
+export function isToggleArgument(arg: Argument): arg is Argument & { type: ArgumentType.TOGGLE } {
   return arg.type === ArgumentType.TOGGLE;
 }
 
-export function isStringArgument(arg: Argument): arg is Argument {
+export function isStringArgument(arg: Argument): arg is Argument & { type: ArgumentType.STRING } {
   return arg.type === ArgumentType.STRING;
 }
 
@@ -47,7 +53,7 @@ export function isTextArgument(arg: Argument): arg is TextArgument {
   return arg.type === ArgumentType.TEXT;
 }
 
-export function isSelectArgument(arg: Argument): arg is Argument {
+export function isSelectArgument(arg: Argument): arg is SelectArgument {
   return arg.type === ArgumentType.SELECT;
 }
 
