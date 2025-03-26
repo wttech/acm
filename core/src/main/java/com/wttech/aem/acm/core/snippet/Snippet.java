@@ -2,7 +2,6 @@ package com.wttech.aem.acm.core.snippet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.acm.core.AcmException;
-import com.wttech.aem.acm.core.code.Executable;
 import com.wttech.aem.acm.core.util.JcrUtils;
 import java.io.InputStream;
 import java.util.Optional;
@@ -12,7 +11,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 
-public class Snippet implements Executable, Comparable<Snippet> {
+public class Snippet implements Comparable<Snippet> {
 
     public static final String FILE_EXTENSION = ".yml";
 
@@ -42,12 +41,10 @@ public class Snippet implements Executable, Comparable<Snippet> {
                         new AcmException(String.format("Snippet definition '%s' cannot be read!", resource.getPath())));
     }
 
-    @Override
     public String getId() {
         return getPath();
     }
 
-    @Override
     public String getContent() throws AcmException {
         return definition.getContent();
     }

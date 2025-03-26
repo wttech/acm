@@ -5,6 +5,7 @@ import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import groovy.lang.MissingMethodException;
 import groovy.lang.Script;
 import java.io.OutputStream;
 import java.util.Map;
@@ -99,17 +100,27 @@ public class Executor {
             }
 
             context.setOutputStream(outputStream);
-            GroovyShell shell = createShell(context);
+            CodeShell shell = createShell(context);
 
             execution.start();
 
-            Script script = shell.parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
             if (context.getMode() == ExecutionMode.PARSE) {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
-            boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
+
+            try {
+                script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+                shell.getCodeBinding()
+                        .getArgs()
+                        .setValues(context.getExecutable().getArguments());
+            } catch (MissingMethodException e) {
+                // ignore
+            }
+
+            boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Method.CHECK.givenName, null);
             if (!canRun) {
                 return execution.end(ExecutionStatus.SKIPPED);
             } else if (context.getMode() == ExecutionMode.CHECK) {
@@ -117,7 +128,7 @@ public class Executor {
             }
 
             statuses.put(context.getId(), ExecutionStatus.RUNNING);
-            script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
+            script.invokeMethod(CodeSyntax.Method.RUN.givenName, null);
             return execution.end(ExecutionStatus.SUCCEEDED);
         } catch (Throwable e) {
             execution.error(e);
@@ -130,16 +141,40 @@ public class Executor {
         }
     }
 
-    private GroovyShell createShell(ExecutionContext context) {
-        Binding binding = new CodeBinding(context).toBinding();
+    private CodeShell createShell(ExecutionContext context) {
+        CodeBinding codeBinding = new CodeBinding(context);
+        Binding binding = codeBinding.toBinding();
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
         compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
-
-        return new GroovyShell(binding, compiler);
+        GroovyShell groovyShell = new GroovyShell(binding, compiler);
+        return new CodeShell(groovyShell, codeBinding);
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {
         return Optional.ofNullable(statuses.get(executionId));
+    }
+
+    public Description describe(Executable executable, ResourceResolver resourceResolver) {
+        return describe(createContext(executable, resourceResolver));
+    }
+
+    public Description describe(ExecutionContext context) {
+        try {
+            CodeShell shell = createShell(context);
+            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+            script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+
+            return new Description(
+                    context.getExecutable(), shell.getCodeBinding().getArgs());
+        } catch (MissingMethodException e) {
+            return new Description(context.getExecutable(), new Arguments(context));
+        } catch (Exception e) {
+            throw new AcmException(
+                    String.format(
+                            "Cannot describe executable '%s'!",
+                            context.getExecutable().getId()),
+                    e);
+        }
     }
 }

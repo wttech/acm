@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.osgi.OsgiContext;
 import java.io.OutputStream;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.sling.api.resource.ResourceResolver;
 
 public class ExecutionContext {
@@ -14,7 +15,7 @@ public class ExecutionContext {
 
     private final ResourceResolver resourceResolver;
 
-    private OutputStream outputStream = null;
+    private OutputStream outputStream = NullOutputStream.INSTANCE;
 
     private ExecutionMode mode = ExecutionMode.RUN;
 

@@ -3,6 +3,68 @@ export type Executable = {
   content: string;
 };
 
+export type Description = {
+  arguments: {
+    [name: string]: Argument<ArgumentValue>;
+  };
+};
+
+export enum ArgumentType {
+  TOGGLE = 'TOGGLE',
+  STRING = 'STRING',
+  TEXT = 'TEXT',
+  SELECT = 'SELECT',
+  INTEGER = 'INTEGER',
+  DOUBLE = 'DOUBLE',
+}
+
+export type ArgumentValue = string | number | boolean | null | undefined;
+export type ArgumentValues = Record<string, ArgumentValue>
+
+export const ArgumentGroupDefault = "general";
+
+export type Argument<T> = {
+  name: string;
+  type: ArgumentType;
+  value: T;
+  label: string;
+  required: boolean;
+  group: string;
+};
+
+export type TextArgument = Argument<string> & {
+  language?: string;
+};
+
+export type SelectArgument = Argument<ArgumentValue> & {
+  options: Record<string, ArgumentValue>;
+};
+
+export type NumberArgument = Argument<number> & {
+  min: number;
+  max: number;
+};
+
+export function isToggleArgument(arg: Argument<ArgumentValue>): arg is Argument<boolean> & { type: ArgumentType.TOGGLE } {
+  return arg.type === ArgumentType.TOGGLE;
+}
+
+export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> & { type: ArgumentType.STRING } {
+  return arg.type === ArgumentType.STRING;
+}
+
+export function isTextArgument(arg: Argument<ArgumentValue>): arg is TextArgument {
+  return arg.type === ArgumentType.TEXT;
+}
+
+export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArgument {
+  return arg.type === ArgumentType.SELECT;
+}
+
+export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
+  return arg.type === ArgumentType.INTEGER || arg.type === ArgumentType.DOUBLE;
+}
+
 export type Execution = {
   id: string;
   executable: Executable;

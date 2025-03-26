@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.script;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.acm.core.AcmException;
+import com.wttech.aem.acm.core.code.ArgumentValues;
 import com.wttech.aem.acm.core.code.Executable;
 import com.wttech.aem.acm.core.util.JcrUtils;
 import java.io.IOException;
@@ -54,6 +55,11 @@ public class Script implements Executable, Comparable<Script> {
         } catch (IOException e) {
             throw new ScriptException(String.format("Cannot read script as string '%s'!", getPath()), e);
         }
+    }
+
+    @Override
+    public ArgumentValues getArguments() {
+        return new ArgumentValues();
     }
 
     @JsonIgnore

@@ -8,4 +8,6 @@ public interface Executable extends Serializable {
     String getId();
 
     String getContent() throws AcmException;
+
+    ArgumentValues getArguments();
 }

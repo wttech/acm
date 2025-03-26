@@ -13,6 +13,7 @@ public enum Variable {
             PrintStream.class
                     .getName()), // capturing output of 'groovy.lang.Script' requires 'out' to be 'java.io.PrintStream'
     LOG("log", Logger.class.getName()),
+    ARGS("args", Arguments.class.getName()),
     CONDITION("condition", Condition.class.getName()),
     RESOURCE_RESOLVER("resourceResolver", ResourceResolver.class.getName()),
     ACL("acl", Acl.class.getName()),
