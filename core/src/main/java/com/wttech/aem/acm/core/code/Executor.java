@@ -111,8 +111,14 @@ public class Executor {
 
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
 
-            script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
-            shell.getCodeBinding().getArgs().setValues(context.getExecutable().getArguments());
+            try {
+                script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+                shell.getCodeBinding()
+                        .getArgs()
+                        .setValues(context.getExecutable().getArguments());
+            } catch (MissingMethodException e) {
+                // ignore
+            }
 
             boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Method.CHECK.givenName, null);
             if (!canRun) {
