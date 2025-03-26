@@ -43,24 +43,13 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
-            ExecuteCodeInput input = JsonUtils.read(request.getInputStream(), ExecuteCodeInput.class);
+            QueueCodeInput input = JsonUtils.read(request.getInputStream(), QueueCodeInput.class);
             if (input == null) {
                 respondJson(response, badRequest("Code input is not specified!"));
                 return;
             }
 
             Code code = input.getCode();
-            ExecutionContext context = executionQueue.createContext(code, request.getResourceResolver());
-            if (input.getHistory() != null) {
-                context.setHistory(input.getHistory());
-            }
-
-            ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
-            if (mode == null) {
-                respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", mode)));
-                return;
-            }
-            context.setMode(mode);
 
             Execution execution = executionQueue.submit(code).orElse(null);
             if (execution == null) {

@@ -6,9 +6,9 @@ import com.wttech.aem.acm.core.code.arg.*;
 import com.wttech.aem.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 
@@ -34,17 +34,45 @@ public class Arguments implements Serializable {
 
     @JsonIgnore
     public ValueMap getValues() {
-        return new ValueMapDecorator(
-                definitions.values().stream().collect(Collectors.toMap(Argument::getName, Argument::getValue)));
+        Map<String, Object> props = new HashMap<>();
+        for (Argument<?> argument : definitions.values()) {
+            props.put(argument.getName(), argument.getValue());
+        }
+        return new ValueMapDecorator(props);
     }
 
-    public <T> T value(String name, Class<T> type) {
+    public <T> T getValue(String name, Class<T> type) {
         return getValues().get(name, type);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T value(String name) {
+    public <T> T getValue(String name) {
         return (T) getValues().get(name);
+    }
+
+    public <T> T value(String name, Class<T> type) {
+        return getValue(name, type);
+    }
+
+    public <T> T value(String name) {
+        return getValue(name);
+    }
+
+    public void setValues(ArgumentValues arguments) {
+        arguments.forEach((name, value) -> {
+            Argument<?> argument = definitions.get(name);
+            if (argument == null) {
+                throw new IllegalArgumentException(
+                        String.format("Cannot set value for argument '%s' as it is not defined!", name));
+            } else {
+                setValue(argument, value);
+            }
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void setValue(Argument<T> argument, Object value) {
+        argument.setValue((T) value);
     }
 
     public void toggle(String name) {

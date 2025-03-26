@@ -90,12 +90,11 @@ const ConsolePage = () => {
         url: `/apps/acm/api/queue-code.json`,
         method: 'post',
         data: {
-          mode: 'run',
           code: {
             id: 'console',
             content: code,
+            arguments: args
           },
-          arguments: args
         },
       });
       const queuedExecution = response.data.data.executions[0]!;
