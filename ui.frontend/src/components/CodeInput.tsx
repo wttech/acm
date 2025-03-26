@@ -1,9 +1,9 @@
 import React from 'react';
-import { TextField, Checkbox, NumberField, Picker, Item, View } from '@adobe/react-spectrum';
+import {TextField, Checkbox, NumberField, Picker, Item, View, Switch} from '@adobe/react-spectrum';
 import {
     Argument,
     ArgumentValue,
-    isToggleArgument,
+    isBoolArgument,
     isStringArgument,
     isTextArgument,
     isSelectArgument,
@@ -21,15 +21,24 @@ interface CodeInputProps {
 }
 
 const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
-    if (isToggleArgument(arg)) {
+    if (isBoolArgument(arg)) {
         return (
             <View key={arg.name} marginBottom="size-200">
-                <Checkbox
-                    isSelected={value as boolean}
-                    onChange={(val) => onChange(arg.name, val)}
-                >
-                    {argLabel(arg)}
-                </Checkbox>
+                {(arg.display === 'SWITCHER') ? (
+                    <Switch
+                        isSelected={value as boolean}
+                        onChange={(val) => onChange(arg.name, val)}>
+                        {argLabel(arg)}
+                    </Switch>
+                ) : (
+                    <Checkbox
+                        isSelected={value as boolean}
+                        onChange={(val) => onChange(arg.name, val)}
+                    >
+                        {argLabel(arg)}
+                    </Checkbox>
+                )}
+
             </View>
         );
     } else if (isStringArgument(arg)) {
@@ -94,8 +103,8 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
                     onChange={(val) => onChange(arg.name, val)}
                     minValue={arg.min}
                     maxValue={arg.max}
-                    hideStepper={arg.type === ArgumentType.DOUBLE}
-                    formatOptions={arg.type === ArgumentType.INTEGER ? { maximumFractionDigits: 0 } : undefined}
+                    hideStepper={arg.type === 'DOUBLE'}
+                    formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
                 />
             </View>
         );

@@ -75,12 +75,12 @@ public class Arguments implements Serializable {
         argument.setValue((T) value);
     }
 
-    public void toggle(String name) {
-        toggle(name, null);
+    public void bool(String name) {
+        bool(name, null);
     }
 
-    public void toggle(String name, Closure<ToggleArgument> options) {
-        ToggleArgument argument = new ToggleArgument(name);
+    public void bool(String name, Closure<BoolArgument> options) {
+        BoolArgument argument = new BoolArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }

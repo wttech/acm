@@ -9,15 +9,7 @@ export type Description = {
   };
 };
 
-export enum ArgumentType {
-  TOGGLE = 'TOGGLE',
-  STRING = 'STRING',
-  TEXT = 'TEXT',
-  SELECT = 'SELECT',
-  INTEGER = 'INTEGER',
-  DOUBLE = 'DOUBLE',
-}
-
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'INTEGER' | 'DOUBLE';
 export type ArgumentValue = string | number | boolean | null | undefined;
 export type ArgumentValues = Record<string, ArgumentValue>
 
@@ -32,6 +24,10 @@ export type Argument<T> = {
   group: string;
 };
 
+export type BoolArgument = Argument<boolean> & {
+  display: 'SWITCHER' | 'CHECKBOX';
+}
+
 export type TextArgument = Argument<string> & {
   language?: string;
 };
@@ -45,24 +41,24 @@ export type NumberArgument = Argument<number> & {
   max: number;
 };
 
-export function isToggleArgument(arg: Argument<ArgumentValue>): arg is Argument<boolean> & { type: ArgumentType.TOGGLE } {
-  return arg.type === ArgumentType.TOGGLE;
+export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> {
+  return arg.type === 'STRING';
 }
 
-export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> & { type: ArgumentType.STRING } {
-  return arg.type === ArgumentType.STRING;
+export function isBoolArgument(arg: Argument<ArgumentValue>): arg is BoolArgument {
+  return arg.type === 'BOOL';
 }
 
 export function isTextArgument(arg: Argument<ArgumentValue>): arg is TextArgument {
-  return arg.type === ArgumentType.TEXT;
+  return arg.type === 'TEXT';
 }
 
 export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArgument {
-  return arg.type === ArgumentType.SELECT;
+  return arg.type === 'SELECT';
 }
 
 export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
-  return arg.type === ArgumentType.INTEGER || arg.type === ArgumentType.DOUBLE;
+  return arg.type === 'INTEGER' || arg.type === 'DOUBLE';
 }
 
 export type Execution = {
