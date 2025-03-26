@@ -12,6 +12,7 @@ import {
 } from '../utils/api.types.ts';
 import { Editor } from '@monaco-editor/react';
 import {Field} from '@react-spectrum/label';
+import {Strings} from "../utils/strings.ts";
 
 interface CodeInputProps {
     arg: Argument<ArgumentValue>;
@@ -27,7 +28,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
                     isSelected={value as boolean}
                     onChange={(val) => onChange(arg.name, val)}
                 >
-                    {arg.label || arg.name}
+                    {argLabel(arg)}
                 </Checkbox>
             </View>
         );
@@ -35,7 +36,8 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
         return (
             <View key={arg.name} marginBottom="size-200">
                 <TextField
-                    label={arg.label || arg.name}
+                    width="100%"
+                    label={argLabel(arg)}
                     value={value?.toString() || ''}
                     onChange={(val) => onChange(arg.name, val)}
                 />
@@ -46,7 +48,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
             <View key={arg.name} marginY="size-100">
                 {arg.language ? (
                     <>
-                        <Field label={arg.label || arg.name} width="100%">
+                        <Field label={argLabel(arg)} width="100%">
                             <div>
                                 <Editor
                                     language={arg.language}
@@ -61,7 +63,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
                     </>
                 ) : (
                     <TextField
-                        label={arg.label || arg.name}
+                        label={argLabel(arg)}
                         value={value?.toString() || ''}
                         onChange={(val) => onChange(arg.name, val)}
                     />
@@ -72,7 +74,8 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
         return (
             <View key={arg.name} marginBottom="size-200">
                 <Picker
-                    label={arg.label || arg.name}
+                    width="100%"
+                    label={argLabel(arg)}
                     selectedKey={value?.toString() || ''}
                     onSelectionChange={(val) => onChange(arg.name, val)}
                 >
@@ -86,7 +89,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
         return (
             <View key={arg.name} marginBottom="size-200">
                 <NumberField
-                    label={arg.label || arg.name}
+                    label={argLabel(arg)}
                     value={value as number}
                     onChange={(val) => onChange(arg.name, val)}
                     minValue={arg.min}
@@ -100,5 +103,12 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
         return null;
     }
 };
+
+function argLabel(arg: Argument<ArgumentValue>): string {
+    if (arg.label) {
+        return arg.label;
+    }
+    return Strings.capitalizeWords(arg.name);
+}
 
 export default CodeInput;

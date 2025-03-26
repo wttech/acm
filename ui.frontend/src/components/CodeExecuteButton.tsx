@@ -18,6 +18,8 @@ import { apiRequest } from '../utils/api.ts';
 import { Argument, ArgumentValue, ArgumentValues, Description } from '../utils/api.types.ts';
 import CodeInput from './CodeInput';
 import { Strings } from '../utils/strings.ts';
+import Close from "@spectrum-icons/workflow/Close";
+import Checkmark from "@spectrum-icons/workflow/Checkmark";
 
 interface CodeExecuteButtonProps {
     code: string;
@@ -30,8 +32,10 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
     const [description, setDescription] = useState<Description | null>(null);
     const [args, setArgs] = useState<ArgumentValues>({});
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [described, setDescribed] = useState(false);
 
     const fetchDescription = async () => {
+        setDescribed(true);
         try {
             const response = await apiRequest<Description>({
                 operation: 'Describe code',
@@ -60,6 +64,8 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
             }
         } catch (error) {
             console.error('Cannot describe code:', error);
+        } finally {
+            setDescribed(false);
         }
     };
 
@@ -86,7 +92,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
 
     return (
         <>
-            <Button variant="accent" onPress={handleExecute} isPending={isPending} isDisabled={isDisabled}>
+            <Button variant="accent" onPress={handleExecute} isPending={isPending || described} isDisabled={isDisabled}>
                 <Gears />
                 <Text>Execute</Text>
             </Button>
@@ -135,10 +141,12 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                         </Content>
                         <ButtonGroup>
                             <Button variant="secondary" onPress={handleCloseDialog}>
-                                Cancel
+                                <Close size="XS" />
+                                <Text>Cancel</Text>
                             </Button>
                             <Button variant="cta" onPress={() => { handleCloseDialog(); onExecute(args); }}>
-                                Execute
+                                <Checkmark size="XS" />
+                                <Text>Start</Text>
                             </Button>
                         </ButtonGroup>
                     </Dialog>
