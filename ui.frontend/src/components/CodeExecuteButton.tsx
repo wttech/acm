@@ -14,7 +14,7 @@ import {
     Item, View,
 } from '@adobe/react-spectrum';
 import Gears from '@spectrum-icons/workflow/Gears';
-import { apiRequest } from '../utils/api.ts';
+import {toastRequest} from '../utils/api.ts';
 import {Argument, ArgumentGroupDefault, ArgumentValue, ArgumentValues, Description} from '../utils/api.types.ts';
 import CodeInput from './CodeInput';
 import { Strings } from '../utils/strings.ts';
@@ -37,8 +37,10 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
     const fetchDescription = async () => {
         setDescribed(true);
         try {
-            const response = await apiRequest<Description>({
+            const response = await toastRequest<Description>({
                 operation: 'Describe code',
+                timeout: 10000,
+                positive: false,
                 url: `/apps/acm/api/describe-code.json`,
                 method: 'post',
                 data: {
@@ -62,8 +64,6 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
             } else {
                 onExecute({});
             }
-        } catch (error) {
-            console.error('Cannot describe code:', error);
         } finally {
             setDescribed(false);
         }

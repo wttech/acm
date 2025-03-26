@@ -6,7 +6,9 @@ import static com.wttech.aem.acm.core.util.ServletUtils.respondJson;
 import com.wttech.aem.acm.core.code.*;
 import com.wttech.aem.acm.core.util.JsonUtils;
 import java.io.IOException;
+import java.util.Optional;
 import javax.servlet.Servlet;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -53,10 +55,14 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
                         ok(String.format("Code from '%s' described successfully", code.getId()), description));
             } catch (Exception e) {
                 LOG.error("Code from '{}' cannot be described!", code.getId(), e);
+                String cause = StringUtils.defaultIfBlank(
+                        Optional.ofNullable(e.getCause())
+                                .map(Throwable::getMessage)
+                                .orElse(null),
+                        e.getMessage());
                 respondJson(
                         response,
-                        error(String.format(
-                                "Code from '%s' cannot be described. Error: %s", code.getId(), e.getMessage())));
+                        error(String.format("Code from '%s' cannot be described! Cause: %s", code.getId(), cause)));
             }
             respondJson(response, ok("Code described successfully"));
         } catch (Exception e) {

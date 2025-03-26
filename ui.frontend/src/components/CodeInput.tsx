@@ -8,7 +8,6 @@ import {
     isTextArgument,
     isSelectArgument,
     isNumberArgument,
-    ArgumentType
 } from '../utils/api.types.ts';
 import { Editor } from '@monaco-editor/react';
 import {Field} from '@react-spectrum/label';
