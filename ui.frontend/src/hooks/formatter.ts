@@ -3,7 +3,27 @@ import { useDateFormatter } from '@react-aria/i18n';
 import { formatDistance, formatDuration, intervalToDuration } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { useContext } from 'react';
-import { AppContext } from '../../AppContext.tsx';
+import { AppContext } from '../AppContext';
+
+export function useFormatter() {
+  const context = useContext(AppContext)!;
+
+  const instanceTimezoneId = context.instanceSettings.timezoneId;
+  const instanceDateFormatter = useDateFormatter({
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: instanceTimezoneId,
+  });
+
+  const userTimezoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userDateFormatter = useDateFormatter({
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: userTimezoneId,
+  });
+
+  return new Formatter(instanceTimezoneId, instanceDateFormatter, userTimezoneId, userDateFormatter);
+}
 
 class Formatter {
   instanceTimezoneId: string;
@@ -94,24 +114,4 @@ class Formatter {
   public userTimezone(): string {
     return this.userTimeZoneId;
   }
-}
-
-export function useFormatter() {
-  const context = useContext(AppContext)!;
-
-  const instanceTimezoneId = context.instanceSettings.timezoneId;
-  const instanceDateFormatter = useDateFormatter({
-    dateStyle: 'long',
-    timeStyle: 'short',
-    timeZone: instanceTimezoneId,
-  });
-
-  const userTimezoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const userDateFormatter = useDateFormatter({
-    dateStyle: 'long',
-    timeStyle: 'short',
-    timeZone: userTimezoneId,
-  });
-
-  return new Formatter(instanceTimezoneId, instanceDateFormatter, userTimezoneId, userDateFormatter);
 }

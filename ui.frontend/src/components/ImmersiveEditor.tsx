@@ -4,11 +4,11 @@ import { ColorVersion } from '@react-types/shared';
 import FullScreenExit from '@spectrum-icons/workflow/FullScreenExit';
 import { MarkerSeverity, editor } from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
-import { debounce } from '../utils/debounce.ts';
-import { modelStorage } from '../utils/modelStorage.ts';
-import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
+import { debounce } from '../utils/debounce';
+import { modelStorage } from '../utils/modelStorage';
+import { registerGroovyLanguage } from '../utils/monaco/groovy';
+import { SyntaxError } from "../hooks/code";
 
-export type SyntaxError = { line: number; column: number; message: string };
 type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & {
   id: string;
   scrollToBottomOnUpdate?: boolean;

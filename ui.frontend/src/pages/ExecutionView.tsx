@@ -17,8 +17,8 @@ import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import ImmersiveEditor from '../components/ImmersiveEditor';
 import { toastRequest } from '../utils/api';
 import { Execution, ExecutionOutput, isExecutionPending } from '../utils/api.types';
-import { useFormatter } from '../utils/hooks/formatter';
-import { useNavigationTab } from '../utils/hooks/navigation';
+import { useFormatter } from '../hooks/formatter';
+import { useNavigationTab } from '../hooks/navigation';
 
 const toastTimeout = 3000;
 

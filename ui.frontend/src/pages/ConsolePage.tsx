@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { useInterval } from 'react-use';
 import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Switch, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
 import { ToastQueue } from '@react-spectrum/toast';
 import Bug from '@spectrum-icons/workflow/Bug';
@@ -8,77 +10,34 @@ import Gears from '@spectrum-icons/workflow/Gears';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
-import { useCallback, useEffect, useState } from 'react';
-import { useDebounce, useInterval } from 'react-use';
 import CompilationStatus from '../components/CompilationStatus.tsx';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
-import ImmersiveEditor, { SyntaxError } from '../components/ImmersiveEditor';
+import ImmersiveEditor from '../components/ImmersiveEditor';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import { apiRequest } from '../utils/api.ts';
-import {ArgumentValues, Execution, ExecutionStatus, isExecutionPending, QueueOutput} from '../utils/api.types.ts';
+import { ArgumentValues, Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types.ts';
 import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
 import CodeExecuteButton from "../components/CodeExecuteButton";
+import { useCompilation } from '../hooks/code';
 
 const toastTimeout = 3000;
 const executionPollInterval = 500;
-const compilationDelay = 1000;
 type SelectedTab = 'code' | 'output';
 
 const ConsolePage = () => {
   const [selectedTab, setSelectedTab] = useState<SelectedTab>('code');
   const [executing, setExecuting] = useState<boolean>(false);
   const [code, setCode] = useState<string | undefined>(localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCode);
-  const [execution, setExecution] = useState<Execution | null>(null);
-  const [compiling, setCompiling] = useState<boolean>(false);
-  const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
-  const [compileError, setCompileError] = useState<string | undefined>(undefined);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
+  const [execution, setExecution] = useState<Execution | null>(null);
+  const [compiling, syntaxError, compileError, parseExecution ] = useCompilation(code);
 
-  const compileCode = useCallback(async () => {
-    try {
-      const { data } = await apiRequest<Execution>({
-        operation: 'Code parsing',
-        url: `/apps/acm/api/execute-code.json`,
-        method: 'post',
-        data: {
-          mode: 'parse',
-          code: {
-            id: 'console',
-            content: code,
-          },
-        },
-      });
-      const queuedExecution = data.data;
-      setExecution(queuedExecution);
-
-      if (queuedExecution.error) {
-        const [, lineText, columnText] = queuedExecution.error.match(/@ line (\d+), column (\d+)/) || [];
-
-        if (!lineText || !columnText) {
-          setCompileError(queuedExecution.error);
-          return;
-        }
-
-        const line = parseInt(lineText, 10);
-        const column = parseInt(columnText, 10);
-
-        setSyntaxError({ line, column, message: queuedExecution.error });
-      } else {
-        setSyntaxError(undefined);
-        setCompileError(undefined);
-      }
-    } catch {
-      console.warn('Code parsing error!');
-    } finally {
-      setCompiling(false);
-    }
-  }, [code]);
-
-  const [, cancelCompilation] = useDebounce(compileCode, compilationDelay, [code]);
-  useDebounce(() => localStorage.setItem(StorageKeys.EDITOR_CODE, code || ''), compilationDelay, [code]);
+  useEffect(() => {
+    setExecution(parseExecution)
+  }, [parseExecution]);
 
   const onExecute = async (args: ArgumentValues) => {
     setExecuting(true);
@@ -146,16 +105,6 @@ const ConsolePage = () => {
       },
       execution && isExecutionPending(execution.status) ? executionPollInterval : null,
   );
-
-  useEffect(() => {
-    setSyntaxError(undefined);
-    setCompileError(undefined);
-    setCompiling(true);
-
-    return () => {
-      cancelCompilation();
-    };
-  }, [cancelCompilation, code]);
 
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
 

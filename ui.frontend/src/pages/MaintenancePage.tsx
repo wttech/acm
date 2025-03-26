@@ -5,7 +5,7 @@ import User from '@spectrum-icons/workflow/User';
 import HealthChecker from '../components/HealthChecker';
 import ScriptExecutor from '../components/ScriptExecutor';
 import UserPreferencesConsole from '../components/UserPreferencesConsole';
-import { useNavigationTab } from '../utils/hooks/navigation';
+import { useNavigationTab } from '../hooks/navigation';
 
 const MaintenancePage = () => {
   const [selectedTab, setSelectedTab] = useNavigationTab('/maintenance', 'instance-configuration');

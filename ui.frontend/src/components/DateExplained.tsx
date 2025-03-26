@@ -1,6 +1,6 @@
 import { Content, ContextualHelp, Heading, Text } from '@adobe/react-spectrum';
 import React from 'react';
-import { useFormatter } from '../utils/hooks/formatter';
+import { useFormatter } from '../hooks/formatter';
 
 interface DateExplainedProps {
   value: string | Date;

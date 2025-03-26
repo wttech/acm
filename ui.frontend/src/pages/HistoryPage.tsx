@@ -16,7 +16,7 @@ import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import { toastRequest } from '../utils/api';
 import { ExecutionOutput, ExecutionStatus } from '../utils/api.types';
-import { useFormatter } from '../utils/hooks/formatter';
+import { useFormatter } from '../hooks/formatter';
 
 const HistoryPage = () => {
   const navigate = useNavigate();

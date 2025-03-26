@@ -2,7 +2,7 @@ import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectru
 import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import ScriptList from '../components/ScriptList';
-import { useNavigationTab } from '../utils/hooks/navigation';
+import { useNavigationTab } from '../hooks/navigation';
 
 const ScriptsPage = () => {
   const [selectedTab, handleTabChange] = useNavigationTab('/scripts', 'enabled');
