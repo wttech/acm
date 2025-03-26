@@ -21,6 +21,8 @@ export enum ArgumentType {
 export type ArgumentValue = string | number | boolean | null | undefined;
 export type ArgumentValues = Record<string, ArgumentValue>
 
+export const ArgumentGroupDefault = "general";
+
 export type Argument<T> = {
   name: string;
   type: ArgumentType;

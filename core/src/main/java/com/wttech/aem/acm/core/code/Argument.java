@@ -10,7 +10,7 @@ public abstract class Argument<V> {
 
     private String label;
 
-    private String group = "default";
+    private String group = "general";
 
     private boolean required;
 

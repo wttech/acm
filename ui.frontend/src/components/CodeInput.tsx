@@ -48,7 +48,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
             <View key={arg.name} marginY="size-100">
                 {arg.language ? (
                     <>
-                        <Field label={argLabel(arg)} width="100%">
+                        <Field label={argLabel(arg)} description={`Language: ${arg.language}`} width="100%">
                             <div>
                                 <Editor
                                     language={arg.language}

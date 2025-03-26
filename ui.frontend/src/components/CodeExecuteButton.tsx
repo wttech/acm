@@ -15,7 +15,7 @@ import {
 } from '@adobe/react-spectrum';
 import Gears from '@spectrum-icons/workflow/Gears';
 import { apiRequest } from '../utils/api.ts';
-import { Argument, ArgumentValue, ArgumentValues, Description } from '../utils/api.types.ts';
+import {Argument, ArgumentGroupDefault, ArgumentValue, ArgumentValues, Description} from '../utils/api.types.ts';
 import CodeInput from './CodeInput';
 import { Strings } from '../utils/strings.ts';
 import Close from "@spectrum-icons/workflow/Close";
@@ -88,7 +88,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
 
     const descriptionArguments: Argument<ArgumentValue>[] = Object.values(description?.arguments || []);
     const groups = Array.from(new Set(descriptionArguments.map(arg => arg.group)));
-    const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== 'default');
+    const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== ArgumentGroupDefault);
 
     return (
         <>
