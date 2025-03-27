@@ -7,69 +7,67 @@ import { StorageKeys } from '../utils/storage.ts';
 const compilationDelay = 1000;
 
 export type SyntaxError = {
-    line: number;
-    column: number;
-    message: string
+  line: number;
+  column: number;
+  message: string;
 };
 
 export const useCompilation = (code: string | undefined) => {
-    const [compiling, setCompiling] = useState<boolean>(false);
-    const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
-    const [compileError, setCompileError] = useState<string | undefined>(undefined);
-    const [execution, setExecution] = useState<Execution | null>(null);
+  const [compiling, setCompiling] = useState<boolean>(false);
+  const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
+  const [compileError, setCompileError] = useState<string | undefined>(undefined);
 
-    const compileCode = useCallback(async () => {
-        try {
-            const { data } = await apiRequest<Execution>({
-                operation: 'Code parsing',
-                url: `/apps/acm/api/execute-code.json`,
-                method: 'post',
-                data: {
-                    mode: 'parse',
-                    code: {
-                        id: 'console',
-                        content: code,
-                    },
-                },
-            });
-            const queuedExecution = data.data;
-            setExecution(queuedExecution);
+  const compileCode = useCallback(async () => {
+    try {
+      const { data } = await apiRequest<Execution>({
+        operation: 'Code parsing',
+        url: `/apps/acm/api/execute-code.json`,
+        method: 'post',
+        data: {
+          mode: 'parse',
+          code: {
+            id: 'console',
+            content: code,
+          },
+        },
+      });
+      const queuedExecution = data.data;
 
-            if (queuedExecution.error) {
-                const [, lineText, columnText] = queuedExecution.error.match(/@ line (\d+), column (\d+)/) || [];
+      if (queuedExecution.error) {
+        const [, lineText, columnText] = queuedExecution.error.match(/@ line (\d+), column (\d+)/) || [];
 
-                if (!lineText || !columnText) {
-                    setCompileError(queuedExecution.error);
-                    return;
-                }
-
-                const line = parseInt(lineText, 10);
-                const column = parseInt(columnText, 10);
-
-                setSyntaxError({ line, column, message: queuedExecution.error });
-            } else {
-                setSyntaxError(undefined);
-                setCompileError(undefined);
-            }
-        } catch {
-            console.warn('Code parsing error!');
-        } finally {
-            setCompiling(false);
+        if (!lineText || !columnText) {
+          setCompileError(queuedExecution.error);
+          return;
         }
-    }, [code]);
 
-    const [, cancelCompilation] = useDebounce(compileCode, compilationDelay, [code]);
-    useDebounce(() => localStorage.setItem(StorageKeys.EDITOR_CODE, code || ''), compilationDelay, [code]);
+        const line = parseInt(lineText, 10);
+        const column = parseInt(columnText, 10);
 
-    useEffect(() => {
+        setSyntaxError({ line, column, message: queuedExecution.error });
+      } else {
         setSyntaxError(undefined);
         setCompileError(undefined);
-        setCompiling(true);
+      }
+    } catch {
+      console.warn('Code parsing error!');
+    } finally {
+      setCompiling(false);
+    }
+  }, [code]);
 
-        return () => {
-            cancelCompilation();
-        };
-    }, [cancelCompilation, code]);
+  const [, cancelCompilation] = useDebounce(compileCode, compilationDelay, [code]);
+  useDebounce(() => localStorage.setItem(StorageKeys.EDITOR_CODE, code || ''), compilationDelay, [code]);
 
-    return [ compiling, syntaxError, compileError, execution ] as const;
+  useEffect(() => {
+    setSyntaxError(undefined);
+    setCompileError(undefined);
+    setCompiling(true);
+
+    return () => {
+      cancelCompilation();
+    };
+  }, [cancelCompilation, code]);
+
+  return [compiling, syntaxError, compileError] as const;
 };
