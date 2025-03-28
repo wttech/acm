@@ -13,13 +13,13 @@ import { Editor } from '@monaco-editor/react';
 import {Field} from '@react-spectrum/label';
 import {Strings} from "../utils/strings.ts";
 
-interface CodeInputProps {
+interface CodeArgumentInputProps {
     arg: Argument<ArgumentValue>;
     value: ArgumentValue;
     onChange: (name: string, value: ArgumentValue) => void;
 }
 
-const CodeInput: React.FC<CodeInputProps> = ({ arg, value, onChange }) => {
+const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg, value, onChange }) => {
     if (isBoolArgument(arg)) {
         return (
             <View key={arg.name} marginBottom="size-200">
@@ -119,4 +119,4 @@ function argLabel(arg: Argument<ArgumentValue>): string {
     return Strings.capitalizeWords(arg.name);
 }
 
-export default CodeInput;
+export default CodeArgumentInput;

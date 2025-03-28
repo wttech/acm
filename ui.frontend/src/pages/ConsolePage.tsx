@@ -61,14 +61,12 @@ const ConsolePage = () => {
     setExecution(parseExecution)
   }, [parseExecution]);
 
-  const onDescribe = (description: Description) => {
-    if (description.execution.status === ExecutionStatus.FAILED) {
-      setExecution(description.execution)
-      setSelectedTab('output')
-      ToastQueue.negative('Code description failed!', {
-        timeout: toastTimeout,
-      });
-    }
+  const onDescribeFailed = (description: Description) => {
+    setExecution(description.execution)
+    setSelectedTab('output')
+    ToastQueue.negative('Code description failed!', {
+      timeout: toastTimeout,
+    });
   }
 
   const onExecute = async (description: Description, args: ArgumentValues) => {
@@ -159,7 +157,7 @@ const ConsolePage = () => {
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                   <Flex flex="1" alignItems="center">
                     <ButtonGroup>
-                      <CodeExecuteButton code={code || ''} onDescribe={onDescribe} onExecute={onExecute} isPending={executing || compiling} isDisabled={!!syntaxError || !!compileError}/>
+                      <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={!!syntaxError || !!compileError}/>
                     </ButtonGroup>
                   </Flex>
                   <Flex flex="1" justifyContent="center" alignItems="center">

@@ -24,20 +24,20 @@ import {
     Description,
     ExecutionStatus,
 } from '../utils/api.types.ts';
-import CodeInput from './CodeInput';
+import CodeArgumentInput from './CodeArgumentInput.tsx';
 import {Strings} from '../utils/strings.ts';
 import Close from "@spectrum-icons/workflow/Close";
 import Checkmark from "@spectrum-icons/workflow/Checkmark";
 
 interface CodeExecuteButtonProps {
     code: string;
-    onDescribe: (description: Description) => void;
+    onDescribeFailed: (description: Description) => void;
     onExecute: (description: Description, args: ArgumentValues) => void;
     isDisabled: boolean;
     isPending: boolean;
 }
 
-const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, onDescribe, isDisabled, isPending }) => {
+const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeFailed, onExecute, isDisabled, isPending }) => {
     const [description, setDescription] = useState<Description | null>(null);
     const [args, setArgs] = useState<ArgumentValues>({});
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -59,15 +59,14 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                 },
             });
             const description = response.data.data;
-            onDescribe(description)
 
             if (description.execution.status === ExecutionStatus.SUCCEEDED) {
                 setDescription(description);
 
-                const initialArgs = description.arguments
+                const argumentsInitial = description.arguments
                     ? Object.fromEntries(Object.entries(description.arguments).map(([key, arg]) => [key, arg.value]))
                     : {};
-                setArgs(initialArgs);
+                setArgs(argumentsInitial);
 
                 const argumentsRequired = description.arguments && Object.keys(description.arguments).length > 0;
                 if (argumentsRequired) {
@@ -75,6 +74,10 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                 } else {
                     onExecute(description, {});
                 }
+            } else if (description.execution.status === ExecutionStatus.FAILED) {
+                onDescribeFailed(description);
+            } else {
+                console.error("Code description has unexpected status:", description.execution.status);
             }
         } finally {
             setDescribed(false);
@@ -128,7 +131,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                                                     {descriptionArguments
                                                         .filter(arg => arg.group === group)
                                                         .map(arg => (
-                                                            <CodeInput
+                                                            <CodeArgumentInput
                                                                 key={arg.name}
                                                                 arg={arg}
                                                                 value={args[arg.name]}
@@ -142,7 +145,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                                 </Tabs>
                             ) : (
                                 descriptionArguments.map(arg => (
-                                    <CodeInput
+                                    <CodeArgumentInput
                                         key={arg.name}
                                         arg={arg}
                                         value={args[arg.name]}
