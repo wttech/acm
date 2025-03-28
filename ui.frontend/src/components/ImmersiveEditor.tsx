@@ -53,6 +53,10 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
     const storedModel = modelStorage.getModel(id);
     const textModel = storedModel?.textModel || monacoRef.editor.createModel(initialValue ?? value ?? '', language);
 
+    if (value !== undefined) {
+      textModel.setValue(value);
+    }
+
     const mountedEditor = monacoRef.editor.create(containerRef.current, {
       model: textModel,
       scrollBeyondLastLine: false,
