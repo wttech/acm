@@ -5,8 +5,9 @@ import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 
 public enum ScriptType {
-    ENABLED(ScriptRepository.ROOT + "/enabled"),
-    DISABLED(ScriptRepository.ROOT + "/disabled");
+    MANUAL(ScriptRepository.ROOT + "/manual"),
+    ENABLED(ScriptRepository.ROOT + "/auto/enabled"),
+    DISABLED(ScriptRepository.ROOT + "/auto/disabled");
 
     private final String root;
 

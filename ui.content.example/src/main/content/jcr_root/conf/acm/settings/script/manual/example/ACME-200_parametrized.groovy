@@ -1,5 +1,4 @@
 void describeRun() {
-    //args.checkbox("replicate")
     args.bool("dryRun") { label = "Dry run"; value = true; checkbox() }
     args.string("name") { value = "John" }
     args.string("surname") { value = "Doe" }
