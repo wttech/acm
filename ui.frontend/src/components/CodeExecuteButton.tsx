@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
     Button,
-    Text,
-    Dialog,
-    Heading,
-    Divider,
-    Content,
     ButtonGroup,
+    Content,
+    Dialog,
     DialogContainer,
-    Tabs,
+    Divider,
+    Heading,
+    Item,
     TabList,
     TabPanels,
-    Item, View,
+    Tabs,
+    Text,
+    View,
 } from '@adobe/react-spectrum';
 import Gears from '@spectrum-icons/workflow/Gears';
 import {toastRequest} from '../utils/api.ts';
@@ -21,9 +22,10 @@ import {
     ArgumentValue,
     ArgumentValues,
     Description,
+    ExecutionStatus,
 } from '../utils/api.types.ts';
 import CodeInput from './CodeInput';
-import { Strings } from '../utils/strings.ts';
+import {Strings} from '../utils/strings.ts';
 import Close from "@spectrum-icons/workflow/Close";
 import Checkmark from "@spectrum-icons/workflow/Checkmark";
 
@@ -57,20 +59,22 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                 },
             });
             const description = response.data.data;
-            setDescription(description);
-
             onDescribe(description)
 
-            const initialArgs = description.arguments
-                ? Object.fromEntries(Object.entries(description.arguments).map(([key, arg]) => [key, arg.value]))
-                : {};
-            setArgs(initialArgs);
+            if (description.execution.status === ExecutionStatus.SUCCEEDED) {
+                setDescription(description);
 
-            const argumentsRequired = description.arguments && Object.keys(description.arguments).length > 0;
-            if (argumentsRequired) {
-                setDialogOpen(true);
-            } else {
-                onExecute(description, {});
+                const initialArgs = description.arguments
+                    ? Object.fromEntries(Object.entries(description.arguments).map(([key, arg]) => [key, arg.value]))
+                    : {};
+                setArgs(initialArgs);
+
+                const argumentsRequired = description.arguments && Object.keys(description.arguments).length > 0;
+                if (argumentsRequired) {
+                    setDialogOpen(true);
+                } else {
+                    onExecute(description, {});
+                }
             }
         } finally {
             setDescribed(false);

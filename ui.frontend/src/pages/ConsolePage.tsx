@@ -1,7 +1,22 @@
-import { useEffect, useState } from 'react';
-import { useInterval } from 'react-use';
-import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Flex, Heading, Item, Switch, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
-import { ToastQueue } from '@react-spectrum/toast';
+import {useEffect, useState} from 'react';
+import {useInterval} from 'react-use';
+import {
+  Button,
+  ButtonGroup,
+  Content,
+  Dialog,
+  DialogTrigger,
+  Divider,
+  Flex,
+  Heading,
+  Item,
+  Switch,
+  TabList,
+  TabPanels,
+  Tabs,
+  Text
+} from '@adobe/react-spectrum';
+import {ToastQueue} from '@react-spectrum/toast';
 import Bug from '@spectrum-icons/workflow/Bug';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Close from '@spectrum-icons/workflow/Close';
@@ -16,7 +31,7 @@ import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ImmersiveEditor from '../components/ImmersiveEditor';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
-import { apiRequest } from '../utils/api.ts';
+import {apiRequest} from '../utils/api.ts';
 import {
   ArgumentValues,
   Description,
@@ -25,10 +40,10 @@ import {
   isExecutionPending,
   QueueOutput
 } from '../utils/api.types.ts';
-import { StorageKeys } from '../utils/storage.ts';
+import {StorageKeys} from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
 import CodeExecuteButton from "../components/CodeExecuteButton";
-import { useCompilation } from '../hooks/code';
+import {useCompilation} from '../hooks/code';
 
 const toastTimeout = 3000;
 const executionPollInterval = 500;
@@ -47,7 +62,13 @@ const ConsolePage = () => {
   }, [parseExecution]);
 
   const onDescribe = (description: Description) => {
-    setExecution(description.execution)
+    if (description.execution.status === ExecutionStatus.FAILED) {
+      setExecution(description.execution)
+      setSelectedTab('output')
+      ToastQueue.negative('Code description failed!', {
+        timeout: toastTimeout,
+      });
+    }
   }
 
   const onExecute = async (description: Description, args: ArgumentValues) => {
