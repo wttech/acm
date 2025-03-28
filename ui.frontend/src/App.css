@@ -1,15 +1,8 @@
 body {
-  min-height: 100vh;
-}
-
-/* AEM classes cause layout clipping in Monaco editor */
-div.foundation-layout-panel-bodywrapper,
-div.foundation-layout-panel-content,
-div.foundation-layout-panel-body {
-  overflow: unset;
+    min-height: 100vh;
 }
 
 /* CoralUI3 clashes with React Spectrum */
 input[type='search'] {
-  box-sizing: border-box !important;
+    box-sizing: border-box !important;
 }
