@@ -4,6 +4,7 @@ export type Executable = {
 };
 
 export type Description = {
+  execution: Execution
   arguments: {
     [name: string]: Argument<ArgumentValue>;
   };

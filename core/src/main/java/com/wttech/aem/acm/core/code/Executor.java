@@ -99,7 +99,6 @@ public class Executor {
                 context.setOutputStream(outputStream);
             }
 
-            context.setOutputStream(outputStream);
             CodeShell shell = createShell(context);
 
             execution.start();
@@ -160,21 +159,28 @@ public class Executor {
     }
 
     public Description describe(ExecutionContext context) {
-        try {
-            CodeShell shell = createShell(context);
-            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
-            script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
+        try (OutputStream outputStream = context.getFileOutput().write()) {
+            context.setOutputStream(outputStream);
+
+            CodeShell shell = createShell(context);
+            execution.start();
+            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+
+            try {
+                script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+            } catch (MissingMethodException e) {
+                // ignore
+            }
             return new Description(
-                    context.getExecutable(), shell.getCodeBinding().getArgs());
-        } catch (MissingMethodException e) {
-            return new Description(context.getExecutable(), new Arguments(context));
-        } catch (Exception e) {
-            throw new AcmException(
-                    String.format(
-                            "Cannot describe executable '%s'!",
-                            context.getExecutable().getId()),
-                    e);
+                    execution.end(ExecutionStatus.SUCCEEDED),
+                    shell.getCodeBinding().getArgs());
+        } catch (Throwable e) {
+            execution.error(e);
+            return new Description(execution.end(ExecutionStatus.FAILED), new Arguments(context));
+        } finally {
+            context.getFileOutput().delete();
         }
     }
 }

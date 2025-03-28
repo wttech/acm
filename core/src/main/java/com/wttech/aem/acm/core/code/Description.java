@@ -4,17 +4,17 @@ import java.io.Serializable;
 
 public class Description implements Serializable {
 
-    private final Executable executable;
+    private final Execution execution;
 
     private final Arguments arguments;
 
-    public Description(Executable executable, Arguments arguments) {
-        this.executable = executable;
+    public Description(Execution execution, Arguments arguments) {
+        this.execution = execution;
         this.arguments = arguments;
     }
 
-    public Executable getExecutable() {
-        return executable;
+    public Execution getExecution() {
+        return execution;
     }
 
     public Arguments getArguments() {

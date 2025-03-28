@@ -17,7 +17,14 @@ import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ImmersiveEditor from '../components/ImmersiveEditor';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import { apiRequest } from '../utils/api.ts';
-import { ArgumentValues, Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types.ts';
+import {
+  ArgumentValues,
+  Description,
+  Execution,
+  ExecutionStatus,
+  isExecutionPending,
+  QueueOutput
+} from '../utils/api.types.ts';
 import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
 import CodeExecuteButton from "../components/CodeExecuteButton";
@@ -39,7 +46,11 @@ const ConsolePage = () => {
     setExecution(parseExecution)
   }, [parseExecution]);
 
-  const onExecute = async (args: ArgumentValues) => {
+  const onDescribe = (description: Description) => {
+    setExecution(description.execution)
+  }
+
+  const onExecute = async (description: Description, args: ArgumentValues) => {
     setExecuting(true);
     setExecution(null);
 
@@ -99,11 +110,11 @@ const ConsolePage = () => {
 
   useInterval(
       () => {
-        if (execution && isExecutionPending(execution.status)) {
+        if (executing && execution && isExecutionPending(execution.status)) {
           pollExecutionState(execution.id);
         }
       },
-      execution && isExecutionPending(execution.status) ? executionPollInterval : null,
+      executing && execution && isExecutionPending(execution.status) ? executionPollInterval : null,
   );
 
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
@@ -127,7 +138,7 @@ const ConsolePage = () => {
                 <Flex direction="row" justifyContent="space-between" alignItems="center">
                   <Flex flex="1" alignItems="center">
                     <ButtonGroup>
-                      <CodeExecuteButton code={code || ''} onExecute={onExecute} isPending={executing || compiling} isDisabled={!!syntaxError || !!compileError}/>
+                      <CodeExecuteButton code={code || ''} onDescribe={onDescribe} onExecute={onExecute} isPending={executing || compiling} isDisabled={!!syntaxError || !!compileError}/>
                     </ButtonGroup>
                   </Flex>
                   <Flex flex="1" justifyContent="center" alignItems="center">

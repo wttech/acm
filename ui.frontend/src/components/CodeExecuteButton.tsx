@@ -15,7 +15,13 @@ import {
 } from '@adobe/react-spectrum';
 import Gears from '@spectrum-icons/workflow/Gears';
 import {toastRequest} from '../utils/api.ts';
-import {Argument, ArgumentGroupDefault, ArgumentValue, ArgumentValues, Description} from '../utils/api.types.ts';
+import {
+    Argument,
+    ArgumentGroupDefault,
+    ArgumentValue,
+    ArgumentValues,
+    Description,
+} from '../utils/api.types.ts';
 import CodeInput from './CodeInput';
 import { Strings } from '../utils/strings.ts';
 import Close from "@spectrum-icons/workflow/Close";
@@ -23,12 +29,13 @@ import Checkmark from "@spectrum-icons/workflow/Checkmark";
 
 interface CodeExecuteButtonProps {
     code: string;
-    onExecute: (args: ArgumentValues) => void;
+    onDescribe: (description: Description) => void;
+    onExecute: (description: Description, args: ArgumentValues) => void;
     isDisabled: boolean;
     isPending: boolean;
 }
 
-const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, isDisabled, isPending }) => {
+const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, onDescribe, isDisabled, isPending }) => {
     const [description, setDescription] = useState<Description | null>(null);
     const [args, setArgs] = useState<ArgumentValues>({});
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -39,7 +46,6 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
         try {
             const response = await toastRequest<Description>({
                 operation: 'Describe code',
-                timeout: 10000,
                 positive: false,
                 url: `/apps/acm/api/describe-code.json`,
                 method: 'post',
@@ -53,6 +59,8 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
             const description = response.data.data;
             setDescription(description);
 
+            onDescribe(description)
+
             const initialArgs = description.arguments
                 ? Object.fromEntries(Object.entries(description.arguments).map(([key, arg]) => [key, arg.value]))
                 : {};
@@ -62,7 +70,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
             if (argumentsRequired) {
                 setDialogOpen(true);
             } else {
-                onExecute({});
+                onExecute(description, {});
             }
         } finally {
             setDescribed(false);
@@ -71,7 +79,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
 
     const handleExecute = () => {
         if (description) {
-            onExecute(args);
+            onExecute(description, args);
         } else {
             fetchDescription();
         }
@@ -144,7 +152,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onExecute, 
                                 <Close size="XS" />
                                 <Text>Cancel</Text>
                             </Button>
-                            <Button variant="cta" onPress={() => { handleCloseDialog(); onExecute(args); }}>
+                            <Button variant="cta" onPress={() => { handleCloseDialog(); onExecute(description!, args); }}>
                                 <Checkmark size="XS" />
                                 <Text>Start</Text>
                             </Button>
