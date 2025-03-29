@@ -1,5 +1,5 @@
 group: General
-name: general_demo_parametrized
+name: general_demo_arguments
 content: |
   void describeRun() {
     args.string("name") { value = "John" }
@@ -14,5 +14,5 @@ content: |
     println "Hello ${args.value('name')} ${args.value('surname')}!"
   }
 documentation: |
-  Parametrized script - a skeleton for a script with parameters.<br>
+  Parametrized script - a skeleton for a script with arguments.<br>
   The script will print a greeting message with the provided name and surname.

@@ -1,0 +1,7 @@
+group: Argument
+name: argument_select
+content: |
+  args.select("${1:name}") { label = "${2:label}"; options = ["${3:option1}": "${4:value1}", "${5:option2}": "${6:value2}"]; value = "${4:value}" }
+documentation: |
+  An argument holding a select box with two options.<br>
+  By default, the first option is selected.

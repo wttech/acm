@@ -1,6 +1,6 @@
 group: Argument
 name: argument_decimal
 content: |
-  args.decimalNumber("$1") { label = "$2"; value = "$3" }
+  args.decimalNumber("${1:name}") { label = "${2:label}"; value = "${3:value}" }
 documentation: |
   An argument holding a decimal number value.<br>

@@ -48,6 +48,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
         try {
             const response = await toastRequest<Description>({
                 operation: 'Describe code',
+                timeout: 10000,
                 positive: false,
                 url: `/apps/acm/api/describe-code.json`,
                 method: 'post',
