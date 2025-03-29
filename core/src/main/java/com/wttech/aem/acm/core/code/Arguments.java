@@ -24,6 +24,10 @@ public class Arguments implements Serializable {
     }
 
     private void add(Argument<?> argument) {
+        if (definitions.containsKey(argument.getName())) {
+            throw new IllegalArgumentException(
+                    String.format("Argument with name '%s' is already defined!", argument.getName()));
+        }
         definitions.put(argument.getName(), argument);
     }
 
