@@ -1,0 +1,18 @@
+group: General
+name: general_demo_parametrized
+content: |
+  void describeRun() {
+    args.string("name") { value = "John" }
+    args.string("surname") { value = "Doe" }
+  }
+  
+  boolean canRun() {
+    return condition.always()
+  }
+    
+  void doRun() {
+    println "Hello ${args.value('name')} ${args.value('surname')}!"
+  }
+documentation: |
+  Parametrized script - a skeleton for a script with parameters.<br>
+  The script will print a greeting message with the provided name and surname.

@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.servlet;
 
 import static com.wttech.aem.acm.core.util.ServletResult.*;
 import static com.wttech.aem.acm.core.util.ServletUtils.respondJson;
+import static com.wttech.aem.acm.core.util.ServletUtils.respondJsonBuffered;
 
 import com.wttech.aem.acm.core.code.*;
 import com.wttech.aem.acm.core.util.JsonUtils;
@@ -50,7 +51,7 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
                 ExecutionContext context = executor.createContext(code, request.getResourceResolver());
                 Description description = executor.describe(context);
 
-                respondJson(
+                respondJsonBuffered(
                         response,
                         ok(String.format("Code from '%s' described successfully", code.getId()), description));
             } catch (Exception e) {
@@ -64,7 +65,6 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
                         response,
                         error(String.format("Code from '%s' cannot be described! Cause: %s", code.getId(), cause)));
             }
-            respondJson(response, ok("Code described successfully"));
         } catch (Exception e) {
             LOG.error("Code input cannot be read!", e);
             respondJson(response, badRequest("Cannot read code input!"));

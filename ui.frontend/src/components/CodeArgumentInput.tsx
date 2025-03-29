@@ -102,7 +102,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg, value, onCha
                     onChange={(val) => onChange(arg.name, val)}
                     minValue={arg.min}
                     maxValue={arg.max}
-                    hideStepper={arg.type === 'DOUBLE'}
+                    hideStepper={arg.type === 'DECIMAL'}
                     formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
                 />
             </View>

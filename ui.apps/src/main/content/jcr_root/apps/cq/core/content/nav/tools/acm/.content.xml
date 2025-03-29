@@ -4,7 +4,7 @@
     jcr:title="Content Manager"
     jcr:description="Do live content and permission updates via Groovy Scripts">
     <console/>
-    <snippets/>
     <scripts/>
+    <snippets/>
     <executions/>
 </jcr:root>

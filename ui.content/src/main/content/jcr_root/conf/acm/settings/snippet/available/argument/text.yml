@@ -1,0 +1,7 @@
+group: Argument
+name: argument_text
+content: |
+  args.text("$1") { label = "$2"; value = "$3"; language = "$4" }
+documentation: |
+  An argument holding a complex, multiline string value.<br>
+  Language can be specified for syntax highlighting, for example, "json" or "xml".<br>

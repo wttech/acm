@@ -125,12 +125,12 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void doubleNumber(String name) {
-        doubleNumber(name, null);
+    public void decimalNumber(String name) {
+        decimalNumber(name, null);
     }
 
-    public void doubleNumber(String name, Closure<DoubleArgument> options) {
-        DoubleArgument argument = new DoubleArgument(name);
+    public void decimalNumber(String name, Closure<DecimalArgument> options) {
+        DecimalArgument argument = new DecimalArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }

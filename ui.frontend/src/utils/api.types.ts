@@ -10,7 +10,7 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'INTEGER' | 'DOUBLE';
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'INTEGER' | 'DECIMAL';
 export type ArgumentValue = string | number | boolean | null | undefined;
 export type ArgumentValues = Record<string, ArgumentValue>
 
@@ -59,7 +59,7 @@ export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArg
 }
 
 export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
-  return arg.type === 'INTEGER' || arg.type === 'DOUBLE';
+  return arg.type === 'INTEGER' || arg.type === 'DECIMAL';
 }
 
 export type Execution = {

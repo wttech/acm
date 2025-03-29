@@ -6,5 +6,5 @@ public enum ArgumentType {
     BOOL,
     STRING,
     INTEGER,
-    DOUBLE
+    DECIMAL
 }
