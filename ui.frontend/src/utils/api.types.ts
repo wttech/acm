@@ -35,6 +35,7 @@ export type TextArgument = Argument<string> & {
 
 export type SelectArgument = Argument<ArgumentValue> & {
   options: Record<string, ArgumentValue>;
+  display: 'DROPDOWN' | 'RADIO'
 };
 
 export type NumberArgument = Argument<number> & {

@@ -5,3 +5,4 @@ content: |
 documentation: |
   An argument holding a select box with two options.<br>
   By default, the first option is selected.
+  Can be displayed as a dropdown or a radio.

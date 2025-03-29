@@ -41,7 +41,7 @@ public class BoolArgument extends Argument<Boolean> {
                     .filter(r -> r.name().equalsIgnoreCase(name))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Bool argument cannot be rendered as '%s'!", name)));
+                            String.format("Bool argument cannot be displayed as '%s'!", name)));
         }
     }
 }

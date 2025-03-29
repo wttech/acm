@@ -1,5 +1,5 @@
 import React from 'react';
-import {TextField, Checkbox, NumberField, Picker, Item, View, Switch} from '@adobe/react-spectrum';
+import {TextField, Checkbox, NumberField, Picker, Item, View, Switch, RadioGroup, Radio} from '@adobe/react-spectrum';
 import {
     Argument,
     ArgumentValue,
@@ -81,16 +81,30 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg, value, onCha
     } else if (isSelectArgument(arg)) {
         return (
             <View key={arg.name} marginBottom="size-200">
-                <Picker
-                    width="100%"
-                    label={argLabel(arg)}
-                    selectedKey={value?.toString() || ''}
-                    onSelectionChange={(val) => onChange(arg.name, val)}
-                >
-                    {Object.entries(arg.options).map(([label, val]) => (
-                        <Item key={val?.toString()}>{label}</Item>
-                    ))}
-                </Picker>
+                {arg.display === 'RADIO' ? (
+                    <RadioGroup
+                        label={argLabel(arg)}
+                        value={value?.toString() || ''}
+                        onChange={(val) => onChange(arg.name, val)}
+                    >
+                        {Object.entries(arg.options).map(([label, val]) => (
+                            <Radio key={val?.toString()} value={val?.toString() || ''}>
+                                {label}
+                            </Radio>
+                        ))}
+                    </RadioGroup>
+                ) : (
+                    <Picker
+                        width="100%"
+                        label={argLabel(arg)}
+                        selectedKey={value?.toString() || ''}
+                        onSelectionChange={(val) => onChange(arg.name, val)}
+                    >
+                        {Object.entries(arg.options).map(([label, val]) => (
+                            <Item key={val?.toString()}>{label}</Item>
+                        ))}
+                    </Picker>
+                )}
             </View>
         );
     } else if (isNumberArgument(arg)) {
