@@ -1,5 +1,5 @@
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
-import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
+import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import Hand from '@spectrum-icons/workflow/Hand';
 import ScriptList from '../components/ScriptList';
@@ -16,9 +16,9 @@ const ScriptsPage = () => {
             <Hand />
             <Text>Manual</Text>
           </Item>
-          <Item aria-label="Enabled scripts" key="enabled">
-            <CheckmarkCircle />
-            <Text>Enabled</Text>
+          <Item aria-label="Automatic scripts" key="enabled">
+            <FlashOn/>
+            <Text>Automatic</Text>
           </Item>
           <Item aria-label="Disabled scripts" key="disabled">
             <CloseCircle />
