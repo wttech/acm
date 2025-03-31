@@ -3,11 +3,14 @@ package com.wttech.aem.acm.core.code.arg;
 import com.wttech.aem.acm.core.code.Argument;
 import com.wttech.aem.acm.core.code.ArgumentType;
 import com.wttech.aem.acm.core.util.ObjectUtils;
+import com.wttech.aem.acm.core.util.StringUtil;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class MultiSelectArgument<V> extends Argument<V> {
 
-    private Display display = Display.LIST;
+    private Display display = Display.AUTO;
 
     private Map<String, V> options = new LinkedHashMap<>();
 
@@ -32,6 +35,12 @@ public class MultiSelectArgument<V> extends Argument<V> {
         this.options = options;
     }
 
+    public void setOptions(Collection<V> options) {
+        this.options = options.stream()
+                .collect(Collectors.toMap(
+                        k -> StringUtil.capitalizeWords(ObjectUtils.toString(k)), Function.identity()));
+    }
+
     public Display getDisplay() {
         return display;
     }
@@ -53,6 +62,7 @@ public class MultiSelectArgument<V> extends Argument<V> {
     }
 
     public enum Display {
+        AUTO,
         LIST,
         CHECKBOX;
 

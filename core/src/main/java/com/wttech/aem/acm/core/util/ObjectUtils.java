@@ -12,6 +12,10 @@ public final class ObjectUtils {
         return obj instanceof Collection || obj != null && obj.getClass().isArray();
     }
 
+    public static String toString(Object obj) {
+        return obj == null ? null : obj.toString();
+    }
+
     public static boolean toBool(Object value) {
         if (value instanceof Boolean) {
             return (Boolean) value;

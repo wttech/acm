@@ -40,12 +40,12 @@ export type NumberArgument = Argument<number> & {
 
 export type SelectArgument = Argument<ArgumentValue> & {
   options: Record<string, ArgumentValue>;
-  display: 'DROPDOWN' | 'RADIO'
+  display: 'AUTO' | 'DROPDOWN' | 'RADIO'
 };
 
 export type MultiSelectArgument = Argument<ArgumentValue> & {
   options: Record<string, ArgumentValue>;
-  display: 'CHECKBOX' | 'DROPDOWN'
+  display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN'
 };
 
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> {

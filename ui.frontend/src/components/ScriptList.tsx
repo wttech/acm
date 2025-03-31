@@ -173,7 +173,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
       <TableView
         flex="1"
         aria-label="Scripts list"
-        selectionMode="multiple"
+        selectionMode={type === 'manual' ? 'none': 'multiple'}
         selectedKeys={selectedKeys}
         onSelectionChange={setSelectedKeys}
         renderEmptyState={renderEmptyState}

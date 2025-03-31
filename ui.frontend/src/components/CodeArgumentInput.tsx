@@ -94,10 +94,14 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg, value, onCha
             </View>
         );
     }  else if (isSelectArgument(arg)) {
+        const display = arg.display === 'AUTO'
+            ? ((Object.entries(arg.options).length <= 3) ? 'RADIO' : 'DROPDOWN')
+            : arg.display;
         return (
             <View key={arg.name} marginBottom="size-200">
-                {arg.display === 'RADIO' ? (
+                {display === 'RADIO' ? (
                     <RadioGroup
+                        orientation='horizontal'
                         aria-label={`Argument "${arg.name}"`}
                         label={argLabel(arg)}
                         value={value?.toString() || ''}
@@ -125,10 +129,14 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg, value, onCha
             </View>
         );
     } else if (isMultiSelectArgument(arg)) {
+        const display = arg.display === 'AUTO'
+            ? ((Object.entries(arg.options).length <= 3) ? 'CHECKBOX' : 'LIST')
+            : arg.display;
         return (
             <View key={arg.name} marginBottom="size-200">
-                {arg.display === 'CHECKBOX' ? (
+                {display === 'CHECKBOX' ? (
                     <CheckboxGroup
+                        orientation='horizontal'
                         aria-label={`Argument "${arg.name}"`}
                         label={argLabel(arg)}
                         value={value as string[]}
