@@ -119,6 +119,16 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
+    public void multiSelect(String name) {
+        multiSelect(name, null);
+    }
+
+    public <V> void multiSelect(String name, Closure<MultiSelectArgument<V>> options) {
+        MultiSelectArgument<V> argument = new MultiSelectArgument<>(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
     public void integerNumber(String name) {
         integerNumber(name, null);
     }
