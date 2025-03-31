@@ -43,7 +43,7 @@ import ScriptSynchronizeButton from './ScriptSynchronizeButton';
 import ScriptToggleButton from './ScriptToggleButton';
 
 type ScriptListProps = {
-  type: 'enabled' | 'disabled';
+  type: 'manual' | 'enabled' | 'disabled';
 };
 
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
@@ -100,8 +100,12 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
-              <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-              <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
+              {type === 'enabled' || type === 'disabled' ? (
+                  <>
+                    <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
+                    <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
+                  </>
+              ) : null}
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">

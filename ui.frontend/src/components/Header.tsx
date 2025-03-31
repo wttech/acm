@@ -24,16 +24,16 @@ const Header = () => {
           <Text>Console</Text>
         </Button>
       </AppLink>
+      <AppLink to="/scripts">
+        <Button variant={location.pathname.startsWith('/scripts') ? 'accent' : 'primary'} style="outline">
+            <FileCode />
+            <Text>Scripts</Text>
+        </Button>
+      </AppLink>
       <AppLink to="/snippets">
         <Button variant={location.pathname.startsWith('/snippets') ? 'accent' : 'primary'} style="outline">
           <Code />
           <Text>Snippets</Text>
-        </Button>
-      </AppLink>
-      <AppLink to="/scripts">
-        <Button variant={location.pathname.startsWith('/scripts') ? 'accent' : 'primary'} style="outline">
-          <FileCode />
-          <Text>Scripts</Text>
         </Button>
       </AppLink>
       <AppLink to="/history">

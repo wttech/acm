@@ -10,8 +10,8 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'INTEGER' | 'DOUBLE';
-export type ArgumentValue = string | number | boolean | null | undefined;
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL';
+export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined;
 export type ArgumentValues = Record<string, ArgumentValue>
 
 export const ArgumentGroupDefault = "general";
@@ -33,13 +33,19 @@ export type TextArgument = Argument<string> & {
   language?: string;
 };
 
-export type SelectArgument = Argument<ArgumentValue> & {
-  options: Record<string, ArgumentValue>;
-};
-
 export type NumberArgument = Argument<number> & {
   min: number;
   max: number;
+};
+
+export type SelectArgument = Argument<ArgumentValue> & {
+  options: Record<string, ArgumentValue>;
+  display: 'DROPDOWN' | 'RADIO'
+};
+
+export type MultiSelectArgument = Argument<ArgumentValue> & {
+  options: Record<string, ArgumentValue>;
+  display: 'CHECKBOX' | 'DROPDOWN'
 };
 
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> {
@@ -59,7 +65,11 @@ export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArg
 }
 
 export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
-  return arg.type === 'INTEGER' || arg.type === 'DOUBLE';
+  return arg.type === 'INTEGER' || arg.type === 'DECIMAL';
+}
+
+export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {
+  return arg.type === 'MULTISELECT';
 }
 
 export type Execution = {

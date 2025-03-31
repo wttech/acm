@@ -24,6 +24,10 @@ public class Arguments implements Serializable {
     }
 
     private void add(Argument<?> argument) {
+        if (definitions.containsKey(argument.getName())) {
+            throw new IllegalArgumentException(
+                    String.format("Argument with name '%s' is already defined!", argument.getName()));
+        }
         definitions.put(argument.getName(), argument);
     }
 
@@ -115,6 +119,16 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
+    public void multiSelect(String name) {
+        multiSelect(name, null);
+    }
+
+    public <V> void multiSelect(String name, Closure<MultiSelectArgument<V>> options) {
+        MultiSelectArgument<V> argument = new MultiSelectArgument<>(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
     public void integerNumber(String name) {
         integerNumber(name, null);
     }
@@ -125,12 +139,12 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void doubleNumber(String name) {
-        doubleNumber(name, null);
+    public void decimalNumber(String name) {
+        decimalNumber(name, null);
     }
 
-    public void doubleNumber(String name, Closure<DoubleArgument> options) {
-        DoubleArgument argument = new DoubleArgument(name);
+    public void decimalNumber(String name, Closure<DecimalArgument> options) {
+        DecimalArgument argument = new DecimalArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }
