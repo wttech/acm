@@ -67,7 +67,6 @@ public class Script implements Executable, Comparable<Script> {
         return resource.getPath();
     }
 
-    @JsonIgnore
     public ScriptType getType() {
         return ScriptType.byPath(getPath()).orElse(ScriptType.DISABLED);
     }

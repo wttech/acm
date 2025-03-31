@@ -1,14 +1,8 @@
 import {useEffect, useState} from 'react';
 import {useInterval} from 'react-use';
 import {
-  Button,
   ButtonGroup,
-  Content,
-  Dialog,
-  DialogTrigger,
-  Divider,
   Flex,
-  Heading,
   Item,
   Switch,
   TabList,
@@ -17,14 +11,8 @@ import {
   Text
 } from '@adobe/react-spectrum';
 import {ToastQueue} from '@react-spectrum/toast';
-import Bug from '@spectrum-icons/workflow/Bug';
-import Cancel from '@spectrum-icons/workflow/Cancel';
-import Close from '@spectrum-icons/workflow/Close';
 import FileCode from '@spectrum-icons/workflow/FileCode';
-import Gears from '@spectrum-icons/workflow/Gears';
-import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
-import Spellcheck from '@spectrum-icons/workflow/Spellcheck';
 import CompilationStatus from '../components/CompilationStatus.tsx';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
@@ -44,6 +32,7 @@ import {StorageKeys} from '../utils/storage.ts';
 import ConsoleCode from './ConsoleCode.groovy';
 import CodeExecuteButton from "../components/CodeExecuteButton";
 import {useCompilation} from '../hooks/code';
+import ConsoleHelpButton from "../components/ConsoleHelpButton.tsx";
 
 const toastTimeout = 3000;
 const executionPollInterval = 500;
@@ -186,46 +175,7 @@ const ConsolePage = () => {
                     <ExecutionProgressBar execution={execution} active={executing} />
                   </Flex>
                   <Flex flex="1" justifyContent="end" alignItems="center">
-                    <DialogTrigger>
-                      <Button variant="secondary" style="fill">
-                        <Help />
-                        <Text>Help</Text>
-                      </Button>
-                      {(close) => (
-                          <Dialog>
-                            <Heading>Code execution</Heading>
-                            <Divider />
-                            <Content>
-                              <p>
-                                <Print size="XS" /> Output is printed live.
-                              </p>
-                              <p>
-                                <Cancel size="XS" /> <Text>Abort if the execution:</Text>
-                                <ul style={{ listStyleType: 'none' }}>
-                                  <li>
-                                    <Spellcheck size="XS" /> is taking too long
-                                  </li>
-                                  <li>
-                                    <Bug size="XS" /> is stuck in an infinite loop
-                                  </li>
-                                  <li>
-                                    <Gears size="XS" /> makes the instance unresponsive
-                                  </li>
-                                </ul>
-                              </p>
-                              <p>
-                                <Help size="XS" /> Be aware that aborting execution may leave data in an inconsistent state.
-                              </p>
-                            </Content>
-                            <ButtonGroup>
-                              <Button variant="secondary" onPress={close}>
-                                <Close size="XS" />
-                                <Text>Close</Text>
-                              </Button>
-                            </ButtonGroup>
-                          </Dialog>
-                      )}
-                    </DialogTrigger>
+                    <ConsoleHelpButton/>
                   </Flex>
                 </Flex>
                 <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />

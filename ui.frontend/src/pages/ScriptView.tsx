@@ -4,7 +4,8 @@ import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
-import { useEffect, useState } from 'react';
+import Gears from '@spectrum-icons/workflow/Gears';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import { toastRequest } from '../utils/api';
@@ -87,9 +88,19 @@ const ScriptView = () => {
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="details">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+              <View>
+                <Flex justifyContent="space-between" alignItems="center">
+                  <ButtonGroup>
+                    <Button variant="cta" onPress={() => {}}>
+                      <Gears />
+                      <Text>Execute</Text>
+                    </Button>
+                  </ButtonGroup>
+                </Flex>
+              </View>
               <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
-                  <Field label="Name">
+                  <Field label="Name" width="100%">
                     <div>
                       <Text>{script.name}</Text>
                     </div>
