@@ -26,7 +26,7 @@ public enum ExecutionStatus {
     }
 
     public boolean isActive() {
-        return this == PARSING || this == CHECKING || this == RUNNING;
+        return this == ACTIVE || this == PARSING || this == CHECKING || this == RUNNING;
     }
 
     public static List<ExecutionStatus> manyOf(List<String> names) {

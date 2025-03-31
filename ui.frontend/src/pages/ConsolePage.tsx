@@ -51,6 +51,7 @@ const ConsolePage = () => {
   }, [parseExecution]);
 
   const onDescribeFailed = (description: Description) => {
+    console.error("Code description failed:", description);
     setExecution(description.execution)
     setSelectedTab('output')
     ToastQueue.negative('Code description failed!', {

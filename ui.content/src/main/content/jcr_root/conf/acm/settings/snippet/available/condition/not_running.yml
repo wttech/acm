@@ -1,7 +1,0 @@
-group: Condition
-name: condition_not_running
-content: |
-  condition.notRunning()
-documentation: |
-  Execute the script only if it is not already running.<br>
-  Ensures that the script is not running in parallel (including other scripts).<br>

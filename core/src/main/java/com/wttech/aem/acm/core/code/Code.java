@@ -1,5 +1,6 @@
 package com.wttech.aem.acm.core.code;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.util.JsonUtils;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Code implements Executable {
 
     private String id;

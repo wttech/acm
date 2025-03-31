@@ -5,27 +5,27 @@ import com.wttech.aem.acm.core.code.ArgumentType;
 
 public class IntegerArgument extends Argument<Integer> {
 
-    private int min;
+    private Integer min;
 
-    private int max;
+    private Integer max;
 
     public IntegerArgument(String name) {
         super(name, ArgumentType.INTEGER);
     }
 
-    public int getMin() {
+    public Integer getMin() {
         return min;
     }
 
-    public void setMin(int min) {
+    public void setMin(Integer min) {
         this.min = min;
     }
 
-    public int getMax() {
+    public Integer getMax() {
         return max;
     }
 
-    public void setMax(int max) {
+    public void setMax(Integer max) {
         this.max = max;
     }
 }

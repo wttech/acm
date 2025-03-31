@@ -175,8 +175,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg, value, onCha
                     label={argLabel(arg)}
                     value={value as number}
                     onChange={(val) => onChange(arg.name, val)}
-                    minValue={arg.min}
-                    maxValue={arg.max}
+                    minValue={arg.min !== null ? arg.min : undefined}
+                    maxValue={arg.max !== null ? arg.max : undefined}
                     hideStepper={arg.type === 'DECIMAL'}
                     formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
                 />

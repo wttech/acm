@@ -47,19 +47,11 @@ public class Condition {
     }
 
     public boolean idle() {
-        return !queuedExecutions().findFirst().isPresent();
+        return queuedExecutions().noneMatch(e -> e.getStatus().isActive());
     }
 
     public boolean idleSelf() {
-        return !queuedSelfExecutions().findFirst().isPresent();
-    }
-
-    public boolean notRunning() {
-        return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
-    }
-
-    public boolean notRunningSelf() {
-        return queuedSelfExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
+        return queuedSelfExecutions().noneMatch(e -> e.getStatus().isActive());
     }
 
     public Stream<Execution> queuedExecutions() {

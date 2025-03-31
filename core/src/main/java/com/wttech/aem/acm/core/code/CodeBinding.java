@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.acl.Acl;
 import com.wttech.aem.acm.core.acl.AclGroovy;
+import com.wttech.aem.acm.core.format.Formatter;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.replication.Activator;
 import groovy.lang.Binding;
@@ -28,12 +29,15 @@ public class CodeBinding {
 
     private final Condition condition;
 
+    private final Formatter formatter;
+
     public CodeBinding(ExecutionContext context) {
         this.args = new Arguments(context);
         this.log = createLogger(context.getExecutable());
         this.out = new CodePrintStream(context);
         this.resourceResolver = context.getResourceResolver();
         this.acl = new AclGroovy(resourceResolver);
+        this.formatter = new Formatter();
         this.activator = new Activator(
                 context.getResourceResolver(), context.getOsgiContext().getReplicator());
         this.osgi = context.getOsgiContext();
@@ -55,6 +59,7 @@ public class CodeBinding {
         result.setVariable(Variable.OUT.varName(), out);
         result.setVariable(Variable.RESOURCE_RESOLVER.varName(), resourceResolver);
         result.setVariable(Variable.ACL.varName(), acl);
+        result.setVariable(Variable.FORMATTER.varName(), formatter);
         result.setVariable(Variable.ACTIVATOR.varName(), activator);
         result.setVariable(Variable.OSGI.varName(), osgi);
         result.setVariable(Variable.CONDITION.varName(), condition);
