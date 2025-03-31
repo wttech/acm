@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.code.arg;
 
 import com.wttech.aem.acm.core.code.Argument;
 import com.wttech.aem.acm.core.code.ArgumentType;
+import com.wttech.aem.acm.core.util.ObjectUtils;
 import java.util.*;
 
 public class MultiSelectArgument<V> extends Argument<V> {
@@ -12,6 +13,15 @@ public class MultiSelectArgument<V> extends Argument<V> {
 
     public MultiSelectArgument(String name) {
         super(name, ArgumentType.MULTISELECT);
+    }
+
+    @Override
+    public void setValue(V value) {
+        if (!ObjectUtils.isCollectionOrArray(value)) {
+            throw new IllegalArgumentException(
+                    String.format("Multi-select value must be a collection but specified '%s'!", value));
+        }
+        super.setValue(value);
     }
 
     public Map<String, V> getOptions() {
