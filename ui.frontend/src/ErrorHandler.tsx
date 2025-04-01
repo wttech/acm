@@ -13,8 +13,9 @@ import {
 import Error from '@spectrum-icons/illustrations/Error';
 import Bug from "@spectrum-icons/workflow/Bug";
 
-const ErrorComponent: React.FC = () => {
+const ErrorHandler: React.FC = () => {
     const error = useRouteError() as Error;
+
     console.error("[ACM] Error:", error);
 
     return (
@@ -42,7 +43,9 @@ const ErrorComponent: React.FC = () => {
                                 <Bug/>&nbsp;<Text>Error Details</Text>
                             </DisclosureTitle>
                             <DisclosurePanel>
+                                <pre style={{overflow: 'scroll'}}>
                                 {error?.stack || error?.message || 'An unknown error occurred.'}
+                                </pre>
                             </DisclosurePanel>
                         </Disclosure>
                     </Flex>
@@ -52,4 +55,4 @@ const ErrorComponent: React.FC = () => {
     );
 };
 
-export default ErrorComponent;
+export default ErrorHandler;

@@ -8,13 +8,13 @@ import MaintenancePage from './pages/MaintenancePage';
 import ScriptsPage from './pages/ScriptsPage';
 import ScriptView from './pages/ScriptView';
 import SnippetsPage from './pages/SnippetsPage';
-import ErrorComponent from "./ErrorComponent";
+import ErrorHandler from "./ErrorHandler";
 
 const router = createHashRouter([
   {
     path: '/',
     element: <App />,
-    errorElement: <ErrorComponent/>,
+    errorElement: <ErrorHandler/>,
     children: [
       { path: '/', element: <DashboardPage /> },
       { path: '/scripts/:tab?', element: <ScriptsPage /> },
