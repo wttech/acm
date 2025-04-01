@@ -17,15 +17,26 @@ export function registerSyntax(instance: Monaco) {
   const groovyKeywords = ['def', 'as', 'in', 'trait', 'with'];
   groovyLanguage.keywords = [...(groovyLanguage.keywords || []), ...groovyKeywords];
 
+  const javaRootRules = [...(groovyLanguage.tokenizer.root || [])].filter((rule) => {
+    // Removes Java's single quote interpretation from tokenizer
+      if (Array.isArray(rule) && rule[0] instanceof RegExp) {
+          return !rule[0].toString().includes("'");
+      }
+      return true;
+  });
+
   // Extend the tokenizer with Groovy-specific features
   groovyLanguage.tokenizer = {
     ...groovyLanguage.tokenizer,
     root: [
-      ...(groovyLanguage.tokenizer.root || []),
+      ...javaRootRules,
 
       // Support for GStrings (interpolated strings)
       [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
       [/"/, { token: 'string.quote', bracket: '@open', next: '@gstring' }],
+
+      [/'([^'\\]|\\.)*$/, 'string.invalid'], // non-terminated single quote string
+      [/'/, { token: 'string.quote', bracket: '@open', next: '@string_single' }],
 
       // Groovy closures
       [/\{/, { token: 'delimiter.curly', next: '@closure' }],
@@ -36,6 +47,12 @@ export function registerSyntax(instance: Monaco) {
       [/[^\\"]+/, 'string'],
       [/\\./, 'string.escape'],
       [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+    ],
+
+    string_single: [
+      [/[^\\']+/, 'string'],
+      [/\\./, 'string.escape'],
+      [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
     ],
 
     closure: [
