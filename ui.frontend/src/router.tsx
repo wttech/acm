@@ -23,7 +23,7 @@ const router = createHashRouter([
       { path: '/console', element: <ConsolePage /> },
       { path: '/history', element: <HistoryPage /> },
       { path: '/executions', element: <HistoryPage /> },
-      { path: '/executions/view/:executionId/:tab?', element: <ExecutionView /> }, // Add :tab?
+      { path: '/executions/view/:executionId/:tab?', element: <ExecutionView /> },
       { path: '/maintenance/:tab?', element: <MaintenancePage /> },
     ],
   },

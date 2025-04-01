@@ -24,7 +24,12 @@ const SnippetsPage = () => {
   }, []);
 
   const defaultTab = snippets?.list[0]?.group;
+
+  console.log('default tab', defaultTab)
+
   const [selectedTab, handleTabChange] = useNavigationTab('/snippets', defaultTab);
+
+  console.log('selected tab',selectedTab)
 
   if (snippets === null) {
     return (
