@@ -3,6 +3,75 @@ export type Executable = {
   content: string;
 };
 
+export type Description = {
+  execution: Execution
+  arguments: {
+    [name: string]: Argument<ArgumentValue>;
+  };
+};
+
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL';
+export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined;
+export type ArgumentValues = Record<string, ArgumentValue>
+
+export const ArgumentGroupDefault = "general";
+
+export type Argument<T> = {
+  name: string;
+  type: ArgumentType;
+  value: T;
+  label: string;
+  required: boolean;
+  group: string;
+};
+
+export type BoolArgument = Argument<boolean> & {
+  display: 'SWITCHER' | 'CHECKBOX';
+}
+
+export type TextArgument = Argument<string> & {
+  language?: string;
+};
+
+export type NumberArgument = Argument<number> & {
+  min: number;
+  max: number;
+};
+
+export type SelectArgument = Argument<ArgumentValue> & {
+  options: Record<string, ArgumentValue>;
+  display: 'AUTO' | 'DROPDOWN' | 'RADIO'
+};
+
+export type MultiSelectArgument = Argument<ArgumentValue> & {
+  options: Record<string, ArgumentValue>;
+  display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN'
+};
+
+export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> {
+  return arg.type === 'STRING';
+}
+
+export function isBoolArgument(arg: Argument<ArgumentValue>): arg is BoolArgument {
+  return arg.type === 'BOOL';
+}
+
+export function isTextArgument(arg: Argument<ArgumentValue>): arg is TextArgument {
+  return arg.type === 'TEXT';
+}
+
+export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArgument {
+  return arg.type === 'SELECT';
+}
+
+export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
+  return arg.type === 'INTEGER' || arg.type === 'DECIMAL';
+}
+
+export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {
+  return arg.type === 'MULTISELECT';
+}
+
 export type Execution = {
   id: string;
   executable: Executable;
@@ -17,6 +86,9 @@ export type Execution = {
 export enum ExecutionStatus {
   QUEUED = 'QUEUED',
   ACTIVE = 'ACTIVE',
+  PARSING = 'PARSING',
+  CHECKING = 'CHECKING',
+  RUNNING = 'RUNNING',
   STOPPED = 'STOPPED',
   FAILED = 'FAILED',
   SKIPPED = 'SKIPPED',
@@ -24,16 +96,20 @@ export enum ExecutionStatus {
   SUCCEEDED = 'SUCCEEDED',
 }
 
-export function isExecutionNegative(status: ExecutionStatus | null | undefined) {
-  return status === ExecutionStatus.FAILED || status === ExecutionStatus.ABORTED;
+export function isExecutionNegative(status: ExecutionStatus | null | undefined): boolean {
+  return !!status && [ExecutionStatus.FAILED, ExecutionStatus.ABORTED].includes(status);
 }
 
-export function isExecutionPending(status: ExecutionStatus | null | undefined) {
-  return status === ExecutionStatus.QUEUED || status === ExecutionStatus.ACTIVE;
+export function isExecutionPending(status: ExecutionStatus | null | undefined): boolean {
+  return !!status && (status === ExecutionStatus.QUEUED || isExecutionActive(status));
 }
 
-export function isExecutionCompleted(status: ExecutionStatus | null | undefined) {
-  return status === ExecutionStatus.FAILED || status === ExecutionStatus.SUCCEEDED;
+export function isExecutionActive(status: ExecutionStatus | null | undefined): boolean {
+  return !!status && [ExecutionStatus.ACTIVE, ExecutionStatus.PARSING, ExecutionStatus.CHECKING, ExecutionStatus.RUNNING].includes(status);
+}
+
+export function isExecutionCompleted(status: ExecutionStatus | null | undefined): boolean {
+  return !!status && [ExecutionStatus.FAILED, ExecutionStatus.SUCCEEDED].includes(status);
 }
 
 export type QueueOutput = {
@@ -68,6 +144,7 @@ export type Snippet = {
 
 export type Script = {
   id: string;
+  type: 'MANUAL' | 'ENABLED' | 'DISABLED';
   path: string;
   name: string;
   content: string;

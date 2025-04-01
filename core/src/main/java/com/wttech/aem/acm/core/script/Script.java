@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.script;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.acm.core.AcmException;
+import com.wttech.aem.acm.core.code.ArgumentValues;
 import com.wttech.aem.acm.core.code.Executable;
 import com.wttech.aem.acm.core.util.JcrUtils;
 import java.io.IOException;
@@ -56,12 +57,16 @@ public class Script implements Executable, Comparable<Script> {
         }
     }
 
+    @Override
+    public ArgumentValues getArguments() {
+        return new ArgumentValues();
+    }
+
     @JsonIgnore
     public String getPath() {
         return resource.getPath();
     }
 
-    @JsonIgnore
     public ScriptType getType() {
         return ScriptType.byPath(getPath()).orElse(ScriptType.DISABLED);
     }

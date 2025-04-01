@@ -1,10 +1,13 @@
 package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.osgi.OsgiContext;
+import com.wttech.aem.acm.core.util.NullOutputStream;
 import java.io.OutputStream;
 import org.apache.sling.api.resource.ResourceResolver;
 
 public class ExecutionContext {
+
+    private final Executor executor;
 
     private final Executable executable;
 
@@ -12,9 +15,9 @@ public class ExecutionContext {
 
     private final ResourceResolver resourceResolver;
 
-    private OutputStream outputStream = null;
+    private OutputStream outputStream = new NullOutputStream();
 
-    private ExecutionMode mode = ExecutionMode.EVALUATE;
+    private ExecutionMode mode = ExecutionMode.RUN;
 
     private boolean history = true;
 
@@ -22,10 +25,16 @@ public class ExecutionContext {
 
     private String id = ExecutionId.generate();
 
-    public ExecutionContext(Executable executable, OsgiContext osgiContext, ResourceResolver resourceResolver) {
+    public ExecutionContext(
+            Executor executor, Executable executable, OsgiContext osgiContext, ResourceResolver resourceResolver) {
+        this.executor = executor;
         this.executable = executable;
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
+    }
+
+    public Executor getExecutor() {
+        return executor;
     }
 
     public Executable getExecutable() {
@@ -38,6 +47,10 @@ public class ExecutionContext {
 
     public OsgiContext getOsgiContext() {
         return osgiContext;
+    }
+
+    public ExecutionFileOutput getFileOutput() {
+        return new ExecutionFileOutput(id);
     }
 
     public OutputStream getOutputStream() {

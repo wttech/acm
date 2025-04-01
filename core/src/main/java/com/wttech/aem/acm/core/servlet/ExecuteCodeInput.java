@@ -2,14 +2,17 @@ package com.wttech.aem.acm.core.servlet;
 
 import com.wttech.aem.acm.core.code.Code;
 import java.io.Serializable;
+import java.util.Map;
 
 public class ExecuteCodeInput implements Serializable {
 
     private String mode;
 
+    private Boolean history;
+
     private Code code;
 
-    private Boolean history;
+    private Map<String, Object> arguments;
 
     public ExecuteCodeInput() {
         // for deserialization
@@ -19,11 +22,15 @@ public class ExecuteCodeInput implements Serializable {
         return mode;
     }
 
+    public Boolean getHistory() {
+        return history;
+    }
+
     public Code getCode() {
         return code;
     }
 
-    public Boolean getHistory() {
-        return history;
+    public Map<String, Object> getArguments() {
+        return arguments;
     }
 }

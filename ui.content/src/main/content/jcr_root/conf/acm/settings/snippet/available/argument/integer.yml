@@ -1,0 +1,6 @@
+group: Argument
+name: argument_integer
+content: |
+  args.integerNumber("${1:name}") { label = "${2:label}"; value = "${3:value}" }
+documentation: |
+  An argument holding a integer number value.<br>

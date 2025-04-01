@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.servlet;
 
 import static com.wttech.aem.acm.core.util.ServletResult.*;
 import static com.wttech.aem.acm.core.util.ServletUtils.respondJson;
+import static com.wttech.aem.acm.core.util.ServletUtils.respondJsonBuffered;
 
 import com.wttech.aem.acm.core.code.*;
 import com.wttech.aem.acm.core.util.JsonUtils;
@@ -59,7 +60,7 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
             try {
                 Execution execution = executor.execute(context);
 
-                respondJson(
+                respondJsonBuffered(
                         response, ok(String.format("Code from '%s' executed successfully", code.getId()), execution));
             } catch (Exception e) {
                 LOG.error("Code from '{}' cannot be executed!", code.getId(), e);
@@ -68,7 +69,6 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
                         error(String.format(
                                 "Code from '%s' cannot be executed. Error: %s", code.getId(), e.getMessage())));
             }
-            respondJson(response, ok("Code executed successfully"));
         } catch (Exception e) {
             LOG.error("Code input cannot be read!", e);
             respondJson(response, badRequest("Cannot read code input!"));

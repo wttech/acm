@@ -1,9 +1,19 @@
 package com.wttech.aem.acm.core.util;
 
+import java.util.Collection;
+
 public final class ObjectUtils {
 
     private ObjectUtils() {
         // intentionally empty
+    }
+
+    public static boolean isCollectionOrArray(Object obj) {
+        return obj instanceof Collection || obj != null && obj.getClass().isArray();
+    }
+
+    public static String toString(Object obj) {
+        return obj == null ? null : obj.toString();
     }
 
     public static boolean toBool(Object value) {

@@ -51,6 +51,7 @@ public class StateServlet extends SlingAllMethodsServlet {
 
             State state = new State(healthStatus, instanceSettings, queuedExecutions);
 
+            // TODO use different view (skip outputs)
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {
             LOG.error("State cannot be read!", e);

@@ -1,19 +1,24 @@
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
-import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
+import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
+import Hand from '@spectrum-icons/workflow/Hand';
 import ScriptList from '../components/ScriptList';
-import { useNavigationTab } from '../utils/hooks/navigation';
+import { useNavigationTab } from '../hooks/navigation';
 
 const ScriptsPage = () => {
-  const [selectedTab, handleTabChange] = useNavigationTab('/scripts', 'enabled');
+  const [selectedTab, handleTabChange] = useNavigationTab('/scripts', 'manual');
 
   return (
     <Flex direction="column" flex="1" gap="size-400">
       <Tabs flex="1" aria-label="Scripts" selectedKey={selectedTab} onSelectionChange={handleTabChange}>
         <TabList>
-          <Item aria-label="Enabled scripts" key="enabled">
-            <CheckmarkCircle />
-            <Text>Enabled</Text>
+          <Item aria-label="Manual scripts" key="manual">
+            <Hand />
+            <Text>Manual</Text>
+          </Item>
+          <Item aria-label="Automatic scripts" key="enabled">
+            <FlashOn/>
+            <Text>Automatic</Text>
           </Item>
           <Item aria-label="Disabled scripts" key="disabled">
             <CloseCircle />
@@ -21,6 +26,9 @@ const ScriptsPage = () => {
           </Item>
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
+          <Item key="manual">
+            <ScriptList type="manual" />
+          </Item>
           <Item key="enabled">
             <ScriptList type="enabled" />
           </Item>

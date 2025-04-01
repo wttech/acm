@@ -5,8 +5,13 @@ import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.util.ResourceUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import groovy.lang.MissingMethodException;
 import groovy.lang.Script;
 import java.io.OutputStream;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -43,6 +48,8 @@ public class Executor {
 
     private Config config;
 
+    private final Map<String, ExecutionStatus> statuses = new ConcurrentHashMap<>();
+
     @Activate
     @Modified
     protected void activate(Config config) {
@@ -50,7 +57,7 @@ public class Executor {
     }
 
     public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        ExecutionContext result = new ExecutionContext(executable, osgiContext, resourceResolver);
+        ExecutionContext result = new ExecutionContext(this, executable, osgiContext, resourceResolver);
         result.setDebug(config.debug());
         result.setHistory(config.history());
         return result;
@@ -61,7 +68,7 @@ public class Executor {
             return execute(createContext(executable, resourceResolver));
         } catch (LoginException e) {
             throw new AcmException(
-                    String.format("Failed to access repository while executing '%s'", executable.getId()), e);
+                    String.format("Cannot access repository while executing '%s'", executable.getId()), e);
         }
     }
 
@@ -69,40 +76,58 @@ public class Executor {
         try {
             ImmediateExecution execution = executeImmediately(context);
             if (context.isHistory()
-                    && (context.getMode() == ExecutionMode.EVALUATE)
+                    && (context.getMode() == ExecutionMode.RUN)
                     && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
                 ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
                 history.save(execution);
             }
             return execution;
         } finally {
-            new ExecutionFileOutput(context.getId()).delete();
+            context.getFileOutput().delete();
         }
     }
 
     private ImmediateExecution executeImmediately(ExecutionContext context) {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
-        try (OutputStream outputStream = new ExecutionFileOutput(context.getId()).write()) {
-            context.setOutputStream(outputStream);
-            GroovyShell shell = createShell(context);
+        try (OutputStream outputStream = context.getFileOutput().write()) {
+            statuses.put(context.getId(), ExecutionStatus.PARSING);
+
+            if (context.getOutputStream() != null) {
+                context.setOutputStream(new TeeOutputStream(outputStream, context.getOutputStream()));
+            } else {
+                context.setOutputStream(outputStream);
+            }
+
+            CodeShell shell = createShell(context);
 
             execution.start();
 
-            Script script = shell.parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
-
-            switch (context.getMode()) {
-                case PARSE:
-                    break;
-                case EVALUATE:
-                    boolean runnable = (Boolean) script.invokeMethod(CodeSyntax.Methods.CHECK.givenName, null);
-                    if (!runnable) {
-                        return execution.end(ExecutionStatus.SKIPPED);
-                    }
-                    script.invokeMethod(CodeSyntax.Methods.RUN.givenName, null);
-                    break;
+            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+            if (context.getMode() == ExecutionMode.PARSE) {
+                return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
+            statuses.put(context.getId(), ExecutionStatus.CHECKING);
+
+            try {
+                script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+                shell.getCodeBinding()
+                        .getArgs()
+                        .setValues(context.getExecutable().getArguments());
+            } catch (MissingMethodException e) {
+                // ignore
+            }
+
+            boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Method.CHECK.givenName, null);
+            if (!canRun) {
+                return execution.end(ExecutionStatus.SKIPPED);
+            } else if (context.getMode() == ExecutionMode.CHECK) {
+                return execution.end(ExecutionStatus.SUCCEEDED);
+            }
+
+            statuses.put(context.getId(), ExecutionStatus.RUNNING);
+            script.invokeMethod(CodeSyntax.Method.RUN.givenName, null);
             return execution.end(ExecutionStatus.SUCCEEDED);
         } catch (Throwable e) {
             execution.error(e);
@@ -110,15 +135,52 @@ public class Executor {
                 return execution.end(ExecutionStatus.ABORTED);
             }
             return execution.end(ExecutionStatus.FAILED);
+        } finally {
+            statuses.remove(context.getId());
         }
     }
 
-    private GroovyShell createShell(ExecutionContext context) {
-        Binding binding = new CodeBinding(context).toBinding();
+    private CodeShell createShell(ExecutionContext context) {
+        CodeBinding codeBinding = new CodeBinding(context);
+        Binding binding = codeBinding.toBinding();
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
         compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
+        GroovyShell groovyShell = new GroovyShell(binding, compiler);
+        return new CodeShell(groovyShell, codeBinding);
+    }
 
-        return new GroovyShell(binding, compiler);
+    public Optional<ExecutionStatus> checkStatus(String executionId) {
+        return Optional.ofNullable(statuses.get(executionId));
+    }
+
+    public Description describe(Executable executable, ResourceResolver resourceResolver) {
+        return describe(createContext(executable, resourceResolver));
+    }
+
+    public Description describe(ExecutionContext context) {
+        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
+
+        try (OutputStream outputStream = context.getFileOutput().write()) {
+            context.setOutputStream(outputStream);
+
+            CodeShell shell = createShell(context);
+            execution.start();
+            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+
+            try {
+                script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+            } catch (MissingMethodException e) {
+                // ignore
+            }
+            return new Description(
+                    execution.end(ExecutionStatus.SUCCEEDED),
+                    shell.getCodeBinding().getArgs());
+        } catch (Throwable e) {
+            execution.error(e);
+            return new Description(execution.end(ExecutionStatus.FAILED), new Arguments(context));
+        } finally {
+            context.getFileOutput().delete();
+        }
     }
 }

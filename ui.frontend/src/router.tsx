@@ -1,18 +1,20 @@
 import { createHashRouter } from 'react-router-dom';
 import App from './App';
 import ConsolePage from './pages/ConsolePage';
-import DashboardPage from './pages/DashboardPage.tsx';
+import DashboardPage from './pages/DashboardPage';
 import ExecutionView from './pages/ExecutionView';
-import HistoryPage from './pages/HistoryPage.tsx';
-import MaintenancePage from './pages/MaintenancePage.tsx';
+import HistoryPage from './pages/HistoryPage';
+import MaintenancePage from './pages/MaintenancePage';
 import ScriptsPage from './pages/ScriptsPage';
 import ScriptView from './pages/ScriptView';
 import SnippetsPage from './pages/SnippetsPage';
+import ErrorHandler from "./ErrorHandler";
 
 const router = createHashRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <ErrorHandler/>,
     children: [
       { path: '/', element: <DashboardPage /> },
       { path: '/scripts/:tab?', element: <ScriptsPage /> },
@@ -21,7 +23,7 @@ const router = createHashRouter([
       { path: '/console', element: <ConsolePage /> },
       { path: '/history', element: <HistoryPage /> },
       { path: '/executions', element: <HistoryPage /> },
-      { path: '/executions/view/:executionId/:tab?', element: <ExecutionView /> }, // Add :tab?
+      { path: '/executions/view/:executionId/:tab?', element: <ExecutionView /> },
       { path: '/maintenance/:tab?', element: <MaintenancePage /> },
     ],
   },

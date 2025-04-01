@@ -7,7 +7,7 @@ import Markdown from '../components/Markdown';
 import SnippetCode from '../components/SnippetCode';
 import { toastRequest } from '../utils/api';
 import { Snippet, SnippetOutput } from '../utils/api.types';
-import { useNavigationTab } from '../utils/hooks/navigation';
+import { useNavigationTab } from '../hooks/navigation';
 
 const SnippetsPage = () => {
   const [snippets, setSnippets] = useState<SnippetOutput | null>(null);
@@ -24,6 +24,7 @@ const SnippetsPage = () => {
   }, []);
 
   const defaultTab = snippets?.list[0]?.group;
+
   const [selectedTab, handleTabChange] = useNavigationTab('/snippets', defaultTab);
 
   if (snippets === null) {

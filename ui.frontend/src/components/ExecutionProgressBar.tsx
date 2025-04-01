@@ -1,7 +1,7 @@
 import { Meter, ProgressBar } from '@adobe/react-spectrum';
 import React from 'react';
-import { Execution, isExecutionPending } from '../utils/api.types.ts';
-import { useFormatter } from '../utils/hooks/formatter.ts';
+import { Execution, ExecutionStatus, isExecutionPending } from '../utils/api.types.ts';
+import { useFormatter } from '../hooks/formatter.ts';
 import { Strings } from '../utils/strings.ts';
 
 interface ExecutionProgressBarProps {
@@ -10,35 +10,32 @@ interface ExecutionProgressBarProps {
 }
 
 const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, active }) => {
-  const variant = (): 'positive' | 'informative' | 'warning' | 'critical' | undefined => {
+  const formatter = useFormatter();
+
+  const variant = ((): 'positive' | 'informative' | 'warning' | 'critical' | undefined => {
     switch (execution?.status) {
-      case 'SUCCEEDED':
+      case ExecutionStatus.SUCCEEDED:
         return 'positive';
-      case 'SKIPPED':
+      case ExecutionStatus.SKIPPED:
         return 'warning';
-      case 'ABORTED':
-      case 'FAILED':
+      case ExecutionStatus.ABORTED:
+      case ExecutionStatus.FAILED:
         return 'critical';
       default:
         return 'informative';
     }
-  };
+  })();
+  const label = execution ? Strings.capitalize(execution.status) : 'Not executing';
 
-  const formatter = useFormatter();
+  if (!execution) {
+    return <Meter aria-label={label} label={label} showValueLabel={false} value={0} />;
+  }
 
-  return (
-    <>
-      {execution ? (
-        active || isExecutionPending(execution.status) ? (
-          <ProgressBar aria-label="Executing" showValueLabel={false} label="Executing…" isIndeterminate />
-        ) : (
-          <Meter aria-label="Executed" variant={variant()} showValueLabel={false} value={100} label={`${Strings.capitalize(execution.status)} after ${formatter.durationShort(execution.duration)}`} />
-        )
-      ) : (
-        <Meter aria-label="Not executing" label="Not executing" showValueLabel={false} value={0} />
-      )}
-    </>
-  );
+  if (active || isExecutionPending(execution.status)) {
+    return <ProgressBar aria-label={label} showValueLabel={false} label={label} isIndeterminate />;
+  }
+
+  return <Meter aria-label={label} variant={variant} showValueLabel={false} value={100} label={`${label} after ${formatter.durationShort(execution.duration)}`} />;
 };
 
 export default ExecutionProgressBar;

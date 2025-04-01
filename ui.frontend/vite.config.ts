@@ -34,6 +34,8 @@ export default defineConfig({
     }),
   ],
   server: {
+    strictPort: true,
+    port: 5173,
     fs: {
       allow: ['node_modules', 'src'],
     },

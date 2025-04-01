@@ -33,10 +33,27 @@ public final class ServletUtils {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Responds with JSON result in streaming mode.
+     * Consumes less memory, but JSON may be malformed in case of serialization errors.
+     */
     public static void respondJson(SlingHttpServletResponse response, ServletResult<?> result) throws IOException {
         response.setStatus(result.getStatus());
         response.setContentType(JsonUtils.APPLICATION_JSON_UTF8);
 
         JsonUtils.MAPPER.writeValue(response.getOutputStream(), result);
+    }
+
+    /**
+     * Responds with JSON result in buffered mode.
+     * Memory consumption is higher, but it allows to fail early in case of serialization errors.
+     */
+    public static void respondJsonBuffered(SlingHttpServletResponse response, ServletResult<?> result)
+            throws IOException {
+        response.setStatus(result.getStatus());
+        response.setContentType(JsonUtils.APPLICATION_JSON_UTF8);
+
+        String json = JsonUtils.MAPPER.writeValueAsString(result);
+        response.getWriter().write(json);
     }
 }

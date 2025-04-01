@@ -8,10 +8,18 @@ export function useNavigationTab(basePath: string | null, defaultTab: string = '
   const [selectedTab, setSelectedTab] = useState<string>(tab || defaultTab);
 
   useEffect(() => {
+    if (tab === undefined || tab === '') {
+      setSelectedTab(defaultTab);
+    } else {
+      setSelectedTab(tab);
+    }
+  }, [tab, defaultTab]);
+
+  useEffect(() => {
     if (basePath !== null && tab !== selectedTab) {
       navigate(`${basePath}/${selectedTab}`, { replace: true });
     }
-  }, [selectedTab, tab, navigate, basePath]);
+  }, [selectedTab, navigate, basePath, tab]);
 
   const handleTabChange = (key: Key) => {
     setSelectedTab(key as string);

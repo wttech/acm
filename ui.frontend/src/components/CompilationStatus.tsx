@@ -1,5 +1,5 @@
 import { Link, StatusLight, Text } from '@adobe/react-spectrum';
-import { SyntaxError } from './ImmersiveEditor';
+import { SyntaxError } from '../hooks/code';
 
 type CompilationStatusProps = {
   compiling: boolean;

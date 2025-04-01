@@ -32,7 +32,23 @@ public class ScriptStats implements Serializable {
         ExecutionHistory history = new ExecutionHistory(resourceResolver);
         ExecutionQuery query = new ExecutionQuery();
         query.setStatuses(ExecutionStatus.completed());
-        query.setExecutableId(ScriptType.ENABLED.enforcePath(path));
+
+        ScriptType scriptType = ScriptType.byPath(path)
+                .orElseThrow(() -> new IllegalStateException(
+                        String.format("Script type for path '%s' cannot be determined!", path)));
+        switch (scriptType) {
+            case MANUAL:
+            case ENABLED:
+                query.setExecutableId(path);
+                break;
+            case DISABLED:
+                query.setExecutableId(ScriptType.ENABLED.enforcePath(path));
+                break;
+            default:
+                throw new IllegalStateException(String.format(
+                        "Script type '%s' for path '%s' is not supported to calculate stats!", scriptType, path));
+        }
+
         history.findAll(query).limit(limit).forEach(e -> {
             if (lastExecution.get() == null) {
                 lastExecution.set(e);

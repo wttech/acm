@@ -4,11 +4,11 @@ import { ColorVersion } from '@react-types/shared';
 import FullScreenExit from '@spectrum-icons/workflow/FullScreenExit';
 import { MarkerSeverity, editor } from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
-import { debounce } from '../utils/debounce.ts';
-import { modelStorage } from '../utils/modelStorage.ts';
-import { registerGroovyLanguage } from '../utils/monaco/groovy.ts';
+import { SyntaxError } from '../hooks/code';
+import { debounce } from '../utils/debounce';
+import { modelStorage } from '../utils/modelStorage';
+import { registerGroovyLanguage } from '../utils/monaco/groovy';
 
-export type SyntaxError = { line: number; column: number; message: string };
 type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & {
   id: string;
   scrollToBottomOnUpdate?: boolean;
@@ -53,11 +53,16 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
     const storedModel = modelStorage.getModel(id);
     const textModel = storedModel?.textModel || monacoRef.editor.createModel(initialValue ?? value ?? '', language);
 
+    if (value !== undefined) {
+      textModel.setValue(value);
+    }
+
     const mountedEditor = monacoRef.editor.create(containerRef.current, {
       model: textModel,
       scrollBeyondLastLine: false,
       theme: 'vs-dark',
       value: initialValue ?? value,
+      fixedOverflowWidgets: true,
       ...props,
     });
 

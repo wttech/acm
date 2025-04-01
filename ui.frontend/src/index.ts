@@ -8,6 +8,7 @@ async function getCsrfToken() {
   const response = await axios.get('/libs/granite/csrf/token.json');
   return response.data.token;
 }
+
 axios.interceptors.request.use(
   async (config) => {
     // Granite shell page has a different CSRF token (no need to set it for dev development)
@@ -27,6 +28,6 @@ axios.interceptors.request.use(
 // Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
 monacoLoader.config({
   paths: {
-    vs: isProduction() ? '/apps/acm/spa/js/monaco-editor/vs' : '/node_modules/monaco-editor/min/vs',
+    vs: isProduction() ? `${window.origin}/apps/acm/spa/js/monaco-editor/vs` : 'http://localhost:5173/node_modules/monaco-editor/min/vs',
   },
 });

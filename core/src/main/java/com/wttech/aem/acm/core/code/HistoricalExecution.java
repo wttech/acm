@@ -1,6 +1,8 @@
 package com.wttech.aem.acm.core.code;
 
+import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.util.DateUtils;
+import com.wttech.aem.acm.core.util.JsonUtils;
 import java.util.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -32,37 +34,52 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
     private final String output;
 
     public HistoricalExecution(Resource resource) {
-        ValueMap props = resource.getValueMap();
+        try {
+            ValueMap props = resource.getValueMap();
 
-        this.executable =
-                new Code(props.get("executableId", String.class), props.get("executableContent", String.class));
-        this.id = props.get("id", String.class);
-        this.status = ExecutionStatus.of(props.get("status", String.class)).orElse(null);
-        this.startDate = DateUtils.toDate(props.get("startDate", Calendar.class));
-        this.endDate = DateUtils.toDate(props.get("endDate", Calendar.class));
-        this.duration = props.get("duration", Long.class);
-        this.error = props.get("error", String.class);
-        this.output = props.get("output", String.class);
+            this.executable = new Code(
+                    props.get("executableId", String.class),
+                    props.get("executableContent", String.class),
+                    JsonUtils.readFromString(props.get("executableArguments", String.class), ArgumentValues.class));
+            this.id = props.get("id", String.class);
+            this.status = ExecutionStatus.of(props.get("status", String.class)).orElse(null);
+            this.startDate = DateUtils.toDate(props.get("startDate", Calendar.class));
+            this.endDate = DateUtils.toDate(props.get("endDate", Calendar.class));
+            this.duration = props.get("duration", Long.class);
+            this.error = props.get("error", String.class);
+            this.output = props.get("output", String.class);
+        } catch (Exception e) {
+            throw new AcmException(
+                    String.format("Cannot read historical execution from resource '%s'!", resource.getPath()), e);
+        }
     }
 
     protected static Map<String, Object> toMap(ImmediateExecution execution) {
-        Map<String, Object> props = new HashMap<>();
+        try {
+            Map<String, Object> props = new HashMap<>();
 
-        props.put("executableId", execution.getExecutable().getId());
-        props.put("executableContent", execution.getExecutable().getContent());
-        props.put("id", execution.getId());
-        props.put("status", execution.getStatus().name());
-        props.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
-        props.put("endDate", DateUtils.toCalendar(execution.getEndDate()));
-        props.put("duration", execution.getDuration());
-        props.put("error", execution.getError());
-        props.put("output", execution.readOutput());
+            props.put("executableId", execution.getExecutable().getId());
+            props.put("executableContent", execution.getExecutable().getContent());
+            props.put(
+                    "executableArguments",
+                    JsonUtils.writeToString(execution.getExecutable().getArguments()));
+            props.put("id", execution.getId());
+            props.put("status", execution.getStatus().name());
+            props.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
+            props.put("endDate", DateUtils.toCalendar(execution.getEndDate()));
+            props.put("duration", execution.getDuration());
+            props.put("error", execution.getError());
+            props.put("output", execution.readOutput());
 
-        props.entrySet().removeIf(e -> e.getValue() == null);
-        props.put(JcrConstants.JCR_PRIMARYTYPE, PRIMARY_TYPE);
-        props.put(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESOURCE_TYPE);
+            props.entrySet().removeIf(e -> e.getValue() == null);
+            props.put(JcrConstants.JCR_PRIMARYTYPE, PRIMARY_TYPE);
+            props.put(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESOURCE_TYPE);
 
-        return props;
+            return props;
+        } catch (Exception e) {
+            throw new AcmException(
+                    String.format("Cannot serialize historical execution to map '%s'!", execution.getId()), e);
+        }
     }
 
     public static boolean check(Resource resource) {
