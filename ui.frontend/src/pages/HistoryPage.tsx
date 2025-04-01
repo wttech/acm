@@ -36,7 +36,7 @@ const HistoryPage = () => {
 
   const sevenDaysAgo = new Date(); // assume start date to be 7 days ago
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const startDateDefault = new CalendarDateTime(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth() + 1, sevenDaysAgo.getDate() - 7, 0, 0, 0);
+  const startDateDefault = new CalendarDateTime(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth() + 1, sevenDaysAgo.getDate(), 0, 0, 0);
 
   const [searchState, setSearchState] = useSearchParams();
   const [startDate, setStartDate] = useState<DateValue | null>(getDateFromStringValue(searchState.get(searchParams.startDate), startDateDefault));
