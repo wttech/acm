@@ -31,11 +31,11 @@ const ErrorHandler: React.FC = () => {
         >
             <IllustratedMessage>
                 <Error />
-                <Heading>AEM Content Manager</Heading>
+                <Heading>Oops! Something went wrong</Heading>
                 <Content>
                     <Flex gap="size-250" direction="column">
                         <Text alignSelf="start">
-                            Oops! Application encountered an error.<br/>
+                            Application encountered a problem.<br/>
                             Ensure that AEM instance backend is available.
                         </Text>
                         <Disclosure>
