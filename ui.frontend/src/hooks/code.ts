@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDebounce } from 'react-use';
 import { apiRequest } from '../utils/api.ts';
 import { Execution } from '../utils/api.types.ts';
-import { StorageKeys } from '../utils/storage.ts';
 
 const compilationDelay = 1000;
 
@@ -12,7 +11,7 @@ export type SyntaxError = {
     message: string
 };
 
-export const useCompilation = (code: string | undefined) => {
+export const useCompilation = (code: string | undefined, onCodeChange: (code: string) => void) => {
     const [compiling, setCompiling] = useState<boolean>(false);
     const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
     const [compileError, setCompileError] = useState<string | undefined>(undefined);
@@ -59,7 +58,7 @@ export const useCompilation = (code: string | undefined) => {
     }, [code]);
 
     const [, cancelCompilation] = useDebounce(compileCode, compilationDelay, [code]);
-    useDebounce(() => localStorage.setItem(StorageKeys.EDITOR_CODE, code || ''), compilationDelay, [code]);
+    useDebounce(() => onCodeChange(code || ''), compilationDelay, [code]);
 
     useEffect(() => {
         setSyntaxError(undefined);
@@ -71,5 +70,5 @@ export const useCompilation = (code: string | undefined) => {
         };
     }, [cancelCompilation, code]);
 
-    return [ compiling, syntaxError, compileError, execution ] as const;
+    return [compiling, syntaxError, compileError, execution] as const;
 };

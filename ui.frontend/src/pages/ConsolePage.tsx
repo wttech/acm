@@ -15,20 +15,18 @@ import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ConsoleHelpButton from '../components/ConsoleHelpButton';
 import { useCompilation } from '../hooks/code.ts';
+import ConsoleCodeGroovy from "./ConsoleCode.groovy.ts";
+import {StorageKeys} from "../utils/storage.ts";
 
 const toastTimeout = 3000;
-const StorageKeys = {
-    EDITOR_CODE: 'editor_code',
-};
-const ConsoleCode = '';
 
 const ConsolePage = () => {
     const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
-    const [code, setCode] = useState<string | undefined>(localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCode);
-    const [autoscroll, setAutoscroll] = useState<boolean>(true);
-    const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code);
+    const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCodeGroovy);
+    const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
     const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
     const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id || null);
+    const [autoscroll, setAutoscroll] = useState<boolean>(true);
 
     useEffect(() => {
         setExecution(parseExecution);
