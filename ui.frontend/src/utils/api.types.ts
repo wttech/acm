@@ -4,7 +4,7 @@ export type Executable = {
 };
 
 export type Description = {
-  execution: Execution
+  execution: Execution;
   arguments: {
     [name: string]: Argument<ArgumentValue>;
   };
@@ -12,9 +12,9 @@ export type Description = {
 
 export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined;
-export type ArgumentValues = Record<string, ArgumentValue>
+export type ArgumentValues = Record<string, ArgumentValue>;
 
-export const ArgumentGroupDefault = "general";
+export const ArgumentGroupDefault = 'general';
 
 export type Argument<T> = {
   name: string;
@@ -27,7 +27,7 @@ export type Argument<T> = {
 
 export type BoolArgument = Argument<boolean> & {
   display: 'SWITCHER' | 'CHECKBOX';
-}
+};
 
 export type TextArgument = Argument<string> & {
   language?: string;
@@ -40,12 +40,12 @@ export type NumberArgument = Argument<number> & {
 
 export type SelectArgument = Argument<ArgumentValue> & {
   options: Record<string, ArgumentValue>;
-  display: 'AUTO' | 'DROPDOWN' | 'RADIO'
+  display: 'AUTO' | 'DROPDOWN' | 'RADIO';
 };
 
 export type MultiSelectArgument = Argument<ArgumentValue> & {
   options: Record<string, ArgumentValue>;
-  display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN'
+  display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN';
 };
 
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> {
@@ -186,4 +186,12 @@ export enum HealthIssueSeverity {
   CRITICAL = 'CRITICAL',
   WARNING = 'WARNING',
   INFO = 'INFO',
+}
+
+export enum ExecutionQueryParams {
+  START_DATE = 'startDate',
+  END_DATE = 'endDate',
+  STATUS = 'status',
+  EXECUTABLE_ID = 'executableId',
+  DURATION = 'duration',
 }

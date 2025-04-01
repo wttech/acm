@@ -10,9 +10,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AppLink } from '../AppLink.tsx';
 import CodeExecuteButton from '../components/CodeExecuteButton.tsx';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
-import { searchParams } from '../constants/searchParams.ts';
 import { toastRequest } from '../utils/api';
-import { ArgumentValues, Description, QueueOutput, Script, ScriptOutput } from '../utils/api.types';
+import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput } from '../utils/api.types';
 import { buildUrlWithParams } from '../utils/url.ts';
 
 const toastTimeout = 3000;
@@ -131,7 +130,7 @@ const ScriptView = () => {
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
                     <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={script.type !== 'MANUAL'} isPending={executing} />
-                    <AppLink marginStart={16} variant="secondary" to={buildUrlWithParams('/history', { [searchParams.executableId]: script.name })}>
+                    <AppLink marginStart={16} variant="secondary" to={buildUrlWithParams('/history', { [ExecutionQueryParams.EXECUTABLE_ID]: script.name })}>
                       <Button variant="secondary" style="outline">
                         <History />
                         <Text>See executions</Text>

@@ -14,10 +14,9 @@ import { useDebounce } from 'react-use';
 import DateExplained from '../components/DateExplained';
 import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
-import { searchParams } from '../constants/searchParams.ts';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
-import { ExecutionOutput, ExecutionStatus } from '../utils/api.types';
+import { ExecutionOutput, ExecutionQueryParams, ExecutionStatus } from '../utils/api.types';
 
 const getDateFromStringValue = (urlValue: string | null, fallback?: CalendarDateTime) => {
   if (urlValue) {
@@ -39,13 +38,13 @@ const HistoryPage = () => {
   const startDateDefault = new CalendarDateTime(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth() + 1, sevenDaysAgo.getDate(), 0, 0, 0);
 
   const [searchState, setSearchState] = useSearchParams();
-  const [startDate, setStartDate] = useState<DateValue | null>(getDateFromStringValue(searchState.get(searchParams.startDate), startDateDefault));
-  const [endDate, setEndDate] = useState<DateValue | null>(getDateFromStringValue(searchState.get(searchParams.endDate)));
-  const [status, setStatus] = useState<string | null>(searchState.get(searchParams.status) || 'all');
-  const [executableId, setExecutableId] = useState<string>(searchState.get(searchParams.executableId) || '');
+  const [startDate, setStartDate] = useState<DateValue | null>(getDateFromStringValue(searchState.get(ExecutionQueryParams.START_DATE), startDateDefault));
+  const [endDate, setEndDate] = useState<DateValue | null>(getDateFromStringValue(searchState.get(ExecutionQueryParams.END_DATE)));
+  const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
+  const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');
 
   const [durationMinFromParam, durationMaxFromParam] = (() => {
-    const urlValue = searchState.get(searchParams.duration);
+    const urlValue = searchState.get(ExecutionQueryParams.DURATION);
 
     if (!urlValue) {
       return [undefined, undefined];
@@ -70,11 +69,11 @@ const HistoryPage = () => {
 
           const params = new URLSearchParams();
 
-          if (executableId) params.append(searchParams.executableId, `%${executableId}%`);
-          if (startDate) params.append(searchParams.startDate, startDate.toString());
-          if (endDate) params.append(searchParams.endDate, endDate.toString());
-          if (status && status !== 'all') params.append(searchParams.status, status);
-          if (durationMin || durationMax) params.append(searchParams.duration, `${durationMin || ''},${durationMax || ''}`);
+          if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, `%${executableId}%`);
+          if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
+          if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
+          if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status);
+          if (durationMin || durationMax) params.append(ExecutionQueryParams.DURATION, `${durationMin || ''},${durationMax || ''}`);
           if (params.toString()) url += `?${params.toString()}`;
 
           setSearchState(params.toString(), { replace: true });
