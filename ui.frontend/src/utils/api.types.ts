@@ -96,20 +96,20 @@ export enum ExecutionStatus {
   SUCCEEDED = 'SUCCEEDED',
 }
 
-export function isExecutionNegative(status: ExecutionStatus | null | undefined) {
-  return status && [ExecutionStatus.FAILED, ExecutionStatus.ABORTED].includes(status);
+export function isExecutionNegative(status: ExecutionStatus | null | undefined): boolean {
+  return !!status && [ExecutionStatus.FAILED, ExecutionStatus.ABORTED].includes(status);
 }
 
-export function isExecutionPending(status: ExecutionStatus | null | undefined) {
-  return status === ExecutionStatus.QUEUED || isExecutionActive(status);
+export function isExecutionPending(status: ExecutionStatus | null | undefined): boolean {
+  return !!status && (status === ExecutionStatus.QUEUED || isExecutionActive(status));
 }
 
-export function isExecutionActive(status: ExecutionStatus | null | undefined) {
-  return status && [ExecutionStatus.ACTIVE, ExecutionStatus.PARSING, ExecutionStatus.CHECKING, ExecutionStatus.RUNNING].includes(status);
+export function isExecutionActive(status: ExecutionStatus | null | undefined): boolean {
+  return !!status && [ExecutionStatus.ACTIVE, ExecutionStatus.PARSING, ExecutionStatus.CHECKING, ExecutionStatus.RUNNING].includes(status);
 }
 
-export function isExecutionCompleted(status: ExecutionStatus | null | undefined) {
-  return status && [ExecutionStatus.FAILED, ExecutionStatus.SUCCEEDED].includes(status);
+export function isExecutionCompleted(status: ExecutionStatus | null | undefined): boolean {
+  return !!status && [ExecutionStatus.FAILED, ExecutionStatus.SUCCEEDED].includes(status);
 }
 
 export type QueueOutput = {
