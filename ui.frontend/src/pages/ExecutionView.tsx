@@ -25,7 +25,7 @@ const ExecutionView = () => {
   const { executionId } = useParams<{ executionId: string }>();
   const formatter = useFormatter();
   const [autoscrollOutput, setAutoscrollOutput] = useState<boolean>(true);
-  const { execution, setExecution, loading } = useExecutionPolling(executionId);
+  const { execution, setExecution, loading } = useExecutionPolling(executionId); // TODO avoid toasting too often (handle edge case with super-quick scripts)
   const [selectedTab, handleTabChange] = useNavigationTab(executionId ? `/executions/view/${encodeURIComponent(executionId)}` : null, 'details');
 
   if (loading) {

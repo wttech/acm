@@ -85,7 +85,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                 if (executions.isEmpty()) {
                     respondJson(
                             response,
-                            notFound(String.format("Code execution with ID '%s' not found!", StringUtils.join(jobIds, ","))));
+                            notFound(String.format(
+                                    "Code execution with ID '%s' not found!", StringUtils.join(jobIds, ","))));
                     return;
                 }
             }
@@ -114,7 +115,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             if (executions.isEmpty()) {
                 respondJson(
                         response,
-                        notFound(String.format("Code execution with ID '%s' not found!", StringUtils.join(jobIds, ","))));
+                        notFound(String.format(
+                                "Code execution with ID '%s' not found!", StringUtils.join(jobIds, ","))));
                 return;
             }
 
