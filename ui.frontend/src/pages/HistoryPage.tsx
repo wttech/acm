@@ -1,5 +1,5 @@
 import { Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, NumberField, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, Text, TextField, View } from '@adobe/react-spectrum';
-import { CalendarDateTime, DateValue } from '@internationalized/date';
+import { DateValue } from '@internationalized/date';
 import { Key } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Alert from '@spectrum-icons/workflow/Alert';
@@ -18,46 +18,27 @@ import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
 import { ExecutionOutput, ExecutionQueryParams, ExecutionStatus } from '../utils/api.types';
 import { buildUrlWithParams } from '../utils/url.ts';
-
-const getDateFromStringValue = (urlValue: string | null, fallback?: CalendarDateTime) => {
-  if (urlValue) {
-    const date = new Date(urlValue);
-
-    return new CalendarDateTime(date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
-  }
-
-  return fallback ?? null;
-};
+import { Dates } from "../utils/dates.ts";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
   const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const sevenDaysAgo = new Date(); // assume start date to be 7 days ago
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const startDateDefault = new CalendarDateTime(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth() + 1, sevenDaysAgo.getDate(), 0, 0, 0);
-
   const [searchState, setSearchState] = useSearchParams();
-  const [startDate, setStartDate] = useState<DateValue | null>(getDateFromStringValue(searchState.get(ExecutionQueryParams.START_DATE), startDateDefault));
-  const [endDate, setEndDate] = useState<DateValue | null>(getDateFromStringValue(searchState.get(ExecutionQueryParams.END_DATE)));
+  const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendar(Dates.daysAgo(7)));
+  const [endDate, setEndDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.END_DATE)));
   const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
   const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');
 
-  const [durationMinFromParam, durationMaxFromParam] = (() => {
-    const urlValue = searchState.get(ExecutionQueryParams.DURATION);
-
-    if (!urlValue) {
-      return [undefined, undefined];
-    }
-
-    const [min, max] = urlValue.split(',');
-
+  const [durationMinInitial, durationMaxInitial] = (() => {
+    const searchParam = searchState.get(ExecutionQueryParams.DURATION);
+    if (!searchParam) return [undefined, undefined];
+    const [min, max] = searchParam.split(',');
     return [Number(min), Number(max)];
   })();
-
-  const [durationMin, setDurationMin] = useState<number | undefined>(durationMinFromParam);
-  const [durationMax, setDurationMax] = useState<number | undefined>(durationMaxFromParam);
+  const [durationMin, setDurationMin] = useState<number | undefined>(durationMinInitial);
+  const [durationMax, setDurationMax] = useState<number | undefined>(durationMaxInitial);
 
   const formatter = useFormatter();
 
