@@ -2,15 +2,15 @@ import { Key } from '@react-types/shared';
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-const TAB_KEY = 'tab';
+export const TAB_SEARCH_PARAM_KEY = 'tab';
 
 export function useNavigationTab(defaultTab: string = '') {
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    if (!searchParams.get(TAB_KEY)) {
+    if (!searchParams.get(TAB_SEARCH_PARAM_KEY)) {
       setSearchParams((prev) => {
-        prev.set(TAB_KEY, defaultTab);
+        prev.set(TAB_SEARCH_PARAM_KEY, defaultTab);
 
         return prev;
       });
@@ -19,11 +19,11 @@ export function useNavigationTab(defaultTab: string = '') {
 
   const handleTabChange = (key: Key) => {
     setSearchParams((prev) => {
-      prev.set(TAB_KEY, key.toString());
+      prev.set(TAB_SEARCH_PARAM_KEY, key.toString());
 
       return prev;
     });
   };
 
-  return [searchParams.get(TAB_KEY) || defaultTab, handleTabChange] as const;
+  return [searchParams.get(TAB_SEARCH_PARAM_KEY) || defaultTab, handleTabChange] as const;
 }

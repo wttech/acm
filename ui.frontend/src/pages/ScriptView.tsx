@@ -10,6 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AppLink } from '../AppLink.tsx';
 import CodeExecuteButton from '../components/CodeExecuteButton.tsx';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
+import { TAB_SEARCH_PARAM_KEY } from '../hooks/navigation.ts';
 import { toastRequest } from '../utils/api';
 import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput } from '../utils/api.types';
 import { buildUrlWithParams } from '../utils/url.ts';
@@ -101,7 +102,7 @@ const ScriptView = () => {
         },
       });
       const queuedExecution = response.data.data.executions[0]!;
-      navigate(`/executions/view/${encodeURIComponent(queuedExecution.id)}/output`);
+      navigate(buildUrlWithParams(`/executions/view/${encodeURIComponent(queuedExecution.id)}`, { [TAB_SEARCH_PARAM_KEY]: 'output' }));
     } catch (error) {
       console.error('Script execution error:', error);
       ToastQueue.negative('Script execution error!', { timeout: toastTimeout });

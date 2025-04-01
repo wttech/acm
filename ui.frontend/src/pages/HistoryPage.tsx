@@ -17,6 +17,7 @@ import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
 import { ExecutionOutput, ExecutionQueryParams, ExecutionStatus } from '../utils/api.types';
+import { buildUrlWithParams } from '../utils/url.ts';
 
 const getDateFromStringValue = (urlValue: string | null, fallback?: CalendarDateTime) => {
   if (urlValue) {
@@ -65,8 +66,6 @@ const HistoryPage = () => {
       const fetchExecutions = async () => {
         setLoading(true);
         try {
-          let url = `/apps/acm/api/execution.json`;
-
           const params = new URLSearchParams();
 
           if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, `%${executableId}%`);
@@ -74,13 +73,12 @@ const HistoryPage = () => {
           if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
           if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status);
           if (durationMin || durationMax) params.append(ExecutionQueryParams.DURATION, `${durationMin || ''},${durationMax || ''}`);
-          if (params.toString()) url += `?${params.toString()}`;
 
           setSearchState(params.toString(), { replace: true });
 
           const response = await toastRequest<ExecutionOutput>({
             method: 'GET',
-            url,
+            url: buildUrlWithParams('/apps/acm/api/execution.json', params),
             operation: `Executions loading`,
             positive: false,
           });
