@@ -3,6 +3,7 @@ import { useInterval } from 'react-use';
 import { ToastQueue } from '@react-spectrum/toast';
 import { apiRequest } from '../utils/api';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
+import { useFormatter } from './formatter';
 
 const toastTimeout = 3000;
 
@@ -10,6 +11,8 @@ export const useExecutionPolling = (jobId: string | undefined | null, pollInterv
     const [execution, setExecution] = useState<Execution | null>(null);
     const [executing, setExecuting] = useState<boolean>(!!jobId);
     const [loading, setLoading] = useState<boolean>(true);
+    const [wasPending, setWasPending] = useState<boolean>(false);
+    const formatter = useFormatter();
 
     const pollExecutionState = async (jobId: string) => {
         try {
@@ -22,14 +25,21 @@ export const useExecutionPolling = (jobId: string | undefined | null, pollInterv
             setExecution(queuedExecution);
             setLoading(false);
 
-            if (!isExecutionPending(queuedExecution.status)) {
+            if (isExecutionPending(queuedExecution.status)) {
+                setWasPending(true);
+            } else {
                 setExecuting(false);
-                if (queuedExecution.status === ExecutionStatus.FAILED) {
-                    ToastQueue.negative('Code execution failed!', { timeout: toastTimeout });
-                } else if (queuedExecution.status === ExecutionStatus.SKIPPED) {
-                    ToastQueue.neutral('Code execution cannot run!', { timeout: toastTimeout });
-                } else if (queuedExecution.status === ExecutionStatus.SUCCEEDED) {
-                    ToastQueue.positive('Code execution succeeded!', { timeout: toastTimeout });
+                setWasPending(false);
+
+                const recentlyCompleted = formatter.isRecent(queuedExecution.endDate, 2 * pollInterval);
+                if (recentlyCompleted || wasPending) {
+                    if (queuedExecution.status === ExecutionStatus.FAILED) {
+                        ToastQueue.negative('Code execution failed!', { timeout: toastTimeout });
+                    } else if (queuedExecution.status === ExecutionStatus.SKIPPED) {
+                        ToastQueue.neutral('Code execution cannot run!', { timeout: toastTimeout });
+                    } else if (queuedExecution.status === ExecutionStatus.SUCCEEDED) {
+                        ToastQueue.positive('Code execution succeeded!', { timeout: toastTimeout });
+                    }
                 }
             }
         } catch (error) {
