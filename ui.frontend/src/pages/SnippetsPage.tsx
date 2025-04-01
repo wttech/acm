@@ -5,9 +5,9 @@ import FolderOpenOutline from '@spectrum-icons/workflow/FolderOpenOutline';
 import { useEffect, useState } from 'react';
 import Markdown from '../components/Markdown';
 import SnippetCode from '../components/SnippetCode';
+import { useNavigationTab } from '../hooks/navigation';
 import { toastRequest } from '../utils/api';
 import { Snippet, SnippetOutput } from '../utils/api.types';
-import { useNavigationTab } from '../hooks/navigation';
 
 const SnippetsPage = () => {
   const [snippets, setSnippets] = useState<SnippetOutput | null>(null);
@@ -24,12 +24,7 @@ const SnippetsPage = () => {
   }, []);
 
   const defaultTab = snippets?.list[0]?.group;
-
-  console.log('default tab', defaultTab)
-
-  const [selectedTab, handleTabChange] = useNavigationTab('/snippets', defaultTab);
-
-  console.log('selected tab',selectedTab)
+  const [selectedTab, handleTabChange] = useNavigationTab(defaultTab);
 
   if (snippets === null) {
     return (

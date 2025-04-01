@@ -9,29 +9,55 @@ import Pause from '@spectrum-icons/workflow/Pause';
 import Search from '@spectrum-icons/workflow/Search';
 import Star from '@spectrum-icons/workflow/Star';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 import DateExplained from '../components/DateExplained';
 import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
+import { searchParams } from '../constants/searchParams.ts';
+import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
 import { ExecutionOutput, ExecutionStatus } from '../utils/api.types';
-import { useFormatter } from '../hooks/formatter';
+
+const getDateFromStringValue = (urlValue: string | null, fallback?: CalendarDateTime) => {
+  if (urlValue) {
+    const date = new Date(urlValue);
+
+    return new CalendarDateTime(date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+  }
+
+  return fallback ?? null;
+};
 
 const HistoryPage = () => {
   const navigate = useNavigate();
   const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const now = new Date(); // assume start date to be 7 days ago
-  const startDateDefault = new CalendarDateTime(now.getFullYear(), now.getMonth() + 1, now.getDate() - 7, 0, 0, 0);
+  const sevenDaysAgo = new Date(); // assume start date to be 7 days ago
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const startDateDefault = new CalendarDateTime(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth() + 1, sevenDaysAgo.getDate() - 7, 0, 0, 0);
 
-  const [startDate, setStartDate] = useState<DateValue | null>(startDateDefault);
-  const [endDate, setEndDate] = useState<DateValue | null>();
-  const [status, setStatus] = useState<string | null>('all');
-  const [executableId, setExecutableId] = useState<string>('');
-  const [durationMin, setDurationMin] = useState<number | undefined>();
-  const [durationMax, setDurationMax] = useState<number | undefined>();
+  const [searchState, setSearchState] = useSearchParams();
+  const [startDate, setStartDate] = useState<DateValue | null>(getDateFromStringValue(searchState.get(searchParams.startDate), startDateDefault));
+  const [endDate, setEndDate] = useState<DateValue | null>(getDateFromStringValue(searchState.get(searchParams.endDate)));
+  const [status, setStatus] = useState<string | null>(searchState.get(searchParams.status) || 'all');
+  const [executableId, setExecutableId] = useState<string>(searchState.get(searchParams.executableId) || '');
+
+  const [durationMinFromParam, durationMaxFromParam] = (() => {
+    const urlValue = searchState.get(searchParams.duration);
+
+    if (!urlValue) {
+      return [undefined, undefined];
+    }
+
+    const [min, max] = urlValue.split(',');
+
+    return [Number(min), Number(max)];
+  })();
+
+  const [durationMin, setDurationMin] = useState<number | undefined>(durationMinFromParam);
+  const [durationMax, setDurationMax] = useState<number | undefined>(durationMaxFromParam);
 
   const formatter = useFormatter();
 
@@ -41,13 +67,18 @@ const HistoryPage = () => {
         setLoading(true);
         try {
           let url = `/apps/acm/api/execution.json`;
+
           const params = new URLSearchParams();
-          if (executableId) params.append('executableId', `%${executableId}%`);
-          if (startDate) params.append('startDate', startDate.toString());
-          if (endDate) params.append('endDate', endDate.toString());
-          if (status && status !== 'all') params.append('status', status);
-          if (durationMin || durationMax) params.append('duration', `${durationMin || ''},${durationMax || ''}`);
+
+          if (executableId) params.append(searchParams.executableId, `%${executableId}%`);
+          if (startDate) params.append(searchParams.startDate, startDate.toString());
+          if (endDate) params.append(searchParams.endDate, endDate.toString());
+          if (status && status !== 'all') params.append(searchParams.status, status);
+          if (durationMin || durationMax) params.append(searchParams.duration, `${durationMin || ''},${durationMax || ''}`);
           if (params.toString()) url += `?${params.toString()}`;
+
+          setSearchState(params.toString(), { replace: true });
+
           const response = await toastRequest<ExecutionOutput>({
             method: 'GET',
             url,

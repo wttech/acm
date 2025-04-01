@@ -8,7 +8,7 @@ import UserPreferencesConsole from '../components/UserPreferencesConsole';
 import { useNavigationTab } from '../hooks/navigation';
 
 const MaintenancePage = () => {
-  const [selectedTab, setSelectedTab] = useNavigationTab('/maintenance', 'script-executor');
+  const [selectedTab, setSelectedTab] = useNavigationTab('script-executor');
 
   return (
     <Flex direction="column" flex="1" gap="size-400">
