@@ -7,13 +7,12 @@ import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AppLink } from '../AppLink.tsx';
 import CodeExecuteButton from '../components/CodeExecuteButton.tsx';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
-import { TAB_SEARCH_PARAM_KEY } from '../hooks/navigation.ts';
+import { NavigationSearchParams } from '../hooks/navigation.ts';
 import { toastRequest } from '../utils/api';
 import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput } from '../utils/api.types';
-import { buildUrlWithParams } from '../utils/url.ts';
+import { Urls } from '../utils/url.ts';
 
 const toastTimeout = 3000;
 
@@ -102,7 +101,7 @@ const ScriptView = () => {
         },
       });
       const queuedExecution = response.data.data.executions[0]!;
-      navigate(buildUrlWithParams(`/executions/view/${encodeURIComponent(queuedExecution.id)}`, { [TAB_SEARCH_PARAM_KEY]: 'output' }));
+      navigate(Urls.compose(`/executions/view/${encodeURIComponent(queuedExecution.id)}`, { [NavigationSearchParams.TAB]: 'output' }));
     } catch (error) {
       console.error('Script execution error:', error);
       ToastQueue.negative('Script execution error!', { timeout: toastTimeout });
@@ -131,12 +130,10 @@ const ScriptView = () => {
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
                     <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={script.type !== 'MANUAL'} isPending={executing} />
-                    <AppLink marginStart={16} variant="secondary" to={buildUrlWithParams('/history', { [ExecutionQueryParams.EXECUTABLE_ID]: script.name })}>
-                      <Button variant="secondary" style="outline">
-                        <History />
-                        <Text>See executions</Text>
-                      </Button>
-                    </AppLink>
+                    <Button variant="secondary" style="outline" onPress={() => navigate(Urls.compose('/history', { [ExecutionQueryParams.EXECUTABLE_ID]: script.name }))}>
+                      <History />
+                      <Text>See executions</Text>
+                    </Button>
                   </ButtonGroup>
                 </Flex>
               </View>

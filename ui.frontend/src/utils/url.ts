@@ -1,5 +1,7 @@
-export const buildUrlWithParams = (url: string, searchParams: Record<string, string> | URLSearchParams) => {
-  const params = new URLSearchParams(searchParams);
+export class Urls {
 
-  return `${url}${params.toString() ? `?${params.toString()}` : ''}`;
-};
+  static compose = (url: string, searchParams: Record<string, string> | URLSearchParams) => {
+    const params = new URLSearchParams(searchParams);
+    return `${url}${params.toString() ? `?${params.toString()}` : ''}`;
+  };
+}

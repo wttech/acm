@@ -17,8 +17,8 @@ import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
 import { ExecutionOutput, ExecutionQueryParams, ExecutionStatus } from '../utils/api.types';
-import { buildUrlWithParams } from '../utils/url.ts';
-import { Dates } from "../utils/dates.ts";
+import { Urls } from '../utils/url';
+import { Dates } from "../utils/dates";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ const HistoryPage = () => {
 
           const response = await toastRequest<ExecutionOutput>({
             method: 'GET',
-            url: buildUrlWithParams('/apps/acm/api/execution.json', params),
+            url: Urls.compose('/apps/acm/api/execution.json', params),
             operation: `Executions loading`,
             positive: false,
           });
