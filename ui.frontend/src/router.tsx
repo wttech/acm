@@ -1,18 +1,20 @@
 import { createHashRouter } from 'react-router-dom';
 import App from './App';
 import ConsolePage from './pages/ConsolePage';
-import DashboardPage from './pages/DashboardPage.tsx';
+import DashboardPage from './pages/DashboardPage';
 import ExecutionView from './pages/ExecutionView';
-import HistoryPage from './pages/HistoryPage.tsx';
-import MaintenancePage from './pages/MaintenancePage.tsx';
+import HistoryPage from './pages/HistoryPage';
+import MaintenancePage from './pages/MaintenancePage';
 import ScriptsPage from './pages/ScriptsPage';
 import ScriptView from './pages/ScriptView';
 import SnippetsPage from './pages/SnippetsPage';
+import ErrorComponent from "./ErrorComponent";
 
 const router = createHashRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <ErrorComponent/>,
     children: [
       { path: '/', element: <DashboardPage /> },
       { path: '/scripts/:tab?', element: <ScriptsPage /> },
