@@ -107,6 +107,17 @@ class Formatter {
     return `${this.dateAtInstance(value)} (${this.dateRelative(value)})`;
   }
 
+  public isRecent(value: string | Date, timeFrameMs: number): boolean {
+    if (!value) {
+      return false;
+    }
+
+    const now = new Date();
+    const targetDate = toZonedTime(new Date(value), this.userTimeZoneId);
+    const timeDifference = now.getTime() - targetDate.getTime();
+    return timeDifference <= timeFrameMs;
+  }
+
   public instanceTimezone(): string {
     return this.instanceTimezoneId;
   }
