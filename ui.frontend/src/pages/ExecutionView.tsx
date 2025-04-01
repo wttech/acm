@@ -31,6 +31,7 @@ const ExecutionView = () => {
   const executionInQueue = !!appState?.queuedExecutions.find((execution) => execution.id === executionId);
   const [loading, setLoading] = useState<boolean>(executionInQueue);
 
+  // TODO hello world from manual ends too early
   useEffect(() => {
     const fetchExecution = async () => {
       try {
