@@ -31,7 +31,7 @@ const ConsolePage = () => {
     const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id || null);
 
     useEffect(() => {
-        setQueuedExecution(parseExecution);
+        setExecution(parseExecution);
     }, [parseExecution]);
 
     const onDescribeFailed = (description: Description) => {

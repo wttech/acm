@@ -25,12 +25,10 @@ const ExecutionView = () => {
   const { executionId } = useParams<{ executionId: string }>();
   const formatter = useFormatter();
   const [autoscrollOutput, setAutoscrollOutput] = useState<boolean>(true);
-
-  const { execution, setExecution } = useExecutionPolling(executionId);
-
+  const { execution, setExecution, loading } = useExecutionPolling(executionId);
   const [selectedTab, handleTabChange] = useNavigationTab(executionId ? `/executions/view/${encodeURIComponent(executionId)}` : null, 'details');
 
-  if (!execution) {
+  if (loading) {
     return (
         <Flex flex="1" justifyContent="center" alignItems="center">
           <ProgressBar label="Loading..." isIndeterminate />

@@ -9,6 +9,7 @@ const toastTimeout = 3000;
 export const useExecutionPolling = (jobId: string | undefined | null, pollInterval: number = 500) => {
     const [execution, setExecution] = useState<Execution | null>(null);
     const [executing, setExecuting] = useState<boolean>(!!jobId);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const pollExecutionState = async (jobId: string) => {
         try {
@@ -19,6 +20,7 @@ export const useExecutionPolling = (jobId: string | undefined | null, pollInterv
             });
             const queuedExecution = response.data.data.executions.find((e: Execution) => e.id === jobId)!;
             setExecution(queuedExecution);
+            setLoading(false);
 
             if (!isExecutionPending(queuedExecution.status)) {
                 setExecuting(false);
@@ -32,6 +34,7 @@ export const useExecutionPolling = (jobId: string | undefined | null, pollInterv
             }
         } catch (error) {
             console.warn('Code execution state unknown:', error);
+            setLoading(false);
         }
     };
 
@@ -44,5 +47,5 @@ export const useExecutionPolling = (jobId: string | undefined | null, pollInterv
         executing && jobId ? pollInterval : null,
     );
 
-    return { execution, setExecution, executing, setExecuting };
+    return { execution, setExecution, executing, setExecuting, loading };
 };
