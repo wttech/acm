@@ -25,7 +25,6 @@ const SnippetsPage = () => {
 
   const defaultTab = snippets?.list[0]?.group;
   const [selectedTab, handleTabChange] = useNavigationTab(defaultTab);
-
   if (snippets === null) {
     return (
       <Flex flex="1" justifyContent="center" alignItems="center">
