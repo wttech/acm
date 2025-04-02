@@ -1,10 +1,12 @@
-import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, Switch, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Badge, Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, Switch, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
+import InfoOutline from '@spectrum-icons/workflow/InfoOutline';
 import Print from '@spectrum-icons/workflow/Print';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -18,6 +20,7 @@ import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
 import { isExecutionPending } from '../utils/api.types';
+import { Objects } from '../utils/objects.ts';
 
 const toastTimeout = 3000;
 
@@ -25,7 +28,7 @@ const ExecutionView = () => {
   const { executionId } = useParams<{ executionId: string }>();
   const formatter = useFormatter();
   const [autoscrollOutput, setAutoscrollOutput] = useState<boolean>(true);
-  const { execution, setExecution, loading } = useExecutionPolling(executionId); // TODO avoid toasting too often (handle edge case with super-quick scripts)
+  const { execution, setExecution, loading } = useExecutionPolling(executionId);
   const [selectedTab, handleTabChange] = useNavigationTab('details');
 
   if (loading) {
@@ -82,8 +85,8 @@ const ExecutionView = () => {
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
-                  <LabeledValue label="ID" value={execution.id} />
-                  <Field label="Status">
+                  <LabeledValue label="ID" value={execution.id} flex="1" minWidth="50%" />
+                  <Field label="Status" flex="1" minWidth="50%">
                     <div>
                       <ExecutionStatusBadge value={execution.status} />
                     </div>
@@ -91,17 +94,33 @@ const ExecutionView = () => {
                 </Flex>
               </View>
               <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                <Field label="Executable" width="100%">
-                  <div>
-                    <ExecutableValue value={execution.executable} />
-                  </div>
-                </Field>
-              </View>
-              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
                   <LabeledValue label="Started At" value={execution.startDate ? formatter.dateExplained(execution.startDate) : '—'} />
                   <LabeledValue label="Duration" value={formatter.durationExplained(execution.duration)} />
                   <LabeledValue label="Ended At" value={execution.endDate ? formatter.dateExplained(execution.endDate) : '—'} />
+                </Flex>
+              </View>
+              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
+                <Flex direction="row" justifyContent="space-between" gap="size-200">
+                  <Field label="Executable" flex="1" minWidth="50%">
+                    <div>
+                      <ExecutableValue value={execution.executable} />
+                    </div>
+                  </Field>
+                  <Field label="Arguments" flex="1" minWidth="50%">
+                    <div>
+                      {Objects.isEmpty(execution.executable.arguments) ? (
+                        <Badge variant="neutral">
+                          <InfoOutline />
+                          <Text>Not described</Text>
+                        </Badge>
+                      ) : (
+                        <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
+                          <Editor width="100%" language="json" theme="vs-dark" height="200px" options={{ readOnly: true, scrollBeyondLastLine: false }} value={JSON.stringify(execution.executable.arguments, null, 2)} />
+                        </View>
+                      )}
+                    </div>
+                  </Field>
                 </Flex>
               </View>
             </Flex>

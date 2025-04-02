@@ -2,7 +2,7 @@
 <jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
     jcr:primaryType="nt:unstructured"
     jcr:title="Scripts"
-    jcr:description="Enable or disable auto-executed scripts."
+    jcr:description="Execute manual scripts and toggle automatic scripts."
     icon="fileCode"
     href="/acm#/scripts"
     id="acm-scripts"/>
