@@ -1,6 +1,7 @@
 export type Executable = {
   id: string;
   content: string;
+  arguments: ArgumentValues;
 };
 
 export const ExecutableIdConsole = 'console';
