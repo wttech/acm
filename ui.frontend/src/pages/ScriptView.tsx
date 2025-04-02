@@ -1,29 +1,18 @@
-import {
-  Button,
-  ButtonGroup,
-  Content,
-  Flex,
-  IllustratedMessage,
-  Item,
-  LabeledValue,
-  ProgressBar,
-  TabList,
-  TabPanels,
-  Tabs,
-  Text,
-  View
-} from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
-import { toastRequest } from '../utils/api';
-import { Script, ScriptOutput, ArgumentValues, Description, QueueOutput } from '../utils/api.types';
+import History from '@spectrum-icons/workflow/History';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import CodeExecuteButton from '../components/CodeExecuteButton.tsx';
+import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
+import { NavigationSearchParams } from '../hooks/navigation.ts';
+import { toastRequest } from '../utils/api';
+import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput } from '../utils/api.types';
+import { Urls } from '../utils/url.ts';
 
 const toastTimeout = 3000;
 
@@ -56,40 +45,40 @@ const ScriptView = () => {
 
   if (loading) {
     return (
-        <Flex flex="1" justifyContent="center" alignItems="center">
-          <ProgressBar label="Loading..." isIndeterminate />
-        </Flex>
+      <Flex flex="1" justifyContent="center" alignItems="center">
+        <ProgressBar label="Loading..." isIndeterminate />
+      </Flex>
     );
   }
 
   if (!script) {
     return (
-        <Flex direction="column" flex="1">
-          <IllustratedMessage>
-            <NotFound />
-            <Content>Script not found</Content>
-          </IllustratedMessage>
-        </Flex>
+      <Flex direction="column" flex="1">
+        <IllustratedMessage>
+          <NotFound />
+          <Content>Script not found</Content>
+        </IllustratedMessage>
+      </Flex>
     );
   }
 
   const onCopyScriptCode = () => {
     navigator.clipboard
-        .writeText(script.content)
-        .then(() => {
-          ToastQueue.info('Script code copied to clipboard!', {
-            timeout: toastTimeout,
-          });
-        })
-        .catch(() => {
-          ToastQueue.negative('Failed to copy script code!', {
-            timeout: toastTimeout,
-          });
+      .writeText(script.content)
+      .then(() => {
+        ToastQueue.info('Script code copied to clipboard!', {
+          timeout: toastTimeout,
         });
+      })
+      .catch(() => {
+        ToastQueue.negative('Failed to copy script code!', {
+          timeout: toastTimeout,
+        });
+      });
   };
 
   const onDescribeFailed = (description: Description) => {
-    console.error("Script description failed:", description);
+    console.error('Script description failed:', description);
     ToastQueue.negative('Script description failed. Check logs!', {
       timeout: toastTimeout,
     });
@@ -107,12 +96,12 @@ const ScriptView = () => {
           code: {
             id: script.id,
             content: script.content,
-            arguments: args
+            arguments: args,
           },
         },
       });
       const queuedExecution = response.data.data.executions[0]!;
-      navigate(`/executions/view/${encodeURIComponent(queuedExecution.id)}/output`);
+      navigate(Urls.compose(`/executions/view/${encodeURIComponent(queuedExecution.id)}`, { [NavigationSearchParams.TAB]: 'output' }));
     } catch (error) {
       console.error('Script execution error:', error);
       ToastQueue.negative('Script execution error!', { timeout: toastTimeout });
@@ -122,64 +111,62 @@ const ScriptView = () => {
   };
 
   return (
-      <Flex direction="column" flex="1" gap="size-400">
-        <Tabs flex="1" aria-label="Script Details">
-          <TabList>
-            <Item key="details">
-              <FileCode />
-              <Text>Script</Text>
-            </Item>
-            <Item key="code" aria-label="Code">
-              <FileCode />
-              <Text>Code</Text>
-            </Item>
-          </TabList>
-          <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-            <Item key="details">
-              <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-                <View>
-                  <Flex justifyContent="space-between" alignItems="center">
-                    <ButtonGroup>
-                      <CodeExecuteButton
-                          code={script.content}
-                          onDescribeFailed={onDescribeFailed}
-                          onExecute={onExecute}
-                          isDisabled={script.type !== 'MANUAL'}
-                          isPending={executing}
-                      />
-                    </ButtonGroup>
-                  </Flex>
-                </View>
-                <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                  <Flex direction="row" justifyContent="space-between" gap="size-200">
-                    <Field label="Name" width="100%">
-                      <div>
-                        <Text>{script.name}</Text>
-                      </div>
-                    </Field>
-                    <LabeledValue label="ID" value={script.id} />
-                  </Flex>
-                </View>
-              </Flex>
-            </Item>
-            <Item key="code">
-              <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-                <View>
-                  <Flex justifyContent="space-between" alignItems="center">
-                    <ButtonGroup>
-                      <Button variant="secondary" onPress={onCopyScriptCode}>
-                        <Copy />
-                        <Text>Copy</Text>
-                      </Button>
-                    </ButtonGroup>
-                  </Flex>
-                </View>
-                <ImmersiveEditor id="script-view" value={script.content} language="groovy" readOnly />
-              </Flex>
-            </Item>
-          </TabPanels>
-        </Tabs>
-      </Flex>
+    <Flex direction="column" flex="1" gap="size-400">
+      <Tabs flex="1" aria-label="Script Details">
+        <TabList>
+          <Item key="details">
+            <FileCode />
+            <Text>Script</Text>
+          </Item>
+          <Item key="code" aria-label="Code">
+            <FileCode />
+            <Text>Code</Text>
+          </Item>
+        </TabList>
+        <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
+          <Item key="details">
+            <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+              <View>
+                <Flex justifyContent="space-between" alignItems="center">
+                  <ButtonGroup>
+                    <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={script.type !== 'MANUAL'} isPending={executing} />
+                    <Button variant="secondary" style="outline" onPress={() => navigate(Urls.compose('/history', { [ExecutionQueryParams.EXECUTABLE_ID]: script.id }))}>
+                      <History />
+                      <Text>Show in history</Text>
+                    </Button>
+                  </ButtonGroup>
+                </Flex>
+              </View>
+              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
+                <Flex direction="row" justifyContent="space-between" gap="size-200">
+                  <Field label="Name" width="100%">
+                    <div>
+                      <Text>{script.name}</Text>
+                    </div>
+                  </Field>
+                  <LabeledValue label="ID" value={script.id} />
+                </Flex>
+              </View>
+            </Flex>
+          </Item>
+          <Item key="code">
+            <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+              <View>
+                <Flex justifyContent="space-between" alignItems="center">
+                  <ButtonGroup>
+                    <Button variant="secondary" onPress={onCopyScriptCode}>
+                      <Copy />
+                      <Text>Copy</Text>
+                    </Button>
+                  </ButtonGroup>
+                </Flex>
+              </View>
+              <ImmersiveEditor id="script-view" value={script.content} language="groovy" readOnly />
+            </Flex>
+          </Item>
+        </TabPanels>
+      </Tabs>
+    </Flex>
   );
 };
 

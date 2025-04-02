@@ -1,29 +1,29 @@
 import { Key } from '@react-types/shared';
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
-export function useNavigationTab(basePath: string | null, defaultTab: string = '') {
-  const { tab } = useParams();
-  const navigate = useNavigate();
-  const [selectedTab, setSelectedTab] = useState<string>(tab || defaultTab);
+export enum NavigationSearchParams {
+  TAB = 'tab',
+}
 
-  useEffect(() => {
-    if (tab === undefined || tab === '') {
-      setSelectedTab(defaultTab);
-    } else {
-      setSelectedTab(tab);
-    }
-  }, [tab, defaultTab]);
+export function useNavigationTab(defaultTab: string = '') {
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    if (basePath !== null && tab !== selectedTab) {
-      navigate(`${basePath}/${selectedTab}`, { replace: true });
+    if (!searchParams.get(NavigationSearchParams.TAB)) {
+      setSearchParams((prev) => {
+        prev.set(NavigationSearchParams.TAB, defaultTab);
+        return prev;
+      });
     }
-  }, [selectedTab, navigate, basePath, tab]);
+  }, [defaultTab, searchParams, setSearchParams]);
 
   const handleTabChange = (key: Key) => {
-    setSelectedTab(key as string);
+    setSearchParams((prev) => {
+      prev.set(NavigationSearchParams.TAB, key.toString());
+      return prev;
+    });
   };
 
-  return [selectedTab, handleTabChange] as const;
+  return [searchParams.get(NavigationSearchParams.TAB) || defaultTab, handleTabChange] as const;
 }

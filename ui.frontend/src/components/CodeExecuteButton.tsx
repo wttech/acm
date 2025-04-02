@@ -21,7 +21,7 @@ import {
     ArgumentGroupDefault,
     ArgumentValue,
     ArgumentValues,
-    Description,
+    Description, ExecutableIdConsole,
     ExecutionStatus,
 } from '../utils/api.types.ts';
 import CodeArgumentInput from './CodeArgumentInput.tsx';
@@ -54,7 +54,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
                 method: 'post',
                 data: {
                     code: {
-                        id: 'console',
+                        id: ExecutableIdConsole,
                         content: code,
                     },
                 },

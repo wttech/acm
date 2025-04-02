@@ -1,12 +1,12 @@
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
-import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
+import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import Hand from '@spectrum-icons/workflow/Hand';
 import ScriptList from '../components/ScriptList';
 import { useNavigationTab } from '../hooks/navigation';
 
 const ScriptsPage = () => {
-  const [selectedTab, handleTabChange] = useNavigationTab('/scripts', 'manual');
+  const [selectedTab, handleTabChange] = useNavigationTab('manual');
 
   return (
     <Flex direction="column" flex="1" gap="size-400">
@@ -17,7 +17,7 @@ const ScriptsPage = () => {
             <Text>Manual</Text>
           </Item>
           <Item aria-label="Automatic scripts" key="enabled">
-            <FlashOn/>
+            <FlashOn />
             <Text>Automatic</Text>
           </Item>
           <Item aria-label="Disabled scripts" key="disabled">

@@ -1,5 +1,5 @@
 import { Cell, Column, Content, DatePicker, Flex, IllustratedMessage, Item, NumberField, Picker, ProgressBar, Row, TableBody, TableHeader, TableView, Text, TextField, View } from '@adobe/react-spectrum';
-import { CalendarDateTime, DateValue } from '@internationalized/date';
+import { DateValue } from '@internationalized/date';
 import { Key } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Alert from '@spectrum-icons/workflow/Alert';
@@ -9,29 +9,36 @@ import Pause from '@spectrum-icons/workflow/Pause';
 import Search from '@spectrum-icons/workflow/Search';
 import Star from '@spectrum-icons/workflow/Star';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 import DateExplained from '../components/DateExplained';
 import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
-import { toastRequest } from '../utils/api';
-import { ExecutionOutput, ExecutionStatus } from '../utils/api.types';
 import { useFormatter } from '../hooks/formatter';
+import { toastRequest } from '../utils/api';
+import {ExecutionOutput, ExecutionQueryParams, ExecutionStatus, isExecutableExplicit} from '../utils/api.types';
+import { Urls } from '../utils/url';
+import { Dates } from "../utils/dates";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
   const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const now = new Date(); // assume start date to be 7 days ago
-  const startDateDefault = new CalendarDateTime(now.getFullYear(), now.getMonth() + 1, now.getDate() - 7, 0, 0, 0);
+  const [searchState, setSearchState] = useSearchParams();
+  const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendar(Dates.daysAgo(7)));
+  const [endDate, setEndDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.END_DATE)));
+  const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
+  const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');
 
-  const [startDate, setStartDate] = useState<DateValue | null>(startDateDefault);
-  const [endDate, setEndDate] = useState<DateValue | null>();
-  const [status, setStatus] = useState<string | null>('all');
-  const [executableId, setExecutableId] = useState<string>('');
-  const [durationMin, setDurationMin] = useState<number | undefined>();
-  const [durationMax, setDurationMax] = useState<number | undefined>();
+  const [durationMinInitial, durationMaxInitial] = (() => {
+    const searchParam = searchState.get(ExecutionQueryParams.DURATION);
+    if (!searchParam) return [undefined, undefined];
+    const [min, max] = searchParam.split(',');
+    return [Number(min), Number(max)];
+  })();
+  const [durationMin, setDurationMin] = useState<number | undefined>(durationMinInitial);
+  const [durationMax, setDurationMax] = useState<number | undefined>(durationMaxInitial);
 
   const formatter = useFormatter();
 
@@ -40,17 +47,19 @@ const HistoryPage = () => {
       const fetchExecutions = async () => {
         setLoading(true);
         try {
-          let url = `/apps/acm/api/execution.json`;
           const params = new URLSearchParams();
-          if (executableId) params.append('executableId', `%${executableId}%`);
-          if (startDate) params.append('startDate', startDate.toString());
-          if (endDate) params.append('endDate', endDate.toString());
-          if (status && status !== 'all') params.append('status', status);
-          if (durationMin || durationMax) params.append('duration', `${durationMin || ''},${durationMax || ''}`);
-          if (params.toString()) url += `?${params.toString()}`;
+
+          if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, isExecutableExplicit(executableId) ? executableId : `%${executableId}%`);
+          if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
+          if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
+          if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status);
+          if (durationMin || durationMax) params.append(ExecutionQueryParams.DURATION, `${durationMin || ''},${durationMax || ''}`);
+
+          setSearchState(params.toString(), { replace: true });
+
           const response = await toastRequest<ExecutionOutput>({
             method: 'GET',
-            url,
+            url: Urls.compose('/apps/acm/api/execution.json', params),
             operation: `Executions loading`,
             positive: false,
           });
