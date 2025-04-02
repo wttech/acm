@@ -46,7 +46,7 @@ export function registerSyntax(instance: Monaco) {
 
     gstring: [
       [/\\\$/, 'string.escape'],
-      [/\$\{[^}]+\}/, 'variable'],
+      [/\$\{[^}]+\}/, 'identifier'],
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
@@ -61,7 +61,7 @@ export function registerSyntax(instance: Monaco) {
 
     string_multiline: [
       [/\\\$/, 'string.escape'],
-      [/\$\{[^}]+\}/, 'variable'],
+      [/\$\{[^}]+\}/, 'identifier'],
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"""/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
