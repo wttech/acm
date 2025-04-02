@@ -16,7 +16,7 @@ import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
-import { ExecutionOutput, ExecutionQueryParams, ExecutionStatus } from '../utils/api.types';
+import {ExecutionOutput, ExecutionQueryParams, ExecutionStatus, isExecutableExplicit} from '../utils/api.types';
 import { Urls } from '../utils/url';
 import { Dates } from "../utils/dates";
 
@@ -49,7 +49,7 @@ const HistoryPage = () => {
         try {
           const params = new URLSearchParams();
 
-          if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, `%${executableId}%`);
+          if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, isExecutableExplicit(executableId) ? executableId : `%${executableId}%`);
           if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
           if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
           if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status);

@@ -34,7 +34,7 @@ const ErrorHandler: React.FC = () => {
                 <Heading>Oops! Something went wrong</Heading>
                 <Content>
                     <Flex gap="size-250" direction="column">
-                        <Text alignSelf="start">
+                        <Text>
                             Application encountered a problem.<br/>
                             Ensure that AEM instance backend is available.
                         </Text>

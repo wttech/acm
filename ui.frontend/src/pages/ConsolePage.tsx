@@ -14,7 +14,14 @@ import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import { useCompilation } from '../hooks/code.ts';
 import { useExecutionPolling } from '../hooks/execution.ts';
 import { apiRequest } from '../utils/api.ts';
-import { ArgumentValues, Description, Execution, isExecutionPending, QueueOutput } from '../utils/api.types.ts';
+import {
+  ArgumentValues,
+  Description,
+  ExecutableIdConsole,
+  Execution,
+  isExecutionPending,
+  QueueOutput
+} from '../utils/api.types.ts';
 import { StorageKeys } from '../utils/storage.ts';
 import ConsoleCodeGroovy from './ConsoleCode.groovy.ts';
 
@@ -50,7 +57,7 @@ const ConsolePage = () => {
         method: 'post',
         data: {
           code: {
-            id: 'console',
+            id: ExecutableIdConsole,
             content: code,
             arguments: args,
           },

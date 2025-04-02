@@ -3,7 +3,7 @@ import Draft from '@spectrum-icons/workflow/Draft';
 import Hand from '@spectrum-icons/workflow/Hand';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import React from 'react';
-import { Executable } from '../utils/api.types';
+import {Executable, isExecutableConsole} from '../utils/api.types';
 import { Strings } from '../utils/strings.ts';
 
 interface ExecutableValueProps {
@@ -11,7 +11,7 @@ interface ExecutableValueProps {
 }
 
 const ExecutableValue: React.FC<ExecutableValueProps> = ({ value: value }) => {
-  if (value.id === 'console') {
+  if (isExecutableConsole(value.id)) {
     return (
       <>
         <Draft size="XS" /> <Text>Console</Text>

@@ -10,6 +10,18 @@ export type Description = {
   };
 };
 
+export const ExecutableIdConsole = 'console';
+
+export function isExecutableConsole(id: string): boolean {
+  return id === ExecutableIdConsole;
+}
+export function isExecutableScript(id: string): boolean {
+  return id.startsWith("/conf/acm/settings/script")
+}
+export function isExecutableExplicit(id: string): boolean {
+  return isExecutableConsole(id) || isExecutableScript(id);
+}
+
 export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined;
 export type ArgumentValues = Record<string, ArgumentValue>;

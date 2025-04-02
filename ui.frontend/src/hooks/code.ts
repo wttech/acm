@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDebounce } from 'react-use';
 import { apiRequest } from '../utils/api.ts';
-import { Execution } from '../utils/api.types.ts';
+import {ExecutableIdConsole, Execution} from '../utils/api.types.ts';
 
 const compilationDelay = 1000;
 
@@ -26,7 +26,7 @@ export const useCompilation = (code: string | undefined, onCodeChange: (code: st
                 data: {
                     mode: 'parse',
                     code: {
-                        id: 'console',
+                        id: ExecutableIdConsole,
                         content: code,
                     },
                 },
