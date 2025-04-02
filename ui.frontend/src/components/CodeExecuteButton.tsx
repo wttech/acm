@@ -3,10 +3,11 @@ import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Close from '@spectrum-icons/workflow/Close';
 import Gears from '@spectrum-icons/workflow/Gears';
 import React, { useState } from 'react';
-import { toastRequest } from '../utils/api.ts';
-import { Argument, ArgumentGroupDefault, ArgumentValue, ArgumentValues, Description, ExecutableIdConsole, ExecutionStatus } from '../utils/api.types.ts';
-import { Strings } from '../utils/strings.ts';
-import CodeArgumentInput from './CodeArgumentInput.tsx';
+import { toastRequest } from '../utils/api';
+import { Argument, ArgumentGroupDefault, ArgumentValue, ArgumentValues, Description, ExecutableIdConsole, ExecutionStatus } from '../utils/api.types';
+import { Objects } from '../utils/objects';
+import { Strings } from '../utils/strings';
+import CodeArgumentInput from './CodeArgumentInput';
 
 interface CodeExecuteButtonProps {
   code: string;
@@ -46,7 +47,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
         const argumentsInitial = description.arguments ? Object.fromEntries(Object.entries(description.arguments).map(([key, arg]) => [key, arg.value])) : {};
         setArgs(argumentsInitial);
 
-        const argumentsRequired = description.arguments && Object.keys(description.arguments).length > 0;
+        const argumentsRequired = Objects.isNotEmpty(description.arguments);
         if (argumentsRequired) {
           setDialogOpen(true);
         } else {

@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class SnippetRepository {
 
@@ -36,17 +38,22 @@ public class SnippetRepository {
     }
 
     public Stream<Snippet> findAll() throws AcmException {
-        return ResourceSpliterator.stream(getRoot())
+        return ResourceSpliterator.stream(getOrCreateRoot())
                 .map(Snippet::from)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }
 
-    private Resource getRoot() throws AcmException {
-        Resource root = resourceResolver.getResource(SnippetType.AVAILABLE.root());
-        if (root == null) {
-            throw new AcmException(String.format("Snippets root path '%s' does not exist!", ROOT));
+    private Resource getOrCreateRoot() throws AcmException {
+        try {
+            return ResourceUtil.getOrCreateResource(
+                    resourceResolver,
+                    ROOT,
+                    JcrResourceConstants.NT_SLING_FOLDER,
+                    JcrResourceConstants.NT_SLING_FOLDER,
+                    true);
+        } catch (Exception e) {
+            throw new AcmException(String.format("Failed to get or create snippet root '%s'", ROOT), e);
         }
-        return root;
     }
 }
