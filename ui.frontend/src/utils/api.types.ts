@@ -3,13 +3,6 @@ export type Executable = {
   content: string;
 };
 
-export type Description = {
-  execution: Execution;
-  arguments: {
-    [name: string]: Argument<ArgumentValue>;
-  };
-};
-
 export const ExecutableIdConsole = 'console';
 
 export function isExecutableConsole(id: string): boolean {
@@ -21,6 +14,13 @@ export function isExecutableScript(id: string): boolean {
 export function isExecutableExplicit(id: string): boolean {
   return isExecutableConsole(id) || isExecutableScript(id);
 }
+
+export type Description = {
+  execution: Execution;
+  arguments: {
+    [name: string]: Argument<ArgumentValue>;
+  };
+};
 
 export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined;

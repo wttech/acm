@@ -9,7 +9,7 @@ import {
     Switch,
     RadioGroup,
     Radio,
-    CheckboxGroup, ListView,
+    CheckboxGroup, ListView, TextArea,
 } from '@adobe/react-spectrum';
 import {
     Argument,
@@ -84,8 +84,9 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg, value, onCha
                         </Field>
                     </>
                 ) : (
-                    <TextField
+                    <TextArea
                         aria-label={`Argument "${arg.name}"`}
+                        width="100%"
                         label={argLabel(arg)}
                         value={value?.toString() || ''}
                         onChange={(val) => onChange(arg.name, val)}
