@@ -7,10 +7,10 @@ export class Strings {
   }
   static capitalizeWords(text: string): string {
     return text
-        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-        .split(' ')
-        .map(word => this.capitalize(word))
-        .join(' ');
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .split(' ')
+      .map((word) => this.capitalize(word))
+      .join(' ');
   }
   static removeEnd(text: string, suffix: string) {
     if (text.endsWith(suffix)) {
@@ -18,5 +18,4 @@ export class Strings {
     }
     return text;
   }
-
 }
