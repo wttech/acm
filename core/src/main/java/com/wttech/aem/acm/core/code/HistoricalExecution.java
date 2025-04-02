@@ -3,6 +3,7 @@ package com.wttech.aem.acm.core.code;
 import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.util.DateUtils;
 import com.wttech.aem.acm.core.util.JsonUtils;
+import java.io.InputStream;
 import java.util.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -40,7 +41,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             this.executable = new Code(
                     props.get("executableId", String.class),
                     props.get("executableContent", String.class),
-                    JsonUtils.readFromString(props.get("executableArguments", String.class), ArgumentValues.class));
+                    JsonUtils.read(props.get("executableArguments", InputStream.class), ArgumentValues.class));
             this.id = props.get("id", String.class);
             this.status = ExecutionStatus.of(props.get("status", String.class)).orElse(null);
             this.startDate = DateUtils.toDate(props.get("startDate", Calendar.class));
@@ -62,7 +63,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             props.put("executableContent", execution.getExecutable().getContent());
             props.put(
                     "executableArguments",
-                    JsonUtils.writeToString(execution.getExecutable().getArguments()));
+                    JsonUtils.writeToStream(execution.getExecutable().getArguments()));
             props.put("id", execution.getId());
             props.put("status", execution.getStatus().name());
             props.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
