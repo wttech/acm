@@ -19,10 +19,10 @@ export function registerSyntax(instance: Monaco) {
 
   const javaRootRules = [...(groovyLanguage.tokenizer.root || [])].filter((rule) => {
     // Removes Java's single quote interpretation from tokenizer
-      if (Array.isArray(rule) && rule[0] instanceof RegExp) {
-          return !rule[0].toString().includes("'");
-      }
-      return true;
+    if (Array.isArray(rule) && rule[0] instanceof RegExp && typeof rule[1] === "string") {
+      return !rule[1].includes("string");
+    }
+    return true;
   });
 
   // Extend the tokenizer with Groovy-specific features
@@ -31,11 +31,13 @@ export function registerSyntax(instance: Monaco) {
     root: [
       ...javaRootRules,
 
-      // Support for GStrings (interpolated strings)
-      [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
+      // multiline strings
+      [/"""/, { token: 'string.quote', bracket: '@open', next: '@string_multiline' }],
+
+      // GStrings (interpolated strings)
       [/"/, { token: 'string.quote', bracket: '@open', next: '@gstring' }],
 
-      [/'([^'\\]|\\.)*$/, 'string.invalid'], // non-terminated single quote string
+      // single quoted strings
       [/'/, { token: 'string.quote', bracket: '@open', next: '@string_single' }],
 
       // Groovy closures
@@ -43,16 +45,27 @@ export function registerSyntax(instance: Monaco) {
     ],
 
     gstring: [
-      [/\$\{[^}]+}/, 'variable'],
-      [/[^\\"]+/, 'string'],
+      [/\\\$/, 'string.escape'],
+      [/\$\{[^}]+\}/, 'variable'],
       [/\\./, 'string.escape'],
+      [/[^\\"$]+/, 'string'],
       [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+      [/[$]/, 'string']
     ],
 
     string_single: [
       [/[^\\']+/, 'string'],
       [/\\./, 'string.escape'],
       [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+    ],
+
+    string_multiline: [
+      [/\\\$/, 'string.escape'],
+      [/\$\{[^}]+\}/, 'variable'],
+      [/\\./, 'string.escape'],
+      [/[^\\"$]+/, 'string'],
+      [/"""/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+      [/[$]/, 'string']
     ],
 
     closure: [
