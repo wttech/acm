@@ -1,9 +1,9 @@
 import { Text } from '@adobe/react-spectrum';
 import Draft from '@spectrum-icons/workflow/Draft';
-import Hand from '@spectrum-icons/workflow/Hand';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
+import Hand from '@spectrum-icons/workflow/Hand';
 import React from 'react';
-import {Executable, isExecutableConsole} from '../utils/api.types';
+import { Executable, isExecutableConsole } from '../utils/api.types';
 import { Strings } from '../utils/strings.ts';
 
 interface ExecutableValueProps {
@@ -29,9 +29,9 @@ const ExecutableValue: React.FC<ExecutableValueProps> = ({ value: value }) => {
     const scriptPath = value.id.split('/script/manual/')[1];
     const scriptName = Strings.removeEnd(scriptPath, '.groovy');
     return (
-        <>
-          <Hand size="XS" /> <Text>Script '{scriptName}'</Text>
-        </>
+      <>
+        <Hand size="XS" /> <Text>Script '{scriptName}'</Text>
+      </>
     );
   } else {
     return <>{value.id}</>;

@@ -19,10 +19,10 @@ export function registerSyntax(instance: Monaco) {
 
   const javaRootRules = [...(groovyLanguage.tokenizer.root || [])].filter((rule) => {
     // Removes Java's single quote interpretation from tokenizer
-      if (Array.isArray(rule) && rule[0] instanceof RegExp) {
-          return !rule[0].toString().includes("'");
-      }
-      return true;
+    if (Array.isArray(rule) && rule[0] instanceof RegExp) {
+      return !rule[0].toString().includes("'");
+    }
+    return true;
   });
 
   // Extend the tokenizer with Groovy-specific features

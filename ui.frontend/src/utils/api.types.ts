@@ -9,7 +9,7 @@ export function isExecutableConsole(id: string): boolean {
   return id === ExecutableIdConsole;
 }
 export function isExecutableScript(id: string): boolean {
-  return id.startsWith("/conf/acm/settings/script")
+  return id.startsWith('/conf/acm/settings/script');
 }
 export function isExecutableExplicit(id: string): boolean {
   return isExecutableConsole(id) || isExecutableScript(id);

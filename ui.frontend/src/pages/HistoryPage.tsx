@@ -16,9 +16,9 @@ import ExecutableValue from '../components/ExecutableValue.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
-import {ExecutionOutput, ExecutionQueryParams, ExecutionStatus, isExecutableExplicit} from '../utils/api.types';
+import { ExecutionOutput, ExecutionQueryParams, ExecutionStatus, isExecutableExplicit } from '../utils/api.types';
+import { Dates } from '../utils/dates';
 import { Urls } from '../utils/url';
-import { Dates } from "../utils/dates";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
