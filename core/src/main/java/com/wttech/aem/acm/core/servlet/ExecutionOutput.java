@@ -1,18 +1,17 @@
 package com.wttech.aem.acm.core.servlet;
 
-import com.wttech.aem.acm.core.code.Execution;
 import java.io.Serializable;
 import java.util.List;
 
 public class ExecutionOutput implements Serializable {
 
-    public List<Execution> list;
+    public List<?> list;
 
-    public ExecutionOutput(List<Execution> executions) {
+    public ExecutionOutput(List<?> executions) {
         this.list = executions;
     }
 
-    public List<Execution> getList() {
+    public List<?> getList() {
         return list;
     }
 }

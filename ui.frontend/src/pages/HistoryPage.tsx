@@ -21,6 +21,7 @@ import {
   ExecutionQueryParams,
   ExecutionStatus,
   ExecutionSummary,
+  ExecutionFormat,
   isExecutableExplicit
 } from '../utils/api.types';
 import { Dates } from '../utils/dates';
@@ -54,7 +55,7 @@ const HistoryPage = () => {
           setLoading(true);
           try {
             const params = new URLSearchParams();
-
+            params.append(ExecutionQueryParams.FORMAT, ExecutionFormat.SUMMARY);
             if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, isExecutableExplicit(executableId) ? executableId : `%${executableId}%`);
             if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
             if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
@@ -65,7 +66,7 @@ const HistoryPage = () => {
 
             const response = await toastRequest<ExecutionOutput<ExecutionSummary>>({
               method: 'GET',
-              url: Urls.compose('/apps/acm/api/execution.json?format=summary', params),
+              url: Urls.compose('/apps/acm/api/execution.json', params),
               operation: `Executions loading`,
               positive: false,
             });

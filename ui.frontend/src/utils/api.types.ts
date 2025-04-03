@@ -210,7 +210,13 @@ export enum HealthIssueSeverity {
   INFO = 'INFO',
 }
 
+export enum ExecutionFormat {
+  SUMMARY = 'SUMMARY',
+  FULL = 'FULL',
+}
+
 export enum ExecutionQueryParams {
+  FORMAT = 'format',
   START_DATE = 'startDate',
   END_DATE = 'endDate',
   STATUS = 'status',

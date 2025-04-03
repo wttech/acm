@@ -29,9 +29,25 @@ public class ExecutionResolver {
         }
     }
 
+    public Optional<ExecutionSummary> readSummary(String id) {
+        Optional<ExecutionSummary> execution = history.readSummary(id);
+        if (execution.isPresent()) {
+            return execution;
+        } else {
+            return queue.readSummary(id);
+        }
+    }
+
     public Stream<Execution> readAll(Collection<String> ids) {
         return (ids != null ? ids.stream() : Stream.<String>empty())
                 .map(this::read)
+                .filter(Optional::isPresent)
+                .map(Optional::get);
+    }
+
+    public Stream<ExecutionSummary> readAllSummaries(Collection<String> ids) {
+        return (ids != null ? ids.stream() : Stream.<String>empty())
+                .map(this::readSummary)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }
