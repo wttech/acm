@@ -19,8 +19,8 @@ export function registerSyntax(instance: Monaco) {
 
   const javaRootRules = [...(groovyLanguage.tokenizer.root || [])].filter((rule) => {
     // Removes Java's single quote interpretation from tokenizer
-    if (Array.isArray(rule) && rule[0] instanceof RegExp && typeof rule[1] === "string") {
-      return !rule[1].includes("string");
+    if (Array.isArray(rule) && rule[0] instanceof RegExp) {
+      return !rule[0].toString().includes("'");
     }
     return true;
   });
@@ -31,68 +31,28 @@ export function registerSyntax(instance: Monaco) {
     root: [
       ...javaRootRules,
 
-      // multiline strings
-      [/"""/, { token: 'string.quote', bracket: '@open', next: '@string_multiline' }],
+      // Support for GStrings (interpolated strings)
+      [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
+      [/"/, { token: 'string.quote', bracket: '@open', next: '@gstring' }],
 
-      // double quoted strings
-      [/"/, { token: 'string.quote', bracket: '@open', next: '@string_double' }],
-
-      // single quoted strings
+      [/'([^'\\]|\\.)*$/, 'string.invalid'], // non-terminated single quote string
       [/'/, { token: 'string.quote', bracket: '@open', next: '@string_single' }],
 
       // Groovy closures
       [/\{/, { token: 'delimiter.curly', next: '@closure' }],
     ],
 
-    string_double: [
-      [/\\\$/, 'string.escape'],
-      [/\$\{/, { token: 'identifier', bracket: '@open', next: '@gstring_expression' }],
+    gstring: [
+      [/\$\{[^}]+}/, 'variable'],
+      [/[^\\"]+/, 'string'],
       [/\\./, 'string.escape'],
-      [/[^\\"$]+/, 'string'],
       [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
-      [/[$]/, 'string']
     ],
 
     string_single: [
       [/[^\\']+/, 'string'],
       [/\\./, 'string.escape'],
       [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
-    ],
-
-    string_multiline: [
-      [/\\\$/, 'string.escape'],
-      [/\$\{/, { token: 'identifier', bracket: '@open', next: '@gstring_expression_multiline' }],
-      [/\\./, 'string.escape'],
-      [/[^\\"$]+/, 'string'],
-      [/"""/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
-      [/[$]/, 'string']
-    ],
-
-    gstring_expression: [
-      [/'/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_single' }],
-      [/\{/, { token: 'delimiter.curly', bracket: '@open', next: '@closure' }],
-      [/\}/, { token: 'identifier', bracket: '@close', next: '@pop' }],
-      [/[^{}'"]+/, 'identifier']
-    ],
-
-    gstring_expression_multiline: [
-      [/'/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_single' }],
-      [/"/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_double' }],
-      [/\{/, { token: 'delimiter.curly', bracket: '@open', next: '@closure' }],
-      [/\}/, { token: 'identifier', bracket: '@close', next: '@pop' }],
-      [/[^{}'"]+/, 'identifier']
-    ],
-
-    string_in_gstring_single: [
-      [/[^\\']+/, 'string'],
-      [/\\./, 'string.escape'],
-      [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
-    ],
-
-    string_in_gstring_double: [
-      [/[^\\"]+/, 'string'],
-      [/\\./, 'string.escape'],
-      [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
     ],
 
     closure: [
