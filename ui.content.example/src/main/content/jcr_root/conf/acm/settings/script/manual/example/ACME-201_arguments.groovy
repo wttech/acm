@@ -1,11 +1,11 @@
 void describeRun() {
-    args.bool("isCat") { label = "Is it a cat?"; value = true; checkbox() }
     args.string("animalName") { value = "Whiskers" }
     args.string("animalType") { value = "Cat" }
     args.select("activity") { label = "Activity"; options = ["Sleeping": "sleep", "Playing": "play", "Eating": "eat"]; value = "play" }
     args.text("favoriteFoods") { label = "Favorite Foods"; language = "json"; value = """["milk", "mice"]"""; group = "Data" }
     args.integerNumber("napTime") { min = 1; value = 5 }
     args.decimalNumber("hungerLevel") { min = 0.1d; max = 1.0d; value = 0.5d }
+    args.bool("birthday") { label = "Birthday?"; value = false; checkbox() }
 }
 
 boolean canRun() {
@@ -13,13 +13,13 @@ boolean canRun() {
 }
 
 void doRun() {
-    println "Is it a cat? ${args.value('isCat')}"
     println "Animal Name: ${args.value('animalName')}"
     println "Animal Type: ${args.value('animalType')}"
     println "Activity: ${args.value('activity')}"
+    println "Birthday: ${args.value('birthday')}"
 
-    if (args.value('isCat')) {
-        println "${args.value('animalName')} the cat is ready for some fun!"
+    if (args.value('birthday')) {
+        println "Happy Birthday, ${args.value('animalName')} the ${args.value('animalType')}!"
     } else {
         println "${args.value('animalName')} the ${args.value('animalType')} is ready for some fun!"
     }

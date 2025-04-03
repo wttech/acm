@@ -1,15 +1,14 @@
 package com.wttech.aem.acm.core.util;
 
+import com.wttech.aem.acm.core.AcmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Workspace;
-import org.apache.sling.api.resource.LoginException;
-import org.apache.sling.api.resource.PersistenceException;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.api.resource.*;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public final class ResourceUtils {
 
@@ -42,6 +41,19 @@ public final class ResourceUtils {
                             "Cannot move resource from '%s' to '%s' due to workspace move error!",
                             sourcePath, targetPath),
                     e);
+        }
+    }
+
+    public static Resource makeFolders(ResourceResolver resourceResolver, String path) throws AcmException {
+        try {
+            return ResourceUtil.getOrCreateResource(
+                    resourceResolver,
+                    path,
+                    JcrResourceConstants.NT_SLING_FOLDER,
+                    JcrResourceConstants.NT_SLING_FOLDER,
+                    true);
+        } catch (Exception e) {
+            throw new AcmException(String.format("Folders cannot be created for path '%s'", path), e);
         }
     }
 }
