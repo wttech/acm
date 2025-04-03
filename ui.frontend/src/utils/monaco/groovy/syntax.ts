@@ -34,8 +34,8 @@ export function registerSyntax(instance: Monaco) {
       // multiline strings
       [/"""/, { token: 'string.quote', bracket: '@open', next: '@string_multiline' }],
 
-      // GStrings (interpolated strings)
-      [/"/, { token: 'string.quote', bracket: '@open', next: '@gstring' }],
+      // double quoted strings
+      [/"/, { token: 'string.quote', bracket: '@open', next: '@string_double' }],
 
       // single quoted strings
       [/'/, { token: 'string.quote', bracket: '@open', next: '@string_single' }],
@@ -44,9 +44,9 @@ export function registerSyntax(instance: Monaco) {
       [/\{/, { token: 'delimiter.curly', next: '@closure' }],
     ],
 
-    gstring: [
+    string_double: [
       [/\\\$/, 'string.escape'],
-      [/\$\{[^}]+\}/, 'identifier'],
+      [/\$\{/, { token: 'identifier', bracket: '@open', next: '@gstring_expression' }],
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
@@ -61,11 +61,38 @@ export function registerSyntax(instance: Monaco) {
 
     string_multiline: [
       [/\\\$/, 'string.escape'],
-      [/\$\{[^}]+\}/, 'identifier'],
+      [/\$\{/, { token: 'identifier', bracket: '@open', next: '@gstring_expression_multiline' }],
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"""/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
       [/[$]/, 'string']
+    ],
+
+    gstring_expression: [
+      [/'/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_single' }],
+      [/\{/, { token: 'delimiter.curly', bracket: '@open', next: '@closure' }],
+      [/\}/, { token: 'identifier', bracket: '@close', next: '@pop' }],
+      [/[^{}'"]+/, 'identifier']
+    ],
+
+    gstring_expression_multiline: [
+      [/'/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_single' }],
+      [/"/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_double' }],
+      [/\{/, { token: 'delimiter.curly', bracket: '@open', next: '@closure' }],
+      [/\}/, { token: 'identifier', bracket: '@close', next: '@pop' }],
+      [/[^{}'"]+/, 'identifier']
+    ],
+
+    string_in_gstring_single: [
+      [/[^\\']+/, 'string'],
+      [/\\./, 'string.escape'],
+      [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+    ],
+
+    string_in_gstring_double: [
+      [/[^\\"]+/, 'string'],
+      [/\\./, 'string.escape'],
+      [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
     ],
 
     closure: [
