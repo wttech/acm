@@ -12,8 +12,8 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 import DateExplained from '../components/DateExplained';
-import ExecutableValue from '../components/ExecutableValue.tsx';
-import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
+import ExecutableIdValue from '../components/ExecutableIdValue';
+import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
 import { ExecutionOutput, ExecutionQueryParams, ExecutionStatus, isExecutableExplicit } from '../utils/api.types';
@@ -132,7 +132,7 @@ const HistoryPage = () => {
             {(executions?.list || []).map((execution) => (
               <Row key={execution.id}>
                 <Cell>
-                  <ExecutableValue value={execution.executable} />
+                  <ExecutableIdValue id={execution.executable.id} />
                 </Cell>
                 <Cell>
                   <DateExplained value={execution.startDate} />

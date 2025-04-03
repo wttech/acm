@@ -79,10 +79,17 @@ public class ExecutionQueue implements JobExecutor {
         return Optional.of(new QueuedExecution(executor, job));
     }
 
-    @SuppressWarnings("unchecked")
     public Stream<Execution> findAll() {
-        return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream()
-                .map(job -> new QueuedExecution(executor, job));
+        return findJobs().map(job -> new QueuedExecution(executor, job));
+    }
+
+    public Stream<ExecutionSummary> findAllSummaries() {
+        return findJobs().map(job -> new QueuedExecutionSummary(executor, job));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Stream<Job> findJobs() {
+        return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream();
     }
 
     public Stream<Execution> readAll(Collection<String> jobIds) throws AcmException {

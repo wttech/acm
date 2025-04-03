@@ -1,6 +1,6 @@
 package com.wttech.aem.acm.core.state;
 
-import com.wttech.aem.acm.core.code.Execution;
+import com.wttech.aem.acm.core.code.ExecutionSummary;
 import com.wttech.aem.acm.core.instance.HealthStatus;
 import com.wttech.aem.acm.core.instance.InstanceSettings;
 import java.io.Serializable;
@@ -8,13 +8,14 @@ import java.util.List;
 
 public class State implements Serializable {
 
-    private HealthStatus healthStatus;
+    private final HealthStatus healthStatus;
 
-    private InstanceSettings instanceSettings;
+    private final InstanceSettings instanceSettings;
 
-    private List<Execution> queuedExecutions;
+    private final List<ExecutionSummary> queuedExecutions;
 
-    public State(HealthStatus healthStatus, InstanceSettings instanceSettings, List<Execution> queuedExecutions) {
+    public State(
+            HealthStatus healthStatus, InstanceSettings instanceSettings, List<ExecutionSummary> queuedExecutions) {
         this.healthStatus = healthStatus;
         this.instanceSettings = instanceSettings;
         this.queuedExecutions = queuedExecutions;
@@ -28,7 +29,7 @@ public class State implements Serializable {
         return instanceSettings;
     }
 
-    public List<Execution> getQueuedExecutions() {
+    public List<ExecutionSummary> getQueuedExecutions() {
         return queuedExecutions;
     }
 }

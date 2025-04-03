@@ -103,7 +103,7 @@ export type ExecutionSummary = {
   startDate: string;
   endDate: string;
   duration: number;
-}
+};
 
 export enum ExecutionStatus {
   QUEUED = 'QUEUED',
@@ -186,7 +186,7 @@ export type ScriptOutput = {
 export type State = {
   healthStatus: HealthStatus;
   instanceSettings: InstanceSettings;
-  queuedExecutions: Execution[];
+  queuedExecutions: ExecutionSummary[];
 };
 
 export type InstanceSettings = {

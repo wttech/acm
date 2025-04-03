@@ -12,11 +12,11 @@ import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppContext } from '../AppContext.tsx';
-import ExecutableValue from '../components/ExecutableValue';
+import { AppContext } from '../AppContext';
 import { isProduction } from '../utils/node';
 import DateExplained from './DateExplained';
-import ExecutionsAbortButton from './ExecutionsAbortButton.tsx';
+import ExecutableIdValue from './ExecutableIdValue';
+import ExecutionsAbortButton from './ExecutionsAbortButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
 
 const ScriptExecutor = () => {
@@ -129,7 +129,7 @@ const ScriptExecutor = () => {
             <Row key={execution.id}>
               <Cell>{index + 1}</Cell>
               <Cell>
-                <ExecutableValue value={execution.executable} />
+                <ExecutableIdValue id={execution.executableId} />
               </Cell>
               <Cell>
                 <DateExplained value={execution.startDate} />
