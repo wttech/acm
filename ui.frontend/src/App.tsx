@@ -19,10 +19,10 @@ function App() {
     instanceSettings: {
       id: 'default',
       timezoneId: 'UTC',
+      publish: false,
+      cloudVersion: true
     },
     queuedExecutions: [],
-    publish: false,
-    cloudVersion: true
   });
 
   useEffect(() => {

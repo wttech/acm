@@ -13,6 +13,9 @@ import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.state.State;
 import java.io.IOException;
 import java.util.List;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -34,6 +37,8 @@ import org.slf4j.LoggerFactory;
         })
 public class StateServlet extends SlingAllMethodsServlet {
 
+    private static final String DEFAULT_TIMEZONE_ID = TimeZone.getDefault().getID();
+
     public static final String RT = "acm/api/state";
 
     private static final Logger LOG = LoggerFactory.getLogger(StateServlet.class);
@@ -54,13 +59,13 @@ public class StateServlet extends SlingAllMethodsServlet {
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
-            InstanceSettings instanceSettings = InstanceSettings.current();
             List<Execution> queuedExecutions = executionQueue.findAll().collect(Collectors.toList());
             boolean publish = osgiContext.getInstanceInfo().isPublish();
-            // Version cloudVersion = osgiContext.getBundleContext()
-            // LOG.info(cloudVersion.toString());
+            String propUrl = osgiContext.getBundleContext().getProperty("PRODUCTINFO_VERSION");
+            boolean cloudVersion = isCloudVersion(propUrl);
+            InstanceSettings instanceSettings = new InstanceSettings(DEFAULT_TIMEZONE_ID, publish, cloudVersion);
 
-            State state = new State(healthStatus, instanceSettings, queuedExecutions, publish, false);
+            State state = new State(healthStatus, instanceSettings, queuedExecutions);
 
             // TODO use different view (skip outputs)
             respondJson(response, ok("State read successfully", state));
@@ -71,5 +76,13 @@ public class StateServlet extends SlingAllMethodsServlet {
                     error(String.format(
                             "State cannot be read! %s", e.getMessage().trim())));
         }
+    }
+
+    // Expects four digits followed by dot at the beggining of version string to determine if app is running on cloud
+    private boolean isCloudVersion(String version) {
+        String regex = "^\\d{4}\\..*";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(version);
+        return matcher.matches();
     }
 }

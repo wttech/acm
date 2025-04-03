@@ -74,11 +74,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               {type === 'enabled' || type === 'disabled' ? (
                 <>
                   <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-<<<<<<< Updated upstream
-                  <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
-=======
-                  {appContext && !appContext.publish && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
->>>>>>> Stashed changes
+                  {appContext && !appContext.instanceSettings.publish && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
                 </>
               ) : null}
             </ButtonGroup>

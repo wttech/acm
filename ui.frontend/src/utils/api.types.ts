@@ -177,13 +177,13 @@ export type State = {
   healthStatus: HealthStatus;
   instanceSettings: InstanceSettings;
   queuedExecutions: Execution[];
-  publish: boolean;
-  cloudVersion: boolean;
 };
 
 export type InstanceSettings = {
   id: string;
   timezoneId: string;
+  publish: boolean;
+  cloudVersion: boolean;
 };
 
 export type HealthStatus = {
