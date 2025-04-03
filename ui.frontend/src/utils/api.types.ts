@@ -177,6 +177,8 @@ export type State = {
   healthStatus: HealthStatus;
   instanceSettings: InstanceSettings;
   queuedExecutions: Execution[];
+  publish: boolean;
+  cloudVersion: boolean;
 };
 
 export type InstanceSettings = {

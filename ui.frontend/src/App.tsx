@@ -21,6 +21,8 @@ function App() {
       timezoneId: 'UTC',
     },
     queuedExecutions: [],
+    publish: false,
+    cloudVersion: true
   });
 
   useEffect(() => {

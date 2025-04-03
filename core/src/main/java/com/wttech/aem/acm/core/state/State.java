@@ -14,10 +14,21 @@ public class State implements Serializable {
 
     private List<Execution> queuedExecutions;
 
-    public State(HealthStatus healthStatus, InstanceSettings instanceSettings, List<Execution> queuedExecutions) {
+    private boolean publish;
+
+    private boolean cloudVersion;
+
+    public State(
+            HealthStatus healthStatus,
+            InstanceSettings instanceSettings,
+            List<Execution> queuedExecutions,
+            boolean publish,
+            boolean cloudVersion) {
         this.healthStatus = healthStatus;
         this.instanceSettings = instanceSettings;
         this.queuedExecutions = queuedExecutions;
+        this.publish = publish;
+        this.cloudVersion = cloudVersion;
     }
 
     public HealthStatus getHealthStatus() {
@@ -30,5 +41,13 @@ public class State implements Serializable {
 
     public List<Execution> getQueuedExecutions() {
         return queuedExecutions;
+    }
+
+    public boolean isPublish() {
+        return publish;
+    }
+
+    public boolean isCloudVersion() {
+        return cloudVersion;
     }
 }

@@ -9,6 +9,7 @@ import com.wttech.aem.acm.core.code.ExecutionQueue;
 import com.wttech.aem.acm.core.instance.HealthChecker;
 import com.wttech.aem.acm.core.instance.HealthStatus;
 import com.wttech.aem.acm.core.instance.InstanceSettings;
+import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.state.State;
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
+import org.apache.sling.settings.SlingSettingsService;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -42,14 +44,23 @@ public class StateServlet extends SlingAllMethodsServlet {
     @Reference
     private ExecutionQueue executionQueue;
 
+    @Reference
+    private OsgiContext osgiContext;
+
+    @Reference
+    private SlingSettingsService slingSettingsService;
+
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
             InstanceSettings instanceSettings = InstanceSettings.current();
             List<Execution> queuedExecutions = executionQueue.findAll().collect(Collectors.toList());
+            boolean publish = osgiContext.getInstanceInfo().isPublish();
+            // Version cloudVersion = osgiContext.getBundleContext()
+            // LOG.info(cloudVersion.toString());
 
-            State state = new State(healthStatus, instanceSettings, queuedExecutions);
+            State state = new State(healthStatus, instanceSettings, queuedExecutions, publish, false);
 
             // TODO use different view (skip outputs)
             respondJson(response, ok("State read successfully", state));
