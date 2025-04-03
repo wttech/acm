@@ -46,7 +46,7 @@ export function registerSyntax(instance: Monaco) {
 
     gstring: [
       [/\\\$/, 'string.escape'],
-      [/\$\{[^}]+\}/, 'variable'],
+      [/\$\{/, { token: 'identifier', bracket: '@open', next: '@gstringExpression' }],
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
@@ -61,11 +61,38 @@ export function registerSyntax(instance: Monaco) {
 
     string_multiline: [
       [/\\\$/, 'string.escape'],
-      [/\$\{[^}]+\}/, 'variable'],
+      [/\$\{/, { token: 'identifier', bracket: '@open', next: '@gstringExpressionMultiline' }],
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"""/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
       [/[$]/, 'string']
+    ],
+
+    gstringExpression: [
+      [/'/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_single' }],
+      [/\{/, { token: 'delimiter.curly', bracket: '@open', next: '@closure' }],
+      [/\}/, { token: 'identifier', bracket: '@close', next: '@pop' }],
+      [/[^{}'"]+/, 'identifier']
+    ],
+
+    gstringExpressionMultiline: [
+      [/'/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_single' }],
+      [/"/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_double' }],
+      [/\{/, { token: 'delimiter.curly', bracket: '@open', next: '@closure' }],
+      [/\}/, { token: 'identifier', bracket: '@close', next: '@pop' }],
+      [/[^{}'"]+/, 'identifier']
+    ],
+
+    string_in_gstring_single: [
+      [/[^\\']+/, 'string'],
+      [/\\./, 'string.escape'],
+      [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+    ],
+
+    string_in_gstring_double: [
+      [/[^\\"]+/, 'string'],
+      [/\\./, 'string.escape'],
+      [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
     ],
 
     closure: [
