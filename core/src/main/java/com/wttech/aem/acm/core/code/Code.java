@@ -1,6 +1,5 @@
 package com.wttech.aem.acm.core.code;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.util.JsonUtils;
 import java.io.IOException;
@@ -10,7 +9,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+/**
+ * Represents a code that can be executed.
+ */
 public class Code implements Executable {
 
     private String id;
@@ -32,7 +33,9 @@ public class Code implements Executable {
     public static Map<String, Object> toJobProps(Executable executable) throws AcmException {
         try {
             Map<String, Object> result = new HashMap<>();
-            result.put("code", JsonUtils.writeToString(executable));
+            result.put("id", executable.getId());
+            result.put("content", executable.getContent());
+            result.put("arguments", JsonUtils.writeToString(executable.getArguments()));
             return result;
         } catch (IOException e) {
             throw new AcmException("Cannot serialize code to JSON!", e);
@@ -41,7 +44,11 @@ public class Code implements Executable {
 
     public static Code fromJob(Job job) {
         try {
-            return JsonUtils.readFromString(job.getProperty("code", String.class), Code.class);
+            String id = job.getProperty("id", String.class);
+            String content = job.getProperty("content", String.class);
+            ArgumentValues arguments =
+                    JsonUtils.readFromString(job.getProperty("arguments", String.class), ArgumentValues.class);
+            return new Code(id, content, arguments);
         } catch (IOException e) {
             throw new AcmException("Cannot deserialize code from JSON!", e);
         }

@@ -96,6 +96,15 @@ export type Execution = {
   error: string | null;
 };
 
+export type ExecutionSummary = {
+  id: string;
+  executableId: string;
+  status: ExecutionStatus;
+  startDate: string;
+  endDate: string;
+  duration: number;
+}
+
 export enum ExecutionStatus {
   QUEUED = 'QUEUED',
   ACTIVE = 'ACTIVE',
