@@ -86,7 +86,7 @@ public class ScriptScheduler implements Runnable {
             scriptRepository.clean();
 
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
-                queue.submit(script, contextOptions);
+                queue.submit(contextOptions, script);
             });
         } catch (Exception e) {
             LOG.error("Failed to access repository while scheduling enabled scripts to execution queue", e);

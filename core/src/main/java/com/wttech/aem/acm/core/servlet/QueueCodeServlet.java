@@ -50,11 +50,10 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            Code code = input.getCode();
-
             ExecutionContextOptions contextOptions =
                     new ExecutionContextOptions(request.getResourceResolver().getUserID());
-            Execution execution = executionQueue.submit(code, contextOptions).orElse(null);
+            Code code = input.getCode();
+            Execution execution = executionQueue.submit(contextOptions, code).orElse(null);
             if (execution == null) {
                 respondJson(response, error("Code execution cannot be queued!"));
                 return;
