@@ -56,7 +56,15 @@ public class ExecutionHistory {
     }
 
     public Optional<Execution> read(String id) {
-        return Optional.of(getOrCreateRoot()).map(r -> r.getChild(id)).map(HistoricalExecution::new);
+        return readResource(id).map(HistoricalExecution::new);
+    }
+
+    public Optional<ExecutionSummary> readSummary(String id) {
+        return readResource(id).map(HistoricalExecutionSummary::new);
+    }
+
+    private Optional<Resource> readResource(String id) {
+        return Optional.of(getOrCreateRoot()).map(r -> r.getChild(id));
     }
 
     private Resource getOrCreateRoot() throws AcmException {
@@ -83,14 +91,27 @@ public class ExecutionHistory {
         return toExecutions(executeSql(query.toSql()));
     }
 
-    private Stream<Resource> executeSql(String sql) {
-        return StreamUtils.asStream(resourceResolver.findResources(sql, Query.JCR_SQL2));
-    }
-
     private Stream<Execution> toExecutions(Stream<Resource> entries) {
         return entries.map(HistoricalExecution::from)
                 .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(Execution.class::cast);
+                .map(Optional::get);
+    }
+
+    public Stream<ExecutionSummary> findAllSummaries() {
+        return findAllSummaries(new ExecutionQuery());
+    }
+
+    public Stream<ExecutionSummary> findAllSummaries(ExecutionQuery query) {
+        return toExecutionSummaries(executeSql(query.toSql()));
+    }
+
+    private Stream<ExecutionSummary> toExecutionSummaries(Stream<Resource> entries) {
+        return entries.map(HistoricalExecutionSummary::from)
+                .filter(Optional::isPresent)
+                .map(Optional::get);
+    }
+
+    private Stream<Resource> executeSql(String sql) {
+        return StreamUtils.asStream(resourceResolver.findResources(sql, Query.JCR_SQL2));
     }
 }

@@ -79,10 +79,17 @@ public class ExecutionQueue implements JobExecutor {
         return Optional.of(new QueuedExecution(executor, job));
     }
 
-    @SuppressWarnings("unchecked")
     public Stream<Execution> findAll() {
-        return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream()
-                .map(job -> new QueuedExecution(executor, job));
+        return findJobs().map(job -> new QueuedExecution(executor, job));
+    }
+
+    public Stream<ExecutionSummary> findAllSummaries() {
+        return findJobs().map(job -> new QueuedExecutionSummary(executor, job));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Stream<Job> findJobs() {
+        return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream();
     }
 
     public Stream<Execution> readAll(Collection<String> jobIds) throws AcmException {
@@ -93,8 +100,24 @@ public class ExecutionQueue implements JobExecutor {
                 .map(Optional::get);
     }
 
+    public Stream<ExecutionSummary> readAllSummaries(Collection<String> jobIds) throws AcmException {
+        return jobIds.stream()
+                .filter(StringUtils::isNotBlank)
+                .map(this::readSummary)
+                .filter(Optional::isPresent)
+                .map(Optional::get);
+    }
+
     public Optional<Execution> read(String jobId) throws AcmException {
-        return Optional.ofNullable(jobManager.getJobById(jobId)).map(job -> new QueuedExecution(executor, job));
+        return readJob(jobId).map(job -> new QueuedExecution(executor, job));
+    }
+
+    public Optional<ExecutionSummary> readSummary(String jobId) throws AcmException {
+        return readJob(jobId).map(job -> new QueuedExecutionSummary(executor, job));
+    }
+
+    private Optional<Job> readJob(String jobId) {
+        return Optional.ofNullable(jobManager.getJobById(jobId));
     }
 
     public void stop(String jobId) {

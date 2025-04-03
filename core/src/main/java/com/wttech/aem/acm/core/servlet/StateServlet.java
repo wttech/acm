@@ -4,8 +4,8 @@ import static com.wttech.aem.acm.core.util.ServletResult.error;
 import static com.wttech.aem.acm.core.util.ServletResult.ok;
 import static com.wttech.aem.acm.core.util.ServletUtils.respondJson;
 
-import com.wttech.aem.acm.core.code.Execution;
 import com.wttech.aem.acm.core.code.ExecutionQueue;
+import com.wttech.aem.acm.core.code.ExecutionSummary;
 import com.wttech.aem.acm.core.instance.HealthChecker;
 import com.wttech.aem.acm.core.instance.HealthStatus;
 import com.wttech.aem.acm.core.instance.InstanceSettings;
@@ -47,11 +47,11 @@ public class StateServlet extends SlingAllMethodsServlet {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
             InstanceSettings instanceSettings = InstanceSettings.current();
-            List<Execution> queuedExecutions = executionQueue.findAll().collect(Collectors.toList());
+            List<ExecutionSummary> queuedExecutions =
+                    executionQueue.findAllSummaries().collect(Collectors.toList());
 
             State state = new State(healthStatus, instanceSettings, queuedExecutions);
 
-            // TODO use different view (skip outputs)
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {
             LOG.error("State cannot be read!", e);

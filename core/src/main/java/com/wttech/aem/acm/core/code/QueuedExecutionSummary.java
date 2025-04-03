@@ -8,7 +8,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
 
-public class QueuedExecution implements Execution {
+public class QueuedExecutionSummary implements ExecutionSummary {
 
     @JsonIgnore
     private final Executor executor;
@@ -16,23 +16,19 @@ public class QueuedExecution implements Execution {
     @JsonIgnore
     private final Job job;
 
-    public QueuedExecution(Executor executor, Job job) {
+    public QueuedExecutionSummary(Executor executor, Job job) {
         this.executor = executor;
         this.job = job;
-    }
-
-    protected Job getJob() {
-        return job;
-    }
-
-    @Override
-    public Executable getExecutable() {
-        return Code.fromJob(job);
     }
 
     @Override
     public String getId() {
         return job.getId();
+    }
+
+    @Override
+    public String getExecutableId() {
+        return job.getProperty("id", String.class);
     }
 
     @Override
@@ -56,19 +52,10 @@ public class QueuedExecution implements Execution {
     }
 
     @Override
-    public String getOutput() {
-        return new ExecutionFileOutput(job.getId()).readString().orElse(null);
-    }
-
-    @Override
-    public String getError() {
-        return null;
-    }
-
-    @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("executable", getExecutable())
+                .append("id", getId())
+                .append("executableId", getExecutableId())
                 .append("status", getStatus())
                 .append("duration", getDuration())
                 .toString();

@@ -13,16 +13,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleListener;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(immediate = true, service = Assistancer.class)
 public class Assistancer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Assistancer.class);
 
     @Reference
     private transient OsgiScanner osgiScanner;
@@ -30,45 +29,14 @@ public class Assistancer {
     @Reference
     private transient ResourceScanner resourceScanner;
 
-    private BundleContext bundleContext;
-
-    private BundleListener bundleListener;
-
     private List<ClassInfo> classCache = Collections.emptyList();
 
-    private int bundlesHashCode;
-
-    @Activate
-    protected void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-        this.bundleListener = event -> updateCache();
-        this.bundleContext.addBundleListener(bundleListener);
-
-        updateCache();
-    }
-
-    @Modified
-    protected void modified() {
-        updateCache();
-    }
-
-    @Deactivate
-    protected void deactivate() {
-        if (bundleListener != null) {
-            bundleContext.removeBundleListener(bundleListener);
-        }
-    }
-
-    private synchronized void updateCache() {
-        int bundlesHashCodeCurrent = osgiScanner.computeBundlesHashCode();
-        if (bundlesHashCode != bundlesHashCodeCurrent) {
-            classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
-            bundlesHashCode = bundlesHashCodeCurrent;
-        }
-    }
+    private Integer cacheHashCode;
 
     public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word)
             throws AcmException {
+        maybeUpdateCache();
+
         switch (suggestionType) {
             case VARIABLE:
                 return new Assistance(variableSuggestions(word).collect(Collectors.toList()));
@@ -110,5 +78,15 @@ public class Assistancer {
 
     private Stream<Suggestion> resourceSuggestions(ResourceResolver resolver, String word) {
         return resourceScanner.forPattern(resolver, word).map(ResourceSuggestion::new);
+    }
+
+    private synchronized void maybeUpdateCache() {
+        int cacheHashCodeCurrent = osgiScanner.computeBundlesHashCode();
+        if (cacheHashCode == null || !cacheHashCode.equals(cacheHashCodeCurrent)) {
+            LOG.info("Bundles changed - updating cache");
+            classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
+            cacheHashCode = cacheHashCodeCurrent;
+            LOG.info("Bundles changed - updated cache");
+        }
     }
 }

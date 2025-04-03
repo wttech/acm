@@ -10,7 +10,7 @@ import InfoOutline from '@spectrum-icons/workflow/InfoOutline';
 import Print from '@spectrum-icons/workflow/Print';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import ExecutableValue from '../components/ExecutableValue';
+import ExecutableIdValue from '../components/ExecutableIdValue';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
@@ -20,7 +20,7 @@ import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
 import { isExecutionPending } from '../utils/api.types';
-import { Objects } from '../utils/objects.ts';
+import { Objects } from '../utils/objects';
 
 const toastTimeout = 3000;
 
@@ -104,7 +104,7 @@ const ExecutionView = () => {
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
                   <Field label="Executable" flex="1" minWidth="50%">
                     <div>
-                      <ExecutableValue value={execution.executable} />
+                      <ExecutableIdValue id={execution.executable.id} />
                     </div>
                   </Field>
                   <Field label="Arguments" flex="1" minWidth="50%">

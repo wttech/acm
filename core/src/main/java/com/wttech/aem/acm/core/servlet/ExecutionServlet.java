@@ -33,22 +33,39 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
 
     private static final String ID_PARAM = "id";
 
+    private static final String FORMAT_PARAM = "format";
+
     @Reference
     private ExecutionQueue queue;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        String formatParam = request.getParameter(FORMAT_PARAM);
+        ExecutionFormat format = ExecutionFormat.of(formatParam).orElse(null);
+        if (format == null) {
+            respondJson(response, error(String.format("Execution format '%s' is not supported!", formatParam)));
+            return;
+        }
+
         try {
             ExecutionHistory executionHistory = new ExecutionHistory(request.getResourceResolver());
-            List<Execution> executions;
+            List<?> executions;
 
             List<String> ids = stringsParam(request, ID_PARAM);
             if (ids != null) {
                 ExecutionResolver executionResolver = new ExecutionResolver(queue, request.getResourceResolver());
-                executions = executionResolver.readAll(ids).collect(Collectors.toList());
+                if (format == ExecutionFormat.FULL) {
+                    executions = executionResolver.readAll(ids).collect(Collectors.toList());
+                } else {
+                    executions = executionResolver.readAllSummaries(ids).collect(Collectors.toList());
+                }
             } else {
                 ExecutionQuery criteria = ExecutionQuery.from(request);
-                executions = executionHistory.findAll(criteria).collect(Collectors.toList());
+                if (format == ExecutionFormat.FULL) {
+                    executions = executionHistory.findAll(criteria).collect(Collectors.toList());
+                } else {
+                    executions = executionHistory.findAllSummaries(criteria).collect(Collectors.toList());
+                }
             }
 
             ExecutionOutput output = new ExecutionOutput(executions);

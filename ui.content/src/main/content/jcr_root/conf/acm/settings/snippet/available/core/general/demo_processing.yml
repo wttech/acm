@@ -2,7 +2,7 @@ group: General
 name: general_demo_processing
 content: |
   boolean canRun() {
-    return condition.idle()
+    return condition.idleSelf()
   }
     
   void doRun() {

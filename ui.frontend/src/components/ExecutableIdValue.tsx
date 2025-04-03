@@ -3,30 +3,30 @@ import Draft from '@spectrum-icons/workflow/Draft';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import Hand from '@spectrum-icons/workflow/Hand';
 import React from 'react';
-import { Executable, isExecutableConsole } from '../utils/api.types';
+import { isExecutableConsole } from '../utils/api.types';
 import { Strings } from '../utils/strings.ts';
 
-interface ExecutableValueProps {
-  value: Executable;
+interface ExecutableIdValueProps {
+  id: string;
 }
 
-const ExecutableValue: React.FC<ExecutableValueProps> = ({ value: value }) => {
-  if (isExecutableConsole(value.id)) {
+const ExecutableIdValue: React.FC<ExecutableIdValueProps> = ({ id }) => {
+  if (isExecutableConsole(id)) {
     return (
       <>
         <Draft size="XS" /> <Text>Console</Text>
       </>
     );
-  } else if (value.id.includes('/script/auto/enabled/')) {
-    const scriptPath = value.id.split('/script/auto/enabled/')[1];
+  } else if (id.includes('/script/auto/enabled/')) {
+    const scriptPath = id.split('/script/auto/enabled/')[1];
     const scriptName = Strings.removeEnd(scriptPath, '.groovy');
     return (
       <>
         <FlashOn size="XS" /> <Text>Script '{scriptName}'</Text>
       </>
     );
-  } else if (value.id.includes('/script/manual/')) {
-    const scriptPath = value.id.split('/script/manual/')[1];
+  } else if (id.includes('/script/manual/')) {
+    const scriptPath = id.split('/script/manual/')[1];
     const scriptName = Strings.removeEnd(scriptPath, '.groovy');
     return (
       <>
@@ -34,8 +34,8 @@ const ExecutableValue: React.FC<ExecutableValueProps> = ({ value: value }) => {
       </>
     );
   } else {
-    return <>{value.id}</>;
+    return <>{id}</>;
   }
 };
 
-export default ExecutableValue;
+export default ExecutableIdValue;

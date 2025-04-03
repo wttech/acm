@@ -96,6 +96,15 @@ export type Execution = {
   error: string | null;
 };
 
+export type ExecutionSummary = {
+  id: string;
+  executableId: string;
+  status: ExecutionStatus;
+  startDate: string;
+  endDate: string;
+  duration: number;
+};
+
 export enum ExecutionStatus {
   QUEUED = 'QUEUED',
   ACTIVE = 'ACTIVE',
@@ -129,8 +138,8 @@ export type QueueOutput = {
   executions: Execution[];
 };
 
-export type ExecutionOutput = {
-  list: Execution[];
+export type ExecutionOutput<E> = {
+  list: E[];
 };
 
 export type AssistCodeOutput = {
@@ -177,7 +186,7 @@ export type ScriptOutput = {
 export type State = {
   healthStatus: HealthStatus;
   instanceSettings: InstanceSettings;
-  queuedExecutions: Execution[];
+  queuedExecutions: ExecutionSummary[];
 };
 
 export type InstanceSettings = {
@@ -201,7 +210,13 @@ export enum HealthIssueSeverity {
   INFO = 'INFO',
 }
 
+export enum ExecutionFormat {
+  SUMMARY = 'SUMMARY',
+  FULL = 'FULL',
+}
+
 export enum ExecutionQueryParams {
+  FORMAT = 'format',
   START_DATE = 'startDate',
   END_DATE = 'endDate',
   STATUS = 'status',

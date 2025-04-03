@@ -12,21 +12,21 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 import DateExplained from '../components/DateExplained';
-import ExecutableValue from '../components/ExecutableValue.tsx';
-import ExecutionStatusBadge from '../components/ExecutionStatusBadge.tsx';
+import ExecutableIdValue from '../components/ExecutableIdValue';
+import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
-import { ExecutionOutput, ExecutionQueryParams, ExecutionStatus, isExecutableExplicit } from '../utils/api.types';
+import { ExecutionFormat, ExecutionOutput, ExecutionQueryParams, ExecutionStatus, ExecutionSummary, isExecutableExplicit } from '../utils/api.types';
 import { Dates } from '../utils/dates';
 import { Urls } from '../utils/url';
 
 const HistoryPage = () => {
   const navigate = useNavigate();
-  const [executions, setExecutions] = useState<ExecutionOutput | null>(null);
+  const [executions, setExecutions] = useState<ExecutionOutput<ExecutionSummary> | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [searchState, setSearchState] = useSearchParams();
-  const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendar(Dates.daysAgo(7)));
+  const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendar(Dates.daysAgoAtMidnight(7)));
   const [endDate, setEndDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.END_DATE)));
   const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
   const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');
@@ -48,7 +48,7 @@ const HistoryPage = () => {
         setLoading(true);
         try {
           const params = new URLSearchParams();
-
+          params.append(ExecutionQueryParams.FORMAT, ExecutionFormat.SUMMARY);
           if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, isExecutableExplicit(executableId) ? executableId : `%${executableId}%`);
           if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
           if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
@@ -57,7 +57,7 @@ const HistoryPage = () => {
 
           setSearchState(params.toString(), { replace: true });
 
-          const response = await toastRequest<ExecutionOutput>({
+          const response = await toastRequest<ExecutionOutput<ExecutionSummary>>({
             method: 'GET',
             url: Urls.compose('/apps/acm/api/execution.json', params),
             operation: `Executions loading`,
@@ -132,7 +132,7 @@ const HistoryPage = () => {
             {(executions?.list || []).map((execution) => (
               <Row key={execution.id}>
                 <Cell>
-                  <ExecutableValue value={execution.executable} />
+                  <ExecutableIdValue id={execution.executableId} />
                 </Cell>
                 <Cell>
                   <DateExplained value={execution.startDate} />
