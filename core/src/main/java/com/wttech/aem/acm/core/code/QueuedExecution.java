@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.acm.core.util.DateUtils;
+import com.wttech.aem.acm.core.util.NumberUtils;
 import java.util.Date;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -51,10 +52,7 @@ public class QueuedExecution implements Execution {
 
     @Override
     public long getDuration() {
-        if (getStartDate() == null || getEndDate() == null) {
-            return 0L;
-        }
-        return getEndDate().getTime() - getStartDate().getTime();
+        return NumberUtils.durationBetween(getStartDate(), getEndDate());
     }
 
     @Override
