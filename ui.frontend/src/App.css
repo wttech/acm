@@ -1,8 +1,8 @@
 body {
-    min-height: 100vh;
+  min-height: 100vh;
 }
 
 /* CoralUI3 clashes with React Spectrum */
 input[type='search'] {
-    box-sizing: border-box !important;
+  box-sizing: border-box !important;
 }

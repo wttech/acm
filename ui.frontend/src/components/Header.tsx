@@ -26,8 +26,8 @@ const Header = () => {
       </AppLink>
       <AppLink to="/scripts">
         <Button variant={location.pathname.startsWith('/scripts') ? 'accent' : 'primary'} style="outline">
-            <FileCode />
-            <Text>Scripts</Text>
+          <FileCode />
+          <Text>Scripts</Text>
         </Button>
       </AppLink>
       <AppLink to="/snippets">

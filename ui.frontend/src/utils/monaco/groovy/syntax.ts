@@ -46,7 +46,11 @@ export function registerSyntax(instance: Monaco) {
 
     gstring: [
       [/\\\$/, 'string.escape'],
+<<<<<<< HEAD
       [/\$\{/, { token: 'identifier', bracket: '@open', next: '@gstringExpression' }],
+=======
+      [/\$\{[^}]+\}/, 'identifier'],
+>>>>>>> 288f8b3de77afe7cfb3631c732715732f46dd273
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
