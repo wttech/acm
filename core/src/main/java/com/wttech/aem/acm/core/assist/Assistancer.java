@@ -20,15 +20,31 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Component(immediate = true, service = Assistancer.class)
-public class Assistancer {
+@Component(
+        immediate = true,
+        service = {Assistancer.class, EventHandler.class},
+        property = {EventConstants.EVENT_TOPIC + "=" + Assistancer.UPDATE_CACHE_EVENT_TOPIC})
+public class Assistancer implements EventHandler {
+
+    public static final String UPDATE_CACHE_EVENT_TOPIC = "com/wttech/aem/acm/core/assist/UPDATE_CACHE";
+
+    private static final Logger LOG = LoggerFactory.getLogger(Assistancer.class);
 
     @Reference
     private transient OsgiScanner osgiScanner;
 
     @Reference
     private transient ResourceScanner resourceScanner;
+
+    @Reference
+    private transient EventAdmin eventAdmin;
 
     private BundleContext bundleContext;
 
@@ -41,15 +57,15 @@ public class Assistancer {
     @Activate
     protected void activate(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
-        this.bundleListener = event -> updateCache();
+        this.bundleListener = event -> postUpdateCacheEvent();
         this.bundleContext.addBundleListener(bundleListener);
 
-        updateCache();
+        postUpdateCacheEvent();
     }
 
     @Modified
     protected void modified() {
-        updateCache();
+        postUpdateCacheEvent();
     }
 
     @Deactivate
@@ -59,11 +75,22 @@ public class Assistancer {
         }
     }
 
+    @Override
+    public void handleEvent(Event event) {
+        updateCache();
+    }
+
+    private void postUpdateCacheEvent() {
+        eventAdmin.postEvent(new Event(UPDATE_CACHE_EVENT_TOPIC, Collections.emptyMap()));
+    }
+
     private synchronized void updateCache() {
         int bundlesHashCodeCurrent = osgiScanner.computeBundlesHashCode();
         if (bundlesHashCode != bundlesHashCodeCurrent) {
+            LOG.info("Bundles changed - updating cache");
             classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
             bundlesHashCode = bundlesHashCodeCurrent;
+            LOG.info("Bundles changed - updated cache");
         }
     }
 
