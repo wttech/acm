@@ -7,6 +7,7 @@ import java.util.Optional;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Workspace;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
@@ -16,11 +17,14 @@ public final class ResourceUtils {
         // intentionally empty
     }
 
-    public static ResourceResolver serviceResolver(ResourceResolverFactory resourceResolverFactory)
-            throws LoginException {
-        Map<String, Object> serviceParams = new HashMap<>();
-        serviceParams.put(ResourceResolverFactory.SUBSERVICE, "acm");
-        return resourceResolverFactory.getServiceResourceResolver(serviceParams);
+    public static ResourceResolver serviceResolver(
+            ResourceResolverFactory resourceResolverFactory, String userImpersonationId) throws LoginException {
+        Map<String, Object> params = new HashMap<>();
+        params.put(ResourceResolverFactory.SUBSERVICE, "acm");
+        if (StringUtils.isNotBlank(userImpersonationId)) {
+            params.put(ResourceResolverFactory.USER_IMPERSONATION, userImpersonationId);
+        }
+        return resourceResolverFactory.getServiceResourceResolver(params);
     }
 
     public static void move(ResourceResolver resolver, String sourcePath, String targetPath)
