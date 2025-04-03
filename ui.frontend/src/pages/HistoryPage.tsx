@@ -26,7 +26,7 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [searchState, setSearchState] = useSearchParams();
-  const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendar(Dates.daysAgo(7)));
+  const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendar(Dates.daysAgoAtMidnight(7)));
   const [endDate, setEndDate] = useState<DateValue | null>(Dates.toCalendarOrNull(searchState.get(ExecutionQueryParams.END_DATE)));
   const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
   const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');

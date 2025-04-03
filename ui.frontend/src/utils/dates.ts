@@ -13,9 +13,10 @@ export class Dates {
     return Dates.toCalendar(value);
   }
 
-  static daysAgo(days: number): Date {
+  static daysAgoAtMidnight(days: number): Date {
     const result = new Date();
     result.setDate(result.getDate() - days);
+    result.setHours(0, 0, 0, 0);
     return result;
   }
 }
