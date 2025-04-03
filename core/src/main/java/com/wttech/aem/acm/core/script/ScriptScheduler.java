@@ -1,5 +1,6 @@
 package com.wttech.aem.acm.core.script;
 
+import com.wttech.aem.acm.core.code.ExecutionContextOptions;
 import com.wttech.aem.acm.core.code.ExecutionQueue;
 import com.wttech.aem.acm.core.code.Executor;
 import com.wttech.aem.acm.core.instance.HealthChecker;
@@ -32,11 +33,17 @@ public class ScriptScheduler implements Runnable {
         boolean enabled() default true;
 
         @AttributeDefinition(
-                name = "Scheduler expression",
+                name = "Scheduler Expression",
                 description =
                         "How often the scripts should be executed. Default is every 30 seconds (0/30 * * * * ?). Quartz cron expression format.",
                 defaultValue = "0/30 * * * * ?")
         String scheduler_expression() default "0/30 * * * * ?";
+
+        @AttributeDefinition(
+                name = "User Impersonation ID",
+                description =
+                        "Controls who accesses the repository when scripts are automatically executed. If blank, the service user is used.")
+        String userImpersonationId();
     }
 
     @Reference
@@ -71,13 +78,15 @@ public class ScriptScheduler implements Runnable {
             return;
         }
 
-        try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
+        ExecutionContextOptions contextOptions = new ExecutionContextOptions(config.userImpersonationId());
+        try (ResourceResolver resourceResolver =
+                ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId())) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
 
             scriptRepository.clean();
 
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
-                queue.submit(script);
+                queue.submit(contextOptions, script);
             });
         } catch (Exception e) {
             LOG.error("Failed to access repository while scheduling enabled scripts to execution queue", e);

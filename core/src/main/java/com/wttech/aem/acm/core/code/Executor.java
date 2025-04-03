@@ -63,8 +63,9 @@ public class Executor {
         return result;
     }
 
-    public Execution execute(Executable executable) throws AcmException {
-        try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
+    public Execution execute(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
+        try (ResourceResolver resourceResolver =
+                ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId())) {
             return execute(createContext(executable, resourceResolver));
         } catch (LoginException e) {
             throw new AcmException(

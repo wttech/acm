@@ -71,8 +71,13 @@ public class ExecutionQueue implements JobExecutor {
         return executor.createContext(executable, resourceResolver);
     }
 
-    public Optional<Execution> submit(Executable executable) throws AcmException {
-        Job job = jobManager.addJob(TOPIC, Code.toJobProps(executable));
+    public Optional<Execution> submit(ExecutionContextOptions contextOptions, Executable executable)
+            throws AcmException {
+        Map<String, Object> jobProps = new HashMap<>();
+        jobProps.putAll(ExecutionContextOptions.toJobProps(contextOptions));
+        jobProps.putAll(Code.toJobProps(executable));
+
+        Job job = jobManager.addJob(TOPIC, jobProps);
         if (job == null) {
             return Optional.empty();
         }
@@ -126,13 +131,14 @@ public class ExecutionQueue implements JobExecutor {
 
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
+        ExecutionContextOptions contextOptions = ExecutionContextOptions.fromJob(job);
         QueuedExecution queuedExecution = new QueuedExecution(executor, job);
 
         LOG.debug("Execution started '{}'", queuedExecution);
 
         Future<Execution> future = jobAsyncExecutor.submit(() -> {
             try {
-                return executeAsync(queuedExecution);
+                return executeAsync(contextOptions, queuedExecution);
             } catch (Throwable e) {
                 throw new AcmException(String.format("Execution failed asynchronously '%s'", queuedExecution), e);
             }
@@ -176,8 +182,10 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    private Execution executeAsync(QueuedExecution execution) throws AcmException {
-        try (ResourceResolver resolver = ResourceUtils.serviceResolver(resourceResolverFactory)) {
+    private Execution executeAsync(ExecutionContextOptions contextOptions, QueuedExecution execution)
+            throws AcmException {
+        try (ResourceResolver resolver =
+                ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId())) {
             ExecutionContext context = executor.createContext(execution.getExecutable(), resolver);
             context.setId(execution.getJob().getId());
             return executor.execute(context);
