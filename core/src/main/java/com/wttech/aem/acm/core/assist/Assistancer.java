@@ -13,27 +13,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleListener;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.event.Event;
-import org.osgi.service.event.EventAdmin;
-import org.osgi.service.event.EventConstants;
-import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(
-        immediate = true,
-        service = {Assistancer.class, EventHandler.class},
-        property = {EventConstants.EVENT_TOPIC + "=" + Assistancer.UPDATE_CACHE_EVENT_TOPIC})
-public class Assistancer implements EventHandler {
-
-    public static final String UPDATE_CACHE_EVENT_TOPIC = "com/wttech/aem/acm/core/assist/UPDATE_CACHE";
+@Component(immediate = true, service = Assistancer.class)
+public class Assistancer {
 
     private static final Logger LOG = LoggerFactory.getLogger(Assistancer.class);
 
@@ -43,59 +29,14 @@ public class Assistancer implements EventHandler {
     @Reference
     private transient ResourceScanner resourceScanner;
 
-    @Reference
-    private transient EventAdmin eventAdmin;
-
-    private BundleContext bundleContext;
-
-    private BundleListener bundleListener;
-
     private List<ClassInfo> classCache = Collections.emptyList();
 
-    private int bundlesHashCode;
-
-    @Activate
-    protected void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-        this.bundleListener = event -> postUpdateCacheEvent();
-        this.bundleContext.addBundleListener(bundleListener);
-
-        postUpdateCacheEvent();
-    }
-
-    @Modified
-    protected void modified() {
-        postUpdateCacheEvent();
-    }
-
-    @Deactivate
-    protected void deactivate() {
-        if (bundleListener != null) {
-            bundleContext.removeBundleListener(bundleListener);
-        }
-    }
-
-    @Override
-    public void handleEvent(Event event) {
-        updateCache();
-    }
-
-    private void postUpdateCacheEvent() {
-        eventAdmin.postEvent(new Event(UPDATE_CACHE_EVENT_TOPIC, Collections.emptyMap()));
-    }
-
-    private synchronized void updateCache() {
-        int bundlesHashCodeCurrent = osgiScanner.computeBundlesHashCode();
-        if (bundlesHashCode != bundlesHashCodeCurrent) {
-            LOG.info("Bundles changed - updating cache");
-            classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
-            bundlesHashCode = bundlesHashCodeCurrent;
-            LOG.info("Bundles changed - updated cache");
-        }
-    }
+    private Integer cacheHashCode;
 
     public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word)
             throws AcmException {
+        maybeUpdateCache();
+
         switch (suggestionType) {
             case VARIABLE:
                 return new Assistance(variableSuggestions(word).collect(Collectors.toList()));
@@ -137,5 +78,15 @@ public class Assistancer implements EventHandler {
 
     private Stream<Suggestion> resourceSuggestions(ResourceResolver resolver, String word) {
         return resourceScanner.forPattern(resolver, word).map(ResourceSuggestion::new);
+    }
+
+    private synchronized void maybeUpdateCache() {
+        int cacheHashCodeCurrent = osgiScanner.computeBundlesHashCode();
+        if (cacheHashCode == null || !cacheHashCode.equals(cacheHashCodeCurrent)) {
+            LOG.info("Bundles changed - updating cache");
+            classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
+            cacheHashCode = cacheHashCodeCurrent;
+            LOG.info("Bundles changed - updated cache");
+        }
     }
 }
