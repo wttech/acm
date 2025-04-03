@@ -51,12 +51,14 @@
                             <type>zip</type>
                             <target>/apps/acm-packages/content/install</target>
                         </embedded>
+                        <!-- TODO make it deployable on AEMaaCS as well
                         <embedded>
                             <groupId>com.wttech.aem.acm</groupId>
                             <artifactId>acm.ui.content.index</artifactId>
                             <type>zip</type>
                             <target>/apps/acm-packages/content/install</target>
                         </embedded>
+                        -->
                         <embedded>
                             <groupId>com.wttech.aem.acm</groupId>
                             <artifactId>acm.ui.config</artifactId>
