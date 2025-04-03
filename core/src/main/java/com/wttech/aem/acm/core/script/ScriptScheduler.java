@@ -42,7 +42,7 @@ public class ScriptScheduler implements Runnable {
         @AttributeDefinition(
                 name = "User Impersonation ID",
                 description =
-                        "Controls who access the repository when scripts are automatically executed. If blank, service user is used.")
+                        "Controls who accesses the repository when scripts are automatically executed. If blank, the service user is used.")
         String userImpersonationId();
     }
 
