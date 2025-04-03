@@ -138,8 +138,8 @@ export type QueueOutput = {
   executions: Execution[];
 };
 
-export type ExecutionOutput = {
-  list: Execution[];
+export type ExecutionOutput<E> = {
+  list: E[];
 };
 
 export type AssistCodeOutput = {

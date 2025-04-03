@@ -56,7 +56,15 @@ public class ExecutionHistory {
     }
 
     public Optional<Execution> read(String id) {
-        return Optional.of(getOrCreateRoot()).map(r -> r.getChild(id)).map(HistoricalExecution::new);
+        return readResource(id).map(HistoricalExecution::new);
+    }
+
+    public Optional<ExecutionSummary> readSummary(String id) {
+        return readResource(id).map(HistoricalExecutionSummary::new);
+    }
+
+    private Optional<Resource> readResource(String id) {
+        return Optional.of(getOrCreateRoot()).map(r -> r.getChild(id));
     }
 
     private Resource getOrCreateRoot() throws AcmException {
