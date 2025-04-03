@@ -2,14 +2,13 @@ package com.wttech.aem.acm.core.snippet;
 
 import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.util.ResourceSpliterator;
+import com.wttech.aem.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceUtil;
-import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class SnippetRepository {
 
@@ -45,15 +44,6 @@ public class SnippetRepository {
     }
 
     private Resource getOrCreateRoot() throws AcmException {
-        try {
-            return ResourceUtil.getOrCreateResource(
-                    resourceResolver,
-                    ROOT,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    true);
-        } catch (Exception e) {
-            throw new AcmException(String.format("Failed to get or create snippet root '%s'", ROOT), e);
-        }
+        return ResourceUtils.makeFolders(resourceResolver, ROOT);
     }
 }

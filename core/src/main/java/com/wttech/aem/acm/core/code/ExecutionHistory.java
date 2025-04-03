@@ -1,6 +1,7 @@
 package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.AcmException;
+import com.wttech.aem.acm.core.util.ResourceUtils;
 import com.wttech.aem.acm.core.util.StreamUtils;
 import java.io.Closeable;
 import java.util.*;
@@ -59,16 +60,7 @@ public class ExecutionHistory {
     }
 
     private Resource getOrCreateRoot() throws AcmException {
-        try {
-            return ResourceUtil.getOrCreateResource(
-                    resourceResolver,
-                    ROOT,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    true);
-        } catch (Exception e) {
-            throw new AcmException(String.format("Failed to get or create execution history root '%s'", ROOT), e);
-        }
+        return ResourceUtils.makeFolders(resourceResolver, ROOT);
     }
 
     public boolean contains(String id) {

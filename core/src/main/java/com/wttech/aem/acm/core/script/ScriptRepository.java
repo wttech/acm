@@ -52,16 +52,7 @@ public class ScriptRepository {
     }
 
     private Resource getOrCreateRoot(ScriptType type) throws AcmException {
-        try {
-            return ResourceUtil.getOrCreateResource(
-                    resourceResolver,
-                    type.root(),
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    true);
-        } catch (Exception e) {
-            throw new AcmException(String.format("Failed to get or create script root '%s'", type.root()), e);
-        }
+        return ResourceUtils.makeFolders(resourceResolver, type.root());
     }
 
     public void enable(String path) throws AcmException {
