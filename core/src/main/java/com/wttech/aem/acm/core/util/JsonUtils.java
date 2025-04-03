@@ -3,6 +3,7 @@ package com.wttech.aem.acm.core.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,6 +44,10 @@ public final class JsonUtils {
 
     public static String writeToString(Object data) throws IOException {
         return COMPACT_WRITER.writeValueAsString(data);
+    }
+
+    public static InputStream writeToStream(Object data) throws IOException {
+        return new ByteArrayInputStream(COMPACT_WRITER.writeValueAsBytes(data));
     }
 
     public static String mapToString(Map<String, Object> object) throws IOException {

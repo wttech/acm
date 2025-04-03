@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 
 public class ScriptRepository {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptRepository.class);
-
     public static final String ROOT = "/conf/acm/settings/script";
+
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptRepository.class);
 
     private final ResourceResolver resourceResolver;
 
@@ -36,7 +36,7 @@ public class ScriptRepository {
     }
 
     public Stream<Script> findAll(ScriptType type) throws AcmException {
-        return ResourceSpliterator.stream(readRoot(type))
+        return ResourceSpliterator.stream(getOrCreateRoot(type))
                 .map(Script::from)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
@@ -51,12 +51,8 @@ public class ScriptRepository {
                 .map(Optional::get);
     }
 
-    private Resource readRoot(ScriptType type) throws AcmException {
-        Resource root = resourceResolver.getResource(type.root());
-        if (root == null) {
-            throw new AcmException(String.format("Script root path '%s' does not exist!", type.root()));
-        }
-        return root;
+    private Resource getOrCreateRoot(ScriptType type) throws AcmException {
+        return ResourceUtils.makeFolders(resourceResolver, type.root());
     }
 
     public void enable(String path) throws AcmException {

@@ -2,6 +2,7 @@ package com.wttech.aem.acm.core.snippet;
 
 import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.util.ResourceSpliterator;
+import com.wttech.aem.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -36,17 +37,13 @@ public class SnippetRepository {
     }
 
     public Stream<Snippet> findAll() throws AcmException {
-        return ResourceSpliterator.stream(getRoot())
+        return ResourceSpliterator.stream(getOrCreateRoot())
                 .map(Snippet::from)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }
 
-    private Resource getRoot() throws AcmException {
-        Resource root = resourceResolver.getResource(SnippetType.AVAILABLE.root());
-        if (root == null) {
-            throw new AcmException(String.format("Snippets root path '%s' does not exist!", ROOT));
-        }
-        return root;
+    private Resource getOrCreateRoot() throws AcmException {
+        return ResourceUtils.makeFolders(resourceResolver, ROOT);
     }
 }
