@@ -16,24 +16,26 @@ ACM is a powerful tool designed to streamline your workflow and enhance producti
 
 ## Table of Contents
 
-- [AEM Content Manager (ACM)](#aem-content-manager-acm)
-    - [Key Features](#key-features)
-        - [All-in-one Solution](#all-in-one-solution)
-        - [New Approach](#new-approach)
-        - [Content Management](#content-management)
-        - [Permissions Management](#permissions-management)
-        - [Data Imports & Exports](#data-imports--exports)
-    - [Installation](#installation)
-    - [Compatibility](#compatibility)
-    - [Documentation](#documentation)
-        - [Usage](#usage)
-        - [Content Scripts](#content-scripts)
-            - [Minimal Example](#minimal-example)
-            - [Arguments Example](#arguments-example)
-            - [ACL Example](#acl-example)
-        - [Extension Scripts](#extension-scripts)
-    - [Development](#development)
-    - [License](#license)
+- [Key Features](#key-features)
+    - [All-in-one Solution](#all-in-one-solution)
+    - [New Approach](#new-approach)
+    - [Content Management](#content-management)
+    - [Permissions Management](#permissions-management)
+    - [Data Imports & Exports](#data-imports--exports)
+- [Installation](#installation)
+- [Compatibility](#compatibility)
+- [Documentation](#documentation)
+    - [Usage](#usage)
+    - [Console](#console)
+    - [Content Scripts](#content-scripts)
+        - [Minimal Example](#minimal-example)
+        - [Arguments Example](#arguments-example)
+        - [ACL Example](#acl-example)
+        - [History](#history)
+    - [Extension Scripts](#extension-scripts)
+    - [Snippets](#snippets)
+- [Development](#development)
+- [License](#license)
 
 ## Key Features
 
@@ -96,6 +98,19 @@ There are two ways to install AEM Content Manager on your AEM instances:
   - OSGi events occurrence indicating temporal instability
   - JCR repository paths presence (e.g., `/content/acme`, `/content/dam/acme`)
 
+### Console
+
+The ACM Console is interactive and offers the following features:
+
+- Execute just-in-time Groovy code.
+- Review the output of the code in real-time.
+- View compilation errors as you type.
+- Access a list of available variables and methods.
+- Utilize code completion assistance for OSGi classes, JCR paths, etc.
+- Quickly insert code templates using snippets.
+
+<img src="docs/screenshot-console-interactive.png" width="640" alt="ACM Console">
+
 ### Content scripts
 
 #### Minimal example
@@ -141,6 +156,8 @@ When the script is executed, the arguments are passed to the `doRun()` method.
 
 There are many built-in argument types to use handling different types of data like string, boolean, number, date, etc. Just check `args` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/Arguments.java) for more details.
 
+<img src="docs/screenshot-content-script-arguments.png" width="640" alt="ACM Console">
+
 #### ACL example
 
 The following example demonstrates how to create a user and a group, assign permissions, and add members to the group.
@@ -181,6 +198,16 @@ void doRun() {
 Operations done by `acl` service are idempotent, so you can run the script multiple times without worrying about duplicates, failures, or other issues.
 Logging is very descriptive allowing you to see what was done and what was skipped.
 
+<img src="docs/screenshot-content-script-acl-output.png" width="640" alt="ACM ACL Script Output">
+
+### History
+
+All code executions are logged in the history. You can see the status of each execution, including whether it was successful or failed. The history also provides detailed logs for each execution, including any errors that occurred.
+Original code is stored in the history, so you can always refer back to it if needed.
+Complete output as well as argument values are also included to achieve full traceability.
+
+<img src="docs/screenshot-history.png" width="640" alt="ACM History">
+
 ### Extension scripts
 
 To add own code binding or hook into execution process, you can create your own extension Groovy scripts and place them at path like `/conf/acm/settings/extension/acme/main.groovy`.
@@ -200,6 +227,31 @@ void completeExecution(Execution execution) {
    }
 }
 ```
+
+### Snippets
+
+ACM provides a set of snippets that can be used to quickly insert code templates into your scripts. 
+Despite out-of-the-box snippets, you can create your own snippets and share them with your team.
+
+Just create a YAML files in the `/conf/acm/settings/snippets/{project}` folder and add your code there.
+
+#### Example snippet
+
+Note that snippets could contain placeholders, which are replaced with actual values when the snippet is inserted into the script.
+Also snippet documentation could be a GitHub Flavored Markdown file, which is rendered in the UI. As a consequence you can use HTML tags as well, provide links, images, etc.
+
+Let's assume a snippet located at path `/conf/acm/settings/snippet/available/acme/hello.yml` with the following content:
+
+```yaml
+group: Acme
+name: acme_hello
+content: |
+  println "Hello ${1:message} in ACME project!" }
+documentation: |
+  Prints a greeting message in the ACME project.
+```
+
+<img src="docs/screenshot-snippets.png" width="640" alt="ACM Snippets">
 
 ## Development
 
