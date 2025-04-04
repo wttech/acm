@@ -14,11 +14,52 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           java-version: 8
           distribution: temurin
+
       - name: Publish package
         run: sh ./mvnw --batch-mode deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Draft Release
+        id: draft_release
+        uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.draft_release.outputs.body }}
+          draft: false
+          prerelease: false
+
+#      - name: Upload All Package
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: all/target/acm.all-0.1.0-SNAPSHOT.zip
+#          asset_name: all-package.zip
+#          asset_content_type: application/zip
+#
+#      - name: Upload Minimal Package
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: min/target/acm.min-0.1.0-SNAPSHOT.zip
+#          asset_name: minimal-package.zip
+#          asset_content_type: application/zip
