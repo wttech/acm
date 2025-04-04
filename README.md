@@ -81,6 +81,10 @@ There are two ways to install AEM Content Manager on your AEM instances:
 
 ### Usage
 
+The ACM tool helps developers to implement Groovy scripts in AEM projects.
+Groovy code need to at first implemented and tested then persisted in the AEM instance for later deployment.
+To achieve that, ACM provides a set of features to help you with the development process.
+
 **Groovy code can be run in three ways:**
 
 1. **Ad-hoc using 'Console'**
