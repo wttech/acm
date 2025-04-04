@@ -11,7 +11,6 @@ export function registerAemCodeCompletions(instance: Monaco) {
 }
 
 function registerWordCompletion(instance: Monaco) {
-  console.log("Registering aem code completions")
   instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
       const path = extractPath(model.getLineContent(position.lineNumber));
