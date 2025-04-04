@@ -16,7 +16,7 @@ ACM (AEM Content Manager) is a powerful tool designed to streamline your workflo
 
 It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
 
-<img src="docs/screenshot-dashboard.png" width="640" alt="ACM Dashboard">
+<img src="docs/screenshot-dashboard.png" width="720" alt="ACM Dashboard">
 
 ## Table of Contents
 
@@ -117,7 +117,7 @@ The ACM Console is interactive and offers the following features:
 - Utilize code completion assistance for OSGi classes, JCR paths, etc.
 - Quickly insert code templates using snippets.
 
-<img src="docs/screenshot-console-interactive.png" width="640" alt="ACM Console">
+<img src="docs/screenshot-console-interactive.png" width="720" alt="ACM Console">
 
 ### Content scripts
 
@@ -166,7 +166,7 @@ When the script is executed, the arguments are passed to the `doRun()` method.
 
 There are many built-in argument types to use handling different types of data like string, boolean, number, date, etc. Just check `args` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/Arguments.java) for more details.
 
-<img src="docs/screenshot-content-script-arguments.png" width="640" alt="ACM Console">
+<img src="docs/screenshot-content-script-arguments.png" width="720" alt="ACM Console">
 
 #### ACL example
 
@@ -208,7 +208,7 @@ void doRun() {
 Operations done by `acl` service are idempotent, so you can run the script multiple times without worrying about duplicates, failures, or other issues.
 Logging is very descriptive allowing you to see what was done and what was skipped.
 
-<img src="docs/screenshot-content-script-acl-output.png" width="640" alt="ACM ACL Script Output">
+<img src="docs/screenshot-content-script-acl-output.png" width="720" alt="ACM ACL Script Output">
 
 ### History
 
@@ -216,7 +216,7 @@ All code executions are logged in the history. You can see the status of each ex
 Original code is stored in the history, so you can always refer back to it if needed.
 Complete output as well as argument values are also included to achieve full traceability.
 
-<img src="docs/screenshot-history.png" width="640" alt="ACM History">
+<img src="docs/screenshot-history.png" width="720" alt="ACM History">
 
 ### Extension scripts
 
@@ -261,7 +261,7 @@ documentation: |
   Prints a greeting message in the ACME project.
 ```
 
-<img src="docs/screenshot-snippets.png" width="640" alt="ACM Snippets">
+<img src="docs/screenshot-snippets.png" width="720" alt="ACM Snippets">
 
 ## Development
 
