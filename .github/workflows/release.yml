@@ -13,7 +13,12 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Extract Version
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -22,7 +27,7 @@ jobs:
           distribution: temurin
 
       - name: Publish package
-        run: sh ./mvnw --batch-mode deploy
+        run: sh ./mvnw --batch-mode deploy -Dversion=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -44,22 +49,22 @@ jobs:
           draft: false
           prerelease: false
 
-#      - name: Upload All Package
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: all/target/acm.all-0.1.0-SNAPSHOT.zip
-#          asset_name: all-package.zip
-#          asset_content_type: application/zip
-#
-#      - name: Upload Minimal Package
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: min/target/acm.min-0.1.0-SNAPSHOT.zip
-#          asset_name: minimal-package.zip
-#          asset_content_type: application/zip
+      - name: Upload All Package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: all/target/acm.all-${{ env.VERSION }}.zip
+          asset_name: acm.all-${{ env.VERSION }}.zip
+          asset_content_type: application/zip
+
+      - name: Upload Minimal Package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: min/target/acm.min-${{ env.VERSION }}.zip
+          asset_name: acm.min-${{ env.VERSION }}.zip
+          asset_content_type: application/zip
