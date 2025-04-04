@@ -48,8 +48,10 @@
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>filevault-package-maven-plugin</artifactId>
                 <configuration>
+                    <allowIndexDefinitions>true</allowIndexDefinitions>
                     <properties>
                         <cloudManagerTarget>none</cloudManagerTarget>
+                        <noIntermediateSaves>true</noIntermediateSaves>
                     </properties>
                     <group>com.wttech.aem.acm</group>
                     <name>acm.ui.apps</name>
