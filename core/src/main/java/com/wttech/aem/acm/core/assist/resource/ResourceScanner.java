@@ -11,13 +11,14 @@ import org.osgi.service.component.annotations.Component;
 public class ResourceScanner {
 
     /**
-     * Suggest the node and children if path is having trailing slash, examples:
+     * Suggest the node and children examples:
      * <p>
      * / => root node suggestion (with node type etc), and its children /apps, /content, etc (exception)
      * /content => only content node suggestion
      * /content/ => only content node children
      * /content/mysite => only mysite node suggestion
      * /content/mysite/ => only mysite node children
+     * /content/mys => suggestion on /content/ children whose names start with "mys"
      * etc.
      */
     public Stream<Resource> forPattern(ResourceResolver resolver, String pattern) {
@@ -25,15 +26,32 @@ public class ResourceScanner {
             return Stream.empty();
         }
 
-        Resource resource = resolver.getResource(pattern);
-        if (resource == null) {
+        if (pattern.endsWith("/")) {
+            return getChildren(resolver, pattern);
+        } else {
+            int lastSlashIndex = pattern.lastIndexOf('/');
+            if (lastSlashIndex == -1) {
+                Resource resource = resolver.getResource(pattern);
+                return Stream.of(resource);
+            }
+            String directory = pattern.substring(0, lastSlashIndex);
+            String filename = pattern.substring(lastSlashIndex + 1);
+            Stream<Resource> children = getChildren(resolver, directory);
+            if (children != null) {
+                return children.filter(resource -> resource.getName().startsWith(filename));
+            }
             return Stream.empty();
         }
+    }
 
-        if (pattern.endsWith("/")) {
-            return StreamSupport.stream(resource.getChildren().spliterator(), false);
-        } else {
-            return Stream.of(resource);
+
+    // Helper function to retrieve resource's children as a stream
+    private Stream<Resource> getChildren(ResourceResolver resolver, String path) {
+        Resource resource = resolver.getResource(path);
+        if (resource == null) {
+            return null;
         }
+        Iterable<Resource> children = resource.getChildren();
+        return StreamSupport.stream(children.spliterator(), false);
     }
 }
