@@ -1,4 +1,4 @@
-[![VML Logo](docs/vml-logo.svg)](https://www.vml.com/expertise/enterprise-solutions)
+[![VML Logo](docs/vml-logo-white.svg)](https://www.vml.com/expertise/enterprise-solutions)
 
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/acm)](https://github.com/wttech/acm/releases)
 [![GitHub All Releases](https://img.shields.io/github/downloads/wttech/acm/total)](https://github.com/wttech/acm/releases)
