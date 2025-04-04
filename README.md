@@ -14,6 +14,27 @@
 
 ACM is a powerful tool designed to streamline your workflow and enhance productivity with an intuitive interface and robust features.
 
+## Table of Contents
+
+- [AEM Content Manager (ACM)](#aem-content-manager-acm)
+    - [Key Features](#key-features)
+        - [All-in-one Solution](#all-in-one-solution)
+        - [New Approach](#new-approach)
+        - [Content Management](#content-management)
+        - [Permissions Management](#permissions-management)
+        - [Data Imports & Exports](#data-imports--exports)
+    - [Installation](#installation)
+    - [Compatibility](#compatibility)
+    - [Documentation](#documentation)
+        - [Usage](#usage)
+        - [Content Scripts](#content-scripts)
+            - [Minimal Example](#minimal-example)
+            - [Arguments Example](#arguments-example)
+            - [ACL Example](#acl-example)
+        - [Extension Scripts](#extension-scripts)
+    - [Development](#development)
+    - [License](#license)
+
 ## Key Features
 
 ### All-in-one Solution
@@ -77,7 +98,7 @@ There are two ways to install AEM Content Manager on your AEM instances:
 
 ### Content scripts
 
-**Minimal example :**
+#### Minimal example
 
 ```groovy
 boolean canRun() {
@@ -95,7 +116,9 @@ There are many built-in, ready-to-use conditions available in the `condition` [s
 The `canRun()` method is used to determine if the script should be executed. 
 The `doRun()` method contains the actual code to be executed.
 
-**Arguments example :**
+#### Arguments example
+
+Scripts could accept arguments, which are passed to the script when it is executed.
 
 ```groovy
 void describeRun() {
@@ -118,7 +141,9 @@ When the script is executed, the arguments are passed to the `doRun()` method.
 
 There are many built-in argument types to use handling different types of data like string, boolean, number, date, etc. Just check `args` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/Arguments.java) for more details.
 
-**ACL example:**
+#### ACL example
+
+The following example demonstrates how to create a user and a group, assign permissions, and add members to the group.
 
 ```groovy
 boolean canRun() {
@@ -160,7 +185,7 @@ Logging is very descriptive allowing you to see what was done and what was skipp
 
 To add own code binding or hook into execution process, you can create your own extension Groovy scripts and place them at path like `/conf/acm/settings/extension/acme/main.groovy`.
 
-**Example of an extension script:**
+#### Example extension script
 
 ```groovy
 void extend(Extender extender) {
