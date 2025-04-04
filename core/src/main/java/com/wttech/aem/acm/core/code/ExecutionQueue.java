@@ -76,6 +76,7 @@ public class ExecutionQueue implements JobExecutor {
         Map<String, Object> jobProps = new HashMap<>();
         jobProps.putAll(ExecutionContextOptions.toJobProps(contextOptions));
         jobProps.putAll(Code.toJobProps(executable));
+        jobProps.values().removeIf(Objects::isNull);
 
         Job job = jobManager.addJob(TOPIC, jobProps);
         if (job == null) {
