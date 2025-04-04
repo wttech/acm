@@ -1,17 +1,10 @@
-[![WTT logo](docs/wtt-logo.png)](https://www.wundermanthompson.com)
+[![VML Logo](docs/vml-logo.svg)](https://www.vml.com/expertise/enterprise-solutions)
 
-<!--
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/acm)](https://github.com/wttech/acm/releases)
 [![GitHub All Releases](https://img.shields.io/github/downloads/wttech/acm/total)](https://github.com/wttech/acm/releases)
 [![Check](https://github.com/wttech/acm/workflows/Check/badge.svg)](https://github.com/wttech/acm/actions/workflows/check.yml)
--->
-[![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
 
-<!--
-<p>
-  <img src="docs/logo-text.svg" alt="AEM Content Manager" width="300"/>
-</p>
--->
+[![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
 
 **AEM Content Manager (ACM)**
 
