@@ -14,6 +14,8 @@
 
 ACM is a powerful tool designed to streamline your workflow and enhance productivity with an intuitive interface and robust features.
 
+<img src="docs/screenshot-dashboard.png" width="640" alt="ACM Dashboard">
+
 ## Table of Contents
 
 - [Key Features](#key-features)
