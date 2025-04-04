@@ -35,6 +35,28 @@
         <module>ui.content.index</module>
         <module>ui.frontend</module>
     </modules>
+    <scm>
+        <url>https://github.com/wttech/acm</url>
+        <connection>scm:git:ssh://git@github.com/wttech/acm.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/wttech/acm.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <organization>
+        <name>VML Enterprise Solutions</name>
+        <url>https://www.vml.com/expertise/enterprise-solutions</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>Krystian Panek</name>
+            <email>krystian.panek@vml.com</email>
+        </developer>
+    </developers>
     <properties>
         <aem.host>localhost</aem.host>
         <aem.port>4502</aem.port>
@@ -426,6 +448,11 @@ Bundle-DocURL:
                         <enabled>false</enabled>
                     </snapshots>
                 </repository>
+                <repository>
+                    <id>github</id>
+                    <name>GitHub Packages</name>
+                    <url>https://maven.pkg.github.com/wttech/acm</url>
+                </repository>
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
@@ -774,4 +801,13 @@ Bundle-DocURL:
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/wttech/acm</url>
+        </repository>
+    </distributionManagement>
+
 </project>
