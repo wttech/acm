@@ -1,7 +1,7 @@
 <a href="https://www.vml.com/expertise/enterprise-solutions">
   <picture>
     <source srcset="docs/vml-logo-white.svg" media="(prefers-color-scheme: dark)">
-    <img src="docs/vml-logo-black.svg" alt="VML Logo">
+    <img src="docs/vml-logo-black.svg" alt="VML Logo" height="100">
   </picture>
 </a>
 
