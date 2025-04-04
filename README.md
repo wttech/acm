@@ -115,6 +115,8 @@ The ACM Console is interactive and offers the following features:
 
 #### Minimal example
 
+Below is a minimal example of a Groovy script that prints "Hello World!" to the console.
+
 ```groovy
 boolean canRun() {
     return condition.always()
@@ -125,11 +127,11 @@ void doRun() {
 }
 ```
 
-Notice that the script on its decides when to run. In that way the-sky-is-the-limit. You can run the script once, periodically, or at an exact date and time.
-There are many built-in, ready-to-use conditions available in the `condition` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/Condition.java).
-
-The `canRun()` method is used to determine if the script should be executed. 
+The `canRun()` method is used to determine if the script should be executed.
 The `doRun()` method contains the actual code to be executed.
+
+Notice that the script on their own decide when to run without a need to specify any additional metadata. In that way the-sky-is-the-limit. You can run the script once, periodically, or at an exact date and time.
+There are many built-in, ready-to-use conditions available in the `condition` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/Condition.java).
 
 #### Arguments example
 
