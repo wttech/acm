@@ -11,18 +11,25 @@ export function useNavigationTab(defaultTab: string = '') {
 
   useEffect(() => {
     if (!searchParams.get(NavigationSearchParams.TAB)) {
-      setSearchParams((prev) => {
-        prev.set(NavigationSearchParams.TAB, defaultTab);
-        return prev;
-      });
+      setSearchParams(
+        (prev) => {
+          prev.set(NavigationSearchParams.TAB, defaultTab);
+          return prev;
+        },
+        { replace: true },
+      );
     }
   }, [defaultTab, searchParams, setSearchParams]);
 
   const handleTabChange = (key: Key) => {
-    setSearchParams((prev) => {
-      prev.set(NavigationSearchParams.TAB, key.toString());
-      return prev;
-    });
+    setSearchParams(
+      (prev) => {
+        prev.set(NavigationSearchParams.TAB, key.toString());
+
+        return prev;
+      },
+      { replace: true },
+    );
   };
 
   return [searchParams.get(NavigationSearchParams.TAB) || defaultTab, handleTabChange] as const;
