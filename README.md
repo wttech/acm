@@ -1,4 +1,4 @@
-<a href="https://www.vml.com/expertise/enterprise-solutions">
+<a href="https://www.vml.com/expertise/enterprise-solutions" target="_blank">
   <picture>
     <source srcset="docs/vml-logo-white.svg" media="(prefers-color-scheme: dark)">
     <img src="docs/vml-logo-black.svg" alt="VML Logo" height="100">
