@@ -49,7 +49,7 @@ const ScriptExecutor = () => {
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
               <ExecutionsAbortButton selectedKeys={selectedIds(selectedKeys)} />
-              <MenuTrigger>
+              {context && !context.instanceSettings.cloud && <MenuTrigger>
                 <Button variant="negative">
                   <Settings />
                   <Text>Configure</Text>
@@ -68,7 +68,7 @@ const ScriptExecutor = () => {
                     <Text>Code Executor</Text>
                   </Item>
                 </Menu>
-              </MenuTrigger>
+              </MenuTrigger>}
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">

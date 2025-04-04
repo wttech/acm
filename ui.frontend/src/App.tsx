@@ -19,6 +19,8 @@ function App() {
     instanceSettings: {
       id: 'default',
       timezoneId: 'UTC',
+      publish: false,
+      cloud: true
     },
     queuedExecutions: [],
   });

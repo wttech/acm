@@ -192,6 +192,8 @@ export type State = {
 export type InstanceSettings = {
   id: string;
   timezoneId: string;
+  publish: boolean;
+  cloud: boolean;
 };
 
 export type HealthStatus = {
