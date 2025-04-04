@@ -61,6 +61,7 @@ There are two ways to install AEM Content Manager on your AEM instances:
 2. Using the 'minimal' package:
     * Recommended for AEM instances that already contain some dependencies shared with other tools.
     * This package does not include Groovy bundles, which can be provided by other tools like [AEM Easy Content Upgrade](https://github.com/valtech/aem-easy-content-upgrade/releases) (AECU) or [AEM Groovy Console](https://github.com/orbinson/aem-groovy-console/releases).
+    * Note that these other tools are not required for AEM Content Manager to work. Moreover, they all could be replaced by AEM Content Manager.
 
 ## Compatibility
 
@@ -68,7 +69,7 @@ There are two ways to install AEM Content Manager on your AEM instances:
 |---------------------|------------|-------|--------|
 | 1.0.0               | 6.5, cloud | 8, 11 | 4.x    |
 
-Note that AEM Content Manager is using Groovy scripts concept. However it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
+Note that AEM Content Manager is using Groovy scripts concept. However, it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
 AEM Content Manager tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
 It is compatible with AEM Groovy Console - simply install one of AEM Content Manager distributions without Groovy console OSGi bundle included as it is usually provided by Groovy Console AEM package.
 
@@ -76,11 +77,53 @@ It is compatible with AEM Groovy Console - simply install one of AEM Content Man
 
 ### Basics
 
-TODO
+Groovy code can be run in three ways:
 
-### OSGi configuration
+1. Ad-hoc using 'Console'
+2. Manually executed scripts - see 'Scripts' page then 'Manual' tab)
+3. Automatically executed scripts - see 'Scripts' page then 'Automatic' tab)
 
-TODO
+Code executed in the console is executed in the context of the currently logged user to AEM. 
+
+Code executed in the 'Scripts' page is executed in the context of the system user or impersonated user when configured additionally.
+
+Code can leverage any Java code deployed in AEM instance as OSGi bundles including project code.
+To allow that, ACM performs health checks:
+
+- OSGi bundles (with ability to exclude some of them to address known issues)
+- OSGi events occurrence indicating temporal instability
+- JCR repository paths presence (e.g. /content/acme, /content/dam/acme)
+
+### Extension scripts
+
+To add own code binding or hook into execution process, you can create your own extension Groovy scripts and place them at path like `/conf/acm/settings/extension/acme/main.groovy`.
+
+For example:
+
+```groovy
+void extend(Extender extender) {
+  extender.codeBindingVariable("acme", AcmeApi.class) { new AcmApiImpl(executionContext.resourceResolver)) }
+  // or just  
+  extender.codeBindingVariable("acme") { new AcmApiImpl(executionContext.resourceResolver) }
+}
+
+void completeExecution(Execution execution) {
+   if (execution.status === 'FAILED') {
+      // send Slack/MS Teams message or something
+   }
+}
+```
+
+### OSGi Configuration
+
+- Code Executor
+  - Source Code: [(here)](src/main/java/com/wttech/aem/acm/core/code/Executor.java) 
+  - Web Console: [com.wttech.aem.acm.core.code.Executor](http://localhost:4502/system/console/configMgr/com.wttech.aem.acm.core.code.Executor)
+- Script Scheduler
+  - Source Code: [(here)](src/main/java/com/wttech/aem/acm/core/script/ScriptScheduler.java) 
+  - Web Console: [com.wttech.aem.acm.core.script.ScriptScheduler](http://localhost:4502/system/console/configMgr/com.wttech.aem.acm.core.script.ScriptScheduler)
+- Code Execution Queue (Sling Job):
+  - Web Console: [org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue](http://localhost:4502/system/console/configMgr/org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue)
 
 ## Other tools
 
@@ -89,10 +132,9 @@ TODO
 ## Authors
 
 - Founder, owner, and maintainer: [Krystian Panek](mailto:krystian.panek@vml.com)
-- Developers: [Dominik Przybył](mailto:dominik.przybyl@vml.com), [Mariusz Pacyga](mailto:mariusz.pacyga@vml.com)
-- Consultancy: [Tomasz Sobczyk](mailto:tomasz.sobczyk@vml.com)
+- Developers: [Mariusz Pacyga](mailto:mariusz.pacyga@vml.com), [Dominik Przybył](mailto:dominik.przybyl@vml.com), [Kamil Orwat](mailto:kamil.orwat@vml.com)
+- Consultancy: [Tomasz Sobczyk](mailto:tomasz.sobczyk@vml.com), [Jakub Przybytek](mailto:jakub.przybytek@vml.com)
 - Contributors: [&lt;see all&gt;](https://github.com/wttech/aemc/graphs/contributors)
-
 
 ## Contributing
 
@@ -102,31 +144,26 @@ Issues reported or pull requests created will be very appreciated.
 2. Do code changes on a feature branch created from *main* branch.
 3. Create a pull request with a base of *main* branch.
 
-## Building
+## Development
 
-To build all the modules run in the project root directory the following command with Maven 3:
 
-    sh mvnw clean install
+1. All-in-one command (incremental building and deployment of 'all' distribution, both backend & frontend)
 
-To build all the modules and deploy the `all` package to a local instance of AEM, run in the project root directory the following command:
+    ```shell
+    sh taskw develop:all
+    ```
 
-    sh mvnw clean install -PautoInstallSinglePackage
+2. Example contents
 
-Or to deploy it to a publish instance, run
+    ```shell
+    sh taskw develop:content:example
+    ```
 
-    sh mvnw clean install -PautoInstallSinglePackagePublish
+3. Frontend with live reloading:
 
-Or alternatively
-
-    sh mvnw clean install -PautoInstallSinglePackage -Daem.port=4503
-
-Or to deploy only the bundle to the author, run
-
-    sh mvnw clean install -PautoInstallBundle
-
-Or to deploy only a single content package, run in the sub-module directory (i.e `ui.apps`)
-
-    sh mvnw clean install -PautoInstallPackage
+    ```shell
+    sh taskw develop:frontend:dev
+    ```
 
 ## License
 
