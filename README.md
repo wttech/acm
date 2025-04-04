@@ -124,12 +124,6 @@ The ACM Console is interactive and offers the following features:
 Content scripts in ACM are Groovy scripts that can be used to automate various tasks in AEM. 
 These scripts can be placed in specific locations within the AEM repository to control their execution behavior.
 
-### Content scripts
-
-Content scripts in ACM are Groovy scripts that can be used to automate various tasks in AEM. These scripts can be placed in specific locations within the AEM repository to control their execution behavior.
-
-Scripts can be located in the following paths:
-
 - `/conf/acm/settings/script/auto/enabled/{project}`: Automatically executed scripts that are enabled and awaiting execution if `canRun` conditions are met.
 - `/conf/acm/settings/script/auto/disabled/{project}`: Automatically executed scripts that are disabled, serving as a safety guard to quickly disable scripts under unexpected circumstances.
 - `/conf/acm/settings/script/manual/{project}`: Manually executed scripts, run under specific circumstances by platform administrators.
