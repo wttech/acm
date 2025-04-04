@@ -11,6 +11,7 @@ export function registerAemCodeCompletions(instance: Monaco) {
 }
 
 function registerWordCompletion(instance: Monaco) {
+  console.log("Registering aem code completions")
   instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
       const path = extractPath(model.getLineContent(position.lineNumber));
@@ -59,31 +60,22 @@ function registerResourceCompletion(instance: Monaco) {
     triggerCharacters: ['/'],
 
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
-      let wordText = '';
-
       const path = extractPath(model.getLineContent(position.lineNumber));
-      if (path) {
-        wordText = path;
-      }
-      const wordAtPosition = model.getWordAtPosition(position);
-      if (wordAtPosition) {
-        wordText = wordAtPosition.word;
-      }
 
       try {
         const response = await apiRequest<AssistCodeOutput>({
           method: 'GET',
-          url: `/apps/acm/api/assist-code.json?type=resource&word=${encodeURIComponent(wordText)}`,
+          url: `/apps/acm/api/assist-code.json?type=resource&word=${encodeURIComponent(path)}`,
           operation: 'Code assistance',
         });
         const assistance = response.data.data;
         const suggestions = (assistance?.suggestions ?? []).map((suggestion) => ({
-          label: suggestion.l ?? suggestion.it,
+          label: suggestion.it ?? suggestion.l,
           insertText: removePathPrefix(path, suggestion.it ?? suggestion.l), // subtract path prefix
           kind: monacoKind(suggestion.k),
           detail: suggestion.k,
-          documentation: suggestion.i,
-          range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
+          documentation: new MarkdownString(suggestion.i),
+          range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
         }));
 
         return { suggestions: suggestions, incomplete: true };
