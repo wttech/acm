@@ -1,5 +1,7 @@
 group: ACL
 name: acl_demo
+documentation: |
+  Setup the ACLs for the demo users and groups.
 content: |
   boolean canRun() {
     return condition.idleSelf()
@@ -31,5 +33,3 @@ content: |
     
     println "ACL setup done"
   }
-documentation: |
-  Setup the ACLs for the demo users and groups.

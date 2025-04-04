@@ -5,7 +5,7 @@ import com.wttech.aem.acm.core.acl.authorizable.AclGroup;
 import com.wttech.aem.acm.core.acl.authorizable.AclUser;
 import com.wttech.aem.acm.core.acl.utils.AuthorizableManager;
 import com.wttech.aem.acm.core.acl.utils.PermissionsManager;
-import com.wttech.aem.acm.core.repository.Repository;
+import com.wttech.aem.acm.core.repo.Repository;
 import java.util.Optional;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;

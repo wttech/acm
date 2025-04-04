@@ -5,6 +5,7 @@ import com.wttech.aem.acm.core.acl.AclGroovy;
 import com.wttech.aem.acm.core.format.Formatter;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.replication.Activator;
+import com.wttech.aem.acm.core.repo.Repository;
 import groovy.lang.Binding;
 import java.io.PrintStream;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -18,6 +19,8 @@ public class CodeBinding {
     private final PrintStream out;
 
     private final ResourceResolver resourceResolver;
+
+    private final Repository repository;
 
     private final Acl acl;
 
@@ -36,6 +39,7 @@ public class CodeBinding {
         this.log = createLogger(context.getExecutable());
         this.out = new CodePrintStream(context);
         this.resourceResolver = context.getResourceResolver();
+        this.repository = new Repository(resourceResolver);
         this.acl = new AclGroovy(resourceResolver);
         this.formatter = new Formatter();
         this.activator = new Activator(
@@ -58,6 +62,7 @@ public class CodeBinding {
         result.setVariable(Variable.LOG.varName(), log);
         result.setVariable(Variable.OUT.varName(), out);
         result.setVariable(Variable.RESOURCE_RESOLVER.varName(), resourceResolver);
+        result.setVariable(Variable.REPOSITORY.varName(), repository);
         result.setVariable(Variable.ACL.varName(), acl);
         result.setVariable(Variable.FORMATTER.varName(), formatter);
         result.setVariable(Variable.ACTIVATOR.varName(), activator);

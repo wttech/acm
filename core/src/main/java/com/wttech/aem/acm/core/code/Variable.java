@@ -4,6 +4,7 @@ import com.wttech.aem.acm.core.acl.Acl;
 import com.wttech.aem.acm.core.format.Formatter;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.replication.Activator;
+import com.wttech.aem.acm.core.repo.Repository;
 import java.io.PrintStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ public enum Variable {
     ARGS("args", Arguments.class.getName()),
     CONDITION("condition", Condition.class.getName()),
     RESOURCE_RESOLVER("resourceResolver", ResourceResolver.class.getName()),
+    REPOSITORY("repo", Repository.class.getName()),
     ACL("acl", Acl.class.getName()),
     ACTIVATOR("activator", Activator.class.getName()),
     OSGI("osgi", OsgiContext.class.getName()),

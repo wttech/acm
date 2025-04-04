@@ -1,4 +1,4 @@
-package com.wttech.aem.acm.core.repository;
+package com.wttech.aem.acm.core.repo;
 
 import com.wttech.aem.acm.core.AcmException;
 
