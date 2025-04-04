@@ -223,7 +223,9 @@ All code executions are logged in the history. You can see the status of each ex
 Original code is stored in the history, so you can always refer back to it if needed.
 Complete output as well as argument values are also included to achieve full traceability.
 
-<img src="docs/screenshot-history.png" width="720" alt="ACM History">
+<img src="docs/screenshot-history.png" width="720" alt="ACM History - Executions">
+<img src="docs/screenshot-history-execution-code.png" width="720" alt="ACM History - Execution Code">
+<img src="docs/screenshot-history-execution-output.png" width="720" alt="ACM History - Execution Output">
 
 ### Extension scripts
 
