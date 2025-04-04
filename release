@@ -1,7 +1,5 @@
 #!/usr/bin/env sh
 
-set -e
-
 VERSION=$1
 VERSION_TAG="v$VERSION"
 
