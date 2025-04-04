@@ -52,7 +52,7 @@ There are two ways to install AEM Content Manager on your AEM instances:
 
 ## Documentation
 
-### Basics
+### Usage
 
 **Groovy code can be run in three ways:**
 
@@ -74,6 +74,87 @@ There are two ways to install AEM Content Manager on your AEM instances:
   - OSGi bundles (with the ability to exclude some to address known issues)
   - OSGi events occurrence indicating temporal instability
   - JCR repository paths presence (e.g., `/content/acme`, `/content/dam/acme`)
+
+### Content scripts
+
+**Minimal example :**
+
+```groovy
+boolean canRun() {
+    return condition.always()
+}
+
+void doRun() {
+    println "Hello World!"
+}
+```
+
+Notice that the script on its decides when to run. In that way the-sky-is-the-limit. You can run the script once, periodically, or at an exact date and time.
+There are many built-in, ready-to-use conditions available in the `condition` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/Condition.java).
+
+The `canRun()` method is used to determine if the script should be executed. 
+The `doRun()` method contains the actual code to be executed.
+
+**Arguments example :**
+
+```groovy
+void describeRun() {
+    args.string("name") { value = "John" }
+    args.string("surname") { value = "Doe" }
+}
+
+boolean canRun() {
+    return condition.always()
+}
+
+void doRun() {
+    println "Hello ${args.value('name')} ${args.value('surname')}!"
+}
+```
+
+The `describeRun()` method is used to define the arguments that can be passed to the script.
+The `args` service is used to define the arguments that can be passed to the script.
+When the script is executed, the arguments are passed to the `doRun()` method.
+
+There are many built-in argument types to use handling different types of data like string, boolean, number, date, etc. Just check `args` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/Arguments.java) for more details.
+
+**ACL example:**
+
+```groovy
+boolean canRun() {
+    return condition.idleSelf()
+}
+
+void doRun() {
+    out.fromAclLogs()
+    
+    println "ACL setup started"
+    
+    def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
+    acmeService.with {
+      purge()
+      allow { path = "/content"; permissions = ["jcr:read", "jcr:write"] }
+    }
+    
+    acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
+    def johnDoe = acl.getUser { id = "john.doe" }
+    johnDoe?.with {
+      purge()
+      allow("/content", ["jcr:read"])
+    }
+    
+    acl.createGroup { id = "test.group" }.with {
+      removeAllMembers()
+      addMember(acmeService)
+      addMember(johnDoe)
+    }
+    
+    println "ACL setup done"
+}
+```
+
+Operations done by `acl` service are idempotent, so you can run the script multiple times without worrying about duplicates, failures, or other issues.
+Logging is very descriptive allowing you to see what was done and what was skipped.
 
 ### Extension scripts
 
