@@ -44,19 +44,30 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
 ## Key Features
 
 ### All-in-one Solution
-ACM is a comprehensive alternative to tools like APM, AECU, AEM Groovy Console, and AC Tool. It leverages the Groovy language, which is familiar to most Java developers, eliminating the need to learn custom YAML syntax or languages/grammars. Enjoy a single, painless tool setup in AEM projects with no hooks and POM updates.
+
+ACM is a comprehensive alternative to tools like APM, AECU, AEM Groovy Console, and AC Tool.
+It leverages the Groovy language, which is familiar to most Java developers, eliminating the need to learn custom YAML syntax or languages/grammars. 
+Enjoy a single, painless tool setup in AEM projects with no hooks and POM updates.
 
 ### New Approach
-Experience a different way of using Groovy scripts. ACM ensures the instance is healthy before scripts decide when to run: once, periodically, or at an exact date and time. Execute scripts in parallel or sequentially, offering unmatched flexibility and control.
+
+Experience a different way of using Groovy scripts. 
+ACM ensures the instance is healthy before scripts decide when to run: once, periodically, or at an exact date and time. 
+Execute scripts in parallel or sequentially, offering unmatched flexibility and control.
 
 ### Content Management
+
 Effortlessly migrate pages and components between versions. Ensure content integrity and resolve issues with confidence.
 
 ### Permissions Management
-Apply JCR permissions dynamically. Manage permissions seamlessly during site creation, blueprinting, and for live copies, language copies, and other AEM-specific replication scenarios.
+
+Apply JCR permissions dynamically. 
+Manage permissions seamlessly during site creation, blueprinting, and for live copies, language copies, and other AEM-specific replication scenarios.
 
 ### Data Imports & Exports
-Effortlessly integrate data from external sources into the JCR repository, enhancing content management capabilities. By simplifying data import implementation, ACM allows developers to focus more on developing better components and presenting data effectively, ensuring a user-friendly experience.
+
+Effortlessly integrate data from external sources into the JCR repository, enhancing content management capabilities. 
+By simplifying data import implementation, ACM allows developers to focus more on developing better components and presenting data effectively, ensuring a user-friendly experience.
 
 ## Installation
 
@@ -66,7 +77,7 @@ There are two ways to install AEM Content Manager on your AEM instances:
 
 1. **Using the 'all' package:**
     * Recommended for fresh AEM instances.
-    * This package will also install AEM Groovy Console and AEM Content Manager examples.
+    * This package will also install Groovy Bundles ([groovy](https://mvnrepository.com/artifact/org.apache.groovy/groovy) and [groovy-templates](https://mvnrepository.com/artifact/org.apache.groovy/groovy-templates)).
 2. **Using the 'minimal' package:**
     * Recommended for AEM instances that already contain some dependencies shared with other tools.
     * This package does not include Groovy bundles, which can be provided by other tools like [AEM Easy Content Upgrade](https://github.com/valtech/aem-easy-content-upgrade/releases) (AECU) or [AEM Groovy Console](https://github.com/orbinson/aem-groovy-console/releases).
