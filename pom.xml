@@ -20,7 +20,7 @@
     <groupId>com.wttech.aem.acm</groupId>
     <artifactId>root</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <name>AEM Content Manager</name>
     <description>AEM Content Manager</description>
     <modules>
@@ -58,6 +58,7 @@
         </developer>
     </developers>
     <properties>
+        <revision>9.0.0-SNAPSHOT</revision>
         <aem.host>localhost</aem.host>
         <aem.port>4502</aem.port>
         <aem.publish.host>localhost</aem.publish.host>
