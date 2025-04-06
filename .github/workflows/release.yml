@@ -40,25 +40,27 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish AEM Distribution 'All'
-        working-directory: core
-        run: sh ../mvnw -B deploy -Drevision=${{ env.VERSION }}
+        run: |
+          mvn deploy:deploy-file \
+            -Durl=https://maven.pkg.github.com/wttech/acm \
+            -DrepositoryId=github \
+            -Dfile=/Users/krystian.panek/Projects/rnd/open-source/acm/all/target/acm.all-${{ env.VERSION }}.zip \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.all \
+            -Dversion=${{ env.VERSION }} \
+            -Dpackaging=zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish AEM Distribution 'Min'
-        working-directory: min
-        run: sh ../mvnw -B deploy -Drevision=${{ env.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish AEM Package 'UI Content Example'
-        working-directory: ui.content.example
-        run: sh ../mvnw -B deploy -Drevision=${{ env.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish OSGi Bundle 'Core'
-        working-directory: core
-        run: sh ../mvnw -B deploy -Drevision=${{ env.VERSION }}
+        run: |
+          mvn deploy:deploy-file \
+            -Durl=https://maven.pkg.github.com/wttech/acm \
+            -DrepositoryId=github \
+            -Dfile=/Users/krystian.panek/Projects/rnd/open-source/acm/min/target/acm.min-${{ env.VERSION }}.zip \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.min \
+            -Dversion=${{ env.VERSION }} \
+            -Dpackaging=zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
