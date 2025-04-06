@@ -65,7 +65,7 @@
                         <dependency>
                             <groupId>com.wttech.aem.acm</groupId>
                             <artifactId>acm.ui.apps</artifactId>
-                            <version>${project.version}</version>
+                            <version>${revision}</version>
                         </dependency>
                     </dependencies>
                 </configuration>
@@ -89,12 +89,12 @@
         <dependency>
             <groupId>com.wttech.aem.acm</groupId>
             <artifactId>acm.core</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.wttech.aem.acm</groupId>
             <artifactId>acm.ui.apps</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}</version>
             <type>zip</type>
         </dependency>
     </dependencies>
