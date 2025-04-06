@@ -34,28 +34,12 @@ jobs:
           java-version: 8
           distribution: temurin
 
-      - name: Publish package
-        run: sh ./mvnw --batch-mode deploy -Dversion=${{ env.VERSION }}
+      - name: Build all modules
+        run: sh ./mvnw -B install -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Draft Release
-        id: draft_release
-        uses: release-drafter/release-drafter@v5
+      - name: Publish specified modules
+        run: sh ./mvnw -B deploy -pl :core,:all,:min,:ui.content.example -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create GitHub Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }}
-          body: ${{ steps.draft_release.outputs.body }}
-          draft: false
-          prerelease: false
-          files: |
-            all/target/acm.all-${{ env.VERSION }}.zip
-            min/target/acm.min-${{ env.VERSION }}.zip
