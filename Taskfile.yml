@@ -257,36 +257,3 @@ tasks:
     desc: format frontend code
     dir: ui.frontend
     cmd: sh npmw run format
-
-  release:
-    desc: release AEM packages
-    cmd: |
-      VERSION="{{.CLI_ARGS}}"
-      VERSION_TAG="v$VERSION"
-
-      VERSION_CURRENT_TAG=$(git describe --tags --abbrev=0)
-      VERSION_CURRENT_TAG="${VERSION_CURRENT_TAG:1}"
-
-      if [ -z "$VERSION" ]
-      then
-            echo "Release version is not specified!"
-            echo "Last released: ${VERSION_CURRENT_TAG}"
-            exit 1
-      fi
-
-      GIT_STAT=$(git diff --stat)
-
-      if [ "$GIT_STAT" != '' ]; then
-        echo "Unable to release. Uncommitted changes detected!"
-        exit 1
-      fi
-
-      echo "Releasing $VERSION_TAG"
-
-      echo "Pushing version bump"
-      git commit -a -m "Release $VERSION_TAG"
-      git push
-
-      echo "Pushing release tag '$VERSION_TAG'"
-      git tag "$VERSION_TAG"
-      git push origin "$VERSION_TAG"
