@@ -44,7 +44,7 @@ jobs:
           mvn deploy:deploy-file \
             -Durl=https://maven.pkg.github.com/wttech/acm \
             -DrepositoryId=github \
-            -Dfile=/Users/krystian.panek/Projects/rnd/open-source/acm/all/target/acm.all-${{ env.VERSION }}.zip \
+            -Dfile=all/target/acm.all-${{ env.VERSION }}.zip \
             -DgroupId=com.wttech.aem.acm \
             -DartifactId=acm.all \
             -Dversion=${{ env.VERSION }} \
@@ -57,7 +57,7 @@ jobs:
           mvn deploy:deploy-file \
             -Durl=https://maven.pkg.github.com/wttech/acm \
             -DrepositoryId=github \
-            -Dfile=/Users/krystian.panek/Projects/rnd/open-source/acm/min/target/acm.min-${{ env.VERSION }}.zip \
+            -Dfile=min/target/acm.min-${{ env.VERSION }}.zip \
             -DgroupId=com.wttech.aem.acm \
             -DartifactId=acm.min \
             -Dversion=${{ env.VERSION }} \
