@@ -449,11 +449,13 @@ Bundle-DocURL:
                         <enabled>false</enabled>
                     </snapshots>
                 </repository>
+                <!--
                 <repository>
                     <id>github</id>
                     <name>GitHub Packages</name>
                     <url>https://maven.pkg.github.com/wttech/acm</url>
                 </repository>
+                -->
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
