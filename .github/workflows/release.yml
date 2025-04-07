@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
     steps:
       - name: Extract Version
         id: extract_version
@@ -90,3 +91,54 @@ jobs:
             -Dpackaging=jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Upload AEM Distribution 'All' to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: all/target/acm.all-${{ env.VERSION }}.zip
+          asset_name: acm.all-${{ env.VERSION }}.zip
+          asset_content_type: application/zip
+
+      - name: Upload AEM Distribution 'Min' to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: min/target/acm.min-${{ env.VERSION }}.zip
+          asset_name: acm.min-${{ env.VERSION }}.zip
+          asset_content_type: application/zip
+
+      - name: Upload AEM Package 'UI Content Example' to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ui.content.example/target/acm.ui.content.example-${{ env.VERSION }}.zip
+          asset_name: acm.ui.content.example-${{ env.VERSION }}.zip
+          asset_content_type: application/zip
+
+      - name: Upload OSGi Bundle 'Core' to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: core/target/acm.core-${{ env.VERSION }}.jar
+          asset_name: acm.core-${{ env.VERSION }}.jar
+          asset_content_type: application/java-archive
