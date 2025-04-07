@@ -13,7 +13,7 @@ interface CodeArgumentInputProps {
 }
 
 const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
-    const { control } = useFormContext();
+    const { control, trigger } = useFormContext();
     const controllerRules = (arg: Argument<ArgumentValue>) => ({
         validate: (value: ArgumentValue) => {
             if (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value))) {
@@ -76,7 +76,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                     render={({ field, fieldState }) => (
                         <View key={arg.name} marginY="size-100">
                             {arg.language ? (
-                                <Field label={argLabel(arg)} description={`Language: ${arg.language}`} width="100%">
+                                <Field label={argLabel(arg)} description={`Language: ${arg.language}`} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                                     <div>
                                         <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
                                             <Editor
@@ -86,7 +86,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                                 height="200px"
                                                 options={{ scrollBeyondLastLine: false }}
                                                 value={field.value?.toString() || ''}
-                                                onChange={(val) => field.onChange(val || '')}
+                                                onChange={(value) => { field.onChange(value); trigger(arg.name); /* no blur support */}}
                                             />
                                         </View>
                                     </div>
@@ -166,7 +166,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                     ))}
                                 </CheckboxGroup>
                             ) : (
-                                <Field label={argLabel(arg)} width="100%">
+                                <Field label={argLabel(arg)} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                                     <div>
                                         <ListView
                                             {...field}
