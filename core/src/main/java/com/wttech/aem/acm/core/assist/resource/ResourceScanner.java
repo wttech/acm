@@ -32,7 +32,7 @@ public class ResourceScanner {
             int lastSlashIndex = pattern.lastIndexOf('/');
             if (lastSlashIndex == -1) {
                 Resource resource = resolver.getResource(pattern);
-                return Stream.of(resource);
+                return resource == null ? Stream.empty() : Stream.of(resource);
             }
             String directory = pattern.substring(0, lastSlashIndex);
             String filename = pattern.substring(lastSlashIndex + 1);
