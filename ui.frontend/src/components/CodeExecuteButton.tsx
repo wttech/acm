@@ -28,6 +28,8 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
     reValidateMode: 'onBlur',
   });
 
+  const { formState } = methods;
+
   const fetchDescription = async () => {
     setDescribed(true);
     try {
@@ -87,23 +89,23 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
 
   return (
       <>
-        <Button variant="accent" onPress={handleExecute} isPending={isPending || described} isDisabled={isDisabled}>
+        <Button aria-label="Execute" variant="accent" onPress={handleExecute} isPending={isPending || described} isDisabled={isDisabled}>
           <Gears />
           <Text>Execute</Text>
         </Button>
         <DialogContainer onDismiss={handleCloseDialog}>
           {dialogOpen && (
               <Dialog>
-                <Heading>Provide Arguments</Heading>
-                <Divider />
-                <Content>
-                  <FormProvider {...methods}>
+                <FormProvider {...methods}>
+                  <Heading>Provide Arguments</Heading>
+                  <Divider />
+                  <Content>
                     <Form onSubmit={methods.handleSubmit((data) => {
                       handleCloseDialog();
                       onExecute(description!, data);
                     })}>
                       {shouldRenderTabs ? (
-                          <Tabs>
+                          <Tabs aria-label="Argument Groups">
                             <TabList>
                               {groups.map((group) => (
                                   <Item key={group}>{Strings.capitalize(group)}</Item>
@@ -127,18 +129,18 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
                           descriptionArguments.map((arg) => <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />)
                       )}
                     </Form>
-                  </FormProvider>
-                </Content>
-                <ButtonGroup>
-                  <Button variant="secondary" onPress={handleCloseDialog}>
-                    <Close size="XS" />
-                    <Text>Cancel</Text>
-                  </Button>
-                  <Button variant="cta" type="submit">
-                    <Checkmark size="XS" />
-                    <Text>Start</Text>
-                  </Button>
-                </ButtonGroup>
+                  </Content>
+                  <ButtonGroup>
+                    <Button aria-label="Cancel" variant="secondary" onPress={handleCloseDialog}>
+                      <Close size="XS" />
+                      <Text>Cancel</Text>
+                    </Button>
+                    <Button aria-label="Start" variant="cta" type="submit" isDisabled={Object.keys(formState.errors).length > 0}>
+                      <Checkmark size="XS" />
+                      <Text>Start</Text>
+                    </Button>
+                  </ButtonGroup>
+                </FormProvider>
               </Dialog>
           )}
         </DialogContainer>

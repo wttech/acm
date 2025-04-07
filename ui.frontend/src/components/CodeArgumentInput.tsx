@@ -24,11 +24,11 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                     render={({ field }) => (
                         <View key={arg.name} marginBottom="size-200">
                             {arg.display === 'SWITCHER' ? (
-                                <Switch {...field} isSelected={field.value} onChange={field.onChange}>
+                                <Switch {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
                                     {argLabel(arg)}
                                 </Switch>
                             ) : (
-                                <Checkbox {...field} isSelected={field.value} onChange={field.onChange}>
+                                <Checkbox {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
                                     {argLabel(arg)}
                                 </Checkbox>
                             )}
@@ -49,6 +49,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                 label={argLabel(arg)}
                                 errorMessage={fieldState.error ? 'This field is required' : undefined}
                                 validationState={fieldState.error ? 'invalid' : 'valid'}
+                                aria-label={`Argument '${arg.name}'`}
+                                width="100%"
                             />
                         </View>
                     )}
@@ -67,7 +69,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                     <div>
                                         <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
                                             <Editor
-                                                {...field}
+                                                aria-label={`Argument '${arg.name}'`}
+                                                /*{...field}*//* TODO onBlur here */
                                                 language={arg.language}
                                                 theme="vs-dark"
                                                 height="200px"
@@ -84,6 +87,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                     label={argLabel(arg)}
                                     errorMessage={fieldState.error ? 'This field is required' : undefined}
                                     validationState={fieldState.error ? 'invalid' : 'valid'}
+                                    aria-label={`Argument '${arg.name}'`}
+                                    width="100%"
                                 />
                             )}
                         </View>
@@ -106,6 +111,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                     label={argLabel(arg)}
                                     errorMessage={fieldState.error ? 'This field is required' : undefined}
                                     validationState={fieldState.error ? 'invalid' : 'valid'}
+                                    aria-label={`Argument '${arg.name}'`}
                                 >
                                     {Object.entries(arg.options).map(([label, val]) => (
                                         <Radio key={val?.toString()} value={val?.toString() || ''}>
@@ -121,6 +127,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                     onSelectionChange={field.onChange}
                                     errorMessage={fieldState.error ? 'This field is required' : undefined}
                                     validationState={fieldState.error ? 'invalid' : 'valid'}
+                                    aria-label={`Argument '${arg.name}'`}
                                 >
                                     {Object.entries(arg.options).map(([label, val]) => (
                                         <Item key={val?.toString()}>{label}</Item>
@@ -147,6 +154,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                     label={argLabel(arg)}
                                     errorMessage={fieldState.error ? 'This field is required' : undefined}
                                     validationState={fieldState.error ? 'invalid' : 'valid'}
+                                    aria-label={`Argument '${arg.name}'`}
                                 >
                                     {Object.entries(arg.options).map(([label, val]) => (
                                         <Checkbox key={val?.toString()} value={val?.toString() || ''}>
@@ -163,8 +171,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                             selectionMode="multiple"
                                             selectedKeys={field.value as string[]}
                                             onSelectionChange={(val) => field.onChange(Array.from(val as Set<string>))}
-                                            /*errorMessage={fieldState.error ? 'This field is required' : undefined}*/
-                                            /*validationState={fieldState.error ? 'invalid' : 'valid'}*/
+                                            aria-label={`Argument '${arg.name}'`}
                                         >
                                             {Object.entries(arg.options).map(([label, val]) => (
                                                 <Item key={val?.toString()}>{label}</Item>
@@ -194,6 +201,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                 maxValue={arg.max !== null ? arg.max : undefined}
                                 hideStepper={arg.type === 'DECIMAL'}
                                 formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
+                                aria-label={`Argument '${arg.name}'`}
                             />
                         </View>
                     )}
