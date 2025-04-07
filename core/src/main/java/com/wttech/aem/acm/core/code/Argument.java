@@ -14,6 +14,8 @@ public abstract class Argument<V> {
 
     private boolean required = true;
 
+    private String validator;
+
     public Argument(String name, ArgumentType type) {
         this.name = name;
         this.type = type;
@@ -65,5 +67,13 @@ public abstract class Argument<V> {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public String getValidator() {
+        return validator;
+    }
+
+    public void setValidator(String validator) {
+        this.validator = validator;
     }
 }

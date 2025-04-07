@@ -1,5 +1,5 @@
 void describeRun() {
-    args.string("animalName") { value = "Whiskers" }
+    args.string("animalName") { value = "Whiskers" ; validator = "(v) => v && v.startsWith('W') || 'Value must start with W!'" }
     args.string("animalType") { value = "Cat" }
     args.select("activity") { label = "Activity"; options = ["Sleeping": "sleep", "Playing": "play", "Eating": "eat"]; value = "play" }
     args.text("favoriteFoods") { label = "Favorite Foods"; language = "json"; value = """["milk", "mice"]"""; group = "Data" }
