@@ -27,7 +27,7 @@ public class ResourceScanner {
         }
 
         if (pattern.endsWith("/")) {
-            return getChildren(resolver, pattern);
+            return listChildren(resolver, pattern);
         } else {
             int lastSlashIndex = pattern.lastIndexOf('/');
             if (lastSlashIndex == -1) {
@@ -36,18 +36,17 @@ public class ResourceScanner {
             }
             String directory = pattern.substring(0, lastSlashIndex);
             String filename = pattern.substring(lastSlashIndex + 1);
-            Stream<Resource> children = getChildren(resolver, directory);
+            Stream<Resource> children = listChildren(resolver, directory);
             return children.filter(resource -> resource.getName().startsWith(filename));
         }
     }
 
     // Helper function to retrieve resource's children as a stream
-    private Stream<Resource> getChildren(ResourceResolver resolver, String path) {
+    private Stream<Resource> listChildren(ResourceResolver resolver, String path) {
         Resource resource = resolver.getResource(path);
         if (resource == null) {
             return Stream.empty();
         }
-        Iterable<Resource> children = resource.getChildren();
-        return StreamSupport.stream(children.spliterator(), false);
+        return StreamSupport.stream(resource.getChildren().spliterator(), false);
     }
 }
