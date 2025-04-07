@@ -106,7 +106,8 @@ jobs:
               tag_name: context.ref,
               name: `Release ${process.env.VERSION}`,
               draft: false,
-              prerelease: false
+              prerelease: false,
+              generate_release_notes: true
             });
             core.setOutput('upload_url', response.data.upload_url);
 
