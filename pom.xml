@@ -32,7 +32,6 @@
         <module>ui.config</module>
         <module>ui.content</module>
         <module>ui.content.example</module>
-        <module>ui.content.index</module>
         <module>ui.frontend</module>
     </modules>
     <scm>
@@ -294,7 +293,7 @@ Bundle-DocURL:
                     <groupId>org.apache.jackrabbit</groupId>
                     <artifactId>filevault-package-maven-plugin</artifactId>
                     <extensions>true</extensions>
-                    <version>1.3.6</version>
+                    <version>1.1.6</version>
                     <configuration>
                         <filterSource>src/main/content/META-INF/vault/filter.xml</filterSource>
                         <validatorsSettings>
@@ -302,12 +301,21 @@ Bundle-DocURL:
                                 <options>
                                     <!-- use the nodetypes and namespaces from the aem-nodetypes.jar provided in the plugin dependencies -->
                                     <cnds>tccl:aem.cnd</cnds>
-                                    <immutableRootNodeNames>apps,libs,oak:index</immutableRootNodeNames>
                                 </options>
                             </jackrabbit-nodetypes>
+                            <jackrabbit-packagetype>
+                                <options>
+                                    <immutableRootNodeNames>apps,libs,oak:index</immutableRootNodeNames>
+                                </options>
+                            </jackrabbit-packagetype>
                         </validatorsSettings>
                     </configuration>
                     <dependencies>
+                        <dependency>
+                            <groupId>org.apache.jackrabbit.vault</groupId>
+                            <artifactId>vault-validation</artifactId>
+                            <version>3.5.6</version>
+                        </dependency>
                         <dependency>
                             <groupId>biz.netcentric.aem</groupId>
                             <artifactId>aem-nodetypes</artifactId>
@@ -810,5 +818,4 @@ Bundle-DocURL:
             <url>https://maven.pkg.github.com/wttech/acm</url>
         </repository>
     </distributionManagement>
-
 </project>

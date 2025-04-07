@@ -183,12 +183,6 @@
         </dependency>
         <dependency>
             <groupId>com.wttech.aem.acm</groupId>
-            <artifactId>acm.ui.content.index</artifactId>
-            <version>${revision}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>com.wttech.aem.acm</groupId>
             <artifactId>acm.ui.config</artifactId>
             <version>${revision}</version>
             <type>zip</type>
