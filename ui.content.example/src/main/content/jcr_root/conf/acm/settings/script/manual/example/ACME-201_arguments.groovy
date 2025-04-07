@@ -1,11 +1,11 @@
 void describeRun() {
-    args.string("animalName") { value = "Whiskers" ; validator = "(v) => v && v.startsWith('W') || 'Value must start with W!'" }
-    args.string("animalType") { value = "Cat" }
-    args.select("activity") { label = "Activity"; options = ["Sleeping": "sleep", "Playing": "play", "Eating": "eat"]; value = "play" }
-    args.text("favoriteFoods") { label = "Favorite Foods"; language = "json"; value = """["milk", "mice"]"""; group = "Data" }
-    args.integerNumber("napTime") { min = 1; value = 5 }
-    args.decimalNumber("hungerLevel") { min = 0.1d; max = 1.0d; value = 0.5d }
+    args.string("animalName") { value = "Whiskers" ; validator = "(v, a) => a.animalType === 'cat' ? (v && v.startsWith('W') || 'Cat name must start with W!') : true" }
+    args.select("animalType") { value = "cat"; options = ["cat", "dog", "bird", "fish", "hamster", "rabbit", "turtle", "lizard", "snake", "frog"] }
     args.bool("birthday") { label = "Birthday?"; value = false; checkbox() }
+    args.integerNumber("napTime") { min = 1; value = 5; group = "Behavior" }
+    args.select("activity") { label = "Activity"; options = ["Sleeping": "sleep", "Playing": "play", "Eating": "eat"]; value = "play"; group = "Behavior" }
+    args.decimalNumber("hungerLevel") { min = 0.1d; max = 1.0d; value = 0.5d; group = "Behavior" }
+    args.text("favoriteFoods") { label = "Favorite Foods"; language = "json"; value = """["milk", "mice"]"""; group = "Data" }
 }
 
 boolean canRun() {
