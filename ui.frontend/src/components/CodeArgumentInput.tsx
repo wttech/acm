@@ -5,6 +5,7 @@ import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { Argument, ArgumentValue, isBoolArgument, isMultiSelectArgument, isNumberArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
 import { Strings } from '../utils/strings.ts';
+import useFormCrossFieldValidation from "../hooks/form.ts";
 
 interface CodeArgumentInputProps {
     arg: Argument<ArgumentValue>;
@@ -13,7 +14,9 @@ interface CodeArgumentInputProps {
 }
 
 const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
-    const { control } = useFormContext();
+    const { control, getValues } = useFormContext();
+    useFormCrossFieldValidation(arg.name);
+
     const controllerRules = (arg: Argument<ArgumentValue>) => ({
         validate: (value: ArgumentValue) => {
             if (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value))) {
@@ -22,7 +25,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
             if (arg.validator) {
                 try {
                     const validator = eval(arg.validator);
-                    const errorMessage = validator(value);
+                    const allValues = getValues();
+                    const errorMessage = validator(value, allValues);
                     return errorMessage || true;
                 } catch (error) {
                     console.error(`Validator for argument '${arg.name}' failed!`, error);
