@@ -105,7 +105,7 @@ tasks:
 
   build:std:
     desc: build AEM package
-    cmd: sh mvnw clean package $AEM_BUILD_ARGS
+    cmd: sh mvnw clean install $AEM_BUILD_ARGS
 
   build:version:
     desc: check build tool versions
@@ -142,7 +142,7 @@ tasks:
   build:apps:
     dir: ui.apps
     desc: build AEM Apps package
-    cmd: sh ../mvnw clean install $AEM_BUILD_ARGS
+    cmd: sh ../mvnw clean install -Drevision=9.0.0-SNAPSHOT $AEM_BUILD_ARGS
     generates: [ target/*.ui.apps-*.zip ]
     sources:
       - ../pom.xml
@@ -210,7 +210,7 @@ tasks:
 
   develop:all:
     desc: build & deploy all AEM package to instances
-    deps: [ build:inc ]
+    deps: [ build:std ] # TODO: [ build:inc ]
     cmds:
       - task: deploy:all
 
