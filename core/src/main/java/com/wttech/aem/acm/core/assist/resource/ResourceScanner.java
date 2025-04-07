@@ -37,19 +37,15 @@ public class ResourceScanner {
             String directory = pattern.substring(0, lastSlashIndex);
             String filename = pattern.substring(lastSlashIndex + 1);
             Stream<Resource> children = getChildren(resolver, directory);
-            if (children != null) {
-                return children.filter(resource -> resource.getName().startsWith(filename));
-            }
-            return Stream.empty();
+            return children.filter(resource -> resource.getName().startsWith(filename));
         }
     }
-
 
     // Helper function to retrieve resource's children as a stream
     private Stream<Resource> getChildren(ResourceResolver resolver, String path) {
         Resource resource = resolver.getResource(path);
         if (resource == null) {
-            return null;
+            return Stream.empty();
         }
         Iterable<Resource> children = resource.getChildren();
         return StreamSupport.stream(children.spliterator(), false);
