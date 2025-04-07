@@ -1,8 +1,9 @@
+import React, { useState } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
 import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Heading, Item, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Close from '@spectrum-icons/workflow/Close';
 import Gears from '@spectrum-icons/workflow/Gears';
-import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
 import { Argument, ArgumentGroupDefault, ArgumentValue, ArgumentValues, Description, ExecutableIdConsole, ExecutionStatus } from '../utils/api.types';
 import { Objects } from '../utils/objects';
@@ -19,9 +20,13 @@ interface CodeExecuteButtonProps {
 
 const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeFailed, onExecute, isDisabled, isPending }) => {
   const [description, setDescription] = useState<Description | null>(null);
-  const [args, setArgs] = useState<ArgumentValues>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [described, setDescribed] = useState(false);
+
+  const methods = useForm<ArgumentValues>({
+    mode: 'onBlur',
+    reValidateMode: 'onBlur',
+  });
 
   const fetchDescription = async () => {
     setDescribed(true);
@@ -45,7 +50,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
         setDescription(description);
 
         const argumentsInitial = description.arguments ? Object.fromEntries(Object.entries(description.arguments).map(([key, arg]) => [key, arg.value])) : {};
-        setArgs(argumentsInitial);
+        methods.reset(argumentsInitial);
 
         const argumentsRequired = Objects.isNotEmpty(description.arguments);
         if (argumentsRequired) {
@@ -65,7 +70,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
 
   const handleExecute = () => {
     if (description) {
-      onExecute(description, args);
+      onExecute(description, methods.getValues());
     } else {
       fetchDescription();
     }
@@ -76,71 +81,68 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
     setDescription(null);
   };
 
-  const handleArgumentChange = (name: string, value: ArgumentValue) => {
-    setArgs({ ...args, [name]: value });
-  };
-
   const descriptionArguments: Argument<ArgumentValue>[] = Object.values(description?.arguments || []);
   const groups = Array.from(new Set(descriptionArguments.map((arg) => arg.group)));
   const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== ArgumentGroupDefault);
 
   return (
-    <>
-      <Button variant="accent" onPress={handleExecute} isPending={isPending || described} isDisabled={isDisabled}>
-        <Gears />
-        <Text>Execute</Text>
-      </Button>
-      <DialogContainer onDismiss={handleCloseDialog}>
-        {dialogOpen && (
-          <Dialog>
-            <Heading>Provide Arguments</Heading>
-            <Divider />
-            <Content>
-              {shouldRenderTabs ? (
-                <Tabs>
-                  <TabList>
-                    {groups.map((group) => (
-                      <Item key={group}>{Strings.capitalize(group)}</Item>
-                    ))}
-                  </TabList>
-                  <TabPanels>
-                    {groups.map((group) => (
-                      <Item key={group}>
-                        <View marginY="size-200">
-                          {descriptionArguments
-                            .filter((arg) => arg.group === group)
-                            .map((arg) => (
-                              <CodeArgumentInput key={arg.name} arg={arg} value={args[arg.name]} onChange={handleArgumentChange} />
-                            ))}
-                        </View>
-                      </Item>
-                    ))}
-                  </TabPanels>
-                </Tabs>
-              ) : (
-                descriptionArguments.map((arg) => <CodeArgumentInput key={arg.name} arg={arg} value={args[arg.name]} onChange={handleArgumentChange} />)
-              )}
-            </Content>
-            <ButtonGroup>
-              <Button variant="secondary" onPress={handleCloseDialog}>
-                <Close size="XS" />
-                <Text>Cancel</Text>
-              </Button>
-              <Button
-                variant="cta"
-                onPress={() => {
-                  handleCloseDialog();
-                  onExecute(description!, args);
-                }}
-              >
-                <Checkmark size="XS" />
-                <Text>Start</Text>
-              </Button>
-            </ButtonGroup>
-          </Dialog>
-        )}
-      </DialogContainer>
-    </>
+      <>
+        <Button variant="accent" onPress={handleExecute} isPending={isPending || described} isDisabled={isDisabled}>
+          <Gears />
+          <Text>Execute</Text>
+        </Button>
+        <DialogContainer onDismiss={handleCloseDialog}>
+          {dialogOpen && (
+              <Dialog>
+                <Heading>Provide Arguments</Heading>
+                <Divider />
+                <Content>
+                  <FormProvider {...methods}>
+                    <form onSubmit={methods.handleSubmit((data) => {
+                      handleCloseDialog();
+                      onExecute(description!, data);
+                    })}>
+                      {shouldRenderTabs ? (
+                          <Tabs>
+                            <TabList>
+                              {groups.map((group) => (
+                                  <Item key={group}>{Strings.capitalize(group)}</Item>
+                              ))}
+                            </TabList>
+                            <TabPanels>
+                              {groups.map((group) => (
+                                  <Item key={group}>
+                                    <View marginY="size-200">
+                                      {descriptionArguments
+                                          .filter((arg) => arg.group === group)
+                                          .map((arg) => (
+                                              <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />
+                                          ))}
+                                    </View>
+                                  </Item>
+                              ))}
+                            </TabPanels>
+                          </Tabs>
+                      ) : (
+                          descriptionArguments.map((arg) => <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />)
+                      )}
+                      <ButtonGroup>
+                        <Button variant="secondary" onPress={handleCloseDialog}>
+                          <Close size="XS" />
+                          <Text>Cancel</Text>
+                        </Button>
+                        <Button variant="cta" type="submit">
+                          <Checkmark size="XS" />
+                          <Text>Start</Text>
+                        </Button>
+                      </ButtonGroup>
+                    </form>
+                  </FormProvider>
+                </Content>
+              </Dialog>
+          )}
+        </DialogContainer>
+      </>
   );
 };
 
