@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Heading, Item, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Form, Heading, Item, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Close from '@spectrum-icons/workflow/Close';
 import Gears from '@spectrum-icons/workflow/Gears';
@@ -98,7 +98,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
                 <Divider />
                 <Content>
                   <FormProvider {...methods}>
-                    <form onSubmit={methods.handleSubmit((data) => {
+                    <Form onSubmit={methods.handleSubmit((data) => {
                       handleCloseDialog();
                       onExecute(description!, data);
                     })}>
@@ -126,19 +126,19 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
                       ) : (
                           descriptionArguments.map((arg) => <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />)
                       )}
-                      <ButtonGroup>
-                        <Button variant="secondary" onPress={handleCloseDialog}>
-                          <Close size="XS" />
-                          <Text>Cancel</Text>
-                        </Button>
-                        <Button variant="cta" type="submit">
-                          <Checkmark size="XS" />
-                          <Text>Start</Text>
-                        </Button>
-                      </ButtonGroup>
-                    </form>
+                    </Form>
                   </FormProvider>
                 </Content>
+                <ButtonGroup>
+                  <Button variant="secondary" onPress={handleCloseDialog}>
+                    <Close size="XS" />
+                    <Text>Cancel</Text>
+                  </Button>
+                  <Button variant="cta" type="submit">
+                    <Checkmark size="XS" />
+                    <Text>Start</Text>
+                  </Button>
+                </ButtonGroup>
               </Dialog>
           )}
         </DialogContainer>
