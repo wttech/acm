@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
 import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Form, Heading, Item, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Close from '@spectrum-icons/workflow/Close';
 import Gears from '@spectrum-icons/workflow/Gears';
+import React, { useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 import { toastRequest } from '../utils/api';
 import { Argument, ArgumentGroupDefault, ArgumentValue, ArgumentValues, Description, ExecutableIdConsole, ExecutionStatus } from '../utils/api.types';
 import { Objects } from '../utils/objects';
@@ -83,68 +83,71 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
     setDescription(null);
   };
 
+  const handleFormSubmit = async (data: ArgumentValues) => {
+    handleCloseDialog();
+    onExecute(description!, data);
+  };
+
   const descriptionArguments: Argument<ArgumentValue>[] = Object.values(description?.arguments || []);
   const groups = Array.from(new Set(descriptionArguments.map((arg) => arg.group)));
   const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== ArgumentGroupDefault);
+  const validationFailed = Object.keys(formState.errors).length > 0;
 
   return (
-      <>
-        <Button aria-label="Execute" variant="accent" onPress={handleExecute} isPending={isPending || described} isDisabled={isDisabled}>
-          <Gears />
-          <Text>Execute</Text>
-        </Button>
-        <DialogContainer onDismiss={handleCloseDialog}>
-          {dialogOpen && (
-              <Dialog>
-                <FormProvider {...methods}>
-                  <Heading>Provide Arguments</Heading>
-                  <Divider />
-                  <Content>
-                    <Form onSubmit={methods.handleSubmit((data) => {
-                      handleCloseDialog();
-                      onExecute(description!, data);
-                    })}>
-                      {shouldRenderTabs ? (
-                          <Tabs aria-label="Argument Groups">
-                            <TabList>
-                              {groups.map((group) => (
-                                  <Item key={group}>{Strings.capitalize(group)}</Item>
-                              ))}
-                            </TabList>
-                            <TabPanels>
-                              {groups.map((group) => (
-                                  <Item key={group}>
-                                    <View marginY="size-200">
-                                      {descriptionArguments
-                                          .filter((arg) => arg.group === group)
-                                          .map((arg) => (
-                                              <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />
-                                          ))}
-                                    </View>
-                                  </Item>
-                              ))}
-                            </TabPanels>
-                          </Tabs>
-                      ) : (
-                          descriptionArguments.map((arg) => <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />)
-                      )}
-                    </Form>
-                  </Content>
-                  <ButtonGroup>
-                    <Button aria-label="Cancel" variant="secondary" onPress={handleCloseDialog}>
-                      <Close size="XS" />
-                      <Text>Cancel</Text>
-                    </Button>
-                    <Button aria-label="Start" variant="cta" type="submit" isDisabled={Object.keys(formState.errors).length > 0}>
-                      <Checkmark size="XS" />
-                      <Text>Start</Text>
-                    </Button>
-                  </ButtonGroup>
-                </FormProvider>
-              </Dialog>
-          )}
-        </DialogContainer>
-      </>
+    <>
+      <Button aria-label="Execute" variant="accent" onPress={handleExecute} isPending={isPending || described} isDisabled={isDisabled}>
+        <Gears />
+        <Text>Execute</Text>
+      </Button>
+      <DialogContainer onDismiss={handleCloseDialog}>
+        {dialogOpen && (
+          <Dialog>
+            <FormProvider {...methods}>
+              <Heading>Provide Arguments</Heading>
+              <Divider />
+              <Content>
+                <Form onSubmit={methods.handleSubmit(handleFormSubmit)}>
+                  {shouldRenderTabs ? (
+                    <Tabs aria-label="Argument Groups">
+                      <TabList>
+                        {groups.map((group) => (
+                          <Item key={group}>{Strings.capitalize(group)}</Item>
+                        ))}
+                      </TabList>
+                      <TabPanels>
+                        {groups.map((group) => (
+                          <Item key={group}>
+                            <View marginY="size-200">
+                              {descriptionArguments
+                                .filter((arg) => arg.group === group)
+                                .map((arg) => (
+                                  <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />
+                                ))}
+                            </View>
+                          </Item>
+                        ))}
+                      </TabPanels>
+                    </Tabs>
+                  ) : (
+                    descriptionArguments.map((arg) => <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />)
+                  )}
+                </Form>
+              </Content>
+              <ButtonGroup>
+                <Button aria-label="Cancel" variant="secondary" onPress={handleCloseDialog}>
+                  <Close size="XS" />
+                  <Text>Cancel</Text>
+                </Button>
+                <Button aria-label="Start" variant="cta" isDisabled={validationFailed} onPress={() => methods.handleSubmit(handleFormSubmit)()}>
+                  <Checkmark size="XS" />
+                  <Text>Start</Text>
+                </Button>
+              </ButtonGroup>
+            </FormProvider>
+          </Dialog>
+        )}
+      </DialogContainer>
+    </>
   );
 };
 
