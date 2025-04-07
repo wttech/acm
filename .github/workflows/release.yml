@@ -100,7 +100,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            const response = await github.repos.createRelease({
+            const response = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: context.ref,
@@ -120,7 +120,7 @@ jobs:
             const path = 'all/target/acm.all-${{ env.VERSION }}.zip';
             const stat = fs.statSync(path);
             const file = fs.readFileSync(path);
-            await github.repos.uploadReleaseAsset({
+            await github.rest.repos.uploadReleaseAsset({
               url: '${{ steps.create_release.outputs.upload_url }}',
               headers: {
                 'content-type': 'application/zip',
@@ -140,7 +140,7 @@ jobs:
             const path = 'min/target/acm.min-${{ env.VERSION }}.zip';
             const stat = fs.statSync(path);
             const file = fs.readFileSync(path);
-            await github.repos.uploadReleaseAsset({
+            await github.rest.repos.uploadReleaseAsset({
               url: '${{ steps.create_release.outputs.upload_url }}',
               headers: {
                 'content-type': 'application/zip',
@@ -160,7 +160,7 @@ jobs:
             const path = 'ui.content.example/target/acm.ui.content.example-${{ env.VERSION }}.zip';
             const stat = fs.statSync(path);
             const file = fs.readFileSync(path);
-            await github.repos.uploadReleaseAsset({
+            await github.rest.repos.uploadReleaseAsset({
               url: '${{ steps.create_release.outputs.upload_url }}',
               headers: {
                 'content-type': 'application/zip',
@@ -180,7 +180,7 @@ jobs:
             const path = 'core/target/acm.core-${{ env.VERSION }}.jar';
             const stat = fs.statSync(path);
             const file = fs.readFileSync(path);
-            await github.repos.uploadReleaseAsset({
+            await github.rest.repos.uploadReleaseAsset({
               url: '${{ steps.create_release.outputs.upload_url }}',
               headers: {
                 'content-type': 'application/java-archive',
