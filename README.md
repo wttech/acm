@@ -108,11 +108,11 @@ To achieve that, ACM provides a set of features to help you with the development
 
 2. **Manually executed scripts**
    - Navigate to the 'Scripts' page and select the 'Manual' tab.
-   - Code executed here runs in the context of the system user or an impersonated user when configured additionally.
+   - Code executed here also runs in the context of the current user (due to impersonation).
 
 3. **Automatically executed scripts**
    - Navigate to the 'Scripts' page and select the 'Automatic' tab.
-   - Code can be scheduled to run once, periodically, or at an exact date and time.
+   - Code can be scheduled to run once, periodically, or at an exact date and time. Runs in the context of the system user or impersonated user set in the configuration.
 
 **Rules for executing Groovy code:**
 
