@@ -24,8 +24,8 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
   const [described, setDescribed] = useState(false);
 
   const methods = useForm<ArgumentValues>({
-    mode: 'onBlur',
-    reValidateMode: 'onBlur',
+    mode: 'onChange',
+    reValidateMode: 'onChange',
   });
 
   const { formState } = methods;

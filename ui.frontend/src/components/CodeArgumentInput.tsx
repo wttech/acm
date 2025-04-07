@@ -13,7 +13,7 @@ interface CodeArgumentInputProps {
 }
 
 const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
-    const { control, trigger } = useFormContext();
+    const { control } = useFormContext();
     const controllerRules = (arg: Argument<ArgumentValue>) => ({
         validate: (value: ArgumentValue) => {
             if (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value))) {
@@ -86,7 +86,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                                                 height="200px"
                                                 options={{ scrollBeyondLastLine: false }}
                                                 value={field.value?.toString() || ''}
-                                                onChange={(value) => { field.onChange(value); trigger(arg.name); /* no blur support */}}
+                                                onChange={field.onChange}
                                             />
                                         </View>
                                     </div>
