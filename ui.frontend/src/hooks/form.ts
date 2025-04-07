@@ -7,8 +7,8 @@ const useCrossFieldValidation = (currentField: string) => {
     useEffect(() => {
         const subscription = watch((value, { name }) => {
             if (name === currentField) {
-                const allFields = Object.keys(getValues()).filter(field => field !== currentField);
-                trigger(allFields);
+                const otherFields = Object.keys(getValues()).filter(field => field !== currentField);
+                trigger(otherFields);
             }
         });
         return () => subscription.unsubscribe();
