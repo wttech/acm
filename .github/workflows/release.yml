@@ -47,6 +47,9 @@ jobs:
             -Durl=https://maven.pkg.github.com/wttech/acm \
             -DrepositoryId=github \
             -Dfile=all/target/acm.all-${{ env.VERSION }}.zip \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.all \
+            -Dversion=${{ env.VERSION }} \
             -Dpackaging=zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,6 +60,9 @@ jobs:
             -Durl=https://maven.pkg.github.com/wttech/acm \
             -DrepositoryId=github \
             -Dfile=min/target/acm.min-${{ env.VERSION }}.zip \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.min \
+            -Dversion=${{ env.VERSION }} \
             -Dpackaging=zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,6 +73,9 @@ jobs:
             -Durl=https://maven.pkg.github.com/wttech/acm \
             -DrepositoryId=github \
             -Dfile=ui.content.example/target/acm.ui.content.example-${{ env.VERSION }}.zip \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.ui.content.example \
+            -Dversion=${{ env.VERSION }} \
             -Dpackaging=zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -77,6 +86,9 @@ jobs:
             -Durl=https://maven.pkg.github.com/wttech/acm \
             -DrepositoryId=github \
             -Dfile=core/target/acm.core-${{ env.VERSION }}.jar \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.core \
+            -Dversion=${{ env.VERSION }} \
             -Dpackaging=jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
