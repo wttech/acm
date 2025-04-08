@@ -10,12 +10,13 @@ import groovy.lang.Binding;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CodeBinding {
+public class Bindings {
 
     private final Arguments arguments = new Arguments();
 
@@ -41,6 +42,18 @@ public class CodeBinding {
                     String.format("Code binding variable '%s' already exists!", variable.getName()));
         }
         variables.put(variable.getName(), variable);
+    }
+
+    public void variable(String name, Object value) {
+        registerVariable(new CodeVariable<>(name, Object.class, () -> value, null));
+    }
+
+    public <T> void variable(String name, Class<T> type, Supplier<T> value) {
+        registerVariable(new CodeVariable<>(name, type, value, null));
+    }
+
+    public <T> void variable(String name, Class<T> type, Supplier<T> value, String documentation) {
+        registerVariable(new CodeVariable<>(name, type, value, documentation));
     }
 
     public Map<String, CodeVariable<?>> getVariables() {

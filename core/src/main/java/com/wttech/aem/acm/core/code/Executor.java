@@ -85,6 +85,9 @@ public class Executor {
                 ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
                 history.save(execution);
             }
+            for (Script script : extender.getScripts()) {
+                script.invokeMethod(ExtensionCodeSyntax.Method.COMPLETE.givenName, execution);
+            }
             return execution;
         } finally {
             context.getFileOutput().delete();
@@ -103,11 +106,11 @@ public class Executor {
                 context.setOutputStream(outputStream);
             }
 
-            CodeShell shell = createShell();
-            shell.getCodeBinding().registerVariables(context);
+            Shell shell = createShell();
+            shell.getBindings().registerVariables(context);
 
             for (Script script : extender.getScripts()) {
-                script.invokeMethod(ExtensionCodeSyntax.Method.EXTEND.givenName, null);
+                script.invokeMethod(ExtensionCodeSyntax.Method.EXTEND.givenName, shell);
             }
 
             execution.start();
@@ -121,7 +124,7 @@ public class Executor {
 
             try {
                 script.invokeMethod(ContentCodeSyntax.Method.DESCRIBE.givenName, null);
-                shell.getCodeBinding()
+                shell.getBindings()
                         .getArguments()
                         .setValues(context.getExecutable().getArguments());
             } catch (MissingMethodException e) {
@@ -149,14 +152,14 @@ public class Executor {
         }
     }
 
-    private CodeShell createShell() {
-        CodeBinding codeBinding = new CodeBinding();
-        Binding binding = codeBinding.toBinding();
+    private Shell createShell() {
+        Bindings bindings = new Bindings();
+        Binding binding = bindings.toBinding();
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
         compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new ContentCodeSyntax()));
         GroovyShell groovyShell = new GroovyShell(binding, compiler);
-        return new CodeShell(groovyShell, codeBinding);
+        return new Shell(groovyShell, bindings);
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {
@@ -173,8 +176,8 @@ public class Executor {
         try (OutputStream outputStream = context.getFileOutput().write()) {
             context.setOutputStream(outputStream);
 
-            CodeShell shell = createShell();
-            shell.getCodeBinding().registerVariables(context);
+            Shell shell = createShell();
+            shell.getBindings().registerVariables(context);
 
             execution.start();
             Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), ContentCodeSyntax.MAIN_CLASS);
@@ -186,7 +189,7 @@ public class Executor {
             }
             return new Description(
                     execution.end(ExecutionStatus.SUCCEEDED),
-                    shell.getCodeBinding().getArguments());
+                    shell.getBindings().getArguments());
         } catch (Throwable e) {
             execution.error(e);
             return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
