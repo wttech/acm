@@ -36,7 +36,7 @@ export type Argument<T> = {
   label: string;
   required: boolean;
   group: string;
-  validator?: string
+  validator?: string;
 };
 
 export type BoolArgument = Argument<boolean> & {

@@ -98,7 +98,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             )}
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            {type === 'manual' ?  <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton/>}
+            {type === 'manual' ? <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton />}
           </Flex>
         </Flex>
       </View>
