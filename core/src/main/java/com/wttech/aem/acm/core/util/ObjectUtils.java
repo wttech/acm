@@ -1,6 +1,7 @@
 package com.wttech.aem.acm.core.util;
 
 import java.util.Collection;
+import java.util.Map;
 
 public final class ObjectUtils {
 
@@ -36,5 +37,15 @@ public final class ObjectUtils {
         } else {
             throw new IllegalArgumentException("Cannot convert object to long: " + value);
         }
+    }
+
+    public static boolean validateStringObjectMap(Map<?, ?> map) {
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            Object key = entry.getKey();
+            if (!(key instanceof String)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

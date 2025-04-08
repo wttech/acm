@@ -23,7 +23,7 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL';
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATE';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined;
 export type ArgumentValues = Record<string, ArgumentValue>;
 
@@ -80,6 +80,10 @@ export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArg
 
 export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
   return arg.type === 'INTEGER' || arg.type === 'DECIMAL';
+}
+
+export function isDateArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
+  return arg.type === 'DATE';
 }
 
 export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {

@@ -3,9 +3,11 @@ package com.wttech.aem.acm.core.code;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wttech.aem.acm.core.code.arg.*;
+import com.wttech.aem.acm.core.util.DateUtils;
 import com.wttech.aem.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -146,6 +148,20 @@ public class Arguments implements Serializable {
     public void decimalNumber(String name, Closure<DecimalArgument> options) {
         DecimalArgument argument = new DecimalArgument(name);
         GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void date(String name) {
+        date(name, null);
+    }
+
+    public void date(String name, Closure<DateArgument> options) {
+        DateArgument argument = new DateArgument(name);
+        GroovyUtils.with(argument, options);
+        // Read the date from context and parse it to Calendar object
+        Calendar date =
+                DateUtils.parseDate(context.getExecutable().getArguments().get(name));
+        argument.setValue(date);
         add(argument);
     }
 }

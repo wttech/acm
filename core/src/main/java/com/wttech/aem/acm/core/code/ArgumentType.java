@@ -7,5 +7,6 @@ public enum ArgumentType {
     STRING,
     TEXT,
     SELECT,
-    MULTISELECT
+    MULTISELECT,
+    DATE
 }
