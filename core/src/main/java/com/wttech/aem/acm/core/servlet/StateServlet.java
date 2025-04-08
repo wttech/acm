@@ -4,15 +4,13 @@ import static com.wttech.aem.acm.core.util.ServletResult.error;
 import static com.wttech.aem.acm.core.util.ServletResult.ok;
 import static com.wttech.aem.acm.core.util.ServletUtils.respondJson;
 
-import com.wttech.aem.acm.core.code.ExecutionQueue;
 import com.wttech.aem.acm.core.code.ExecutionSummary;
 import com.wttech.aem.acm.core.instance.HealthChecker;
 import com.wttech.aem.acm.core.instance.HealthStatus;
-import com.wttech.aem.acm.core.instance.InstanceStateService;
+import com.wttech.aem.acm.core.instance.StateService;
 import com.wttech.aem.acm.core.state.State;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -37,21 +35,17 @@ public class StateServlet extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(StateServlet.class);
 
     @Reference
-    private InstanceStateService instanceStateService;
+    private StateService stateService;
 
     @Reference
     private HealthChecker healthChecker;
-
-    @Reference
-    private ExecutionQueue executionQueue;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
-            List<ExecutionSummary> queuedExecutions =
-                    executionQueue.findAllSummaries().collect(Collectors.toList());
-            State state = new State(healthStatus, instanceStateService.getInstanceSettings(), queuedExecutions);
+            List<ExecutionSummary> queuedExecutions = stateService.getQueuedExecutions();
+            State state = new State(healthStatus, stateService.getInstanceSettings(), queuedExecutions);
 
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {

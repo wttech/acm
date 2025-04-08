@@ -1,15 +1,18 @@
 package com.wttech.aem.acm.core.instance;
 
 import com.wttech.aem.acm.core.code.ExecutionQueue;
+import com.wttech.aem.acm.core.code.ExecutionSummary;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-@Component(immediate = true, service = InstanceStateService.class)
-public class InstanceStateService {
+@Component(immediate = true, service = StateService.class)
+public class StateService {
     @Reference
     private HealthChecker healthChecker;
 
@@ -35,9 +38,17 @@ public class InstanceStateService {
     }
 
     private boolean isCloud(String version) {
+        // For local instance treat it same as on-prem
+        if (osgiContext.getInstanceInfo().isRunMode("local")) {
+            return false;
+        }
         String regex = "^\\d{4}\\..*";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(version);
         return matcher.matches();
+    }
+
+    public List<ExecutionSummary> getQueuedExecutions() {
+        return executionQueue.findAllSummaries().collect(Collectors.toList());
     }
 }
