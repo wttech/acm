@@ -10,6 +10,7 @@ import groovy.lang.Binding;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
@@ -27,7 +28,8 @@ public class CodeBinding {
         registerVariables(context);
     }
 
-    private void registerVariables(ExecutionContext context) {
+    // TODO assistancer should call it with null context; that's why supplier is used
+    public void registerVariables(ExecutionContext context) {
         registerVariable(new CodeVariable<>("args", Arguments.class, () -> arguments, "Arguments passed to the script."));
         registerVariable(new CodeVariable<>("log", Logger.class, () -> createLogger(context.getExecutable()), null));
         registerVariable(new CodeVariable<>("out", PrintStream.class, () -> new CodePrintStream(context), "Output stream"));
@@ -46,6 +48,10 @@ public class CodeBinding {
                     String.format("Code binding variable '%s' already exists!", variable.getName()));
         }
         variables.put(variable.getName(), variable);
+    }
+
+    public Map<String, CodeVariable<?>> getVariables() {
+        return variables;
     }
 
     public Arguments getArguments() {
