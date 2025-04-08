@@ -29,13 +29,11 @@ public class ResourceScanner {
         if (pattern.endsWith("/")) {
             return listChildren(resolver, pattern);
         } else {
-            int lastSlashIndex = pattern.lastIndexOf('/');
-            if (lastSlashIndex == -1) {
-                Resource resource = resolver.getResource(pattern);
-                return resource == null ? Stream.empty() : Stream.of(resource);
+            String directory = StringUtils.substringBeforeLast(pattern, "/");
+            String filename = StringUtils.substringAfterLast(pattern, "/");
+            if (StringUtils.isBlank(directory)) {
+                directory = "/";
             }
-            String directory = pattern.substring(0, lastSlashIndex);
-            String filename = pattern.substring(lastSlashIndex + 1);
             Stream<Resource> children = listChildren(resolver, directory);
             return children.filter(resource -> resource.getName().startsWith(filename));
         }
