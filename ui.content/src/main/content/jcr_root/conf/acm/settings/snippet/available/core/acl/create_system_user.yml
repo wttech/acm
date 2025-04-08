@@ -1,7 +1,7 @@
 group: ACL
 name: acl_create_system_user
 content: |
-  def ${1} = acl.createUser { id = "${2}"; systemUser() }
+  acl.createUser { id = "${1:id}"; systemUser() }
 documentation: |
   Create or retrieve the system user with the given ID.<br>
   The user will only be created if it does not already exist.

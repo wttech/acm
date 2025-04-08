@@ -268,12 +268,12 @@ void completeExecution(Execution execution) {
 ACM provides a set of snippets that can be used to quickly insert code templates into your scripts. 
 Despite out-of-the-box snippets, you can create your own snippets and share them with your team.
 
-Just create a YAML files in the `/conf/acm/settings/snippets/{project}` folder and add your code there.
+Just create a YAML files in the `/conf/acm/settings/snippet/available/{project}` folder and add your code there.
 
 #### Example snippet
 
 Note that snippets could contain placeholders, which are replaced with actual values when the snippet is inserted into the script.
-Also snippet documentation could be a GitHub Flavored Markdown file, which is rendered in the UI. As a consequence you can use HTML tags as well, provide links, images, etc.
+Also, snippet documentation could be a GitHub Flavored Markdown file, which is rendered in the UI. As a consequence you can use HTML tags as well, provide links, images, etc.
 
 Let's assume a snippet located at path `/conf/acm/settings/snippet/available/acme/hello.yml` with the following content:
 

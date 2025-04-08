@@ -9,7 +9,7 @@ import Help from '@spectrum-icons/workflow/Help';
 import Replay from '@spectrum-icons/workflow/Replay';
 import React from 'react';
 
-const ScriptsHelpButton: React.FC = () => (
+const ScriptsAutomaticHelpButton: React.FC = () => (
   <DialogTrigger>
     <Button variant="secondary" style="fill">
       <Help />
@@ -17,7 +17,7 @@ const ScriptsHelpButton: React.FC = () => (
     </Button>
     {(close) => (
       <Dialog>
-        <Heading>Script Execution</Heading>
+        <Heading>Automatic Script Execution</Heading>
         <Divider />
         <Content>
           <p>
@@ -53,4 +53,4 @@ const ScriptsHelpButton: React.FC = () => (
   </DialogTrigger>
 );
 
-export default ScriptsHelpButton;
+export default ScriptsAutomaticHelpButton;

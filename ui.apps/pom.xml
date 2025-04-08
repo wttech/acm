@@ -107,18 +107,18 @@
         <dependency>
             <groupId>com.wttech.aem.acm</groupId>
             <artifactId>acm.ui.apps.structure</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>com.wttech.aem.acm</groupId>
             <artifactId>acm.core</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.wttech.aem.acm</groupId>
             <artifactId>acm.ui.frontend</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
             <type>pom</type>
         </dependency>
 

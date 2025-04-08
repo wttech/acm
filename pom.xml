@@ -125,6 +125,32 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <!-- Maven Flatten Plugin (https://maven.apache.org/guides/mini/guide-maven-ci-friendly.html) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -242,6 +268,12 @@ Bundle-DocURL:
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
+                </plugin>
+                <!-- Maven Flatten Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-flatten-plugin</artifactId>
+                    <version>1.1.0</version>
                 </plugin>
                 <!-- Maven Installer Plugin -->
                 <plugin>
@@ -449,11 +481,13 @@ Bundle-DocURL:
                         <enabled>false</enabled>
                     </snapshots>
                 </repository>
+                <!--
                 <repository>
                     <id>github</id>
                     <name>GitHub Packages</name>
                     <url>https://maven.pkg.github.com/wttech/acm</url>
                 </repository>
+                -->
             </repositories>
             <pluginRepositories>
                 <pluginRepository>

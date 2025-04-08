@@ -1,7 +1,7 @@
 group: ACL
 name: acl_purge
 content: |
-  acl.purge { authorizableId = "${1}" }
+  acl.purge { authorizableId = "${1:authorizableId}" }
 documentation: |
   Clear all permissions on the root path and all its subpaths.<br>
   Remove all members and remove from all groups for the given authorizable (user or group).
