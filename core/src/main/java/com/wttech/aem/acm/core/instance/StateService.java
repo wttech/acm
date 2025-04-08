@@ -22,19 +22,14 @@ public class StateService {
     @Reference
     private OsgiContext osgiContext;
 
-    private static InstanceSettings instanceSettings;
-
     public HealthStatus getHealthStatus() {
         return healthChecker.checkStatus();
     }
 
     public InstanceSettings getInstanceSettings() {
-        if (instanceSettings == null) {
-            boolean publish = osgiContext.getInstanceInfo().isPublish();
-            String propUrl = osgiContext.getBundleContext().getProperty("PRODUCTINFO_VERSION");
-            instanceSettings = new InstanceSettings(TimeZone.getDefault().getID(), publish, isCloud(propUrl));
-        }
-        return instanceSettings;
+        boolean publish = osgiContext.getInstanceInfo().isPublish();
+        String propUrl = osgiContext.getBundleContext().getProperty("PRODUCTINFO_VERSION");
+        return new InstanceSettings(TimeZone.getDefault().getID(), publish, isCloud(propUrl));
     }
 
     private boolean isCloud(String version) {
