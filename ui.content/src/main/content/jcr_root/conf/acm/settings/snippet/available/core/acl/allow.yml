@@ -1,6 +1,6 @@
 group: ACL
 name: acl_allow
 content: |
-  acl.allow { authorizableId = "${1}"; path = "${2:path}"; permissions = [${3}]; glob = "/*"; restrictions = [:] }
+  acl.allow { authorizableId = "${1:authorizableId}"; path = "${2:path}"; permissions = [${3:permissions}]; glob = "/*"; restrictions = [:] }
 documentation: |
   Allow the specified permissions, glob and restrictions on the given path for the target authorizable (user or group).
