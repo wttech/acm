@@ -18,7 +18,6 @@ function registerWordCompletion(instance: Monaco) {
         // TODO not sure if needed
         return { suggestions: [], incomplete: true };
       }
-
       let wordText = '';
       const wordAtPosition = model.getWordAtPosition(position);
       if (wordAtPosition) {
@@ -60,7 +59,9 @@ function registerResourceCompletion(instance: Monaco) {
 
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
       const path = extractPath(model.getLineContent(position.lineNumber));
-
+      if (path.length == 0) {
+        return { suggestions: [], incomplete: true };
+      }
       try {
         const response = await apiRequest<AssistCodeOutput>({
           method: 'GET',
