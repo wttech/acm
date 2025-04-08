@@ -44,6 +44,9 @@ public class Executor {
     private ResourceResolverFactory resourceResolverFactory;
 
     @Reference
+    private Extender extender;
+
+    @Reference
     private OsgiContext osgiContext;
 
     private Config config;
@@ -104,7 +107,7 @@ public class Executor {
 
             execution.start();
 
-            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), ContentCodeSyntax.MAIN_CLASS);
             if (context.getMode() == ExecutionMode.PARSE) {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
@@ -112,15 +115,15 @@ public class Executor {
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
 
             try {
-                script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+                script.invokeMethod(ContentCodeSyntax.Method.DESCRIBE.givenName, null);
                 shell.getCodeBinding()
-                        .getArgs()
+                        .getArguments()
                         .setValues(context.getExecutable().getArguments());
             } catch (MissingMethodException e) {
                 // ignore
             }
 
-            boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Method.CHECK.givenName, null);
+            boolean canRun = (Boolean) script.invokeMethod(ContentCodeSyntax.Method.CHECK.givenName, null);
             if (!canRun) {
                 return execution.end(ExecutionStatus.SKIPPED);
             } else if (context.getMode() == ExecutionMode.CHECK) {
@@ -128,7 +131,7 @@ public class Executor {
             }
 
             statuses.put(context.getId(), ExecutionStatus.RUNNING);
-            script.invokeMethod(CodeSyntax.Method.RUN.givenName, null);
+            script.invokeMethod(ContentCodeSyntax.Method.RUN.givenName, null);
             return execution.end(ExecutionStatus.SUCCEEDED);
         } catch (Throwable e) {
             execution.error(e);
@@ -146,7 +149,7 @@ public class Executor {
         Binding binding = codeBinding.toBinding();
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
-        compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
+        compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new ContentCodeSyntax()));
         GroovyShell groovyShell = new GroovyShell(binding, compiler);
         return new CodeShell(groovyShell, codeBinding);
     }
@@ -166,17 +169,21 @@ public class Executor {
             context.setOutputStream(outputStream);
 
             CodeShell shell = createShell(context);
+            for (Script script : extender.getScripts()) {
+                script.invokeMethod(ExtensionCodeSyntax.Method.EXTEND.givenName, null);
+            }
+
             execution.start();
-            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), ContentCodeSyntax.MAIN_CLASS);
 
             try {
-                script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
+                script.invokeMethod(ContentCodeSyntax.Method.DESCRIBE.givenName, null);
             } catch (MissingMethodException e) {
                 // ignore
             }
             return new Description(
                     execution.end(ExecutionStatus.SUCCEEDED),
-                    shell.getCodeBinding().getArgs());
+                    shell.getCodeBinding().getArguments());
         } catch (Throwable e) {
             execution.error(e);
             return new Description(execution.end(ExecutionStatus.FAILED), new Arguments(context));

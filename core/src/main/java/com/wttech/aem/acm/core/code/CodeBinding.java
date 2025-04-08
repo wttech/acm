@@ -8,48 +8,48 @@ import com.wttech.aem.acm.core.replication.Activator;
 import com.wttech.aem.acm.core.repo.Repository;
 import groovy.lang.Binding;
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CodeBinding {
 
-    private final Logger log;
+    private final Arguments arguments;
 
-    private final PrintStream out;
-
-    private final ResourceResolver resourceResolver;
-
-    private final Repository repository;
-
-    private final Acl acl;
-
-    private final Activator activator;
-
-    private final OsgiContext osgi;
-
-    private final Arguments args;
-
-    private final Condition condition;
-
-    private final Formatter formatter;
+    private Map<String, CodeVariable<?>> variables = new HashMap<>();
 
     public CodeBinding(ExecutionContext context) {
-        this.args = new Arguments(context);
-        this.log = createLogger(context.getExecutable());
-        this.out = new CodePrintStream(context);
-        this.resourceResolver = context.getResourceResolver();
-        this.repository = new Repository(resourceResolver);
-        this.acl = new AclGroovy(resourceResolver);
-        this.formatter = new Formatter();
-        this.activator = new Activator(
-                context.getResourceResolver(), context.getOsgiContext().getReplicator());
-        this.osgi = context.getOsgiContext();
-        this.condition = new Condition(context);
+        this.arguments = new Arguments(context);
+
+        registerVariables(context);
     }
 
-    protected Arguments getArgs() {
-        return args;
+    private void registerVariables(ExecutionContext context) {
+        registerVariable(new CodeVariable<>("args", Arguments.class, () -> arguments, "Arguments passed to the script."));
+        registerVariable(new CodeVariable<>("log", Logger.class, () -> createLogger(context.getExecutable()), null));
+        registerVariable(new CodeVariable<>("out", PrintStream.class, () -> new CodePrintStream(context), "Output stream"));
+        registerVariable(new CodeVariable<>("condition", Condition.class, () -> new Condition(context), "Facade for easy condition checks"));
+        registerVariable(new CodeVariable<>("osgi", OsgiContext.class, context::getOsgiContext, "Facade for OSGi operations"));
+        registerVariable(new CodeVariable<>("resourceResolver", ResourceResolver.class, context::getResourceResolver, "Sling Resource Resolver"));
+        registerVariable(new CodeVariable<>("repository", Repository.class, () -> new Repository(context.getResourceResolver()), "Facade for idempotent repository operations"));
+        registerVariable(new CodeVariable<>("acl", Acl.class, () -> new AclGroovy(context.getResourceResolver()), "Facade for ACL operations"));
+        registerVariable(new CodeVariable<>("formatter", Formatter.class, Formatter::new , "Facade for input/output format operations (JSON/YML/CSV)"));
+        registerVariable(new CodeVariable<>("activator", Activator.class, () -> new Activator(context.getResourceResolver(), context.getOsgiContext().getReplicator()), "Facade for replication operations"));
+    }
+
+    public void registerVariable(CodeVariable<?> variable) {
+        if (variables.containsKey(variable.getName())) {
+            throw new IllegalArgumentException(
+                    String.format("Code binding variable '%s' already exists!", variable.getName()));
+        }
+        variables.put(variable.getName(), variable);
+    }
+
+    public Arguments getArguments() {
+        return arguments;
     }
 
     private Logger createLogger(Executable executable) {
@@ -58,16 +58,9 @@ public class CodeBinding {
 
     public Binding toBinding() {
         Binding result = new Binding();
-        result.setVariable(Variable.ARGS.varName(), args);
-        result.setVariable(Variable.LOG.varName(), log);
-        result.setVariable(Variable.OUT.varName(), out);
-        result.setVariable(Variable.RESOURCE_RESOLVER.varName(), resourceResolver);
-        result.setVariable(Variable.REPOSITORY.varName(), repository);
-        result.setVariable(Variable.ACL.varName(), acl);
-        result.setVariable(Variable.FORMATTER.varName(), formatter);
-        result.setVariable(Variable.ACTIVATOR.varName(), activator);
-        result.setVariable(Variable.OSGI.varName(), osgi);
-        result.setVariable(Variable.CONDITION.varName(), condition);
+        variables.forEach((k, v) -> {
+            result.setVariable(k, v.getSupplier().get());
+        });
         return result;
     }
 }

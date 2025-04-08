@@ -9,7 +9,8 @@ import java.io.PrintStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 
-public enum Variable {
+// TODO to be removed
+public enum  Variable {
     // capturing output of 'groovy.lang.Script' requires 'out' to be 'java.io.PrintStream'
     OUT("out", PrintStream.class.getName()),
     LOG("log", Logger.class.getName()),

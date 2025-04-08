@@ -1,6 +1,5 @@
 package com.wttech.aem.acm.core.code;
 
-import java.util.List;
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -10,10 +9,13 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.AbstractASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
-@GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
-public class CodeSyntax extends AbstractASTTransformation {
+import java.util.List;
 
-    public static final String MAIN_CLASS = "AcmCode";
+// TODO extract abstract for both syntaxes
+@GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
+public class ExtensionCodeSyntax extends AbstractASTTransformation {
+
+    public static final String MAIN_CLASS = "AcmExtensionCode";
 
     @Override
     public void visit(ASTNode[] nodes, SourceUnit source) {
@@ -74,9 +76,8 @@ public class CodeSyntax extends AbstractASTTransformation {
     }
 
     enum Method {
-        DESCRIBE("describeRun", "void", false),
-        RUN("doRun", "void", true),
-        CHECK("canRun", "boolean", true);
+        EXTEND("extendRun", "void", true),
+        COMPLETE("completeRun", "void", true);
 
         final String givenName;
 
