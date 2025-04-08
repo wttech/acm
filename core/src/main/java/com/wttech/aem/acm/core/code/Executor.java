@@ -106,6 +106,10 @@ public class Executor {
             CodeShell shell = createShell();
             shell.getCodeBinding().registerVariables(context);
 
+            for (Script script : extender.getScripts()) {
+                script.invokeMethod(ExtensionCodeSyntax.Method.EXTEND.givenName, null);
+            }
+
             execution.start();
 
             Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), ContentCodeSyntax.MAIN_CLASS);
@@ -171,9 +175,6 @@ public class Executor {
 
             CodeShell shell = createShell();
             shell.getCodeBinding().registerVariables(context);
-            for (Script script : extender.getScripts()) {
-                script.invokeMethod(ExtensionCodeSyntax.Method.EXTEND.givenName, null);
-            }
 
             execution.start();
             Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), ContentCodeSyntax.MAIN_CLASS);
