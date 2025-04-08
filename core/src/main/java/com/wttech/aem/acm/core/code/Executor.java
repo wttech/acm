@@ -153,13 +153,11 @@ public class Executor {
     }
 
     private Shell createShell() {
-        Bindings bindings = new Bindings();
-        Binding binding = bindings.toBinding();
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
         compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new ContentCodeSyntax()));
-        GroovyShell groovyShell = new GroovyShell(binding, compiler);
-        return new Shell(groovyShell, bindings);
+        GroovyShell groovyShell = new GroovyShell(new Binding(), compiler);
+        return new Shell(groovyShell);
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {

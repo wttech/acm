@@ -23,6 +23,7 @@ public class Bindings {
     private final Map<String, CodeVariable<?>> variables = new HashMap<>();
 
     // TODO assistancer should call it with null context; that's why supplier is used
+    // TODO move it directly to 'Shell' shell.context.setVariable ; do not duplicate groovy APIs
     public void registerVariables(ExecutionContext context) {
         registerVariable(new CodeVariable<>("args", Arguments.class, () -> arguments, "Arguments passed to the script."));
         registerVariable(new CodeVariable<>("log", Logger.class, () -> createLogger(context.getExecutable()), null));

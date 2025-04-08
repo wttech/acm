@@ -9,7 +9,7 @@ import java.io.PrintStream;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 
-// TODO to be removed
+// TODO to be removed; use groovyShell.getContext().getVariables() somehow
 public enum  Variable {
     // capturing output of 'groovy.lang.Script' requires 'out' to be 'java.io.PrintStream'
     OUT("out", PrintStream.class.getName()),

@@ -6,18 +6,13 @@ public class Shell {
 
     private final GroovyShell groovyShell;
 
-    private final Bindings bindings;
-
-    public Shell(GroovyShell groovyShell, Bindings bindings) {
+    public Shell(GroovyShell groovyShell) {
         this.groovyShell = groovyShell;
-        this.bindings = bindings;
     }
 
     public GroovyShell getGroovyShell() {
         return groovyShell;
     }
 
-    public Bindings getBindings() {
-        return bindings;
-    }
+    // TODO register variable here in groovy context ; but also save metadata / documentation here / to be used in assistancer
 }
