@@ -85,6 +85,14 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
 
   const handleFormSubmit = async (data: ArgumentValues) => {
     handleCloseDialog();
+
+    // Format date fields
+    descriptionArguments
+        .filter(d => d.type == "DATE")
+        .forEach(arg => {
+            data[arg.name] = data[arg.name]!.toString()
+        })
+
     onExecute(description!, data);
   };
 

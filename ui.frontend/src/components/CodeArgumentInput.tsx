@@ -1,6 +1,6 @@
 import {
     Checkbox,
-    CheckboxGroup, DateField,
+    CheckboxGroup, DatePicker,
     Item,
     ListView,
     NumberField,
@@ -48,7 +48,6 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({arg}) => {
                 try {
                     const validator = eval(arg.validator);
                     const allValues = getValues();
-                    console.log(allValues)
                     const errorMessage = validator(value, allValues);
                     return errorMessage || true;
                 } catch (error) {
@@ -259,9 +258,10 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({arg}) => {
                     rules={controllerRules(arg)}
                     render={({field, fieldState}) => (
                         <View key={arg.name} marginBottom="size-200">
-                            <DateField
+                            <DatePicker
                                 {...field}
                                 label={argLabel(arg)}
+                                hideTimeZone={true}
                                 errorMessage={fieldState.error ? fieldState.error.message : undefined}
                                 validationState={fieldState.error ? 'invalid' : 'valid'}
                                 aria-label={`Argument '${arg.name}'`}

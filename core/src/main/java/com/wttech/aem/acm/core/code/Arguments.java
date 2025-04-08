@@ -7,10 +7,11 @@ import com.wttech.aem.acm.core.util.DateUtils;
 import com.wttech.aem.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 
@@ -158,10 +159,11 @@ public class Arguments implements Serializable {
     public void date(String name, Closure<DateArgument> options) {
         DateArgument argument = new DateArgument(name);
         GroovyUtils.with(argument, options);
-        // Read the date from context and parse it to Calendar object
-        Calendar date =
-                DateUtils.parseDate(context.getExecutable().getArguments().get(name));
-        argument.setValue(date);
+        Object dateObject = context.getExecutable().getArguments().get(name));
+        if (dateObject instanceof String) {
+            Objects.toString(dateObject);
+            argument.setValue(DateUtils.fromString();
+        }
         add(argument);
     }
 }
