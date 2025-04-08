@@ -3,7 +3,7 @@ package com.wttech.aem.acm.core.instance;
 import com.wttech.aem.acm.core.osgi.OsgiEvent;
 import com.wttech.aem.acm.core.osgi.OsgiEventCollector;
 import com.wttech.aem.acm.core.osgi.OsgiScanner;
-import com.wttech.aem.acm.core.repository.Repository;
+import com.wttech.aem.acm.core.repo.Repository;
 import com.wttech.aem.acm.core.util.ResourceUtils;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,10 +22,14 @@ import org.osgi.service.event.EventHandler;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(immediate = true, service = HealthChecker.class)
 @Designate(ocd = HealthChecker.Config.class)
 public class HealthChecker implements EventHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(HealthChecker.class);
 
     @Reference
     private OsgiScanner osgiScanner;
@@ -61,7 +65,8 @@ public class HealthChecker implements EventHandler {
         try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory, null)) {
             return checkStatus(resourceResolver);
         } catch (Exception e) {
-            return HealthStatus.error(e);
+            LOG.error("Health checker failed", e);
+            return HealthStatus.exception(e);
         }
     }
 
@@ -76,6 +81,7 @@ public class HealthChecker implements EventHandler {
         return result;
     }
 
+    // TODO seems to not work on AEMaaCS as there is no Sling Installer JMX MBean
     private void checkInstaller(HealthStatus result, ResourceResolver resourceResolver) {
         SlingInstallerState state = slingInstaller.checkState(resourceResolver);
         if (state.isActive()) {

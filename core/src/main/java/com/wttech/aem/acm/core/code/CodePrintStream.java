@@ -38,11 +38,16 @@ public class CodePrintStream extends PrintStream {
     }
 
     public void fromLogs() {
+        fromRepoLogs();
         fromAclLogs();
     }
 
     public void fromAclLogs() {
         fromLogger("com.wttech.aem.acm.core.acl");
+    }
+
+    public void fromRepoLogs() {
+        fromLogger("com.wttech.aem.acm.core.repo");
     }
 
     public List<String> fromLogger(String loggerName) {

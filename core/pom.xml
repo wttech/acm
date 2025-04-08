@@ -20,7 +20,7 @@
     <parent>
         <groupId>com.wttech.aem.acm</groupId>
         <artifactId>root</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>acm.core</artifactId>
