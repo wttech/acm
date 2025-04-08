@@ -103,7 +103,8 @@ public class Executor {
                 context.setOutputStream(outputStream);
             }
 
-            CodeShell shell = createShell(context);
+            CodeShell shell = createShell();
+            shell.getCodeBinding().registerVariables(context);
 
             execution.start();
 
@@ -144,8 +145,8 @@ public class Executor {
         }
     }
 
-    private CodeShell createShell(ExecutionContext context) {
-        CodeBinding codeBinding = new CodeBinding(context);
+    private CodeShell createShell() {
+        CodeBinding codeBinding = new CodeBinding();
         Binding binding = codeBinding.toBinding();
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
@@ -168,7 +169,8 @@ public class Executor {
         try (OutputStream outputStream = context.getFileOutput().write()) {
             context.setOutputStream(outputStream);
 
-            CodeShell shell = createShell(context);
+            CodeShell shell = createShell();
+            shell.getCodeBinding().registerVariables(context);
             for (Script script : extender.getScripts()) {
                 script.invokeMethod(ExtensionCodeSyntax.Method.EXTEND.givenName, null);
             }
@@ -186,7 +188,7 @@ public class Executor {
                     shell.getCodeBinding().getArguments());
         } catch (Throwable e) {
             execution.error(e);
-            return new Description(execution.end(ExecutionStatus.FAILED), new Arguments(context));
+            return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
         } finally {
             context.getFileOutput().delete();
         }

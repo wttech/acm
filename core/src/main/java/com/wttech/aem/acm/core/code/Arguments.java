@@ -14,13 +14,10 @@ import org.apache.sling.api.wrappers.ValueMapDecorator;
 
 public class Arguments implements Serializable {
 
-    private final ExecutionContext context;
-
     private final Map<String, Argument<?>> definitions = new LinkedHashMap<>();
 
-    public Arguments(ExecutionContext context) {
+    public Arguments() {
         super();
-        this.context = context;
     }
 
     private void add(Argument<?> argument) {

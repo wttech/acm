@@ -10,7 +10,6 @@ import groovy.lang.Binding;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
@@ -18,15 +17,9 @@ import org.slf4j.LoggerFactory;
 
 public class CodeBinding {
 
-    private final Arguments arguments;
+    private final Arguments arguments = new Arguments();
 
-    private Map<String, CodeVariable<?>> variables = new HashMap<>();
-
-    public CodeBinding(ExecutionContext context) {
-        this.arguments = new Arguments(context);
-
-        registerVariables(context);
-    }
+    private final Map<String, CodeVariable<?>> variables = new HashMap<>();
 
     // TODO assistancer should call it with null context; that's why supplier is used
     public void registerVariables(ExecutionContext context) {
