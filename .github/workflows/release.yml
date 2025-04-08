@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    name: Deploy to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Extract Version
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 8
+          distribution: temurin
+
+      - name: Build all modules
+        run: sh ./mvnw -B install -Drevision=${{ env.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish AEM Distribution 'All'
+        run: |
+          mvn deploy:deploy-file \
+            -Durl=https://maven.pkg.github.com/wttech/acm \
+            -DrepositoryId=github \
+            -Dfile=all/target/acm.all-${{ env.VERSION }}.zip \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.all \
+            -Dversion=${{ env.VERSION }} \
+            -Dpackaging=zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish AEM Distribution 'Min'
+        run: |
+          mvn deploy:deploy-file \
+            -Durl=https://maven.pkg.github.com/wttech/acm \
+            -DrepositoryId=github \
+            -Dfile=min/target/acm.min-${{ env.VERSION }}.zip \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.min \
+            -Dversion=${{ env.VERSION }} \
+            -Dpackaging=zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish AEM Package 'UI Content Example'
+        run: |
+          mvn deploy:deploy-file \
+            -Durl=https://maven.pkg.github.com/wttech/acm \
+            -DrepositoryId=github \
+            -Dfile=ui.content.example/target/acm.ui.content.example-${{ env.VERSION }}.zip \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.ui.content.example \
+            -Dversion=${{ env.VERSION }} \
+            -Dpackaging=zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish OSGi Bundle 'Core'
+        run: |
+          mvn deploy:deploy-file \
+            -Durl=https://maven.pkg.github.com/wttech/acm \
+            -DrepositoryId=github \
+            -Dfile=core/target/acm.core-${{ env.VERSION }}.jar \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.core \
+            -Dversion=${{ env.VERSION }} \
+            -Dpackaging=jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

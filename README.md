@@ -39,6 +39,8 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
     - [Extension Scripts](#extension-scripts)
     - [Snippets](#snippets)
 - [Development](#development)
+- [Authors](#authors)
+- [Contributing](#contributing)
 - [License](#license)
 
 ## Key Features
@@ -88,6 +90,9 @@ There are two ways to install AEM Content Manager on your AEM instances:
 |---------------------|------------|-------|--------|
 | 1.0.0               | 6.5, cloud | 8, 11 | 4.x    |
 
+Note that AEM Content Manager is using Groovy scripts concept. However, it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
+AEM Content Manager tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
+
 ## Documentation
 
 ### Usage
@@ -103,11 +108,11 @@ To achieve that, ACM provides a set of features to help you with the development
 
 2. **Manually executed scripts**
    - Navigate to the 'Scripts' page and select the 'Manual' tab.
-   - Code executed here runs in the context of the system user or an impersonated user when configured additionally.
+   - Code executed here also runs in the context of the current user (due to impersonation).
 
 3. **Automatically executed scripts**
    - Navigate to the 'Scripts' page and select the 'Automatic' tab.
-   - Code can be scheduled to run once, periodically, or at an exact date and time.
+   - Code can be scheduled to run once, periodically, or at an exact date and time. Runs in the context of the system user or impersonated user set in the configuration.
 
 **Rules for executing Groovy code:**
 
@@ -302,6 +307,21 @@ documentation: |
     ```shell
     sh taskw develop:frontend:dev
     ```
+
+## Authors
+
+- Founder, owner, and maintainer: [Krystian Panek](mailto:krystian.panek@vml.com)
+- Consultancy, tests: [Tomasz Sobczyk](mailto:tomasz.sobczyk@vml.com), [Jakub Przybytek](mailto:jakub.przybytek@vml.com)
+- Developers: [Mariusz Pacyga](mailto:mariusz.pacyga@vml.com), [Dominik Przybył](mailto:dominik.przybyl@vml.com), [Kamil Orwat](mailto:kamil.orwat@vml.com)
+- Contributors: [&lt;see all&gt;](https://github.com/wttech/aemc/graphs/contributors)
+
+## Contributing
+
+Issues reported or pull requests created will be very appreciated.
+
+1. Fork plugin source code using a dedicated GitHub button.
+2. Do code changes on a feature branch created from *main* branch.
+3. Create a pull request with a base of *main* branch.
 
 ## License
 
