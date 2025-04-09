@@ -104,7 +104,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: context.ref,
-              name: `Release ${process.env.VERSION}`,
+              name: `${process.env.VERSION}`,
               draft: false,
               prerelease: false,
               generate_release_notes: true
