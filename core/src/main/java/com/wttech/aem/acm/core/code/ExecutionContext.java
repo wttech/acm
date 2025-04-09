@@ -33,7 +33,7 @@ public class ExecutionContext {
         this.executable = executable;
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
-        this.extender = new Extender(executor, resourceResolver);
+        this.extender = new Extender(resourceResolver);
     }
 
     public Executor getExecutor() {

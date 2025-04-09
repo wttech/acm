@@ -1,20 +1,20 @@
 package com.wttech.aem.acm.core.code.script;
 
 import com.wttech.aem.acm.core.AcmException;
+import com.wttech.aem.acm.core.code.Executable;
 import com.wttech.aem.acm.core.code.Execution;
-import com.wttech.aem.acm.core.code.ExecutionContext;
 import groovy.lang.Script;
 
 public class ExtensionScript {
 
-    private final ExecutionContext context;
+    private final Executable executable;
 
     private final Script script;
 
-    public ExtensionScript(ExecutionContext context) {
-        this.context = context;
+    public ExtensionScript(Executable executable) {
+        this.executable = executable;
         this.script = ScriptUtils.createShell(new ExtensionScriptSyntax())
-                .parse(context.getExecutable().getContent(), ExtensionScriptSyntax.MAIN_CLASS);
+                .parse(executable.getContent(), ExtensionScriptSyntax.MAIN_CLASS);
     }
 
     public void extend(ContentScript contentScript) {
@@ -22,10 +22,7 @@ public class ExtensionScript {
             script.invokeMethod(ExtensionScriptSyntax.Method.EXTEND.givenName, contentScript);
         } catch (Exception e) {
             throw new AcmException(
-                    String.format(
-                            "Cannot extend shell with extension script '%s'",
-                            context.getExecutable().getId()),
-                    e);
+                    String.format("Cannot extend content script with extension script '%s'!", executable.getId()), e);
         }
     }
 
@@ -34,10 +31,7 @@ public class ExtensionScript {
             script.invokeMethod(ExtensionScriptSyntax.Method.COMPLETE.givenName, execution);
         } catch (Exception e) {
             throw new AcmException(
-                    String.format(
-                            "Cannot complete execution with extension script '%s'",
-                            context.getExecutable().getId()),
-                    e);
+                    String.format("Cannot complete execution with extension script '%s'", executable.getId()), e);
         }
     }
 }

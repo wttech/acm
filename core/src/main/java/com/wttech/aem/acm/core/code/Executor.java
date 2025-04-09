@@ -95,7 +95,10 @@ public class Executor {
                 context.setOutputStream(outputStream);
             }
 
-            ContentScript contentScript = new ContentScript(context);
+            ContentScript contentScript = new ContentScript(context.getExecutable());
+            contentScript.prepare(context);
+            context.getExtender().extend(contentScript);
+
             execution.start();
 
             if (context.getMode() == ExecutionMode.PARSE) {
@@ -142,7 +145,9 @@ public class Executor {
         try (OutputStream outputStream = context.getFileOutput().write()) {
             context.setOutputStream(outputStream);
 
-            ContentScript contentScript = new ContentScript(context);
+            ContentScript contentScript = new ContentScript(context.getExecutable());
+            contentScript.prepare(context);
+
             execution.start();
 
             contentScript.describe();

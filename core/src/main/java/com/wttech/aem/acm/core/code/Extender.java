@@ -12,10 +12,10 @@ public class Extender {
 
     private final List<ExtensionScript> scripts;
 
-    public Extender(Executor executor, ResourceResolver resourceResolver) {
+    public Extender(ResourceResolver resourceResolver) {
         this.scripts = new ScriptRepository(resourceResolver)
                 .findAll(ScriptType.EXTENSION)
-                .map(s -> new ExtensionScript(executor.createContext(s, resourceResolver)))
+                .map(ExtensionScript::new)
                 .collect(Collectors.toList());
     }
 
