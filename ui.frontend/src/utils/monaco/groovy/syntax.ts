@@ -19,8 +19,8 @@ export function registerSyntax(instance: Monaco) {
 
   const javaRootRules = [...(groovyLanguage.tokenizer.root || [])].filter((rule) => {
     // Removes Java's single quote interpretation from tokenizer
-    if (Array.isArray(rule) && rule[0] instanceof RegExp && typeof rule[1] === "string") {
-      return !rule[1].includes("string");
+    if (Array.isArray(rule) && rule[0] instanceof RegExp && typeof rule[1] === 'string') {
+      return !rule[1].includes('string');
     }
     return true;
   });
@@ -50,7 +50,7 @@ export function registerSyntax(instance: Monaco) {
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
-      [/[$]/, 'string']
+      [/[$]/, 'string'],
     ],
 
     string_single: [
@@ -65,14 +65,14 @@ export function registerSyntax(instance: Monaco) {
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"""/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
-      [/[$]/, 'string']
+      [/[$]/, 'string'],
     ],
 
     gstring_expression: [
       [/'/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_single' }],
       [/\{/, { token: 'delimiter.curly', bracket: '@open', next: '@closure' }],
       [/\}/, { token: 'identifier', bracket: '@close', next: '@pop' }],
-      [/[^{}'"]+/, 'identifier']
+      [/[^{}'"]+/, 'identifier'],
     ],
 
     gstring_expression_multiline: [
@@ -80,7 +80,7 @@ export function registerSyntax(instance: Monaco) {
       [/"/, { token: 'string.quote', bracket: '@open', next: '@string_in_gstring_double' }],
       [/\{/, { token: 'delimiter.curly', bracket: '@open', next: '@closure' }],
       [/\}/, { token: 'identifier', bracket: '@close', next: '@pop' }],
-      [/[^{}'"]+/, 'identifier']
+      [/[^{}'"]+/, 'identifier'],
     ],
 
     string_in_gstring_single: [

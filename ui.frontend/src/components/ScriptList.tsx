@@ -11,7 +11,8 @@ import DateExplained from './DateExplained.tsx';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptSynchronizeButton from './ScriptSynchronizeButton';
 import ScriptToggleButton from './ScriptToggleButton';
-import ScriptsHelpButton from './ScriptsHelpButton.tsx';
+import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
+import ScriptsManualHelpButton from './ScriptsManualHelpButton';
 
 type ScriptListProps = {
   type: 'manual' | 'enabled' | 'disabled';
@@ -97,7 +98,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             )}
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            <ScriptsHelpButton />
+            {type === 'manual' ? <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton />}
           </Flex>
         </Flex>
       </View>

@@ -1,6 +1,6 @@
 group: ACL
 name: acl_delete_user
 content: |
-  acl.deleteUser { id = "${1}" }
+  acl.deleteUser { id = "${1:id}" }
 documentation: |
   Delete the user with the given ID.

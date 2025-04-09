@@ -1,6 +1,6 @@
 group: ACL
 name: acl_remove_member
 content: |
-  acl.removeMember { groupId = "${1}"; memberId = "${2}" }
+  acl.removeMember { groupId = "${1:groupId}"; memberId = "${2:memberId}" }
 documentation: |
   Removes the given member (user or group) from the given group.

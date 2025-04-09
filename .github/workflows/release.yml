@@ -6,12 +6,13 @@ on:
       - 'v*'
 
 jobs:
-  publish:
-    name: Deploy to GitHub Packages
+  release:
+    name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
+      actions: write
     steps:
       - name: Extract Version
         id: extract_version
@@ -22,6 +23,7 @@ jobs:
 
       - name: Cache Maven dependencies
         uses: actions/cache@v3
+        if: always()
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -90,3 +92,101 @@ jobs:
             -Dpackaging=jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const response = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: context.ref,
+              name: `Release ${process.env.VERSION}`,
+              draft: false,
+              prerelease: false,
+              generate_release_notes: true
+            });
+            core.setOutput('upload_url', response.data.upload_url);
+
+      - name: Upload AEM Distribution 'All' to Release
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'all/target/acm.all-${{ env.VERSION }}.zip';
+            const stat = fs.statSync(path);
+            const file = fs.readFileSync(path);
+            await github.rest.repos.uploadReleaseAsset({
+              url: '${{ steps.create_release.outputs.upload_url }}',
+              headers: {
+                'content-type': 'application/zip',
+                'content-length': stat.size
+              },
+              name: `acm.all-${{ env.VERSION }}.zip`,
+              file: file
+            });
+
+      - name: Upload AEM Distribution 'Min' to Release
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'min/target/acm.min-${{ env.VERSION }}.zip';
+            const stat = fs.statSync(path);
+            const file = fs.readFileSync(path);
+            await github.rest.repos.uploadReleaseAsset({
+              url: '${{ steps.create_release.outputs.upload_url }}',
+              headers: {
+                'content-type': 'application/zip',
+                'content-length': stat.size
+              },
+              name: `acm.min-${{ env.VERSION }}.zip`,
+              file: file
+            });
+
+      - name: Upload AEM Package 'UI Content Example' to Release
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'ui.content.example/target/acm.ui.content.example-${{ env.VERSION }}.zip';
+            const stat = fs.statSync(path);
+            const file = fs.readFileSync(path);
+            await github.rest.repos.uploadReleaseAsset({
+              url: '${{ steps.create_release.outputs.upload_url }}',
+              headers: {
+                'content-type': 'application/zip',
+                'content-length': stat.size
+              },
+              name: `acm.ui.content.example-${{ env.VERSION }}.zip`,
+              file: file
+            });
+
+      - name: Upload OSGi Bundle 'Core' to Release
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'core/target/acm.core-${{ env.VERSION }}.jar';
+            const stat = fs.statSync(path);
+            const file = fs.readFileSync(path);
+            await github.rest.repos.uploadReleaseAsset({
+              url: '${{ steps.create_release.outputs.upload_url }}',
+              headers: {
+                'content-type': 'application/java-archive',
+                'content-length': stat.size
+              },
+              name: `acm.core-${{ env.VERSION }}.jar`,
+              file: file
+            });

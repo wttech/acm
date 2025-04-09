@@ -12,7 +12,9 @@ public abstract class Argument<V> {
 
     private String group = "general";
 
-    private boolean required;
+    private boolean required = true;
+
+    private String validator;
 
     public Argument(String name, ArgumentType type) {
         this.name = name;
@@ -51,11 +53,27 @@ public abstract class Argument<V> {
         this.required = required;
     }
 
+    public void required() {
+        this.required = true;
+    }
+
+    public void optional() {
+        this.required = false;
+    }
+
     public String getGroup() {
         return group;
     }
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public String getValidator() {
+        return validator;
+    }
+
+    public void setValidator(String validator) {
+        this.validator = validator;
     }
 }

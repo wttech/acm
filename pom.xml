@@ -32,7 +32,6 @@
         <module>ui.config</module>
         <module>ui.content</module>
         <module>ui.content.example</module>
-        <module>ui.content.index</module>
         <module>ui.frontend</module>
     </modules>
     <scm>
@@ -124,6 +123,32 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+            <!-- Maven Flatten Plugin (https://maven.apache.org/guides/mini/guide-maven-ci-friendly.html) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -243,6 +268,12 @@ Bundle-DocURL:
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
                 </plugin>
+                <!-- Maven Flatten Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-flatten-plugin</artifactId>
+                    <version>1.1.0</version>
+                </plugin>
                 <!-- Maven Installer Plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -294,7 +325,7 @@ Bundle-DocURL:
                     <groupId>org.apache.jackrabbit</groupId>
                     <artifactId>filevault-package-maven-plugin</artifactId>
                     <extensions>true</extensions>
-                    <version>1.3.6</version>
+                    <version>1.1.6</version>
                     <configuration>
                         <filterSource>src/main/content/META-INF/vault/filter.xml</filterSource>
                         <validatorsSettings>
@@ -302,12 +333,21 @@ Bundle-DocURL:
                                 <options>
                                     <!-- use the nodetypes and namespaces from the aem-nodetypes.jar provided in the plugin dependencies -->
                                     <cnds>tccl:aem.cnd</cnds>
-                                    <immutableRootNodeNames>apps,libs,oak:index</immutableRootNodeNames>
                                 </options>
                             </jackrabbit-nodetypes>
+                            <jackrabbit-packagetype>
+                                <options>
+                                    <immutableRootNodeNames>apps,libs,oak:index</immutableRootNodeNames>
+                                </options>
+                            </jackrabbit-packagetype>
                         </validatorsSettings>
                     </configuration>
                     <dependencies>
+                        <dependency>
+                            <groupId>org.apache.jackrabbit.vault</groupId>
+                            <artifactId>vault-validation</artifactId>
+                            <version>3.5.6</version>
+                        </dependency>
                         <dependency>
                             <groupId>biz.netcentric.aem</groupId>
                             <artifactId>aem-nodetypes</artifactId>
@@ -449,11 +489,13 @@ Bundle-DocURL:
                         <enabled>false</enabled>
                     </snapshots>
                 </repository>
+                <!--
                 <repository>
                     <id>github</id>
                     <name>GitHub Packages</name>
                     <url>https://maven.pkg.github.com/wttech/acm</url>
                 </repository>
+                -->
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
@@ -810,5 +852,4 @@ Bundle-DocURL:
             <url>https://maven.pkg.github.com/wttech/acm</url>
         </repository>
     </distributionManagement>
-
 </project>

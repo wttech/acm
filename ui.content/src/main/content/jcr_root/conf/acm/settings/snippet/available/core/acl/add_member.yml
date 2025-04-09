@@ -1,6 +1,6 @@
 group: ACL
 name: acl_add_member
 content: |
-  acl.addMember { groupId = "${1}"; memberId = "${2}" }
+  acl.addMember { groupId = "${1:groupId}"; memberId = "${2:memberId}" }
 documentation: |
   Add the given member to the target group.
