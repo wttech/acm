@@ -86,9 +86,9 @@ There are two ways to install AEM Content Manager on your AEM instances:
 
 ## Compatibility
 
-| AEM Content Manager | AEM        | Java  | Groovy |
-|---------------------|------------|-------|--------|
-| 1.0.0               | 6.5, cloud | 8, 11 | 4.x    |
+| AEM Content Manager | AEM        | Java | Groovy |
+|---------------------|------------|------|--------|
+| 1.x                 | 6.x, cloud | 8+   | 4.x    |
 
 Note that AEM Content Manager is using Groovy scripts concept. However, it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
 AEM Content Manager tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
