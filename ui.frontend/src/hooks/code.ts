@@ -3,7 +3,7 @@ import { useDebounce } from 'react-use';
 import { apiRequest } from '../utils/api.ts';
 import { ExecutableIdConsole, Execution } from '../utils/api.types.ts';
 
-const compilationDelay = 1000;
+const CompilationDelay = 2000;
 
 export type SyntaxError = {
   line: number;
@@ -57,8 +57,8 @@ export const useCompilation = (code: string | undefined, onCodeChange: (code: st
     }
   }, [code]);
 
-  const [, cancelCompilation] = useDebounce(compileCode, compilationDelay, [code]);
-  useDebounce(() => onCodeChange(code || ''), compilationDelay, [code]);
+  const [, cancelCompilation] = useDebounce(compileCode, CompilationDelay, [code]);
+  useDebounce(() => onCodeChange(code || ''), CompilationDelay, [code]);
 
   useEffect(() => {
     setSyntaxError(undefined);

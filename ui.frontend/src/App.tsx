@@ -10,6 +10,8 @@ import router from './router';
 import { apiRequest } from './utils/api';
 import { State } from './utils/api.types';
 
+const AppStateFetchInterval = 2000;
+
 function App() {
   const [state, setState] = useState<State>({
     healthStatus: {
@@ -37,7 +39,7 @@ function App() {
       }
     };
     fetchState();
-    const intervalId = setInterval(fetchState, 1000);
+    const intervalId = setInterval(fetchState, AppStateFetchInterval);
     return () => clearInterval(intervalId);
   }, []);
 

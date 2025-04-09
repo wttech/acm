@@ -9,6 +9,9 @@ import com.wttech.aem.acm.core.repo.Repository;
 import groovy.lang.GroovyShell;
 import groovy.lang.MissingMethodException;
 import groovy.lang.Script;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +45,7 @@ public class ContentScript {
             script.getBinding().setVariable("out", new CodePrintStream(context));
             script.getBinding().setVariable("resourceResolver", context.getResourceResolver());
             script.getBinding().setVariable("osgi", context.getOsgiContext());
-            script.getBinding().setVariable("repository", new Repository(context.getResourceResolver()));
+            script.getBinding().setVariable("repo", new Repository(context.getResourceResolver()));
             script.getBinding().setVariable("acl", new AclGroovy(context.getResourceResolver()));
             script.getBinding().setVariable("formatter", new Formatter());
             script.getBinding()
@@ -94,5 +97,14 @@ public class ContentScript {
 
     protected Script getScript() {
         return script;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Variable> getVariables() {
+        Map<String, Object> variables = script.getBinding().getVariables();
+
+        return variables.entrySet().stream()
+                .map(entry -> new Variable(entry.getKey(), entry.getValue().getClass()))
+                .collect(Collectors.toList());
     }
 }

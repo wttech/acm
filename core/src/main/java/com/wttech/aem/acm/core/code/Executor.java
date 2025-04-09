@@ -147,6 +147,7 @@ public class Executor {
 
             ContentScript contentScript = new ContentScript(context.getExecutable());
             contentScript.prepare(context);
+            context.getExtender().extend(contentScript);
 
             execution.start();
 
