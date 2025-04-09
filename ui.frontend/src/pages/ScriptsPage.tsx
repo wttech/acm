@@ -1,10 +1,11 @@
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
+import Extension from '@spectrum-icons/workflow/Extension';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import Hand from '@spectrum-icons/workflow/Hand';
-import Extension from '@spectrum-icons/workflow/Extension';
 import ScriptList from '../components/ScriptList';
 import { useNavigationTab } from '../hooks/navigation';
+import { ScriptType } from '../utils/api.types';
 
 const ScriptsPage = () => {
   const [selectedTab, handleTabChange] = useNavigationTab('manual');
@@ -32,16 +33,16 @@ const ScriptsPage = () => {
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="manual">
-            <ScriptList type="manual" />
+            <ScriptList type={ScriptType.MANUAL} />
           </Item>
           <Item key="enabled">
-            <ScriptList type="enabled" />
+            <ScriptList type={ScriptType.ENABLED} />
           </Item>
           <Item key="disabled">
-            <ScriptList type="disabled" />
+            <ScriptList type={ScriptType.DISABLED} />
           </Item>
           <Item key="extension">
-            <ScriptList type="extension" />
+            <ScriptList type={ScriptType.EXTENSION} />
           </Item>
         </TabPanels>
       </Tabs>

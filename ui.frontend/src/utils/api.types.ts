@@ -165,9 +165,16 @@ export type Snippet = {
   documentation: string;
 };
 
+export enum ScriptType {
+  MANUAL = 'MANUAL',
+  ENABLED = 'ENABLED',
+  DISABLED = 'DISABLED',
+  EXTENSION = 'EXTENSION',
+}
+
 export type Script = {
   id: string;
-  type: 'MANUAL' | 'ENABLED' | 'DISABLED' | 'EXTENSION';
+  type: ScriptType;
   path: string;
   name: string;
   content: string;

@@ -6,7 +6,10 @@ void extendRun(ContentScript script) {
 }
 
 void completeRun(Execution execution) {
-    log.info "Completed execution: ${execution}"
+    if (execution.status.name() == 'FAILED') {
+        log.error "Something nasty happenned with '${execution.executable.id}'!"
+        // TODO send notification on Slack, MS Teams, etc using HTTP client / WebAPI
+    }
 }
 
 class AcmeFacade {

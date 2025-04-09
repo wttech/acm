@@ -129,28 +129,22 @@ const ScriptView = () => {
               <View>
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
-                    <CodeExecuteButton
-                        code={script.content}
-                        onDescribeFailed={onDescribeFailed}
-                        onExecute={onExecute}
-                        isDisabled={script.type !== 'MANUAL'}
-                        isPending={executing}
-                    />
+                    <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={script.type !== 'MANUAL'} isPending={executing} />
                     {script.type !== 'EXTENSION' && (
-                        <Button
-                            variant="secondary"
-                            style="outline"
-                            onPress={() =>
-                                navigate(
-                                    Urls.compose('/history', {
-                                      [ExecutionQueryParams.EXECUTABLE_ID]: script.id,
-                                    })
-                                )
-                            }
-                        >
-                          <History />
-                          <Text>Show in history</Text>
-                        </Button>
+                      <Button
+                        variant="secondary"
+                        style="outline"
+                        onPress={() =>
+                          navigate(
+                            Urls.compose('/history', {
+                              [ExecutionQueryParams.EXECUTABLE_ID]: script.id,
+                            }),
+                          )
+                        }
+                      >
+                        <History />
+                        <Text>Show in history</Text>
+                      </Button>
                     )}
                   </ButtonGroup>
                 </Flex>
@@ -189,4 +183,3 @@ const ScriptView = () => {
 };
 
 export default ScriptView;
-
