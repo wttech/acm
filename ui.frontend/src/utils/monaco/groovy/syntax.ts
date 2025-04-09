@@ -65,6 +65,7 @@ export function registerSyntax(instance: Monaco) {
       [/\\./, 'string.escape'],
       [/[^\\"$]+/, 'string'],
       [/"""/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+      [/"/, 'string'],
       [/[$]/, 'string'],
     ],
 
