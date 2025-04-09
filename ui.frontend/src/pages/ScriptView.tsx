@@ -130,10 +130,22 @@ const ScriptView = () => {
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
                     <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={script.type !== 'MANUAL'} isPending={executing} />
-                    <Button variant="secondary" style="outline" onPress={() => navigate(Urls.compose('/history', { [ExecutionQueryParams.EXECUTABLE_ID]: script.id }))}>
-                      <History />
-                      <Text>Show in history</Text>
-                    </Button>
+                    {script.type !== 'EXTENSION' && (
+                      <Button
+                        variant="secondary"
+                        style="outline"
+                        onPress={() =>
+                          navigate(
+                            Urls.compose('/history', {
+                              [ExecutionQueryParams.EXECUTABLE_ID]: script.id,
+                            }),
+                          )
+                        }
+                      >
+                        <History />
+                        <Text>Show in history</Text>
+                      </Button>
+                    )}
                   </ButtonGroup>
                 </Flex>
               </View>

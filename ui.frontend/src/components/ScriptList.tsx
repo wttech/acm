@@ -6,16 +6,17 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../AppContext.tsx';
 import { toastRequest } from '../utils/api';
-import { isExecutionNegative, ScriptOutput } from '../utils/api.types';
+import { isExecutionNegative, ScriptOutput, ScriptType } from '../utils/api.types';
 import DateExplained from './DateExplained.tsx';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptSynchronizeButton from './ScriptSynchronizeButton';
 import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
+import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
 
 type ScriptListProps = {
-  type: 'manual' | 'enabled' | 'disabled';
+  type: ScriptType;
 };
 
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
@@ -72,7 +73,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
-              {type === 'enabled' || type === 'disabled' ? (
+              {type === ScriptType.ENABLED || type === ScriptType.DISABLED ? (
                 <>
                   <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
                   <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
@@ -98,58 +99,71 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             )}
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            {type === 'manual' ? <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton />}
+            {type === ScriptType.MANUAL ? <ScriptsManualHelpButton /> : type === ScriptType.EXTENSION ? <ScriptsExtensionHelpButton /> : <ScriptsAutomaticHelpButton />}
           </Flex>
         </Flex>
       </View>
-      <TableView
-        flex="1"
-        aria-label="Scripts list"
-        selectionMode={type === 'manual' ? 'none' : 'multiple'}
-        selectedKeys={selectedKeys}
-        onSelectionChange={setSelectedKeys}
-        renderEmptyState={renderEmptyState}
-        onAction={(key) => {
-          navigate(`/scripts/view/${encodeURIComponent(key)}`);
-        }}
-      >
-        <TableHeader>
-          <Column>Name</Column>
-          <Column>Last Execution</Column>
-          <Column>
-            Success Rate
-            <ContextualHelp variant="help">
-              <Heading>Explanation</Heading>
-              <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
-            </ContextualHelp>
-          </Column>
-        </TableHeader>
-        <TableBody>
-          {(scripts.list || []).map((script) => {
-            const scriptStats = scripts.stats.find((stat) => stat.path === script.id)!;
-            const lastExecution = scriptStats?.lastExecution;
-
-            return (
+      {type === ScriptType.EXTENSION ? (
+        <TableView flex="1" aria-label={`Script list (${type})`} renderEmptyState={renderEmptyState} onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}>
+          <TableHeader>
+            <Column>Name</Column>
+          </TableHeader>
+          <TableBody>
+            {(scripts.list || []).map((script) => (
               <Row key={script.id}>
                 <Cell>{script.name}</Cell>
-                <Cell>
-                  <Flex alignItems="center" gap="size-100">
-                    {lastExecution && (
-                      <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution">
-                        <Magnify />
-                      </Button>
-                    )}
-                    <Text>{lastExecution ? <DateExplained value={lastExecution.startDate} /> : '—'}</Text>
-                  </Flex>
-                </Cell>
-                <Cell>
-                  <ExecutionStatsBadge stats={scriptStats} />
-                </Cell>
               </Row>
-            );
-          })}
-        </TableBody>
-      </TableView>
+            ))}
+          </TableBody>
+        </TableView>
+      ) : (
+        <TableView
+          flex="1"
+          aria-label={`Script list (${type})`}
+          selectionMode={type === ScriptType.MANUAL ? 'none' : 'multiple'}
+          selectedKeys={selectedKeys}
+          onSelectionChange={setSelectedKeys}
+          renderEmptyState={renderEmptyState}
+          onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
+        >
+          <TableHeader>
+            <Column>Name</Column>
+            <Column>Last Execution</Column>
+            <Column>
+              Success Rate
+              <ContextualHelp variant="help">
+                <Heading>Explanation</Heading>
+                <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
+              </ContextualHelp>
+            </Column>
+          </TableHeader>
+          <TableBody>
+            {(scripts.list || []).map((script) => {
+              const scriptStats = scripts.stats.find((stat) => stat.path === script.id)!;
+              const lastExecution = scriptStats?.lastExecution;
+
+              return (
+                <Row key={script.id}>
+                  <Cell>{script.name}</Cell>
+                  <Cell>
+                    <Flex alignItems="center" gap="size-100">
+                      {lastExecution && (
+                        <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution">
+                          <Magnify />
+                        </Button>
+                      )}
+                      <Text>{lastExecution ? <DateExplained value={lastExecution.startDate} /> : '—'}</Text>
+                    </Flex>
+                  </Cell>
+                  <Cell>
+                    <ExecutionStatsBadge stats={scriptStats} />
+                  </Cell>
+                </Row>
+              );
+            })}
+          </TableBody>
+        </TableView>
+      )}
     </Flex>
   );
 };

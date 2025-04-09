@@ -26,6 +26,6 @@ public class ResourceSuggestion implements Suggestion {
 
     @Override
     public String getInfo() {
-        return resource.getResourceType();
+        return String.format("Resource Type: %s", resource.getResourceType());
     }
 }

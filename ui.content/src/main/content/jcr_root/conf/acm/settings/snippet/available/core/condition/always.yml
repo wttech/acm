@@ -1,0 +1,6 @@
+group: Condition
+name: condition_always
+content: |
+  condition.always()
+documentation: |
+  Execute the script regardless of circumstances.

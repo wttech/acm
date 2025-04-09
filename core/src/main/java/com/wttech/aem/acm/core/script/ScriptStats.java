@@ -5,6 +5,7 @@ import com.wttech.aem.acm.core.code.ExecutionHistory;
 import com.wttech.aem.acm.core.code.ExecutionQuery;
 import com.wttech.aem.acm.core.code.ExecutionStatus;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,6 +45,8 @@ public class ScriptStats implements Serializable {
             case DISABLED:
                 query.setExecutableId(ScriptType.ENABLED.enforcePath(path));
                 break;
+            case EXTENSION:
+                return new ScriptStats(path, Collections.emptyMap(), null);
             default:
                 throw new IllegalStateException(String.format(
                         "Script type '%s' for path '%s' is not supported to calculate stats!", scriptType, path));

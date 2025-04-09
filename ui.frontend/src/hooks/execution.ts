@@ -7,7 +7,7 @@ import { useFormatter } from './formatter';
 
 const toastTimeout = 3000;
 
-export const useExecutionPolling = (jobId: string | undefined | null, pollInterval: number = 500) => {
+export const useExecutionPolling = (jobId: string | undefined | null, pollInterval: number = 900) => {
   const [execution, setExecution] = useState<Execution | null>(null);
   const [executing, setExecuting] = useState<boolean>(!!jobId);
   const [loading, setLoading] = useState<boolean>(true);

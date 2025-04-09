@@ -3,9 +3,10 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
+import { ScriptType } from '../utils/api.types';
 
 type ScriptToggleButtonProps = {
-  type: 'enabled' | 'disabled';
+  type: ScriptType.ENABLED | ScriptType.DISABLED;
   selectedKeys: string[];
   onToggle: () => void;
 };
@@ -16,7 +17,7 @@ const ScriptToggleButton: React.FC<ScriptToggleButtonProps> = ({ type, selectedK
 
   const handleConfirm = async () => {
     setIsLoading(true);
-    const action = type === 'enabled' ? 'disable' : 'enable';
+    const action = type === ScriptType.ENABLED ? 'disable' : 'enable';
     const ids = Array.from(selectedKeys);
 
     const params = new URLSearchParams();
@@ -46,7 +47,7 @@ const ScriptToggleButton: React.FC<ScriptToggleButtonProps> = ({ type, selectedK
       </Heading>
       <Divider />
       <Content>
-        {type === 'enabled' ? (
+        {type === ScriptType.ENABLED ? (
           <Text>Disabling scripts will stop their automatic execution. To execute them again, you need to enable them or reinstall the package with scripts.</Text>
         ) : (
           <Text>Enabling scripts can cause changes in the repository and potential data loss. Ensure the script is ready to use. It is recommended to provide enabled scripts via a package, not manually.</Text>
@@ -67,9 +68,9 @@ const ScriptToggleButton: React.FC<ScriptToggleButtonProps> = ({ type, selectedK
 
   return (
     <DialogTrigger isOpen={toggleDialogOpen} onOpenChange={setToggleDialogOpen}>
-      <Button variant={type === 'enabled' ? 'negative' : 'accent'} style="fill" isDisabled={selectedKeys.length === 0} onPress={() => setToggleDialogOpen(true)}>
-        {type === 'enabled' ? <Cancel /> : <Checkmark />}
-        <Text>{type === 'enabled' ? 'Disable' : 'Enable'}</Text>
+      <Button variant={type === ScriptType.ENABLED ? 'negative' : 'accent'} style="fill" isDisabled={selectedKeys.length === 0} onPress={() => setToggleDialogOpen(true)}>
+        {type === ScriptType.ENABLED ? <Cancel /> : <Checkmark />}
+        <Text>{type === ScriptType.ENABLED ? 'Disable' : 'Enable'}</Text>
       </Button>
       <Dialog>{renderToggleDialog()}</Dialog>
     </DialogTrigger>

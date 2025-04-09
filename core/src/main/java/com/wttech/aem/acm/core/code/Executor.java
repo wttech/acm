@@ -1,12 +1,9 @@
 package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.AcmException;
+import com.wttech.aem.acm.core.code.script.ContentScript;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.util.ResourceUtils;
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import groovy.lang.MissingMethodException;
-import groovy.lang.Script;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Optional;
@@ -15,9 +12,6 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
@@ -82,6 +76,7 @@ public class Executor {
                 ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
                 history.save(execution);
             }
+            context.getExtender().complete(execution);
             return execution;
         } finally {
             context.getFileOutput().delete();
@@ -100,27 +95,22 @@ public class Executor {
                 context.setOutputStream(outputStream);
             }
 
-            CodeShell shell = createShell(context);
+            ContentScript contentScript = new ContentScript(context.getExecutable());
+            contentScript.prepare(context);
+            context.getExtender().extend(contentScript);
 
             execution.start();
 
-            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
             if (context.getMode() == ExecutionMode.PARSE) {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
 
-            try {
-                script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
-                shell.getCodeBinding()
-                        .getArgs()
-                        .setValues(context.getExecutable().getArguments());
-            } catch (MissingMethodException e) {
-                // ignore
-            }
+            contentScript.describe();
+            contentScript.getArguments().setValues(context.getExecutable().getArguments());
 
-            boolean canRun = (Boolean) script.invokeMethod(CodeSyntax.Method.CHECK.givenName, null);
+            boolean canRun = contentScript.canRun();
             if (!canRun) {
                 return execution.end(ExecutionStatus.SKIPPED);
             } else if (context.getMode() == ExecutionMode.CHECK) {
@@ -128,7 +118,7 @@ public class Executor {
             }
 
             statuses.put(context.getId(), ExecutionStatus.RUNNING);
-            script.invokeMethod(CodeSyntax.Method.RUN.givenName, null);
+            contentScript.run();
             return execution.end(ExecutionStatus.SUCCEEDED);
         } catch (Throwable e) {
             execution.error(e);
@@ -139,16 +129,6 @@ public class Executor {
         } finally {
             statuses.remove(context.getId());
         }
-    }
-
-    private CodeShell createShell(ExecutionContext context) {
-        CodeBinding codeBinding = new CodeBinding(context);
-        Binding binding = codeBinding.toBinding();
-        CompilerConfiguration compiler = new CompilerConfiguration();
-        compiler.addCompilationCustomizers(new ImportCustomizer());
-        compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new CodeSyntax()));
-        GroovyShell groovyShell = new GroovyShell(binding, compiler);
-        return new CodeShell(groovyShell, codeBinding);
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {
@@ -165,21 +145,18 @@ public class Executor {
         try (OutputStream outputStream = context.getFileOutput().write()) {
             context.setOutputStream(outputStream);
 
-            CodeShell shell = createShell(context);
-            execution.start();
-            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), CodeSyntax.MAIN_CLASS);
+            ContentScript contentScript = new ContentScript(context.getExecutable());
+            contentScript.prepare(context);
+            context.getExtender().extend(contentScript);
 
-            try {
-                script.invokeMethod(CodeSyntax.Method.DESCRIBE.givenName, null);
-            } catch (MissingMethodException e) {
-                // ignore
-            }
-            return new Description(
-                    execution.end(ExecutionStatus.SUCCEEDED),
-                    shell.getCodeBinding().getArgs());
+            execution.start();
+
+            contentScript.describe();
+
+            return new Description(execution.end(ExecutionStatus.SUCCEEDED), contentScript.getArguments());
         } catch (Throwable e) {
             execution.error(e);
-            return new Description(execution.end(ExecutionStatus.FAILED), new Arguments(context));
+            return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
         } finally {
             context.getFileOutput().delete();
         }

@@ -15,6 +15,8 @@ public class ExecutionContext {
 
     private final ResourceResolver resourceResolver;
 
+    private final Extender extender;
+
     private OutputStream outputStream = new NullOutputStream();
 
     private ExecutionMode mode = ExecutionMode.RUN;
@@ -31,6 +33,7 @@ public class ExecutionContext {
         this.executable = executable;
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
+        this.extender = new Extender(resourceResolver);
     }
 
     public Executor getExecutor() {
@@ -43,6 +46,10 @@ public class ExecutionContext {
 
     public ResourceResolver getResourceResolver() {
         return resourceResolver;
+    }
+
+    public Extender getExtender() {
+        return extender;
     }
 
     public OsgiContext getOsgiContext() {

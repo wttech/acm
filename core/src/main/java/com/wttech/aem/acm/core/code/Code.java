@@ -54,6 +54,18 @@ public class Code implements Executable {
         }
     }
 
+    public static Code consoleMinimal() {
+        Code result = new Code();
+        result.id = "console";
+        result.content = "boolean canRun() {\n" + "    return condition.always()\n"
+                + "  }\n"
+                + "    \n"
+                + "  void doRun() {\n"
+                + "    println \"Hello World!\"\n"
+                + "  }";
+        return result;
+    }
+
     @Override
     public String getId() {
         return id;
