@@ -18,7 +18,7 @@ public class ContentScript {
     private final Script script;
 
     public ContentScript(ExecutionContext context) {
-        GroovyShell shell = ScriptUtil.createShell(new ContentScriptSyntax());
+        GroovyShell shell = ScriptUtils.createShell(new ContentScriptSyntax());
 
         Script script = shell.parse(context.getExecutable().getContent(), ContentScriptSyntax.MAIN_CLASS);
         prepareScript(script, context);

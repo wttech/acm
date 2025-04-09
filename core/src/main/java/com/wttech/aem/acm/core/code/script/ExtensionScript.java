@@ -13,7 +13,7 @@ public class ExtensionScript {
 
     public ExtensionScript(ExecutionContext context) {
         this.context = context;
-        this.script = ScriptUtil.createShell(new ExtensionScriptSyntax())
+        this.script = ScriptUtils.createShell(new ExtensionScriptSyntax())
                 .parse(context.getExecutable().getContent(), ExtensionScriptSyntax.MAIN_CLASS);
     }
 
