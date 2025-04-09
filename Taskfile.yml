@@ -131,7 +131,7 @@ tasks:
     desc: build AEM Frontend
     cmd: sh ../mvnw clean install $AEM_BUILD_ARGS
     generates:
-      - ../ui.apps/src/main/content/jcr_root/apps/puratos/clientlibs/**/*
+      - ../ui.apps/src/main/content/jcr_root/apps/acm/spa/**/*
     sources:
       - pom.xml
       - package.json
@@ -139,10 +139,17 @@ tasks:
       - '*.js'
       - src/**/*
 
+  build:apps:structure:
+    dir: ui.apps.structure
+    desc: build AEM Apps Structure package
+    cmd: sh ../mvnw clean install $AEM_BUILD_ARGS
+    generates: [ target/*.ui.apps.structure-*.zip ]
+    sources: [ pom.xml ]
+
   build:apps:
     dir: ui.apps
     desc: build AEM Apps package
-    cmd: sh ../mvnw clean install -Drevision=9.0.0-SNAPSHOT $AEM_BUILD_ARGS
+    cmd: sh ../mvnw clean install $AEM_BUILD_ARGS
     generates: [ target/*.ui.apps-*.zip ]
     sources:
       - ../pom.xml
@@ -190,6 +197,7 @@ tasks:
       - task: build:root
       - task: build:core
       - task: build:frontend
+      - task: build:apps:structure
       - task: build:apps
       - task: build:config
       - task: build:content
@@ -210,7 +218,7 @@ tasks:
 
   develop:all:
     desc: build & deploy all AEM package to instances
-    deps: [ build:std ] # TODO: [ build:inc ]
+    deps: [ build:inc ]
     cmds:
       - task: deploy:all
 

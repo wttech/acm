@@ -1,6 +1,6 @@
 group: ACL
 name: acl_remove_all_members
 content: |
-  acl.removeAllMembers { groupId = "${1}" }
+  acl.removeAllMembers { groupId = "${1:groupId}" }
 documentation: |
   Removes all members from the given group.

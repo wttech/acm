@@ -1,7 +1,7 @@
 group: ACL
 name: acl_create_user
 content: |
-  def ${1} = acl.createUser { id = "${2}"; fullName = "${3}"; password = "${4}"; email = "${5}" }
+  acl.createUser { id = "${1:id}"; fullName = "${2:fullName}"; password = "${3:password}"; email = "${4:email}" }
 documentation: |
   Create or retrieve the user with the given ID, full name, password and email.<br>
   The user will only be created if it does not already exist.

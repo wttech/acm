@@ -1,6 +1,6 @@
 group: ACL
 name: acl_delete_group
 content: |
-  acl.deleteGroup { id = "${1}" }
+  acl.deleteGroup { id = "${1:id}" }
 documentation: |
   Delete the group with the given ID.

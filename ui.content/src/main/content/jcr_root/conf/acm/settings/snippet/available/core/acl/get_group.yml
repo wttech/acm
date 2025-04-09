@@ -1,6 +1,6 @@
 group: ACL
 name: acl_get_group
 content: |
-  def ${1} = acl.getGroup { id = "${2}" }
+  acl.getGroup { id = "${1:id}" }
 documentation: |
   Get an existing AEM group by its ID.
