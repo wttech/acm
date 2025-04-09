@@ -12,6 +12,7 @@ import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptSynchronizeButton from './ScriptSynchronizeButton';
 import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
+import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
 
 type ScriptListProps = {
@@ -98,7 +99,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             )}
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            {type === ScriptType.MANUAL ? <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton />}
+            {type === ScriptType.MANUAL ? <ScriptsManualHelpButton /> : type === ScriptType.EXTENSION ? <ScriptsExtensionHelpButton /> : <ScriptsAutomaticHelpButton />}
           </Flex>
         </Flex>
       </View>
