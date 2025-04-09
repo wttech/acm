@@ -250,16 +250,24 @@ To add own code binding or hook into execution process, you can create your own 
 #### Example extension script
 
 ```groovy
-void extend(Extender extender) {
-  extender.codeBindingVariable("acme", AcmeApi.class) { new AcmApiImpl(executionContext.resourceResolver)) }
-  // or just
-  extender.codeBindingVariable("acme") { new AcmApiImpl(executionContext.resourceResolver) }
+import com.wttech.aem.acm.core.code.script.ContentScript
+import com.wttech.aem.acm.core.code.Execution
+
+void extendRun(ContentScript script) {
+    script.variable("acme", new AcmeFacade())
 }
 
-void completeExecution(Execution execution) {
-   if (execution.status === 'FAILED') {
-      // send Slack/MS Teams message or something
-   }
+void completeRun(Execution execution) {
+    if (execution.status.name() == 'FAILED') {
+        log.error "Something nasty happened with '${execution.executable.id}'!"
+        // TODO send notification on Slack, MS Teams, etc using HTTP client / WebAPI
+    }
+}
+
+class AcmeFacade {
+    def now() {
+        return new Date()
+    }
 }
 ```
 

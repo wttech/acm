@@ -7,7 +7,7 @@ void extendRun(ContentScript script) {
 
 void completeRun(Execution execution) {
     if (execution.status.name() == 'FAILED') {
-        log.error "Something nasty happenned with '${execution.executable.id}'!"
+        log.error "Something nasty happened with '${execution.executable.id}'!"
         // TODO send notification on Slack, MS Teams, etc using HTTP client / WebAPI
     }
 }
