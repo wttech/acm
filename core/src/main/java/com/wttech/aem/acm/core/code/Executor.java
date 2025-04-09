@@ -4,7 +4,6 @@ import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.code.script.ContentScript;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.util.ResourceUtils;
-
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Optional;
@@ -96,8 +95,7 @@ public class Executor {
                 context.setOutputStream(outputStream);
             }
 
-            ContentScript script = new ContentScript(context);
-
+            ContentScript contentScript = new ContentScript(context);
             execution.start();
 
             if (context.getMode() == ExecutionMode.PARSE) {
@@ -106,10 +104,10 @@ public class Executor {
 
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
 
-            script.describe();
-            script.getArguments().setValues(context.getExecutable().getArguments());
+            contentScript.describe();
+            contentScript.getArguments().setValues(context.getExecutable().getArguments());
 
-            boolean canRun = script.canRun();
+            boolean canRun = contentScript.canRun();
             if (!canRun) {
                 return execution.end(ExecutionStatus.SKIPPED);
             } else if (context.getMode() == ExecutionMode.CHECK) {
@@ -117,7 +115,7 @@ public class Executor {
             }
 
             statuses.put(context.getId(), ExecutionStatus.RUNNING);
-            script.run();
+            contentScript.run();
             return execution.end(ExecutionStatus.SUCCEEDED);
         } catch (Throwable e) {
             execution.error(e);

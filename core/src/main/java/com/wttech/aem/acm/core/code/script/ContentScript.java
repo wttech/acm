@@ -18,9 +18,9 @@ public class ContentScript {
     private final Script script;
 
     public ContentScript(ExecutionContext context) {
-        GroovyShell shell = ScriptUtil.createShell(new ContentCodeSyntax());
+        GroovyShell shell = ScriptUtil.createShell(new ContentScriptSyntax());
 
-        Script script = shell.parse(context.getExecutable().getContent(), context.getExecutable().getId());
+        Script script = shell.parse(context.getExecutable().getContent(), ContentScriptSyntax.MAIN_CLASS);
         prepareScript(script, context);
         context.getExtender().extend(this);
         this.script = script;
@@ -36,7 +36,12 @@ public class ContentScript {
         script.getBinding().setVariable("repository", new Repository(context.getResourceResolver()));
         script.getBinding().setVariable("acl", new AclGroovy(context.getResourceResolver()));
         script.getBinding().setVariable("formatter", new Formatter());
-        script.getBinding().setVariable("activator", new Activator(context.getResourceResolver(), context.getOsgiContext().getReplicator()));
+        script.getBinding()
+                .setVariable(
+                        "activator",
+                        new Activator(
+                                context.getResourceResolver(),
+                                context.getOsgiContext().getReplicator()));
     }
 
     private Logger createLogger(Executable executable) {
@@ -45,18 +50,18 @@ public class ContentScript {
 
     public void describe() {
         try {
-            script.invokeMethod(ContentCodeSyntax.DESCRIBE_RUN.givenName, null);
+            script.invokeMethod(ContentScriptSyntax.Method.DESCRIBE.givenName, null);
         } catch (MissingMethodException e) {
             // ignore
         }
     }
 
     public boolean canRun() {
-        return (Boolean) script.invokeMethod(ContentCodeSyntax.CAN_RUN.givenName, null);
+        return (Boolean) script.invokeMethod(ContentScriptSyntax.Method.CHECK.givenName, null);
     }
 
     public void run() {
-        script.invokeMethod(ContentCodeSyntax.DO_RUN.givenName, null);
+        script.invokeMethod(ContentScriptSyntax.Method.RUN.givenName, null);
     }
 
     public Arguments getArguments() {
