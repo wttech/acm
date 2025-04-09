@@ -44,9 +44,6 @@ public class Executor {
     private ResourceResolverFactory resourceResolverFactory;
 
     @Reference
-    private Extender extender;
-
-    @Reference
     private OsgiContext osgiContext;
 
     private Config config;
@@ -85,9 +82,7 @@ public class Executor {
                 ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
                 history.save(execution);
             }
-            for (Script script : extender.getScripts()) {
-                script.invokeMethod(ExtensionCodeSyntax.Method.COMPLETE.givenName, execution);
-            }
+            context.getExtender().complete(execution);
             return execution;
         } finally {
             context.getFileOutput().delete();
@@ -106,16 +101,16 @@ public class Executor {
                 context.setOutputStream(outputStream);
             }
 
-            Shell shell = createShell();
-            shell.getBindings().registerVariables(context);
+            Shell shell = createContentShell();
+            shell.setVariables(context);
 
-            for (Script script : extender.getScripts()) {
-                script.invokeMethod(ExtensionCodeSyntax.Method.EXTEND.givenName, shell);
-            }
+            context.getExtender().extend(shell);
 
             execution.start();
 
-            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), ContentCodeSyntax.MAIN_CLASS);
+            Script script = shell.parseCode(
+                    context.getExecutable().getContent(),
+                    context.getExecutable().getId());
             if (context.getMode() == ExecutionMode.PARSE) {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
@@ -123,15 +118,13 @@ public class Executor {
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
 
             try {
-                script.invokeMethod(ContentCodeSyntax.Method.DESCRIBE.givenName, null);
-                shell.getBindings()
-                        .getArguments()
-                        .setValues(context.getExecutable().getArguments());
+                script.invokeMethod(ContentCodeSyntax.DESCRIBE_RUN.givenName, null);
+                shell.getArguments().setValues(context.getExecutable().getArguments());
             } catch (MissingMethodException e) {
                 // ignore
             }
 
-            boolean canRun = (Boolean) script.invokeMethod(ContentCodeSyntax.Method.CHECK.givenName, null);
+            boolean canRun = (Boolean) script.invokeMethod(ContentCodeSyntax.CAN_RUN.givenName, null);
             if (!canRun) {
                 return execution.end(ExecutionStatus.SKIPPED);
             } else if (context.getMode() == ExecutionMode.CHECK) {
@@ -139,7 +132,7 @@ public class Executor {
             }
 
             statuses.put(context.getId(), ExecutionStatus.RUNNING);
-            script.invokeMethod(ContentCodeSyntax.Method.RUN.givenName, null);
+            script.invokeMethod(ContentCodeSyntax.DO_RUN.givenName, null);
             return execution.end(ExecutionStatus.SUCCEEDED);
         } catch (Throwable e) {
             execution.error(e);
@@ -152,10 +145,18 @@ public class Executor {
         }
     }
 
-    private Shell createShell() {
+    public Shell createContentShell() {
+        return createShell(new ContentCodeSyntax());
+    }
+
+    public Shell createExtensionShell() {
+        return createShell(new ExtensionCodeSyntax());
+    }
+
+    private Shell createShell(AbstractCodeSyntax codeSyntax) {
         CompilerConfiguration compiler = new CompilerConfiguration();
         compiler.addCompilationCustomizers(new ImportCustomizer());
-        compiler.addCompilationCustomizers(new ASTTransformationCustomizer(new ContentCodeSyntax()));
+        compiler.addCompilationCustomizers(new ASTTransformationCustomizer(codeSyntax));
         GroovyShell groovyShell = new GroovyShell(new Binding(), compiler);
         return new Shell(groovyShell);
     }
@@ -174,20 +175,20 @@ public class Executor {
         try (OutputStream outputStream = context.getFileOutput().write()) {
             context.setOutputStream(outputStream);
 
-            Shell shell = createShell();
-            shell.getBindings().registerVariables(context);
+            Shell shell = createContentShell();
+            shell.setVariables(context);
 
             execution.start();
-            Script script = shell.getGroovyShell().parse(context.getExecutable().getContent(), ContentCodeSyntax.MAIN_CLASS);
+            Script script = shell.parseCode(
+                    context.getExecutable().getContent(),
+                    context.getExecutable().getId());
 
             try {
-                script.invokeMethod(ContentCodeSyntax.Method.DESCRIBE.givenName, null);
+                script.invokeMethod(ContentCodeSyntax.DESCRIBE_RUN.givenName, null);
             } catch (MissingMethodException e) {
                 // ignore
             }
-            return new Description(
-                    execution.end(ExecutionStatus.SUCCEEDED),
-                    shell.getBindings().getArguments());
+            return new Description(execution.end(ExecutionStatus.SUCCEEDED), shell.getArguments());
         } catch (Throwable e) {
             execution.error(e);
             return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());

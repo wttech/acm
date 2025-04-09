@@ -1,30 +1,52 @@
 package com.wttech.aem.acm.core.code;
 
+import com.wttech.aem.acm.core.AcmException;
+import com.wttech.aem.acm.core.script.ScriptRepository;
+import com.wttech.aem.acm.core.script.ScriptType;
 import groovy.lang.Script;
-import org.apache.sling.api.resource.observation.ResourceChange;
-import org.apache.sling.api.resource.observation.ResourceChangeListener;
-import org.jetbrains.annotations.NotNull;
-import org.osgi.service.component.annotations.Component;
-
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.sling.api.resource.ResourceResolver;
 
-@Component(service = {Extender.class, ResourceChangeListener.class}, immediate = true)
-public class Extender implements ResourceChangeListener {
+public class Extender {
 
-    private final List<Script> scripts = new LinkedList<>();
+    private final Shell shell;
 
-    @Override
-    public void onChange(@NotNull List<ResourceChange> list) {
-        // TODO if any of the changes are related to the extension scripts, call compileExtensionScripts; but async; implement something like debounce
+    private final List<Script> scripts;
+
+    public Extender(Executor executor, ResourceResolver resourceResolver) {
+        this.shell = executor.createExtensionShell();
+        this.scripts = new ScriptRepository(resourceResolver)
+                .findAll(ScriptType.EXTENSION)
+                .map(s -> shell.parseCode(s.getContent(), s.getName()))
+                .collect(Collectors.toList());
     }
 
-    public void compileExtensionScripts() {
-        // TODO ...
+    public void extend(Shell contentShell) {
+        for (Script script : scripts) {
+            try {
+                script.invokeMethod(ExtensionCodeSyntax.EXTEND_RUN.givenName, contentShell);
+            } catch (Exception e) {
+                throw new AcmException(
+                        String.format(
+                                "Cannot extend shell with extension script '%s'",
+                                script.getClass().getName()),
+                        e);
+            }
+        }
     }
 
-    public Collection<Script> getScripts() {
-        return scripts;
+    public void complete(Execution execution) {
+        for (Script script : scripts) {
+            try {
+                script.invokeMethod(ExtensionCodeSyntax.COMPLETE_RUN.givenName, execution);
+            } catch (Exception e) {
+                throw new AcmException(
+                        String.format(
+                                "Cannot complete execution with extension script '%s'",
+                                script.getClass().getName()),
+                        e);
+            }
+        }
     }
 }
