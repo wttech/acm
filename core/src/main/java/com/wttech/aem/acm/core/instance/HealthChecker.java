@@ -83,7 +83,7 @@ public class HealthChecker implements EventHandler {
 
     // TODO seems to not work on AEMaaCS as there is no Sling Installer JMX MBean
     private void checkInstaller(HealthStatus result, ResourceResolver resourceResolver) {
-        if (!config.runCheckInstaller()) {
+        if (!config.installerChecking()) {
             return;
         }
         SlingInstallerState state = slingInstaller.checkState(resourceResolver);
@@ -100,7 +100,7 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkRepository(HealthStatus result, ResourceResolver resourceResolver) {
-        if (!config.runCheckRepository()) {
+        if (!config.repositoryChecking()) {
             return;
         }
         Repository repository = new Repository(resourceResolver);
@@ -119,7 +119,7 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkBundles(HealthStatus result) {
-        if (!config.runCheckBundles()) {
+        if (!config.bundleChecking()) {
             return;
         }
         osgiScanner.scanBundles().filter(b -> !isBundleIgnored(b)).forEach(bundle -> {
@@ -153,7 +153,7 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkEvents(HealthStatus result) {
-        if (!config.runCheckEvents()) {
+        if (!config.eventChecking()) {
             return;
         }
         List<OsgiEvent> recentEvents = eventCollector.getRecentEvents(config.eventTimeWindow());
@@ -188,11 +188,16 @@ public class HealthChecker implements EventHandler {
 
     @ObjectClassDefinition(name = "AEM Content Manager - Health Checker")
     public @interface Config {
+        @AttributeDefinition(name = "Bundle Checking")
+        boolean bundleChecking() default true;
 
         @AttributeDefinition(
                 name = "Bundle Symbolic Names Ignored",
                 description = "Allows to exclude certain OSGi bundles from health check (to address known issues)")
         String[] bundleSymbolicNamesIgnored();
+
+        @AttributeDefinition(name = "Event Checking")
+        boolean eventChecking() default true;
 
         @AttributeDefinition(
                 name = "Event Unstable Topics",
@@ -211,25 +216,17 @@ public class HealthChecker implements EventHandler {
         @AttributeDefinition(name = "Event Unstable Queue Size", description = "Max number of unstable events to store")
         int eventQueueSize() default 250;
 
+        @AttributeDefinition(name = "Repository Checking")
+        boolean repositoryChecking() default true;
+
         @AttributeDefinition(
                 name = "Repository Paths Existed",
                 description = "Paths to check for the existence in the repository")
         String[] repositoryPathsExisted();
 
-        @AttributeDefinition(name = "Run repository healthcheck", description = "Validates repository")
-        boolean runCheckRepository() default true;
-
         @AttributeDefinition(
-                name = "Run sling installer healthcheck",
+                name = "Installer Checking",
                 description = "Default is set to false, because it's not supported on AEMaaCS")
-        boolean runCheckInstaller() default false;
-
-        @AttributeDefinition(
-                name = "Run OSGi bundles healthcheck",
-                description = "Checks whether bundles are inactive or not resolved")
-        boolean runCheckBundles() default true;
-
-        @AttributeDefinition(name = "Run events healthcheck", description = "Looks for recurring events")
-        boolean runCheckEvents() default true;
+        boolean installerChecking() default false;
     }
 }
