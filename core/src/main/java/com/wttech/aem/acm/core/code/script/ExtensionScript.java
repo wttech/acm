@@ -19,6 +19,7 @@ public class ExtensionScript {
 
     public void extend(ContentScript contentScript) {
         try {
+            script.setBinding(contentScript.getScript().getBinding());
             script.invokeMethod(ExtensionScriptSyntax.Method.EXTEND.givenName, contentScript);
         } catch (Exception e) {
             throw new AcmException(

@@ -91,4 +91,8 @@ public class ContentScript {
     public void variable(String name, Object value) {
         script.getBinding().setVariable(name, value);
     }
+
+    protected Script getScript() {
+        return script;
+    }
 }
