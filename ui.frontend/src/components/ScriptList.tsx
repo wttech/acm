@@ -15,7 +15,7 @@ import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
 
 type ScriptListProps = {
-  type: 'manual' | 'enabled' | 'disabled';
+  type: 'manual' | 'enabled' | 'disabled' | 'extension';
 };
 
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
@@ -67,90 +67,108 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
   }
 
   return (
-    <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-      <View>
-        <Flex direction="row" justifyContent="space-between" alignItems="center">
-          <Flex flex="1" alignItems="center">
-            <ButtonGroup>
-              {type === 'enabled' || type === 'disabled' ? (
-                <>
-                  <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-                  <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
-                </>
-              ) : null}
-            </ButtonGroup>
-          </Flex>
-          <Flex flex="1" justifyContent="center" alignItems="center">
-            {appContext && (
-              <StatusLight variant={appContext.healthStatus.healthy ? 'positive' : 'negative'}>
-                {appContext.healthStatus.healthy ? (
-                  <Text>Executor active</Text>
-                ) : (
-                  <>
-                    <Text>Executor paused</Text>
-                    <Text>&nbsp;&mdash;&nbsp;</Text>
-                    <Link isQuiet onPress={() => navigate('/maintenance/health-checker')}>
-                      See health issues
-                    </Link>
-                  </>
-                )}
-              </StatusLight>
-            )}
-          </Flex>
-          <Flex flex="1" justifyContent="end" alignItems="center">
-            {type === 'manual' ? <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton />}
-          </Flex>
-        </Flex>
-      </View>
-      <TableView
-        flex="1"
-        aria-label="Scripts list"
-        selectionMode={type === 'manual' ? 'none' : 'multiple'}
-        selectedKeys={selectedKeys}
-        onSelectionChange={setSelectedKeys}
-        renderEmptyState={renderEmptyState}
-        onAction={(key) => {
-          navigate(`/scripts/view/${encodeURIComponent(key)}`);
-        }}
-      >
-        <TableHeader>
-          <Column>Name</Column>
-          <Column>Last Execution</Column>
-          <Column>
-            Success Rate
-            <ContextualHelp variant="help">
-              <Heading>Explanation</Heading>
-              <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
-            </ContextualHelp>
-          </Column>
-        </TableHeader>
-        <TableBody>
-          {(scripts.list || []).map((script) => {
-            const scriptStats = scripts.stats.find((stat) => stat.path === script.id)!;
-            const lastExecution = scriptStats?.lastExecution;
-
-            return (
-              <Row key={script.id}>
-                <Cell>{script.name}</Cell>
-                <Cell>
-                  <Flex alignItems="center" gap="size-100">
-                    {lastExecution && (
-                      <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution">
-                        <Magnify />
-                      </Button>
+      <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+        <View>
+          <Flex direction="row" justifyContent="space-between" alignItems="center">
+            <Flex flex="1" alignItems="center">
+              <ButtonGroup>
+                {(type === 'enabled' || type === 'disabled') ? (
+                    <>
+                      <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
+                      <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
+                    </>
+                ) : null}
+              </ButtonGroup>
+            </Flex>
+            <Flex flex="1" justifyContent="center" alignItems="center">
+              {appContext && (
+                  <StatusLight variant={appContext.healthStatus.healthy ? 'positive' : 'negative'}>
+                    {appContext.healthStatus.healthy ? (
+                        <Text>Executor active</Text>
+                    ) : (
+                        <>
+                          <Text>Executor paused</Text>
+                          <Text>&nbsp;&mdash;&nbsp;</Text>
+                          <Link isQuiet onPress={() => navigate('/maintenance/health-checker')}>
+                            See health issues
+                          </Link>
+                        </>
                     )}
-                    <Text>{lastExecution ? <DateExplained value={lastExecution.startDate} /> : '—'}</Text>
-                  </Flex>
-                </Cell>
-                <Cell>
-                  <ExecutionStatsBadge stats={scriptStats} />
-                </Cell>
-              </Row>
-            );
-          })}
-        </TableBody>
-      </TableView>
-    </Flex>
+                  </StatusLight>
+              )}
+            </Flex>
+            <Flex flex="1" justifyContent="end" alignItems="center">
+              {type === 'manual' ? <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton />}
+            </Flex>
+          </Flex>
+        </View>
+        {type === 'extension' ? (
+            <TableView
+                flex="1"
+                aria-label={`Script list (${type})`}
+                renderEmptyState={renderEmptyState}
+                onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
+            >
+              <TableHeader>
+                <Column>Name</Column>
+              </TableHeader>
+              <TableBody>
+                {(scripts.list || []).map((script) => (
+                    <Row key={script.id}>
+                      <Cell>{script.name}</Cell>
+                    </Row>
+                ))}
+              </TableBody>
+            </TableView>
+        ) : (
+            <TableView
+                flex="1"
+                aria-label={`Script list (${type})`}
+                selectionMode={type === 'manual' ? 'none' : 'multiple'}
+                selectedKeys={selectedKeys}
+                onSelectionChange={setSelectedKeys}
+                renderEmptyState={renderEmptyState}
+                onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
+            >
+              <TableHeader>
+                <Column>Name</Column>
+                <Column>Last Execution</Column>
+                <Column>
+                  Success Rate
+                  <ContextualHelp variant="help">
+                    <Heading>Explanation</Heading>
+                    <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
+                  </ContextualHelp>
+                </Column>
+              </TableHeader>
+              <TableBody>
+                {(scripts.list || []).map((script) => {
+                  const scriptStats = scripts.stats.find((stat) => stat.path === script.id)!;
+                  const lastExecution = scriptStats?.lastExecution;
+
+                  return (
+                      <Row key={script.id}>
+                        <Cell>{script.name}</Cell>
+                        <Cell>
+                          <Flex alignItems="center" gap="size-100">
+                            {lastExecution && (
+                                <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution">
+                                  <Magnify />
+                                </Button>
+                            )}
+                            <Text>{lastExecution ? <DateExplained value={lastExecution.startDate} /> : '—'}</Text>
+                          </Flex>
+                        </Cell>
+                        <Cell>
+                          <ExecutionStatsBadge stats={scriptStats} />
+                        </Cell>
+                      </Row>
+                  );
+                })}
+              </TableBody>
+            </TableView>
+        )}
+      </Flex>
   );
 };
 

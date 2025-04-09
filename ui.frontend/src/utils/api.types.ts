@@ -167,7 +167,7 @@ export type Snippet = {
 
 export type Script = {
   id: string;
-  type: 'MANUAL' | 'ENABLED' | 'DISABLED';
+  type: 'MANUAL' | 'ENABLED' | 'DISABLED' | 'EXTENSION';
   path: string;
   name: string;
   content: string;

@@ -2,6 +2,7 @@ import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectru
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import Hand from '@spectrum-icons/workflow/Hand';
+import Extension from '@spectrum-icons/workflow/Extension';
 import ScriptList from '../components/ScriptList';
 import { useNavigationTab } from '../hooks/navigation';
 
@@ -24,6 +25,10 @@ const ScriptsPage = () => {
             <CloseCircle />
             <Text>Disabled</Text>
           </Item>
+          <Item aria-label="Extension scripts" key="extension">
+            <Extension />
+            <Text>Extension</Text>
+          </Item>
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="manual">
@@ -34,6 +39,9 @@ const ScriptsPage = () => {
           </Item>
           <Item key="disabled">
             <ScriptList type="disabled" />
+          </Item>
+          <Item key="extension">
+            <ScriptList type="extension" />
           </Item>
         </TabPanels>
       </Tabs>
