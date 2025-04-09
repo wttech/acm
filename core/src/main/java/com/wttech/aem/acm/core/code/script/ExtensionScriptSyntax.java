@@ -37,7 +37,7 @@ public class ExtensionScriptSyntax extends AbstractASTTransformation {
     }
 
     enum Method {
-        EXTEND("extendRun", "void", true, 1),
+        PREPARE("prepareRun", "void", true, 1),
         COMPLETE("completeRun", "void", true, 1);
 
         final String givenName;

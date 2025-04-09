@@ -1,25 +1,26 @@
 package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.AcmException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public class ExecutionFileOutput {
+public class ExecutionOutput {
 
     public static final String TMP_DIR = "acm";
 
     private final String jobId;
 
-    public ExecutionFileOutput(String jobId) {
+    private final List<Closeable> closebles = new LinkedList<>();
+
+    public ExecutionOutput(String jobId) {
         this.jobId = jobId;
     }
 
@@ -47,7 +48,9 @@ public class ExecutionFileOutput {
 
     public InputStream read() {
         try {
-            return Files.newInputStream(path());
+            InputStream result = Files.newInputStream(path());
+            closebles.add(result);
+            return result;
         } catch (IOException e) {
             throw new AcmException(
                     String.format("Execution output file cannot open for reading for job '%s'", jobId), e);
@@ -56,7 +59,9 @@ public class ExecutionFileOutput {
 
     public OutputStream write() {
         try {
-            return Files.newOutputStream(path());
+            OutputStream result = Files.newOutputStream(path());
+            closebles.add(result);
+            return result;
         } catch (IOException e) {
             throw new AcmException(
                     String.format("Execution output file cannot be open for writing for job '%s'", jobId), e);
@@ -69,5 +74,16 @@ public class ExecutionFileOutput {
         } catch (IOException e) {
             throw new AcmException(String.format("Execution output file clean up failed for job '%s'", jobId), e);
         }
+    }
+
+    public void close() {
+        for (Closeable closeable : closebles) {
+            try {
+                closeable.close();
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        closebles.clear();
     }
 }

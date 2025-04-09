@@ -1,8 +1,8 @@
-import com.wttech.aem.acm.core.code.script.ContentScript
+import com.wttech.aem.acm.core.code.ExecutionContext
 import com.wttech.aem.acm.core.code.Execution
 
-void extendRun(ContentScript script) {
-    script.variable("acme", new AcmeFacade())
+void prepareRun(ExecutionContext executionContext) {
+    executionContext.variable("acme", new AcmeFacade())
 }
 
 void completeRun(Execution execution) {

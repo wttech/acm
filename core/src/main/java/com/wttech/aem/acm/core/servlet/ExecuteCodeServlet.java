@@ -36,15 +36,23 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        ExecuteCodeInput input;
         try {
-            ExecuteCodeInput input = JsonUtils.read(request.getInputStream(), ExecuteCodeInput.class);
-            if (input == null) {
-                respondJson(response, badRequest("Code input is not specified!"));
-                return;
-            }
+            input = JsonUtils.read(request.getInputStream(), ExecuteCodeInput.class);
+        } catch (Exception e) {
+            LOG.error("Code input cannot be read!", e);
+            respondJson(response, badRequest("Cannot read code input!"));
+            return;
+        }
+        if (input == null) {
+            respondJson(response, badRequest("Code input is not specified!"));
+            return;
+        }
 
-            Code code = input.getCode();
-            ExecutionContext context = executor.createContext(code, request.getResourceResolver());
+        Code code = input.getCode();
+
+        try (ExecutionContext context =
+                executor.createContext(ExecutionId.generate(), code, request.getResourceResolver())) {
             if (input.getHistory() != null) {
                 context.setHistory(input.getHistory());
             }
@@ -69,10 +77,6 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
                         error(String.format(
                                 "Code from '%s' cannot be executed. Error: %s", code.getId(), e.getMessage())));
             }
-        } catch (Exception e) {
-            LOG.error("Code input cannot be read!", e);
-            respondJson(response, badRequest("Cannot read code input!"));
-            return;
         }
     }
 }

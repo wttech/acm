@@ -3,7 +3,6 @@ package com.wttech.aem.acm.core.assist;
 import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.assist.resource.ResourceScanner;
 import com.wttech.aem.acm.core.code.*;
-import com.wttech.aem.acm.core.code.script.ContentScript;
 import com.wttech.aem.acm.core.osgi.ClassInfo;
 import com.wttech.aem.acm.core.osgi.OsgiScanner;
 import com.wttech.aem.acm.core.snippet.SnippetRepository;
@@ -61,15 +60,12 @@ public class Assistancer {
     }
 
     private Stream<VariableSuggestion> variableSuggestions(ResourceResolver resolver, String word) {
-        Executable code = Code.consoleMinimal();
-        ExecutionContext context = executor.createContext(code, resolver);
-        ContentScript contentScript = new ContentScript(code);
-        contentScript.prepare(context);
-        context.getExtender().extend(contentScript);
-
-        return contentScript.getVariables().stream()
-                .filter(v -> SearchUtils.containsWord(v.getName(), word))
-                .map(VariableSuggestion::new);
+        try (ExecutionContext context =
+                executor.createContext(ExecutionId.generate(), Code.consoleMinimal(), resolver)) {
+            return context.getBindingVariables().stream()
+                    .filter(v -> SearchUtils.containsWord(v.getName(), word))
+                    .map(VariableSuggestion::new);
+        }
     }
 
     private Stream<SnippetSuggestion> snippetSuggestions(ResourceResolver resolver, String word) throws AcmException {

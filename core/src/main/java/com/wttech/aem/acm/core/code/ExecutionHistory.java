@@ -4,10 +4,10 @@ import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.util.ResourceUtils;
 import com.wttech.aem.acm.core.util.StreamUtils;
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
 import javax.jcr.query.Query;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -49,7 +49,11 @@ public class ExecutionHistory {
         } finally {
             props.values().forEach(value -> {
                 if (value instanceof Closeable) {
-                    IOUtils.closeQuietly((Closeable) value);
+                    try {
+                        ((Closeable) value).close();
+                    } catch (IOException e) {
+                        // ignore
+                    }
                 }
             });
         }
