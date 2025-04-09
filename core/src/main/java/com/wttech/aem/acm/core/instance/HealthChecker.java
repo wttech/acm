@@ -83,6 +83,9 @@ public class HealthChecker implements EventHandler {
 
     // TODO seems to not work on AEMaaCS as there is no Sling Installer JMX MBean
     private void checkInstaller(HealthStatus result, ResourceResolver resourceResolver) {
+        if (!config.runCheckInstaller()) {
+            return;
+        }
         SlingInstallerState state = slingInstaller.checkState(resourceResolver);
         if (state.isActive()) {
             result.issues.add(new HealthIssue(
@@ -97,6 +100,9 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkRepository(HealthStatus result, ResourceResolver resourceResolver) {
+        if (!config.runCheckRepository()) {
+            return;
+        }
         Repository repository = new Repository(resourceResolver);
         if (repository.isCompositeNodeStore()) {
             result.issues.add(new HealthIssue(
@@ -113,6 +119,9 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkBundles(HealthStatus result) {
+        if (!config.runCheckBundles()) {
+            return;
+        }
         osgiScanner.scanBundles().filter(b -> !isBundleIgnored(b)).forEach(bundle -> {
             if (osgiScanner.isFragment(bundle)) {
                 if (!osgiScanner.isBundleResolved(bundle)) {
@@ -144,6 +153,9 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkEvents(HealthStatus result) {
+        if (!config.runCheckEvents()) {
+            return;
+        }
         List<OsgiEvent> recentEvents = eventCollector.getRecentEvents(config.eventTimeWindow());
         if (!recentEvents.isEmpty()) {
             Map<String, Long> eventCounts =
@@ -203,5 +215,21 @@ public class HealthChecker implements EventHandler {
                 name = "Repository Paths Existed",
                 description = "Paths to check for the existence in the repository")
         String[] repositoryPathsExisted();
+
+        @AttributeDefinition(name = "Run repository healthcheck", description = "Validates repository")
+        boolean runCheckRepository() default true;
+
+        @AttributeDefinition(
+                name = "Run sling installer healthcheck",
+                description = "Default is set to false, because it's not supported on AEMaaCS")
+        boolean runCheckInstaller() default false;
+
+        @AttributeDefinition(
+                name = "Run OSGi bundles healthcheck",
+                description = "Checks whether bundles are inactive or not resolved")
+        boolean runCheckBundles() default true;
+
+        @AttributeDefinition(name = "Run events healthcheck", description = "Looks for recurring events")
+        boolean runCheckEvents() default true;
     }
 }
