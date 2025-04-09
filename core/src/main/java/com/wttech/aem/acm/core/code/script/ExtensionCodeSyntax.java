@@ -1,5 +1,6 @@
-package com.wttech.aem.acm.core.code;
+package com.wttech.aem.acm.core.code.script;
 
+import com.wttech.aem.acm.core.code.AbstractCodeSyntax;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 

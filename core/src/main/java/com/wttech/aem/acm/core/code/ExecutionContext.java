@@ -48,7 +48,7 @@ public class ExecutionContext {
         return resourceResolver;
     }
 
-    protected Extender getExtender() {
+    public Extender getExtender() {
         return extender;
     }
 

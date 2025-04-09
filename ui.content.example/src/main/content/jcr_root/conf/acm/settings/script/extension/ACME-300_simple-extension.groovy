@@ -1,7 +1,8 @@
-import com.wttech.aem.acm.core.code.*
+import com.wttech.aem.acm.core.code.script.ContentScript
+import com.wttech.aem.acm.core.code.Execution
 
-void extendRun(Shell shell) {
-    shell.variable("extensionName", "Simple")
+void extendRun(ContentScript script) {
+    script.variable("extensionName", "Simple")
 }
 
 void completeRun(Execution execution) {
