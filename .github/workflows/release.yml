@@ -97,8 +97,6 @@ jobs:
         run: |
           gh release create ${{ env.VERSION }} \
             --title "${{ env.VERSION }}" \
-            --notes "Release notes generated automatically." \
-            --target "${{ github.ref_name }}" \
             --draft=false \
             --prerelease=false \
             --generate-notes
