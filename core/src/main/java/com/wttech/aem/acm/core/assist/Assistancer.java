@@ -61,8 +61,9 @@ public class Assistancer {
 
     private Stream<VariableSuggestion> variableSuggestions(ResourceResolver resolver, String word) {
         try (ExecutionContext context =
-                executor.createContext(ExecutionId.generate(), Code.consoleMinimal(), resolver)) {
-            return context.getBindingVariables().stream()
+                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, Code.consoleMinimal(), resolver)) {
+            List<Variable> bindingVariables = context.getBindingVariables();
+            return bindingVariables.stream()
                     .filter(v -> SearchUtils.containsWord(v.getName(), word))
                     .map(VariableSuggestion::new);
         }

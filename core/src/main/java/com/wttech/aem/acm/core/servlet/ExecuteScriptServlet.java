@@ -4,10 +4,7 @@ import static com.wttech.aem.acm.core.util.ServletResult.*;
 import static com.wttech.aem.acm.core.util.ServletUtils.respondJson;
 import static com.wttech.aem.acm.core.util.ServletUtils.stringParam;
 
-import com.wttech.aem.acm.core.code.Execution;
-import com.wttech.aem.acm.core.code.ExecutionContext;
-import com.wttech.aem.acm.core.code.ExecutionId;
-import com.wttech.aem.acm.core.code.Executor;
+import com.wttech.aem.acm.core.code.*;
 import com.wttech.aem.acm.core.script.Script;
 import com.wttech.aem.acm.core.script.ScriptRepository;
 import java.io.IOException;
@@ -53,8 +50,8 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            try (ExecutionContext context =
-                    executor.createContext(ExecutionId.generate(), script, request.getResourceResolver())) {
+            try (ExecutionContext context = executor.createContext(
+                    ExecutionId.generate(), ExecutionMode.RUN, script, request.getResourceResolver())) {
                 Execution execution = executor.execute(context);
 
                 respondJson(response, ok(String.format("Script at path '%s' executed successfully", path), execution));

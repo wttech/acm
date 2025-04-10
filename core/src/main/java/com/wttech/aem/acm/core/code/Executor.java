@@ -48,8 +48,9 @@ public class Executor {
         this.config = config;
     }
 
-    public ExecutionContext createContext(String id, Executable executable, ResourceResolver resourceResolver) {
-        ExecutionContext result = new ExecutionContext(id, this, executable, osgiContext, resourceResolver);
+    public ExecutionContext createContext(
+            String id, ExecutionMode mode, Executable executable, ResourceResolver resourceResolver) {
+        ExecutionContext result = new ExecutionContext(id, mode, this, executable, osgiContext, resourceResolver);
         result.setDebug(config.debug());
         result.setHistory(config.history());
         return result;
@@ -58,8 +59,8 @@ public class Executor {
     public Execution execute(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         try (ResourceResolver resourceResolver =
                         ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId());
-                ExecutionContext executionContext =
-                        createContext(ExecutionId.generate(), executable, resourceResolver)) {
+                ExecutionContext executionContext = createContext(
+                        ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resourceResolver)) {
             return execute(executionContext);
         } catch (LoginException e) {
             throw new AcmException(

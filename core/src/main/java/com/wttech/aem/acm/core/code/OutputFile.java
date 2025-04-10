@@ -12,7 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public class ExecutionOutput {
+public class OutputFile implements Output {
 
     public static final String TMP_DIR = "acm";
 
@@ -20,7 +20,7 @@ public class ExecutionOutput {
 
     private final List<Closeable> closebles = new LinkedList<>();
 
-    public ExecutionOutput(String jobId) {
+    public OutputFile(String jobId) {
         this.jobId = jobId;
     }
 
@@ -32,6 +32,7 @@ public class ExecutionOutput {
         return dir.toPath().resolve(String.format("%s_output.txt", StringUtils.replace(jobId, "/", "-")));
     }
 
+    @Override
     public Optional<String> readString() throws AcmException {
         Path path = path();
         if (!path.toFile().exists()) {
@@ -46,6 +47,7 @@ public class ExecutionOutput {
         }
     }
 
+    @Override
     public InputStream read() {
         try {
             InputStream result = Files.newInputStream(path());
@@ -57,6 +59,7 @@ public class ExecutionOutput {
         }
     }
 
+    @Override
     public OutputStream write() {
         try {
             OutputStream result = Files.newOutputStream(path());
@@ -76,6 +79,7 @@ public class ExecutionOutput {
         }
     }
 
+    @Override
     public void close() {
         for (Closeable closeable : closebles) {
             try {
@@ -85,5 +89,6 @@ public class ExecutionOutput {
             }
         }
         closebles.clear();
+        delete();
     }
 }

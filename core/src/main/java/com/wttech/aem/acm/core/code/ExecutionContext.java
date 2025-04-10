@@ -17,7 +17,9 @@ public class ExecutionContext implements AutoCloseable {
 
     private final String id;
 
-    private final ExecutionOutput output;
+    private final ExecutionMode mode;
+
+    private final Output output;
 
     private final Executor executor;
 
@@ -29,8 +31,6 @@ public class ExecutionContext implements AutoCloseable {
 
     private final Extender extender;
 
-    private ExecutionMode mode = ExecutionMode.RUN;
-
     private boolean history = true;
 
     private boolean debug = false;
@@ -41,12 +41,14 @@ public class ExecutionContext implements AutoCloseable {
 
     public ExecutionContext(
             String id,
+            ExecutionMode mode,
             Executor executor,
             Executable executable,
             OsgiContext osgiContext,
             ResourceResolver resourceResolver) {
         this.id = id;
-        this.output = new ExecutionOutput(id);
+        this.mode = mode;
+        this.output = mode == ExecutionMode.RUN ? new OutputFile(id) : new OutputString();
         this.executor = executor;
         this.executable = executable;
         this.osgiContext = osgiContext;
@@ -59,7 +61,7 @@ public class ExecutionContext implements AutoCloseable {
         return id;
     }
 
-    public ExecutionOutput getOutput() {
+    public Output getOutput() {
         return output;
     }
 
@@ -85,10 +87,6 @@ public class ExecutionContext implements AutoCloseable {
 
     public ExecutionMode getMode() {
         return mode;
-    }
-
-    public void setMode(ExecutionMode mode) {
-        this.mode = mode;
     }
 
     public boolean isHistory() {
@@ -147,7 +145,6 @@ public class ExecutionContext implements AutoCloseable {
     @Override
     public void close() {
         output.close();
-        output.delete();
     }
 
     public void variable(String name, Object value) {

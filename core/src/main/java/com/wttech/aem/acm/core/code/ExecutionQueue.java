@@ -183,8 +183,11 @@ public class ExecutionQueue implements JobExecutor {
             throws AcmException {
         try (ResourceResolver resolver =
                         ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId());
-                ExecutionContext context =
-                        executor.createContext(execution.getJob().getId(), execution.getExecutable(), resolver)) {
+                ExecutionContext context = executor.createContext(
+                        execution.getJob().getId(),
+                        contextOptions.getExecutionMode(),
+                        execution.getExecutable(),
+                        resolver)) {
             return executor.execute(context);
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);

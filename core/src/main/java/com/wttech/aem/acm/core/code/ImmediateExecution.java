@@ -71,11 +71,11 @@ public class ImmediateExecution implements Execution {
 
     @Override
     public String getOutput() {
-        return new ExecutionOutput(getId()).readString().orElse(null);
+        return new OutputFile(getId()).readString().orElse(null);
     }
 
     public InputStream readOutput() throws AcmException {
-        return new ExecutionOutput(getId()).read();
+        return new OutputFile(getId()).read();
     }
 
     @Override

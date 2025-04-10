@@ -57,7 +57,7 @@ public class QueuedExecution implements Execution {
 
     @Override
     public String getOutput() {
-        return new ExecutionOutput(job.getId()).readString().orElse(null);
+        return new OutputFile(job.getId()).readString().orElse(null);
     }
 
     @Override

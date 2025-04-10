@@ -51,19 +51,17 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
 
         Code code = input.getCode();
 
+        ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
+        if (mode == null) {
+            respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", input.getMode())));
+            return;
+        }
+
         try (ExecutionContext context =
-                executor.createContext(ExecutionId.generate(), code, request.getResourceResolver())) {
+                executor.createContext(ExecutionId.generate(), mode, code, request.getResourceResolver())) {
             if (input.getHistory() != null) {
                 context.setHistory(input.getHistory());
             }
-
-            ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
-            if (mode == null) {
-                respondJson(
-                        response, badRequest(String.format("Execution mode '%s' is not supported!", input.getMode())));
-                return;
-            }
-            context.setMode(mode);
 
             try {
                 Execution execution = executor.execute(context);
