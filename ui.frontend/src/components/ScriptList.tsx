@@ -76,7 +76,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               {type === ScriptType.ENABLED || type === ScriptType.DISABLED ? (
                 <>
                   <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-                  <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
+                  {appContext && !appContext.instanceSettings.publish && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
                 </>
               ) : null}
             </ButtonGroup>

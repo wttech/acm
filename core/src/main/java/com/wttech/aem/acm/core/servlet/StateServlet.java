@@ -8,7 +8,7 @@ import com.wttech.aem.acm.core.code.ExecutionQueue;
 import com.wttech.aem.acm.core.code.ExecutionSummary;
 import com.wttech.aem.acm.core.instance.HealthChecker;
 import com.wttech.aem.acm.core.instance.HealthStatus;
-import com.wttech.aem.acm.core.instance.InstanceSettings;
+import com.wttech.aem.acm.core.osgi.InstanceInfo;
 import com.wttech.aem.acm.core.state.State;
 import java.io.IOException;
 import java.util.List;
@@ -37,20 +37,21 @@ public class StateServlet extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(StateServlet.class);
 
     @Reference
-    private HealthChecker healthChecker;
+    private ExecutionQueue executionQueue;
 
     @Reference
-    private ExecutionQueue executionQueue;
+    private InstanceInfo instanceInfo;
+
+    @Reference
+    private HealthChecker healthChecker;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
-            InstanceSettings instanceSettings = InstanceSettings.current();
             List<ExecutionSummary> queuedExecutions =
                     executionQueue.findAllSummaries().collect(Collectors.toList());
-
-            State state = new State(healthStatus, instanceSettings, queuedExecutions);
+            State state = new State(healthStatus, instanceInfo.getInstanceSettings(), queuedExecutions);
 
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {

@@ -22,6 +22,11 @@ function App() {
     instanceSettings: {
       id: 'default',
       timezoneId: 'UTC',
+      publish: false,
+      author: true,
+      cloud: true,
+      cloudContainer: true,
+      cloudSdk: false,
     },
     queuedExecutions: [],
   });

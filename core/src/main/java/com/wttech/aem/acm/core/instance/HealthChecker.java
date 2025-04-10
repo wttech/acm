@@ -1,5 +1,6 @@
 package com.wttech.aem.acm.core.instance;
 
+import com.wttech.aem.acm.core.osgi.InstanceInfo;
 import com.wttech.aem.acm.core.osgi.OsgiEvent;
 import com.wttech.aem.acm.core.osgi.OsgiEventCollector;
 import com.wttech.aem.acm.core.osgi.OsgiScanner;
@@ -36,6 +37,9 @@ public class HealthChecker implements EventHandler {
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
+
+    @Reference
+    private InstanceInfo instanceInfo;
 
     @Reference
     private SlingInstaller slingInstaller;
@@ -104,9 +108,9 @@ public class HealthChecker implements EventHandler {
             return;
         }
         Repository repository = new Repository(resourceResolver);
-        if (repository.isCompositeNodeStore()) {
-            result.issues.add(new HealthIssue(
-                    HealthIssueSeverity.CRITICAL, "Repository with composite node store is not supported"));
+        if (instanceInfo.isCloudContainer() && !repository.isCompositeNodeStore()) {
+            result.issues.add(
+                    new HealthIssue(HealthIssueSeverity.CRITICAL, "Repository is not yet using composite node store"));
         }
         if (ArrayUtils.isNotEmpty(config.repositoryPathsExisted())) {
             Arrays.stream(config.repositoryPathsExisted()).forEach(path -> {

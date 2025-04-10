@@ -1,0 +1,6 @@
+group: Condition
+name: condition_instance_cloud_sdk
+content: |
+  condition.isInstanceCloudSdk()
+documentation: |
+  Execute the script only on instance running on AEMaaCS SDK.

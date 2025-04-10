@@ -3,7 +3,7 @@ import { useDebounce } from 'react-use';
 import { apiRequest } from '../utils/api.ts';
 import { ExecutableIdConsole, Execution } from '../utils/api.types.ts';
 
-const CompilationDelay = 2000;
+const CompilationDelay = 1500;
 
 export type SyntaxError = {
   line: number;
@@ -18,6 +18,7 @@ export const useCompilation = (code: string | undefined, onCodeChange: (code: st
   const [execution, setExecution] = useState<Execution | null>(null);
 
   const compileCode = useCallback(async () => {
+    setCompiling(true);
     try {
       const { data } = await apiRequest<Execution>({
         operation: 'Code parsing',
@@ -63,7 +64,6 @@ export const useCompilation = (code: string | undefined, onCodeChange: (code: st
   useEffect(() => {
     setSyntaxError(undefined);
     setCompileError(undefined);
-    setCompiling(true);
 
     return () => {
       cancelCompilation();
