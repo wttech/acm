@@ -16,12 +16,12 @@ public class OutputFile implements Output {
 
     public static final String TMP_DIR = "acm";
 
-    private final String jobId;
+    private final String executionId;
 
     private final List<Closeable> closebles = new LinkedList<>();
 
-    public OutputFile(String jobId) {
-        this.jobId = jobId;
+    public OutputFile(String executionId) {
+        this.executionId = executionId;
     }
 
     public Path path() {
@@ -29,7 +29,7 @@ public class OutputFile implements Output {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        return dir.toPath().resolve(String.format("%s_output.txt", StringUtils.replace(jobId, "/", "-")));
+        return dir.toPath().resolve(String.format("%s_output.txt", StringUtils.replace(executionId, "/", "-")));
     }
 
     @Override
@@ -43,7 +43,7 @@ public class OutputFile implements Output {
             return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new AcmException(
-                    String.format("Execution output file cannot be read as string for job '%s'", jobId), e);
+                    String.format("Output file cannot be read as string for execution ID '%s'", executionId), e);
         }
     }
 
@@ -55,7 +55,7 @@ public class OutputFile implements Output {
             return result;
         } catch (IOException e) {
             throw new AcmException(
-                    String.format("Execution output file cannot open for reading for job '%s'", jobId), e);
+                    String.format("Output file cannot open for reading for execution ID '%s'", executionId), e);
         }
     }
 
@@ -67,7 +67,7 @@ public class OutputFile implements Output {
             return result;
         } catch (IOException e) {
             throw new AcmException(
-                    String.format("Execution output file cannot be open for writing for job '%s'", jobId), e);
+                    String.format("Output file cannot be open for writing for execution ID '%s'", executionId), e);
         }
     }
 
@@ -75,7 +75,7 @@ public class OutputFile implements Output {
         try {
             Files.deleteIfExists(path());
         } catch (IOException e) {
-            throw new AcmException(String.format("Execution output file clean up failed for job '%s'", jobId), e);
+            throw new AcmException(String.format("Output file clean up failed for execution ID '%s'", executionId), e);
         }
     }
 

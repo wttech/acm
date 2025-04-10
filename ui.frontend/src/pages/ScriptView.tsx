@@ -184,4 +184,3 @@ const ScriptView = () => {
 };
 
 export default ScriptView;
-

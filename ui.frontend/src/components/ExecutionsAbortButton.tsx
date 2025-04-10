@@ -19,7 +19,7 @@ const ExecutionsAbortButton: React.FC<ExecutionsAbortButtonProps> = ({ selectedK
     const ids = Array.from(selectedKeys);
 
     const params = new URLSearchParams();
-    ids.forEach((id) => params.append('jobId', id));
+    ids.forEach((id) => params.append('executionId', id));
 
     try {
       await toastRequest<QueueOutput>({

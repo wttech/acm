@@ -7,21 +7,21 @@ import { useFormatter } from './formatter';
 
 const toastTimeout = 3000;
 
-export const useExecutionPolling = (jobId: string | undefined | null, pollInterval: number = 900) => {
+export const useExecutionPolling = (executionId: string | undefined | null, pollInterval: number = 900) => {
   const [execution, setExecution] = useState<Execution | null>(null);
-  const [executing, setExecuting] = useState<boolean>(!!jobId);
+  const [executing, setExecuting] = useState<boolean>(!!executionId);
   const [loading, setLoading] = useState<boolean>(true);
   const [wasPending, setWasPending] = useState<boolean>(false);
   const formatter = useFormatter();
 
-  const pollExecutionState = async (jobId: string) => {
+  const pollExecutionState = async (executionId: string) => {
     try {
       const response = await apiRequest<QueueOutput>({
         operation: 'Code execution state',
-        url: `/apps/acm/api/queue-code.json?jobId=${jobId}`,
+        url: `/apps/acm/api/queue-code.json?executionId=${executionId}`,
         method: 'get',
       });
-      const queuedExecution = response.data.data.executions.find((e: Execution) => e.id === jobId)!;
+      const queuedExecution = response.data.data.executions.find((e: Execution) => e.id === executionId)!;
       setExecution(queuedExecution);
       setLoading(false);
 
@@ -50,11 +50,11 @@ export const useExecutionPolling = (jobId: string | undefined | null, pollInterv
 
   useInterval(
     () => {
-      if (executing && jobId) {
-        pollExecutionState(jobId);
+      if (executing && executionId) {
+        pollExecutionState(executionId);
       }
     },
-    executing && jobId ? pollInterval : null,
+    executing && executionId ? pollInterval : null,
   );
 
   return { execution, setExecution, executing, setExecuting, loading };
