@@ -49,26 +49,28 @@ const ScriptExecutor = () => {
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
               <ExecutionsAbortButton selectedKeys={selectedIds(selectedKeys)} />
-              {context && !context.instanceSettings.cloudContainer && <MenuTrigger>
-                <Button variant="negative">
-                  <Settings />
-                  <Text>Configure</Text>
-                </Button>
-                <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
-                  <Item key="com.wttech.aem.acm.core.script.ScriptScheduler">
-                    <ApplicationDelivery />
-                    <Text>Script Scheduler</Text>
-                  </Item>
-                  <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue">
-                    <Clock />
-                    <Text>Execution Queue</Text>
-                  </Item>
-                  <Item key="com.wttech.aem.acm.core.code.Executor">
-                    <Code />
-                    <Text>Code Executor</Text>
-                  </Item>
-                </Menu>
-              </MenuTrigger>}
+              {context && !context.instanceSettings.cloudContainer && (
+                <MenuTrigger>
+                  <Button variant="negative">
+                    <Settings />
+                    <Text>Configure</Text>
+                  </Button>
+                  <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
+                    <Item key="com.wttech.aem.acm.core.script.ScriptScheduler">
+                      <ApplicationDelivery />
+                      <Text>Script Scheduler</Text>
+                    </Item>
+                    <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue">
+                      <Clock />
+                      <Text>Execution Queue</Text>
+                    </Item>
+                    <Item key="com.wttech.aem.acm.core.code.Executor">
+                      <Code />
+                      <Text>Code Executor</Text>
+                    </Item>
+                  </Menu>
+                </MenuTrigger>
+              )}
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">

@@ -2,7 +2,6 @@ package com.wttech.aem.acm.core.osgi;
 
 import com.wttech.aem.acm.core.instance.InstanceSettings;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
@@ -88,20 +87,19 @@ public class InstanceInfo {
 
         @AttributeDefinition(
                 name = "Version Bundle Context Properties",
-                description = "Used to determine the version of the AEM instance"
-        )
-        String[] versionBundleContextProps() default { "PRODUCTINFO_VERSION", "PRODUCTINFO_SHORTVERSION", "granite.product.version" };
+                description = "Used to determine the version of the AEM instance")
+        String[] versionBundleContextProps() default {
+            "PRODUCTINFO_VERSION", "PRODUCTINFO_SHORTVERSION", "granite.product.version"
+        };
 
         @AttributeDefinition(
                 name = "Version Cloud Regex",
-                description = "Used to determine if the AEM instance is a cloud version (SDK or container)"
-        )
+                description = "Used to determine if the AEM instance is a cloud version (SDK or container)")
         String versionCloudRegex() default "^\\d{4}\\..*";
 
         @AttributeDefinition(
                 name = "Version Cloud Container Environment Properties",
-                description = "Existence of these properties indicates that the instance is running on container"
-        )
-        String[] versionCloudContainerEnvProps() default { "KUBERNETES_SERVICE_HOST", "KUBERNETES_SERVICE_PORT" };
+                description = "Existence of these properties indicates that the instance is running on container")
+        String[] versionCloudContainerEnvProps() default {"KUBERNETES_SERVICE_HOST", "KUBERNETES_SERVICE_PORT"};
     }
 }

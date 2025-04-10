@@ -1,7 +1,6 @@
 package com.wttech.aem.acm.core.instance;
 
 import com.wttech.aem.acm.core.osgi.InstanceInfo;
-
 import java.io.Serializable;
 import java.util.TimeZone;
 

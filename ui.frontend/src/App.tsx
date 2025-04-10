@@ -26,7 +26,7 @@ function App() {
       author: true,
       cloud: true,
       cloudContainer: true,
-      cloudSdk: false
+      cloudSdk: false,
     },
     queuedExecutions: [],
   });
