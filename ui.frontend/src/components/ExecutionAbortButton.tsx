@@ -25,7 +25,7 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
     try {
       await apiRequest<QueueOutput>({
         operation: 'Code execution aborting',
-        url: `/apps/acm/api/queue-code.json?jobId=${execution.id}`,
+        url: `/apps/acm/api/queue-code.json?executionId=${execution.id}`,
         method: 'delete',
       });
 
@@ -33,7 +33,7 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
       while (queuedExecution === null || isExecutionPending(queuedExecution.status)) {
         const response = await apiRequest<QueueOutput>({
           operation: 'Code execution state',
-          url: `/apps/acm/api/queue-code.json?jobId=${execution.id}`,
+          url: `/apps/acm/api/queue-code.json?executionId=${execution.id}`,
           method: 'get',
         });
         queuedExecution = response.data.data.executions[0]!;
