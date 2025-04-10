@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 public class Condition {
 
     private final ExecutionContext executionContext;
+
     private final ExecutionHistory executionHistory;
 
     public Condition(ExecutionContext executionContext) {
@@ -343,5 +344,17 @@ public class Condition {
 
     public boolean isInstancePublish() {
         return executionContext.getOsgiContext().getInstanceInfo().isPublish();
+    }
+
+    public boolean isInstanceCloud() {
+        return executionContext.getOsgiContext().getInstanceInfo().isCloud();
+    }
+
+    public boolean isInstanceCloudContainer() {
+        return executionContext.getOsgiContext().getInstanceInfo().isCloudContainer();
+    }
+
+    public boolean isInstanceCloudSdk() {
+        return executionContext.getOsgiContext().getInstanceInfo().isCloudSdk();
     }
 }

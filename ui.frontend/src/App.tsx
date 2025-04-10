@@ -23,7 +23,10 @@ function App() {
       id: 'default',
       timezoneId: 'UTC',
       publish: false,
-      cloud: true
+      author: true,
+      cloud: true,
+      cloudContainer: true,
+      cloudSdk: false
     },
     queuedExecutions: [],
   });

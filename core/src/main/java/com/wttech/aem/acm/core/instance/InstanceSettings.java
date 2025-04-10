@@ -1,20 +1,39 @@
 package com.wttech.aem.acm.core.instance;
 
+import com.wttech.aem.acm.core.osgi.InstanceInfo;
+
 import java.io.Serializable;
+import java.util.TimeZone;
 
 public class InstanceSettings implements Serializable {
-    private String timezoneId;
-    private boolean publish;
-    private boolean cloud;
 
-    public InstanceSettings(String timezoneId, boolean publish, boolean cloud) {
-        this.timezoneId = timezoneId;
-        this.cloud = cloud;
-        this.publish = publish;
+    private final String timezoneId;
+
+    private final boolean author;
+
+    private final boolean publish;
+
+    private final boolean cloud;
+
+    private final boolean cloudContainer;
+
+    private final boolean cloudSdk;
+
+    public InstanceSettings(InstanceInfo instanceInfo) {
+        this.timezoneId = TimeZone.getDefault().getID();
+        this.cloud = instanceInfo.isCloud();
+        this.author = instanceInfo.isAuthor();
+        this.publish = instanceInfo.isPublish();
+        this.cloudContainer = instanceInfo.isCloudContainer();
+        this.cloudSdk = instanceInfo.isCloudSdk();
     }
 
     public String getTimezoneId() {
         return timezoneId;
+    }
+
+    public boolean isAuthor() {
+        return author;
     }
 
     public boolean isPublish() {
@@ -23,5 +42,13 @@ public class InstanceSettings implements Serializable {
 
     public boolean isCloud() {
         return this.cloud;
+    }
+
+    public boolean isCloudSdk() {
+        return cloudSdk;
+    }
+
+    public boolean isCloudContainer() {
+        return cloudContainer;
     }
 }
