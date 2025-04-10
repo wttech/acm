@@ -8,6 +8,7 @@ import com.wttech.aem.acm.core.osgi.OsgiScanner;
 import com.wttech.aem.acm.core.snippet.SnippetRepository;
 import com.wttech.aem.acm.core.util.SearchUtils;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,6 +41,9 @@ public class Assistancer {
                 name = "Cache Max Age - Specific",
                 description = "Seconds to cache in browser responses for specific assistance type")
         int cacheMaxAgeSpecific() default 10;
+
+        @AttributeDefinition(name = "Cache Lifetime - Variables", description = "Seconds to cache them in-memory")
+        int cacheLifetimeVariables() default 60 * 5;
     }
 
     private Config config;
@@ -55,7 +59,11 @@ public class Assistancer {
 
     private List<ClassInfo> classCache = Collections.emptyList();
 
-    private Integer cacheHashCode;
+    private Integer classCacheHashCode;
+
+    private List<Variable> variablesCache = Collections.emptyList();
+
+    private Long variablesCacheTimestamp;
 
     @Activate
     @Modified
@@ -65,36 +73,37 @@ public class Assistancer {
 
     public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word)
             throws AcmException {
-        maybeUpdateCache();
+        maybeUpdateClassCache();
+        maybeUpdateVariablesCache(resolver);
 
+        List<Suggestion> suggestions = new LinkedList<>();
         switch (suggestionType) {
             case VARIABLE:
-                return new Assistance(variableSuggestions(resolver, word).collect(Collectors.toList()));
+                suggestions.addAll(variableSuggestions(word).collect(Collectors.toList()));
+                break;
             case CLASS:
-                return new Assistance(classSuggestions(word).collect(Collectors.toList()));
+                suggestions.addAll(classSuggestions(word).collect(Collectors.toList()));
+                break;
             case RESOURCE:
-                return new Assistance(resourceSuggestions(resolver, word).collect(Collectors.toList()));
+                suggestions.addAll(resourceSuggestions(resolver, word).collect(Collectors.toList()));
+                break;
             case SNIPPET:
-                return new Assistance(snippetSuggestions(resolver, word).collect(Collectors.toList()));
+                suggestions.addAll(snippetSuggestions(resolver, word).collect(Collectors.toList()));
+                break;
             default:
-                return new Assistance(Stream.of(
-                                classSuggestions(word),
-                                resourceSuggestions(resolver, word),
-                                variableSuggestions(resolver, word),
-                                snippetSuggestions(resolver, word))
-                        .flatMap(s -> s)
-                        .collect(Collectors.toList()));
+                suggestions.addAll(variableSuggestions(word).collect(Collectors.toList()));
+                suggestions.addAll(classSuggestions(word).collect(Collectors.toList()));
+                suggestions.addAll(resourceSuggestions(resolver, word).collect(Collectors.toList()));
+                suggestions.addAll(snippetSuggestions(resolver, word).collect(Collectors.toList()));
+                break;
         }
+        return new Assistance(suggestions);
     }
 
-    private Stream<VariableSuggestion> variableSuggestions(ResourceResolver resolver, String word) {
-        try (ExecutionContext context =
-                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, Code.consoleMinimal(), resolver)) {
-            List<Variable> bindingVariables = context.getBindingVariables();
-            return bindingVariables.stream()
-                    .filter(v -> SearchUtils.containsWord(v.getName(), word))
-                    .map(VariableSuggestion::new);
-        }
+    private Stream<VariableSuggestion> variableSuggestions(String word) {
+        return variablesCache.stream()
+                .filter(v -> SearchUtils.containsWord(v.getName(), word))
+                .map(VariableSuggestion::new);
     }
 
     private Stream<SnippetSuggestion> snippetSuggestions(ResourceResolver resolver, String word) throws AcmException {
@@ -114,13 +123,28 @@ public class Assistancer {
         return resourceScanner.forPattern(resolver, word).map(ResourceSuggestion::new);
     }
 
-    private synchronized void maybeUpdateCache() {
+    private synchronized void maybeUpdateClassCache() {
         int cacheHashCodeCurrent = osgiScanner.computeBundlesHashCode();
-        if (cacheHashCode == null || !cacheHashCode.equals(cacheHashCodeCurrent)) {
-            LOG.info("Bundles changed - updating cache");
+        if (classCacheHashCode == null || !classCacheHashCode.equals(cacheHashCodeCurrent)) {
+            LOG.info("Class cache - updating");
             classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
-            cacheHashCode = cacheHashCodeCurrent;
-            LOG.info("Bundles changed - updated cache");
+            classCacheHashCode = cacheHashCodeCurrent;
+            LOG.info("Class cache - updated");
+        }
+    }
+
+    private synchronized void maybeUpdateVariablesCache(ResourceResolver resolver) {
+        long currentTime = System.currentTimeMillis();
+        long cacheLifetimeMillis = config.cacheLifetimeVariables() * 1000L;
+
+        if (variablesCacheTimestamp == null || (currentTime - variablesCacheTimestamp) > cacheLifetimeMillis) {
+            LOG.info("Variables cache - updating");
+            try (ExecutionContext context = executor.createContext(
+                    ExecutionId.generate(), ExecutionMode.PARSE, Code.consoleMinimal(), resolver)) {
+                variablesCache = context.getBindingVariables();
+                variablesCacheTimestamp = currentTime;
+            }
+            LOG.info("Variables cache - updated");
         }
     }
 
