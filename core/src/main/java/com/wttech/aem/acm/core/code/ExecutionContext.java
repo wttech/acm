@@ -1,11 +1,25 @@
 package com.wttech.aem.acm.core.code;
 
+import com.wttech.aem.acm.core.acl.AclGroovy;
+import com.wttech.aem.acm.core.format.Formatter;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
-import com.wttech.aem.acm.core.util.NullOutputStream;
-import java.io.OutputStream;
+import com.wttech.aem.acm.core.replication.Activator;
+import com.wttech.aem.acm.core.repo.Repository;
+import groovy.lang.Binding;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ExecutionContext {
+public class ExecutionContext implements AutoCloseable {
+
+    private final String id;
+
+    private final ExecutionMode mode;
+
+    private final Output output;
 
     private final Executor executor;
 
@@ -17,23 +31,38 @@ public class ExecutionContext {
 
     private final Extender extender;
 
-    private OutputStream outputStream = new NullOutputStream();
-
-    private ExecutionMode mode = ExecutionMode.RUN;
-
     private boolean history = true;
 
     private boolean debug = false;
 
-    private String id = ExecutionId.generate();
+    private final Arguments arguments = new Arguments();
+
+    private Binding binding = new Binding();
 
     public ExecutionContext(
-            Executor executor, Executable executable, OsgiContext osgiContext, ResourceResolver resourceResolver) {
+            String id,
+            ExecutionMode mode,
+            Executor executor,
+            Executable executable,
+            OsgiContext osgiContext,
+            ResourceResolver resourceResolver) {
+        this.id = id;
+        this.mode = mode;
+        this.output = mode == ExecutionMode.RUN ? new OutputFile(id) : new OutputString();
         this.executor = executor;
         this.executable = executable;
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
-        this.extender = new Extender(resourceResolver);
+        this.binding = createBinding(resourceResolver);
+        this.extender = new Extender(this);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public Output getOutput() {
+        return output;
     }
 
     public Executor getExecutor() {
@@ -44,44 +73,20 @@ public class ExecutionContext {
         return executable;
     }
 
-    public ResourceResolver getResourceResolver() {
-        return resourceResolver;
-    }
-
     public Extender getExtender() {
         return extender;
+    }
+
+    public ResourceResolver getResourceResolver() {
+        return resourceResolver;
     }
 
     public OsgiContext getOsgiContext() {
         return osgiContext;
     }
 
-    public ExecutionFileOutput getFileOutput() {
-        return new ExecutionFileOutput(id);
-    }
-
-    public OutputStream getOutputStream() {
-        return outputStream;
-    }
-
-    protected void setOutputStream(OutputStream outputStream) {
-        this.outputStream = outputStream;
-    }
-
     public ExecutionMode getMode() {
         return mode;
-    }
-
-    public void setMode(ExecutionMode mode) {
-        this.mode = mode;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    protected void setId(String id) {
-        this.id = id;
     }
 
     public boolean isHistory() {
@@ -98,5 +103,51 @@ public class ExecutionContext {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public Arguments getArguments() {
+        return arguments;
+    }
+
+    public Binding getBinding() {
+        return binding;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Variable> getBindingVariables() {
+        Map<String, Object> variables = binding.getVariables();
+        return variables.entrySet().stream()
+                .map(entry -> new Variable(entry.getKey(), entry.getValue().getClass()))
+                .collect(Collectors.toList());
+    }
+
+    private Binding createBinding(ResourceResolver resourceResolver) {
+        Binding result = new Binding();
+
+        result.setVariable("args", arguments);
+        result.setVariable("condition", new Condition(this));
+        result.setVariable("log", createLogger(executable));
+        result.setVariable("out", new CodePrintStream(this));
+        result.setVariable("resourceResolver", resourceResolver);
+        result.setVariable("osgi", osgiContext);
+        result.setVariable("repo", new Repository(resourceResolver));
+        result.setVariable("acl", new AclGroovy(resourceResolver));
+        result.setVariable("formatter", new Formatter());
+        result.setVariable("activator", new Activator(resourceResolver, osgiContext.getReplicator()));
+
+        return result;
+    }
+
+    private Logger createLogger(Executable executable) {
+        return LoggerFactory.getLogger(String.format("%s(%s)", getClass().getName(), executable.getId()));
+    }
+
+    @Override
+    public void close() {
+        output.close();
+    }
+
+    public void variable(String name, Object value) {
+        binding.setVariable(name, value);
     }
 }

@@ -67,10 +67,6 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return executor.createContext(executable, resourceResolver);
-    }
-
     public Optional<Execution> submit(ExecutionContextOptions contextOptions, Executable executable)
             throws AcmException {
         Map<String, Object> jobProps = new HashMap<>();
@@ -186,9 +182,12 @@ public class ExecutionQueue implements JobExecutor {
     private Execution executeAsync(ExecutionContextOptions contextOptions, QueuedExecution execution)
             throws AcmException {
         try (ResourceResolver resolver =
-                ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId())) {
-            ExecutionContext context = executor.createContext(execution.getExecutable(), resolver);
-            context.setId(execution.getJob().getId());
+                        ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId());
+                ExecutionContext context = executor.createContext(
+                        execution.getJob().getId(),
+                        contextOptions.getExecutionMode(),
+                        execution.getExecutable(),
+                        resolver)) {
             return executor.execute(context);
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);

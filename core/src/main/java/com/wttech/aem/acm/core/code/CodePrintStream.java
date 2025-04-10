@@ -18,7 +18,7 @@ public class CodePrintStream extends PrintStream {
     private final List<Logger> loggers;
 
     public CodePrintStream(ExecutionContext executionContext) {
-        super(executionContext.getOutputStream());
+        super(executionContext.getOutput().write());
         this.executionContext = executionContext;
         this.loggers = new LinkedList<>();
     }

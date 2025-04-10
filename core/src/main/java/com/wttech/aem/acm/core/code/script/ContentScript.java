@@ -1,70 +1,34 @@
 package com.wttech.aem.acm.core.code.script;
 
 import com.wttech.aem.acm.core.AcmException;
-import com.wttech.aem.acm.core.acl.AclGroovy;
 import com.wttech.aem.acm.core.code.*;
-import com.wttech.aem.acm.core.format.Formatter;
-import com.wttech.aem.acm.core.replication.Activator;
-import com.wttech.aem.acm.core.repo.Repository;
 import groovy.lang.GroovyShell;
 import groovy.lang.MissingMethodException;
 import groovy.lang.Script;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ContentScript {
 
-    private final Executable executable;
+    private final ExecutionContext executionContext;
 
     private final Script script;
 
-    private final Arguments arguments = new Arguments();
-
-    public ContentScript(Executable executable) {
-        this.executable = executable;
-        this.script = parseScript(executable);
+    public ContentScript(ExecutionContext executionContext) {
+        this.executionContext = executionContext;
+        this.script = parseScript();
     }
 
-    private Script parseScript(Executable executable) {
+    private Script parseScript() {
         GroovyShell shell = ScriptUtils.createShell(new ContentScriptSyntax());
-        Script script = shell.parse(executable.getContent(), ContentScriptSyntax.MAIN_CLASS);
+        Script script = shell.parse(
+                executionContext.getExecutable().getContent(),
+                ContentScriptSyntax.MAIN_CLASS,
+                executionContext.getBinding());
         if (script == null) {
-            throw new AcmException(String.format("Content script '%s' cannot be parsed!", executable.getId()));
+            throw new AcmException(String.format(
+                    "Content script '%s' cannot be parsed!",
+                    executionContext.getExecutable().getId()));
         }
         return script;
-    }
-
-    public void prepare(ExecutionContext context) {
-        try {
-            script.getBinding().setVariable("args", arguments);
-            script.getBinding().setVariable("condition", new Condition(context));
-            script.getBinding().setVariable("log", createLogger(context.getExecutable()));
-            script.getBinding().setVariable("out", new CodePrintStream(context));
-            script.getBinding().setVariable("resourceResolver", context.getResourceResolver());
-            script.getBinding().setVariable("osgi", context.getOsgiContext());
-            script.getBinding().setVariable("repo", new Repository(context.getResourceResolver()));
-            script.getBinding().setVariable("acl", new AclGroovy(context.getResourceResolver()));
-            script.getBinding().setVariable("formatter", new Formatter());
-            script.getBinding()
-                    .setVariable(
-                            "activator",
-                            new Activator(
-                                    context.getResourceResolver(),
-                                    context.getOsgiContext().getReplicator()));
-        } catch (Exception e) {
-            throw new AcmException(
-                    String.format(
-                            "Content script '%s' cannot be prepared!",
-                            context.getExecutable().getId()),
-                    e);
-        }
-    }
-
-    private Logger createLogger(Executable executable) {
-        return LoggerFactory.getLogger(String.format("%s(%s)", getClass().getName(), executable.getId()));
     }
 
     public void describe() {
@@ -81,30 +45,5 @@ public class ContentScript {
 
     public void run() {
         script.invokeMethod(ContentScriptSyntax.Method.RUN.givenName, null);
-    }
-
-    public Executable getExecutable() {
-        return executable;
-    }
-
-    public Arguments getArguments() {
-        return arguments;
-    }
-
-    public void variable(String name, Object value) {
-        script.getBinding().setVariable(name, value);
-    }
-
-    protected Script getScript() {
-        return script;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Variable> getVariables() {
-        Map<String, Object> variables = script.getBinding().getVariables();
-
-        return variables.entrySet().stream()
-                .map(entry -> new Variable(entry.getKey(), entry.getValue().getClass()))
-                .collect(Collectors.toList());
     }
 }

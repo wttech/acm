@@ -4,11 +4,9 @@ import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.code.script.ContentScript;
 import com.wttech.aem.acm.core.osgi.OsgiContext;
 import com.wttech.aem.acm.core.util.ResourceUtils;
-import java.io.OutputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -50,8 +48,9 @@ public class Executor {
         this.config = config;
     }
 
-    public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        ExecutionContext result = new ExecutionContext(this, executable, osgiContext, resourceResolver);
+    public ExecutionContext createContext(
+            String id, ExecutionMode mode, Executable executable, ResourceResolver resourceResolver) {
+        ExecutionContext result = new ExecutionContext(id, mode, this, executable, osgiContext, resourceResolver);
         result.setDebug(config.debug());
         result.setHistory(config.history());
         return result;
@@ -59,8 +58,10 @@ public class Executor {
 
     public Execution execute(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         try (ResourceResolver resourceResolver =
-                ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId())) {
-            return execute(createContext(executable, resourceResolver));
+                        ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId());
+                ExecutionContext executionContext = createContext(
+                        ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resourceResolver)) {
+            return execute(executionContext);
         } catch (LoginException e) {
             throw new AcmException(
                     String.format("Cannot access repository while executing '%s'", executable.getId()), e);
@@ -68,36 +69,24 @@ public class Executor {
     }
 
     public Execution execute(ExecutionContext context) throws AcmException {
-        try {
-            ImmediateExecution execution = executeImmediately(context);
-            if (context.isHistory()
-                    && (context.getMode() == ExecutionMode.RUN)
-                    && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
+        ImmediateExecution execution = executeImmediately(context);
+        if (context.getMode() == ExecutionMode.RUN) {
+            if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
                 ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
                 history.save(execution);
             }
             context.getExtender().complete(execution);
-            return execution;
-        } finally {
-            context.getFileOutput().delete();
         }
+        return execution;
     }
 
     private ImmediateExecution executeImmediately(ExecutionContext context) {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
-        try (OutputStream outputStream = context.getFileOutput().write()) {
+        try {
             statuses.put(context.getId(), ExecutionStatus.PARSING);
 
-            if (context.getOutputStream() != null) {
-                context.setOutputStream(new TeeOutputStream(outputStream, context.getOutputStream()));
-            } else {
-                context.setOutputStream(outputStream);
-            }
-
-            ContentScript contentScript = new ContentScript(context.getExecutable());
-            contentScript.prepare(context);
-            context.getExtender().extend(contentScript);
+            ContentScript contentScript = new ContentScript(context);
 
             execution.start();
 
@@ -108,7 +97,7 @@ public class Executor {
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
 
             contentScript.describe();
-            contentScript.getArguments().setValues(context.getExecutable().getArguments());
+            context.getArguments().setValues(context.getExecutable().getArguments());
 
             boolean canRun = contentScript.canRun();
             if (!canRun) {
@@ -135,30 +124,17 @@ public class Executor {
         return Optional.ofNullable(statuses.get(executionId));
     }
 
-    public Description describe(Executable executable, ResourceResolver resourceResolver) {
-        return describe(createContext(executable, resourceResolver));
-    }
-
     public Description describe(ExecutionContext context) {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
-
-        try (OutputStream outputStream = context.getFileOutput().write()) {
-            context.setOutputStream(outputStream);
-
-            ContentScript contentScript = new ContentScript(context.getExecutable());
-            contentScript.prepare(context);
-            context.getExtender().extend(contentScript);
-
+        try {
+            ContentScript contentScript = new ContentScript(context);
             execution.start();
-
             contentScript.describe();
 
-            return new Description(execution.end(ExecutionStatus.SUCCEEDED), contentScript.getArguments());
+            return new Description(execution.end(ExecutionStatus.SUCCEEDED), context.getArguments());
         } catch (Throwable e) {
             execution.error(e);
             return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
-        } finally {
-            context.getFileOutput().delete();
         }
     }
 }

@@ -2,7 +2,7 @@ package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.AcmException;
 import java.io.Serializable;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.apache.sling.event.jobs.Job;
 
@@ -11,25 +11,33 @@ import org.apache.sling.event.jobs.Job;
  */
 public class ExecutionContextOptions implements Serializable {
 
-    private String userId;
+    private final ExecutionMode executionMode;
 
-    public ExecutionContextOptions(String userId) {
+    private final String userId;
+
+    public ExecutionContextOptions(ExecutionMode executionMode, String userId) {
+        this.executionMode = executionMode;
         this.userId = userId;
     }
 
     public static Map<String, Object> toJobProps(ExecutionContextOptions options) throws AcmException {
-        return Collections.singletonMap("userId", options.getUserId());
+        Map<String, Object> props = new HashMap<>();
+        props.put("executionMode", options.getExecutionMode().name());
+        props.put("userId", options.getUserId());
+        return props;
     }
 
     public static ExecutionContextOptions fromJob(Job job) {
-        return new ExecutionContextOptions(job.getProperty("userId", String.class));
+        return new ExecutionContextOptions(
+                ExecutionMode.valueOf(job.getProperty("executionMode", String.class)),
+                job.getProperty("userId", String.class));
     }
 
     public String getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public ExecutionMode getExecutionMode() {
+        return executionMode;
     }
 }

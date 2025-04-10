@@ -36,26 +36,32 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        ExecuteCodeInput input;
         try {
-            ExecuteCodeInput input = JsonUtils.read(request.getInputStream(), ExecuteCodeInput.class);
-            if (input == null) {
-                respondJson(response, badRequest("Code input is not specified!"));
-                return;
-            }
+            input = JsonUtils.read(request.getInputStream(), ExecuteCodeInput.class);
+        } catch (Exception e) {
+            LOG.error("Code input cannot be read!", e);
+            respondJson(response, badRequest("Cannot read code input!"));
+            return;
+        }
+        if (input == null) {
+            respondJson(response, badRequest("Code input is not specified!"));
+            return;
+        }
 
-            Code code = input.getCode();
-            ExecutionContext context = executor.createContext(code, request.getResourceResolver());
+        Code code = input.getCode();
+
+        ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
+        if (mode == null) {
+            respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", input.getMode())));
+            return;
+        }
+
+        try (ExecutionContext context =
+                executor.createContext(ExecutionId.generate(), mode, code, request.getResourceResolver())) {
             if (input.getHistory() != null) {
                 context.setHistory(input.getHistory());
             }
-
-            ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
-            if (mode == null) {
-                respondJson(
-                        response, badRequest(String.format("Execution mode '%s' is not supported!", input.getMode())));
-                return;
-            }
-            context.setMode(mode);
 
             try {
                 Execution execution = executor.execute(context);
@@ -69,10 +75,6 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
                         error(String.format(
                                 "Code from '%s' cannot be executed. Error: %s", code.getId(), e.getMessage())));
             }
-        } catch (Exception e) {
-            LOG.error("Code input cannot be read!", e);
-            respondJson(response, badRequest("Cannot read code input!"));
-            return;
         }
     }
 }

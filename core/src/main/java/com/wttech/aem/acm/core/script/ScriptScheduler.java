@@ -1,6 +1,7 @@
 package com.wttech.aem.acm.core.script;
 
 import com.wttech.aem.acm.core.code.ExecutionContextOptions;
+import com.wttech.aem.acm.core.code.ExecutionMode;
 import com.wttech.aem.acm.core.code.ExecutionQueue;
 import com.wttech.aem.acm.core.code.Executor;
 import com.wttech.aem.acm.core.instance.HealthChecker;
@@ -78,7 +79,8 @@ public class ScriptScheduler implements Runnable {
             return;
         }
 
-        ExecutionContextOptions contextOptions = new ExecutionContextOptions(config.userImpersonationId());
+        ExecutionContextOptions contextOptions =
+                new ExecutionContextOptions(ExecutionMode.RUN, config.userImpersonationId());
         try (ResourceResolver resourceResolver =
                 ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId())) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);

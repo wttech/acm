@@ -226,7 +226,7 @@ public class HealthChecker implements EventHandler {
 
         @AttributeDefinition(
                 name = "Installer Checking",
-                description = "Default is set to false, because it's not supported on AEMaaCS")
+                description = "Check if any CRX package is currently installed. Supported only on AEM 6.x - not supported on AEMaaCS")
         boolean installerChecking() default false;
     }
 }

@@ -50,8 +50,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            ExecutionContextOptions contextOptions =
-                    new ExecutionContextOptions(request.getResourceResolver().getUserID());
+            ExecutionContextOptions contextOptions = new ExecutionContextOptions(
+                    ExecutionMode.RUN, request.getResourceResolver().getUserID());
             Code code = input.getCode();
             Execution execution = executionQueue.submit(contextOptions, code).orElse(null);
             if (execution == null) {
