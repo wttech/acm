@@ -70,13 +70,13 @@ public class Executor {
 
     public Execution execute(ExecutionContext context) throws AcmException {
         ImmediateExecution execution = executeImmediately(context);
-        if (context.isHistory()
-                && (context.getMode() == ExecutionMode.RUN)
-                && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-            ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
-            history.save(execution);
+        if (context.getMode() == ExecutionMode.RUN) {
+            if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
+                ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
+                history.save(execution);
+            }
+            context.getExtender().complete(execution);
         }
-        context.getExtender().complete(execution);
         return execution;
     }
 
