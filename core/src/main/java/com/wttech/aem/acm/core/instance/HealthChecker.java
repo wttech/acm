@@ -109,8 +109,8 @@ public class HealthChecker implements EventHandler {
         }
         Repository repository = new Repository(resourceResolver);
         if (instanceInfo.isCloudContainer() && !repository.isCompositeNodeStore()) {
-            result.issues.add(new HealthIssue(
-                    HealthIssueSeverity.CRITICAL, "Repository is not yet using composite node store"));
+            result.issues.add(
+                    new HealthIssue(HealthIssueSeverity.CRITICAL, "Repository is not yet using composite node store"));
         }
         if (ArrayUtils.isNotEmpty(config.repositoryPathsExisted())) {
             Arrays.stream(config.repositoryPathsExisted()).forEach(path -> {
