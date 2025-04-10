@@ -67,10 +67,6 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    public ExecutionContext createContext(Executable executable, ResourceResolver resourceResolver) {
-        return executor.createContext(executable, resourceResolver);
-    }
-
     public Optional<Execution> submit(ExecutionContextOptions contextOptions, Executable executable)
             throws AcmException {
         Map<String, Object> jobProps = new HashMap<>();
@@ -98,36 +94,36 @@ public class ExecutionQueue implements JobExecutor {
         return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream();
     }
 
-    public Stream<Execution> readAll(Collection<String> jobIds) throws AcmException {
-        return jobIds.stream()
+    public Stream<Execution> readAll(Collection<String> executionIds) throws AcmException {
+        return executionIds.stream()
                 .filter(StringUtils::isNotBlank)
                 .map(this::read)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }
 
-    public Stream<ExecutionSummary> readAllSummaries(Collection<String> jobIds) throws AcmException {
-        return jobIds.stream()
+    public Stream<ExecutionSummary> readAllSummaries(Collection<String> executionIds) throws AcmException {
+        return executionIds.stream()
                 .filter(StringUtils::isNotBlank)
                 .map(this::readSummary)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }
 
-    public Optional<Execution> read(String jobId) throws AcmException {
-        return readJob(jobId).map(job -> new QueuedExecution(executor, job));
+    public Optional<Execution> read(String executionId) throws AcmException {
+        return readJob(executionId).map(job -> new QueuedExecution(executor, job));
     }
 
-    public Optional<ExecutionSummary> readSummary(String jobId) throws AcmException {
-        return readJob(jobId).map(job -> new QueuedExecutionSummary(executor, job));
+    public Optional<ExecutionSummary> readSummary(String executionId) throws AcmException {
+        return readJob(executionId).map(job -> new QueuedExecutionSummary(executor, job));
     }
 
-    private Optional<Job> readJob(String jobId) {
-        return Optional.ofNullable(jobManager.getJobById(jobId));
+    private Optional<Job> readJob(String executionId) {
+        return Optional.ofNullable(jobManager.getJobById(executionId));
     }
 
-    public void stop(String jobId) {
-        jobManager.stopJobById(jobId);
+    public void stop(String executionId) {
+        jobManager.stopJobById(executionId);
     }
 
     @Override
@@ -186,9 +182,12 @@ public class ExecutionQueue implements JobExecutor {
     private Execution executeAsync(ExecutionContextOptions contextOptions, QueuedExecution execution)
             throws AcmException {
         try (ResourceResolver resolver =
-                ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId())) {
-            ExecutionContext context = executor.createContext(execution.getExecutable(), resolver);
-            context.setId(execution.getJob().getId());
+                        ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId());
+                ExecutionContext context = executor.createContext(
+                        execution.getJob().getId(),
+                        contextOptions.getExecutionMode(),
+                        execution.getExecutable(),
+                        resolver)) {
             return executor.execute(context);
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);

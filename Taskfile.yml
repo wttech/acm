@@ -171,13 +171,6 @@ tasks:
     sources: [ pom.xml, src/**/* ]
     generates: [ target/*.ui.content-*.zip ]
 
-  build:content:index:
-    dir: ui.content.index
-    desc: build AEM Index content package
-    cmd: sh ../mvnw clean install $AEM_BUILD_ARGS
-    sources: [ pom.xml, src/**/* ]
-    generates: [ target/*.ui.content.index-*.zip ]
-
   build:all:
     dir: all
     desc: build AEM all package
@@ -201,7 +194,6 @@ tasks:
       - task: build:apps
       - task: build:config
       - task: build:content
-      - task: build:content:index
       - task: build:all
 
   build:clean:

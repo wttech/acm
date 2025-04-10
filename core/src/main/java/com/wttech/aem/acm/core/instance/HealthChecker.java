@@ -83,6 +83,9 @@ public class HealthChecker implements EventHandler {
 
     // TODO seems to not work on AEMaaCS as there is no Sling Installer JMX MBean
     private void checkInstaller(HealthStatus result, ResourceResolver resourceResolver) {
+        if (!config.installerChecking()) {
+            return;
+        }
         SlingInstallerState state = slingInstaller.checkState(resourceResolver);
         if (state.isActive()) {
             result.issues.add(new HealthIssue(
@@ -97,6 +100,9 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkRepository(HealthStatus result, ResourceResolver resourceResolver) {
+        if (!config.repositoryChecking()) {
+            return;
+        }
         Repository repository = new Repository(resourceResolver);
         if (repository.isCompositeNodeStore()) {
             result.issues.add(new HealthIssue(
@@ -113,6 +119,9 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkBundles(HealthStatus result) {
+        if (!config.bundleChecking()) {
+            return;
+        }
         osgiScanner.scanBundles().filter(b -> !isBundleIgnored(b)).forEach(bundle -> {
             if (osgiScanner.isFragment(bundle)) {
                 if (!osgiScanner.isBundleResolved(bundle)) {
@@ -144,6 +153,9 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkEvents(HealthStatus result) {
+        if (!config.eventChecking()) {
+            return;
+        }
         List<OsgiEvent> recentEvents = eventCollector.getRecentEvents(config.eventTimeWindow());
         if (!recentEvents.isEmpty()) {
             Map<String, Long> eventCounts =
@@ -176,11 +188,16 @@ public class HealthChecker implements EventHandler {
 
     @ObjectClassDefinition(name = "AEM Content Manager - Health Checker")
     public @interface Config {
+        @AttributeDefinition(name = "Bundle Checking")
+        boolean bundleChecking() default true;
 
         @AttributeDefinition(
                 name = "Bundle Symbolic Names Ignored",
                 description = "Allows to exclude certain OSGi bundles from health check (to address known issues)")
         String[] bundleSymbolicNamesIgnored();
+
+        @AttributeDefinition(name = "Event Checking")
+        boolean eventChecking() default true;
 
         @AttributeDefinition(
                 name = "Event Unstable Topics",
@@ -199,9 +216,18 @@ public class HealthChecker implements EventHandler {
         @AttributeDefinition(name = "Event Unstable Queue Size", description = "Max number of unstable events to store")
         int eventQueueSize() default 250;
 
+        @AttributeDefinition(name = "Repository Checking")
+        boolean repositoryChecking() default true;
+
         @AttributeDefinition(
                 name = "Repository Paths Existed",
                 description = "Paths to check for the existence in the repository")
         String[] repositoryPathsExisted();
+
+        @AttributeDefinition(
+                name = "Installer Checking",
+                description =
+                        "Check if any CRX package is currently installed. Supported only on AEM 6.x - not supported on AEMaaCS")
+        boolean installerChecking() default false;
     }
 }

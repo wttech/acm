@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CodeExecuteButton from '../components/CodeExecuteButton.tsx';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
-import { NavigationSearchParams } from '../hooks/navigation.ts';
+import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation.ts';
 import { toastRequest } from '../utils/api';
 import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput } from '../utils/api.types';
 import { Urls } from '../utils/url.ts';
@@ -22,6 +22,7 @@ const ScriptView = () => {
   const [executing, setExecuting] = useState<boolean>(false);
   const scriptId = decodeURIComponent(useParams<{ scriptId: string }>().scriptId as string);
   const navigate = useNavigate();
+  const [selectedTab, handleTabChange] = useNavigationTab('details');
 
   useEffect(() => {
     const fetchScript = async () => {
@@ -112,7 +113,7 @@ const ScriptView = () => {
 
   return (
     <Flex direction="column" flex="1" gap="size-400">
-      <Tabs flex="1" aria-label="Script Details">
+      <Tabs flex="1" aria-label="Script Details" selectedKey={selectedTab} onSelectionChange={handleTabChange}>
         <TabList>
           <Item key="details">
             <FileCode />
@@ -130,10 +131,22 @@ const ScriptView = () => {
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
                     <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={script.type !== 'MANUAL'} isPending={executing} />
-                    <Button variant="secondary" style="outline" onPress={() => navigate(Urls.compose('/history', { [ExecutionQueryParams.EXECUTABLE_ID]: script.id }))}>
-                      <History />
-                      <Text>Show in history</Text>
-                    </Button>
+                    {script.type !== 'EXTENSION' && (
+                      <Button
+                        variant="secondary"
+                        style="outline"
+                        onPress={() =>
+                          navigate(
+                            Urls.compose('/history', {
+                              [ExecutionQueryParams.EXECUTABLE_ID]: script.id,
+                            }),
+                          )
+                        }
+                      >
+                        <History />
+                        <Text>Show in history</Text>
+                      </Button>
+                    )}
                   </ButtonGroup>
                 </Flex>
               </View>

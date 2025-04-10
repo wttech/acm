@@ -33,7 +33,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
     public static final String RT = "acm/api/queue-code";
 
-    public static final String JOB_ID_PARAM = "jobId";
+    public static final String EXECUTION_ID_PARAM = "executionId";
 
     private static final Logger LOG = LoggerFactory.getLogger(QueueCodeServlet.class);
 
@@ -50,8 +50,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            ExecutionContextOptions contextOptions =
-                    new ExecutionContextOptions(request.getResourceResolver().getUserID());
+            ExecutionContextOptions contextOptions = new ExecutionContextOptions(
+                    ExecutionMode.RUN, request.getResourceResolver().getUserID());
             Code code = input.getCode();
             Execution execution = executionQueue.submit(contextOptions, code).orElse(null);
             if (execution == null) {
@@ -64,7 +64,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                     response,
                     ok(String.format("Code from '%s' queued for execution successfully", code.getId()), output));
         } catch (Exception e) {
-            LOG.error("Job cannot be queued!", e);
+            LOG.error("Execution cannot be queued!", e);
             respondJson(
                     response,
                     badRequest(String.format("Code execution cannot be queued! %s", e.getMessage())
@@ -75,20 +75,20 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
-            List<String> jobIds = stringsParam(request, JOB_ID_PARAM);
+            List<String> executionIds = stringsParam(request, EXECUTION_ID_PARAM);
 
             List<Execution> executions;
-            if (jobIds == null) {
+            if (executionIds == null) {
                 executions = executionQueue.findAll().collect(Collectors.toList());
             } else {
                 ExecutionResolver executionResolver =
                         new ExecutionResolver(executionQueue, request.getResourceResolver());
-                executions = executionResolver.readAll(jobIds).collect(Collectors.toList());
+                executions = executionResolver.readAll(executionIds).collect(Collectors.toList());
                 if (executions.isEmpty()) {
                     respondJson(
                             response,
                             notFound(String.format(
-                                    "Code execution with ID '%s' not found!", StringUtils.join(jobIds, ","))));
+                                    "Code execution with ID '%s' not found!", StringUtils.join(executionIds, ","))));
                     return;
                 }
             }
@@ -96,7 +96,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             QueueOutput output = new QueueOutput(executions);
             respondJson(response, ok("Code execution found successfully", output));
         } catch (Exception e) {
-            LOG.error("Job cannot be read!", e);
+            LOG.error("Execution cannot be read!", e);
             respondJson(
                     response,
                     error(String.format("Code execution cannot be read! %s", e.getMessage())
@@ -106,19 +106,19 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doDelete(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        List<String> jobIds = stringsParam(request, JOB_ID_PARAM);
-        if (jobIds == null) {
+        List<String> executionIds = stringsParam(request, EXECUTION_ID_PARAM);
+        if (executionIds == null) {
             respondJson(response, badRequest("Code execution ID is not specified!"));
             return;
         }
 
         try {
-            List<Execution> executions = executionQueue.readAll(jobIds).collect(Collectors.toList());
+            List<Execution> executions = executionQueue.readAll(executionIds).collect(Collectors.toList());
             if (executions.isEmpty()) {
                 respondJson(
                         response,
                         notFound(String.format(
-                                "Code execution with ID '%s' not found!", StringUtils.join(jobIds, ","))));
+                                "Code execution with ID '%s' not found!", StringUtils.join(executionIds, ","))));
                 return;
             }
 

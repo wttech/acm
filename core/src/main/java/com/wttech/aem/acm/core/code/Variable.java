@@ -1,41 +1,41 @@
 package com.wttech.aem.acm.core.code;
 
-import com.wttech.aem.acm.core.acl.Acl;
-import com.wttech.aem.acm.core.format.Formatter;
-import com.wttech.aem.acm.core.osgi.OsgiContext;
-import com.wttech.aem.acm.core.replication.Activator;
-import com.wttech.aem.acm.core.repo.Repository;
-import java.io.PrintStream;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.slf4j.Logger;
+import java.io.Serializable;
 
-public enum Variable {
-    // capturing output of 'groovy.lang.Script' requires 'out' to be 'java.io.PrintStream'
-    OUT("out", PrintStream.class.getName()),
-    LOG("log", Logger.class.getName()),
-    ARGS("args", Arguments.class.getName()),
-    CONDITION("condition", Condition.class.getName()),
-    RESOURCE_RESOLVER("resourceResolver", ResourceResolver.class.getName()),
-    REPOSITORY("repo", Repository.class.getName()),
-    ACL("acl", Acl.class.getName()),
-    ACTIVATOR("activator", Activator.class.getName()),
-    OSGI("osgi", OsgiContext.class.getName()),
-    FORMATTER("formatter", Formatter.class.getName());
+public class Variable implements Serializable {
 
-    final String varName;
+    private String name;
 
-    final String className;
+    private String type;
 
-    Variable(String varName, String className) {
-        this.varName = varName;
-        this.className = className;
+    private String documentation;
+
+    public Variable(String name, Class<?> type) {
+        this.name = name;
+        this.type = type.getName();
     }
 
-    public String varName() {
-        return varName;
+    public String getName() {
+        return name;
     }
 
-    public String typeName() {
-        return className;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getDocumentation() {
+        return documentation;
+    }
+
+    public void setDocumentation(String documentation) {
+        this.documentation = documentation;
     }
 }

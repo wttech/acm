@@ -26,15 +26,15 @@ public class VariableSuggestion implements Suggestion {
 
     @Override
     public String getInsertText() {
-        return variable.varName();
+        return variable.getName();
     }
 
     @Override
     public String getInfo() {
         List<String> info = new LinkedList<>();
 
-        info.add(String.format("Type: %s", variable.typeName()));
-        CodeRepository.linkToClass(variable.typeName()).ifPresent(link -> {
+        info.add(String.format("Type: %s", variable.getType()));
+        CodeRepository.linkToClass(variable.getType()).ifPresent(link -> {
             info.add(String.format("Source Code: [Open on GitHub](%s)", link));
         });
 

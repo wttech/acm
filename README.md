@@ -86,9 +86,9 @@ There are two ways to install AEM Content Manager on your AEM instances:
 
 ## Compatibility
 
-| AEM Content Manager | AEM        | Java  | Groovy |
-|---------------------|------------|-------|--------|
-| 1.0.0               | 6.5, cloud | 8, 11 | 4.x    |
+| AEM Content Manager | AEM        | Java | Groovy |
+|---------------------|------------|------|--------|
+| 1.x                 | 6.x, cloud | 8+   | 4.x    |
 
 Note that AEM Content Manager is using Groovy scripts concept. However, it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
 AEM Content Manager tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
@@ -250,16 +250,24 @@ To add own code binding or hook into execution process, you can create your own 
 #### Example extension script
 
 ```groovy
-void extend(Extender extender) {
-  extender.codeBindingVariable("acme", AcmeApi.class) { new AcmApiImpl(executionContext.resourceResolver)) }
-  // or just
-  extender.codeBindingVariable("acme") { new AcmApiImpl(executionContext.resourceResolver) }
+import com.wttech.aem.acm.core.code.ExecutionContext
+import com.wttech.aem.acm.core.code.Execution
+
+void prepareRun(ExecutionContext executionContext) {
+    executionContext.variable("acme", new AcmeFacade())
 }
 
-void completeExecution(Execution execution) {
-   if (execution.status === 'FAILED') {
-      // send Slack/MS Teams message or something
-   }
+void completeRun(Execution execution) {
+    if (execution.status.name() == 'FAILED') {
+        log.error "Something nasty happened with '${execution.executable.id}'!"
+        // TODO send notification on Slack, MS Teams, etc using HTTP client / WebAPI
+    }
+}
+
+class AcmeFacade {
+    def now() {
+        return new Date()
+    }
 }
 ```
 

@@ -1,6 +1,6 @@
 import { defaultTheme, Flex, Provider, View } from '@adobe/react-spectrum';
 import { ToastContainer } from '@react-spectrum/toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import './App.css';
 import { AppContext } from './AppContext';
@@ -9,6 +9,9 @@ import Header from './components/Header';
 import router from './router';
 import { apiRequest } from './utils/api';
 import { State } from './utils/api.types';
+
+const AppStateFetchInterval = 3000;
+const AppStateFetchTimeout = 2500;
 
 function App() {
   const [state, setState] = useState<State>({
@@ -25,21 +28,32 @@ function App() {
     queuedExecutions: [],
   });
 
+  const isFetching = useRef(false);
+
   useEffect(() => {
     const fetchState = async () => {
+      if (isFetching.current) {
+        return; // no overlaps
+      }
+      isFetching.current = true;
+
       try {
         const response = await apiRequest<State>({
-          operation: 'Fetch state',
+          operation: 'Fetch application state',
           url: '/apps/acm/api/state.json',
           method: 'get',
+          timeout: AppStateFetchTimeout,
         });
         setState(response.data.data);
       } catch (error) {
-        console.warn('Cannot fetch state:', error);
+        console.warn('Cannot fetch application state:', error);
+      } finally {
+        isFetching.current = false;
       }
     };
+
     fetchState();
-    const intervalId = setInterval(fetchState, 1000);
+    const intervalId = setInterval(fetchState, AppStateFetchInterval);
     return () => clearInterval(intervalId);
   }, []);
 

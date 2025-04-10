@@ -1,0 +1,6 @@
+group: OSGi
+name: osgi_get_service
+documentation: |
+  Get an OSGi service by its interface.
+content: |
+  osgi.getService(${1:pid}.class)

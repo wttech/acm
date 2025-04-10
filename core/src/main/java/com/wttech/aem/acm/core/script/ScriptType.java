@@ -7,7 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 public enum ScriptType {
     MANUAL(ScriptRepository.ROOT + "/manual"),
     ENABLED(ScriptRepository.ROOT + "/auto/enabled"),
-    DISABLED(ScriptRepository.ROOT + "/auto/disabled");
+    DISABLED(ScriptRepository.ROOT + "/auto/disabled"),
+    EXTENSION(ScriptRepository.ROOT + "/extension");
 
     private final String root;
 
