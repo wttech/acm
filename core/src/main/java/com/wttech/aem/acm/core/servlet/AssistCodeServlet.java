@@ -30,8 +30,11 @@ import org.slf4j.LoggerFactory;
 public class AssistCodeServlet extends SlingAllMethodsServlet {
 
     public static final String RT = "acm/api/assist-code";
+
     public static final String WORD_PARAM = "word";
+
     public static final String TYPE_PARAM = "type";
+
     private static final Logger LOG = LoggerFactory.getLogger(AssistCodeServlet.class);
 
     @Reference
@@ -44,14 +47,26 @@ public class AssistCodeServlet extends SlingAllMethodsServlet {
             respondJson(response, badRequest("Code assistance word is not specified!"));
             return;
         }
-        String type = StringUtils.defaultString(stringParam(request, TYPE_PARAM), "all");
+        String typeName = StringUtils.defaultString(stringParam(request, TYPE_PARAM), "all");
+        SuggestionType suggestionType = SuggestionType.of(typeName);
         try {
-            Assistance assistance = assistancer.forWord(request.getResourceResolver(), SuggestionType.of(type), word);
+            Assistance assistance = assistancer.forWord(request.getResourceResolver(), suggestionType, word);
+            if (suggestionType == SuggestionType.ALL) {
+                respondCacheMaxAge(response, assistancer.getCacheMaxAgeAll());
+            } else {
+                respondCacheMaxAge(response, assistancer.getCacheMaxAgeSpecific());
+            }
             respondJson(response, ok("Code assistance generated successfully", assistance));
         } catch (Exception e) {
             LOG.error("Cannot generate code assistance", e);
             respondJson(
                     response, error(String.format("Code assistance cannot be generated. Error: %s", e.getMessage())));
+        }
+    }
+
+    private void respondCacheMaxAge(SlingHttpServletResponse response, int maxAge) {
+        if (maxAge > 0) {
+            response.setHeader("Cache-Control", String.format("max-age=%d", maxAge));
         }
     }
 }

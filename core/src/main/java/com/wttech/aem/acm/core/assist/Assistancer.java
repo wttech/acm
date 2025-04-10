@@ -12,15 +12,37 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(immediate = true, service = Assistancer.class)
+@Designate(ocd = Assistancer.Config.class)
 public class Assistancer {
 
     private static final Logger LOG = LoggerFactory.getLogger(Assistancer.class);
+
+    @ObjectClassDefinition(name = "AEM Content Manager - Assistancer")
+    public @interface Config {
+
+        @AttributeDefinition(
+                name = "Cache Max Age - All",
+                description = "Seconds to cache in browser responses for 'all' assistance type")
+        int cacheMaxAgeAll() default 60 * 5;
+
+        @AttributeDefinition(
+                name = "Cache Max Age - Specific",
+                description = "Seconds to cache in browser responses for specific assistance type")
+        int cacheMaxAgeSpecific() default 10;
+    }
+
+    private Config config;
 
     @Reference
     private transient OsgiScanner osgiScanner;
@@ -34,6 +56,12 @@ public class Assistancer {
     private List<ClassInfo> classCache = Collections.emptyList();
 
     private Integer cacheHashCode;
+
+    @Activate
+    @Modified
+    protected void activate(Config config) {
+        this.config = config;
+    }
 
     public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word)
             throws AcmException {
@@ -94,5 +122,13 @@ public class Assistancer {
             cacheHashCode = cacheHashCodeCurrent;
             LOG.info("Bundles changed - updated cache");
         }
+    }
+
+    public int getCacheMaxAgeAll() {
+        return config.cacheMaxAgeAll();
+    }
+
+    public int getCacheMaxAgeSpecific() {
+        return config.cacheMaxAgeSpecific();
     }
 }
