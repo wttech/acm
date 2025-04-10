@@ -22,7 +22,7 @@ public class ResourceScanner {
      * etc.
      */
     public Stream<Resource> forPattern(ResourceResolver resolver, String pattern) {
-        if (StringUtils.isBlank(pattern)) {
+        if (StringUtils.isBlank(pattern) || !StringUtils.startsWith(pattern, "/")) {
             return Stream.empty();
         }
 
