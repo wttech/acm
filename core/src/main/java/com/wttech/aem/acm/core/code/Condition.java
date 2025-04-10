@@ -48,11 +48,11 @@ public class Condition {
     }
 
     public boolean idle() {
-        return queuedExecutions().noneMatch(e -> e.getStatus().isActive());
+        return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
     }
 
     public boolean idleSelf() {
-        return queuedSelfExecutions().noneMatch(e -> e.getStatus().isActive());
+        return queuedSelfExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
     }
 
     public Stream<Execution> queuedExecutions() {

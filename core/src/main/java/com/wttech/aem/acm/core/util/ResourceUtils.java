@@ -24,7 +24,13 @@ public final class ResourceUtils {
         if (StringUtils.isNotBlank(userImpersonationId)) {
             params.put(ResourceResolverFactory.USER_IMPERSONATION, userImpersonationId);
         }
-        return resourceResolverFactory.getServiceResourceResolver(params);
+
+        try {
+            return resourceResolverFactory.getServiceResourceResolver(params);
+        } catch (LoginException e) {
+            return resourceResolverFactory.getAdministrativeResourceResolver(
+                    params); // fix for 'Impersonation not allowed' on 6.5.0 (supported by login admin whitelist)
+        }
     }
 
     public static void move(ResourceResolver resolver, String sourcePath, String targetPath)
