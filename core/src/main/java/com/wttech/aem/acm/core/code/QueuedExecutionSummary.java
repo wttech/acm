@@ -33,7 +33,7 @@ public class QueuedExecutionSummary implements ExecutionSummary {
 
     @Override
     public String getExecutableId() {
-        return job.getProperty("id", String.class);
+        return job.getProperty("executableId", String.class);
     }
 
     @Override

@@ -32,7 +32,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
     toastRequest<ScriptOutput>({
       method: 'GET',
       url: `/apps/acm/api/script.json?type=${type}`,
-      operation: `Scripts loading (${type})`,
+      operation: `Scripts loading (${type.toString().toLowerCase()})`,
       positive: false,
     })
       .then((data) => setScripts(data.data.data))
@@ -147,12 +147,17 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                   <Cell>{script.name}</Cell>
                   <Cell>
                     <Flex alignItems="center" gap="size-100">
-                      {lastExecution && (
-                        <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution">
-                          <Magnify />
-                        </Button>
+                      {lastExecution ? (
+                        <>
+                          <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution">
+                            <Magnify />
+                          </Button>
+                          <Text><DateExplained value={lastExecution.startDate} /></Text>
+                          <Text>by {lastExecution.userId}</Text>
+                        </>
+                      ) : (
+                        <Text>&mdash;</Text>
                       )}
-                      <Text>{lastExecution ? <DateExplained value={lastExecution.startDate} /> : '—'}</Text>
                     </Flex>
                   </Cell>
                   <Cell>
