@@ -12,6 +12,8 @@ public class InstanceSettings implements Serializable {
 
     private final boolean publish;
 
+    private final boolean onPrem;
+
     private final boolean cloud;
 
     private final boolean cloudContainer;
@@ -20,9 +22,10 @@ public class InstanceSettings implements Serializable {
 
     public InstanceSettings(InstanceInfo instanceInfo) {
         this.timezoneId = TimeZone.getDefault().getID();
-        this.cloud = instanceInfo.isCloud();
         this.author = instanceInfo.isAuthor();
         this.publish = instanceInfo.isPublish();
+        this.onPrem = instanceInfo.isOnPrem();
+        this.cloud = instanceInfo.isCloud();
         this.cloudContainer = instanceInfo.isCloudContainer();
         this.cloudSdk = instanceInfo.isCloudSdk();
     }

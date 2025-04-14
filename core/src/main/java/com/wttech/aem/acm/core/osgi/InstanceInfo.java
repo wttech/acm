@@ -41,10 +41,17 @@ public class InstanceInfo {
         return isRunMode(InstanceRole.PUBLISH.name());
     }
 
-    public boolean isCloud() {
-        String versionCloudRegex = config.versionCloudRegex();
-        Pattern pattern = Pattern.compile(versionCloudRegex);
+    public boolean isOnPrem() {
+        return !isCloud();
+    }
 
+    public boolean isCloud() {
+        return isCloudSdk() || isCloudContainer();
+    }
+
+    public boolean isCloudSdk() {
+        String regex = config.versionCloudSdkRegex();
+        Pattern pattern = Pattern.compile(regex);
         for (String prop : config.versionBundleContextProps()) {
             String value = bundleContext.getProperty(prop);
             if (StringUtils.isNotBlank(value)) {
@@ -64,10 +71,6 @@ public class InstanceInfo {
             }
         }
         return false;
-    }
-
-    public boolean isCloudSdk() {
-        return isCloud() && !isCloudContainer();
     }
 
     public boolean isRunMode(String runMode) {
@@ -95,7 +98,7 @@ public class InstanceInfo {
         @AttributeDefinition(
                 name = "Version Cloud Regex",
                 description = "Used to determine if the AEM instance is a cloud version (SDK or container)")
-        String versionCloudRegex() default "^\\d{4}\\..*";
+        String versionCloudSdkRegex() default "^\\d{4}\\..*";
 
         @AttributeDefinition(
                 name = "Version Cloud Container Environment Properties",

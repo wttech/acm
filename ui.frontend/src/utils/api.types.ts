@@ -202,6 +202,7 @@ export type InstanceSettings = {
   timezoneId: string;
   author: boolean;
   publish: boolean;
+  onPrem: boolean;
   cloud: boolean;
   cloudSdk: boolean;
   cloudContainer: boolean;
