@@ -21,8 +21,7 @@ import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
 import { isExecutionPending } from '../utils/api.types';
 import { Objects } from '../utils/objects';
-
-const toastTimeout = 3000;
+import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
 const ExecutionView = () => {
   const { executionId } = useParams<{ executionId: string }>();
@@ -56,10 +55,10 @@ const ExecutionView = () => {
     navigator.clipboard
       .writeText(execution.executable.content)
       .then(() => {
-        ToastQueue.info('Execution code copied to clipboard!', { timeout: toastTimeout });
+        ToastQueue.info('Execution code copied to clipboard!', { timeout: ToastTimeoutQuick });
       })
       .catch(() => {
-        ToastQueue.negative('Failed to copy execution code!', { timeout: toastTimeout });
+        ToastQueue.negative('Failed to copy execution code!', { timeout: ToastTimeoutQuick });
       });
   };
 
@@ -85,8 +84,8 @@ const ExecutionView = () => {
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
-                  <LabeledValue label="ID" value={execution.id} flex="1"/>
-                  <LabeledValue label="User" value={execution.userId} flex="1"/>
+                  <LabeledValue label="ID" value={execution.id} flex="1" />
+                  <LabeledValue label="User" value={execution.userId} flex="1" />
                   <Flex justifyContent="end">
                     <Field label="Status" flex="1">
                       <div>

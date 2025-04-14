@@ -1,9 +1,9 @@
-import {Monaco} from '@monaco-editor/react';
+import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
-import {MarkdownString} from 'monaco-editor/esm/vs/base/common/htmlContent';
-import {apiRequest} from '../../../api.ts';
-import {AssistCodeOutput} from '../../../api.types.ts';
-import {LANGUAGE_ID} from '../../groovy.ts';
+import { MarkdownString } from 'monaco-editor/esm/vs/base/common/htmlContent';
+import { apiRequest } from '../../../api.ts';
+import { AssistCodeOutput } from '../../../api.types.ts';
+import { LANGUAGE_ID } from '../../groovy.ts';
 
 export function registerAemCodeCompletions(instance: Monaco) {
   registerWordCompletion(instance);
@@ -13,19 +13,21 @@ export function registerAemCodeCompletions(instance: Monaco) {
 function registerWordCompletion(instance: Monaco) {
   instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
+      // Do not suggest paths as done separately
       const path = extractPath(model.getLineContent(position.lineNumber), position);
       if (path) {
-        // TODO not sure if needed
-        return {suggestions: [], incomplete: true};
+        return { suggestions: [], incomplete: true };
       }
+
       let wordText = '';
       const wordAtPosition = model.getWordAtPosition(position);
       if (wordAtPosition) {
         wordText = wordAtPosition.word;
       }
+
       // Don't send requests when word is empty
       if (wordText == '') {
-        return {suggestions: [], incomplete: true};
+        return { suggestions: [], incomplete: true };
       }
 
       try {
@@ -48,10 +50,10 @@ function registerWordCompletion(instance: Monaco) {
           // sortText: sortText(suggestion.v, wordText)
         }));
 
-        return {suggestions: suggestions, incomplete: true};
+        return { suggestions: suggestions, incomplete: true };
       } catch (error) {
         console.error('Code assistance error:', error);
-        return {suggestions: [], incomplete: true};
+        return { suggestions: [], incomplete: true };
       }
     },
   });
@@ -64,7 +66,7 @@ function registerResourceCompletion(instance: Monaco) {
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
       const path = extractPath(model.getLineContent(position.lineNumber), position);
       if (path.length == 0) {
-        return {suggestions: [], incomplete: true};
+        return { suggestions: [], incomplete: true };
       }
       try {
         const response = await apiRequest<AssistCodeOutput>({
@@ -82,10 +84,10 @@ function registerResourceCompletion(instance: Monaco) {
           range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
         }));
 
-        return {suggestions: suggestions, incomplete: true};
+        return { suggestions: suggestions, incomplete: true };
       } catch (error) {
         console.error('Code assistance error:', error);
-        return {suggestions: [], incomplete: true};
+        return { suggestions: [], incomplete: true };
       }
     },
   });
@@ -118,30 +120,29 @@ function monacoInsertTextRules(kind: string) {
 }
 
 function extractPath(lineContent: string, position: monaco.Position): string {
-  const paths = []
+  const paths = [];
   let match;
   // there are two groups: match[1] will be string withing double quotes, and match[2] means single quote string
   const regex = /"(\/[^ "]*)"|'(\/[^ ']*)'/g;
   // retrieve all paths from current line
   while ((match = regex.exec(lineContent)) !== null) {
     if (match[1]) {
-      paths.push({word: match[1], index: match['index'] + 1});
+      paths.push({ word: match[1], index: match['index'] + 1 });
     } else if (match[2]) {
-      paths.push({word: match[2], index: match['index'] + 1});
+      paths.push({ word: match[2], index: match['index'] + 1 });
     }
   }
   // keep only matches before the cursor, also word cant have two or more slashes in a row to be valid path
-  const possiblePaths = paths
-    .filter(p => p.index < position.column && (p.index + p.word.length + 1) >= position.column && !p.word.includes("//"))
+  const possiblePaths = paths.filter((p) => p.index < position.column && p.index + p.word.length + 1 >= position.column && !p.word.includes('//'));
   if (possiblePaths.length == 0) {
-    return ''
+    return '';
   }
   // find the one closest to the cursor
   const result = possiblePaths
-    .map(p => {
-      return {diff: position.column - p.index, ...p}
+    .map((p) => {
+      return { diff: position.column - p.index, ...p };
     })
-    .sort((a, b) => a.diff - b.diff)[0]
+    .sort((a, b) => a.diff - b.diff)[0];
 
   return result.word || '';
 }

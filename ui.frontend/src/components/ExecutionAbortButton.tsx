@@ -4,9 +4,9 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import React, { useState } from 'react';
 import { apiRequest } from '../utils/api';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
+import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
 const executionPollInterval = 1000;
-const toastTimeout = 3000;
 
 interface ExecutionAbortButtonProps {
   execution: Execution | null;
@@ -42,18 +42,18 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
       }
       if (queuedExecution.status === ExecutionStatus.ABORTED) {
         ToastQueue.positive('Code execution aborted successfully!', {
-          timeout: toastTimeout,
+          timeout: ToastTimeoutQuick,
         });
       } else {
         console.warn('Code execution aborting failed!');
         ToastQueue.negative('Code execution aborting failed!', {
-          timeout: toastTimeout,
+          timeout: ToastTimeoutQuick,
         });
       }
     } catch (error) {
       console.error('Code execution aborting error:', error);
       ToastQueue.negative('Code execution aborting failed!', {
-        timeout: toastTimeout,
+        timeout: ToastTimeoutQuick,
       });
     } finally {
       setIsAborting(false);

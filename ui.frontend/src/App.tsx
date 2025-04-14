@@ -43,6 +43,7 @@ function App() {
           url: '/apps/acm/api/state.json',
           method: 'get',
           timeout: AppStateFetchTimeout,
+          quiet: true,
         });
         setState(response.data.data);
       } catch (error) {

@@ -152,7 +152,9 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                           <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution">
                             <Magnify />
                           </Button>
-                          <Text><DateExplained value={lastExecution.startDate} /></Text>
+                          <Text>
+                            <DateExplained value={lastExecution.startDate} />
+                          </Text>
                           <Text>by {lastExecution.userId}</Text>
                         </>
                       ) : (

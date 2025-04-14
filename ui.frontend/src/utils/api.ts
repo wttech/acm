@@ -1,5 +1,6 @@
 import { ToastQueue } from '@react-spectrum/toast';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { ToastTimeoutMedium } from './spectrum.ts';
 
 export type ApiResponse<T> = {
   status: number;
@@ -7,8 +8,13 @@ export type ApiResponse<T> = {
   data: T;
 };
 
+type ApiRequestConfig = AxiosRequestConfig & {
+  operation: string;
+  quiet?: boolean;
+};
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export async function apiRequest<D>(config: ToastRequestConfig): Promise<AxiosResponse<ApiResponse<D>>> {
+export async function apiRequest<D>(config: ApiRequestConfig): Promise<AxiosResponse<ApiResponse<D>>> {
   try {
     const response = await axios<ApiResponse<D>>(config);
     if (response.status >= 200 && response.status < 300) {
@@ -17,7 +23,9 @@ export async function apiRequest<D>(config: ToastRequestConfig): Promise<AxiosRe
       throw new Error(`${config.operation} failed!`);
     }
   } catch (error: any) {
-    console.error(`${config.operation} error!`, error);
+    if (config.quiet !== true) {
+      console.error(`${config.operation} error!`, error);
+    }
     if (error.response && error.response.data && error.response.data.message) {
       throw new Error(error.response.data.message);
     } else {
@@ -26,14 +34,13 @@ export async function apiRequest<D>(config: ToastRequestConfig): Promise<AxiosRe
   }
 }
 
-type ToastRequestConfig = AxiosRequestConfig & {
-  operation: string;
-  timeout?: number;
+type ToastRequestConfig = ApiRequestConfig & {
   positive?: boolean;
+  hideAfter?: number;
 };
 
 export async function toastRequest<D>(config: ToastRequestConfig): Promise<AxiosResponse<ApiResponse<D>>> {
-  const toastTimeout = config.timeout || 5000;
+  const toastTimeout = config.hideAfter || ToastTimeoutMedium;
   try {
     const response = await axios<ApiResponse<D>>(config);
     if (response.status >= 200 && response.status < 300) {

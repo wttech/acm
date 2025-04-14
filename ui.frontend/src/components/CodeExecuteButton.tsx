@@ -7,6 +7,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { toastRequest } from '../utils/api';
 import { Argument, ArgumentGroupDefault, ArgumentValue, ArgumentValues, Description, ExecutableIdConsole, ExecutionStatus } from '../utils/api.types';
 import { Objects } from '../utils/objects';
+import { ToastTimeoutLong } from '../utils/spectrum.ts';
 import { Strings } from '../utils/strings';
 import CodeArgumentInput from './CodeArgumentInput';
 
@@ -35,7 +36,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
     try {
       const response = await toastRequest<Description>({
         operation: 'Describe code',
-        timeout: 10000,
+        hideAfter: ToastTimeoutLong,
         positive: false,
         url: `/apps/acm/api/describe-code.json`,
         method: 'post',
