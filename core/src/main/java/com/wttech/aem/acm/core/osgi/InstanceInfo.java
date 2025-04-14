@@ -51,10 +51,10 @@ public class InstanceInfo {
     }
 
     private InstanceType determineType() {
-        if (isCloudSdk()) {
-            return InstanceType.CLOUD_SDK;
-        } else if (isCloudContainer()) {
+        if (isCloudContainer()) {
             return InstanceType.CLOUD_CONTAINER;
+        } else if (isCloudSdk()) {
+            return InstanceType.CLOUD_SDK;
         } else {
             return InstanceType.ON_PREM;
         }
