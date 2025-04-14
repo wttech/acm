@@ -28,12 +28,12 @@ public class QueuedExecutionSummary implements ExecutionSummary {
 
     @Override
     public String getUserId() {
-        return job.getProperty(ExecutionContextOptions.USER_ID_PROP, String.class);
+        return job.getProperty(ExecutionJob.USER_ID_PROP, String.class);
     }
 
     @Override
     public String getExecutableId() {
-        return job.getProperty("executableId", String.class);
+        return job.getProperty(ExecutionJob.EXECUTABLE_ID_PROP, String.class);
     }
 
     @Override

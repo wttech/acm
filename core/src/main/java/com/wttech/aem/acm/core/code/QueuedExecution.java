@@ -32,7 +32,7 @@ public class QueuedExecution implements Execution {
 
     @Override
     public String getUserId() {
-        return job.getProperty(ExecutionContextOptions.USER_ID_PROP, String.class);
+        return job.getProperty(ExecutionJob.USER_ID_PROP, String.class);
     }
 
     @Override
