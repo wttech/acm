@@ -13,15 +13,21 @@ export function registerAemCodeCompletions(instance: Monaco) {
 function registerWordCompletion(instance: Monaco) {
   instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
-      const path = extractPath(model.getLineContent(position.lineNumber));
+      // Do not suggest paths as done separately
+      const path = extractPath(model.getLineContent(position.lineNumber), position);
       if (path) {
-        // TODO not sure if needed
         return { suggestions: [], incomplete: true };
       }
+
       let wordText = '';
       const wordAtPosition = model.getWordAtPosition(position);
       if (wordAtPosition) {
         wordText = wordAtPosition.word;
+      }
+
+      // Don't send requests when word is empty
+      if (wordText == '') {
+        return { suggestions: [], incomplete: true };
       }
 
       try {
@@ -58,7 +64,7 @@ function registerResourceCompletion(instance: Monaco) {
     triggerCharacters: ['/'],
 
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
-      const path = extractPath(model.getLineContent(position.lineNumber));
+      const path = extractPath(model.getLineContent(position.lineNumber), position);
       if (path.length == 0) {
         return { suggestions: [], incomplete: true };
       }
@@ -113,10 +119,32 @@ function monacoInsertTextRules(kind: string) {
   }
 }
 
-function extractPath(lineContent: string): string {
-  const regex = /"([^"]*)"/g;
-  const matches = regex.exec(lineContent);
-  return matches?.[1] || '';
+function extractPath(lineContent: string, position: monaco.Position): string {
+  const paths = [];
+  let match;
+  // there are two groups: match[1] will be string withing double quotes, and match[2] means single quote string
+  const regex = /"(\/[^ "]*)"|'(\/[^ ']*)'/g;
+  // retrieve all paths from current line
+  while ((match = regex.exec(lineContent)) !== null) {
+    if (match[1]) {
+      paths.push({ word: match[1], index: match['index'] + 1 });
+    } else if (match[2]) {
+      paths.push({ word: match[2], index: match['index'] + 1 });
+    }
+  }
+  // keep only matches before the cursor, also word cant have two or more slashes in a row to be valid path
+  const possiblePaths = paths.filter((p) => p.index < position.column && p.index + p.word.length + 1 >= position.column && !p.word.includes('//'));
+  if (possiblePaths.length == 0) {
+    return '';
+  }
+  // find the one closest to the cursor
+  const result = possiblePaths
+    .map((p) => {
+      return { diff: position.column - p.index, ...p };
+    })
+    .sort((a, b) => a.diff - b.diff)[0];
+
+  return result.word || '';
 }
 
 function removePathPrefix(path: string, v: string) {
