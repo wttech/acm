@@ -200,13 +200,20 @@ export type State = {
 export type InstanceSettings = {
   id: string;
   timezoneId: string;
-  author: boolean;
-  publish: boolean;
-  onPrem: boolean;
-  cloud: boolean;
-  cloudSdk: boolean;
-  cloudContainer: boolean;
+  role: InstanceRole;
+  type: InstanceType;
 };
+
+export enum InstanceRole {
+  AUTHOR = 'AUTHOR',
+  PUBLISH = 'PUBLISH',
+}
+
+export enum InstanceType {
+  ON_PREM = 'ON_PREM',
+  CLOUD_SDK = 'CLOUD_SDK',
+  CLOUD_CONTAINER = 'CLOUD_CONTAINER',
+}
 
 export type HealthStatus = {
   healthy: boolean;

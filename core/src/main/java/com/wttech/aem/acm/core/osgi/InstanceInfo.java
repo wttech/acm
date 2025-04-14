@@ -14,6 +14,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.Option;
 
 @Component(immediate = true, service = InstanceInfo.class)
 @Designate(ocd = InstanceInfo.Config.class)
@@ -41,15 +42,25 @@ public class InstanceInfo {
         return isRunMode(InstanceRole.PUBLISH.name());
     }
 
-    public boolean isOnPrem() {
-        return !isCloud();
+    public InstanceRole getRole() {
+        return isAuthor() ? InstanceRole.AUTHOR : InstanceRole.PUBLISH;
     }
 
-    public boolean isCloud() {
-        return isCloudSdk() || isCloudContainer();
+    public InstanceType getType() {
+        return InstanceType.of(config.type()).orElseGet(this::determineType);
     }
 
-    public boolean isCloudSdk() {
+    private InstanceType determineType() {
+        if (isCloudSdk()) {
+            return InstanceType.CLOUD_SDK;
+        } else if (isCloudContainer()) {
+            return InstanceType.CLOUD_CONTAINER;
+        } else {
+            return InstanceType.ON_PREM;
+        }
+    }
+
+    private boolean isCloudSdk() {
         String regex = config.versionCloudSdkRegex();
         Pattern pattern = Pattern.compile(regex);
         for (String prop : config.versionBundleContextProps()) {
@@ -64,7 +75,7 @@ public class InstanceInfo {
         return false;
     }
 
-    public boolean isCloudContainer() {
+    private boolean isCloudContainer() {
         for (String envProp : config.versionCloudContainerEnvProps()) {
             if (StringUtils.isNotBlank(System.getenv(envProp))) {
                 return true;
@@ -87,6 +98,18 @@ public class InstanceInfo {
 
     @ObjectClassDefinition(name = "AEM Content Manager - Instance Info")
     public @interface Config {
+
+        @AttributeDefinition(
+                name = "Type",
+                description =
+                        "Determines the type of hardware the AEM instance is running on. Only when 'auto' is set, the other configuration values are in use.",
+                options = {
+                    @Option(label = "Determine automatically", value = "AUTO"),
+                    @Option(label = "On Prem", value = "ON_PREM"),
+                    @Option(label = "Cloud SDK", value = "CLOUD_SDK"),
+                    @Option(label = "Cloud Container", value = "CLOUD_CONTAINER")
+                })
+        String type() default "AUTO";
 
         @AttributeDefinition(
                 name = "Version Bundle Context Properties",
