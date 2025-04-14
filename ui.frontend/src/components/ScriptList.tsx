@@ -1,31 +1,12 @@
-import {
-  Button,
-  ButtonGroup,
-  Cell,
-  Column,
-  Content,
-  ContextualHelp,
-  Flex,
-  Heading,
-  IllustratedMessage,
-  Link,
-  ProgressBar,
-  Row,
-  StatusLight,
-  TableBody,
-  TableHeader,
-  TableView,
-  Text,
-  View
-} from '@adobe/react-spectrum';
-import {Key, Selection} from '@react-types/shared';
+import { Button, ButtonGroup, Cell, Column, Content, ContextualHelp, Flex, Heading, IllustratedMessage, Link, ProgressBar, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
+import { Key, Selection } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
-import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {AppContext} from '../AppContext.tsx';
-import {toastRequest} from '../utils/api';
-import {InstanceRole, isExecutionNegative, ScriptOutput, ScriptType} from '../utils/api.types';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../AppContext.tsx';
+import { toastRequest } from '../utils/api';
+import { InstanceRole, isExecutionNegative, ScriptOutput, ScriptType } from '../utils/api.types';
 import DateExplained from './DateExplained.tsx';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptSynchronizeButton from './ScriptSynchronizeButton';
@@ -95,7 +76,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               {type === ScriptType.ENABLED || type === ScriptType.DISABLED ? (
                 <>
                   <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-                  {appContext && (appContext.instanceSettings.role == InstanceRole.AUTHOR) && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
+                  {appContext && appContext.instanceSettings.role == InstanceRole.AUTHOR && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
                 </>
               ) : null}
             </ButtonGroup>
