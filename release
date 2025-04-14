@@ -1,23 +1,24 @@
 #!/usr/bin/env sh
 
+set -e
+
 VERSION=$1
 VERSION_TAG="v$VERSION"
 
-VERSION_CURRENT_TAG=$(git describe --tags --abbrev=0)
-VERSION_CURRENT_TAG="${VERSION_CURRENT_TAG:1}"
+VERSION_CURRENT_TAG=$(git describe --tags --abbrev=0 || echo "v0.0.0")
+VERSION_CURRENT_TAG="${VERSION_CURRENT_TAG#v}" # remove leading 'v', preserve leading zeros
 
-if [ -z "$VERSION" ]
-then
-      echo "Release version is not specified!"
-      echo "Last released: ${VERSION_CURRENT_TAG}"
-      exit 1
+if [ -z "$VERSION" ]; then
+    echo "Release version is not specified!"
+    echo "Last released: ${VERSION_CURRENT_TAG}"
+    exit 1
 fi
 
-GIT_STAT=$(git diff --stat)
+GIT_STAT=$(git diff --stat || true)
 
 if [ "$GIT_STAT" != '' ]; then
-  echo "Unable to release. Uncommitted changes detected!"
-  exit 1
+    echo "Unable to release. Uncommitted changes detected!"
+    exit 1
 fi
 
 echo "Releasing $VERSION_TAG"
@@ -40,9 +41,9 @@ echo "<TODO>"
 #fi
 
 echo "Pushing version bump"
-git commit -a -m "Release $VERSION_TAG"
-git push
+git commit -a -m "Release $VERSION_TAG" || echo "No changes to commit"
+git push || echo "Nothing to push"
 
 echo "Pushing release tag '$VERSION_TAG'"
 git tag "$VERSION_TAG"
-git push origin "$VERSION_TAG"
+git push origin "$VERSION_TAG" || echo "Tag already exists or cannot push"
