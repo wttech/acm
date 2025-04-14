@@ -10,8 +10,8 @@ import router from './router';
 import { apiRequest } from './utils/api';
 import { InstanceRole, InstanceType, State } from './utils/api.types';
 
-const AppStateFetchInterval = 3000;
 const AppStateFetchTimeout = 2500;
+const AppStateFetchInterval = 3000;
 
 function App() {
   const [state, setState] = useState<State>({
