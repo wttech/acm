@@ -347,6 +347,10 @@ public class Condition {
         return executionContext.getOsgiContext().getInstanceInfo().isPublish();
     }
 
+    public boolean isInstanceOnPrem() {
+        return executionContext.getOsgiContext().getInstanceInfo().getType() == InstanceType.ON_PREM;
+    }
+
     public boolean isInstanceCloud() {
         return executionContext.getOsgiContext().getInstanceInfo().getType().isCloud();
     }
