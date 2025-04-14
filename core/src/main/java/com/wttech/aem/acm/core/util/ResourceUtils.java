@@ -19,20 +19,45 @@ public final class ResourceUtils {
 
     public static ResourceResolver serviceResolver(
             ResourceResolverFactory resourceResolverFactory, String userImpersonationId) throws LoginException {
+        boolean impersonation = StringUtils.isNotBlank(userImpersonationId);
         Map<String, Object> params = new HashMap<>();
         params.put(ResourceResolverFactory.SUBSERVICE, "acm");
-        if (StringUtils.isNotBlank(userImpersonationId)) {
+        if (impersonation) {
             params.put(ResourceResolverFactory.USER_IMPERSONATION, userImpersonationId);
         }
-
         try {
-            return resourceResolverFactory.getServiceResourceResolver(params);
+            ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(params);
+            if (impersonation) {
+                String userImpersonationIdEffective = serviceOrImpersonatedUserId(resolver);
+                if (!StringUtils.equals(userImpersonationId, userImpersonationIdEffective)) {
+                    throw new AcmException(String.format(
+                            "Cannot impersonate user '%s' as service user '%s' is used instead!",
+                            serviceOrImpersonatedUserId(resolver), userImpersonationId));
+                }
+            }
+            return resolver;
         } catch (LoginException e) {
             return resourceResolverFactory.getAdministrativeResourceResolver(
                     params); // fix for 'Impersonation not allowed' on 6.5.0 (supported by login admin whitelist)
         }
     }
 
+    /**
+     * When user is impersonated, resolver's user ID remains the same as the one of the service user.
+     * To get the effective user ID, leverage the session user who effectively performs the operations on the repository.
+     */
+    public static String serviceOrImpersonatedUserId(ResourceResolver resourceResolver) {
+        Session session = resourceResolver.adaptTo(Session.class);
+        if (session == null) {
+            throw new AcmException("Cannot determine service/impersonated user ID from resource resolver!");
+        }
+        return session.getUserID();
+    }
+
+    /**
+     * Move in-place resource from source path to target path.
+     * Resolver is not doing it in-place, but JCR workspace is.
+     */
     public static void move(ResourceResolver resolver, String sourcePath, String targetPath)
             throws PersistenceException {
         Workspace workspace = Optional.ofNullable(resolver)

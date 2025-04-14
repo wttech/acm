@@ -122,6 +122,7 @@ const ScriptExecutor = () => {
         <TableHeader>
           <Column width="5%">#</Column>
           <Column>Executable</Column>
+          <Column>User</Column>
           <Column>Started</Column>
           <Column>Status</Column>
         </TableHeader>
@@ -131,6 +132,9 @@ const ScriptExecutor = () => {
               <Cell>{index + 1}</Cell>
               <Cell>
                 <ExecutableIdValue id={execution.executableId} />
+              </Cell>
+              <Cell>
+                <Text>{execution.userId}</Text>
               </Cell>
               <Cell>
                 <DateExplained value={execution.startDate} />

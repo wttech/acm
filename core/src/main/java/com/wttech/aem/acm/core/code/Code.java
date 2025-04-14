@@ -33,9 +33,9 @@ public class Code implements Executable {
     public static Map<String, Object> toJobProps(Executable executable) throws AcmException {
         try {
             Map<String, Object> result = new HashMap<>();
-            result.put("id", executable.getId());
-            result.put("content", executable.getContent());
-            result.put("arguments", JsonUtils.writeToString(executable.getArguments()));
+            result.put(ExecutionJob.EXECUTABLE_ID_PROP, executable.getId());
+            result.put(ExecutionJob.EXECUTABLE_CONTENT_PROP, executable.getContent());
+            result.put(ExecutionJob.EXECUTABLE_ARGUMENTS_PROP, JsonUtils.writeToString(executable.getArguments()));
             return result;
         } catch (IOException e) {
             throw new AcmException("Cannot serialize code to JSON!", e);
@@ -44,10 +44,10 @@ public class Code implements Executable {
 
     public static Code fromJob(Job job) {
         try {
-            String id = job.getProperty("id", String.class);
-            String content = job.getProperty("content", String.class);
-            ArgumentValues arguments =
-                    JsonUtils.readFromString(job.getProperty("arguments", String.class), ArgumentValues.class);
+            String id = job.getProperty(ExecutionJob.EXECUTABLE_ID_PROP, String.class);
+            String content = job.getProperty(ExecutionJob.EXECUTABLE_CONTENT_PROP, String.class);
+            ArgumentValues arguments = JsonUtils.readFromString(
+                    job.getProperty(ExecutionJob.EXECUTABLE_ARGUMENTS_PROP, String.class), ArgumentValues.class);
             return new Code(id, content, arguments);
         } catch (IOException e) {
             throw new AcmException("Cannot deserialize code from JSON!", e);

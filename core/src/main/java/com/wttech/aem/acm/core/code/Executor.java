@@ -73,7 +73,7 @@ public class Executor {
         if (context.getMode() == ExecutionMode.RUN) {
             if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
                 ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
-                history.save(execution);
+                history.save(context, execution);
             }
             context.getExtender().complete(execution);
         }

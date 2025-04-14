@@ -88,6 +88,7 @@ export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is Mult
 
 export type Execution = {
   id: string;
+  userId: string;
   executable: Executable;
   status: ExecutionStatus;
   startDate: string;
@@ -99,6 +100,7 @@ export type Execution = {
 
 export type ExecutionSummary = {
   id: string;
+  userId: string;
   executableId: string;
   status: ExecutionStatus;
   startDate: string;
