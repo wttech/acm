@@ -11,6 +11,8 @@ public interface ExecutionSummary extends Serializable {
 
     String getId();
 
+    String getUserId();
+
     String getExecutableId();
 
     ExecutionStatus getStatus();

@@ -11,6 +11,10 @@ import org.apache.sling.event.jobs.Job;
  */
 public class ExecutionContextOptions implements Serializable {
 
+    public static final String USER_ID_PROP = "userId";
+
+    public static final String EXECUTION_MODE_PROP = "executionMode";
+
     private final ExecutionMode executionMode;
 
     private final String userId;
@@ -22,15 +26,15 @@ public class ExecutionContextOptions implements Serializable {
 
     public static Map<String, Object> toJobProps(ExecutionContextOptions options) throws AcmException {
         Map<String, Object> props = new HashMap<>();
-        props.put("executionMode", options.getExecutionMode().name());
-        props.put("userId", options.getUserId());
+        props.put(EXECUTION_MODE_PROP, options.getExecutionMode().name());
+        props.put(USER_ID_PROP, options.getUserId());
         return props;
     }
 
     public static ExecutionContextOptions fromJob(Job job) {
         return new ExecutionContextOptions(
-                ExecutionMode.valueOf(job.getProperty("executionMode", String.class)),
-                job.getProperty("userId", String.class));
+                ExecutionMode.valueOf(job.getProperty(EXECUTION_MODE_PROP, String.class)),
+                job.getProperty(USER_ID_PROP, String.class));
     }
 
     public String getUserId() {

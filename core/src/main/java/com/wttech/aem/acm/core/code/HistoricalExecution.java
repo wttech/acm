@@ -3,6 +3,7 @@ package com.wttech.aem.acm.core.code;
 import com.wttech.aem.acm.core.AcmException;
 import com.wttech.aem.acm.core.util.DateUtils;
 import com.wttech.aem.acm.core.util.JsonUtils;
+import com.wttech.aem.acm.core.util.ResourceUtils;
 import java.io.InputStream;
 import java.util.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -18,9 +19,9 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
 
     public static final String RESOURCE_TYPE = "acm/execution/history/entry";
 
-    private final Executable executable;
-
     private final String id;
+
+    private final String userId;
 
     private final ExecutionStatus status;
 
@@ -34,43 +35,49 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
 
     private final String output;
 
+    private final Executable executable;
+
     public HistoricalExecution(Resource resource) {
         try {
             ValueMap props = resource.getValueMap();
 
-            this.executable = new Code(
-                    props.get("executableId", String.class),
-                    props.get("executableContent", String.class),
-                    JsonUtils.read(props.get("executableArguments", InputStream.class), ArgumentValues.class));
             this.id = props.get("id", String.class);
+            this.userId = props.get("userId", String.class);
             this.status = ExecutionStatus.of(props.get("status", String.class)).orElse(null);
             this.startDate = DateUtils.toDate(props.get("startDate", Calendar.class));
             this.endDate = DateUtils.toDate(props.get("endDate", Calendar.class));
             this.duration = props.get("duration", Long.class);
             this.error = props.get("error", String.class);
             this.output = props.get("output", String.class);
+
+            this.executable = new Code(
+                    props.get("executableId", String.class),
+                    props.get("executableContent", String.class),
+                    JsonUtils.read(props.get("executableArguments", InputStream.class), ArgumentValues.class));
         } catch (Exception e) {
             throw new AcmException(
                     String.format("Cannot read historical execution from resource '%s'!", resource.getPath()), e);
         }
     }
 
-    protected static Map<String, Object> toMap(ImmediateExecution execution) {
+    protected static Map<String, Object> toMap(ExecutionContext context, ImmediateExecution execution) {
         try {
             Map<String, Object> props = new HashMap<>();
 
-            props.put("executableId", execution.getExecutable().getId());
-            props.put("executableContent", execution.getExecutable().getContent());
-            props.put(
-                    "executableArguments",
-                    JsonUtils.writeToStream(execution.getExecutable().getArguments()));
             props.put("id", execution.getId());
+            props.put("userId", ResourceUtils.serviceOrImpersonatedUserId(context.getResourceResolver()));
             props.put("status", execution.getStatus().name());
             props.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
             props.put("endDate", DateUtils.toCalendar(execution.getEndDate()));
             props.put("duration", execution.getDuration());
             props.put("error", execution.getError());
             props.put("output", execution.readOutput());
+
+            props.put("executableId", execution.getExecutable().getId());
+            props.put("executableContent", execution.getExecutable().getContent());
+            props.put(
+                    "executableArguments",
+                    JsonUtils.writeToStream(execution.getExecutable().getArguments()));
 
             props.entrySet().removeIf(e -> e.getValue() == null);
             props.put(JcrConstants.JCR_PRIMARYTYPE, PRIMARY_TYPE);
@@ -94,8 +101,8 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
     }
 
     @Override
-    public Executable getExecutable() {
-        return executable;
+    public String getUserId() {
+        return userId;
     }
 
     @Override
@@ -134,8 +141,15 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
     }
 
     @Override
+    public Executable getExecutable() {
+        return executable;
+    }
+
+    @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("id", getId())
+                .append("userId", getUserId())
                 .append("executable", getExecutable())
                 .append("status", getStatus())
                 .append("duration", getDuration())
