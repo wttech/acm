@@ -22,15 +22,15 @@ public class ExecutionContextOptions implements Serializable {
 
     public static Map<String, Object> toJobProps(ExecutionContextOptions options) throws AcmException {
         Map<String, Object> props = new HashMap<>();
-        props.put("executionMode", options.getExecutionMode().name());
-        props.put("userId", options.getUserId());
+        props.put(ExecutionJob.EXECUTION_MODE_PROP, options.getExecutionMode().name());
+        props.put(ExecutionJob.USER_ID_PROP, options.getUserId());
         return props;
     }
 
     public static ExecutionContextOptions fromJob(Job job) {
         return new ExecutionContextOptions(
-                ExecutionMode.valueOf(job.getProperty("executionMode", String.class)),
-                job.getProperty("userId", String.class));
+                ExecutionMode.valueOf(job.getProperty(ExecutionJob.EXECUTION_MODE_PROP, String.class)),
+                job.getProperty(ExecutionJob.USER_ID_PROP, String.class));
     }
 
     public String getUserId() {

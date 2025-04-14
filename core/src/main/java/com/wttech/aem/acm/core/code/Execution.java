@@ -9,9 +9,9 @@ import java.util.Date;
  */
 public interface Execution extends Serializable {
 
-    Executable getExecutable();
-
     String getId();
+
+    String getUserId();
 
     ExecutionStatus getStatus();
 
@@ -24,4 +24,6 @@ public interface Execution extends Serializable {
     String getError();
 
     String getOutput();
+
+    Executable getExecutable();
 }

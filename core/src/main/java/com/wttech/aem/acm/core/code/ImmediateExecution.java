@@ -13,6 +13,8 @@ public class ImmediateExecution implements Execution {
 
     private final String id;
 
+    private final String userId;
+
     private final ExecutionStatus status;
 
     private final Date startDate;
@@ -22,9 +24,16 @@ public class ImmediateExecution implements Execution {
     private final String error;
 
     public ImmediateExecution(
-            Executable executable, String id, ExecutionStatus status, Date startDate, Date endDate, String error) {
+            Executable executable,
+            String id,
+            String userId,
+            ExecutionStatus status,
+            Date startDate,
+            Date endDate,
+            String error) {
         this.executable = executable;
         this.id = id;
+        this.userId = userId;
         this.status = status;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -32,13 +41,13 @@ public class ImmediateExecution implements Execution {
     }
 
     @Override
-    public Executable getExecutable() {
-        return executable;
+    public String getId() {
+        return id;
     }
 
     @Override
-    public String getId() {
-        return id;
+    public String getUserId() {
+        return userId;
     }
 
     @Override
@@ -79,8 +88,15 @@ public class ImmediateExecution implements Execution {
     }
 
     @Override
+    public Executable getExecutable() {
+        return executable;
+    }
+
+    @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("id", getId())
+                .append("userId", getUserId())
                 .append("executable", getExecutable())
                 .append("status", getStatus())
                 .append("duration", getDuration())
@@ -111,7 +127,14 @@ public class ImmediateExecution implements Execution {
 
         public ImmediateExecution end(ExecutionStatus status) {
             Date endDate = new Date();
-            return new ImmediateExecution(context.getExecutable(), context.getId(), status, startDate, endDate, error);
+            return new ImmediateExecution(
+                    context.getExecutable(),
+                    context.getId(),
+                    context.getResourceResolver().getUserID(),
+                    status,
+                    startDate,
+                    endDate,
+                    error);
         }
     }
 }

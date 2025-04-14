@@ -124,6 +124,7 @@ const HistoryPage = () => {
         <TableView flex="1" aria-label="Executions table" selectionMode="none" renderEmptyState={renderEmptyState} onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
           <TableHeader>
             <Column>Executable</Column>
+            <Column>User</Column>
             <Column>Started</Column>
             <Column>Duration</Column>
             <Column>Status</Column>
@@ -133,6 +134,9 @@ const HistoryPage = () => {
               <Row key={execution.id}>
                 <Cell>
                   <ExecutableIdValue id={execution.executableId} />
+                </Cell>
+                <Cell>
+                  <Text>{execution.userId}</Text>
                 </Cell>
                 <Cell>
                   <DateExplained value={execution.startDate} />

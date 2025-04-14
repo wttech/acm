@@ -12,6 +12,8 @@ public class HistoricalExecutionSummary implements ExecutionSummary, Comparable<
 
     private final String id;
 
+    private final String userId;
+
     private final String executableId;
 
     private final ExecutionStatus status;
@@ -27,6 +29,7 @@ public class HistoricalExecutionSummary implements ExecutionSummary, Comparable<
             ValueMap props = resource.getValueMap();
 
             this.id = props.get("id", String.class);
+            this.userId = props.get("userId", String.class);
             this.executableId = props.get("executableId", String.class);
             this.status = ExecutionStatus.of(props.get("status", String.class)).orElse(null);
             this.startDate = DateUtils.toDate(props.get("startDate", Calendar.class));
@@ -54,6 +57,11 @@ public class HistoricalExecutionSummary implements ExecutionSummary, Comparable<
     @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String getUserId() {
+        return userId;
     }
 
     @Override
@@ -85,6 +93,7 @@ public class HistoricalExecutionSummary implements ExecutionSummary, Comparable<
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("id", getId())
+                .append("userId", getUserId())
                 .append("executableId", getExecutableId())
                 .append("status", getStatus())
                 .append("duration", getDuration())

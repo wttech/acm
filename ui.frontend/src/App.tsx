@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 import Header from './components/Header';
 import router from './router';
 import { apiRequest } from './utils/api';
-import { State } from './utils/api.types';
+import { InstanceRole, InstanceType, State } from './utils/api.types';
 
 const AppStateFetchInterval = 3000;
 const AppStateFetchTimeout = 2500;
@@ -22,11 +22,8 @@ function App() {
     instanceSettings: {
       id: 'default',
       timezoneId: 'UTC',
-      publish: false,
-      author: true,
-      cloud: true,
-      cloudContainer: true,
-      cloudSdk: false,
+      role: InstanceRole.AUTHOR,
+      type: InstanceType.CLOUD_CONTAINER,
     },
     queuedExecutions: [],
   });

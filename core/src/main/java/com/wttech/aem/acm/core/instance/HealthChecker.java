@@ -1,9 +1,6 @@
 package com.wttech.aem.acm.core.instance;
 
-import com.wttech.aem.acm.core.osgi.InstanceInfo;
-import com.wttech.aem.acm.core.osgi.OsgiEvent;
-import com.wttech.aem.acm.core.osgi.OsgiEventCollector;
-import com.wttech.aem.acm.core.osgi.OsgiScanner;
+import com.wttech.aem.acm.core.osgi.*;
 import com.wttech.aem.acm.core.repo.Repository;
 import com.wttech.aem.acm.core.util.ResourceUtils;
 import java.util.*;
@@ -108,7 +105,7 @@ public class HealthChecker implements EventHandler {
             return;
         }
         Repository repository = new Repository(resourceResolver);
-        if (instanceInfo.isCloudContainer() && !repository.isCompositeNodeStore()) {
+        if ((instanceInfo.getType() == InstanceType.CLOUD_CONTAINER) && !repository.isCompositeNodeStore()) {
             result.issues.add(
                     new HealthIssue(HealthIssueSeverity.CRITICAL, "Repository is not yet using composite node store"));
         }

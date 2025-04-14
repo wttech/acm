@@ -27,8 +27,13 @@ public class QueuedExecutionSummary implements ExecutionSummary {
     }
 
     @Override
+    public String getUserId() {
+        return job.getProperty(ExecutionJob.USER_ID_PROP, String.class);
+    }
+
+    @Override
     public String getExecutableId() {
-        return job.getProperty("id", String.class);
+        return job.getProperty(ExecutionJob.EXECUTABLE_ID_PROP, String.class);
     }
 
     @Override
@@ -55,6 +60,7 @@ public class QueuedExecutionSummary implements ExecutionSummary {
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("id", getId())
+                .append("userId", getUserId())
                 .append("executableId", getExecutableId())
                 .append("status", getStatus())
                 .append("duration", getDuration())

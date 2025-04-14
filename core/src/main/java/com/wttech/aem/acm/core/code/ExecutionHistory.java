@@ -29,9 +29,9 @@ public class ExecutionHistory {
         return Stream.empty();
     }
 
-    public void save(ImmediateExecution execution) throws AcmException {
+    public void save(ExecutionContext context, ImmediateExecution execution) throws AcmException {
         Resource root = getOrCreateRoot();
-        Map<String, Object> props = HistoricalExecution.toMap(execution);
+        Map<String, Object> props = HistoricalExecution.toMap(context, execution);
 
         try {
             String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");

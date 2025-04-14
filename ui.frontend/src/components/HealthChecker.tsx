@@ -7,7 +7,7 @@ import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
 import { useContext } from 'react';
 import { AppContext } from '../AppContext';
-import { HealthIssueSeverity } from '../utils/api.types';
+import { HealthIssueSeverity, InstanceType } from '../utils/api.types';
 import { isProduction } from '../utils/node.ts';
 
 const HealthChecker = () => {
@@ -38,7 +38,11 @@ const HealthChecker = () => {
       <View>
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
-            <Button variant="negative" onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.acm.core.instance.HealthChecker`, '_blank')}>
+            <Button
+              variant="negative"
+              isDisabled={!context || context.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
+              onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.acm.core.instance.HealthChecker`, '_blank')}
+            >
               <Settings />
               <Text>Configure</Text>
             </Button>

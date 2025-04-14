@@ -26,13 +26,13 @@ public class QueuedExecution implements Execution {
     }
 
     @Override
-    public Executable getExecutable() {
-        return Code.fromJob(job);
+    public String getId() {
+        return job.getId();
     }
 
     @Override
-    public String getId() {
-        return job.getId();
+    public String getUserId() {
+        return job.getProperty(ExecutionJob.USER_ID_PROP, String.class);
     }
 
     @Override
@@ -66,8 +66,15 @@ public class QueuedExecution implements Execution {
     }
 
     @Override
+    public Executable getExecutable() {
+        return Code.fromJob(job);
+    }
+
+    @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("id", getId())
+                .append("userId", getUserId())
                 .append("executable", getExecutable())
                 .append("status", getStatus())
                 .append("duration", getDuration())

@@ -316,6 +316,20 @@ documentation: |
     sh taskw develop:frontend:dev
     ```
 
+## Releasing
+
+1. To check the last release version, run:
+
+    ```shell
+    sh taskw release
+    ```
+ 
+2. To release a new version, run:
+
+    ```shell
+    sh taskw release -- <new-version>
+    ```
+
 ## Authors
 
 - Founder, owner, and maintainer: [Krystian Panek](mailto:krystian.panek@vml.com)
