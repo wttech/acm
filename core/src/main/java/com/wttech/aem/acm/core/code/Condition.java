@@ -1,5 +1,6 @@
 package com.wttech.aem.acm.core.code;
 
+import com.wttech.aem.acm.core.osgi.InstanceType;
 import java.time.*;
 import java.util.Date;
 import java.util.Optional;
@@ -347,14 +348,14 @@ public class Condition {
     }
 
     public boolean isInstanceCloud() {
-        return executionContext.getOsgiContext().getInstanceInfo().isCloud();
+        return executionContext.getOsgiContext().getInstanceInfo().getType().isCloud();
     }
 
     public boolean isInstanceCloudContainer() {
-        return executionContext.getOsgiContext().getInstanceInfo().isCloudContainer();
+        return executionContext.getOsgiContext().getInstanceInfo().getType() == InstanceType.CLOUD_CONTAINER;
     }
 
     public boolean isInstanceCloudSdk() {
-        return executionContext.getOsgiContext().getInstanceInfo().isCloudSdk();
+        return executionContext.getOsgiContext().getInstanceInfo().getType() == InstanceType.CLOUD_SDK;
     }
 }

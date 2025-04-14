@@ -6,7 +6,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../AppContext.tsx';
 import { toastRequest } from '../utils/api';
-import { isExecutionNegative, ScriptOutput, ScriptType } from '../utils/api.types';
+import { InstanceRole, isExecutionNegative, ScriptOutput, ScriptType } from '../utils/api.types';
 import DateExplained from './DateExplained.tsx';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptSynchronizeButton from './ScriptSynchronizeButton';
@@ -76,7 +76,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               {type === ScriptType.ENABLED || type === ScriptType.DISABLED ? (
                 <>
                   <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-                  {appContext && !appContext.instanceSettings.publish && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
+                  {appContext && appContext.instanceSettings.role == InstanceRole.AUTHOR && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
                 </>
               ) : null}
             </ButtonGroup>
@@ -90,7 +90,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                   <>
                     <Text>Executor paused</Text>
                     <Text>&nbsp;&mdash;&nbsp;</Text>
-                    <Link isQuiet onPress={() => navigate('/maintenance/health-checker')}>
+                    <Link isQuiet onPress={() => navigate('/maintenance?tab=health-checker')}>
                       See health issues
                     </Link>
                   </>
