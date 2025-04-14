@@ -23,6 +23,10 @@ function registerWordCompletion(instance: Monaco) {
       if (wordAtPosition) {
         wordText = wordAtPosition.word;
       }
+      // Don't send requests when word is empty
+      if (wordText == '') {
+        return {suggestions: [], incomplete: true};
+      }
 
       try {
         const response = await apiRequest<AssistCodeOutput>({
@@ -117,7 +121,7 @@ function extractPath(lineContent: string, position: monaco.Position): string {
   const paths = []
   let match;
   // there are two groups: match[1] will be string withing double quotes, and match[2] means single quote string
-  const regex = /"(\/[^"]*)"|'(\/[^']*)'/g;
+  const regex = /"(\/[^ "]*)"|'(\/[^ ']*)'/g;
   // retrieve all paths from current line
   while ((match = regex.exec(lineContent)) !== null) {
     if (match[1]) {
@@ -126,8 +130,9 @@ function extractPath(lineContent: string, position: monaco.Position): string {
       paths.push({word: match[2], index: match['index'] + 1});
     }
   }
-  // keep only matches before the cursor
-  const possiblePaths = paths.filter(p => p.index < position.column)
+  // keep only matches before the cursor, also word cant have two or more slashes in a row to be valid path
+  const possiblePaths = paths
+    .filter(p => p.index < position.column && (p.index + p.word.length + 1) >= position.column && !p.word.includes("//"))
   if (possiblePaths.length == 0) {
     return ''
   }
