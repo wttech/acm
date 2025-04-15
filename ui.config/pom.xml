@@ -21,8 +21,8 @@
     <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
     <!-- ====================================================================== -->
     <parent>
-        <groupId>com.wttech.aem.acm</groupId>
-        <artifactId>root</artifactId>
+        <groupId>com.wttech.aem</groupId>
+        <artifactId>acm.root</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -62,7 +62,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.wttech.aem.acm</groupId>
+            <groupId>com.wttech.aem</groupId>
             <artifactId>acm.ui.apps.structure</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
