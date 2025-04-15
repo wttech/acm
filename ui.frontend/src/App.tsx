@@ -58,7 +58,7 @@ function App() {
     fetchState();
     const intervalId = setInterval(fetchState, state.spaSettings.appStateInterval);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [state.spaSettings.appStateInterval]);
 
   return (
     <Provider
