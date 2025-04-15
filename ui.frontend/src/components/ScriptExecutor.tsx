@@ -10,9 +10,9 @@ import Code from '@spectrum-icons/workflow/Code';
 import Help from '@spectrum-icons/workflow/Help';
 import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppContext } from '../AppContext';
+import { useAppState } from '../hooks/app.ts';
 import { InstanceType } from '../utils/api.types.ts';
 import { isProduction } from '../utils/node';
 import DateExplained from './DateExplained';
@@ -24,8 +24,8 @@ const ScriptExecutor = () => {
   const prefix = isProduction() ? '' : 'http://localhost:4502';
   const navigate = useNavigate();
 
-  const context = useContext(AppContext);
-  const executions = context?.queuedExecutions || [];
+  const appState = useAppState();
+  const executions = appState.queuedExecutions;
 
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
   const selectedIds = (selectedKeys: Selection): string[] => {
@@ -51,7 +51,7 @@ const ScriptExecutor = () => {
             <ButtonGroup>
               <ExecutionsAbortButton selectedKeys={selectedIds(selectedKeys)} />
               <MenuTrigger>
-                <Button variant="negative" isDisabled={!context || context.instanceSettings.type === InstanceType.CLOUD_CONTAINER}>
+                <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}>
                   <Settings />
                   <Text>Configure</Text>
                 </Button>

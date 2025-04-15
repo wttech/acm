@@ -55,7 +55,7 @@ public class StateServlet extends SlingAllMethodsServlet {
             HealthStatus healthStatus = healthChecker.checkStatus();
             List<ExecutionSummary> queuedExecutions =
                     executionQueue.findAllSummaries().collect(Collectors.toList());
-            State state = new State(healthStatus, instanceInfo.getInstanceSettings(), queuedExecutions, spaSettings);
+            State state = new State(spaSettings, healthStatus, instanceInfo.getInstanceSettings(), queuedExecutions);
 
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {

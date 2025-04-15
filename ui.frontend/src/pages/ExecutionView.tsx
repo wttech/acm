@@ -22,12 +22,14 @@ import { useNavigationTab } from '../hooks/navigation';
 import { isExecutionPending } from '../utils/api.types';
 import { Objects } from '../utils/objects';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
+import {useAppState} from "../hooks/app.ts";
 
 const ExecutionView = () => {
+  const appState = useAppState();
   const { executionId } = useParams<{ executionId: string }>();
   const formatter = useFormatter();
   const [autoscrollOutput, setAutoscrollOutput] = useState<boolean>(true);
-  const { execution, setExecution, loading } = useExecutionPolling(executionId);
+  const { execution, setExecution, loading } = useExecutionPolling(executionId, appState.spaSettings.executionPollInterval);
   const [selectedTab, handleTabChange] = useNavigationTab('details');
 
   if (loading) {

@@ -9,12 +9,14 @@ import Header from './components/Header';
 import router from './router';
 import { apiRequest } from './utils/api';
 import { InstanceRole, InstanceType, State } from './utils/api.types';
-
-const AppStateFetchTimeout = 2500;
-const AppStateFetchInterval = 3000;
+import { intervalToTimeout } from './utils/spectrum.ts';
 
 function App() {
   const [state, setState] = useState<State>({
+    spaSettings: {
+      appStateInterval: 3000,
+      executionPollInterval: 1000,
+    },
     healthStatus: {
       healthy: true,
       issues: [],
@@ -42,7 +44,7 @@ function App() {
           operation: 'Fetch application state',
           url: '/apps/acm/api/state.json',
           method: 'get',
-          timeout: AppStateFetchTimeout,
+          timeout: intervalToTimeout(state.spaSettings.appStateInterval),
           quiet: true,
         });
         setState(response.data.data);
@@ -54,7 +56,7 @@ function App() {
     };
 
     fetchState();
-    const intervalId = setInterval(fetchState, AppStateFetchInterval);
+    const intervalId = setInterval(fetchState, state.spaSettings.appStateInterval);
     return () => clearInterval(intervalId);
   }, []);
 

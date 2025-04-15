@@ -18,11 +18,14 @@ public class State implements Serializable {
     private final SpaSettings spaSettings;
 
     public State(
-            HealthStatus healthStatus, InstanceSettings instanceSettings, List<ExecutionSummary> queuedExecutions, SpaSettings spaSettings) {
+            SpaSettings spaSettings,
+            HealthStatus healthStatus,
+            InstanceSettings instanceSettings,
+            List<ExecutionSummary> queuedExecutions) {
+        this.spaSettings = spaSettings;
         this.healthStatus = healthStatus;
         this.instanceSettings = instanceSettings;
         this.queuedExecutions = queuedExecutions;
-        this.spaSettings = spaSettings;
     }
 
     public HealthStatus getHealthStatus() {

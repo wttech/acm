@@ -2,9 +2,9 @@ import { Button, ButtonGroup, Cell, Column, Content, ContextualHelp, Flex, Headi
 import { Key, Selection } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppContext } from '../AppContext.tsx';
+import { useAppState } from '../hooks/app.ts';
 import { toastRequest } from '../utils/api';
 import { InstanceRole, isExecutionNegative, ScriptOutput, ScriptType } from '../utils/api.types';
 import DateExplained from './DateExplained.tsx';
@@ -20,7 +20,7 @@ type ScriptListProps = {
 };
 
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
-  const appContext = useContext(AppContext);
+  const appState = useAppState();
   const navigate = useNavigate();
 
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);
@@ -76,27 +76,25 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               {type === ScriptType.ENABLED || type === ScriptType.DISABLED ? (
                 <>
                   <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-                  {appContext && appContext.instanceSettings.role == InstanceRole.AUTHOR && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
+                  {appState.instanceSettings.role == InstanceRole.AUTHOR && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
                 </>
               ) : null}
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
-            {appContext && (
-              <StatusLight variant={appContext.healthStatus.healthy ? 'positive' : 'negative'}>
-                {appContext.healthStatus.healthy ? (
-                  <Text>Executor active</Text>
-                ) : (
-                  <>
-                    <Text>Executor paused</Text>
-                    <Text>&nbsp;&mdash;&nbsp;</Text>
-                    <Link isQuiet onPress={() => navigate('/maintenance?tab=health-checker')}>
-                      See health issues
-                    </Link>
-                  </>
-                )}
-              </StatusLight>
-            )}
+            <StatusLight variant={appState.healthStatus.healthy ? 'positive' : 'negative'}>
+              {appState.healthStatus.healthy ? (
+                <Text>Executor active</Text>
+              ) : (
+                <>
+                  <Text>Executor paused</Text>
+                  <Text>&nbsp;&mdash;&nbsp;</Text>
+                  <Link isQuiet onPress={() => navigate('/maintenance?tab=health-checker')}>
+                    See health issues
+                  </Link>
+                </>
+              )}
+            </StatusLight>
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
             {type === ScriptType.MANUAL ? <ScriptsManualHelpButton /> : type === ScriptType.EXTENSION ? <ScriptsExtensionHelpButton /> : <ScriptsAutomaticHelpButton />}
