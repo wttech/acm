@@ -6,6 +6,7 @@ import static com.wttech.aem.acm.core.util.ServletUtils.respondJson;
 
 import com.wttech.aem.acm.core.code.ExecutionQueue;
 import com.wttech.aem.acm.core.code.ExecutionSummary;
+import com.wttech.aem.acm.core.gui.SpaSettings;
 import com.wttech.aem.acm.core.instance.HealthChecker;
 import com.wttech.aem.acm.core.instance.HealthStatus;
 import com.wttech.aem.acm.core.osgi.InstanceInfo;
@@ -45,13 +46,16 @@ public class StateServlet extends SlingAllMethodsServlet {
     @Reference
     private HealthChecker healthChecker;
 
+    @Reference
+    private SpaSettings spaSettings;
+
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
             List<ExecutionSummary> queuedExecutions =
                     executionQueue.findAllSummaries().collect(Collectors.toList());
-            State state = new State(healthStatus, instanceInfo.getInstanceSettings(), queuedExecutions);
+            State state = new State(spaSettings, healthStatus, instanceInfo.getInstanceSettings(), queuedExecutions);
 
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {

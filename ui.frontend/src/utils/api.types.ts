@@ -194,9 +194,15 @@ export type ScriptOutput = {
 };
 
 export type State = {
+  spaSettings: SpaSettings;
   healthStatus: HealthStatus;
   instanceSettings: InstanceSettings;
   queuedExecutions: ExecutionSummary[];
+};
+
+export type SpaSettings = {
+  appStateInterval: number;
+  executionPollInterval: number;
 };
 
 export type InstanceSettings = {

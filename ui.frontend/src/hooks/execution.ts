@@ -3,13 +3,12 @@ import { useState } from 'react';
 import { useInterval } from 'react-use';
 import { apiRequest } from '../utils/api';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
-import { ToastTimeoutQuick } from '../utils/spectrum.ts';
+import { intervalToTimeout, ToastTimeoutQuick } from '../utils/spectrum';
+import { useAppState } from './app';
 import { useFormatter } from './formatter';
 
-const ExecutionPollInterval = 1000;
-const ExecutionPollTimeout = 900;
-
-export const useExecutionPolling = (executionId: string | undefined | null) => {
+export const useExecutionPolling = (executionId: string | undefined | null, pollInterval: number) => {
+  const appState = useAppState();
   const [execution, setExecution] = useState<Execution | null>(null);
   const [executing, setExecuting] = useState<boolean>(!!executionId);
   const [loading, setLoading] = useState<boolean>(true);
@@ -22,7 +21,7 @@ export const useExecutionPolling = (executionId: string | undefined | null) => {
         operation: 'Code execution state',
         url: `/apps/acm/api/queue-code.json?executionId=${executionId}`,
         method: 'get',
-        timeout: ExecutionPollTimeout,
+        timeout: intervalToTimeout(pollInterval),
       });
       const queuedExecution = response.data.data.executions.find((e: Execution) => e.id === executionId)!;
       setExecution(queuedExecution);
@@ -34,7 +33,7 @@ export const useExecutionPolling = (executionId: string | undefined | null) => {
         setExecuting(false);
         setWasPending(false);
 
-        const recentlyCompleted = formatter.isRecent(queuedExecution.endDate, 2 * ExecutionPollInterval);
+        const recentlyCompleted = formatter.isRecent(queuedExecution.endDate, 2 * pollInterval);
         if (recentlyCompleted || wasPending) {
           if (queuedExecution.status === ExecutionStatus.FAILED) {
             ToastQueue.negative('Code execution failed!', { timeout: ToastTimeoutQuick });
@@ -57,13 +56,13 @@ export const useExecutionPolling = (executionId: string | undefined | null) => {
         pollExecutionState(executionId);
       }
     },
-    executing && executionId ? ExecutionPollInterval : null,
+    executing && executionId ? appState.spaSettings.executionPollInterval : null,
   );
 
   return { execution, setExecution, executing, setExecuting, loading };
 };
 
-export const pollExecutionPending = async (executionId: string): Promise<Execution> => {
+export const pollExecutionPending = async (executionId: string, pollInterval: number): Promise<Execution> => {
   let queuedExecution: Execution | null = null;
 
   while (queuedExecution === null || isExecutionPending(queuedExecution.status)) {
@@ -71,10 +70,10 @@ export const pollExecutionPending = async (executionId: string): Promise<Executi
       operation: 'Code execution state',
       url: `/apps/acm/api/queue-code.json?executionId=${executionId}`,
       method: 'get',
-      timeout: ExecutionPollTimeout,
+      timeout: intervalToTimeout(pollInterval),
     });
     queuedExecution = response.data.data.executions[0]!;
-    await new Promise((resolve) => setTimeout(resolve, ExecutionPollInterval));
+    await new Promise((resolve) => setTimeout(resolve, pollInterval));
   }
 
   return queuedExecution;

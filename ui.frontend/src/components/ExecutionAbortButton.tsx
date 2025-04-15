@@ -6,6 +6,7 @@ import { pollExecutionPending } from '../hooks/execution';
 import { apiRequest } from '../utils/api';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
+import {useAppState} from "../hooks/app.ts";
 
 interface ExecutionAbortButtonProps {
   execution: Execution | null;
@@ -13,6 +14,7 @@ interface ExecutionAbortButtonProps {
 }
 
 const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, onComplete }) => {
+  const appState = useAppState();
   const [isAborting, setIsAborting] = useState(false);
 
   const onAbort = async () => {
@@ -28,7 +30,7 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
         method: 'delete',
       });
 
-      const queuedExecution = await pollExecutionPending(execution.id);
+      const queuedExecution = await pollExecutionPending(execution.id, appState.spaSettings.executionPollInterval);
       if (queuedExecution?.status === ExecutionStatus.ABORTED) {
         ToastQueue.positive('Code execution aborted successfully!', {
           timeout: ToastTimeoutQuick,

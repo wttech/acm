@@ -11,21 +11,22 @@ import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ImmersiveEditor from '../components/ImmersiveEditor';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
-import { useCompilation } from '../hooks/code.ts';
-import { useExecutionPolling } from '../hooks/execution.ts';
-import { apiRequest } from '../utils/api.ts';
+import { useAppState } from '../hooks/app';
+import { useCompilation } from '../hooks/code';
+import { useExecutionPolling } from '../hooks/execution';
+import { apiRequest } from '../utils/api';
 import { ArgumentValues, Description, ExecutableIdConsole, Execution, isExecutionPending, QueueOutput } from '../utils/api.types.ts';
-import { StorageKeys } from '../utils/storage.ts';
-import ConsoleCodeGroovy from './ConsoleCode.groovy.ts';
-
-const toastTimeout = 3000;
+import { ToastTimeoutQuick } from '../utils/spectrum.ts';
+import { StorageKeys } from '../utils/storage';
+import ConsoleCodeGroovy from './ConsoleCode.groovy';
 
 const ConsolePage = () => {
+  const appState = useAppState();
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCodeGroovy);
   const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
   const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
-  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id || null);
+  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id || null, appState.spaSettings.executionPollInterval);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
 
   useEffect(() => {
@@ -36,7 +37,7 @@ const ConsolePage = () => {
     console.error('Code description failed:', description);
     setExecution(description.execution);
     setSelectedTab('output');
-    ToastQueue.negative('Code description failed!', { timeout: toastTimeout });
+    ToastQueue.negative('Code description failed!', { timeout: ToastTimeoutQuick });
   };
 
   const onExecute = async (description: Description, args: ArgumentValues) => {
@@ -63,7 +64,7 @@ const ConsolePage = () => {
     } catch (error) {
       console.error('Code execution error:', error);
       setExecuting(false);
-      ToastQueue.negative('Code execution error!', { timeout: toastTimeout });
+      ToastQueue.negative('Code execution error!', { timeout: ToastTimeoutQuick });
     }
   };
 
