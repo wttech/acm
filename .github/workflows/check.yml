@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+    name: Check
     runs-on: ubuntu-latest
 
     steps:

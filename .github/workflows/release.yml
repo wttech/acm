@@ -42,17 +42,8 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Build All Modules
-        run: sh ./mvnw -B install -Prelease -Drevision=${{ env.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Deploy Artifacts to Maven Repositories
-        run: |
-          (cd all && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }})
-          (cd min && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }})
-          (cd ui.content.example && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }})
-          (cd core && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }} -Prelease)
+      - name: Build & Deploy Artifacts to Maven Repositories
+        run: sh mvnw -B deploy -pl core,all,min,ui.content.example -am -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
