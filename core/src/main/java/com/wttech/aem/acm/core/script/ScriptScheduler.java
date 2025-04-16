@@ -64,29 +64,38 @@ public class ScriptScheduler implements Runnable {
 
     private Config config;
 
+    private long intervalBetweenRuns = -1;
+
     @Activate
     @Modified
     protected void activate(Config config) {
         this.config = config;
+        calculateInterval();
     }
 
-    /** This function returns time between next 2 runs of provided cron job. If cron expression is invalid returned value will be -1. */
-    public long getIntervalBetweenRuns() {
+    private void calculateInterval() {
         try {
             CronExpression expression = new CronExpression(this.config.scheduler_expression());
             Date now = new Date();
             Date nextRun = expression.getNextValidTimeAfter(now);
             if (nextRun == null) {
-                return -1;
+                this.intervalBetweenRuns = -1;
+                return;
             }
             Date secondRun = expression.getNextValidTimeAfter(nextRun);
             if (secondRun == null) {
-                return -1;
+                this.intervalBetweenRuns = -1;
+                return;
             }
-            return secondRun.getTime() - nextRun.getTime();
+            this.intervalBetweenRuns = secondRun.getTime() - nextRun.getTime();
         } catch (ParseException e) {
-            return -1;
+            this.intervalBetweenRuns = -1;
         }
+    }
+
+    /** This function returns time between next 2 runs of provided cron job. If cron expression is invalid returned value will be -1. */
+    public long getIntervalBetweenRuns() {
+        return this.intervalBetweenRuns;
     }
 
     @Override
