@@ -42,37 +42,18 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Build and Sign Artifacts
+      - name: Build All Modules
         run: sh ./mvnw -B install -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build all modules
-        run: sh ./mvnw -B install -Prelease -Drevision=${{ env.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish AEM Distribution 'All'
+      - name: Deploy Artifacts to Maven Repositories
         working-directory: all
-        run: sh ../mvnw deploy -Prelease -Drevision=${{ env.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish AEM Distribution 'Min'
-        working-directory: min
-        run: sh ../mvnw deploy -Prelease -Drevision=${{ env.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish AEM Package 'UI Content Example'
-        working-directory: ui.content.example
-        run: sh ../mvnw deploy -Prelease -Drevision=${{ env.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish OSGi Bundle 'Core'
-        working-directory: core
-        run: sh ../mvnw deploy -Prelease -Drevision=${{ env.VERSION }}
+        run: |
+          (cd all && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }})
+          (cd min && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }})
+          (cd ui.content.example && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }})
+          (cd core && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }} -Prelease)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
