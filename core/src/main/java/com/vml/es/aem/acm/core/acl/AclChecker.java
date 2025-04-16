@@ -69,7 +69,7 @@ public class AclChecker {
             }
             return true;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to check if group does not contain authorizable", e);
+            throw new AclException(String.format("Cannot check if group '%s' does not contain authorizable '%s'!", groupId, memberId), e);
         }
     }
 
@@ -108,7 +108,7 @@ public class AclChecker {
             }
             return result;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to check if authorizable exists", e);
+            throw new AclException(String.format("Cannot check if authorizable '%s' exists", id), e);
         }
     }
 
@@ -141,7 +141,7 @@ public class AclChecker {
             }
             return false;
         } catch (RepositoryException e) {
-            throw new AclException("Failed to check if group contains authorizable", e);
+            throw new AclException(String.format("Cannot check if group '%s' contains authorizable '%s'!", groupId, memberId), e);
         }
     }
 
