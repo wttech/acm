@@ -1,6 +1,6 @@
 package com.vml.es.aem.acm.core.code;
 
-import com.vml.es.aem.acm.core.acl.AclGroovy;
+import com.vml.es.aem.acm.core.acl.Acl;
 import com.vml.es.aem.acm.core.format.Formatter;
 import com.vml.es.aem.acm.core.osgi.OsgiContext;
 import com.vml.es.aem.acm.core.replication.Activator;
@@ -131,7 +131,7 @@ public class ExecutionContext implements AutoCloseable {
         result.setVariable("resourceResolver", resourceResolver);
         result.setVariable("osgi", osgiContext);
         result.setVariable("repo", new Repository(resourceResolver));
-        result.setVariable("acl", new AclGroovy(resourceResolver));
+        result.setVariable("acl", new Acl(resourceResolver));
         result.setVariable("formatter", new Formatter());
         result.setVariable("activator", new Activator(resourceResolver, osgiContext.getReplicator()));
 

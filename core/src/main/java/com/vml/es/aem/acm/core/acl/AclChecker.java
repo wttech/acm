@@ -1,7 +1,11 @@
-package com.vml.es.aem.acm.core.acl.check;
+package com.vml.es.aem.acm.core.acl;
 
-import com.vml.es.aem.acm.core.acl.AclContext;
-import com.vml.es.aem.acm.core.acl.AclException;
+import com.vml.es.aem.acm.core.acl.check.AuthorizableOptions;
+import com.vml.es.aem.acm.core.acl.check.ExistsOptions;
+import com.vml.es.aem.acm.core.acl.check.MemberOptions;
+import com.vml.es.aem.acm.core.acl.check.PasswordOptions;
+import com.vml.es.aem.acm.core.acl.check.PermissionsOptions;
+import com.vml.es.aem.acm.core.acl.check.PropertyOptions;
 import com.vml.es.aem.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.util.List;
@@ -12,11 +16,11 @@ import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 
-public class CheckAcl {
+public class AclChecker {
 
     private final AclContext context;
 
-    public CheckAcl(AclContext context) {
+    public AclChecker(AclContext context) {
         this.context = context;
     }
 
