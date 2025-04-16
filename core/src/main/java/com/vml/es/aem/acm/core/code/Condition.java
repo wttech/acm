@@ -1,7 +1,6 @@
 package com.vml.es.aem.acm.core.code;
 
 import com.vml.es.aem.acm.core.osgi.InstanceType;
-import com.vml.es.aem.acm.core.osgi.InstanceType;
 import com.vml.es.aem.acm.core.script.ScriptScheduler;
 import com.vml.es.aem.acm.core.util.DateUtils;
 import java.time.*;
