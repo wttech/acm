@@ -1,5 +1,6 @@
 package com.vml.es.aem.acm.core.script;
 
+import com.vml.es.aem.acm.core.AcmException;
 import com.vml.es.aem.acm.core.code.ExecutionContextOptions;
 import com.vml.es.aem.acm.core.code.ExecutionMode;
 import com.vml.es.aem.acm.core.code.ExecutionQueue;
@@ -70,26 +71,24 @@ public class ScriptScheduler implements Runnable {
     @Modified
     protected void activate(Config config) {
         this.config = config;
-        calculateInterval();
+        intervalBetweenRuns = calculateInterval();
     }
 
-    private void calculateInterval() {
+    private long calculateInterval() {
         try {
             CronExpression expression = new CronExpression(this.config.scheduler_expression());
             Date now = new Date();
             Date nextRun = expression.getNextValidTimeAfter(now);
             if (nextRun == null) {
-                this.intervalBetweenRuns = -1;
-                return;
+                return -1;
             }
             Date secondRun = expression.getNextValidTimeAfter(nextRun);
             if (secondRun == null) {
-                this.intervalBetweenRuns = -1;
-                return;
+                return -1;
             }
-            this.intervalBetweenRuns = secondRun.getTime() - nextRun.getTime();
+            return secondRun.getTime() - nextRun.getTime();
         } catch (ParseException e) {
-            this.intervalBetweenRuns = -1;
+            throw new AcmException("Interval cannot be parsed. ", e);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.vml.es.aem.acm.core.code;
 
+import com.vml.es.aem.acm.core.osgi.InstanceInfo;
 import com.vml.es.aem.acm.core.osgi.InstanceType;
 import com.vml.es.aem.acm.core.script.ScriptScheduler;
 import com.vml.es.aem.acm.core.util.DateUtils;
@@ -313,8 +314,13 @@ public class Condition {
     }
 
     public boolean isDate(ZonedDateTime zonedDateTime) {
+        String timezoneId = executionContext
+                .getOsgiContext()
+                .getService(InstanceInfo.class)
+                .getInstanceSettings()
+                .getTimezoneId();
         LocalDateTime localDateTime =
-                zonedDateTime.withZoneSameLocal(ZoneOffset.systemDefault()).toLocalDateTime();
+                zonedDateTime.withZoneSameLocal(ZoneId.of(timezoneId)).toLocalDateTime();
         return isDate(localDateTime);
     }
 
@@ -323,9 +329,6 @@ public class Condition {
                 .getOsgiContext()
                 .getService(ScriptScheduler.class)
                 .getIntervalBetweenRuns();
-        if (interval < 0) {
-            throw new IllegalArgumentException("Invalid cron expression in scheduler_expression OSGi config");
-        }
         return DateUtils.isInRange(localDateTime, LocalDateTime.now(), interval);
     }
 
