@@ -36,6 +36,17 @@ jobs:
           java-version: 8
           distribution: temurin
 
+      - name: Import GPG Key
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Build and Sign Artifacts
+        run: sh ./mvnw -B install -Prelease -Drevision=${{ env.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build all modules
         run: sh ./mvnw -B install -Prelease -Drevision=${{ env.VERSION }}
         env:
