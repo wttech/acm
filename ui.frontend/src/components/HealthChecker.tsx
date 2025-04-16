@@ -37,7 +37,7 @@ const HealthChecker = () => {
       <View>
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
-            <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER} onPress={() => window.open(`${prefix}/system/console/configMgr/com.wttech.aem.acm.core.instance.HealthChecker`, '_blank')}>
+            <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER} onPress={() => window.open(`${prefix}/system/console/configMgr/com.vml.es.aem.acm.core.instance.HealthChecker`, '_blank')}>
               <Settings />
               <Text>Configure</Text>
             </Button>
