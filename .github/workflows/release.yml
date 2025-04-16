@@ -37,7 +37,7 @@ jobs:
           distribution: temurin
 
       - name: Build all modules
-        run: sh ./mvnw -B install -Drevision=${{ env.VERSION }}
+        run: sh ./mvnw -B install -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -90,6 +90,24 @@ jobs:
             -DartifactId=acm.core \
             -Dversion=${{ env.VERSION }} \
             -Dpackaging=jar
+          mvn deploy:deploy-file \
+            -Durl=https://maven.pkg.github.com/wttech/acm \
+            -DrepositoryId=github \
+            -Dfile=core/target/acm.core-${{ env.VERSION }}-javadoc.jar \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.core \
+            -Dversion=${{ env.VERSION }} \
+            -Dclassifier=javadoc \
+            -Dpackaging=jar
+          mvn deploy:deploy-file \
+            -Durl=https://maven.pkg.github.com/wttech/acm \
+            -DrepositoryId=github \
+            -Dfile=core/target/acm.core-${{ env.VERSION }}-sources.jar \
+            -DgroupId=com.wttech.aem.acm \
+            -DartifactId=acm.core \
+            -Dversion=${{ env.VERSION }} \
+            -Dclassifier=sources \
+            -Dpackaging=jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -103,6 +121,8 @@ jobs:
             all/target/acm.all-${{ env.VERSION }}.zip \
             min/target/acm.min-${{ env.VERSION }}.zip \
             ui.content.example/target/acm.ui.content.example-${{ env.VERSION }}.zip \
-            core/target/acm.core-${{ env.VERSION }}.jar
+            core/target/acm.core-${{ env.VERSION }}.jar \
+            core/target/acm.core-${{ env.VERSION }}-javadoc.jar \
+            core/target/acm.core-${{ env.VERSION }}-sources.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
