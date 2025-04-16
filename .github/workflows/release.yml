@@ -54,25 +54,25 @@ jobs:
 
       - name: Publish AEM Distribution 'All'
         working-directory: all
-        run: sh ../mvnw deploy
+        run: sh ../mvnw deploy -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish AEM Distribution 'Min'
         working-directory: min
-        run: sh ../mvnw deploy
+        run: sh ../mvnw deploy -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish AEM Package 'UI Content Example'
         working-directory: ui.content.example
-        run: sh ../mvnw deploy
+        run: sh ../mvnw deploy -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish OSGi Bundle 'Core'
         working-directory: core
-        run: sh ../mvnw deploy
+        run: sh ../mvnw deploy -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
