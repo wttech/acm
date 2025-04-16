@@ -21,7 +21,33 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Cache Maven dependencies
+      # https://central.sonatype.org/publish/requirements/#sign-files-with-gpgpgp
+      - name: Import GPG Key
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 8
+          distribution: temurin
+
+      # https://central.sonatype.org/publish/publish-portal-maven/#credentials
+      - name: Setup Maven Settings
+        uses: s4u/maven-settings-action@v2
+        with:
+          servers: |
+            [
+              {
+                "id": "central",
+                "username": "${{ secrets.OSSRH_USERNAME }}",
+                "password": "${{ secrets.OSSRH_PASSWORD }}"
+              }
+            ]
+
+      - name: Setup Maven Cache
         uses: actions/cache@v3
         if: always()
         with:
@@ -30,19 +56,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: 8
-          distribution: temurin
-
-      - name: Import GPG Key
-        uses: crazy-max/ghaction-import-gpg@v5
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Build & Deploy Artifacts to Maven Repositories
+      - name: Build & Deploy with Maven
         run: sh mvnw -B deploy -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
