@@ -1,19 +1,4 @@
-import {
-  Checkbox,
-  CheckboxGroup,
-  Item,
-  ListView,
-  NumberField,
-  Picker,
-  Radio,
-  RadioGroup,
-  Switch,
-  TextArea,
-  TextField,
-  View,
-  Text,
-  Flex
-} from '@adobe/react-spectrum';
+import { Checkbox, CheckboxGroup, Flex, Item, ListView, NumberField, Picker, Radio, RadioGroup, Switch, Text, TextArea, TextField, View } from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import React from 'react';
@@ -34,7 +19,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
 
   const controllerRules = (arg: Argument<ArgumentValue>) => ({
     validate: (value: ArgumentValue) => {
-      if (arg.required && (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value) || (typeof value == "boolean" && !value)))) {
+      if (arg.required && (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value)) || (typeof value == 'boolean' && !value))) {
         return 'Value is required';
       }
       if (arg.validator) {
@@ -61,7 +46,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           rules={controllerRules(arg)}
           render={({ field, fieldState }) => (
             <View key={arg.name} marginBottom="size-200">
-              <Flex alignItems={"start"} justifyContent={"start"} direction={"column"}>
+              <Flex alignItems={'start'} justifyContent={'start'} direction={'column'}>
                 {arg.display === 'SWITCHER' ? (
                   <Switch {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
                     {argLabel(arg)}
@@ -72,7 +57,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   </Checkbox>
                 )}
                 {/* Custom error state since react spectrum doesn't provide one for switch and checkbox component */}
-                {fieldState.error && <Text UNSAFE_style={{color: "#d31510", fontSize: "12px"}}>{fieldState.error.message}</Text>}
+                {fieldState.error && <Text UNSAFE_style={{ color: '#d31510', fontSize: '12px' }}>{fieldState.error.message}</Text>}
               </Flex>
             </View>
           )}
