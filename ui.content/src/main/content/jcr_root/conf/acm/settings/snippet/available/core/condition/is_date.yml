@@ -1,0 +1,8 @@
+group: Condition
+name: condition_is_date
+content: |
+  condition.isDate(${1:date})
+documentation: |
+  Execute the script only on selected date. <br>
+  This object can be a string in format <b>yyyy-MM-dd HH:mm:ss</b>, ZonedDateTime object and LocalDateTime <br>
+  For example: `condition.isDate("2025-04-16 12:30:00")` or `condition.isDate(ZonedDateTime.now())`.
