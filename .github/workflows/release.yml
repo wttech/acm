@@ -36,60 +36,14 @@ jobs:
           java-version: 8
           distribution: temurin
 
-      - name: Build all modules
-        run: sh ./mvnw -B install -Drevision=${{ env.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Import GPG Key
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Publish AEM Distribution 'All'
-        run: |
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=all/target/acm.all-${{ env.VERSION }}.zip \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.all \
-            -Dversion=${{ env.VERSION }} \
-            -Dpackaging=zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish AEM Distribution 'Min'
-        run: |
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=min/target/acm.min-${{ env.VERSION }}.zip \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.min \
-            -Dversion=${{ env.VERSION }} \
-            -Dpackaging=zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish AEM Package 'UI Content Example'
-        run: |
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=ui.content.example/target/acm.ui.content.example-${{ env.VERSION }}.zip \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.ui.content.example \
-            -Dversion=${{ env.VERSION }} \
-            -Dpackaging=zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish OSGi Bundle 'Core'
-        run: |
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=core/target/acm.core-${{ env.VERSION }}.jar \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.core \
-            -Dversion=${{ env.VERSION }} \
-            -Dpackaging=jar
+      - name: Build & Deploy Artifacts to Maven Repositories
+        run: sh mvnw -B deploy -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -103,6 +57,8 @@ jobs:
             all/target/acm.all-${{ env.VERSION }}.zip \
             min/target/acm.min-${{ env.VERSION }}.zip \
             ui.content.example/target/acm.ui.content.example-${{ env.VERSION }}.zip \
-            core/target/acm.core-${{ env.VERSION }}.jar
+            core/target/acm.core-${{ env.VERSION }}.jar \
+            core/target/acm.core-${{ env.VERSION }}-javadoc.jar \
+            core/target/acm.core-${{ env.VERSION }}-sources.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

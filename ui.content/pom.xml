@@ -21,8 +21,8 @@
     <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
     <!-- ====================================================================== -->
     <parent>
-        <groupId>com.wttech.aem.acm</groupId>
-        <artifactId>root</artifactId>
+        <groupId>com.vml.es.aem</groupId>
+        <artifactId>acm.root</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -50,7 +50,7 @@
                     <properties>
                         <cloudManagerTarget>none</cloudManagerTarget>
                     </properties>
-                    <group>com.wttech.aem.acm</group>
+                    <group>com.vml.es.aem.acm</group>
                     <name>acm.ui.content</name>
                     <packageType>content</packageType>
                     <!--<accessControlHandling>merge</accessControlHandling>-->
@@ -63,7 +63,7 @@
                     </validatorsSettings>
                     <dependencies>
                         <dependency>
-                            <groupId>com.wttech.aem.acm</groupId>
+                            <groupId>com.vml.es.aem</groupId>
                             <artifactId>acm.ui.apps</artifactId>
                             <version>${project.version}</version>
                         </dependency>
@@ -87,12 +87,12 @@
     <!-- ====================================================================== -->
     <dependencies>
         <dependency>
-            <groupId>com.wttech.aem.acm</groupId>
+            <groupId>com.vml.es.aem</groupId>
             <artifactId>acm.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.wttech.aem.acm</groupId>
+            <groupId>com.vml.es.aem</groupId>
             <artifactId>acm.ui.apps</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

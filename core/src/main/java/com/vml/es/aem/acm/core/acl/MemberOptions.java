@@ -1,0 +1,26 @@
+package com.vml.es.aem.acm.core.acl;
+
+import com.vml.es.aem.acm.core.acl.authorizable.AclGroup;
+
+public class MemberOptions extends com.vml.es.aem.acm.core.acl.authorizable.MemberOptions {
+
+    private AclGroup group;
+
+    private String groupId;
+
+    public AclGroup getGroup() {
+        return group;
+    }
+
+    public void setGroup(AclGroup group) {
+        this.group = group;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+}

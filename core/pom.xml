@@ -18,8 +18,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.wttech.aem.acm</groupId>
-        <artifactId>root</artifactId>
+        <groupId>com.vml.es.aem</groupId>
+        <artifactId>acm.root</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -27,6 +27,7 @@
     <name>AEM Content Manager - Core</name>
     <description>Core bundle for AEM Content Manager (tool for migrating content and managing permissions)</description>
     <properties>
+        <maven.deploy.skip>false</maven.deploy.skip>
         <skipFormat>false</skipFormat>
     </properties>
     <build>
@@ -46,7 +47,7 @@
                         </goals>
                         <configuration>
                             <bnd><![CDATA[
-Export-Package com.wttech.aem.acm.core.*
+Export-Package com.vml.es.aem.acm.core.*
 Import-Package: javax.annotation;version=0.0.0,*
 Private-Package: org.yaml.snakeyaml.*
 DynamicImport-Package: *
@@ -83,6 +84,7 @@ DynamicImport-Package: *
                     </archive>
                 </configuration>
             </plugin>
+            <!-- Automatic code formatting -->
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
@@ -339,4 +341,59 @@ DynamicImport-Package: *
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <!-- Source JAR -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Javadoc JAR -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.4.1</version>
+                        <configuration>
+                            <failOnError>false</failOnError>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Maven Central GPG Signing -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
