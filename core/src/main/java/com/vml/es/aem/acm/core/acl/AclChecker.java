@@ -66,6 +66,18 @@ public class AclChecker {
         return exists(options.getId(), options.getPath(), options.getType());
     }
 
+    public boolean existsUser(String id) {
+        return exists(id, null, ExistsOptions.Type.USER);
+    }
+
+    public boolean existsSystemUser(String id) {
+        return exists(id, null, ExistsOptions.Type.SYSTEM_USER);
+    }
+
+    public boolean existsGroup(String id) {
+        return exists(id, null, ExistsOptions.Type.GROUP);
+    }
+
     public boolean include(MemberOptions options) {
         return include(options.getId(), options.getMemberId());
     }
@@ -90,6 +102,18 @@ public class AclChecker {
                 true);
     }
 
+    public boolean allow(String id, String path, List<String> permissions) {
+        return check(id, path, permissions, null, null, null, null, true);
+    }
+
+    public boolean allow(String id, String path, List<String> permissions, String glob) {
+        return check(id, path, permissions, glob, null, null, null, true);
+    }
+
+    public boolean allow(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
+        return check(id, path, permissions, null, null, null, restrictions, true);
+    }
+
     public boolean deny(PermissionsOptions options) {
         return check(
                 options.getId(),
@@ -100,6 +124,18 @@ public class AclChecker {
                 options.getProperties(),
                 options.getRestrictions(),
                 false);
+    }
+
+    public boolean deny(String id, String path, List<String> permissions) {
+        return check(id, path, permissions, null, null, null, null, false);
+    }
+
+    public boolean deny(String id, String path, List<String> permissions, String glob) {
+        return check(id, path, permissions, glob, null, null, null, false);
+    }
+
+    public boolean deny(String id, String path, List<String> permissions, Map<String, Object> restrictions) {
+        return check(id, path, permissions, null, null, null, restrictions, false);
     }
 
     public boolean property(PropertyOptions options) {
@@ -115,7 +151,9 @@ public class AclChecker {
             context.getLogger().info("Checked if group '{}' excludes member '{}' [{}]", groupId, memberId, result);
             return result;
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Cannot check if group '%s' does not contain authorizable '%s'!", groupId, memberId), e);
+            throw new AclException(
+                    String.format("Cannot check if group '%s' does not contain authorizable '%s'!", groupId, memberId),
+                    e);
         }
     }
 
@@ -163,7 +201,8 @@ public class AclChecker {
             context.getLogger().info("Checked if group '{}' includes member '{}' [{}]", groupId, memberId, result);
             return result;
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Cannot check if group '%s' contains authorizable '%s'!", groupId, memberId), e);
+            throw new AclException(
+                    String.format("Cannot check if group '%s' contains authorizable '%s'!", groupId, memberId), e);
         }
     }
 
@@ -203,9 +242,13 @@ public class AclChecker {
                         options.determineAllPermissions(),
                         options.determineAllRestrictions(),
                         allow);
-        context.getLogger().info(
-                "Checked permissions for authorizable '{}' at path '{}' with allow '{}' [{}]",
-                id, path, allow, result);
+        context.getLogger()
+                .info(
+                        "Checked permissions for authorizable '{}' at path '{}' with allow '{}' [{}]",
+                        id,
+                        path,
+                        allow,
+                        result);
         return result;
     }
 
