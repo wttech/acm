@@ -10,6 +10,7 @@ public class BoolArgument extends Argument<Boolean> {
 
     public BoolArgument(String name) {
         super(name, ArgumentType.BOOL);
+        super.setRequired(false);
     }
 
     public Display getDisplay() {
