@@ -2,6 +2,9 @@ package com.wttech.aem.acm.core.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -48,6 +51,22 @@ public final class DateUtils {
         return Optional.ofNullable(text).map(DateUtils::fromStringInternal).orElse(null);
     }
 
+    public static LocalDateTime localDateTimeFromString(String text) {
+        for (String format : Arrays.asList(
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                "yyyy-MM-dd'T'HH:mm:ssXXX")) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+            try {
+                return LocalDateTime.parse(text, formatter);
+            } catch (DateTimeParseException ignored) {
+                // ignore
+            }
+        }
+        throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", text));
+    }
+
     public static Calendar toCalendar(Date date) {
         return Optional.ofNullable(date).map(DateUtils::toCalendarInternal).orElse(null);
     }
@@ -62,9 +81,8 @@ public final class DateUtils {
         return Optional.ofNullable(calendar).map(Calendar::getTime).orElse(null);
     }
 
-    public static boolean isInRange(long lowerBound, Date now, long offset) {
-        long upperBound = lowerBound + offset;
-        long current = now.getTime();
-        return lowerBound <= current && upperBound >= current;
+    public static boolean isInRange(LocalDateTime from, LocalDateTime now, long offset) {
+        LocalDateTime to = from.plusNanos(offset * 1_000_000);
+        return !now.isBefore(from) && !now.isAfter(to);
     }
 }

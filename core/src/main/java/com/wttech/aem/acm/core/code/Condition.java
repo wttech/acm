@@ -309,26 +309,17 @@ public class Condition {
     // Date based
 
     public boolean isDate(String dateString) {
-        long milliseconds = DateUtils.fromString(dateString).getTime();
-        return isDate(milliseconds);
-    }
-
-    public boolean isDate(LocalDateTime localDateTime) {
-        long milliseconds = localDateTime
-                .toInstant(ZoneOffset.systemDefault().getRules().getOffset(localDateTime))
-                .toEpochMilli();
-        return isDate(milliseconds);
+        LocalDateTime localDateTime = DateUtils.localDateTimeFromString(dateString);
+        return isDate(localDateTime);
     }
 
     public boolean isDate(ZonedDateTime zonedDateTime) {
-        long milliseconds = zonedDateTime
-                .withZoneSameLocal(ZoneOffset.systemDefault())
-                .toInstant()
-                .toEpochMilli();
-        return isDate(milliseconds);
+        LocalDateTime localDateTime =
+                zonedDateTime.withZoneSameLocal(ZoneOffset.systemDefault()).toLocalDateTime();
+        return isDate(localDateTime);
     }
 
-    public boolean isDate(long milliseconds) {
+    public boolean isDate(LocalDateTime localDateTime) {
         String cron = executionContext
                 .getOsgiContext()
                 .getService(ScriptScheduler.class)
@@ -337,7 +328,7 @@ public class Condition {
         if (interval < 0) {
             throw new IllegalArgumentException("Invalid cron expression: " + cron);
         }
-        return DateUtils.isInRange(milliseconds, new Date(), interval);
+        return DateUtils.isInRange(localDateTime, LocalDateTime.now(), interval);
     }
 
     // Duration-based since last execution
