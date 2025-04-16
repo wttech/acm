@@ -48,7 +48,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy Artifacts to Maven Repositories
-        working-directory: all
         run: |
           (cd all && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }})
           (cd min && sh ../mvnw deploy:deploy -Drevision=${{ env.VERSION }})
