@@ -53,72 +53,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish AEM Distribution 'All'
-        run: |
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=all/target/acm.all-${{ env.VERSION }}.zip \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.all \
-            -Dversion=${{ env.VERSION }} \
-            -Dpackaging=zip
+        working-directory: all
+        run: sh ../mvnw deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish AEM Distribution 'Min'
-        run: |
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=min/target/acm.min-${{ env.VERSION }}.zip \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.min \
-            -Dversion=${{ env.VERSION }} \
-            -Dpackaging=zip
+        working-directory: min
+        run: sh ../mvnw deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish AEM Package 'UI Content Example'
-        run: |
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=ui.content.example/target/acm.ui.content.example-${{ env.VERSION }}.zip \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.ui.content.example \
-            -Dversion=${{ env.VERSION }} \
-            -Dpackaging=zip
+        working-directory: ui.content.example
+        run: sh ../mvnw deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish OSGi Bundle 'Core'
-        run: |
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=core/target/acm.core-${{ env.VERSION }}.jar \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.core \
-            -Dversion=${{ env.VERSION }} \
-            -Dpackaging=jar
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=core/target/acm.core-${{ env.VERSION }}-javadoc.jar \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.core \
-            -Dversion=${{ env.VERSION }} \
-            -Dclassifier=javadoc \
-            -Dpackaging=jar
-          mvn deploy:deploy-file \
-            -Durl=https://maven.pkg.github.com/wttech/acm \
-            -DrepositoryId=github \
-            -Dfile=core/target/acm.core-${{ env.VERSION }}-sources.jar \
-            -DgroupId=com.wttech.aem.acm \
-            -DartifactId=acm.core \
-            -Dversion=${{ env.VERSION }} \
-            -Dclassifier=sources \
-            -Dpackaging=jar
+        working-directory: core
+        run: sh ../mvnw deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
