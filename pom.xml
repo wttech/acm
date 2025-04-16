@@ -23,6 +23,7 @@
     <version>${revision}</version>
     <name>AEM Content Manager</name>
     <description>AEM Content Manager</description>
+    <url>https://github.com/wttech/acm</url>
     <modules>
         <module>all</module>
         <module>min</module>
@@ -35,9 +36,9 @@
         <module>ui.frontend</module>
     </modules>
     <scm>
-        <url>https://github.com/wttech/acm</url>
         <connection>scm:git:ssh://git@github.com/wttech/acm.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/wttech/acm.git</developerConnection>
+        <url>https://github.com/wttech/acm</url>
         <tag>HEAD</tag>
     </scm>
     <licenses>
@@ -54,6 +55,8 @@
         <developer>
             <name>Krystian Panek</name>
             <email>krystian.panek@vml.com</email>
+            <organization>VML Enterprise Solutions</organization>
+            <organizationUrl>https://www.vml.com/expertise/enterprise-solutions</organizationUrl>
         </developer>
     </developers>
     <properties>
