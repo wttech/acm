@@ -7,6 +7,9 @@ import com.wttech.aem.acm.core.code.Executor;
 import com.wttech.aem.acm.core.instance.HealthChecker;
 import com.wttech.aem.acm.core.instance.HealthStatus;
 import com.wttech.aem.acm.core.util.ResourceUtils;
+import com.wttech.aem.acm.core.util.quartz.CronExpression;
+import java.text.ParseException;
+import java.util.Date;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;
@@ -67,8 +70,23 @@ public class ScriptScheduler implements Runnable {
         this.config = config;
     }
 
-    public String schedulerExpression() {
-        return this.config.scheduler_expression();
+    /** This function returns time between next 2 runs of provided cron job. If cron expression is invalid returned value will be -1. */
+    public long getIntervalBetweenRuns() {
+        try {
+            CronExpression expression = new CronExpression(this.config.scheduler_expression());
+            Date now = new Date();
+            Date nextRun = expression.getNextValidTimeAfter(now);
+            if (nextRun == null) {
+                return -1;
+            }
+            Date secondRun = expression.getNextValidTimeAfter(nextRun);
+            if (secondRun == null) {
+                return -1;
+            }
+            return secondRun.getTime() - nextRun.getTime();
+        } catch (ParseException e) {
+            return -1;
+        }
     }
 
     @Override

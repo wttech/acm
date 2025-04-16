@@ -2,7 +2,6 @@ package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.osgi.InstanceType;
 import com.wttech.aem.acm.core.script.ScriptScheduler;
-import com.wttech.aem.acm.core.util.CronUtils;
 import com.wttech.aem.acm.core.util.DateUtils;
 import java.time.*;
 import java.util.Date;
@@ -320,13 +319,12 @@ public class Condition {
     }
 
     public boolean isDate(LocalDateTime localDateTime) {
-        String cron = executionContext
+        long interval = executionContext
                 .getOsgiContext()
                 .getService(ScriptScheduler.class)
-                .schedulerExpression();
-        long interval = CronUtils.getIntervalBetweenRuns(cron);
+                .getIntervalBetweenRuns();
         if (interval < 0) {
-            throw new IllegalArgumentException("Invalid cron expression: " + cron);
+            throw new IllegalArgumentException("Invalid cron expression in scheduler_expression OSGi config");
         }
         return DateUtils.isInRange(localDateTime, LocalDateTime.now(), interval);
     }

@@ -5,16 +5,16 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
 public final class DateUtils {
 
     private DateUtils() {
         // intentionally empty
     }
+
+    private static final List<String> LOCAL_DATE_TIME_FORMATS = Arrays.asList(
+            "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", "yyyy-MM-dd'T'HH:mm:ssXXX");
 
     private static SimpleDateFormat isoFormat() {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
@@ -52,11 +52,7 @@ public final class DateUtils {
     }
 
     public static LocalDateTime localDateTimeFromString(String text) {
-        for (String format : Arrays.asList(
-                "yyyy-MM-dd HH:mm:ss",
-                "yyyy-MM-dd'T'HH:mm:ss",
-                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
-                "yyyy-MM-dd'T'HH:mm:ssXXX")) {
+        for (String format : LOCAL_DATE_TIME_FORMATS) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
             try {
                 return LocalDateTime.parse(text, formatter);
@@ -82,6 +78,7 @@ public final class DateUtils {
     }
 
     public static boolean isInRange(LocalDateTime from, LocalDateTime now, long offset) {
+        // Multiplying by 1_000_000 to convert milliseconds to nanoseconds
         LocalDateTime to = from.plusNanos(offset * 1_000_000);
         return !now.isBefore(from) && !now.isAfter(to);
     }
