@@ -1,4 +1,4 @@
-import { Checkbox, CheckboxGroup, Flex, Item, ListView, NumberField, Picker, Radio, RadioGroup, Switch, Text, TextArea, TextField, View } from '@adobe/react-spectrum';
+import { Checkbox, CheckboxGroup, Flex, Item, ListView, NumberField, Picker, Radio, RadioGroup, Switch, TextArea, TextField, View } from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import React from 'react';
@@ -6,6 +6,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import useFormCrossFieldValidation from '../hooks/form.ts';
 import { Argument, ArgumentValue, isBoolArgument, isMultiSelectArgument, isNumberArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
 import { Strings } from '../utils/strings.ts';
+import styles from "./CodeArgumentInput.module.css"
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -57,7 +58,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   </Checkbox>
                 )}
                 {/* Custom error state since react spectrum doesn't provide one for switch and checkbox component */}
-                {fieldState.error && <Text UNSAFE_style={{ color: '#d31510', fontSize: '12px' }}>{fieldState.error.message}</Text>}
+                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
               </Flex>
             </View>
           )}
