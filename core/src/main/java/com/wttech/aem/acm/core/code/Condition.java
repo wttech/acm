@@ -1,6 +1,9 @@
 package com.wttech.aem.acm.core.code;
 
 import com.wttech.aem.acm.core.osgi.InstanceType;
+import com.wttech.aem.acm.core.script.ScriptScheduler;
+import com.wttech.aem.acm.core.util.CronUtils;
+import com.wttech.aem.acm.core.util.DateUtils;
 import java.time.*;
 import java.util.Date;
 import java.util.Optional;
@@ -301,6 +304,40 @@ public class Condition {
 
     public LocalTime dayEndTime() {
         return LocalTime.of(23, 59, 59, 999999999);
+    }
+
+    // Date based
+
+    public boolean isDate(String dateString) {
+        long milliseconds = DateUtils.fromString(dateString).getTime();
+        return isDate(milliseconds);
+    }
+
+    public boolean isDate(LocalDateTime localDateTime) {
+        long milliseconds = localDateTime
+                .toInstant(ZoneOffset.systemDefault().getRules().getOffset(localDateTime))
+                .toEpochMilli();
+        return isDate(milliseconds);
+    }
+
+    public boolean isDate(ZonedDateTime zonedDateTime) {
+        long milliseconds = zonedDateTime
+                .withZoneSameLocal(ZoneOffset.systemDefault())
+                .toInstant()
+                .toEpochMilli();
+        return isDate(milliseconds);
+    }
+
+    public boolean isDate(long milliseconds) {
+        String cron = executionContext
+                .getOsgiContext()
+                .getService(ScriptScheduler.class)
+                .schedulerExpression();
+        long interval = CronUtils.getIntervalBetweenRuns(cron);
+        if (interval < 0) {
+            throw new IllegalArgumentException("Invalid cron expression: " + cron);
+        }
+        return DateUtils.isInRange(milliseconds, new Date(), interval);
     }
 
     // Duration-based since last execution

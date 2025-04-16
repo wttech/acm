@@ -61,4 +61,10 @@ public final class DateUtils {
     public static Date toDate(Calendar calendar) {
         return Optional.ofNullable(calendar).map(Calendar::getTime).orElse(null);
     }
+
+    public static boolean isInRange(long lowerBound, Date now, long offset) {
+        long upperBound = lowerBound + offset;
+        long current = now.getTime();
+        return lowerBound <= current && upperBound >= current;
+    }
 }

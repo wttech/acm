@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 @Component(
         immediate = true,
-        service = {Runnable.class})
+        service = {Runnable.class, ScriptScheduler.class})
 @Designate(ocd = ScriptScheduler.Config.class)
 public class ScriptScheduler implements Runnable {
 
@@ -65,6 +65,10 @@ public class ScriptScheduler implements Runnable {
     @Modified
     protected void activate(Config config) {
         this.config = config;
+    }
+
+    public String schedulerExpression() {
+        return this.config.scheduler_expression();
     }
 
     @Override
