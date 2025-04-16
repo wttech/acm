@@ -27,6 +27,7 @@
     <name>AEM Content Manager - Core</name>
     <description>Core bundle for AEM Content Manager (tool for migrating content and managing permissions)</description>
     <properties>
+        <maven.deploy.skip>false</maven.deploy.skip>
         <skipFormat>false</skipFormat>
     </properties>
     <build>

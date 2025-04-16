@@ -43,7 +43,7 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Build & Deploy Artifacts to Maven Repositories
-        run: sh mvnw -B deploy -pl core,all,min,ui.content.example -am -Prelease -Drevision=${{ env.VERSION }}
+        run: sh mvnw -B deploy -Prelease -Drevision=${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
