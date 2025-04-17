@@ -23,7 +23,7 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL';
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined;
 export type ArgumentValues = Record<string, ArgumentValue>;
 
@@ -41,6 +41,10 @@ export type Argument<T> = {
 
 export type BoolArgument = Argument<boolean> & {
   display: 'SWITCHER' | 'CHECKBOX';
+};
+
+export type DateTimeArgument = Argument<string> & {
+  display: 'DATE' | 'DATETIME';
 };
 
 export type TextArgument = Argument<string> & {
@@ -68,6 +72,10 @@ export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<
 
 export function isBoolArgument(arg: Argument<ArgumentValue>): arg is BoolArgument {
   return arg.type === 'BOOL';
+}
+
+export function isDateTimeArgument(arg: Argument<ArgumentValue>): arg is DateTimeArgument {
+  return arg.type === 'DATETIME';
 }
 
 export function isTextArgument(arg: Argument<ArgumentValue>): arg is TextArgument {
