@@ -57,7 +57,6 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                     {argLabel(arg)}
                   </Checkbox>
                 )}
-                {/* Custom error state since react spectrum doesn't provide one for switch and checkbox component */}
                 {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
               </Flex>
             </View>
