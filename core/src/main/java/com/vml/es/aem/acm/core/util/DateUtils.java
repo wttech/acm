@@ -2,16 +2,23 @@ package com.vml.es.aem.acm.core.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
 public final class DateUtils {
 
     private DateUtils() {
         // intentionally empty
     }
+
+    public static final String TIMEZONE_ID = TimeZone.getDefault().getID();
+
+    private static final List<String> LOCAL_DATE_TIME_FORMATS = Arrays.asList(
+            "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", "yyyy-MM-dd'T'HH:mm:ssXXX");
 
     private static SimpleDateFormat isoFormat() {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
@@ -48,6 +55,18 @@ public final class DateUtils {
         return Optional.ofNullable(text).map(DateUtils::fromStringInternal).orElse(null);
     }
 
+    public static ZonedDateTime localDateTimeFromString(String text) {
+        for (String format : LOCAL_DATE_TIME_FORMATS) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.of(TIMEZONE_ID));
+            try {
+                return ZonedDateTime.parse(text, formatter);
+            } catch (DateTimeParseException ignored) {
+                // ignore
+            }
+        }
+        throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", text));
+    }
+
     public static Calendar toCalendar(Date date) {
         return Optional.ofNullable(date).map(DateUtils::toCalendarInternal).orElse(null);
     }
@@ -60,5 +79,11 @@ public final class DateUtils {
 
     public static Date toDate(Calendar calendar) {
         return Optional.ofNullable(calendar).map(Calendar::getTime).orElse(null);
+    }
+
+    public static boolean isInRange(LocalDateTime from, LocalDateTime now, long offset) {
+        // Multiplying by 1_000_000 to convert milliseconds to nanoseconds
+        LocalDateTime to = from.plusNanos(offset * 1_000_000);
+        return !now.isBefore(from) && !now.isAfter(to);
     }
 }

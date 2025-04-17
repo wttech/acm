@@ -1,5 +1,6 @@
 package com.vml.es.aem.acm.core.script;
 
+import com.vml.es.aem.acm.core.AcmException;
 import com.vml.es.aem.acm.core.code.ExecutionContextOptions;
 import com.vml.es.aem.acm.core.code.ExecutionMode;
 import com.vml.es.aem.acm.core.code.ExecutionQueue;
@@ -7,6 +8,9 @@ import com.vml.es.aem.acm.core.code.Executor;
 import com.vml.es.aem.acm.core.instance.HealthChecker;
 import com.vml.es.aem.acm.core.instance.HealthStatus;
 import com.vml.es.aem.acm.core.util.ResourceUtils;
+import com.vml.es.aem.acm.core.util.quartz.CronExpression;
+import java.text.ParseException;
+import java.util.Date;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;
@@ -21,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 @Component(
         immediate = true,
-        service = {Runnable.class})
+        service = {Runnable.class, ScriptScheduler.class})
 @Designate(ocd = ScriptScheduler.Config.class)
 public class ScriptScheduler implements Runnable {
 
@@ -61,10 +65,36 @@ public class ScriptScheduler implements Runnable {
 
     private Config config;
 
+    private long intervalBetweenRuns = -1;
+
     @Activate
     @Modified
     protected void activate(Config config) {
         this.config = config;
+        intervalBetweenRuns = calculateInterval();
+    }
+
+    private long calculateInterval() {
+        try {
+            CronExpression expression = new CronExpression(this.config.scheduler_expression());
+            Date now = new Date();
+            Date nextRun = expression.getNextValidTimeAfter(now);
+            if (nextRun == null) {
+                return -1;
+            }
+            Date secondRun = expression.getNextValidTimeAfter(nextRun);
+            if (secondRun == null) {
+                return -1;
+            }
+            return secondRun.getTime() - nextRun.getTime();
+        } catch (ParseException e) {
+            throw new AcmException("Interval cannot be parsed. ", e);
+        }
+    }
+
+    /** This function returns time between next 2 runs of provided cron job. If cron expression is invalid returned value will be -1. */
+    public long getIntervalBetweenRuns() {
+        return this.intervalBetweenRuns;
     }
 
     @Override

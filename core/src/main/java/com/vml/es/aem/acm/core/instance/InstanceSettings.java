@@ -3,8 +3,8 @@ package com.vml.es.aem.acm.core.instance;
 import com.vml.es.aem.acm.core.osgi.InstanceInfo;
 import com.vml.es.aem.acm.core.osgi.InstanceRole;
 import com.vml.es.aem.acm.core.osgi.InstanceType;
+import com.vml.es.aem.acm.core.util.DateUtils;
 import java.io.Serializable;
-import java.util.TimeZone;
 
 public class InstanceSettings implements Serializable {
 
@@ -15,7 +15,7 @@ public class InstanceSettings implements Serializable {
     private final InstanceType type;
 
     public InstanceSettings(InstanceInfo instanceInfo) {
-        this.timezoneId = TimeZone.getDefault().getID();
+        this.timezoneId = DateUtils.TIMEZONE_ID;
         this.role = instanceInfo.getRole();
         this.type = instanceInfo.getType();
     }

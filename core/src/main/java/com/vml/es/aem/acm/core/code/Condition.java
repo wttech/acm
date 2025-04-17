@@ -1,6 +1,8 @@
 package com.vml.es.aem.acm.core.code;
 
 import com.vml.es.aem.acm.core.osgi.InstanceType;
+import com.vml.es.aem.acm.core.script.ScriptScheduler;
+import com.vml.es.aem.acm.core.util.DateUtils;
 import java.time.*;
 import java.util.Date;
 import java.util.Optional;
@@ -301,6 +303,28 @@ public class Condition {
 
     public LocalTime dayEndTime() {
         return LocalTime.of(23, 59, 59, 999999999);
+    }
+
+    // Date based
+
+    public boolean isDate(String dateString) {
+        ZonedDateTime localDateTime = DateUtils.localDateTimeFromString(dateString);
+        return isDate(localDateTime);
+    }
+
+    public boolean isDate(ZonedDateTime zonedDateTime) {
+        LocalDateTime localDateTime = zonedDateTime
+                .withZoneSameLocal(ZoneId.of(DateUtils.TIMEZONE_ID))
+                .toLocalDateTime();
+        return isDate(localDateTime);
+    }
+
+    public boolean isDate(LocalDateTime localDateTime) {
+        long interval = executionContext
+                .getOsgiContext()
+                .getService(ScriptScheduler.class)
+                .getIntervalBetweenRuns();
+        return DateUtils.isInRange(localDateTime, LocalDateTime.now(), interval);
     }
 
     // Duration-based since last execution
