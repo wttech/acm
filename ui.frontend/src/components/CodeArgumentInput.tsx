@@ -1,4 +1,4 @@
-import { Checkbox, CheckboxGroup, Item, ListView, NumberField, Picker, Radio, RadioGroup, Switch, TextArea, TextField, View } from '@adobe/react-spectrum';
+import { Checkbox, CheckboxGroup, Flex, Item, ListView, NumberField, Picker, Radio, RadioGroup, Switch, TextArea, TextField, View } from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import React from 'react';
@@ -6,6 +6,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import useFormCrossFieldValidation from '../hooks/form.ts';
 import { Argument, ArgumentValue, isBoolArgument, isMultiSelectArgument, isNumberArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
 import { Strings } from '../utils/strings.ts';
+import styles from "./CodeArgumentInput.module.css"
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -19,7 +20,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
 
   const controllerRules = (arg: Argument<ArgumentValue>) => ({
     validate: (value: ArgumentValue) => {
-      if (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value))) {
+      if (arg.required && (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value)) || (typeof value == 'boolean' && !value))) {
         return 'Value is required';
       }
       if (arg.validator) {
@@ -43,17 +44,21 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
         <Controller
           name={arg.name}
           control={control}
-          render={({ field }) => (
+          rules={controllerRules(arg)}
+          render={({ field, fieldState }) => (
             <View key={arg.name} marginBottom="size-200">
-              {arg.display === 'SWITCHER' ? (
-                <Switch {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
-                  {argLabel(arg)}
-                </Switch>
-              ) : (
-                <Checkbox {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
-                  {argLabel(arg)}
-                </Checkbox>
-              )}
+              <Flex alignItems={'start'} justifyContent={'start'} direction={'column'}>
+                {arg.display === 'SWITCHER' ? (
+                  <Switch {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
+                    {argLabel(arg)}
+                  </Switch>
+                ) : (
+                  <Checkbox {...field} isSelected={field.value} isInvalid={!!fieldState.error} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
+                    {argLabel(arg)}
+                  </Checkbox>
+                )}
+                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
+              </Flex>
             </View>
           )}
         />
