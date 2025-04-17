@@ -3,6 +3,8 @@ package com.vml.es.aem.acm.core.util;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -12,6 +14,8 @@ public final class DateUtils {
     private DateUtils() {
         // intentionally empty
     }
+
+    public static final String TIMEZONE_ID = TimeZone.getDefault().getID();
 
     private static final List<String> LOCAL_DATE_TIME_FORMATS = Arrays.asList(
             "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", "yyyy-MM-dd'T'HH:mm:ssXXX");
@@ -51,11 +55,11 @@ public final class DateUtils {
         return Optional.ofNullable(text).map(DateUtils::fromStringInternal).orElse(null);
     }
 
-    public static LocalDateTime localDateTimeFromString(String text) {
+    public static ZonedDateTime localDateTimeFromString(String text) {
         for (String format : LOCAL_DATE_TIME_FORMATS) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.of(TIMEZONE_ID));
             try {
-                return LocalDateTime.parse(text, formatter);
+                return ZonedDateTime.parse(text, formatter);
             } catch (DateTimeParseException ignored) {
                 // ignore
             }

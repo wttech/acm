@@ -1,6 +1,5 @@
 package com.vml.es.aem.acm.core.code;
 
-import com.vml.es.aem.acm.core.osgi.InstanceInfo;
 import com.vml.es.aem.acm.core.osgi.InstanceType;
 import com.vml.es.aem.acm.core.script.ScriptScheduler;
 import com.vml.es.aem.acm.core.util.DateUtils;
@@ -309,18 +308,14 @@ public class Condition {
     // Date based
 
     public boolean isDate(String dateString) {
-        LocalDateTime localDateTime = DateUtils.localDateTimeFromString(dateString);
+        ZonedDateTime localDateTime = DateUtils.localDateTimeFromString(dateString);
         return isDate(localDateTime);
     }
 
     public boolean isDate(ZonedDateTime zonedDateTime) {
-        String timezoneId = executionContext
-                .getOsgiContext()
-                .getService(InstanceInfo.class)
-                .getInstanceSettings()
-                .getTimezoneId();
-        LocalDateTime localDateTime =
-                zonedDateTime.withZoneSameLocal(ZoneId.of(timezoneId)).toLocalDateTime();
+        LocalDateTime localDateTime = zonedDateTime
+                .withZoneSameLocal(ZoneId.of(DateUtils.TIMEZONE_ID))
+                .toLocalDateTime();
         return isDate(localDateTime);
     }
 

@@ -4,5 +4,10 @@ content: |
   condition.isDate(${1:date})
 documentation: |
   Execute the script only on selected date. <br>
-  This object can be a string in format <b>yyyy-MM-dd HH:mm:ss</b>, ZonedDateTime object and LocalDateTime <br>
-  For example: `condition.isDate("2025-04-16 12:30:00")` or `condition.isDate(ZonedDateTime.now())`.
+  This object can be a string in one of the following formats: <br>
+  - **yyyy-MM-dd HH:mm:ss**: `condition.isDate("2025-04-16 12:30:00")` <br>
+  - **yyyy-MM-dd'T'HH:mm:ss**: `condition.isDate("2025-04-16T12:30:00")` <br>
+  - **yyyy-MM-dd'T'HH:mm:ss.SSSXXX**: `condition.isDate("2025-04-16T12:30:00.123+02:00")` <br>
+  - **yyyy-MM-dd'T'HH:mm:ssXXX**: `condition.isDate("2025-04-16T12:30:00+02:00")` <br>
+  Additionally, you can pass a `ZonedDateTime` or `LocalDateTime` object. <br>
+  For example: `condition.isDate(ZonedDateTime.now())`.
