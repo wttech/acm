@@ -1,12 +1,13 @@
-import { Checkbox, CheckboxGroup, Flex, Item, ListView, NumberField, Picker, Radio, RadioGroup, Switch, TextArea, TextField, View } from '@adobe/react-spectrum';
+import { Checkbox, CheckboxGroup, DatePicker, Flex, Item, ListView, NumberField, Picker, Radio, RadioGroup, Switch, TextArea, TextField, View } from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import useFormCrossFieldValidation from '../hooks/form.ts';
-import { Argument, ArgumentValue, isBoolArgument, isMultiSelectArgument, isNumberArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
+import { Argument, ArgumentValue, isBoolArgument, isDateTimeArgument, isMultiSelectArgument, isNumberArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
+import { Dates } from '../utils/dates.ts';
 import { Strings } from '../utils/strings.ts';
-import styles from "./CodeArgumentInput.module.css"
+import styles from './CodeArgumentInput.module.css';
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -59,6 +60,31 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 )}
                 {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
               </Flex>
+            </View>
+          )}
+        />
+      );
+    } else if (isDateTimeArgument(arg)) {
+      return (
+        <Controller
+          name={arg.name}
+          control={control}
+          rules={controllerRules(arg)}
+          render={({ field, fieldState }) => (
+            <View key={arg.name} marginBottom="size-200">
+              <DatePicker
+                {...field}
+                minValue={arg.min !== null ? Dates.toCalendarOrNull(arg.min) : undefined}
+                maxValue={arg.max !== null ? Dates.toCalendarOrNull(arg.max) : undefined}
+                value={Dates.toCalendarOrNull(field.value)}
+                onChange={(dateValue) => field.onChange(dateValue?.toString())}
+                granularity={arg.variant === 'DATETIME' ? 'second' : 'day'}
+                label={argLabel(arg)}
+                errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                validationState={fieldState.error ? 'invalid' : 'valid'}
+                aria-label={`Argument '${arg.name}'`}
+                width="100%"
+              />
             </View>
           )}
         />
