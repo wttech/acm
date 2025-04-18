@@ -75,7 +75,7 @@ public class DateTimeArgument extends Argument<LocalDateTime> {
                     .filter(r -> r.name().equalsIgnoreCase(name))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Bool argument cannot be displayed as '%s'!", name)));
+                            String.format("Datetime argument cannot be displayed as '%s'!", name)));
         }
     }
 }
