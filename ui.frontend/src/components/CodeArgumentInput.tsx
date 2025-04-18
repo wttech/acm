@@ -92,7 +92,6 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({arg}) => {
         />
       );
     } else if (isDateTimeArgument(arg)) {
-      console.log(arg)
       return (
         <Controller
           name={arg.name}
