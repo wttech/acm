@@ -44,7 +44,9 @@ export type BoolArgument = Argument<boolean> & {
 };
 
 export type DateTimeArgument = Argument<string> & {
-  display: 'DATE' | 'DATETIME';
+  variant: 'DATE' | 'DATETIME';
+  min: string;
+  max: string;
 };
 
 export type TextArgument = Argument<string> & {

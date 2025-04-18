@@ -7,43 +7,71 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 
 public class DateTimeArgument extends Argument<LocalDateTime> {
-    private DateTimeArgument.Display display = DateTimeArgument.Display.DATETIME;
+    private DateTimeArgument.Variant variant = DateTimeArgument.Variant.DATETIME;
+
+    private LocalDateTime min;
+
+    private LocalDateTime max;
 
     public DateTimeArgument(String name) {
         super(name, ArgumentType.DATETIME);
     }
 
-    public DateTimeArgument.Display getDisplay() {
-        return display;
+    public LocalDateTime getMin() {
+        return min;
     }
 
-    public void setDisplay(String display) {
-        this.display = DateTimeArgument.Display.of(display);
+    public void setMin(LocalDateTime min) {
+        this.min = min;
     }
 
-    public void setDisplay(DateTimeArgument.Display render) {
-        this.display = render;
+    public void setMin(LocalDate min) {
+        this.min = min.atStartOfDay();
     }
 
-    // Cast LocalDate to LocalDateTime in case of DATE display type
+    public LocalDateTime getMax() {
+        return max;
+    }
+
+    public void setMax(LocalDateTime max) {
+        this.max = max;
+    }
+
+    public void setMax(LocalDate max) {
+        this.max = max.atStartOfDay();
+    }
+
+    public DateTimeArgument.Variant getVariant() {
+        return variant;
+    }
+
+    public void setVariant(String variant) {
+        this.variant = DateTimeArgument.Variant.of(variant);
+    }
+
+    public void setVariant(DateTimeArgument.Variant render) {
+        this.variant = render;
+    }
+
+    // Cast LocalDate to LocalDateTime in case of DATE variant
     public void setValue(LocalDate value) {
         setValue(value.atStartOfDay());
     }
 
     public void date() {
-        this.display = DateTimeArgument.Display.DATE;
+        this.variant = DateTimeArgument.Variant.DATE;
     }
 
     public void dateTime() {
-        this.display = DateTimeArgument.Display.DATETIME;
+        this.variant = DateTimeArgument.Variant.DATETIME;
     }
 
-    public enum Display {
+    public enum Variant {
         DATE,
         DATETIME;
 
-        public static DateTimeArgument.Display of(String name) {
-            return Arrays.stream(DateTimeArgument.Display.values())
+        public static DateTimeArgument.Variant of(String name) {
+            return Arrays.stream(DateTimeArgument.Variant.values())
                     .filter(r -> r.name().equalsIgnoreCase(name))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(

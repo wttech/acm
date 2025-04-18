@@ -14,10 +14,10 @@ import {
   TextField,
   View
 } from '@adobe/react-spectrum';
-import { Editor } from '@monaco-editor/react';
-import { Field } from '@react-spectrum/label';
+import {Editor} from '@monaco-editor/react';
+import {Field} from '@react-spectrum/label';
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import {Controller, useFormContext} from 'react-hook-form';
 import useFormCrossFieldValidation from '../hooks/form.ts';
 import {
   Argument,
@@ -30,7 +30,7 @@ import {
   isStringArgument,
   isTextArgument
 } from '../utils/api.types.ts';
-import { Strings } from '../utils/strings.ts';
+import {Strings} from '../utils/strings.ts';
 import styles from "./CodeArgumentInput.module.css"
 import {Dates} from "../utils/dates.ts";
 
@@ -40,8 +40,8 @@ interface CodeArgumentInputProps {
   onChange: (name: string, value: ArgumentValue) => void;
 }
 
-const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
-  const { control, getValues } = useFormContext();
+const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({arg}) => {
+  const {control, getValues} = useFormContext();
   useFormCrossFieldValidation(arg.name);
 
   const controllerRules = (arg: Argument<ArgumentValue>) => ({
@@ -71,15 +71,17 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           name={arg.name}
           control={control}
           rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
+          render={({field, fieldState}) => (
             <View key={arg.name} marginBottom="size-200">
               <Flex alignItems={'start'} justifyContent={'start'} direction={'column'}>
                 {arg.display === 'SWITCHER' ? (
-                  <Switch {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
+                  <Switch {...field} isSelected={field.value} onChange={field.onChange}
+                          aria-label={`Argument '${arg.name}'`}>
                     {argLabel(arg)}
                   </Switch>
                 ) : (
-                  <Checkbox {...field} isSelected={field.value} isInvalid={!!fieldState.error} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
+                  <Checkbox {...field} isSelected={field.value} isInvalid={!!fieldState.error} onChange={field.onChange}
+                            aria-label={`Argument '${arg.name}'`}>
                     {argLabel(arg)}
                   </Checkbox>
                 )}
@@ -96,9 +98,18 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           name={arg.name}
           control={control}
           rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
+          render={({field, fieldState}) => (
             <View key={arg.name} marginBottom="size-200">
-              <DatePicker {...field} value={Dates.toCalendarOrNull(field.value)} onChange={(dateValue) => field.onChange(dateValue?.toString())} granularity={arg.display === "DATETIME" ? "second" : "day"} label={argLabel(arg)} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`} width="100%" />
+              <DatePicker {...field}
+                          minValue={arg.min !== null ? Dates.toCalendarOrNull(arg.min) : undefined}
+                          maxValue={arg.max !== null ? Dates.toCalendarOrNull(arg.max) : undefined}
+                          value={Dates.toCalendarOrNull(field.value)}
+                          onChange={(dateValue) => field.onChange(dateValue?.toString())}
+                          granularity={arg.variant === "DATETIME" ? "second" : "day"}
+                          label={argLabel(arg)}
+                          errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                          validationState={fieldState.error ? 'invalid' : 'valid'}
+                          aria-label={`Argument '${arg.name}'`} width="100%"/>
             </View>
           )}
         />
@@ -109,9 +120,12 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           name={arg.name}
           control={control}
           rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
+          render={({field, fieldState}) => (
             <View key={arg.name} marginBottom="size-200">
-              <TextField {...field} label={argLabel(arg)} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`} width="100%" />
+              <TextField {...field} label={argLabel(arg)}
+                         errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                         validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`}
+                         width="100%"/>
             </View>
           )}
         />
@@ -122,18 +136,26 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           name={arg.name}
           control={control}
           rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
+          render={({field, fieldState}) => (
             <View key={arg.name} marginY="size-100">
               {arg.language ? (
-                <Field label={argLabel(arg)} description={`Language: ${arg.language}`} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                <Field label={argLabel(arg)} description={`Language: ${arg.language}`} width="100%"
+                       errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                       validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
-                      <Editor aria-label={`Argument '${arg.name}'`} language={arg.language} theme="vs-dark" height="200px" options={{ scrollBeyondLastLine: false }} value={field.value?.toString() || ''} onChange={field.onChange} />
+                    <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative"
+                          borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
+                      <Editor aria-label={`Argument '${arg.name}'`} language={arg.language} theme="vs-dark"
+                              height="200px" options={{scrollBeyondLastLine: false}}
+                              value={field.value?.toString() || ''} onChange={field.onChange}/>
                     </View>
                   </div>
                 </Field>
               ) : (
-                <TextArea {...field} label={argLabel(arg)} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`} width="100%" />
+                <TextArea {...field} label={argLabel(arg)}
+                          errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                          validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`}
+                          width="100%"/>
               )}
             </View>
           )}
@@ -146,7 +168,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           name={arg.name}
           control={control}
           rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
+          render={({field, fieldState}) => (
             <View key={arg.name} marginBottom="size-200">
               {display === 'RADIO' ? (
                 <RadioGroup
@@ -189,7 +211,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           name={arg.name}
           control={control}
           rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
+          render={({field, fieldState}) => (
             <View key={arg.name} marginBottom="size-200">
               {display === 'CHECKBOX' ? (
                 <CheckboxGroup
@@ -207,7 +229,9 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   ))}
                 </CheckboxGroup>
               ) : (
-                <Field label={argLabel(arg)} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                <Field label={argLabel(arg)} width="100%"
+                       errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                       validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
                     <ListView
                       {...field}
@@ -234,7 +258,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           name={arg.name}
           control={control}
           rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
+          render={({field, fieldState}) => (
             <View key={arg.name} marginBottom="size-200">
               <NumberField
                 {...field}
@@ -244,7 +268,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 minValue={arg.min !== null ? arg.min : undefined}
                 maxValue={arg.max !== null ? arg.max : undefined}
                 hideStepper={arg.type === 'DECIMAL'}
-                formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
+                formatOptions={arg.type === 'INTEGER' ? {maximumFractionDigits: 0} : undefined}
                 aria-label={`Argument '${arg.name}'`}
               />
             </View>
