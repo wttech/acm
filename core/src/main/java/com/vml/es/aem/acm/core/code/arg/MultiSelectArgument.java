@@ -32,6 +32,10 @@ public class MultiSelectArgument<V> extends Argument<V> {
     }
 
     public void setOptions(Map<Object, V> options) {
+        boolean match = options.keySet().stream().allMatch(key -> key instanceof String || key instanceof Integer);
+        if (!match) {
+            throw new IllegalArgumentException("Multi-select keys can only be of type String or Integer!");
+        }
         this.options = options;
     }
 
