@@ -20,7 +20,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
 
   const controllerRules = (arg: Argument<ArgumentValue>) => ({
     validate: (value: ArgumentValue) => {
-      if (arg.required && (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value)) || (typeof value == 'boolean' && !value))) {
+      if (arg.required && (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value)) || (typeof value == 'boolean' && !value) || (Array.isArray(value) && value.length === 0))) {
         return 'Value is required';
       }
       if (arg.validator) {
@@ -114,7 +114,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   orientation="horizontal"
                   label={argLabel(arg)}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  isInvalid={!!fieldState.error}
                   aria-label={`Argument '${arg.name}'`}
                 >
                   {Object.entries(arg.options).map(([label, val]) => (
@@ -130,7 +130,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   selectedKey={field.value?.toString() || ''}
                   onSelectionChange={field.onChange}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  isInvalid={!!fieldState.error}
                   aria-label={`Argument '${arg.name}'`}
                 >
                   {Object.entries(arg.options).map(([label, val]) => (
@@ -157,8 +157,9 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   orientation="horizontal"
                   label={argLabel(arg)}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  isInvalid={!!fieldState.error}
                   aria-label={`Argument '${arg.name}'`}
+                  value={field.value.map(String)}
                 >
                   {Object.entries(arg.options).map(([label, val]) => (
                     <Checkbox key={val?.toString()} value={val?.toString() || ''}>
@@ -171,9 +172,9 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   <div>
                     <ListView
                       {...field}
-                      maxHeight="size-1600"
+                      maxHeight="size-2000"
                       selectionMode="multiple"
-                      selectedKeys={field.value as string[]}
+                      selectedKeys={field.value.map(String)}
                       onSelectionChange={(val) => field.onChange(Array.from(val as Set<string>))}
                       aria-label={`Argument '${arg.name}'`}
                     >
@@ -220,10 +221,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
 };
 
 function argLabel(arg: Argument<ArgumentValue>): string {
-  if (arg.label) {
-    return arg.label;
-  }
-  return Strings.capitalizeWords(arg.name);
+  return arg.label ? arg.label : Strings.capitalizeWords(arg.name);
 }
 
 export default CodeArgumentInput;

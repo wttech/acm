@@ -12,7 +12,7 @@ public class MultiSelectArgument<V> extends Argument<V> {
 
     private Display display = Display.AUTO;
 
-    private Map<String, V> options = new LinkedHashMap<>();
+    private Map<Object, V> options = new LinkedHashMap<>();
 
     public MultiSelectArgument(String name) {
         super(name, ArgumentType.MULTISELECT);
@@ -27,11 +27,11 @@ public class MultiSelectArgument<V> extends Argument<V> {
         super.setValue(value);
     }
 
-    public Map<String, V> getOptions() {
+    public Map<Object, V> getOptions() {
         return options;
     }
 
-    public void setOptions(Map<String, V> options) {
+    public void setOptions(Map<Object, V> options) {
         this.options = options;
     }
 
