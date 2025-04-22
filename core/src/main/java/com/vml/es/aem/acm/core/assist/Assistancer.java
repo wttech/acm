@@ -57,6 +57,9 @@ public class Assistancer {
     @Reference
     private Executor executor;
 
+    @Reference
+    private CodeRepository codeRepository;
+
     private List<ClassInfo> classCache = Collections.emptyList();
 
     private Integer classCacheHashCode;
@@ -103,7 +106,7 @@ public class Assistancer {
     private Stream<VariableSuggestion> variableSuggestions(String word) {
         return variablesCache.stream()
                 .filter(v -> SearchUtils.containsWord(v.getName(), word))
-                .map(VariableSuggestion::new);
+                .map(cf -> new VariableSuggestion(cf, codeRepository));
     }
 
     private Stream<SnippetSuggestion> snippetSuggestions(ResourceResolver resolver, String word) throws AcmException {
@@ -116,7 +119,7 @@ public class Assistancer {
     private Stream<ClassSuggestion> classSuggestions(String word) {
         return classCache.stream()
                 .filter(cf -> SearchUtils.containsWord(cf.getClassName(), word))
-                .map(ClassSuggestion::new);
+                .map(cf -> new ClassSuggestion(cf, codeRepository));
     }
 
     private Stream<Suggestion> resourceSuggestions(ResourceResolver resolver, String word) {
