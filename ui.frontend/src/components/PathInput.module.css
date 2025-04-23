@@ -1,0 +1,9 @@
+.label {
+  color: var(--spectrum-gray-700);
+  padding-top: var(--spectrum-global-dimension-size-50);
+  padding-bottom: var(--spectrum-global-dimension-size-65);
+  font-size: var(--spectrum-global-dimension-font-size-75);
+  font-weight: var(--spectrum-global-font-weight-regular);
+  line-height: var(--spectrum-global-font-line-height-small);
+  font-family: var(--spectrum-global-font-family-base), sans-serif;
+}

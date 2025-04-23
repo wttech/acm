@@ -4,9 +4,10 @@ import { Field } from '@react-spectrum/label';
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import useFormCrossFieldValidation from '../hooks/form.ts';
-import { Argument, ArgumentValue, isBoolArgument, isMultiSelectArgument, isNumberArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
+import { Argument, ArgumentValue, isBoolArgument, isMultiSelectArgument, isNumberArgument, isPathArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
 import { Strings } from '../utils/strings.ts';
-import styles from "./CodeArgumentInput.module.css"
+import styles from './CodeArgumentInput.module.css';
+import { PathInput } from './PathInput.tsx';
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -207,6 +208,32 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
                 aria-label={`Argument '${arg.name}'`}
               />
+            </View>
+          )}
+        />
+      );
+    } else if (isPathArgument(arg)) {
+      return (
+        <Controller
+          name={arg.name}
+          control={control}
+          rules={controllerRules(arg)}
+          render={({ field, fieldState }) => (
+            <View key={arg.name} marginBottom={'size-2000'}>
+              <Flex alignItems={'start'} justifyContent={'start'} direction={'column'}>
+                <PathInput
+                  {...field}
+                  selectionMode={'single'}
+                  value={'/content/cp-sites-aem/hills'}
+                  label={argLabel(arg)}
+                  // This will be used to set the value of the field
+                  rootPath={''}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  isInvalid={!!fieldState.error}
+                  aria-label={`Argument ${arg.name}`}
+                />
+                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
+              </Flex>
             </View>
           )}
         />
