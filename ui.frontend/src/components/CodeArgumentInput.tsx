@@ -225,8 +225,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   {...field}
                   selectionMode={'single'}
                   label={argLabel(arg)}
-                  // This will be used to set the value of the field
-                  rootPath={'/content'}
+                  rootPath={arg.rootPath ?? ""}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
                   isInvalid={!!fieldState.error}
                   aria-label={`Argument ${arg.name}`}

@@ -10,3 +10,5 @@ documentation: |
     <pre>
         args.path("path") { label = "Path"; value = "/content"; rootPath = "/content" }
     </pre>
+    <br>
+    <b>Note the fact that both rootpath and value can't end with '/'</b>

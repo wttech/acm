@@ -62,6 +62,10 @@ export type MultiSelectArgument = Argument<ArgumentValue> & {
   display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN';
 };
 
+export type PathArgument = Argument<ArgumentValue> & {
+  rootPath: string;
+};
+
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> {
   return arg.type === 'STRING';
 }
@@ -86,7 +90,7 @@ export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is Mult
   return arg.type === 'MULTISELECT';
 }
 
-export function isPathArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {
+export function isPathArgument(arg: Argument<ArgumentValue>): arg is PathArgument {
   return arg.type === 'PATH';
 }
 
