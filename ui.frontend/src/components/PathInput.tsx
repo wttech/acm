@@ -25,7 +25,7 @@ export const PathInput =  forwardRef(function PathInput({ rootPath = "", onChang
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [items, setItems] = useState<Node>({
-    name: rootPath,
+    name: rootPath == "/" ? "" : rootPath,
     children: null,
   });
 
@@ -100,6 +100,9 @@ export const PathInput =  forwardRef(function PathInput({ rootPath = "", onChang
   };
 
   useEffect(() => {
+    if (rootPath == '/') {
+      rootPath = "";
+    }
     // Expand the root path when the component mounts
     const initializePathInput = async () => {
       if (!loadedPaths.has(rootPath)) {
