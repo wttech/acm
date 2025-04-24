@@ -1,6 +1,7 @@
 import { SpectrumTreeViewProps, Text, TreeView, TreeViewItem, TreeViewItemContent } from '@adobe/react-spectrum';
 import { Selection } from '@react-types/shared/src/selection';
-import { useEffect, useState } from 'react';
+import { DOMRef } from '@react-types/shared/src/refs';
+import React, {forwardRef, useEffect, useState} from 'react';
 import { apiRequest } from '../utils/api.ts';
 import { AssistCodeOutput, AssistCodeOutputSuggestion } from '../utils/api.types.ts';
 import styles from './PathInput.module.css';
@@ -19,12 +20,13 @@ interface IPathInput extends SpectrumTreeViewProps<string> {
   value: string;
 }
 
-export function PathInput({ rootPath = '', onChange, label, value, ...props }: IPathInput) {
+export const PathInput =  forwardRef(function PathInput({ rootPath = '', onChange, label, value, ...props }: IPathInput, ref: DOMRef<HTMLDivElement>) {
   const { getPathCompletion } = useRequestPathCompletion();
+  const [loadedPaths, setLoadedPaths] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [items, setItems] = useState<Node>({
-    name: rootPath,
+    name: rootPath.replace(/(?!^)\//g, ""),
     children: null,
   });
 
@@ -48,7 +50,7 @@ export function PathInput({ rootPath = '', onChange, label, value, ...props }: I
   const findAndUpdateNodeFromPath = (path: string, newChildren: Node[]) => {
     const updateTree = (node: Node, pathParts: string[]): Node => {
       if (pathParts.length === 0) {
-        return { ...node, children: newChildren };
+        return { ...node, children: newChildren.length > 0 ? newChildren : [] };
       }
       const [currentPart, ...remainingParts] = pathParts;
       const children = node.children || [];
@@ -70,24 +72,22 @@ export function PathInput({ rootPath = '', onChange, label, value, ...props }: I
   };
 
   const loadSuggestions = async (path: string) => {
-    getPathCompletion(path)
+    await getPathCompletion(path)
       .then((data) => data.suggestions.map(translateSuggestion))
       .then((nodes) => {
         findAndUpdateNodeFromPath(path, nodes);
       });
   };
 
-  const loadedPaths = new Set<string>([rootPath]);
   const onExpandedChange = (keys: Selection) => {
     const newKeys = new Set([...keys].map((key) => key.toString()));
     const differenceToAdd = [...newKeys].filter((key) => !expanded.has(key));
     const differenceToRemove = [...expanded].filter((key) => !newKeys.has(key));
 
     const updatedExpanded = new Set(expanded);
-
     differenceToAdd.forEach(async (key) => {
       if (!loadedPaths.has(key)) {
-        loadedPaths.add(key);
+        setLoadedPaths(prevPaths => new Set(prevPaths).add(key));
         await loadSuggestions(key + '/');
       }
       updatedExpanded.add(key);
@@ -101,51 +101,54 @@ export function PathInput({ rootPath = '', onChange, label, value, ...props }: I
   };
 
   useEffect(() => {
+    // Expand the root path when the component mounts
     const initializePathInput = async () => {
       if (!loadedPaths.has(rootPath)) {
-        loadedPaths.add(rootPath);
+        setLoadedPaths(prevPaths => new Set(prevPaths).add(rootPath));
         await loadSuggestions(rootPath);
       }
       const expandPathToValue = async (path: string) => {
-        const pathParts = path.split('/').filter(Boolean);
-        let currentPath = rootPath;
-        const expandedKeys = new Set<string>();
-        expandedKeys.add(rootPath);
-        for (const part of pathParts) {
-          currentPath += `/${part}`;
-          expandedKeys.add(currentPath);
-          if (!loadedPaths.has(currentPath)) {
-            loadedPaths.add(currentPath);
+        const pathParts = path.split("/").filter(Boolean);
+        let currentPath = "";
+        const tempExpanded = new Set<string>();
+        const tempLoadedPaths = new Set(loadedPaths);
+        // Expand each part of the path except for the last oen
+        for (const part of pathParts.slice(0, -1)) {
+          currentPath = `${currentPath}/${part}`.replace(/\/+/g, '/');
+          if (!tempLoadedPaths.has(currentPath)) {
             await loadSuggestions(currentPath);
+            tempLoadedPaths.add(currentPath);
+            tempExpanded.add(currentPath);
           }
         }
-        return expandedKeys;
+
+        setLoadedPaths(new Set(tempLoadedPaths));
+        setExpanded(new Set(tempExpanded));
       };
-      const expandedKeys = await expandPathToValue(value);
-      setExpanded(expandedKeys);
+      await expandPathToValue(value);
       setSelected(new Set([value]));
     };
 
     initializePathInput().catch((err) => {
       console.error('Error initializing PathInput:', err);
     });
-  }, [rootPath, value]);
+  }, []);
 
   return (
     <>
       <p className={styles.label}>{label}</p>
-      <TreeView {...props} maxHeight={'size-2400'} width={'100%'} onSelectionChange={onSelectionChange} onExpandedChange={onExpandedChange} defaultSelectedKeys={new Set(value)} selectedKeys={selected} expandedKeys={expanded}>
+      <TreeView {...props} ref={ref} selectionMode={"single"} width={'100%'} onSelectionChange={onSelectionChange} onExpandedChange={onExpandedChange} defaultSelectedKeys={new Set(value)} selectedKeys={selected} expandedKeys={expanded}>
         {items && <TreeItem node={items} path={''} />}
       </TreeView>
     </>
   );
-}
+})
 
 const TreeItem = ({ node, path }: { node: Node; path: string }) => {
   return (
     <TreeViewItem id={path + node.name} textValue={node.name}>
       <TreeViewItemContent>
-        <Text>{node.name}</Text>
+        <Text>{node.name.replace("/", "")}</Text>
       </TreeViewItemContent>
       {node.children && node.children.length > 0 ? (
         node.children.map((child: Node) => <TreeItem node={child} path={path + node.name + '/'} key={path + node.name + child.name} />)
