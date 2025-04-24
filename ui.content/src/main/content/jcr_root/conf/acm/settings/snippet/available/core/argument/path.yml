@@ -1,0 +1,12 @@
+group: Argument
+name: argument_path
+content: |
+  args.path("${1:name}") { label = "${2:label}"; value = ${3:value}; rootPath = "${4:rootPath}" }
+documentation: |
+    An argument that allows the user to select a path.<br>
+    The path can be relative to the current resource or absolute.
+    <br><br>
+    <b>Example:</b>
+    <pre>
+        args.path("path") { label = "Path"; value = "/content"; rootPath = "/content" }
+    </pre>
