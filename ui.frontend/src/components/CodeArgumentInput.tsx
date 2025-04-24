@@ -219,11 +219,12 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           control={control}
           rules={controllerRules(arg)}
           render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom={'size-2000'}>
+            <View key={arg.name} marginBottom={'size-200'}>
               <Flex alignItems={'start'} justifyContent={'start'} direction={'column'}>
                 <PathInput
                   {...field}
                   selectionMode={'single'}
+                  maxHeight={"size-3000"}
                   label={argLabel(arg)}
                   rootPath={arg.rootPath ?? ""}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
