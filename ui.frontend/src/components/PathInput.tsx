@@ -29,7 +29,7 @@ export const PathInput =  forwardRef(function PathInput({ rootPath = "", onChang
     children: null,
   });
 
-  const onSelectionChange = (keys: Selection) => {
+  const onSelectionChange = useCallback((keys: Selection) => {
     const newSelection = new Set([...keys].map((key) => key.toString()));
     const selectedValue = [...newSelection][0];
     if (selectedValue != undefined) {
@@ -39,7 +39,7 @@ export const PathInput =  forwardRef(function PathInput({ rootPath = "", onChang
         onChange(selectedValue.length > 0 ? selectedValue : '/');
       }, 0)
     }
-  };
+  }, []);
 
   const translateSuggestion = (suggestion: AssistCodeOutputSuggestion): Node => {
     const name = suggestion.it.split('/').at(-1);
@@ -75,6 +75,9 @@ export const PathInput =  forwardRef(function PathInput({ rootPath = "", onChang
       .then((data) => data.suggestions.map(translateSuggestion))
       .then((nodes) => {
         findAndUpdateNodeFromPath(path, nodes);
+      })
+      .catch(error => {
+        console.error("Error loading suggestions:", error);
       });
   }, [])
 
@@ -126,6 +129,12 @@ export const PathInput =  forwardRef(function PathInput({ rootPath = "", onChang
 
         setLoadedPaths(new Set(tempLoadedPaths));
         setExpanded(new Set(tempExpanded));
+
+        // If value passed doesn't exist in the loaded paths, clear the selection
+        if (!tempLoadedPaths.has(value)) {
+          setSelected(new Set<string>())
+          onChange("");
+        }
       };
       await expandPathToValue(value);
       setSelected(new Set([value]));
