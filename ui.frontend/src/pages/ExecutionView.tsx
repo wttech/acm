@@ -31,7 +31,6 @@ const ExecutionView = () => {
   const [autoscrollOutput, setAutoscrollOutput] = useState<boolean>(true);
   const { execution, setExecution, loading } = useExecutionPolling(executionId, appState.spaSettings.executionPollInterval);
   const [selectedTab, handleTabChange] = useNavigationTab('details');
-
   if (loading) {
     return (
       <Flex flex="1" justifyContent="center" alignItems="center">
@@ -87,7 +86,7 @@ const ExecutionView = () => {
               <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
                   <LabeledValue label="ID" value={execution.id} flex="1" />
-                  <LabeledValue label="User" value={execution.userId} flex="1" />
+                  <LabeledValue label="User" value={execution.userId ? execution.userId : "unknown"} flex="1" />
                   <Flex justifyContent="end">
                     <Field label="Status" flex="1">
                       <div>
