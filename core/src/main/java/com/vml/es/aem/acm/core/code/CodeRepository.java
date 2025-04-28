@@ -20,7 +20,7 @@ public class CodeRepository {
         @AttributeDefinition(
                 name = "Class Links",
                 description =
-                        "Mapping of class prefixes to their corresponding GitHub URLs in the format 'prefix=url'.")
+                        "Mapping of class prefixes to their corresponding URLs in the format 'prefix=url'.")
         String[] classLinks() default {
             "com.vml.es.aem.acm.core=https://github.com/wttech/acm/blob/main/core/src/main/java",
             "org.apache.sling.api=https://github.com/apache/sling-org-apache-sling-api/tree/master/src/main/java"
