@@ -233,6 +233,7 @@ Bundle-Category: acm
 Bundle-DocURL:
 -plugin org.apache.sling.caconfig.bndplugin.ConfigurationClassScannerPlugin
 -plugin org.apache.sling.bnd.models.ModelsScannerPlugin
+Private-Package: com.fasterxml.jackson.datatype.jsr310
                                 ]]>
                                 </bnd>
                             </configuration>
