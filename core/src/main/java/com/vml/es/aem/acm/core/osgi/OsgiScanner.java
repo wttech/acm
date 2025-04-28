@@ -32,8 +32,8 @@ public class OsgiScanner {
         return Arrays.stream(bundleContext.getBundles());
     }
 
-    public Stream<ClassInfo> scanClasses() {
-        return scanBundles().filter(this::isBundleOrFragmentReady).flatMap(this::scanClasses);
+    public Stream<ClassInfo> scanExportedClasses() {
+        return scanBundles().filter(this::isBundleOrFragmentReady).flatMap(this::scanExportedClasses);
     }
 
     public int computeBundlesHashCode() {
@@ -56,6 +56,12 @@ public class OsgiScanner {
         return bundle.getState() == Bundle.RESOLVED;
     }
 
+    public Stream<String> findSystemExportedPackages() {
+        return Arrays.stream(bundleContext.getBundles())
+                .filter(b -> b.getBundleId() == 0)
+                .flatMap(this::exportedPackages);
+    }
+
     public boolean isFragment(Bundle bundle) {
         return bundle.getHeaders().get("Fragment-Host") != null;
     }
@@ -64,18 +70,20 @@ public class OsgiScanner {
         return isBundleActive(bundle) || (isFragment(bundle) && isBundleResolved(bundle));
     }
 
-    private Stream<ClassInfo> scanClasses(Bundle bundle) {
+    private Stream<String> exportedPackages(Bundle bundle) {
         BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
         if (bundleWiring == null) {
             return Stream.empty();
         }
-
         return bundleWiring.getCapabilities(BUNDLE_WIRING_PACKAGE).stream()
-                .map(capability -> (String) capability.getAttributes().get(BUNDLE_WIRING_PACKAGE))
-                .flatMap(pkg -> findClasses(bundle, pkg));
+                .map(c -> (String) c.getAttributes().get(BUNDLE_WIRING_PACKAGE));
     }
 
-    private Stream<ClassInfo> findClasses(Bundle bundle, String packageName) {
+    private Stream<ClassInfo> scanExportedClasses(Bundle bundle) {
+        return exportedPackages(bundle).flatMap(pkg -> findClasses(bundle, pkg));
+    }
+
+    public Stream<ClassInfo> findClasses(Bundle bundle, String packageName) {
         try {
             Enumeration<URL> resources = bundle.findEntries(packageName.replace('.', '/'), "*.class", false);
             if (resources == null) {
@@ -83,10 +91,9 @@ public class OsgiScanner {
             }
 
             return StreamUtils.asStream(resources)
-                    .map(this::toRawClassName)
+                    .map(u -> normalizeClassName(u.getFile()))
                     .filter(className -> isDirectChildOfPackage(className, packageName))
-                    .filter(this::isImportableClass)
-                    .map(this::toStdClassName)
+                    .filter(this::isImportableClassName)
                     .map(c -> new ClassInfo(c, bundle));
         } catch (Exception e) {
             LOG.error("Error scanning classes in bundle '{}'", bundle.getSymbolicName(), e);
@@ -99,17 +106,12 @@ public class OsgiScanner {
         return classPackage.equals(packageName);
     }
 
-    private String toRawClassName(URL url) {
-        final String f = url.getFile();
-        final String cn = f.substring(1, f.length() - ".class".length());
+    public String normalizeClassName(String className) {
+        final String cn = className.substring(1, className.length() - ".class".length());
         return cn.replace('/', '.').replace("$", ".");
     }
 
-    private String toStdClassName(String rawClassName) {
-        return rawClassName;
-    }
-
-    private boolean isImportableClass(String className) {
+    public boolean isImportableClassName(String className) {
         return !className.matches(".*\\$\\d+.*") && !className.endsWith("package-info");
     }
 }

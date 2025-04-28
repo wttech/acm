@@ -1,6 +1,7 @@
 package com.vml.es.aem.acm.core.repo;
 
 import com.vml.es.aem.acm.core.util.ResourceUtils;
+import java.util.HashMap;
 import java.util.Map;
 import javax.jcr.Node;
 import javax.jcr.Session;
@@ -106,5 +107,45 @@ public class Repository {
             throw new RepositoryException(
                     String.format("Repository path '%s' cannot be checked for existence!", path), e);
         }
+    }
+
+    public Resource saveFile(String path, String data, String mimeType) {
+        Resource mainResource = resourceResolver.getResource(path);
+        if (mainResource == null) {
+            String parentPath = StringUtils.substringBeforeLast(path, "/");
+            Resource parent = resourceResolver.getResource(parentPath);
+            if (parent == null) {
+                throw new RepositoryException(
+                        String.format("Cannot save file as parent path '%s' does not exist!", parentPath));
+            }
+            try {
+                String name = StringUtils.substringAfterLast(path, "/");
+                mainResource = resourceResolver.create(parent, name, null);
+
+                Map<String, Object> contentValues = new HashMap<>();
+                contentValues.put("jcr:data", data);
+                contentValues.put("jcr:mimeType", mimeType);
+                resourceResolver.create(mainResource, "jcr:content", contentValues);
+
+                commit(String.format("creating file at path '%s'", path));
+                LOG.info("Created file at path '{}'", path);
+                return mainResource;
+            } catch (PersistenceException e) {
+                throw new RepositoryException(String.format("Cannot save file at path '%s'!", path), e);
+            }
+        } else {
+            Resource contentResource = mainResource.getChild("jcr:data");
+            if (contentResource == null) {
+                throw new RepositoryException(
+                        String.format("Cannot update file at path '%s' as content resource does not exist!", path));
+            }
+            ModifiableValueMap contentValues = contentResource.adaptTo(ModifiableValueMap.class);
+            contentValues.put("jcr:data", data);
+            contentValues.put("jcr:mimeType", mimeType);
+
+            commit(String.format("updating file at path '%s'", path));
+            LOG.info("Updated file at path '{}'", path);
+        }
+        return mainResource;
     }
 }

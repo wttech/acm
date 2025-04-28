@@ -130,7 +130,7 @@ public class Assistancer {
         int cacheHashCodeCurrent = osgiScanner.computeBundlesHashCode();
         if (classCacheHashCode == null || !classCacheHashCode.equals(cacheHashCodeCurrent)) {
             LOG.info("Class cache - updating");
-            classCache = osgiScanner.scanClasses().distinct().sorted().collect(Collectors.toList());
+            classCache = osgiScanner.scanExportedClasses().distinct().sorted().collect(Collectors.toList());
             classCacheHashCode = cacheHashCodeCurrent;
             LOG.info("Class cache - updated");
         }
