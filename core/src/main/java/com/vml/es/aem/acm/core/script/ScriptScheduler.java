@@ -65,13 +65,13 @@ public class ScriptScheduler implements Runnable {
 
     private Config config;
 
-    private long intervalBetweenRuns = -1;
+    private long intervalMillis;
 
     @Activate
     @Modified
     protected void activate(Config config) {
         this.config = config;
-        intervalBetweenRuns = calculateInterval();
+        this.intervalMillis = calculateInterval();
     }
 
     private long calculateInterval() {
@@ -79,22 +79,11 @@ public class ScriptScheduler implements Runnable {
             CronExpression expression = new CronExpression(this.config.scheduler_expression());
             Date now = new Date();
             Date nextRun = expression.getNextValidTimeAfter(now);
-            if (nextRun == null) {
-                return -1;
-            }
             Date secondRun = expression.getNextValidTimeAfter(nextRun);
-            if (secondRun == null) {
-                return -1;
-            }
             return secondRun.getTime() - nextRun.getTime();
         } catch (ParseException e) {
-            throw new AcmException("Interval cannot be parsed. ", e);
+            throw new AcmException("Script scheduler interval cannot be parsed!", e);
         }
-    }
-
-    /** This function returns time between next 2 runs of provided cron job. If cron expression is invalid returned value will be -1. */
-    public long getIntervalBetweenRuns() {
-        return this.intervalBetweenRuns;
     }
 
     @Override
@@ -123,5 +112,9 @@ public class ScriptScheduler implements Runnable {
         } catch (Exception e) {
             LOG.error("Failed to access repository while scheduling enabled scripts to execution queue", e);
         }
+    }
+
+    public long getIntervalMillis() {
+        return this.intervalMillis;
     }
 }

@@ -305,7 +305,7 @@ public class Condition {
         return LocalTime.of(23, 59, 59, 999999999);
     }
 
-    // Date based
+    // Date-based (predetermined/static)
 
     public boolean isDate(String dateString) {
         ZonedDateTime localDateTime = DateUtils.localDateTimeFromString(dateString);
@@ -314,20 +314,20 @@ public class Condition {
 
     public boolean isDate(ZonedDateTime zonedDateTime) {
         LocalDateTime localDateTime = zonedDateTime
-                .withZoneSameLocal(ZoneId.of(DateUtils.TIMEZONE_ID))
+                .withZoneSameLocal(DateUtils.ZONE_ID)
                 .toLocalDateTime();
         return isDate(localDateTime);
     }
 
     public boolean isDate(LocalDateTime localDateTime) {
-        long interval = executionContext
+        long intervalMillis = executionContext
                 .getOsgiContext()
                 .getService(ScriptScheduler.class)
-                .getIntervalBetweenRuns();
-        return DateUtils.isInRange(localDateTime, LocalDateTime.now(), interval);
+                .getIntervalMillis();
+        return DateUtils.isInRange(localDateTime, LocalDateTime.now(), intervalMillis);
     }
 
-    // Duration-based since last execution
+    // Duration-based since the last execution
 
     public Duration passedDuration() {
         Execution lastExecution = passedExecution();

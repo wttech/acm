@@ -10,4 +10,4 @@ documentation: |
   - **yyyy-MM-dd'T'HH:mm:ss.SSSXXX**: `condition.isDate("2025-04-16T12:30:00.123+02:00")` <br>
   - **yyyy-MM-dd'T'HH:mm:ssXXX**: `condition.isDate("2025-04-16T12:30:00+02:00")` <br>
   Additionally, you can pass a `ZonedDateTime` or `LocalDateTime` object. <br>
-  For example: `condition.isDate(ZonedDateTime.now())`.
+  For example: `condition.isDate(ZonedDateTime.of(2025, 12, 25, 10, 0, 0, 0, ZoneId.of("Europe/Warsaw")))`.

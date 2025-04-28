@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public final class DateUtils {
@@ -16,6 +17,8 @@ public final class DateUtils {
     }
 
     public static final String TIMEZONE_ID = TimeZone.getDefault().getID();
+
+    public static final ZoneId ZONE_ID = ZoneId.of(DateUtils.TIMEZONE_ID);
 
     private static final List<String> LOCAL_DATE_TIME_FORMATS = Arrays.asList(
             "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", "yyyy-MM-dd'T'HH:mm:ssXXX");
@@ -81,9 +84,8 @@ public final class DateUtils {
         return Optional.ofNullable(calendar).map(Calendar::getTime).orElse(null);
     }
 
-    public static boolean isInRange(LocalDateTime from, LocalDateTime now, long offset) {
-        // Multiplying by 1_000_000 to convert milliseconds to nanoseconds
-        LocalDateTime to = from.plusNanos(offset * 1_000_000);
+    public static boolean isInRange(LocalDateTime from, LocalDateTime now, long offsetMillis) {
+        LocalDateTime to = from.plus(offsetMillis, ChronoUnit.MILLIS);
         return !now.isBefore(from) && !now.isAfter(to);
     }
 }
