@@ -12,7 +12,7 @@ public class MultiSelectArgument<V> extends Argument<V> {
 
     private Display display = Display.AUTO;
 
-    private Map<Object, V> options = new LinkedHashMap<>();
+    private Map<String, V> options = new LinkedHashMap<>();
 
     public MultiSelectArgument(String name) {
         super(name, ArgumentType.MULTISELECT);
@@ -27,16 +27,13 @@ public class MultiSelectArgument<V> extends Argument<V> {
         super.setValue(value);
     }
 
-    public Map<Object, V> getOptions() {
+    public Map<String, V> getOptions() {
         return options;
     }
 
-    public void setOptions(Map<Object, V> options) {
-        boolean match = options.keySet().stream().allMatch(key -> key instanceof String || key instanceof Integer);
-        if (!match) {
-            throw new IllegalArgumentException("Multi-select keys can only be of type String or Integer!");
-        }
-        this.options = options;
+    public void setOptions(Map<?, V> options) {
+        this.options = options.entrySet().stream()
+                .collect(Collectors.toMap(e -> ObjectUtils.toString(e.getKey()), Map.Entry::getValue));
     }
 
     public void setOptions(Collection<V> options) {
