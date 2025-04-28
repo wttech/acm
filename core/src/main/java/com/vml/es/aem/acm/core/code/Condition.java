@@ -313,9 +313,8 @@ public class Condition {
     }
 
     public boolean isDate(ZonedDateTime zonedDateTime) {
-        LocalDateTime localDateTime = zonedDateTime
-                .withZoneSameLocal(DateUtils.ZONE_ID)
-                .toLocalDateTime();
+        LocalDateTime localDateTime =
+                zonedDateTime.withZoneSameLocal(DateUtils.ZONE_ID).toLocalDateTime();
         return isDate(localDateTime);
     }
 
