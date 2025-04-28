@@ -1,6 +1,8 @@
 package com.vml.es.aem.acm.core.code;
 
 import com.vml.es.aem.acm.core.osgi.InstanceType;
+import com.vml.es.aem.acm.core.script.ScriptScheduler;
+import com.vml.es.aem.acm.core.util.DateUtils;
 import java.time.*;
 import java.util.Date;
 import java.util.Optional;
@@ -303,7 +305,28 @@ public class Condition {
         return LocalTime.of(23, 59, 59, 999999999);
     }
 
-    // Duration-based since last execution
+    // Date-based (predetermined/static)
+
+    public boolean isDate(String dateString) {
+        ZonedDateTime localDateTime = DateUtils.localDateTimeFromString(dateString);
+        return isDate(localDateTime);
+    }
+
+    public boolean isDate(ZonedDateTime zonedDateTime) {
+        LocalDateTime localDateTime =
+                zonedDateTime.withZoneSameLocal(DateUtils.ZONE_ID).toLocalDateTime();
+        return isDate(localDateTime);
+    }
+
+    public boolean isDate(LocalDateTime localDateTime) {
+        long intervalMillis = executionContext
+                .getOsgiContext()
+                .getService(ScriptScheduler.class)
+                .getIntervalMillis();
+        return DateUtils.isInRange(localDateTime, LocalDateTime.now(), intervalMillis);
+    }
+
+    // Duration-based since the last execution
 
     public Duration passedDuration() {
         Execution lastExecution = passedExecution();
