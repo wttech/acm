@@ -1,9 +1,14 @@
 package com.vml.es.aem.acm.core.osgi;
 
 import com.vml.es.aem.acm.core.util.StreamUtils;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.jar.JarFile;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.osgi.framework.Bundle;
@@ -65,17 +70,25 @@ public class OsgiScanner {
     }
 
     private Stream<ClassInfo> scanClasses(Bundle bundle) {
-        BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
-        if (bundleWiring == null) {
-            return Stream.empty();
-        }
-
-        return bundleWiring.getCapabilities(BUNDLE_WIRING_PACKAGE).stream()
-                .map(capability -> (String) capability.getAttributes().get(BUNDLE_WIRING_PACKAGE))
-                .flatMap(pkg -> findClasses(bundle, pkg));
+        return readPackages(bundle)
+                .flatMap(pkg ->
+                        isSystemBundle(bundle) ? findSystemClasses(bundle, pkg) : findRegularClasses(bundle, pkg));
     }
 
-    private Stream<ClassInfo> findClasses(Bundle bundle, String packageName) {
+    private boolean isSystemBundle(Bundle bundle) {
+        return bundle.getBundleId() == 0;
+    }
+
+    private Stream<String> readPackages(Bundle bundle) {
+        BundleWiring wiring = bundle.adapt(BundleWiring.class);
+        if (wiring == null) {
+            return Stream.empty();
+        }
+        return wiring.getCapabilities(BUNDLE_WIRING_PACKAGE).stream()
+                .map(c -> (String) c.getAttributes().get(BUNDLE_WIRING_PACKAGE));
+    }
+
+    private Stream<ClassInfo> findRegularClasses(Bundle bundle, String packageName) {
         try {
             Enumeration<URL> resources = bundle.findEntries(packageName.replace('.', '/'), "*.class", false);
             if (resources == null) {
@@ -92,6 +105,29 @@ public class OsgiScanner {
             LOG.error("Error scanning classes in bundle '{}'", bundle.getSymbolicName(), e);
             return Stream.empty();
         }
+    }
+
+    private Stream<ClassInfo> findSystemClasses(Bundle bundle, String packageName) {
+        List<ClassInfo> classInfos = new ArrayList<>();
+        String path = packageName.replace('.', '/');
+        String[] classpathEntries = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
+
+        for (String entry : classpathEntries) {
+            File jarFile = new File(entry);
+            if (jarFile.exists() && jarFile.isFile() && jarFile.getName().endsWith(".jar")) {
+                try (JarFile jar = new JarFile(jarFile)) {
+                    jar.stream()
+                            .filter(e ->
+                                    e.getName().startsWith(path) && e.getName().endsWith(".class"))
+                            .map(e -> e.getName().replace("/", ".").replace(".class", ""))
+                            .forEach(className -> classInfos.add(new ClassInfo(className, bundle)));
+                } catch (IOException e) {
+                    LOG.error("Error reading JAR file '{}'", jarFile.getAbsolutePath(), e);
+                }
+            }
+        }
+
+        return classInfos.stream();
     }
 
     private boolean isDirectChildOfPackage(String className, String packageName) {
