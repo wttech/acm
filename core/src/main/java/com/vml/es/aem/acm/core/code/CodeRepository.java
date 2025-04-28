@@ -35,7 +35,7 @@ public class CodeRepository {
         for (String classLink : config.classLinks()) {
             String[] parts = classLink.split("=");
             if (parts.length == 2) {
-                CLASS_LINKS.put(parts[0], parts[1]);
+                CLASS_LINKS.put(parts[0].trim(), parts[1].trim());
             }
         }
     }
