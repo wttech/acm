@@ -1,0 +1,9 @@
+/*Custom error state since react spectrum doesn't provide one for switch and checkbox component*/
+.error {
+    color: var(--spectrum-red-900);
+    font-size: var(--spectrum-global-dimension-font-size-75);
+    line-height: var(--spectrum-global-font-line-height-small);
+    letter-spacing: var(--spectrum-global-font-letter-spacing-none);
+    margin-inline-end: var(--spectrum-global-dimension-size-100);
+    font-family: var(--spectrum-global-font-family-base), sans-serif;
+}

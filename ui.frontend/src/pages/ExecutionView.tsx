@@ -16,13 +16,13 @@ import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import ImmersiveEditor from '../components/ImmersiveEditor';
+import { useAppState } from '../hooks/app.ts';
 import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
 import { isExecutionPending } from '../utils/api.types';
 import { Objects } from '../utils/objects';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
-import {useAppState} from "../hooks/app.ts";
 
 const ExecutionView = () => {
   const appState = useAppState();

@@ -53,6 +53,7 @@
     </organization>
     <developers>
         <developer>
+            <id>krystian.panek</id>
             <name>Krystian Panek</name>
             <email>krystian.panek@vml.com</email>
             <organization>VML Enterprise Solutions</organization>
