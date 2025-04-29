@@ -1,0 +1,13 @@
+group: Argument
+name: argument_color
+content: |
+  args.color("${1:name}") { label = "${2:label}"; value = ${3:value} }
+documentation: |
+    An argument that displays a color picker.<br>
+    <br>
+    **Example**:<br>
+    ```groovy
+    args.color("color") {label = "background color"; value = "#ff0000"}
+    ```
+    <br>
+    value must be a string with a hex color code<br>

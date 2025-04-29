@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vml.es.aem.acm.core.code.arg.*;
 import com.vml.es.aem.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
+
+import java.awt.*;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -142,6 +144,36 @@ public class Arguments implements Serializable {
 
     public void integerNumber(String name, Closure<IntegerArgument> options) {
         IntegerArgument argument = new IntegerArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void slider(String name) {
+        slider(name, null);
+    }
+
+    public void slider(String name, Closure<SliderArgument> options) {
+        SliderArgument argument = new SliderArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void color(String name) {
+        color(name, null);
+    }
+
+    public void color(String name, Closure<ColorArgument> options) {
+        ColorArgument argument = new ColorArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void range(String name) {
+        range(name, null);
+    }
+
+    public void range(String name, Closure<RangeArgument> options) {
+        RangeArgument argument = new RangeArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }

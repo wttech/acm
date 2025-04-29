@@ -1,0 +1,14 @@
+group: Argument
+name: argument_range
+content: |
+  args.range("${1:name}") { label = "${2:label}"; value = ${3:value}; min=${4:min}; max=${5:max}; step=${6:step} }
+documentation: |
+    An argument that displays a range slider.<br>
+    For single values, use slider argument<br>
+    <br>
+    **Example**:<br>
+    ```groovy
+    args.range("range") {label = "my range"; value = [10d, 60]; step=10; min=10; max=65}
+    ```
+    <br>
+    value must be an array of two numbers<br>

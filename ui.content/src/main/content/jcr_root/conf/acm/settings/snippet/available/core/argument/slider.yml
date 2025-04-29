@@ -1,0 +1,7 @@
+group: Argument
+name: argument_slider
+content: |
+  args.slider("${1:name}") { label = "${2:label}"; value = ${3:value}; min=${4:min}; max=${5:max}; step=${6:step} }
+documentation: |
+    An argument that displays a slider.<br>
+    For range values, use range argument<br>

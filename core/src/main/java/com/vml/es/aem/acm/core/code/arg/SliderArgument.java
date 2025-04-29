@@ -1,0 +1,38 @@
+package com.vml.es.aem.acm.core.code.arg;
+
+import com.vml.es.aem.acm.core.code.Argument;
+import com.vml.es.aem.acm.core.code.ArgumentType;
+
+public class SliderArgument extends Argument<Number> {
+    private Number min;
+    private Number max;
+    private Number step;
+
+    public SliderArgument(String name) {
+        super(name, ArgumentType.SLIDER);
+    }
+
+    public Number getMin() {
+        return min;
+    }
+
+    public void setMin(Number min) {
+        this.min = min.doubleValue();
+    }
+
+    public Number getMax() {
+        return max;
+    }
+
+    public void setMax(Number max) {
+        this.max = max.doubleValue();
+    }
+
+    public Number getStep() {
+        return step;
+    }
+
+    public void setStep(Number step) {
+        this.step = step.doubleValue();
+    }
+}
