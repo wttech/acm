@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -59,7 +60,8 @@ public class OsgiScanner {
     public Stream<String> findSystemExportedPackages() {
         return Arrays.stream(bundleContext.getBundles())
                 .filter(b -> b.getBundleId() == 0)
-                .flatMap(this::exportedPackages);
+                .flatMap(this::exportedPackages)
+                .sorted();
     }
 
     public boolean isFragment(Bundle bundle) {
@@ -107,8 +109,8 @@ public class OsgiScanner {
     }
 
     public String normalizeClassName(String className) {
-        final String cn = className.substring(1, className.length() - ".class".length());
-        return cn.replace('/', '.').replace("$", ".");
+        final String cn = StringUtils.removeEnd(className, ".class");
+        return cn.replace('/', '.');
     }
 
     public boolean isImportableClassName(String className) {
