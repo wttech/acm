@@ -1,4 +1,5 @@
 import com.vml.es.aem.acm.core.osgi.OsgiScanner
+import com.vml.es.aem.acm.core.assist.JavaClassDictionary
 import java.util.function.Consumer
 import java.util.jar.JarFile
 import java.io.File
@@ -22,8 +23,9 @@ void doRun() {
         case "save":
             def buffer = new StringBuffer();
             eachSystemClass(osgiScanner) { className -> buffer.append("${className}\n")}
-            repo.makeFolders("/conf/acm/settings/assist/jre")
-            repo.saveFile("/conf/acm/settings/assist/jre/1.8.txt", buffer.toString(), "text/plain")
+            def dictFile = repo.get(JavaClassDictionary.path())
+            dictFile.parent().makeFolders()
+            dictFile.saveFile(buffer.toString(), "text/plain")
             break;
     }
 }

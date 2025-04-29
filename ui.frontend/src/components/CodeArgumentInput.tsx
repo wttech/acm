@@ -6,7 +6,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import useFormCrossFieldValidation from '../hooks/form.ts';
 import { Argument, ArgumentValue, isBoolArgument, isMultiSelectArgument, isNumberArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
 import { Strings } from '../utils/strings.ts';
-import styles from "./CodeArgumentInput.module.css"
+import styles from './CodeArgumentInput.module.css';
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -25,6 +25,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
       }
       if (arg.validator) {
         try {
+          // eslint-disable-next-line no-eval
           const validator = eval(arg.validator);
           const allValues = getValues();
           const errorMessage = validator(value, allValues);

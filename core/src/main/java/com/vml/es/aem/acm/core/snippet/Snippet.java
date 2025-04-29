@@ -2,7 +2,6 @@ package com.vml.es.aem.acm.core.snippet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vml.es.aem.acm.core.AcmException;
-import com.vml.es.aem.acm.core.util.JcrUtils;
 import java.io.InputStream;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +34,7 @@ public class Snippet implements Comparable<Snippet> {
     }
 
     private SnippetDefinition readDefinition() throws AcmException {
-        return Optional.ofNullable(resource.getChild(JcrUtils.JCR_CONTENT))
+        return Optional.ofNullable(resource.getChild(JcrConstants.JCR_CONTENT))
                 .map(r -> SnippetDefinition.fromYaml(r.getPath(), r.adaptTo(InputStream.class)))
                 .orElseThrow(() ->
                         new AcmException(String.format("Snippet definition '%s' cannot be read!", resource.getPath())));
