@@ -62,8 +62,7 @@ public class OsgiScanner {
     public Stream<String> findSystemExportedPackages() {
         return Arrays.stream(bundleContext.getBundles())
                 .filter(b -> b.getBundleId() == 0)
-                .flatMap(this::exportedPackages)
-                .sorted();
+                .flatMap(this::exportedPackages);
     }
 
     public boolean isFragment(Bundle bundle) {

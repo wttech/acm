@@ -33,16 +33,13 @@ void doRun() {
 OsgiScanner osgiScanner() { return osgi.getService(OsgiScanner.class) }
 
 def eachSystemClass(Consumer<String> callback) {
-    def exportedPackages = osgiScanner().findSystemExportedPackages().toList()
+    def exportedPackages = osgiScanner().findSystemExportedPackages().sorted().toList()
     ModuleLayer.boot().modules().forEach { module ->
-        module.getPackages()
-                .findAll { pkg -> exportedPackages.contains(pkg) }
-                .sort()
-                .forEach { pkg ->
-                    findSystemClasses(module, pkg).forEach { className ->
-                        callback(className)
-                    }
-                }
+        module.getPackages().findAll { pkg -> exportedPackages.contains(pkg) }.forEach { pkg ->
+            findSystemClasses(module, pkg).sorted().forEach { className ->
+                callback(className)
+            }
+        }
     }
 }
 
