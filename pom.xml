@@ -233,6 +233,7 @@ Bundle-Category: acm
 Bundle-DocURL:
 -plugin org.apache.sling.caconfig.bndplugin.ConfigurationClassScannerPlugin
 -plugin org.apache.sling.bnd.models.ModelsScannerPlugin
+Private-Package: com.fasterxml.jackson.datatype.jsr310
                                 ]]>
                                 </bnd>
                             </configuration>
@@ -253,6 +254,11 @@ Bundle-DocURL:
                             <groupId>org.apache.sling</groupId>
                             <artifactId>scriptingbundle-maven-plugin</artifactId>
                             <version>0.5.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.fasterxml.jackson.datatype</groupId>
+                            <artifactId>jackson-datatype-jsr310</artifactId>
+                            <version>2.17.2</version>
                         </dependency>
                     </dependencies>
                 </plugin>
