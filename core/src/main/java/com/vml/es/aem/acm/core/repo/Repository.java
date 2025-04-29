@@ -7,6 +7,7 @@ import java.util.Objects;
 import javax.jcr.Node;
 import javax.jcr.Session;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -121,20 +122,22 @@ public class Repository {
                             String.format("Cannot save file as parent path '%s' does not exist!", parentPath));
                 }
                 String name = StringUtils.substringAfterLast(path, "/");
-                mainResource = resourceResolver.create(parent, name, null);
+                Map<String, Object> mainValues = new HashMap<>();
+                mainValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_FILE);
+                mainResource = resourceResolver.create(parent, name, mainValues);
 
                 Map<String, Object> contentValues = new HashMap<>();
                 setFileContent(contentValues, data, mimeType);
-                resourceResolver.create(mainResource, "jcr:content", contentValues);
+                resourceResolver.create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
 
                 commit(String.format("creating file at path '%s'", path));
                 LOG.info("Created file at path '{}'", path);
             } else {
-                Resource contentResource = mainResource.getChild("jcr:data");
+                Resource contentResource = mainResource.getChild(JcrConstants.JCR_CONTENT);
                 if (contentResource == null) {
                     Map<String, Object> contentValues = new HashMap<>();
                     setFileContent(contentValues, data, mimeType);
-                    resourceResolver.create(mainResource, "jcr:content", contentValues);
+                    resourceResolver.create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
                 } else {
                     ModifiableValueMap contentValues =
                             Objects.requireNonNull(contentResource.adaptTo(ModifiableValueMap.class));
@@ -151,7 +154,9 @@ public class Repository {
     }
 
     private void setFileContent(Map<String, Object> contentValues, String data, String mimeType) {
-        contentValues.put("jcr:data", data);
-        contentValues.put("jcr:mimeType", mimeType);
+        contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
+        contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
+        contentValues.put(JcrConstants.JCR_DATA, data);
+        contentValues.put(JcrConstants.JCR_MIMETYPE, mimeType);
     }
 }

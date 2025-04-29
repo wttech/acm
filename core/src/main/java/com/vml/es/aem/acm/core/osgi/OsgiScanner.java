@@ -4,6 +4,8 @@ import com.vml.es.aem.acm.core.util.StreamUtils;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -93,9 +95,9 @@ public class OsgiScanner {
             }
 
             return StreamUtils.asStream(resources)
-                    .map(u -> normalizeClassName(u.getFile()))
+                    .map(u -> normalizeClassName(u.getFile()).orElse(null))
+                    .filter(Objects::nonNull)
                     .filter(className -> isDirectChildOfPackage(className, packageName))
-                    .filter(this::isImportableClassName)
                     .map(c -> new ClassInfo(c, bundle));
         } catch (Exception e) {
             LOG.error("Error scanning classes in bundle '{}'", bundle.getSymbolicName(), e);
@@ -108,12 +110,10 @@ public class OsgiScanner {
         return classPackage.equals(packageName);
     }
 
-    public String normalizeClassName(String className) {
-        final String cn = StringUtils.removeEnd(className, ".class");
-        return cn.replace('/', '.');
-    }
-
-    public boolean isImportableClassName(String className) {
-        return !className.matches(".*\\$\\d+.*") && !className.endsWith("package-info");
+    public Optional<String> normalizeClassName(String fileName) {
+        return Optional.ofNullable(fileName)
+                .map(f -> StringUtils.removeEnd(f, ".class").replace('/', '.'))
+                .filter(f -> !f.matches(".*\\$\\d+.*") && !f.endsWith("package-info"))
+                .map(f -> f.replace('$', '.'));
     }
 }

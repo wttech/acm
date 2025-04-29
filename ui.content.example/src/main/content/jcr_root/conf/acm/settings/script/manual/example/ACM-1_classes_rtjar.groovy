@@ -54,6 +54,6 @@ def findClassesInJar(OsgiScanner osgiScanner, File jarFile, String packageName) 
     def jar = new JarFile(jarFile)
     return jar.stream()
             .filter { entry -> entry.name.startsWith(path) && entry.name.endsWith(".class") }
-            .map { entry -> osgiScanner.normalizeClassName(entry.name) }
-            .filter { className -> osgiScanner.isImportableClassName(className) }
+            .map { entry -> osgiScanner.normalizeClassName(entry.name).orElse(null) }
+            .filter { Objects.nonNull(it)}
 }
