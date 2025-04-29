@@ -96,7 +96,8 @@ public class OsgiScanner {
             }
 
             return StreamUtils.asStream(resources)
-                    .map(u -> normalizeClassName(u.getFile()).orElse(null))
+                    .map(u -> normalizeClassName(StringUtils.removeStart(u.getFile(), "/"))
+                            .orElse(null))
                     .filter(Objects::nonNull)
                     .filter(className -> isDirectChildOfPackage(className, packageName))
                     .map(c -> new ClassInfo(c, bundle));
