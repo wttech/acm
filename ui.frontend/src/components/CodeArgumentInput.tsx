@@ -172,7 +172,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   <div>
                     <ListView
                       {...field}
-                      maxHeight="size-2000"
+                      maxHeight="size-1600"
                       selectionMode="multiple"
                       selectedKeys={field.value.map(String)}
                       onSelectionChange={(val) => field.onChange(Array.from(val as Set<string>))}
