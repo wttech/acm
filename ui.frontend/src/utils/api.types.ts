@@ -62,13 +62,13 @@ export type SliderArgument = Argument<number> & {
   min: number;
   max: number;
   step: number;
-  offset: number
+  offset: number;
 };
 
 type RangeValue = {
   start: number;
   end: number;
-}
+};
 
 export type RangeArgument = Argument<RangeValue> & {
   min: number;

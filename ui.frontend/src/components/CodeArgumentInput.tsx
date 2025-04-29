@@ -1,20 +1,4 @@
-import {
-  Checkbox,
-  CheckboxGroup, ColorEditor, ColorPicker,
-  DatePicker,
-  Flex,
-  Item,
-  ListView,
-  NumberField, parseColor,
-  Picker,
-  Radio,
-  RadioGroup, RangeSlider,
-  Slider,
-  Switch,
-  TextArea,
-  TextField,
-  View
-} from '@adobe/react-spectrum';
+import { Checkbox, CheckboxGroup, ColorEditor, ColorPicker, DatePicker, Flex, Item, ListView, NumberField, parseColor, Picker, Radio, RadioGroup, RangeSlider, Slider, Switch, TextArea, TextField, View } from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import React from 'react';
@@ -23,14 +7,16 @@ import useFormCrossFieldValidation from '../hooks/form.ts';
 import {
   Argument,
   ArgumentValue,
-  isBoolArgument, isColorArgument,
+  isBoolArgument,
+  isColorArgument,
   isDateTimeArgument,
   isMultiSelectArgument,
-  isNumberArgument, isRangeArgument,
+  isNumberArgument,
+  isRangeArgument,
   isSelectArgument,
   isSliderArgument,
   isStringArgument,
-  isTextArgument
+  isTextArgument,
 } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates.ts';
 import { Strings } from '../utils/strings.ts';
@@ -272,15 +258,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           rules={controllerRules(arg)}
           render={({ field, fieldState }) => (
             <View key={arg.name} marginBottom="size-200">
-              <Flex justifyContent={"start"} alignItems={"start"} direction={"column"}>
-                <Slider
-                  {...field}
-                  label={argLabel(arg)}
-                  minValue={arg.min !== null ? arg.min : 0}
-                  maxValue={arg.max !== null ? arg.max : 100}
-                  step={arg.step ? arg.step : 1}
-                  aria-label={`Argument '${arg.name}'`}
-                />
+              <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
+                <Slider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
                 {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
               </Flex>
             </View>
@@ -295,14 +274,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           rules={controllerRules(arg)}
           render={({ field, fieldState }) => (
             <View key={arg.name} marginBottom="size-200">
-              <Flex justifyContent={"start"} alignItems={"start"} direction={"column"}>
-                <ColorPicker
-                  {...field}
-                  label={argLabel(arg)}
-                  aria-label={`Argument '${arg.name}'`}
-                  value={field.value ? parseColor(field.value) : "#000"}
-                  onChange={value => field.onChange(value.toString("hex"))}
-                >
+              <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
+                <ColorPicker {...field} label={argLabel(arg)} aria-label={`Argument '${arg.name}'`} value={field.value ? parseColor(field.value) : '#000'} onChange={(value) => field.onChange(value.toString('hex'))}>
                   <ColorEditor />
                 </ColorPicker>
                 {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
@@ -319,15 +292,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           rules={controllerRules(arg)}
           render={({ field, fieldState }) => (
             <View key={arg.name} marginBottom="size-200">
-              <Flex justifyContent={"start"} alignItems={"start"} direction={"column"}>
-                <RangeSlider
-                  {...field}
-                  label={argLabel(arg)}
-                  minValue={arg.min !== null ? arg.min : 0}
-                  maxValue={arg.max !== null ? arg.max : 100}
-                  step={arg.step ? arg.step : 1}
-                  aria-label={`Argument '${arg.name}'`}
-                />
+              <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
+                <RangeSlider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
                 {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
               </Flex>
             </View>
