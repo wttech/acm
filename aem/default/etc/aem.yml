@@ -255,10 +255,10 @@ vendor:
     # Auto-installed JDK options
     download:
       # Source URL with template vars support
+      url: "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u432-b06/OpenJDK8U-jdk_[[.Arch]]_[[.Os]]_hotspot_8u432b06.[[.ArchiveExt]]"
       #url: "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.18%2B10/OpenJDK11U-jdk_[[.Arch]]_[[.Os]]_hotspot_11.0.18_10.[[.ArchiveExt]]"
-      url: "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8%2B7/OpenJDK17U-jdk_[[.Arch]]_[[.Os]]_hotspot_17.0.8_7.[[.ArchiveExt]]"
+      #url: "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8%2B7/OpenJDK17U-jdk_[[.Arch]]_[[.Os]]_hotspot_17.0.8_7.[[.ArchiveExt]]"
       #url: "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35/OpenJDK21U-jdk_[[.Arch]]_[[.Os]]_hotspot_21_35.[[.ArchiveExt]]"
-      #url: "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u432-b06/OpenJDK8U-jdk_[[.Arch]]_[[.Os]]_hotspot_8u432b06.[[.ArchiveExt]]"
       # Map source URL template vars to be compatible with Adoptium Java
       replacements:
         # Var 'Os' (GOOS)
