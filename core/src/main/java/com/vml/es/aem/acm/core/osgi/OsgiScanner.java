@@ -59,10 +59,12 @@ public class OsgiScanner {
         return bundle.getState() == Bundle.RESOLVED;
     }
 
-    public Stream<String> findSystemExportedPackages() {
-        return Arrays.stream(bundleContext.getBundles())
-                .filter(b -> b.getBundleId() == 0)
-                .flatMap(this::exportedPackages);
+    public Bundle getSystemBundle() {
+        return bundleContext.getBundle(0);
+    }
+
+    public Stream<String> getSystemExportedPackages() {
+        return findExportedPackages(getSystemBundle());
     }
 
     public boolean isFragment(Bundle bundle) {
@@ -73,7 +75,7 @@ public class OsgiScanner {
         return isBundleActive(bundle) || (isFragment(bundle) && isBundleResolved(bundle));
     }
 
-    private Stream<String> exportedPackages(Bundle bundle) {
+    private Stream<String> findExportedPackages(Bundle bundle) {
         BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
         if (bundleWiring == null) {
             return Stream.empty();
@@ -83,7 +85,7 @@ public class OsgiScanner {
     }
 
     private Stream<ClassInfo> scanExportedClasses(Bundle bundle) {
-        return exportedPackages(bundle).flatMap(pkg -> findClasses(bundle, pkg));
+        return findExportedPackages(bundle).flatMap(pkg -> findClasses(bundle, pkg));
     }
 
     public Stream<ClassInfo> findClasses(Bundle bundle, String packageName) {

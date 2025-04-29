@@ -30,7 +30,7 @@ public class JavaClassDictionary {
 
     public static JavaClassDictionary determine(ResourceResolver resolver) {
         return byJavaVersion(resolver, System.getProperty("java.specification.version"))
-                .orElseGet(() -> any(resolver)
+                .orElseGet(() -> highestJavaVersion(resolver)
                         .orElseThrow(() -> new IllegalStateException("Java class dictionary cannot be determined!")));
     }
 
@@ -43,12 +43,12 @@ public class JavaClassDictionary {
                 .map(JavaClassDictionary::new);
     }
 
-    public static Optional<JavaClassDictionary> any(ResourceResolver resolver) {
+    public static Optional<JavaClassDictionary> highestJavaVersion(ResourceResolver resolver) {
         return Optional.ofNullable(resolver.getResource(ROOT))
                 .map(r -> StreamUtils.asStream(r.listChildren()))
                 .orElse(Stream.empty())
                 .filter(r -> r.isResourceType(JcrConstants.NT_FILE))
-                .sorted(Comparator.comparing(Resource::getName))
+                .sorted(Comparator.comparing(Resource::getName).reversed())
                 .map(JavaClassDictionary::new)
                 .findFirst();
     }

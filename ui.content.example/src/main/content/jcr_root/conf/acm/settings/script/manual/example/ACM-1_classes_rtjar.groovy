@@ -32,7 +32,7 @@ void doRun() {
 OsgiScanner osgiScanner() { return osgi.getService(OsgiScanner.class) }
 
 def eachSystemClass(Consumer<String> callback) {
-    osgiScanner().findSystemExportedPackages().sorted().forEach { pkg ->
+    osgiScanner().getSystemExportedPackages().sorted().forEach { pkg ->
         findSystemClasses(pkg).sorted().forEach { className ->
             callback(className)
         }

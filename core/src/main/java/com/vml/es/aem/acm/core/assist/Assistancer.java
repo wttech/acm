@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.osgi.framework.Bundle;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -60,9 +61,11 @@ public class Assistancer {
     @Reference
     private CodeRepository codeRepository;
 
-    private List<ClassInfo> classCache = Collections.emptyList();
+    private List<ClassInfo> javaClassCache;
 
-    private Integer classCacheHashCode;
+    private List<ClassInfo> bundleClassCache = Collections.emptyList();
+
+    private Integer bundleClassCacheHashCode;
 
     private List<Variable> variablesCache = Collections.emptyList();
 
@@ -76,7 +79,8 @@ public class Assistancer {
 
     public Assistance forWord(ResourceResolver resolver, SuggestionType suggestionType, String word)
             throws AcmException {
-        maybeUpdateClassCache();
+        maybeLoadJavaClassCache(resolver);
+        maybeUpdateBundleClassCache();
         maybeUpdateVariablesCache(resolver);
 
         List<Suggestion> suggestions = new LinkedList<>();
@@ -85,7 +89,8 @@ public class Assistancer {
                 suggestions.addAll(variableSuggestions(word).collect(Collectors.toList()));
                 break;
             case CLASS:
-                suggestions.addAll(classSuggestions(word).collect(Collectors.toList()));
+                suggestions.addAll(javaClassSuggestions(word).collect(Collectors.toList()));
+                suggestions.addAll(bundleClassSuggestions(word).collect(Collectors.toList()));
                 break;
             case RESOURCE:
                 suggestions.addAll(resourceSuggestions(resolver, word).collect(Collectors.toList()));
@@ -95,12 +100,25 @@ public class Assistancer {
                 break;
             default:
                 suggestions.addAll(variableSuggestions(word).collect(Collectors.toList()));
-                suggestions.addAll(classSuggestions(word).collect(Collectors.toList()));
+                suggestions.addAll(javaClassSuggestions(word).collect(Collectors.toList()));
+                suggestions.addAll(bundleClassSuggestions(word).collect(Collectors.toList()));
                 suggestions.addAll(resourceSuggestions(resolver, word).collect(Collectors.toList()));
                 suggestions.addAll(snippetSuggestions(resolver, word).collect(Collectors.toList()));
                 break;
         }
         return new Assistance(suggestions);
+    }
+
+    private void maybeLoadJavaClassCache(ResourceResolver resolver) {
+        if (javaClassCache == null) {
+            LOG.info("Java class cache - loading");
+            Bundle bundle = osgiScanner.getSystemBundle();
+            this.javaClassCache = JavaClassDictionary.determine(resolver)
+                    .getClasses()
+                    .map(className -> new ClassInfo(className, bundle))
+                    .collect(Collectors.toList());
+            LOG.info("Java class cache - loaded");
+        }
     }
 
     private Stream<VariableSuggestion> variableSuggestions(String word) {
@@ -116,8 +134,14 @@ public class Assistancer {
                 .map(SnippetSuggestion::new);
     }
 
-    private Stream<ClassSuggestion> classSuggestions(String word) {
-        return classCache.stream()
+    private Stream<ClassSuggestion> javaClassSuggestions(String word) {
+        return javaClassCache.stream()
+                .filter(cf -> SearchUtils.containsWord(cf.getClassName(), word))
+                .map(cf -> new ClassSuggestion(cf, codeRepository));
+    }
+
+    private Stream<ClassSuggestion> bundleClassSuggestions(String word) {
+        return bundleClassCache.stream()
                 .filter(cf -> SearchUtils.containsWord(cf.getClassName(), word))
                 .map(cf -> new ClassSuggestion(cf, codeRepository));
     }
@@ -126,13 +150,14 @@ public class Assistancer {
         return resourceScanner.forPattern(resolver, word).map(ResourceSuggestion::new);
     }
 
-    private synchronized void maybeUpdateClassCache() {
+    private synchronized void maybeUpdateBundleClassCache() {
         int cacheHashCodeCurrent = osgiScanner.computeBundlesHashCode();
-        if (classCacheHashCode == null || !classCacheHashCode.equals(cacheHashCodeCurrent)) {
-            LOG.info("Class cache - updating");
-            classCache = osgiScanner.scanExportedClasses().distinct().sorted().collect(Collectors.toList());
-            classCacheHashCode = cacheHashCodeCurrent;
-            LOG.info("Class cache - updated");
+        if (bundleClassCacheHashCode == null || !bundleClassCacheHashCode.equals(cacheHashCodeCurrent)) {
+            LOG.info("Bundle class cache - updating");
+            bundleClassCache =
+                    osgiScanner.scanExportedClasses().distinct().sorted().collect(Collectors.toList());
+            bundleClassCacheHashCode = cacheHashCodeCurrent;
+            LOG.info("Bundle class cache - updated");
         }
     }
 
