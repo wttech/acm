@@ -1,4 +1,5 @@
 import com.vml.es.aem.acm.core.assist.JavaClassDictionary
+import com.vml.es.aem.acm.core.osgi.OsgiScanner
 
 import java.lang.module.ModuleFinder
 import java.lang.module.ModuleReference
@@ -29,32 +30,42 @@ void doRun() {
     }
 }
 
+OsgiScanner osgiScanner() { return osgi.getService(OsgiScanner.class) }
+
 def eachSystemClass(Consumer<String> callback) {
+    def exportedPackages = osgiScanner().findSystemExportedPackages().toList()
     ModuleLayer.boot().modules().forEach { module ->
-        module.getPackages().forEach { pkg ->
-            findSystemClasses(module, pkg).forEach { className ->
-                callback(className)
-            }
-        }
+        module.getPackages()
+                .findAll { pkg -> exportedPackages.contains(pkg) }
+                .sort()
+                .forEach { pkg ->
+                    findSystemClasses(module, pkg).forEach { className ->
+                        callback(className)
+                    }
+                }
     }
 }
 
 def findSystemClasses(Module module, String packageName) {
-    def classLoader = module.getClassLoader()
-    def path = packageName.replace('.', '/')
-    def resources = classLoader?.getResources(path) ?: []
     def classNames = [] as List<String>
+    def packagePathPrefix = packageName.replace('.', '/')
 
-    resources.each { url ->
-        def file = new File(url.toURI())
-        if (file.isDirectory()) {
-            file.eachFileRecurse { f ->
-                if (f.name.endsWith(".class")) {
-                    def className = "${packageName}.${f.name.replace('.class', '')}"
-                    classNames.add(className)
+    module.getLayer().configuration().modules().stream()
+            .filter { it.name() == module.name }
+            .findFirst()
+            .ifPresent { resolvedModule ->
+                resolvedModule.reference().open().withCloseable { moduleReader ->
+                    moduleReader.list()
+                            .filter { resource -> resource.startsWith(packagePathPrefix) && resource.endsWith(".class") }
+                            .forEach { resource ->
+                                def className = resource.replace('/', '.').replace('.class', '')
+                                def normalizedClassName = osgiScanner().normalizeClassName(className).orElse(null)
+                                if (normalizedClassName) {
+                                    classNames.add(normalizedClassName)
+                                }
+                            }
                 }
             }
-        }
-    }
+
     return classNames.stream()
 }

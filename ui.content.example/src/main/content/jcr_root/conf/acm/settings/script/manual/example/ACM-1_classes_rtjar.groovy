@@ -15,14 +15,13 @@ boolean canRun() {
 void doRun() {
     out.fromLogs()
 
-    def osgiScanner = osgi.getService(OsgiScanner.class)
     switch (args.value("mode")) {
         case "print":
-            eachSystemClass(osgiScanner) { className -> println "${className}"}
+            eachSystemClass { className -> println "${className}"}
             break;
         case "save":
             def buffer = new StringBuffer();
-            eachSystemClass(osgiScanner) { className -> buffer.append("${className}\n")}
+            eachSystemClass { className -> buffer.append("${className}\n")}
             def dictFile = repo.get(JavaClassDictionary.path())
             dictFile.parent().makeFolders()
             dictFile.saveFile(buffer.toString(), "text/plain")
@@ -30,15 +29,17 @@ void doRun() {
     }
 }
 
-def eachSystemClass(OsgiScanner osgiScanner, Consumer<String> callback) {
-    osgiScanner.findSystemExportedPackages().forEach { pkg ->
-        findSystemClasses(osgiScanner, pkg).forEach { className ->
+OsgiScanner osgiScanner() { return osgi.getService(OsgiScanner.class) }
+
+def eachSystemClass(Consumer<String> callback) {
+    osgiScanner().findSystemExportedPackages().forEach { pkg ->
+        findSystemClasses(pkg).forEach { className ->
             callback(className)
         }
     }
 }
 
-def findSystemClasses(OsgiScanner osgiScanner, String packageName) {
+def findSystemClasses(String packageName) {
     def javaHome = System.getProperty("java.home")
     def javaLibPath = new File(javaHome, "lib").canonicalPath
 
@@ -48,14 +49,14 @@ def findSystemClasses(OsgiScanner osgiScanner, String packageName) {
 
     return classPathEntries.stream()
             .filter { entry -> entry.endsWith(".jar") }
-            .flatMap { entry -> findClassesInJar(osgiScanner, new File(entry), packageName) }
+            .flatMap { entry -> findClassesInJar(new File(entry), packageName) }
 }
 
-def findClassesInJar(OsgiScanner osgiScanner, File jarFile, String packageName) {
+def findClassesInJar(File jarFile, String packageName) {
     def path = packageName.replace('.', '/')
     def jar = new JarFile(jarFile)
     return jar.stream()
             .filter { entry -> entry.name.startsWith(path) && entry.name.endsWith(".class") }
-            .map { entry -> osgiScanner.normalizeClassName(entry.name).orElse(null) }
+            .map { entry -> osgiScanner().normalizeClassName(entry.name).orElse(null) }
             .filter { Objects.nonNull(it)}
 }
