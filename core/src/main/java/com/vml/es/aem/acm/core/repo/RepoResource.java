@@ -6,8 +6,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.api.resource.Resource;
 
 public class RepoResource {
@@ -27,6 +25,10 @@ public class RepoResource {
 
     public String getPath() {
         return path;
+    }
+
+    public RepoState state() {
+        return repo.state(path);
     }
 
     public void save(Map<String, Object> props) {
@@ -183,8 +185,6 @@ public class RepoResource {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("path", path)
-                .toString();
+        return state().toString();
     }
 }

@@ -5,10 +5,7 @@ import com.vml.es.aem.acm.core.util.StreamUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 import javax.jcr.Node;
 import javax.jcr.Session;
@@ -17,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
+import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -314,5 +312,13 @@ public class Repo {
             result = result.skip(1);
         }
         return result;
+    }
+
+    public RepoState state(String path) {
+        Resource resource = resourceResolver.getResource(path);
+        if (resource == null) {
+            return new RepoState(path, false, new ValueMapDecorator(Collections.emptyMap()));
+        }
+        return new RepoState(path, true, resource.getValueMap());
     }
 }
