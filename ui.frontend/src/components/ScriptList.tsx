@@ -134,6 +134,13 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                 <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
               </ContextualHelp>
             </Column>
+            <Column>
+              Average execution time
+              <ContextualHelp variant="help">
+                <Heading>Explanation</Heading>
+                <Content>Calculated average length in milliseconds based on the last 30 completed executions (only succeeded or failed).</Content>
+              </ContextualHelp>
+            </Column>
           </TableHeader>
           <TableBody>
             {(scripts.list || []).map((script) => {
@@ -162,6 +169,9 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                   </Cell>
                   <Cell>
                     <ExecutionStatsBadge stats={scriptStats} />
+                  </Cell>
+                  <Cell>
+                    <Text>{lastExecution ? `${scriptStats.averageExecutionTime} ms` : "-"}</Text>
                   </Cell>
                 </Row>
               );

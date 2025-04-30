@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.apache.sling.api.resource.ResourceResolver;
 
 public class ScriptStats implements Serializable {
@@ -25,7 +23,8 @@ public class ScriptStats implements Serializable {
 
     private final Long averageExecutionTime;
 
-    public ScriptStats(String path, Map<ExecutionStatus, Long> statusCount, Execution lastExecution, Long averageExecutionTime) {
+    public ScriptStats(
+            String path, Map<ExecutionStatus, Long> statusCount, Execution lastExecution, Long averageExecutionTime) {
         this.path = path;
         this.statusCount = statusCount;
         this.lastExecution = lastExecution;
