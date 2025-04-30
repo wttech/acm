@@ -5,7 +5,7 @@ import com.vml.es.aem.acm.core.acl.authorizable.AclGroup;
 import com.vml.es.aem.acm.core.acl.authorizable.AclUser;
 import com.vml.es.aem.acm.core.acl.utils.AuthorizableManager;
 import com.vml.es.aem.acm.core.acl.utils.PermissionsManager;
-import com.vml.es.aem.acm.core.repo.Repository;
+import com.vml.es.aem.acm.core.repo.Repo;
 import java.util.Optional;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -42,7 +42,7 @@ public class AclContext {
             this.resourceResolver = resourceResolver;
             this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
-            this.compositeNodeStore = new Repository(resourceResolver).isCompositeNodeStore();
+            this.compositeNodeStore = new Repo(resourceResolver).isCompositeNodeStore();
         } catch (RepositoryException e) {
             throw new AclException("Cannot access repository while obtaining ACL context!", e);
         }
