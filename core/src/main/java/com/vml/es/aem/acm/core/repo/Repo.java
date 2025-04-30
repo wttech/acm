@@ -87,14 +87,6 @@ public class Repo {
                 .map(r -> new RepoResource(this, r.getPath()));
     }
 
-    public Resource requireResource(String path) {
-        Resource resource = resourceResolver.getResource(path);
-        if (resource == null) {
-            throw new RepoException(String.format("Resource at path '%s' does not exist!", path));
-        }
-        return resource;
-    }
-
     public boolean isCompositeNodeStore() {
         try {
             Node node = session.getNode("/apps");

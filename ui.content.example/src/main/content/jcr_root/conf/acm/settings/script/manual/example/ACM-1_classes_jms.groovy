@@ -1,5 +1,4 @@
 import com.vml.es.aem.acm.core.assist.JavaClassDictionary
-import com.vml.es.aem.acm.core.osgi.OsgiScanner
 
 import java.lang.module.ModuleFinder
 import java.lang.module.ModuleReference
@@ -30,10 +29,8 @@ void doRun() {
     }
 }
 
-OsgiScanner osgiScanner() { return osgi.getService(OsgiScanner.class) }
-
 def eachSystemClass(Consumer<String> callback) {
-    def exportedPackages = osgiScanner().getSystemExportedPackages().sorted().toList()
+    def exportedPackages = osgi.osgiScanner.getSystemExportedPackages().sorted().toList()
     ModuleLayer.boot().modules().forEach { module ->
         module.getPackages().findAll { pkg -> exportedPackages.contains(pkg) }.forEach { pkg ->
             findSystemClasses(module, pkg).sorted().forEach { className ->
@@ -56,7 +53,7 @@ def findSystemClasses(Module module, String packageName) {
                             .filter { resource -> resource.startsWith(packagePathPrefix) && resource.endsWith(".class") }
                             .forEach { resource ->
                                 def className = resource.replace('/', '.').replace('.class', '')
-                                def normalizedClassName = osgiScanner().normalizeClassName(className).orElse(null)
+                                def normalizedClassName = osgi.osgiScanner.normalizeClassName(className).orElse(null)
                                 if (normalizedClassName) {
                                     classNames.add(normalizedClassName)
                                 }

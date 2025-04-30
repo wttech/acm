@@ -41,8 +41,20 @@ public class RepoResource {
         return path;
     }
 
+    public Optional<Resource> get() {
+        return Optional.ofNullable(repo.getResourceResolver().getResource(path));
+    }
+
+    public Resource resolve() {
+        return get().orElse(null);
+    }
+
+    public Resource require() {
+        return get().orElseThrow(() -> new RepoException(String.format("Resource at path '%s' does not exist!", path)));
+    }
+
     public boolean exists() {
-        return repo.getResourceResolver().getResource(path) != null;
+        return get().isPresent();
     }
 
     public boolean existsStrict(String path) {
@@ -62,7 +74,7 @@ public class RepoResource {
     }
 
     public RepoResource ensure(String resourceType) {
-        Resource resource = repo.getResourceResolver().getResource(path);
+        Resource resource = resolve();
         if (resource == null) {
             try {
                 ResourceUtil.getOrCreateResource(repo.getResourceResolver(), path, resourceType, resourceType, false);
@@ -79,7 +91,7 @@ public class RepoResource {
     }
 
     public Resource save(Map<String, Object> values) {
-        Resource result = repo.getResourceResolver().getResource(path);
+        Resource result = resolve();
         if (result == null) {
             String parentPath = StringUtils.substringBeforeLast(path, "/");
             Resource parent = repo.getResourceResolver().getResource(parentPath);
@@ -106,7 +118,7 @@ public class RepoResource {
     }
 
     public ValueMap properties() {
-        return repo.requireResource(path).getValueMap();
+        return require().getValueMap();
     }
 
     public <V> V property(String key, Class<V> clazz) {
@@ -122,7 +134,7 @@ public class RepoResource {
     }
 
     public void saveProperty(String key, Object value) {
-        Resource resource = repo.getResourceResolver().getResource(path);
+        Resource resource = resolve();
         if (resource == null) {
             throw new RepoException(
                     String.format("Cannot save property '%s' as resource at path '%s' does not exist!", key, path));
@@ -154,7 +166,7 @@ public class RepoResource {
     }
 
     public boolean delete() {
-        Resource resource = repo.getResourceResolver().getResource(path);
+        Resource resource = resolve();
         if (resource == null) {
             LOG.info("Skipped deletion as resource does not exist at path '{}'", path);
             return false;
@@ -165,6 +177,7 @@ public class RepoResource {
             throw new RepoException(String.format("Cannot delete resource at path '%s'!", path), e);
         }
         LOG.info("Deleted resource at path '{}'", path);
+        repo.commit(String.format("deleting resource at path '%s'", path));
         return true;
     }
 
@@ -189,7 +202,7 @@ public class RepoResource {
 
     public RepoResource child(String name) {
         if (StringUtils.isBlank(name)) {
-            throw new RepoException("Repo child resource name cannot be blank!");
+            throw new IllegalArgumentException("Repo child resource name cannot be blank!");
         }
         String childPath = String.format("%s/%s", path, name);
         return new RepoResource(repo, childPath);
@@ -208,13 +221,16 @@ public class RepoResource {
     }
 
     public Stream<RepoResource> children() {
-        return StreamUtils.asStream(repo.requireResource(path).listChildren())
-                .map(r -> new RepoResource(repo, r.getPath()));
+        return StreamUtils.asStream(require().listChildren()).map(r -> new RepoResource(repo, r.getPath()));
+    }
+
+    public boolean hasChildren() {
+        return require().hasChildren();
     }
 
     public Stream<RepoResource> traverse(boolean includeSelf) {
         Stream<RepoResource> result =
-                ResourceSpliterator.stream(repo.requireResource(path)).map(r -> new RepoResource(repo, r.getPath()));
+                ResourceSpliterator.stream(require()).map(r -> new RepoResource(repo, r.getPath()));
         if (!includeSelf) {
             result = result.skip(1);
         }
@@ -266,7 +282,7 @@ public class RepoResource {
     }
 
     public RepoResourceState state() {
-        Resource resource = repo.getResourceResolver().getResource(path);
+        Resource resource = resolve();
         if (resource == null) {
             return new RepoResourceState(path, false, Collections.emptyMap());
         }
@@ -274,7 +290,7 @@ public class RepoResource {
     }
 
     public Resource saveFile(Object data, String mimeType) {
-        Resource mainResource = repo.getResourceResolver().getResource(path);
+        Resource mainResource = resolve();
         try {
             if (mainResource == null) {
                 String parentPath = StringUtils.substringBeforeLast(path, "/");
@@ -323,7 +339,7 @@ public class RepoResource {
     }
 
     public InputStream readFileAsStream() {
-        Resource resource = repo.requireResource(path);
+        Resource resource = require();
         Resource contentResource = resource.getChild(JcrConstants.JCR_CONTENT);
         if (contentResource == null) {
             throw new RepoException(String.format("Cannot read file at path '%s' as it does not have content!", path));
@@ -349,7 +365,7 @@ public class RepoResource {
     }
 
     public boolean isType(String resourceType) {
-        return repo.requireResource(path).isResourceType(resourceType);
+        return require().isResourceType(resourceType);
     }
 
     @Override

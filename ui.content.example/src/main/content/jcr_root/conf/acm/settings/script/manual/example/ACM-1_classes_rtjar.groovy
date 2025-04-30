@@ -1,4 +1,3 @@
-import com.vml.es.aem.acm.core.osgi.OsgiScanner
 import com.vml.es.aem.acm.core.assist.JavaClassDictionary
 import java.util.function.Consumer
 import java.util.jar.JarFile
@@ -29,10 +28,8 @@ void doRun() {
     }
 }
 
-OsgiScanner osgiScanner() { return osgi.getService(OsgiScanner.class) }
-
 def eachSystemClass(Consumer<String> callback) {
-    osgiScanner().getSystemExportedPackages().sorted().forEach { pkg ->
+    osgi.osgiScanner.getSystemExportedPackages().sorted().forEach { pkg ->
         findSystemClasses(pkg).sorted().forEach { className ->
             callback(className)
         }
@@ -57,6 +54,6 @@ def findClassesInJar(File jarFile, String packageName) {
     def jar = new JarFile(jarFile)
     return jar.stream()
             .filter { entry -> entry.name.startsWith(path) && entry.name.endsWith(".class") }
-            .map { entry -> osgiScanner().normalizeClassName(entry.name).orElse(null) }
+            .map { entry -> osgi.osgiScanner.normalizeClassName(entry.name).orElse(null) }
             .filter { Objects.nonNull(it)}
 }
