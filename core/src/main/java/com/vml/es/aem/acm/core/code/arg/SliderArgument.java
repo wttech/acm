@@ -17,7 +17,7 @@ public class SliderArgument extends Argument<Number> {
     }
 
     public void setMin(Number min) {
-        this.min = min.doubleValue();
+        this.min = min;
     }
 
     public Number getMax() {
@@ -25,7 +25,7 @@ public class SliderArgument extends Argument<Number> {
     }
 
     public void setMax(Number max) {
-        this.max = max.doubleValue();
+        this.max = max;
     }
 
     public Number getStep() {
@@ -33,6 +33,6 @@ public class SliderArgument extends Argument<Number> {
     }
 
     public void setStep(Number step) {
-        this.step = step.doubleValue();
+        this.step = step;
     }
 }
