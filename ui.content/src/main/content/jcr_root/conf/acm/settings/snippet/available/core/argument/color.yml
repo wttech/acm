@@ -3,7 +3,8 @@ name: argument_color
 content: |
   args.color("${1:name}") { label = "${2:label}"; value = ${3:value} }
 documentation: |
-    An argument that displays a color picker.<br>
+    An argument that allows to choose a value from color picker.<br>
+    It returns a string with the color hex code.<br>
     <br>
     **Example**:<br>
     ```groovy
