@@ -1,14 +1,25 @@
 package com.vml.es.aem.acm.core.repo;
 
+import com.vml.es.aem.acm.core.util.ResourceSpliterator;
+import com.vml.es.aem.acm.core.util.StreamUtils;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Stream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.sling.api.resource.Resource;
+import org.apache.jackrabbit.JcrConstants;
+import org.apache.sling.api.resource.*;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RepoResource {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RepoResource.class);
 
     private final Repo repo;
 
@@ -27,56 +38,131 @@ public class RepoResource {
         return path;
     }
 
-    public RepoState state() {
-        return repo.state(path);
-    }
-
-    public void save(Map<String, Object> props) {
-        repo.save(path, props);
-    }
-
-    public void saveProp(String key, Object value) {
-        repo.saveProp(path, key, value);
-    }
-
-    public void saveFile(Object data, String mimeType) {
-        repo.saveFile(path, data, mimeType);
-    }
-
-    public boolean isFile() {
-        return repo.isFile(path);
-    }
-
-    public boolean isType(String resourceType) {
-        return repo.isType(path, resourceType);
-    }
-
-    public String readAsString() {
-        return repo.readFileAsString(path);
-    }
-
-    public InputStream readAsStream() {
-        return repo.readFileAsStream(path);
-    }
-
-    public void delete() {
-        repo.delete(path);
-    }
-
     public boolean exists() {
-        return repo.exists(path);
+        return repo.getResourceResolver().getResource(path) != null;
     }
 
-    public void ensure(String resourceType) {
-        repo.ensure(path, resourceType);
+    public boolean existsStrict(String path) {
+        try {
+            return repo.getSession().nodeExists(path);
+        } catch (Exception e) {
+            throw new RepoException(String.format("Resource at path '%s' cannot be checked for existence!", path), e);
+        }
     }
 
-    public void ensureFolder() {
-        repo.ensureFolder(path);
+    public RepoResource ensureFolder() {
+        return ensure(JcrResourceConstants.NT_SLING_FOLDER);
     }
 
-    public void ensureOrderedFolder() {
-        repo.ensureOrderedFolder(path);
+    public RepoResource ensureOrderedFolder() {
+        return ensure(JcrResourceConstants.NT_SLING_ORDERED_FOLDER);
+    }
+
+    public RepoResource ensure(String resourceType) {
+        Resource resource = repo.getResourceResolver().getResource(path);
+        if (resource == null) {
+            try {
+                ResourceUtil.getOrCreateResource(repo.getResourceResolver(), path, resourceType, resourceType, false);
+            } catch (PersistenceException e) {
+                throw new RepoException(
+                        String.format("Cannot ensure resource '%s' at path '%s'!", resourceType, path), e);
+            }
+            repo.commit(String.format("ensuring resource '%s' at path %s", resourceType, path));
+            LOG.info("Ensured resource '{}' at path '{}'", resourceType, path);
+        } else {
+            LOG.info("Skipped ensuring resource '{}' at path '{}'", resourceType, path);
+        }
+        return this;
+    }
+
+    public Resource save(Map<String, Object> values) {
+        Resource result = repo.getResourceResolver().getResource(path);
+        if (result == null) {
+            String parentPath = StringUtils.substringBeforeLast(path, "/");
+            Resource parent = repo.getResourceResolver().getResource(parentPath);
+            if (parent == null) {
+                throw new RepoException(
+                        String.format("Cannot save resource as parent path '%s' does not exist!", parentPath));
+            }
+            try {
+                String name = StringUtils.substringAfterLast(path, "/");
+                result = repo.getResourceResolver().create(parent, name, values);
+                repo.commit(String.format("creating resource at path '%s'", path));
+                LOG.info("Created resource at path '{}'", path);
+                return result;
+            } catch (PersistenceException e) {
+                throw new RepoException(String.format("Cannot save resource at path '%s'!", path), e);
+            }
+        } else {
+            ModifiableValueMap valueMap = Objects.requireNonNull(result.adaptTo(ModifiableValueMap.class));
+            valueMap.putAll(values);
+            repo.commit(String.format("updating resource at path '%s'", path));
+            LOG.info("Updated resource at path '{}'", path);
+        }
+        return result;
+    }
+
+    public ValueMap properties() {
+        return repo.requireResource(path).getValueMap();
+    }
+
+    public <V> V property(String key, Class<V> clazz) {
+        return properties().get(key, clazz);
+    }
+
+    public <V> V property(String key, V defaultValue) {
+        return properties().get(key, defaultValue);
+    }
+
+    public Object property(String key) {
+        return properties().get(key);
+    }
+
+    public void saveProperty(String key, Object value) {
+        Resource resource = repo.getResourceResolver().getResource(path);
+        if (resource == null) {
+            throw new RepoException(
+                    String.format("Cannot save property '%s' as resource at path '%s' does not exist!", key, path));
+        }
+        ModifiableValueMap props = Objects.requireNonNull(resource.adaptTo(ModifiableValueMap.class));
+        Object valueExisting = props.get(key);
+        if (Objects.equals(value, valueExisting)) {
+            LOG.info(
+                    "Skipped saving property '{}' for resource at path '{}' as it already exists with the same value '{}'!",
+                    key,
+                    path,
+                    value);
+            return;
+        }
+        props.put(key, value);
+
+        if (valueExisting == null) {
+            LOG.info("Created property '{}' with value '{}' for resource at path '{}'", key, value, path);
+            repo.commit(String.format("creating property '%s' at path '%s'", key, path));
+        } else {
+            LOG.info(
+                    "Updated property '{}' from value '{}' to '{}' for resource at path '{}'",
+                    key,
+                    valueExisting,
+                    value,
+                    path);
+            repo.commit(String.format("updating property '%s' at path '%s'", key, path));
+        }
+    }
+
+    public boolean delete() {
+        Resource resource = repo.getResourceResolver().getResource(path);
+        if (resource == null) {
+            LOG.info("Skipped deletion as resource does not exist at path '{}'", path);
+            return false;
+        }
+        try {
+            repo.getResourceResolver().delete(resource);
+        } catch (PersistenceException e) {
+            throw new RepoException(String.format("Cannot delete resource at path '%s'!", path), e);
+        }
+        LOG.info("Deleted resource at path '{}'", path);
+        return true;
     }
 
     public RepoResource parent() {
@@ -106,10 +192,6 @@ public class RepoResource {
         return new RepoResource(repo, childPath);
     }
 
-    public Stream<RepoResource> children() {
-        return repo.children(path);
-    }
-
     public Stream<RepoResource> siblings() {
         return siblings(true);
     }
@@ -122,8 +204,18 @@ public class RepoResource {
         return traverse(true);
     }
 
+    public Stream<RepoResource> children() {
+        return StreamUtils.asStream(repo.requireResource(path).listChildren())
+                .map(r -> new RepoResource(repo, r.getPath()));
+    }
+
     public Stream<RepoResource> traverse(boolean includeSelf) {
-        return repo.traverse(path, includeSelf);
+        Stream<RepoResource> result =
+                ResourceSpliterator.stream(repo.requireResource(path)).map(r -> new RepoResource(repo, r.getPath()));
+        if (!includeSelf) {
+            result = result.skip(1);
+        }
+        return result;
     }
 
     public Stream<RepoResource> query() {
@@ -168,6 +260,89 @@ public class RepoResource {
             current = current.hasParent() ? current.parent() : null;
         }
         return breadcrumbs.stream();
+    }
+
+    public RepoResourceState state() {
+        return new RepoResourceState(this);
+    }
+
+    public Resource saveFile(Object data, String mimeType) {
+        Resource mainResource = repo.getResourceResolver().getResource(path);
+        try {
+            if (mainResource == null) {
+                String parentPath = StringUtils.substringBeforeLast(path, "/");
+                Resource parent = repo.getResourceResolver().getResource(parentPath);
+                if (parent == null) {
+                    throw new RepoException(
+                            String.format("Cannot save file as parent path '%s' does not exist!", parentPath));
+                }
+                String name = StringUtils.substringAfterLast(path, "/");
+                Map<String, Object> mainValues = new HashMap<>();
+                mainValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_FILE);
+                mainResource = repo.getResourceResolver().create(parent, name, mainValues);
+
+                Map<String, Object> contentValues = new HashMap<>();
+                setFileContent(contentValues, data, mimeType);
+                repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
+
+                repo.commit(String.format("creating file at path '%s'", path));
+                LOG.info("Created file at path '{}'", path);
+            } else {
+                Resource contentResource = mainResource.getChild(JcrConstants.JCR_CONTENT);
+                if (contentResource == null) {
+                    Map<String, Object> contentValues = new HashMap<>();
+                    setFileContent(contentValues, data, mimeType);
+                    repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
+                } else {
+                    ModifiableValueMap contentValues =
+                            Objects.requireNonNull(contentResource.adaptTo(ModifiableValueMap.class));
+                    setFileContent(contentValues, data, mimeType);
+                }
+
+                repo.commit(String.format("updating file at path '%s'", path));
+                LOG.info("Updated file at path '{}'", path);
+            }
+        } catch (PersistenceException e) {
+            throw new RepoException(String.format("Cannot save file at path '%s'!", path), e);
+        }
+        return mainResource;
+    }
+
+    private void setFileContent(Map<String, Object> contentValues, Object data, String mimeType) {
+        contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
+        contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
+        contentValues.put(JcrConstants.JCR_DATA, data);
+        contentValues.put(JcrConstants.JCR_MIMETYPE, mimeType);
+    }
+
+    public InputStream readFileAsStream() {
+        Resource resource = repo.requireResource(path);
+        Resource contentResource = resource.getChild(JcrConstants.JCR_CONTENT);
+        if (contentResource == null) {
+            throw new RepoException(String.format("Cannot read file at path '%s' as it does not have content!", path));
+        }
+        InputStream inputStream = contentResource.adaptTo(InputStream.class);
+        if (inputStream == null) {
+            throw new RepoException(
+                    String.format("Cannot read file at path '%s' as it does not have content stream!", path));
+        }
+        return inputStream;
+    }
+
+    public String readFileAsString() {
+        try {
+            return IOUtils.toString(readFileAsStream(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RepoException(String.format("Cannot read file as path '%s' as string!", path), e);
+        }
+    }
+
+    public boolean isFile() {
+        return isType(JcrConstants.NT_FILE);
+    }
+
+    public boolean isType(String resourceType) {
+        return repo.requireResource(path).isResourceType(resourceType);
     }
 
     @Override

@@ -111,7 +111,7 @@ public class HealthChecker implements EventHandler {
         }
         if (ArrayUtils.isNotEmpty(config.repositoryPathsExisted())) {
             Arrays.stream(config.repositoryPathsExisted()).forEach(path -> {
-                if (!repo.exists(path)) {
+                if (!repo.get(path).exists()) {
                     result.issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL, String.format("Repository path '%s' does not exist", path)));
                 }

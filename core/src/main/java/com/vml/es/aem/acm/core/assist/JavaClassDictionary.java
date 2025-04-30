@@ -62,7 +62,7 @@ public class JavaClassDictionary {
     }
 
     public Stream<String> getClasses() {
-        try (InputStream input = RepoResource.of(resource).readAsStream()) {
+        try (InputStream input = RepoResource.of(resource).readFileAsStream()) {
             return StreamUtils.asStream(IOUtils.lineIterator(input, StandardCharsets.UTF_8))
                     .map(String::trim)
                     .filter(StringUtils::isNotBlank);

@@ -1,5 +1,6 @@
 package com.vml.es.aem.acm.core.repo;
 
+import com.vml.es.aem.acm.core.util.StringUtil;
 import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -7,22 +8,25 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.api.resource.ValueMap;
 
-public class RepoState implements Serializable {
+/**
+ * Immutable snapshot of a repository resource state (even not existing).
+ */
+public class RepoResourceState implements Serializable {
 
-    private final String path;
+    private final RepoResource resource;
 
     private final boolean exists;
 
     private final ValueMap properties;
 
-    public RepoState(String path, boolean exists, ValueMap properties) {
-        this.path = path;
-        this.exists = exists;
-        this.properties = properties;
+    public RepoResourceState(RepoResource resource) {
+        this.resource = resource;
+        this.exists = resource.exists();
+        this.properties = resource.properties();
     }
 
     public String getPath() {
-        return path;
+        return resource.getPath();
     }
 
     public boolean isExists() {
@@ -37,10 +41,10 @@ public class RepoState implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RepoState that = (RepoState) o;
+        RepoResourceState that = (RepoResourceState) o;
         return new EqualsBuilder()
+                .append(resource.getPath(), that.getPath())
                 .append(exists, that.exists)
-                .append(path, that.path)
                 .append(properties, that.properties)
                 .isEquals();
     }
@@ -48,7 +52,7 @@ public class RepoState implements Serializable {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(path)
+                .append(resource.getPath())
                 .append(exists)
                 .append(properties)
                 .toHashCode();
@@ -56,10 +60,10 @@ public class RepoState implements Serializable {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("path", path)
+        return new ToStringBuilder(resource, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("path", resource.getPath())
                 .append("exists", exists)
-                .append("properties", properties)
+                .append("properties", StringUtil.toString(properties))
                 .toString();
     }
 }
