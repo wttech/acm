@@ -2,6 +2,7 @@ package com.vml.es.aem.acm.core.repo;
 
 import com.vml.es.aem.acm.core.util.ResourceSpliterator;
 import com.vml.es.aem.acm.core.util.StreamUtils;
+import com.vml.es.aem.acm.core.util.StringUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +12,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
@@ -263,7 +266,11 @@ public class RepoResource {
     }
 
     public RepoResourceState state() {
-        return new RepoResourceState(this);
+        Resource resource = repo.getResourceResolver().getResource(path);
+        if (resource == null) {
+            return new RepoResourceState(path, false, Collections.emptyMap());
+        }
+        return new RepoResourceState(path, true, resource.getValueMap());
     }
 
     public Resource saveFile(Object data, String mimeType) {
@@ -360,6 +367,10 @@ public class RepoResource {
 
     @Override
     public String toString() {
-        return state().toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("path", path)
+                .append("exists", exists())
+                .append("properties", StringUtil.toString(properties()))
+                .toString();
     }
 }
