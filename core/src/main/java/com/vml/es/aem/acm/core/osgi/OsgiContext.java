@@ -7,13 +7,9 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
-import org.osgi.service.component.annotations.Reference;
 
 @Component(immediate = true, service = OsgiContext.class)
 public class OsgiContext {
-
-    @Reference
-    private InstanceInfo instanceInfo;
 
     private BundleContext bundleContext;
 
@@ -27,11 +23,6 @@ public class OsgiContext {
         return bundleContext;
     }
 
-    public InstanceInfo getInstanceInfo() {
-        return instanceInfo;
-    }
-
-    @SuppressWarnings("unchecked")
     public <T> Optional<T> findService(Class<T> clazz) {
         return Optional.ofNullable(clazz)
                 .map(c -> bundleContext.getServiceReference(clazz))
@@ -44,6 +35,14 @@ public class OsgiContext {
 
     public Replicator getReplicator() {
         return getService(Replicator.class);
+    }
+
+    public OsgiScanner getOsgiScanner() {
+        return getService(OsgiScanner.class);
+    }
+
+    public InstanceInfo getInstanceInfo() {
+        return getService(InstanceInfo.class);
     }
 
     public ExecutionQueue getExecutionQueue() {

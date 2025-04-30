@@ -1,7 +1,7 @@
 package com.vml.es.aem.acm.core.snippet;
 
 import com.vml.es.aem.acm.core.AcmException;
-import com.vml.es.aem.acm.core.util.ResourceSpliterator;
+import com.vml.es.aem.acm.core.repo.RepoResource;
 import com.vml.es.aem.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +37,9 @@ public class SnippetRepository {
     }
 
     public Stream<Snippet> findAll() throws AcmException {
-        return ResourceSpliterator.stream(getOrCreateRoot())
+        return RepoResource.of(getOrCreateRoot())
+                .descendants()
+                .map(RepoResource::resolve)
                 .map(Snippet::from)
                 .filter(Optional::isPresent)
                 .map(Optional::get);

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
+    <filter root="/conf/acm/settings/assist/java"/>
     <filter root="/conf/acm/settings/snippet/available/core"/>
 </workspaceFilter>
