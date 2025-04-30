@@ -23,7 +23,7 @@ void doRun() {
             def buffer = new StringBuffer();
             eachSystemClass { className -> buffer.append("${className}\n")}
             def dictFile = repo.get(JavaClassDictionary.path())
-            dictFile.parent().makeFolders()
+            dictFile.parent().ensureFolder()
             dictFile.saveFile(buffer.toString(), "text/plain")
             break;
     }

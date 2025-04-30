@@ -65,8 +65,16 @@ public class RepoResource {
         return repo.exists(path);
     }
 
-    public void makeFolders() {
-        repo.makeFolders(path);
+    public void ensure(String resourceType) {
+        repo.ensure(path, resourceType);
+    }
+
+    public void ensureFolder() {
+        repo.ensureFolder(path);
+    }
+
+    public void ensureOrderedFolder() {
+        repo.ensureOrderedFolder(path);
     }
 
     public RepoResource parent() {
@@ -78,7 +86,10 @@ public class RepoResource {
     }
 
     public String parentPath() {
-        return StringUtils.trimToNull(StringUtils.substringBeforeLast(path, "/"));
+        if ("/".equals(path)) {
+            return null;
+        }
+        return StringUtils.defaultIfEmpty(StringUtils.substringBeforeLast(path, "/"), "/");
     }
 
     public boolean hasParent() {
@@ -98,11 +109,19 @@ public class RepoResource {
     }
 
     public Stream<RepoResource> siblings() {
-        return parent().children().filter(s -> !StringUtils.equals(s.getPath(), path));
+        return siblings(true);
     }
 
-    public Stream<RepoResource> recurse() {
-        return repo.recurse(path);
+    public Stream<RepoResource> siblings(boolean includeSelf) {
+        return parent().children().filter(s -> includeSelf || !StringUtils.equals(s.getPath(), path));
+    }
+
+    public Stream<RepoResource> traverse() {
+        return traverse(true);
+    }
+
+    public Stream<RepoResource> traverse(boolean includeSelf) {
+        return repo.traverse(path, includeSelf);
     }
 
     public Stream<RepoResource> query() {
@@ -122,7 +141,7 @@ public class RepoResource {
     }
 
     public Stream<RepoResource> descendants() {
-        return recurse();
+        return traverse(false);
     }
 
     public Stream<RepoResource> ancestors() {

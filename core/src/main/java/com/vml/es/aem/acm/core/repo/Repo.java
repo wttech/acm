@@ -1,7 +1,6 @@
 package com.vml.es.aem.acm.core.repo;
 
 import com.vml.es.aem.acm.core.util.ResourceSpliterator;
-import com.vml.es.aem.acm.core.util.ResourceUtils;
 import com.vml.es.aem.acm.core.util.StreamUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,10 +16,8 @@ import javax.jcr.query.Query;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
-import org.apache.sling.api.resource.ModifiableValueMap;
-import org.apache.sling.api.resource.PersistenceException;
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.*;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,14 +47,26 @@ public class Repo {
         }
     }
 
-    public Resource makeFolders(String path) {
+    public Resource ensureFolder(String path) {
+        return ensure(path, JcrResourceConstants.NT_SLING_FOLDER);
+    }
+
+    public Resource ensureOrderedFolder(String path) {
+        return ensure(path, JcrResourceConstants.NT_SLING_ORDERED_FOLDER);
+    }
+
+    public Resource ensure(String path, String resourceType) {
         Resource resource = resourceResolver.getResource(path);
         if (resource == null) {
-            resource = ResourceUtils.makeFolders(resourceResolver, path);
-            commit(String.format("creating folders at path %s", path));
-            LOG.info("Created folders at path '{}'", path);
+            try {
+                ResourceUtil.getOrCreateResource(resourceResolver, path, resourceType, resourceType, false);
+            } catch (PersistenceException e) {
+                throw new RepoException(String.format("Cannot ensure '%s' at path '%s'!", resourceType, path), e);
+            }
+            commit(String.format("ensuring '%s' at path %s", resourceType, path));
+            LOG.info("Ensured '{}' at path '{}'", resourceType, path);
         } else {
-            LOG.info("Skipped creation of folders at path '{}'", path);
+            LOG.info("Skipped ensuring '{}' at path '{}'", resourceType, path);
         }
 
         return resource;
@@ -262,10 +271,6 @@ public class Repo {
         this.autoCommit = autoCommit;
     }
 
-    public Stream<RepoResource> recurse(String path) {
-        return ResourceSpliterator.stream(require(path)).map(r -> new RepoResource(this, r.getPath()));
-    }
-
     public Stream<RepoResource> query(String path) {
         return query(path, JcrConstants.NT_BASE, null, null);
     }
@@ -296,5 +301,18 @@ public class Repo {
 
     public Stream<RepoResource> children(String path) {
         return StreamUtils.asStream(require(path).listChildren()).map(r -> new RepoResource(this, r.getPath()));
+    }
+
+    public Stream<RepoResource> traverse(String path) {
+        return traverse(path, true);
+    }
+
+    public Stream<RepoResource> traverse(String path, boolean includeSelf) {
+        Stream<RepoResource> result =
+                ResourceSpliterator.stream(require(path)).map(r -> new RepoResource(this, r.getPath()));
+        if (!includeSelf) {
+            result = result.skip(1);
+        }
+        return result;
     }
 }
