@@ -21,14 +21,14 @@ public class ScriptStats implements Serializable {
 
     private final Execution lastExecution;
 
-    private final Long averageExecutionTime;
+    private final Long averageDuration;
 
     public ScriptStats(
             String path, Map<ExecutionStatus, Long> statusCount, Execution lastExecution, Long averageExecutionTime) {
         this.path = path;
         this.statusCount = statusCount;
         this.lastExecution = lastExecution;
-        this.averageExecutionTime = averageExecutionTime;
+        this.averageDuration = averageExecutionTime;
     }
 
     public static ScriptStats forCompletedByPath(ResourceResolver resourceResolver, String path, int limit) {
@@ -60,25 +60,26 @@ public class ScriptStats implements Serializable {
 
         List<Execution> executions = history.findAll(query).limit(limit).collect(Collectors.toList());
         Integer length = executions.size();
-        AtomicReference<Long> sumExecTime = new AtomicReference<>(0L);
+        AtomicReference<Long> averageDuration = new AtomicReference<>(0L);
 
         executions.forEach(e -> {
             if (lastExecution.get() == null) {
                 lastExecution.set(e);
             }
             statusCount.put(e.getStatus(), statusCount.get(e.getStatus()) + 1);
-            sumExecTime.updateAndGet(v -> v + e.getDuration());
+            averageDuration.updateAndGet(v -> v + e.getDuration());
         });
 
-        return new ScriptStats(path, statusCount, lastExecution.get(), length == 0 ? 0 : sumExecTime.get() / length);
+        return new ScriptStats(
+                path, statusCount, lastExecution.get(), length == 0 ? 0 : averageDuration.get() / length);
     }
 
     public String getPath() {
         return path;
     }
 
-    public Long getAverageExecutionTime() {
-        return averageExecutionTime;
+    public Long getAverageDuration() {
+        return averageDuration;
     }
 
     public Map<ExecutionStatus, Long> getStatusCount() {
