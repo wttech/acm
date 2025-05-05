@@ -24,11 +24,11 @@ public class ScriptStats implements Serializable {
     private final Long averageDuration;
 
     public ScriptStats(
-            String path, Map<ExecutionStatus, Long> statusCount, Execution lastExecution, Long averageExecutionTime) {
+            String path, Map<ExecutionStatus, Long> statusCount, Execution lastExecution, Long averageDuration) {
         this.path = path;
         this.statusCount = statusCount;
         this.lastExecution = lastExecution;
-        this.averageDuration = averageExecutionTime;
+        this.averageDuration = averageDuration;
     }
 
     public static ScriptStats forCompletedByPath(ResourceResolver resourceResolver, String path, int limit) {
