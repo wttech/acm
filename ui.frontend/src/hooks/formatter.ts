@@ -88,6 +88,19 @@ class Formatter {
     return result;
   }
 
+  public durationTillNow(from: string | Date) {
+    return this.durationBetween(from, new Date());
+  }
+
+  public durationBetween(from: string | Date, to: string | Date): number | null {
+    if (!from || !to) {
+      return null;
+    }
+    const fromDate = toZonedTime(from instanceof Date ? from : new Date(from), this.userTimeZoneId);
+    const toDate = toZonedTime(to instanceof Date ? to : new Date(to), this.userTimeZoneId);
+    return toDate.getTime() - fromDate.getTime();
+  }
+
   public dateRelative(value: string | Date): string {
     const date = value instanceof Date ? value : new Date(value);
     const zonedDate = toZonedTime(date, this.userTimeZoneId);
@@ -111,11 +124,11 @@ class Formatter {
     if (!value) {
       return false;
     }
-
-    const now = new Date();
-    const targetDate = toZonedTime(new Date(value), this.userTimeZoneId);
-    const timeDifference = now.getTime() - targetDate.getTime();
-    return timeDifference <= timeFrameMs;
+    const duration = this.durationBetween(value, new Date());
+    if (duration === null || duration < 0) {
+      return false;
+    }
+    return duration <= timeFrameMs;
   }
 
   public instanceTimezone(): string {
