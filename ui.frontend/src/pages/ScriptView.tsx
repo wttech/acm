@@ -80,6 +80,9 @@ const ScriptView = () => {
 
   const onDescribeFailed = (description: Description) => {
     console.error('Script description failed:', description);
+    if (description.execution.error) {
+      console.error(description.execution.error);
+    }
     ToastQueue.negative('Script description failed. Check logs!', {
       timeout: toastTimeout,
     });

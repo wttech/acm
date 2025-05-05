@@ -4,7 +4,7 @@ import com.vml.es.aem.acm.core.acl.Acl;
 import com.vml.es.aem.acm.core.format.Formatter;
 import com.vml.es.aem.acm.core.osgi.OsgiContext;
 import com.vml.es.aem.acm.core.replication.Activator;
-import com.vml.es.aem.acm.core.repo.Repository;
+import com.vml.es.aem.acm.core.repo.Repo;
 import groovy.lang.Binding;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +130,7 @@ public class ExecutionContext implements AutoCloseable {
         result.setVariable("out", new CodePrintStream(this));
         result.setVariable("resourceResolver", resourceResolver);
         result.setVariable("osgi", osgiContext);
-        result.setVariable("repo", new Repository(resourceResolver));
+        result.setVariable("repo", new Repo(resourceResolver));
         result.setVariable("acl", new Acl(resourceResolver));
         result.setVariable("formatter", new Formatter());
         result.setVariable("activator", new Activator(resourceResolver, osgiContext.getReplicator()));

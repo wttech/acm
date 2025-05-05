@@ -1,7 +1,7 @@
 package com.vml.es.aem.acm.core.instance;
 
 import com.vml.es.aem.acm.core.osgi.*;
-import com.vml.es.aem.acm.core.repo.Repository;
+import com.vml.es.aem.acm.core.repo.Repo;
 import com.vml.es.aem.acm.core.util.ResourceUtils;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -104,14 +104,14 @@ public class HealthChecker implements EventHandler {
         if (!config.repositoryChecking()) {
             return;
         }
-        Repository repository = new Repository(resourceResolver);
-        if ((instanceInfo.getType() == InstanceType.CLOUD_CONTAINER) && !repository.isCompositeNodeStore()) {
+        Repo repo = new Repo(resourceResolver);
+        if ((instanceInfo.getType() == InstanceType.CLOUD_CONTAINER) && !repo.isCompositeNodeStore()) {
             result.issues.add(
                     new HealthIssue(HealthIssueSeverity.CRITICAL, "Repository is not yet using composite node store"));
         }
         if (ArrayUtils.isNotEmpty(config.repositoryPathsExisted())) {
             Arrays.stream(config.repositoryPathsExisted()).forEach(path -> {
-                if (!repository.exists(path)) {
+                if (!repo.get(path).exists()) {
                     result.issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL, String.format("Repository path '%s' does not exist", path)));
                 }
