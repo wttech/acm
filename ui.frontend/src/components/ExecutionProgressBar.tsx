@@ -51,7 +51,7 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
 
       fetchStats();
     }
-  }, [execution]);
+  }, [execution?.executable?.id, execution?.status]);
 
   const variant = ((): 'positive' | 'informative' | 'warning' | 'critical' | undefined => {
     switch (execution?.status) {
