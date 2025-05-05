@@ -4,7 +4,10 @@ import com.vml.es.aem.acm.core.util.StreamUtils;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -32,8 +35,8 @@ public class OsgiScanner {
         return Arrays.stream(bundleContext.getBundles());
     }
 
-    public Stream<ClassInfo> scanClasses() {
-        return scanBundles().filter(this::isBundleOrFragmentReady).flatMap(this::scanClasses);
+    public Stream<ClassInfo> scanExportedClasses() {
+        return scanBundles().filter(this::isBundleOrFragmentReady).flatMap(this::scanExportedClasses);
     }
 
     public int computeBundlesHashCode() {
@@ -56,6 +59,14 @@ public class OsgiScanner {
         return bundle.getState() == Bundle.RESOLVED;
     }
 
+    public Bundle getSystemBundle() {
+        return bundleContext.getBundle(0);
+    }
+
+    public Stream<String> getSystemExportedPackages() {
+        return findExportedPackages(getSystemBundle());
+    }
+
     public boolean isFragment(Bundle bundle) {
         return bundle.getHeaders().get("Fragment-Host") != null;
     }
@@ -64,18 +75,20 @@ public class OsgiScanner {
         return isBundleActive(bundle) || (isFragment(bundle) && isBundleResolved(bundle));
     }
 
-    private Stream<ClassInfo> scanClasses(Bundle bundle) {
+    private Stream<String> findExportedPackages(Bundle bundle) {
         BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
         if (bundleWiring == null) {
             return Stream.empty();
         }
-
         return bundleWiring.getCapabilities(BUNDLE_WIRING_PACKAGE).stream()
-                .map(capability -> (String) capability.getAttributes().get(BUNDLE_WIRING_PACKAGE))
-                .flatMap(pkg -> findClasses(bundle, pkg));
+                .map(c -> (String) c.getAttributes().get(BUNDLE_WIRING_PACKAGE));
     }
 
-    private Stream<ClassInfo> findClasses(Bundle bundle, String packageName) {
+    private Stream<ClassInfo> scanExportedClasses(Bundle bundle) {
+        return findExportedPackages(bundle).flatMap(pkg -> findClasses(bundle, pkg));
+    }
+
+    public Stream<ClassInfo> findClasses(Bundle bundle, String packageName) {
         try {
             Enumeration<URL> resources = bundle.findEntries(packageName.replace('.', '/'), "*.class", false);
             if (resources == null) {
@@ -83,10 +96,10 @@ public class OsgiScanner {
             }
 
             return StreamUtils.asStream(resources)
-                    .map(this::toRawClassName)
+                    .map(u -> normalizeClassName(StringUtils.removeStart(u.getFile(), "/"))
+                            .orElse(null))
+                    .filter(Objects::nonNull)
                     .filter(className -> isDirectChildOfPackage(className, packageName))
-                    .filter(this::isImportableClass)
-                    .map(this::toStdClassName)
                     .map(c -> new ClassInfo(c, bundle));
         } catch (Exception e) {
             LOG.error("Error scanning classes in bundle '{}'", bundle.getSymbolicName(), e);
@@ -99,17 +112,10 @@ public class OsgiScanner {
         return classPackage.equals(packageName);
     }
 
-    private String toRawClassName(URL url) {
-        final String f = url.getFile();
-        final String cn = f.substring(1, f.length() - ".class".length());
-        return cn.replace('/', '.').replace("$", ".");
-    }
-
-    private String toStdClassName(String rawClassName) {
-        return rawClassName;
-    }
-
-    private boolean isImportableClass(String className) {
-        return !className.matches(".*\\$\\d+.*") && !className.endsWith("package-info");
+    public Optional<String> normalizeClassName(String fileName) {
+        return Optional.ofNullable(fileName)
+                .map(f -> StringUtils.removeEnd(f, ".class").replace('/', '.'))
+                .filter(f -> !f.matches(".*\\$\\d+.*") && !f.endsWith("package-info"))
+                .map(f -> f.replace('$', '.'));
     }
 }

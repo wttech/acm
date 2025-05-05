@@ -86,6 +86,16 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
+    public void dateTime(String name) {
+        dateTime(name, null);
+    }
+
+    public void dateTime(String name, Closure<DateTimeArgument> options) {
+        DateTimeArgument argument = new DateTimeArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
     public void string(String name) {
         string(name, null);
     }

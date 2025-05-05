@@ -1,0 +1,6 @@
+group: Repo
+name: repo_delete
+documentation: |
+  Delete a resource from the repository.
+content: |
+  repo.get("${1:path}").delete()

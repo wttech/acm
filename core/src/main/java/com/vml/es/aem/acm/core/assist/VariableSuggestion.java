@@ -9,9 +9,11 @@ import org.apache.commons.lang3.StringUtils;
 public class VariableSuggestion implements Suggestion {
 
     private final Variable variable;
+    private final CodeRepository codeRepository;
 
-    public VariableSuggestion(Variable variable) {
+    public VariableSuggestion(Variable variable, CodeRepository codeRepository) {
         this.variable = variable;
+        this.codeRepository = codeRepository;
     }
 
     @Override
@@ -34,7 +36,7 @@ public class VariableSuggestion implements Suggestion {
         List<String> info = new LinkedList<>();
 
         info.add(String.format("Type: %s", variable.getType()));
-        CodeRepository.linkToClass(variable.getType()).ifPresent(link -> {
+        codeRepository.linkToClass(variable.getType()).ifPresent(link -> {
             info.add(String.format("Source Code: [Open on GitHub](%s)", link));
         });
 
