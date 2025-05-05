@@ -4,10 +4,11 @@ import { Field } from '@react-spectrum/label';
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import useFormCrossFieldValidation from '../hooks/form.ts';
-import { Argument, ArgumentValue, isBoolArgument, isDateTimeArgument, isMultiSelectArgument, isNumberArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
+import { Argument, ArgumentValue, isBoolArgument, isDateTimeArgument, isMultiSelectArgument, isNumberArgument, isPathArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates.ts';
 import { Strings } from '../utils/strings.ts';
 import styles from './CodeArgumentInput.module.css';
+import { PathInput } from './PathInput.tsx';
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -234,6 +235,30 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
                 aria-label={`Argument '${arg.name}'`}
               />
+            </View>
+          )}
+        />
+      );
+    } else if (isPathArgument(arg)) {
+      return (
+        <Controller
+          name={arg.name}
+          control={control}
+          rules={controllerRules(arg)}
+          render={({ field, fieldState }) => (
+            <View key={arg.name} marginBottom={'size-200'}>
+              <Flex alignItems={'start'} justifyContent={'start'} direction={'column'}>
+                <PathInput
+                  {...field}
+                  selectionMode={'single'}
+                  maxHeight={"size-3000"}
+                  label={argLabel(arg)}
+                  rootPath={arg.rootPath ?? ""}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  isInvalid={!!fieldState.error}
+                  aria-label={`Argument ${arg.name}`}
+                />
+              </Flex>
             </View>
           )}
         />

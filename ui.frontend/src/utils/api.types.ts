@@ -23,7 +23,7 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME';
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'PATH';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined;
 export type ArgumentValues = Record<string, ArgumentValue>;
 
@@ -68,6 +68,10 @@ export type MultiSelectArgument = Argument<ArgumentValue> & {
   display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN';
 };
 
+export type PathArgument = Argument<ArgumentValue> & {
+  rootPath: string;
+};
+
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> {
   return arg.type === 'STRING';
 }
@@ -94,6 +98,10 @@ export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArg
 
 export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {
   return arg.type === 'MULTISELECT';
+}
+
+export function isPathArgument(arg: Argument<ArgumentValue>): arg is PathArgument {
+  return arg.type === 'PATH';
 }
 
 export type Execution = {
@@ -155,14 +163,16 @@ export type ExecutionOutput<E> = {
   list: E[];
 };
 
+export type AssistCodeOutputSuggestion = {
+  k: string; // kind
+  l: string; // label
+  it: string; // insert text
+  i: string;
+};
+
 export type AssistCodeOutput = {
   code: string;
-  suggestions: {
-    k: string; // kind
-    l: string; // label
-    it: string; // insert text
-    i: string; // info
-  }[];
+  suggestions: AssistCodeOutputSuggestion[];
 };
 
 export type SnippetOutput = {
