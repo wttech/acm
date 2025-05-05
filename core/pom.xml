@@ -25,7 +25,7 @@
     </parent>
     <artifactId>acm.core</artifactId>
     <name>AEM Content Manager - Core</name>
-    <description>Core bundle for AEM Content Manager (tool for migrating content and managing permissions)</description>
+    <description>Core bundle for AEM Content Manager</description>
     <properties>
         <maven.deploy.skip>false</maven.deploy.skip>
         <skipFormat>false</skipFormat>
@@ -49,7 +49,7 @@
                             <bnd><![CDATA[
 Export-Package com.vml.es.aem.acm.core.*
 Import-Package: javax.annotation;version=0.0.0,*
-Private-Package: org.yaml.snakeyaml.*,com.fasterxml.jackson.datatype.jsr310.*
+Private-Package: com.fasterxml.jackson.core.*,com.fasterxml.jackson.annotation.*,com.fasterxml.jackson.dataformat.*,com.fasterxml.jackson.databind.*,com.fasterxml.jackson.datatype.*,org.yaml.snakeyaml.*
 DynamicImport-Package: *
                                 ]]></bnd>
                         </configuration>
@@ -244,8 +244,20 @@ DynamicImport-Package: *
         </dependency>
         <dependency>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.5</version>
+            <version>2.17.2</version>
             <groupId>com.fasterxml.jackson.core</groupId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.17.2</version><!-- TODO upgrade only when fixed: https://github.com/diffplug/spotless/issues/2303 -->
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-csv</artifactId>
+            <version>2.17.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -296,11 +308,6 @@ DynamicImport-Package: *
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-templates</artifactId>
             <version>4.0.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>1.32</version>
         </dependency>
 
         <!-- Testing -->

@@ -97,7 +97,6 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 errorMessage={fieldState.error ? fieldState.error.message : undefined}
                 validationState={fieldState.error ? 'invalid' : 'valid'}
                 aria-label={`Argument '${arg.name}'`}
-                width="100%"
               />
             </View>
           )}
