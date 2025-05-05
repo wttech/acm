@@ -258,7 +258,6 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   isInvalid={!!fieldState.error}
                   aria-label={`Argument ${arg.name}`}
                 />
-                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
               </Flex>
             </View>
           )}

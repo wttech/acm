@@ -4,6 +4,7 @@ import React, {forwardRef, Ref, useCallback, useEffect, useState} from 'react';
 import { apiRequest } from '../utils/api.ts';
 import { AssistCodeOutput, AssistCodeOutputSuggestion } from '../utils/api.types.ts';
 import styles from './PathInput.module.css';
+import codeArgumentStyles from './CodeArgumentInput.module.css';
 
 interface Node {
   name: string;
@@ -31,14 +32,16 @@ export const PathInput =  forwardRef(function PathInput({ rootPath = "", onChang
 
   const onSelectionChange = useCallback((keys: Selection) => {
     const newSelection = new Set([...keys].map((key) => key.toString()));
-    const selectedValue = [...newSelection][0];
-    if (selectedValue != undefined) {
-      setSelected(new Set([selectedValue]));
-      // Offload the onChange call to avoid blocking the UI
-      setTimeout(() => {
-        onChange(selectedValue.length > 0 ? selectedValue : '/');
-      }, 0)
+    let selectedValue = [...newSelection][0];
+    if (selected.has(selectedValue)) {
+      // @ts-expect-error: Allow assigning null to selectedValue to clear the selection
+      selectedValue = null;
     }
+    setTimeout(() => {
+      // Offload the onChange call to avoid blocking the UI
+      setSelected(new Set([selectedValue]));
+      onChange(selectedValue);
+    }, 0)
   }, []);
 
   const translateSuggestion = (suggestion: AssistCodeOutputSuggestion): Node => {
@@ -138,6 +141,7 @@ export const PathInput =  forwardRef(function PathInput({ rootPath = "", onChang
       };
       await expandPathToValue(value);
       setSelected(new Set([value]));
+      onChange(value)
     };
     if (value != null && value.length > 0) {
       // Offload the initialization to avoid blocking the UI
@@ -155,6 +159,8 @@ export const PathInput =  forwardRef(function PathInput({ rootPath = "", onChang
           {items && <TreeItem node={items} path={''} />}
         </TreeView>
       </div>
+      {props.errorMessage && <p className={codeArgumentStyles.error}>{props.errorMessage}</p>}
+      {!props.errorMessage && value && value != "/" && <p className={styles.label}>Selected: {value}</p>}
     </>
   );
 })
