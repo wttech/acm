@@ -14,6 +14,7 @@ import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
+import {useFormatter} from "../hooks/formatter.ts";
 
 type ScriptListProps = {
   type: ScriptType;
@@ -22,6 +23,7 @@ type ScriptListProps = {
 const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
   const appState = useAppState();
   const navigate = useNavigate();
+  const formatter = useFormatter();
 
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -128,7 +130,14 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             <Column>Name</Column>
             <Column>Last Execution</Column>
             <Column>
-              Success Rate
+              <Text>Average Duration</Text>
+              <ContextualHelp variant="help">
+                <Heading>Explanation</Heading>
+                <Content>Duration is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
+              </ContextualHelp>
+            </Column>
+            <Column>
+              <Text>Success Rate</Text>
               <ContextualHelp variant="help">
                 <Heading>Explanation</Heading>
                 <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
@@ -159,6 +168,9 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
                         <Text>&mdash;</Text>
                       )}
                     </Flex>
+                  </Cell>
+                  <Cell>
+                    <Text>{lastExecution ? formatter.duration(scriptStats.averageDuration) : <>&mdash;</>}</Text>
                   </Cell>
                   <Cell>
                     <ExecutionStatsBadge stats={scriptStats} />
