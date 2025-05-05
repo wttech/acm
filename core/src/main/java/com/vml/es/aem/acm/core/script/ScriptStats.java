@@ -1,9 +1,6 @@
 package com.vml.es.aem.acm.core.script;
 
-import com.vml.es.aem.acm.core.code.Execution;
-import com.vml.es.aem.acm.core.code.ExecutionHistory;
-import com.vml.es.aem.acm.core.code.ExecutionQuery;
-import com.vml.es.aem.acm.core.code.ExecutionStatus;
+import com.vml.es.aem.acm.core.code.*;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,12 +16,12 @@ public class ScriptStats implements Serializable {
 
     private final Map<ExecutionStatus, Long> statusCount;
 
-    private final Execution lastExecution;
+    private final ExecutionSummary lastExecution;
 
     private final Long averageDuration;
 
     public ScriptStats(
-            String path, Map<ExecutionStatus, Long> statusCount, Execution lastExecution, Long averageDuration) {
+            String path, Map<ExecutionStatus, Long> statusCount, ExecutionSummary lastExecution, Long averageDuration) {
         this.path = path;
         this.statusCount = statusCount;
         this.lastExecution = lastExecution;
@@ -32,7 +29,7 @@ public class ScriptStats implements Serializable {
     }
 
     public static ScriptStats forCompletedByPath(ResourceResolver resourceResolver, String path, int limit) {
-        AtomicReference<Execution> lastExecution = new AtomicReference<>();
+        AtomicReference<ExecutionSummary> lastExecution = new AtomicReference<>();
         Map<ExecutionStatus, Long> statusCount =
                 ExecutionStatus.completed().stream().collect(HashMap::new, (m, s) -> m.put(s, 0L), HashMap::putAll);
 
@@ -58,7 +55,8 @@ public class ScriptStats implements Serializable {
                         "Script type '%s' for path '%s' is not supported to calculate stats!", scriptType, path));
         }
 
-        List<Execution> executions = history.findAll(query).limit(limit).collect(Collectors.toList());
+        List<ExecutionSummary> executions =
+                history.findAllSummaries(query).limit(limit).collect(Collectors.toList());
         Integer length = executions.size();
         AtomicReference<Long> averageDuration = new AtomicReference<>(0L);
 
@@ -86,7 +84,7 @@ public class ScriptStats implements Serializable {
         return statusCount;
     }
 
-    public Execution getLastExecution() {
+    public ExecutionSummary getLastExecution() {
         return lastExecution;
     }
 }

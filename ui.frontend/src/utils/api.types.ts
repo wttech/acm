@@ -195,7 +195,7 @@ export type Script = {
 export type ScriptStats = {
   path: string;
   statusCount: { [key in ExecutionStatus]: number };
-  lastExecution: Execution | null;
+  lastExecution: ExecutionSummary | null;
   averageDuration: number;
 };
 
