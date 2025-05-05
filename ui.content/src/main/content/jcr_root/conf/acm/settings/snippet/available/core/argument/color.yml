@@ -1,14 +1,12 @@
 group: Argument
 name: argument_color
 content: |
-  args.color("${1:name}") { label = "${2:label}"; value = ${3:value} }
+  args.color("${1:name}") { label = "${2:label}"; value = ${3:value}; rgba() }
 documentation: |
     An argument that allows to choose a value from color picker.<br>
     It returns a string with the color hex code.<br>
     <br>
     **Example**:<br>
     ```groovy
-    args.color("color") {label = "background color"; value = "#ff0000"}
+    args.color("color") { label = "background color"; value = "#ff0000"; hex() }
     ```
-    <br>
-    value must be a string with a hex color code<br>

@@ -67,7 +67,7 @@ export type SliderArgument = Argument<number> & {
 
 export type ColorArgument = Argument<string> & {
   format: 'HEX' | 'RGBA' | 'HSL' | 'HSB';
-}
+};
 
 type RangeValue = {
   start: number;

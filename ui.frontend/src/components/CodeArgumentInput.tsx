@@ -2,7 +2,8 @@ import {
   Button,
   Checkbox,
   CheckboxGroup,
-  ColorEditor, ColorFormat,
+  ColorEditor,
+  ColorFormat,
   ColorPicker,
   DatePicker,
   Flex,
@@ -18,7 +19,7 @@ import {
   Switch,
   TextArea,
   TextField,
-  View
+  View,
 } from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
@@ -300,14 +301,11 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   {...field}
                   label={argLabel(arg)}
                   aria-label={`Argument '${arg.name}'`}
-                  value={field.value ? parseColor(field.value) : ""}
-                  onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}>
-                  <ColorEditor hideAlphaChannel={arg.format !== "RGBA"} />
-                  <Button
-                    onPress={() => field.onChange("")}
-                    width={"100%"}
-                    marginTop={"size-200"}
-                    variant={"secondary"}>
+                  value={field.value ? parseColor(field.value) : ''}
+                  onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}
+                >
+                  <ColorEditor hideAlphaChannel={arg.format !== 'RGBA'} />
+                  <Button onPress={() => field.onChange('')} width={'100%'} marginTop={'size-200'} variant={'secondary'}>
                     Clear
                   </Button>
                 </ColorPicker>
