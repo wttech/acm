@@ -74,6 +74,19 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
       mountedEditor.restoreViewState(storedModel.viewState);
     }
 
+    // @ts-expect-error: Accessing private API of the suggest widget to modify its behavior
+    const {widget} = mountedEditor.getContribution('editor.contrib.suggestController');
+    if (widget) {
+      const suggestWidget = widget.value;
+      if (suggestWidget && suggestWidget._setDetailsVisible) {
+        suggestWidget._setDetailsVisible(true);
+        if (suggestWidget._details) {
+          // Height adjusts automatically
+          suggestWidget._details.widget._size.width = 500;
+        }
+      }
+    }
+
     const changeListener = textModel.onDidChangeContent(() => {
       debouncedViewStateUpdate(mountedEditor);
       onChange?.(mountedEditor.getValue());

@@ -10,13 +10,16 @@ content: |
 
   void doRun() {
     out.fromLogs()
-
-    def count = 3
-    repo.makeFolders("/var/acm/demo")
-    for (int i = 0; i < count; i++) {
-      repo.save("/var/acm/demo/child-\${i}", [:])
+  
+    println "Creating a folder structure in the temporary directory of the repository."
+  
+    def folder = repo.get("/tmp/acm/demo").ensureFolder()
+    for (int i = 0; i < 5; i++) {
+      def child = folder.child("child-\${i+1}")
+      child.save(["foo": "bar"])
     }
-    for (int i = 0; i < count; i++) {
-      repo.delete("/var/acm/demo/child-\${i}")
-    }
+  
+    println "Folder '${folder.path}' has now ${folder.descendants().count()} descendant(s)."
+  
+    folder.delete()
   }

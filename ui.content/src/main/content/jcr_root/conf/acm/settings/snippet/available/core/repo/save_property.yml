@@ -1,0 +1,7 @@
+group: Repo
+name: repo_save_property
+documentation: |
+  Create new or update the existing property of the resource in the repository.
+  Changes done are tracked and printed in the logs with actual values before and after the change.
+content: |
+  repo.get("${1:path}").saveProperty("${2:key}", "${3:value}")

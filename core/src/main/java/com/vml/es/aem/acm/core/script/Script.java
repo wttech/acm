@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vml.es.aem.acm.core.AcmException;
 import com.vml.es.aem.acm.core.code.ArgumentValues;
 import com.vml.es.aem.acm.core.code.Executable;
-import com.vml.es.aem.acm.core.util.JcrUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.jackrabbit.vault.util.JcrConstants;
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 
 public class Script implements Executable, Comparable<Script> {
@@ -72,7 +71,7 @@ public class Script implements Executable, Comparable<Script> {
     }
 
     public InputStream readContent() throws ScriptException {
-        return Optional.ofNullable(resource.getChild(JcrUtils.JCR_CONTENT))
+        return Optional.ofNullable(resource.getChild(org.apache.jackrabbit.JcrConstants.JCR_CONTENT))
                 .map(r -> r.adaptTo(InputStream.class))
                 .orElseThrow(() -> new ScriptException(String.format("Cannot read script '%s'!", getPath())));
     }
