@@ -1,9 +1,9 @@
 import { Meter, ProgressBar } from '@adobe/react-spectrum';
-import React, { useEffect, useState } from 'react';
-import { useFormatter } from '../hooks/formatter.ts';
-import { apiRequest } from '../utils/api';
-import { Execution, ExecutionStatus, isExecutableScript, isExecutionActive, isExecutionCompleted, isExecutionPending, ScriptOutput } from '../utils/api.types.ts';
-import { Strings } from '../utils/strings.ts';
+import React, {useEffect, useState} from 'react';
+import { useFormatter } from '../hooks/formatter';
+import { useScriptStats } from '../hooks/script';
+import { Execution, ExecutionStatus, isExecutionActive, isExecutionCompleted, isExecutionPending } from '../utils/api.types';
+import { Strings } from '../utils/strings';
 
 interface ExecutionProgressBarProps {
   execution: Execution | null;
@@ -12,46 +12,28 @@ interface ExecutionProgressBarProps {
 
 const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, active }) => {
   const formatter = useFormatter();
+  const stats = useScriptStats(execution?.executable.id || null);
   const [progress, setProgress] = useState<number | null>(null);
   const [label, setLabel] = useState<string>('Not executing');
 
   useEffect(() => {
-    if (execution && isExecutableScript(execution.executable.id)) {
-      const fetchStats = async () => {
-        try {
-          const response = await apiRequest<ScriptOutput>({
-            operation: 'Fetch script stats',
-            url: `/apps/acm/api/script.json?id=${encodeURIComponent(execution.executable.id)}`,
-            method: 'get',
-          });
-          const output = response.data.data;
-          const stats = output.stats.find((stat) => stat.path === execution.executable.id);
+    if (execution && stats) {
+      if (execution.startDate && stats.averageDuration) {
+        const elapsedTime = formatter.durationTillNow(execution.startDate)!;
+        const percentage = Math.min((elapsedTime / stats.averageDuration) * 100, 100);
 
-          if (stats?.averageDuration && execution.startDate) {
-            const elapsedTime = formatter.durationTillNow(execution.startDate)!;
-            const percentage = Math.min((elapsedTime / stats.averageDuration) * 100, 100);
-
-            setProgress(percentage);
-
-            if (isExecutionPending(execution.status) || isExecutionActive(execution.status)) {
-              setLabel(percentage >= 100 ? 'Running - Almost done' : `Running - ${formatter.durationShort(stats.averageDuration - elapsedTime)} remaining`);
-            } else if (isExecutionCompleted(execution.status)) {
-              setLabel(Strings.capitalize(execution.status));
-            }
-          } else {
-            setProgress(null);
-            setLabel(isExecutionCompleted(execution.status) ? Strings.capitalize(execution.status) : 'Running - Stay tuned');
-          }
-        } catch (error) {
-          console.error('Failed to fetch script stats:', error);
-          setProgress(null);
-          setLabel(isExecutionCompleted(execution.status) ? Strings.capitalize(execution.status) : 'Running - Stay tuned');
+        setProgress(percentage);
+        if (isExecutionPending(execution.status) || isExecutionActive(execution.status)) {
+          setLabel(percentage >= 100 ? 'Running - Almost done' : `Running - ${formatter.durationShort(stats.averageDuration - elapsedTime)} remaining`);
+        } else if (isExecutionCompleted(execution.status)) {
+          setLabel(Strings.capitalize(execution.status));
         }
-      };
-
-      fetchStats();
+      } else {
+        setProgress(null);
+        setLabel(isExecutionCompleted(execution.status) ? Strings.capitalize(execution.status) : 'Running - Stay tuned');
+      }
     }
-  }, [execution?.executable?.id, execution?.status]);
+  }, [execution?.id, execution?.startDate, execution?.status, stats?.averageDuration]);
 
   const variant = ((): 'positive' | 'informative' | 'warning' | 'critical' | undefined => {
     switch (execution?.status) {
