@@ -65,6 +65,10 @@ export type SliderArgument = Argument<number> & {
   offset: number;
 };
 
+export type ColorArgument = Argument<string> & {
+  format: 'HEX' | 'RGBA' | 'HSL' | 'HSB';
+}
+
 type RangeValue = {
   start: number;
   end: number;
@@ -114,7 +118,7 @@ export function isSliderArgument(arg: Argument<ArgumentValue>): arg is SliderArg
   return arg.type === 'SLIDER';
 }
 
-export function isColorArgument(arg: Argument<ArgumentValue>): arg is Argument<string> {
+export function isColorArgument(arg: Argument<ArgumentValue>): arg is ColorArgument {
   return arg.type === 'COLOR';
 }
 

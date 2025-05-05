@@ -5,12 +5,14 @@ import com.vml.es.aem.acm.core.code.ArgumentType;
 import java.io.Serializable;
 import java.util.List;
 
-public class RangeArgument extends Argument<RangeArgument.Range> {
+public class NumberRangeArgument extends Argument<NumberRangeArgument.Range> {
     private Number min;
+
     private Number max;
+
     private Number step;
 
-    public RangeArgument(String name) {
+    public NumberRangeArgument(String name) {
         super(name, ArgumentType.RANGE);
     }
 
@@ -48,6 +50,7 @@ public class RangeArgument extends Argument<RangeArgument.Range> {
 
     public static class Range implements Serializable {
         private Number start;
+
         private Number end;
 
         public Range(Number start, Number end) {

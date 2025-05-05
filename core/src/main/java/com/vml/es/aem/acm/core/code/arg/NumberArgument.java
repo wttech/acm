@@ -3,12 +3,14 @@ package com.vml.es.aem.acm.core.code.arg;
 import com.vml.es.aem.acm.core.code.Argument;
 import com.vml.es.aem.acm.core.code.ArgumentType;
 
-public class SliderArgument extends Argument<Number> {
+public class NumberArgument extends Argument<Number> {
     private Number min;
+
     private Number max;
+
     private Number step;
 
-    public SliderArgument(String name) {
+    public NumberArgument(String name) {
         super(name, ArgumentType.SLIDER);
     }
 

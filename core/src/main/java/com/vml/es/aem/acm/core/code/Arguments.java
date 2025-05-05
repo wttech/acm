@@ -146,12 +146,12 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void slider(String name) {
-        slider(name, null);
+    public void number(String name) {
+        number(name, null);
     }
 
-    public void slider(String name, Closure<SliderArgument> options) {
-        SliderArgument argument = new SliderArgument(name);
+    public void number(String name, Closure<NumberArgument> options) {
+        NumberArgument argument = new NumberArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }
@@ -166,12 +166,12 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void range(String name) {
-        range(name, null);
+    public void numberRange(String name) {
+        numberRange(name, null);
     }
 
-    public void range(String name, Closure<RangeArgument> options) {
-        RangeArgument argument = new RangeArgument(name);
+    public void numberRange(String name, Closure<NumberRangeArgument> options) {
+        NumberRangeArgument argument = new NumberRangeArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }

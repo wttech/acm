@@ -1,4 +1,25 @@
-import { Checkbox, CheckboxGroup, ColorEditor, ColorPicker, DatePicker, Flex, Item, ListView, NumberField, parseColor, Picker, Radio, RadioGroup, RangeSlider, Slider, Switch, TextArea, TextField, View } from '@adobe/react-spectrum';
+import {
+  Button,
+  Checkbox,
+  CheckboxGroup,
+  ColorEditor, ColorFormat,
+  ColorPicker,
+  DatePicker,
+  Flex,
+  Item,
+  ListView,
+  NumberField,
+  parseColor,
+  Picker,
+  Radio,
+  RadioGroup,
+  RangeSlider,
+  Slider,
+  Switch,
+  TextArea,
+  TextField,
+  View
+} from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import React from 'react';
@@ -275,8 +296,20 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           render={({ field, fieldState }) => (
             <View key={arg.name} marginBottom="size-200">
               <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
-                <ColorPicker {...field} label={argLabel(arg)} aria-label={`Argument '${arg.name}'`} value={field.value ? parseColor(field.value) : '#000'} onChange={(value) => field.onChange(value.toString('hex'))}>
-                  <ColorEditor />
+                <ColorPicker
+                  {...field}
+                  label={argLabel(arg)}
+                  aria-label={`Argument '${arg.name}'`}
+                  value={field.value ? parseColor(field.value) : ""}
+                  onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}>
+                  <ColorEditor hideAlphaChannel={arg.format !== "RGBA"} />
+                  <Button
+                    onPress={() => field.onChange("")}
+                    width={"100%"}
+                    marginTop={"size-200"}
+                    variant={"secondary"}>
+                    Clear
+                  </Button>
                 </ColorPicker>
                 {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
               </Flex>
