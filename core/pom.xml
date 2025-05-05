@@ -49,7 +49,7 @@
                             <bnd><![CDATA[
 Export-Package com.vml.es.aem.acm.core.*
 Import-Package: javax.annotation;version=0.0.0,*
-Private-Package: org.yaml.snakeyaml.*
+Private-Package: org.yaml.snakeyaml.*,com.fasterxml.jackson.datatype.jsr310.*
 DynamicImport-Package: *
                                 ]]></bnd>
                         </configuration>
