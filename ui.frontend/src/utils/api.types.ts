@@ -172,7 +172,7 @@ export type Suggestion = {
   l: string; // label
   it: string; // insert text
   i: string; // info
-}
+};
 
 export type SnippetOutput = {
   list: Snippet[];

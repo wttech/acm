@@ -1,10 +1,11 @@
 import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import { MarkdownString } from 'monaco-editor/esm/vs/base/common/htmlContent';
+import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 import { apiRequest } from '../../../api.ts';
-import {AssistCodeOutput, Suggestion, SuggestionKind} from '../../../api.types.ts';
+import { AssistCodeOutput, Suggestion, SuggestionKind } from '../../../api.types.ts';
+import { Strings } from '../../../strings.ts';
 import { LANGUAGE_ID } from '../../groovy.ts';
-import {languages} from "monaco-editor/esm/vs/editor/editor.api"
 
 export function registerAemCodeCompletions(instance: Monaco) {
   registerWordCompletion(instance);
@@ -46,7 +47,7 @@ function registerWordCompletion(instance: Monaco) {
           detail: suggestion.k,
           documentation: new MarkdownString(suggestion.i),
           range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
-        }))
+        }));
         return { suggestions: suggestions, incomplete: true };
       } catch (error) {
         console.error('Code assistance error:', error);
@@ -151,27 +152,18 @@ function removePathPrefix(path: string, v: string) {
   return v;
 }
 
-function composeLabel(suggestion: Suggestion) {
+function composeLabel(suggestion: Suggestion): string | languages.CompletionItemLabel {
   switch (suggestion.k) {
     case SuggestionKind.CLASS:
       return {
-        label: suggestion.it ? suggestion.it.split('.').at(-1) : suggestion.l.split('.').at(-1),
-        description: suggestion.it ?? suggestion.l
-      } as languages.CompletionItemLabel
+        label: Strings.substringAfterLast(suggestion.it, '.'),
+        description: Strings.substringBeforeLast(suggestion.it, '.'),
+      } as languages.CompletionItemLabel;
     case SuggestionKind.VARIABLE:
-      return {
-        label: suggestion.it ? suggestion.it.split('.').at(-1) : suggestion.l.split('.').at(-1),
-        description: suggestion.i.replace("Type: ", "")
-      } as languages.CompletionItemLabel
+      return suggestion.it;
     case SuggestionKind.RESOURCE:
-      return {
-        label: suggestion.it ? suggestion.it.split("/").at(-1) : suggestion.l.split("/").at(-1),
-        description: suggestion.it
-      } as languages.CompletionItemLabel
+      return Strings.substringAfterLast(suggestion.it, '/');
     case SuggestionKind.SNIPPET:
-      return {
-        label: suggestion.l,
-        description: suggestion.it
-      } as languages.CompletionItemLabel
+      return suggestion.l;
   }
 }
