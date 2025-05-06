@@ -1,6 +1,16 @@
 group: OSGi
 name: osgi_get_service
-documentation: |
-  Get an OSGi service by its interface.
 content: |
   osgi.getService(${1:pid}.class)
+documentation: |
+  Get an OSGi service by its interface.
+  
+  For example:
+  ```groovy
+  osgi.getService(ResourceResolverFactory.class)
+  osgi.getService(EventAdmin.class)
+  osgi.getService(JobManager.class)
+  osgi.getService(QueryBuilder.class)
+  osgi.getService(WorkflowService.class)
+  // etc...
+  ```

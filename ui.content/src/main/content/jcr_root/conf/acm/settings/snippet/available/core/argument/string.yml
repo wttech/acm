@@ -4,3 +4,8 @@ content: |
   args.string("${1:name}") { label = "${2:label}"; value = "${3:value}" }
 documentation: |
   An argument holding a string value.<br>
+  
+  For example:
+  ```groovy
+  args.string("foo") { label = "Foo"; value = "bar" }
+  ```

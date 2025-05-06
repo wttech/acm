@@ -4,4 +4,8 @@ content: |
   condition.everyHourInMinuteRange(${1:startMinute}, ${2:endMinute})
 documentation: |
   Execute the script only once a day within a given time range.<br>
-  For example: `condition.everyHourInMinuteRange(30, 35)`.
+  
+  For example: 
+  ```
+  condition.everyHourInMinuteRange(30, 35)
+  ```

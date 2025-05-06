@@ -5,4 +5,10 @@ content: |
 documentation: |
   An argument holding multiple values selected from a list of options.
   By default, the first option is selected.
-  Can be displayed as a list or a checkbox(es).
+  
+  Display mode can be enforced by using `list()` or `checkbox()` methods.
+  
+  For example:
+  ```groovy
+  args.multiSelect("foo") { label = "Foo"; options = ["bar": "Bar", "baz": "Baz"]; value = ["bar"] }
+  ```

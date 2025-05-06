@@ -1,7 +1,12 @@
 group: Repo
 name: repo_save
+content: |
+  repo.get("${1:path}").save(["${2:key}": "${3:value}"])
 documentation: |
   Create or update the resource in the repository.<br>
   If the resource already exists, it will be updated with the new properties.
-content: |
-  repo.get("${1:path}").save(["${2:key}": "${3:value}"])
+  
+  For example:
+  ```groovy
+  repo.get("/content/acme").save(["foo": "bar"])
+  ```
