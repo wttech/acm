@@ -160,8 +160,15 @@ export type AssistCodeOutput = {
   suggestions: Suggestion[];
 };
 
+export enum SuggestionKind {
+  VARIABLE = 'variable',
+  RESOURCE = 'resource',
+  SNIPPET = 'snippet',
+  CLASS = 'class',
+}
+
 export type Suggestion = {
-  k: "variable" | "resource" | "snippet" | "class"; // kind
+  k: SuggestionKind; // kind
   l: string; // label
   it: string; // insert text
   i: string; // info
