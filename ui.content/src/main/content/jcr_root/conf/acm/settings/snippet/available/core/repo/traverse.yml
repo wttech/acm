@@ -1,0 +1,12 @@
+group: Repo
+name: repo_traverse
+documentation: |
+  Travers resources under the given path in the repository.<br>
+  The result is a stream of resources that match the query.<br>
+  
+  To skip the current resource, use the `includeSelf` parameter by setting it to `false`.<br>
+  ```
+content: |
+  repo.get("${1:path}").traverse(${2:includeSelf}) { resource ->")
+    println "Resource: ${resource.path}"
+  }

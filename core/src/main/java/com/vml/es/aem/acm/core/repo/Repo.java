@@ -67,17 +67,17 @@ public class Repo {
         return query(path, nodeType, null, null);
     }
 
-    public Stream<RepoResource> query(String path, String nodeType, String whereSpec) {
-        return query(path, nodeType, whereSpec, null);
+    public Stream<RepoResource> query(String path, String nodeType, String where) {
+        return query(path, nodeType, where, null);
     }
 
-    public Stream<RepoResource> query(String path, String nodeType, String whereSpec, String orderBySpec) {
+    public Stream<RepoResource> query(String path, String nodeType, String where, String orderBy) {
         String sql = String.format("SELECT * FROM [%s] AS n WHERE ISDESCENDANTNODE(n, [%s])", nodeType, path);
-        if (StringUtils.isNotBlank(whereSpec)) {
-            sql += " AND " + whereSpec;
+        if (StringUtils.isNotBlank(where)) {
+            sql += " AND " + where;
         }
-        if (StringUtils.isNotBlank(orderBySpec)) {
-            sql += " ORDER BY " + orderBySpec;
+        if (StringUtils.isNotBlank(orderBy)) {
+            sql += " ORDER BY " + orderBy;
         }
         return queryRaw(sql);
     }
