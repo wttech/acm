@@ -9,7 +9,6 @@ public enum ArgumentType {
     TEXT,
     SELECT,
     MULTISELECT,
-    SLIDER,
     COLOR,
     RANGE
 }

@@ -36,7 +36,6 @@ import {
   isNumberArgument,
   isRangeArgument,
   isSelectArgument,
-  isSliderArgument,
   isStringArgument,
   isTextArgument,
 } from '../utils/api.types.ts';
@@ -250,44 +249,46 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
         />
       );
     } else if (isNumberArgument(arg)) {
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom="size-200">
-              <NumberField
-                {...field}
-                label={argLabel(arg)}
-                errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                validationState={fieldState.error ? 'invalid' : 'valid'}
-                minValue={arg.min !== null ? arg.min : undefined}
-                maxValue={arg.max !== null ? arg.max : undefined}
-                hideStepper={arg.type === 'DECIMAL'}
-                formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
-                aria-label={`Argument '${arg.name}'`}
-              />
-            </View>
-          )}
-        />
-      );
-    } else if (isSliderArgument(arg)) {
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom="size-200">
-              <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
-                <Slider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
-                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
-              </Flex>
-            </View>
-          )}
-        />
-      );
+      if (arg.display === 'SLIDER') {
+        return(
+          <Controller
+            name={arg.name}
+            control={control}
+            rules={controllerRules(arg)}
+            render={({ field, fieldState }) => (
+              <View key={arg.name} marginBottom="size-200">
+                <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
+                  <Slider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                  {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
+                </Flex>
+              </View>
+            )}
+          />
+        )
+      } else {
+        return (
+          <Controller
+            name={arg.name}
+            control={control}
+            rules={controllerRules(arg)}
+            render={({ field, fieldState }) => (
+              <View key={arg.name} marginBottom="size-200">
+                <NumberField
+                  {...field}
+                  label={argLabel(arg)}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  minValue={arg.min !== null ? arg.min : undefined}
+                  maxValue={arg.max !== null ? arg.max : undefined}
+                  hideStepper={arg.type === 'DECIMAL'}
+                  formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
+                  aria-label={`Argument '${arg.name}'`}
+                />
+              </View>
+            )}
+          />
+        );
+      }
     } else if (isColorArgument(arg)) {
       return (
         <Controller

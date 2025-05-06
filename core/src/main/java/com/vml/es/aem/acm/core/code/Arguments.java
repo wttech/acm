@@ -146,16 +146,6 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void number(String name) {
-        number(name, null);
-    }
-
-    public void number(String name, Closure<NumberArgument> options) {
-        NumberArgument argument = new NumberArgument(name);
-        GroovyUtils.with(argument, options);
-        add(argument);
-    }
-
     public void color(String name) {
         color(name, null);
     }
@@ -166,12 +156,22 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void numberRange(String name) {
-        numberRange(name, null);
+    public void integerRange(String name) {
+        integerRange(name, null);
     }
 
-    public void numberRange(String name, Closure<NumberRangeArgument> options) {
-        NumberRangeArgument argument = new NumberRangeArgument(name);
+    public void integerRange(String name, Closure<IntegerRangeArgument> options) {
+        IntegerRangeArgument argument = new IntegerRangeArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void decimalRange(String name) {
+        decimalRange(name, null);
+    }
+
+    public void decimalRange(String name, Closure<DecimalRangeArgument> options) {
+        DecimalRangeArgument argument = new DecimalRangeArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }

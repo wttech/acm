@@ -56,13 +56,8 @@ export type TextArgument = Argument<string> & {
 export type NumberArgument = Argument<number> & {
   min: number;
   max: number;
-};
-
-export type SliderArgument = Argument<number> & {
-  min: number;
-  max: number;
   step: number;
-  offset: number;
+  display: 'INPUT' | 'SLIDER';
 };
 
 export type ColorArgument = Argument<string> & {
@@ -112,10 +107,6 @@ export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArg
 
 export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
   return arg.type === 'INTEGER' || arg.type === 'DECIMAL';
-}
-
-export function isSliderArgument(arg: Argument<ArgumentValue>): arg is SliderArgument {
-  return arg.type === 'SLIDER';
 }
 
 export function isColorArgument(arg: Argument<ArgumentValue>): arg is ColorArgument {

@@ -5,18 +5,18 @@ import com.vml.es.aem.acm.core.code.ArgumentType;
 import java.io.Serializable;
 import java.util.List;
 
-public class NumberRangeArgument extends Argument<NumberRangeArgument.Range> {
-    private Number min;
+public class IntegerRangeArgument extends Argument<IntegerRangeArgument.Range> {
+    private Integer min;
 
-    private Number max;
+    private Integer max;
 
-    private Number step;
+    private Integer step;
 
-    public NumberRangeArgument(String name) {
+    public IntegerRangeArgument(String name) {
         super(name, ArgumentType.RANGE);
     }
 
-    public void setValue(List<? extends Number> value) {
+    public void setValue(List<Integer> value) {
         if (value.size() != 2) {
             throw new IllegalArgumentException(
                     String.format("Range value must be a list of two elements but specified '%s'!", value));
@@ -24,53 +24,53 @@ public class NumberRangeArgument extends Argument<NumberRangeArgument.Range> {
         super.setValue(new Range(value.get(0), value.get(1)));
     }
 
-    public Number getMin() {
+    public Integer getMin() {
         return min;
     }
 
-    public void setMin(Number min) {
+    public void setMin(Integer min) {
         this.min = min;
     }
 
-    public Number getStep() {
+    public Integer getStep() {
         return step;
     }
 
-    public void setStep(Number step) {
+    public void setStep(Integer step) {
         this.step = step;
     }
 
-    public Number getMax() {
+    public Integer getMax() {
         return max;
     }
 
-    public void setMax(Number max) {
+    public void setMax(Integer max) {
         this.max = max;
     }
 
     public static class Range implements Serializable {
-        private Number start;
+        private Integer start;
 
-        private Number end;
+        private Integer end;
 
-        public Range(Number start, Number end) {
+        public Range(Integer start, Integer end) {
             this.start = start;
             this.end = end;
         }
 
-        public Number getStart() {
+        public Integer getStart() {
             return start;
         }
 
-        public void setStart(Number start) {
+        public void setStart(Integer start) {
             this.start = start;
         }
 
-        public Number getEnd() {
+        public Integer getEnd() {
             return end;
         }
 
-        public void setEnd(Number end) {
+        public void setEnd(Integer end) {
             this.end = end;
         }
     }
