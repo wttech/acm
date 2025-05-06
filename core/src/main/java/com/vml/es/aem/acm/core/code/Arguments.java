@@ -146,6 +146,36 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
+    public void color(String name) {
+        color(name, null);
+    }
+
+    public void color(String name, Closure<ColorArgument> options) {
+        ColorArgument argument = new ColorArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void integerRange(String name) {
+        integerRange(name, null);
+    }
+
+    public void integerRange(String name, Closure<IntegerRangeArgument> options) {
+        IntegerRangeArgument argument = new IntegerRangeArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void decimalRange(String name) {
+        decimalRange(name, null);
+    }
+
+    public void decimalRange(String name, Closure<DecimalRangeArgument> options) {
+        DecimalRangeArgument argument = new DecimalRangeArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
     public void decimalNumber(String name) {
         decimalNumber(name, null);
     }

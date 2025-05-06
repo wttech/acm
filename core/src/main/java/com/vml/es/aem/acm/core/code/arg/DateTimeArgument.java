@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 
 public class DateTimeArgument extends Argument<LocalDateTime> {
+
     private DateTimeArgument.Variant variant = DateTimeArgument.Variant.DATETIME;
 
     private LocalDateTime min;
