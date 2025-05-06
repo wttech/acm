@@ -4,4 +4,9 @@ content: |
   args.text("${1:name}") { label = "${2:label}"; value = "${3:value}"; language = "${4:language}" }
 documentation: |
   An argument holding a complex, multiline string value.<br>
-  Language can be specified for syntax highlighting, for example, "json" or "xml".<br>
+  Language can be specified to enable syntax highlighting e.g. "json" or "xml".<br>
+  
+  For example:
+  ```groovy
+  args.text("foo") { label = "Foo"; value = '{"Bar": "bar"}'; language = "json" }
+  ```

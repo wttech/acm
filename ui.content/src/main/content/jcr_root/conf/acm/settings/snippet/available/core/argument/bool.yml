@@ -1,7 +1,14 @@
 group: Argument
 name: argument_bool
 content: |
-  args.bool("${1:name}") { label = "${2:label}"; value = ${3:value}; checkbox() }
+  args.bool("${1:name}") { label = "${2:label}"; value = ${3:value} }
 documentation: |
   An argument that can be either true or false.<br>
-  Can be displayed as a checkbox or a switcher.
+  Display mode can be adjusted by using `checkbox()` or `toggle()` methods.
+  
+  For example:
+  ```groovy
+  args.bool("dryRun") { label = "Dry run"; value = true; toggle() }
+  args.bool("force") { label = "Force"; value = false; checkbox() }
+  args.bool("enabled") { label = "Enabled"; value = true; checkbox() }
+  ```

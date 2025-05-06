@@ -1,7 +1,12 @@
 group: Repo
 name: repo_update_property
+content: |
+  repo.get("${1:path}").updateProperty("${2:key}") { v -> ${3:value} }
 documentation: |
   Update the existing property of the resource in the repository.<br>
   Changes done are tracked and printed in the logs with actual values before and after the change.
-content: |
-  repo.get("${1:path}").updateProperty("${2:key}") { v -> ${3:value} }
+  
+  For example:
+  ```groovy
+  repo.get("/content/acme").updateProperty("foo") { v -> v.replaceAll("bar", "baz") }
+  ```

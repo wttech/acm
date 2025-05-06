@@ -1,5 +1,7 @@
 group: Repo
 name: repo_query
+content: |
+  repo.get("${1:path}").query("${2:nodeType}", "${3:where}", "${4:orderBy}")
 documentation: |
   Query resources under the given path in the repository.<br>
   The result is a stream of resources that match the query.<br>
@@ -11,14 +13,13 @@ documentation: |
   
   All parameters are optional and can be omitted if not needed. When node type is omitted, 'nt:base' is used as default.
   
-  Example usages:
+  For example:
   ```groovy
   repo.get("/content/acme").query("cq:PageContent", "n.[sling:resourceType] = 'acme/components/page'").forEach { page ->
     println "Page: ${page.path}"
   }
+  
   repo.get("/home/users").query("rep:User", "n.[rep:authorizableId] LIKE 'a%'", "n.[jcr:created] DESC").forEach { user ->
       println "User: ${user.property('rep:authorizableId')} created at ${user.property('jcr:created', String.class)}"
   }
   ```
-content: |
-  repo.get("${1:path}").query("${2:nodeType}", "${3:where}", "${4:orderBy}")

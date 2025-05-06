@@ -4,4 +4,8 @@ content: |
   condition.everyDayInTimeRange('${1:startTime}', '${2:endTime}')
 documentation: |
   Execute the script only once a day within a given time range.<br>
-  For example: `condition.everyDayInTimeRange('2:00', '3:00')`.
+  
+  For example: 
+  ```groovy
+  condition.everyDayInTimeRange('2:00', '3:00')
+  ```

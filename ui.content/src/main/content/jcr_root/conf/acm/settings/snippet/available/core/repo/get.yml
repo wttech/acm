@@ -1,6 +1,11 @@
 group: Repo
 name: repo_get
-documentation: |
-  Get resource from the repository.
 content: |
   repo.get("${1:path}")
+documentation: |
+  Get resource from the repository.
+  
+  For example:
+  ```groovy
+  repo.get("/content/acme")
+  ```

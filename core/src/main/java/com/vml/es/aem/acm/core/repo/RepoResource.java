@@ -151,16 +151,17 @@ public class RepoResource {
                     valueUpdated);
             return;
         }
-        props.put(key, valueUpdated);
 
         if (valueUpdated == null) {
+            props.remove(key);
             LOG.info("Deleted property '{}' with value '{}' for resource at path '{}'", key, valueExisting, path);
             repo.commit(String.format("deleting property '%s' at path '%s'", key, path));
-        }
-        if (valueExisting == null) {
+        } else if (valueExisting == null) {
+            props.put(key, valueUpdated);
             LOG.info("Created property '{}' with value '{}' for resource at path '{}'", key, valueUpdated, path);
             repo.commit(String.format("creating property '%s' at path '%s'", key, path));
         } else {
+            props.put(key, valueUpdated);
             LOG.info(
                     "Updated property '{}' from value '{}' to '{}' for resource at path '{}'",
                     key,

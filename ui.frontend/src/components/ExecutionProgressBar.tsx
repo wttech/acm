@@ -11,6 +11,8 @@ interface ExecutionProgressBarProps {
   active?: boolean;
 }
 
+const ExecutionProgressInterval = 800;
+
 const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, active }) => {
   const standardLabel = () => {
     if (execution) {
@@ -73,7 +75,7 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
         }
       }
     },
-    !intervalCompleted ? 1000 : null,
+    !intervalCompleted ? ExecutionProgressInterval : null,
   );
 
   const variant = ((): 'positive' | 'informative' | 'warning' | 'critical' | undefined => {
