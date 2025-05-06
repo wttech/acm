@@ -74,7 +74,7 @@ public class Repo {
     public Stream<RepoResource> query(String path, String nodeType, String where, String orderBy) {
         String sql = String.format("SELECT * FROM [%s] AS n WHERE ISDESCENDANTNODE(n, [%s])", nodeType, path);
         if (StringUtils.isNotBlank(where)) {
-            sql += " AND " + where;
+            sql += " AND (" + where + ")";
         }
         if (StringUtils.isNotBlank(orderBy)) {
             sql += " ORDER BY " + orderBy;

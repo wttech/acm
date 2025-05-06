@@ -91,6 +91,10 @@ public class RepoResource {
         return this;
     }
 
+    public Resource save(String key, Object value) {
+        return save(Collections.singletonMap(key, value));
+    }
+
     public Resource save(Map<String, Object> values) {
         Resource result = resolve();
         if (result == null) {
