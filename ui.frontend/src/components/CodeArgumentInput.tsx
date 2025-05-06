@@ -26,19 +26,7 @@ import { Field } from '@react-spectrum/label';
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import useFormCrossFieldValidation from '../hooks/form.ts';
-import {
-  Argument,
-  ArgumentValue,
-  isBoolArgument,
-  isColorArgument,
-  isDateTimeArgument,
-  isMultiSelectArgument,
-  isNumberArgument,
-  isRangeArgument,
-  isSelectArgument,
-  isStringArgument,
-  isTextArgument,
-} from '../utils/api.types.ts';
+import { Argument, ArgumentValue, isBoolArgument, isColorArgument, isDateTimeArgument, isMultiSelectArgument, isNumberArgument, isRangeArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates.ts';
 import { Strings } from '../utils/strings.ts';
 import styles from './CodeArgumentInput.module.css';
@@ -250,7 +238,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
       );
     } else if (isNumberArgument(arg)) {
       if (arg.display === 'SLIDER') {
-        return(
+        return (
           <Controller
             name={arg.name}
             control={control}
@@ -264,7 +252,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               </View>
             )}
           />
-        )
+        );
       } else {
         return (
           <Controller

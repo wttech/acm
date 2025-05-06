@@ -4,7 +4,7 @@ content: |
   args.color("${1:name}") { label = "${2:label}"; value = ${3:value}; rgba() }
 documentation: |
     An argument that allows to choose a value from color picker.<br>
-    It returns a string with the color hex code.<br>
+    It returns a string with the color in selected format, RGBA is the default<br>
     <br>
     **Example**:<br>
     ```groovy
