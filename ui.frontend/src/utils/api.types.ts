@@ -157,13 +157,22 @@ export type ExecutionOutput<E> = {
 
 export type AssistCodeOutput = {
   code: string;
-  suggestions: {
-    k: string; // kind
-    l: string; // label
-    it: string; // insert text
-    i: string; // info
-  }[];
+  suggestions: Suggestion[];
 };
+
+export enum SuggestionKind {
+  VARIABLE = 'variable',
+  RESOURCE = 'resource',
+  SNIPPET = 'snippet',
+  CLASS = 'class',
+}
+
+export type Suggestion = {
+  k: SuggestionKind; // kind
+  l: string; // label
+  it: string; // insert text
+  i: string; // info
+}
 
 export type SnippetOutput = {
   list: Snippet[];
