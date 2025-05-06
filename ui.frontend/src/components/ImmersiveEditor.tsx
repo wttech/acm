@@ -75,7 +75,7 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
     }
 
     // @ts-expect-error: Accessing private API of the suggest widget to modify its behavior
-    const {widget} = mountedEditor.getContribution('editor.contrib.suggestController');
+    const { widget } = mountedEditor.getContribution('editor.contrib.suggestController');
     if (widget) {
       const suggestWidget = widget.value;
       if (suggestWidget && suggestWidget._setDetailsVisible) {

@@ -5,6 +5,7 @@ import Magnify from '@spectrum-icons/workflow/Magnify';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app.ts';
+import { useFormatter } from '../hooks/formatter.ts';
 import { toastRequest } from '../utils/api';
 import { InstanceRole, isExecutionNegative, ScriptOutput, ScriptType } from '../utils/api.types';
 import DateExplained from './DateExplained.tsx';
@@ -14,7 +15,6 @@ import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
-import {useFormatter} from "../hooks/formatter.ts";
 
 type ScriptListProps = {
   type: ScriptType;
