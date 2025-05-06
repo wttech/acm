@@ -4,6 +4,7 @@ import { MarkdownString } from 'monaco-editor/esm/vs/base/common/htmlContent';
 import { apiRequest } from '../../../api.ts';
 import { AssistCodeOutput } from '../../../api.types.ts';
 import { LANGUAGE_ID } from '../../groovy.ts';
+import {languages} from "monaco-editor/esm/vs/editor/editor.api"
 
 export function registerAemCodeCompletions(instance: Monaco) {
   registerWordCompletion(instance);
@@ -37,19 +38,32 @@ function registerWordCompletion(instance: Monaco) {
           operation: 'Code assistance',
         });
         const assistance = response.data.data;
-        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => ({
-          label: suggestion.l ?? suggestion.it,
-          insertText: suggestion.it ?? suggestion.l,
-          insertTextRules: monacoInsertTextRules(suggestion.k),
-          kind: monacoKind(suggestion.k),
-          detail: suggestion.k,
-          documentation: new MarkdownString(suggestion.i),
-          range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
+        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => {
+          let label;
+          if (suggestion.k == "class") {
+            label = {
+              label: suggestion.it ? suggestion.it.split('.').at(-1) : suggestion.l.split('.').at(-1),
+              description: suggestion.it ?? suggestion.l
+            } as languages.CompletionItemLabel
+          } else if (suggestion.k == "variable") {
+            label = {
+              label: suggestion.it ? suggestion.it.split('.').at(-1) : suggestion.l.split('.').at(-1),
+              description: suggestion.i.replace("Type: ", "")
+            } as languages.CompletionItemLabel
+          } else {
+            label = suggestion.it ?? suggestion.l;
+          }
 
-          // TODO below does not work, Monaco bug? (we want to prioritize exact class name matches)
-          // sortText: sortText(suggestion.v, wordText)
-        }));
-
+          return {
+            label,
+            insertText: suggestion.it ?? suggestion.l,
+            insertTextRules: monacoInsertTextRules(suggestion.k),
+            kind: monacoKind(suggestion.k),
+            detail: suggestion.k,
+            documentation: new MarkdownString(suggestion.i),
+            range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
+          }
+        })
         return { suggestions: suggestions, incomplete: true };
       } catch (error) {
         console.error('Code assistance error:', error);
@@ -75,14 +89,19 @@ function registerResourceCompletion(instance: Monaco) {
           operation: 'Code assistance',
         });
         const assistance = response.data.data;
-        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => ({
-          label: suggestion.it ?? suggestion.l,
-          insertText: removePathPrefix(path, suggestion.it ?? suggestion.l), // subtract path prefix
-          kind: monacoKind(suggestion.k),
-          detail: suggestion.k,
-          documentation: new MarkdownString(suggestion.i),
-          range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-        }));
+        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => {
+          return {
+            label: {
+              label: suggestion.it ? suggestion.it.split("/").at(-1) : suggestion.l.split("/").at(-1),
+              description: suggestion.it
+            } as languages.CompletionItemLabel,
+            insertText: removePathPrefix(path, suggestion.it ?? suggestion.l), // subtract path prefix
+            kind: monacoKind(suggestion.k),
+            detail: suggestion.k,
+            documentation: new MarkdownString(suggestion.i),
+            range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+          }
+        });
 
         return { suggestions: suggestions, incomplete: true };
       } catch (error) {
@@ -153,13 +172,3 @@ function removePathPrefix(path: string, v: string) {
   }
   return v;
 }
-
-/*
-function sortText(label: string, word: string): string {
-    const lastSegment = label.split('.').pop() || '';
-    const isExactMatch = lastSegment === word;
-    const isPartialMatch = lastSegment.includes(word);
-    const score = (isExactMatch ? '0' : isPartialMatch ? '1' : '2');
-    return score + "_" + label;
-}
-*/
