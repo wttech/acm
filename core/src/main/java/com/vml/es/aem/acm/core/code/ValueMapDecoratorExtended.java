@@ -34,6 +34,9 @@ public class ValueMapDecoratorExtended extends ValueMapDecorator {
         } else if (obj instanceof LocalDateTime && type == Calendar.class) {
             // Convert LocalDateTime to Calendar
             return (T) DateUtils.toCalendar((LocalDateTime) obj);
+        } else if (obj instanceof String && type == LocalDateTime.class) {
+            // Convert String to LocalDateTime
+            return (T) DateUtils.localDateTimeFromString((String) obj);
         } else {
             return super.get(name, type);
         }

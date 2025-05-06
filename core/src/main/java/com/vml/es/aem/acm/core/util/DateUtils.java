@@ -58,11 +58,23 @@ public final class DateUtils {
         return Optional.ofNullable(text).map(DateUtils::fromStringInternal).orElse(null);
     }
 
-    public static ZonedDateTime localDateTimeFromString(String text) {
+    public static ZonedDateTime zonedDateTimeFromString(String text) {
         for (String format : LOCAL_DATE_TIME_FORMATS) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.of(TIMEZONE_ID));
             try {
                 return ZonedDateTime.parse(text, formatter);
+            } catch (DateTimeParseException ignored) {
+                // ignore
+            }
+        }
+        throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", text));
+    }
+
+    public static LocalDateTime localDateTimeFromString(String text) {
+        for (String format : LOCAL_DATE_TIME_FORMATS) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.of(TIMEZONE_ID));
+            try {
+                return LocalDateTime.parse(text, formatter);
             } catch (DateTimeParseException ignored) {
                 // ignore
             }
