@@ -18,7 +18,8 @@ type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorCons
   onChange?: (code: string) => void;
 };
 
-const saveViewStateDebounce = 1000;
+const SaveViewStateDebounce = 1000;
+const SuggestWidgetHeight = 640;
 
 const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, id, language, value, initialValue, scrollToBottomOnUpdate, ...props }: ImmersiveEditorProps<C>) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,7 +27,7 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
   const containerRef = useRef<HTMLDivElement>(null);
   const debouncedViewStateUpdate = debounce((mountedEditor: editor.IStandaloneCodeEditor) => {
     modelStorage.updateViewState(id, mountedEditor.saveViewState());
-  }, saveViewStateDebounce);
+  }, SaveViewStateDebounce);
 
   useEffect(() => {
     if (value) {
@@ -82,7 +83,7 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
         suggestWidget._setDetailsVisible(true);
         if (suggestWidget._details) {
           // Height adjusts automatically
-          suggestWidget._details.widget._size.width = 500;
+          suggestWidget._details.widget._size.width = SuggestWidgetHeight;
         }
       }
     }
