@@ -20,7 +20,8 @@ public class CodeRepository {
     public @interface Config {
         @AttributeDefinition(
                 name = "Class Links",
-                description = "Mapping of class prefixes to their corresponding documentation URLs in the format 'package=url'.")
+                description =
+                        "Mapping of class prefixes to their corresponding documentation URLs in the format 'package=url'.")
         String[] classLinks() default {
             "com.vml.es.aem.acm.core=https://github.com/wttech/acm/blob/main/core/src/main/java",
             "org.apache.sling.api=https://github.com/apache/sling-org-apache-sling-api/tree/master/src/main/java"

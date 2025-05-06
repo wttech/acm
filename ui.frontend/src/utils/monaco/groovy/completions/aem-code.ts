@@ -2,7 +2,7 @@ import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import { MarkdownString } from 'monaco-editor/esm/vs/base/common/htmlContent';
 import { apiRequest } from '../../../api.ts';
-import { AssistCodeOutput } from '../../../api.types.ts';
+import {AssistCodeOutput, Suggestion} from '../../../api.types.ts';
 import { LANGUAGE_ID } from '../../groovy.ts';
 import {languages} from "monaco-editor/esm/vs/editor/editor.api"
 
@@ -38,32 +38,15 @@ function registerWordCompletion(instance: Monaco) {
           operation: 'Code assistance',
         });
         const assistance = response.data.data;
-        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => {
-          let label;
-          if (suggestion.k == "class") {
-            label = {
-              label: suggestion.it ? suggestion.it.split('.').at(-1) : suggestion.l.split('.').at(-1),
-              description: suggestion.it ?? suggestion.l
-            } as languages.CompletionItemLabel
-          } else if (suggestion.k == "variable") {
-            label = {
-              label: suggestion.it ? suggestion.it.split('.').at(-1) : suggestion.l.split('.').at(-1),
-              description: suggestion.i.replace("Type: ", "")
-            } as languages.CompletionItemLabel
-          } else {
-            label = suggestion.it ?? suggestion.l;
-          }
-
-          return {
-            label,
-            insertText: suggestion.it ?? suggestion.l,
-            insertTextRules: monacoInsertTextRules(suggestion.k),
-            kind: monacoKind(suggestion.k),
-            detail: suggestion.k,
-            documentation: new MarkdownString(suggestion.i),
-            range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
-          }
-        })
+        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => ({
+          label: composeLabel(suggestion),
+          insertText: suggestion.it ?? suggestion.l,
+          insertTextRules: monacoInsertTextRules(suggestion.k),
+          kind: monacoKind(suggestion.k),
+          detail: suggestion.k,
+          documentation: new MarkdownString(suggestion.i),
+          range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
+        }))
         return { suggestions: suggestions, incomplete: true };
       } catch (error) {
         console.error('Code assistance error:', error);
@@ -89,19 +72,14 @@ function registerResourceCompletion(instance: Monaco) {
           operation: 'Code assistance',
         });
         const assistance = response.data.data;
-        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => {
-          return {
-            label: {
-              label: suggestion.it ? suggestion.it.split("/").at(-1) : suggestion.l.split("/").at(-1),
-              description: suggestion.it
-            } as languages.CompletionItemLabel,
-            insertText: removePathPrefix(path, suggestion.it ?? suggestion.l), // subtract path prefix
-            kind: monacoKind(suggestion.k),
-            detail: suggestion.k,
-            documentation: new MarkdownString(suggestion.i),
-            range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-          }
-        });
+        const suggestions = (assistance?.suggestions ?? []).map((suggestion) => ({
+          label: composeLabel(suggestion),
+          insertText: removePathPrefix(path, suggestion.it ?? suggestion.l), // subtract path prefix
+          kind: monacoKind(suggestion.k),
+          detail: suggestion.k,
+          documentation: new MarkdownString(suggestion.i),
+          range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+        }));
 
         return { suggestions: suggestions, incomplete: true };
       } catch (error) {
@@ -171,4 +149,27 @@ function removePathPrefix(path: string, v: string) {
     return v.substring(path.length);
   }
   return v;
+}
+
+function composeLabel(suggestion: Suggestion) {
+  if (suggestion.k == "class") {
+    return {
+      label: suggestion.it ? suggestion.it.split('.').at(-1) : suggestion.l.split('.').at(-1),
+      description: suggestion.it ?? suggestion.l
+    } as languages.CompletionItemLabel
+  } else if (suggestion.k == "variable") {
+    return {
+      label: suggestion.it ? suggestion.it.split('.').at(-1) : suggestion.l.split('.').at(-1),
+      description: suggestion.i.replace("Type: ", "")
+    } as languages.CompletionItemLabel
+  } else if (suggestion.k == "resource") {
+    return {
+      label: suggestion.it ? suggestion.it.split("/").at(-1) : suggestion.l.split("/").at(-1),
+      description: suggestion.it
+    } as languages.CompletionItemLabel
+  }
+  return {
+    label: suggestion.l,
+    description: suggestion.it
+  } as languages.CompletionItemLabel
 }
