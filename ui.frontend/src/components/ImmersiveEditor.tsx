@@ -19,7 +19,7 @@ type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorCons
 };
 
 const SaveViewStateDebounce = 1000;
-const SuggestWidgetHeight = 640;
+const SuggestWidgetHeight = 480;
 
 const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, id, language, value, initialValue, scrollToBottomOnUpdate, ...props }: ImmersiveEditorProps<C>) => {
   const [isOpen, setIsOpen] = useState(false);
