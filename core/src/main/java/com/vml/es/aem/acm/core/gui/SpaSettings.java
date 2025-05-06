@@ -16,11 +16,14 @@ public class SpaSettings implements Serializable {
 
     private long executionPollInterval;
 
+    private long scriptStatsLimit;
+
     @Activate
     @Modified
     protected void activate(Config config) {
         this.appStateInterval = config.appStateInterval();
         this.executionPollInterval = config.executionPollInterval();
+        this.scriptStatsLimit = config.scriptStatsLimit();
     }
 
     public long getAppStateInterval() {
@@ -29,6 +32,10 @@ public class SpaSettings implements Serializable {
 
     public long getExecutionPollInterval() {
         return executionPollInterval;
+    }
+
+    public long getScriptStatsLimit() {
+        return scriptStatsLimit;
     }
 
     @ObjectClassDefinition(name = "AEM Content Manager - SPA Settings")
@@ -43,5 +50,11 @@ public class SpaSettings implements Serializable {
                 name = "Execution Poll Interval",
                 description = "Interval in milliseconds to poll execution status.")
         long executionPollInterval() default 1000;
+
+        @AttributeDefinition(
+                name = "Script Stats Limit",
+                description =
+                        "Limit for the number of historical executions to be considered to calculate the average duration.")
+        long scriptStatsLimit() default 30;
     }
 }

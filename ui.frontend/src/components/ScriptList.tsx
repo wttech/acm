@@ -133,14 +133,14 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
               <Text>Average Duration</Text>
               <ContextualHelp variant="help">
                 <Heading>Explanation</Heading>
-                <Content>Duration is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
+                <Content>Duration is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
               </ContextualHelp>
             </Column>
             <Column>
               <Text>Success Rate</Text>
               <ContextualHelp variant="help">
                 <Heading>Explanation</Heading>
-                <Content>Success rate is calculated based on the last 30 completed executions (only succeeded or failed).</Content>
+                <Content>Success rate is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
               </ContextualHelp>
             </Column>
           </TableHeader>

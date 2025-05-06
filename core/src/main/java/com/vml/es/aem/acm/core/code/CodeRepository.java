@@ -1,5 +1,6 @@
 package com.vml.es.aem.acm.core.code;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -15,32 +16,38 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 @Designate(ocd = CodeRepository.Config.class)
 public class CodeRepository {
 
-    @ObjectClassDefinition(name = "AEM Content Manager - Code repository")
+    @ObjectClassDefinition(name = "AEM Content Manager - Code Repository")
     public @interface Config {
         @AttributeDefinition(
                 name = "Class Links",
-                description = "Mapping of class prefixes to their corresponding URLs in the format 'prefix=url'.")
+                description = "Mapping of class prefixes to their corresponding documentation URLs in the format 'package=url'.")
         String[] classLinks() default {
             "com.vml.es.aem.acm.core=https://github.com/wttech/acm/blob/main/core/src/main/java",
             "org.apache.sling.api=https://github.com/apache/sling-org-apache-sling-api/tree/master/src/main/java"
         };
     }
 
-    private final Map<String, String> CLASS_LINKS = new HashMap<>();
+    private Map<String, String> classLinks = Collections.emptyMap();
 
     @Activate
     @Modified
     public void activate(Config config) {
-        for (String classLink : config.classLinks()) {
+        this.classLinks = parseClassLinks(config.classLinks());
+    }
+
+    private Map<String, String> parseClassLinks(String[] classLinks) {
+        Map<String, String> result = new HashMap<>();
+        for (String classLink : classLinks) {
             String[] parts = classLink.split("=");
             if (parts.length == 2) {
-                CLASS_LINKS.put(parts[0].trim(), parts[1].trim());
+                result.put(parts[0].trim(), parts[1].trim());
             }
         }
+        return result;
     }
 
     public Optional<String> linkToClass(String className) {
-        return CLASS_LINKS.entrySet().stream()
+        return classLinks.entrySet().stream()
                 .filter(entry -> StringUtils.startsWith(className, entry.getKey()))
                 .findFirst()
                 .map(entry -> String.format("%s/%s.java", entry.getValue(), StringUtils.replace(className, ".", "/")));

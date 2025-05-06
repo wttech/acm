@@ -16,6 +16,7 @@ function App() {
     spaSettings: {
       appStateInterval: 3000,
       executionPollInterval: 1000,
+      scriptStatsLimit: 30,
     },
     healthStatus: {
       healthy: true,

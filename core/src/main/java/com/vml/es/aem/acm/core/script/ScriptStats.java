@@ -28,7 +28,7 @@ public class ScriptStats implements Serializable {
         this.averageDuration = averageDuration;
     }
 
-    public static ScriptStats forCompletedByPath(ResourceResolver resourceResolver, String path, int limit) {
+    public static ScriptStats forCompletedByPath(ResourceResolver resourceResolver, String path, long limit) {
         AtomicReference<ExecutionSummary> lastExecution = new AtomicReference<>();
         Map<ExecutionStatus, Long> statusCount =
                 ExecutionStatus.completed().stream().collect(HashMap::new, (m, s) -> m.put(s, 0L), HashMap::putAll);

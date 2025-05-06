@@ -214,6 +214,7 @@ export type State = {
 export type SpaSettings = {
   appStateInterval: number;
   executionPollInterval: number;
+  scriptStatsLimit: number;
 };
 
 export type InstanceSettings = {
