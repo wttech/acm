@@ -2,6 +2,7 @@ package com.vml.es.aem.acm.core.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -70,7 +71,7 @@ public final class DateUtils {
         throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", text));
     }
 
-    public static LocalDateTime localDateTimeFromString(String text) {
+    public static LocalDateTime toLocalDateTime(String text) {
         for (String format : LOCAL_DATE_TIME_FORMATS) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.of(TIMEZONE_ID));
             try {
@@ -102,11 +103,12 @@ public final class DateUtils {
                 .orElse(null);
     }
 
-    public static Calendar toCalendar(LocalDateTime localDateTime) {
-        return Optional.ofNullable(localDateTime)
-                .map(ldt -> {
+    public static Calendar toCalendar(String date) {
+        return Optional.ofNullable(date)
+                .map(d -> {
+                    Date parsedDate = fromString(d);
                     Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(Date.from(ldt.atZone(ZONE_ID).toInstant()));
+                    calendar.setTime(parsedDate);
                     return calendar;
                 })
                 .orElse(null);
@@ -127,5 +129,17 @@ public final class DateUtils {
         return Optional.ofNullable(calendar)
                 .map(c -> c.toInstant().atZone(ZONE_ID).toLocalDateTime())
                 .orElse(null);
+    }
+
+    public static LocalDate toLocalDate(String obj) {
+        for (String format : LOCAL_DATE_TIME_FORMATS) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.of(TIMEZONE_ID));
+            try {
+                return LocalDate.parse(obj, formatter);
+            } catch (DateTimeParseException ignored) {
+                // ignore
+            }
+        }
+        throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", obj));
     }
 }
