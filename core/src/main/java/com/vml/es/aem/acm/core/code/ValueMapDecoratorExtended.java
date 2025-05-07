@@ -23,7 +23,8 @@ public class ValueMapDecoratorExtended extends ValueMapDecorator {
      */
     @SuppressWarnings("unchecked")
     public <T> T get(String name, Class<T> type) {
-        Object obj = get(name);if (obj instanceof String && type == LocalDateTime.class) {
+        Object obj = get(name);
+        if (obj instanceof String && type == LocalDateTime.class) {
             // Convert String to LocalDateTime
             return (T) DateUtils.toLocalDateTime((String) obj);
         } else if (obj instanceof String && type == Date.class) {
