@@ -119,18 +119,6 @@ public final class DateUtils {
         return !now.isBefore(from) && !now.isAfter(to);
     }
 
-    public static LocalDateTime toLocalDateTime(Date date) {
-        return Optional.ofNullable(date)
-                .map(d -> d.toInstant().atZone(ZONE_ID).toLocalDateTime())
-                .orElse(null);
-    }
-
-    public static LocalDateTime toLocalDateTime(Calendar calendar) {
-        return Optional.ofNullable(calendar)
-                .map(c -> c.toInstant().atZone(ZONE_ID).toLocalDateTime())
-                .orElse(null);
-    }
-
     public static LocalDate toLocalDate(String obj) {
         for (String format : LOCAL_DATE_TIME_FORMATS) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.of(TIMEZONE_ID));
