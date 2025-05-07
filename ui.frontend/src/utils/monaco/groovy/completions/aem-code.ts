@@ -93,16 +93,16 @@ function registerResourceCompletion(instance: Monaco) {
 
 function monacoKind(kind: string): monaco.languages.CompletionItemKind {
   switch (kind.toLowerCase()) {
-    case 'class':
+    case SuggestionKind.CLASS:
       return monaco.languages.CompletionItemKind.Class;
+    case SuggestionKind.VARIABLE:
+      return monaco.languages.CompletionItemKind.Variable;
+    case SuggestionKind.SNIPPET:
+      return monaco.languages.CompletionItemKind.Snippet;
     case 'method':
       return monaco.languages.CompletionItemKind.Method;
     case 'function':
       return monaco.languages.CompletionItemKind.Function;
-    case 'variable':
-      return monaco.languages.CompletionItemKind.Variable;
-    case 'snippet':
-      return monaco.languages.CompletionItemKind.Snippet;
     default:
       return monaco.languages.CompletionItemKind.Text;
   }
