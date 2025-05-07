@@ -97,6 +97,22 @@ public final class DateUtils {
         return Optional.ofNullable(calendar).map(Calendar::getTime).orElse(null);
     }
 
+    public static Date toDate(LocalDateTime localDateTime) {
+        return Optional.ofNullable(localDateTime)
+                .map(ldt -> Date.from(ldt.atZone(ZONE_ID).toInstant()))
+                .orElse(null);
+    }
+
+    public static Calendar toCalendar(LocalDateTime localDateTime) {
+        return Optional.ofNullable(localDateTime)
+                .map(ldt -> {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(Date.from(ldt.atZone(ZONE_ID).toInstant()));
+                    return calendar;
+                })
+                .orElse(null);
+    }
+
     public static Calendar toCalendar(String date) {
         return Optional.ofNullable(date)
                 .map(d -> {
@@ -111,6 +127,18 @@ public final class DateUtils {
     public static boolean isInRange(LocalDateTime from, LocalDateTime now, long offsetMillis) {
         LocalDateTime to = from.plus(offsetMillis, ChronoUnit.MILLIS);
         return !now.isBefore(from) && !now.isAfter(to);
+    }
+
+    public static LocalDateTime toLocalDateTime(Date date) {
+        return Optional.ofNullable(date)
+                .map(d -> d.toInstant().atZone(ZONE_ID).toLocalDateTime())
+                .orElse(null);
+    }
+
+    public static LocalDateTime toLocalDateTime(Calendar calendar) {
+        return Optional.ofNullable(calendar)
+                .map(c -> c.toInstant().atZone(ZONE_ID).toLocalDateTime())
+                .orElse(null);
     }
 
     public static LocalDate toLocalDate(String obj) {
