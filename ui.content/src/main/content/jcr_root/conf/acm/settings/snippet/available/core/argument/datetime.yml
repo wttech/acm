@@ -1,0 +1,19 @@
+group: Argument
+name: argument_datetime
+content: |
+  args.dateTime("${1:name}") { label = "${2:label}"; value = LocalDateTime.of(${3:value}); min = LocalDateTime.of(${4:min}); max = LocalDateTime.of(${5:max}); dateTime() }
+documentation: |
+  An argument that represents a date and time.<br>
+  The value parameter is the default value, while min and max define the range of acceptable values.<br>
+  
+  The `dateTime()` method is used to specify the display mode for the argument.<br>
+  Alternatively You can use `date()` method to display only the date<br>
+  `dateTime()` is default display mode.<br>
+  
+  For example:
+  ```groovy
+  args.dateTime("someDateTime") {label = "some date time"; value = LocalDateTime.of(2025,5,7,9,50,0); min = LocalDateTime.of(2025,5,7,9,40,0); max = LocalDateTime.of(2025,5,7,10,50,0); dateTime()}
+  args.dateTime("someDate") {label = "some date"; value = LocalDate.of(2025,5,3); min = LocalDate.of(2025,5,7); max = LocalDate.of(2025,5,12); date()}
+  args.dateTime("someDateTime") {label = "some date time"; value = LocalDateTime.of(2025,5,7,9,50,0)}
+  args.dateTime("someDateTime") {label = "some date time"}
+  ```
