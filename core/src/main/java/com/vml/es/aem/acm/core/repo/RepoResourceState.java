@@ -1,6 +1,6 @@
 package com.vml.es.aem.acm.core.repo;
 
-import com.vml.es.aem.acm.core.code.ValueMapDecoratorExtended;
+import com.vml.es.aem.acm.core.code.ArgumentsValueMap;
 import com.vml.es.aem.acm.core.util.StringUtil;
 import java.io.Serializable;
 import java.util.Map;
@@ -25,7 +25,7 @@ public class RepoResourceState implements Serializable {
     public RepoResourceState(String path, boolean exists, Map<String, Object> properties) {
         this.path = path;
         this.exists = exists;
-        this.properties = new ValueMapDecoratorExtended(properties);
+        this.properties = new ArgumentsValueMap(properties);
     }
 
     public String getPath() {

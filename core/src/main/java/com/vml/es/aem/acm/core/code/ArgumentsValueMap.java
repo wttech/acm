@@ -9,13 +9,13 @@ import java.util.Date;
 import java.util.Map;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 
-public class ValueMapDecoratorExtended extends ValueMapDecorator {
+public class ArgumentsValueMap extends ValueMapDecorator {
     /**
      * Creates a new wrapper around a given map.
      *
      * @param base wrapped object
      */
-    public ValueMapDecoratorExtended(Map<String, Object> base) {
+    public ArgumentsValueMap(Map<String, Object> base) {
         super(base);
     }
 

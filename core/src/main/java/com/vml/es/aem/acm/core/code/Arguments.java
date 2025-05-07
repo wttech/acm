@@ -38,7 +38,7 @@ public class Arguments implements Serializable {
         for (Argument<?> argument : definitions.values()) {
             props.put(argument.getName(), argument.getValue());
         }
-        return new ValueMapDecoratorExtended(props);
+        return new ArgumentsValueMap(props);
     }
 
     public <T> T getValue(String name, Class<T> type) {
