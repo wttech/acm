@@ -97,12 +97,6 @@ public final class DateUtils {
         return Optional.ofNullable(calendar).map(Calendar::getTime).orElse(null);
     }
 
-    public static Date toDate(LocalDateTime localDateTime) {
-        return Optional.ofNullable(localDateTime)
-                .map(ldt -> Date.from(ldt.atZone(ZONE_ID).toInstant()))
-                .orElse(null);
-    }
-
     public static Calendar toCalendar(String date) {
         return Optional.ofNullable(date)
                 .map(d -> {
