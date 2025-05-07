@@ -11,6 +11,8 @@ interface ExecutionProgressBarProps {
   active?: boolean;
 }
 
+const ExecutionProgressInterval = 800;
+
 const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, active }) => {
   const standardLabel = () => {
     if (execution) {
@@ -73,7 +75,7 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
         }
       }
     },
-    !intervalCompleted ? 1000 : null,
+    !intervalCompleted ? ExecutionProgressInterval : null,
   );
 
   const variant = ((): 'positive' | 'informative' | 'warning' | 'critical' | undefined => {
@@ -96,7 +98,7 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
 
   if (active || isExecutionPending(execution.status)) {
     if (progress !== null && progress < 100) {
-      return <ProgressBar minWidth="size-3000" aria-label={label} label={label} value={progress}/>;
+      return <ProgressBar minWidth="size-3000" aria-label={label} label={label} value={progress} />;
     }
     return <ProgressBar minWidth="size-3000" aria-label={label} showValueLabel={false} label={label} isIndeterminate />;
   }

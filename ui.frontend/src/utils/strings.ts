@@ -13,9 +13,32 @@ export class Strings {
       .join(' ');
   }
   static removeEnd(text: string, suffix: string) {
+    if (!text || !suffix) {
+      return text;
+    }
     if (text.endsWith(suffix)) {
       return text.slice(0, -suffix.length);
     }
     return text;
+  }
+  static substringAfterLast(text: string, separator: string): string {
+    if (!text || !separator) {
+      return text;
+    }
+    const lastIndex = text.lastIndexOf(separator);
+    if (lastIndex === -1) {
+      return text;
+    }
+    return text.substring(lastIndex + separator.length);
+  }
+  static substringBeforeLast(text: string, separator: string) {
+    if (!text || !separator) {
+      return text;
+    }
+    const lastIndex = text.lastIndexOf(separator);
+    if (lastIndex === -1) {
+      return text;
+    }
+    return text.substring(0, lastIndex);
   }
 }

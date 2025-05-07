@@ -1,8 +1,10 @@
 import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import { MarkdownString } from 'monaco-editor/esm/vs/base/common/htmlContent';
+import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 import { apiRequest } from '../../../api.ts';
-import { AssistCodeOutput } from '../../../api.types.ts';
+import { AssistCodeOutput, Suggestion, SuggestionKind } from '../../../api.types.ts';
+import { Strings } from '../../../strings.ts';
 import { LANGUAGE_ID } from '../../groovy.ts';
 
 export function registerAemCodeCompletions(instance: Monaco) {
@@ -38,18 +40,14 @@ function registerWordCompletion(instance: Monaco) {
         });
         const assistance = response.data.data;
         const suggestions = (assistance?.suggestions ?? []).map((suggestion) => ({
-          label: suggestion.l ?? suggestion.it,
+          label: composeLabel(suggestion),
           insertText: suggestion.it ?? suggestion.l,
           insertTextRules: monacoInsertTextRules(suggestion.k),
           kind: monacoKind(suggestion.k),
           detail: suggestion.k,
           documentation: new MarkdownString(suggestion.i),
           range: new monaco.Range(position.lineNumber, wordAtPosition?.startColumn || position.column, position.lineNumber, wordAtPosition?.endColumn || position.column),
-
-          // TODO below does not work, Monaco bug? (we want to prioritize exact class name matches)
-          // sortText: sortText(suggestion.v, wordText)
         }));
-
         return { suggestions: suggestions, incomplete: true };
       } catch (error) {
         console.error('Code assistance error:', error);
@@ -76,7 +74,7 @@ function registerResourceCompletion(instance: Monaco) {
         });
         const assistance = response.data.data;
         const suggestions = (assistance?.suggestions ?? []).map((suggestion) => ({
-          label: suggestion.it ?? suggestion.l,
+          label: composeLabel(suggestion),
           insertText: removePathPrefix(path, suggestion.it ?? suggestion.l), // subtract path prefix
           kind: monacoKind(suggestion.k),
           detail: suggestion.k,
@@ -154,12 +152,18 @@ function removePathPrefix(path: string, v: string) {
   return v;
 }
 
-/*
-function sortText(label: string, word: string): string {
-    const lastSegment = label.split('.').pop() || '';
-    const isExactMatch = lastSegment === word;
-    const isPartialMatch = lastSegment.includes(word);
-    const score = (isExactMatch ? '0' : isPartialMatch ? '1' : '2');
-    return score + "_" + label;
+function composeLabel(suggestion: Suggestion): string | languages.CompletionItemLabel {
+  switch (suggestion.k) {
+    case SuggestionKind.CLASS:
+      return {
+        label: Strings.substringAfterLast(suggestion.it, '.'),
+        description: Strings.substringBeforeLast(suggestion.it, '.'),
+      } as languages.CompletionItemLabel;
+    case SuggestionKind.VARIABLE:
+      return suggestion.it;
+    case SuggestionKind.RESOURCE:
+      return Strings.substringAfterLast(suggestion.it, '/');
+    case SuggestionKind.SNIPPET:
+      return suggestion.l;
+  }
 }
-*/
