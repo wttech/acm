@@ -1,0 +1,11 @@
+group: General
+name: general_script_describe_run
+content: |
+  void describeRun() {
+    // args
+  }
+documentation: |
+  Describes the script characteristics.
+  
+  This method is executed before the script is run and is used to define the script's input arguments.<br>
+  The arguments must be defined using the `args.xxx(name) { ... }` methods which could be later on used in the script by calling `args.value(name)` method.<br>

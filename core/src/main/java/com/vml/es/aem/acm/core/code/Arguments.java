@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.api.wrappers.ValueMapDecorator;
 
 public class Arguments implements Serializable {
 
@@ -39,7 +38,7 @@ public class Arguments implements Serializable {
         for (Argument<?> argument : definitions.values()) {
             props.put(argument.getName(), argument.getValue());
         }
-        return new ValueMapDecorator(props);
+        return new ArgumentsValueMap(props);
     }
 
     public <T> T getValue(String name, Class<T> type) {
