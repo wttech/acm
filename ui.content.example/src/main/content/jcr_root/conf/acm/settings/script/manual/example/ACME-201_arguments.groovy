@@ -1,3 +1,10 @@
+/**
+ * Prints animal information to the console based on user input.
+ *
+ * This is an example of AEM Content Manager script with arguments.
+ *
+ * @author Krystian Panek <krystian.panek@vml.com>
+ */
 void describeRun() {
     args.string("animalName") { value = "Whiskers" ; validator = "(v, a) => a.animalType === 'cat' ? (v && v.startsWith('W') || 'Cat name must start with W!') : true" }
     args.select("animalType") { value = "cat"; options = ["cat", "dog", "bird", "fish", "hamster", "rabbit", "turtle", "lizard", "snake", "frog"] }
