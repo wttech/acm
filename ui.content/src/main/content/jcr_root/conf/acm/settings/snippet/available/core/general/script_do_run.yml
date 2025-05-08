@@ -1,0 +1,10 @@
+group: General
+name: general_script_do_run
+content: |
+  void doRun() {
+    // logic
+  }
+documentation: |
+  Executes the script logic.
+  
+  This method is executed only when `canRun()` returns true.
