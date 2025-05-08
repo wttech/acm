@@ -11,4 +11,5 @@ documentation: |
   For example:
   ```groovy
   args.select("foo") { label = "Foo"; options = ["bar": "Bar", "baz": "Baz"]; value = "bar" }
+  args.select("foo") { options = ["bar", "baz"]; value = "bar" }
   ```
