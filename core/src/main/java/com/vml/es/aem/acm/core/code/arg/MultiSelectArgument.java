@@ -31,8 +31,9 @@ public class MultiSelectArgument<V> extends Argument<V> {
         return options;
     }
 
-    public void setOptions(Map<String, V> options) {
-        this.options = options;
+    public void setOptions(Map<?, V> options) {
+        this.options = options.entrySet().stream()
+                .collect(Collectors.toMap(e -> ObjectUtils.toString(e.getKey()), Map.Entry::getValue));
     }
 
     public void setOptions(Collection<V> options) {

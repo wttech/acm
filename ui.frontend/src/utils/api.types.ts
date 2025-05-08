@@ -64,7 +64,7 @@ export type SelectArgument = Argument<ArgumentValue> & {
 };
 
 export type MultiSelectArgument = Argument<ArgumentValue> & {
-  options: Record<string, ArgumentValue>;
+  options: Record<string | number, ArgumentValue>;
   display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN';
 };
 
