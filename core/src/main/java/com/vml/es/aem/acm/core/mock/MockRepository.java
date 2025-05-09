@@ -23,7 +23,7 @@ public class MockRepository {
         for (String path : manager.getSearchPaths()) {
             Resource root = resolver.getResource(path);
             if (root == null) {
-                throw new MockException(String.format("Cannot read stubs search path '%s'!", path));
+                throw new MockException(String.format("Cannot read mock search path '%s'!", path));
             }
             Stream<Resource> stream = ResourceSpliterator.stream(root, this::isStub);
             result = Stream.concat(result, stream);

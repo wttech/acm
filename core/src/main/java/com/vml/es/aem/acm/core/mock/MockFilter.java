@@ -85,19 +85,19 @@ public class MockFilter implements Filter {
                     }
                 }
             } catch (MockException e) {
-                LOG.error("Stubs error!", e);
+                LOG.error("Mock error!", e);
 
                 Mock mock = repository.findSpecialStub(MockManager.FAIL_PATH).orElse(null);
                 if (mock != null) {
                     try {
                         mock.fail(request, response, e);
                     } catch (MockException e2) {
-                        LOG.error("Stubs fail error!", e2);
+                        LOG.error("Mock fail error!", e2);
                         response.sendError(
-                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Stubs fail error. " + e.getMessage());
+                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Mock fail error. " + e.getMessage());
                     }
                 } else {
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Stubs error. " + e.getMessage());
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Mock error. " + e.getMessage());
                 }
                 return;
             }
@@ -107,17 +107,17 @@ public class MockFilter implements Filter {
                 try {
                     mock.respond(request, response);
                 } catch (MockException e) {
-                    LOG.error("Stubs missing error!", e);
+                    LOG.error("Mock missing error!", e);
                     response.sendError(
-                            HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Stubs missing error. " + e.getMessage());
+                            HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Mock missing error. " + e.getMessage());
                 }
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Mock not found!");
             }
             return;
         } catch (LoginException e) {
-            LOG.error("Stubs repository error!", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Stubs error. " + e.getMessage());
+            LOG.error("Mock repository error!", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Mock error. " + e.getMessage());
         }
     }
 

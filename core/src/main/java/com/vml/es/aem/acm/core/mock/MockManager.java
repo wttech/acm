@@ -26,13 +26,14 @@ public class MockManager {
     @ObjectClassDefinition(name = "AEM Content Manager - Mock Manager")
     public @interface Config {
 
+        // TODO hardcode it
         @AttributeDefinition(name = "Search paths", description = "JCR repository paths to search for mock resources.")
-        String[] searchPaths() default {"/conf/stubs"};
+        String[] searchPaths() default {"/conf/acm/settings/script/mock"};
 
         @AttributeDefinition(
                 name = "Classifier",
-                description = "Resource name part used to distinguish stubs from other files.")
-        String classifier() default "stub";
+                description = "Resource name part used to distinguish mocks from other files.")
+        String classifier() default "mock";
     }
 
     @Activate
