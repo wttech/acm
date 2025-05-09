@@ -1,5 +1,5 @@
 group: Argument
-name: argument_decimalRange
+name: argument_decimal_range
 content: |
   args.decimalRange("${1:name}") { label = "${2:label}"; value = ${3:value}; min = ${4:min}; max = ${5:max}; step = ${6:step} }
 documentation: |

@@ -156,10 +156,6 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void integerRange(String name) {
-        integerRange(name, null);
-    }
-
     public void integerRange(String name, Closure<IntegerRangeArgument> options) {
         IntegerRangeArgument argument = new IntegerRangeArgument(name);
         GroovyUtils.with(argument, options);

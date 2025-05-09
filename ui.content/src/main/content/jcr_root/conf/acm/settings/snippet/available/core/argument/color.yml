@@ -1,7 +1,7 @@
 group: Argument
 name: argument_color
 content: |
-  args.color("${1:name}") { label = "${2:label}"; value = ${3:value}; rgba() }
+  args.color("${1:name}") { label = "${2:label}"; value = ${3:value} }
 documentation: |
     An argument that allows to choose a value from color picker.<br>
     It returns a string with the color in selected format, RGBA is the default<br>

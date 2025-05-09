@@ -2,11 +2,11 @@ package com.vml.es.aem.acm.core.code.arg;
 
 import com.vml.es.aem.acm.core.code.Argument;
 import com.vml.es.aem.acm.core.code.ArgumentType;
-import java.io.Serializable;
+import com.vml.es.aem.acm.core.util.RangeArgumentObject;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class DecimalRangeArgument extends Argument<DecimalRangeArgument.Range> {
+public class DecimalRangeArgument extends Argument<RangeArgumentObject<BigDecimal>> {
     private BigDecimal min;
 
     private BigDecimal max;
@@ -14,7 +14,7 @@ public class DecimalRangeArgument extends Argument<DecimalRangeArgument.Range> {
     private BigDecimal step;
 
     public DecimalRangeArgument(String name) {
-        super(name, ArgumentType.RANGE);
+        super(name, ArgumentType.NUMBER_RANGE);
     }
 
     public void setValue(List<BigDecimal> value) {
@@ -22,7 +22,7 @@ public class DecimalRangeArgument extends Argument<DecimalRangeArgument.Range> {
             throw new IllegalArgumentException(
                     String.format("Range value must be a list of two elements but specified '%s'!", value));
         }
-        super.setValue(new Range(value.get(0), value.get(1)));
+        super.setValue(new RangeArgumentObject<>(value.get(0), value.get(1)));
     }
 
     public BigDecimal getMin() {
@@ -47,32 +47,5 @@ public class DecimalRangeArgument extends Argument<DecimalRangeArgument.Range> {
 
     public void setMax(BigDecimal max) {
         this.max = max;
-    }
-
-    public static class Range implements Serializable {
-        private BigDecimal start;
-
-        private BigDecimal end;
-
-        public Range(BigDecimal start, BigDecimal end) {
-            this.start = start;
-            this.end = end;
-        }
-
-        public BigDecimal getStart() {
-            return start;
-        }
-
-        public void setStart(BigDecimal start) {
-            this.start = start;
-        }
-
-        public BigDecimal getEnd() {
-            return end;
-        }
-
-        public void setEnd(BigDecimal end) {
-            this.end = end;
-        }
     }
 }

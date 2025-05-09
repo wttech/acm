@@ -15,11 +15,11 @@ public class ColorArgument extends Argument<String> {
         return format;
     }
 
-    public void setVariant(String format) {
+    public void setFormat(String format) {
         this.format = ColorArgument.Format.of(format);
     }
 
-    public void setVariant(ColorArgument.Format format) {
+    public void setFormat(ColorArgument.Format format) {
         this.format = format;
     }
 

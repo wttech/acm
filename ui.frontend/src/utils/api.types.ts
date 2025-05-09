@@ -23,7 +23,7 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'COLOR' | 'RANGE';
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'COLOR' | 'NUMBER_RANGE';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue;
 export type ArgumentValues = Record<string, ArgumentValue>;
 
@@ -69,7 +69,7 @@ type RangeValue = {
   end: number;
 };
 
-export type RangeArgument = Argument<RangeValue> & {
+export type NumberRangeArgument = Argument<RangeValue> & {
   min: number;
   max: number;
   step: number;
@@ -113,8 +113,8 @@ export function isColorArgument(arg: Argument<ArgumentValue>): arg is ColorArgum
   return arg.type === 'COLOR';
 }
 
-export function isRangeArgument(arg: Argument<ArgumentValue>): arg is RangeArgument {
-  return arg.type === 'RANGE';
+export function isRangeArgument(arg: Argument<ArgumentValue>): arg is NumberRangeArgument {
+  return arg.type === 'NUMBER_RANGE';
 }
 
 export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {

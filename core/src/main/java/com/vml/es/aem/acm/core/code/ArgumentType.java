@@ -10,5 +10,5 @@ public enum ArgumentType {
     SELECT,
     MULTISELECT,
     COLOR,
-    RANGE
+    NUMBER_RANGE
 }
