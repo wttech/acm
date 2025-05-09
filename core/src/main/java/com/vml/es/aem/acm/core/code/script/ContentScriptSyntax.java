@@ -19,21 +19,8 @@ public class ContentScriptSyntax extends AbstractASTTransformation {
         if (source == null) {
             return;
         }
-
         this.sourceUnit = source;
-
-        ClassNode mainClass = requireMainClass(source.getAST().getClasses(), MAIN_CLASS);
-        for (Method methodValue : Method.values()) {
-            if (methodValue.required || hasMethod(mainClass, methodValue.givenName)) {
-                if (!isMethodValid(mainClass, methodValue.givenName, methodValue.returnType, 0)) {
-                    addError(
-                            String.format(
-                                    "Top-level '%s %s()' method not found or has incorrect signature!",
-                                    methodValue.returnType, methodValue.givenName),
-                            mainClass);
-                }
-            }
-        }
+        ScriptUtils.visit(this, nodes, source, MAIN_CLASS);
     }
 
     enum Method {

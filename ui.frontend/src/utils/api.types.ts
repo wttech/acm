@@ -191,6 +191,7 @@ export enum ScriptType {
   ENABLED = 'ENABLED',
   DISABLED = 'DISABLED',
   EXTENSION = 'EXTENSION',
+  MOCK = 'MOCK',
 }
 
 export type Script = {
