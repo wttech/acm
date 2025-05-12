@@ -1,7 +1,5 @@
 package com.vml.es.aem.acm.core.code.script;
 
-import static com.vml.es.aem.acm.core.code.script.ScriptUtils.*;
-
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
@@ -24,7 +22,8 @@ public class MockScriptSyntax extends AbstractASTTransformation {
 
     enum Method {
         REQUEST("request", "boolean", true),
-        RESPOND("respond", "void", true);
+        RESPOND("respond", "void", true),
+        FAIL("fail", "void", false);
 
         final String givenName;
 

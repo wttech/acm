@@ -1,7 +1,5 @@
 package com.vml.es.aem.acm.core.code.script;
 
-import static com.vml.es.aem.acm.core.code.script.ScriptUtils.*;
-
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
@@ -11,7 +9,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class ContentScriptSyntax extends AbstractASTTransformation {
 
-    public static final String MAIN_CLASS = "AcmContentScript";
+    public static final String MAIN_CLASS = "AcmExtensionScript";
 
     @Override
     public void visit(ASTNode[] nodes, SourceUnit source) {

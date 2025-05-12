@@ -30,7 +30,7 @@ public class MockScript implements Mock {
         GroovyShell shell = ScriptUtils.createShell(new MockScriptSyntax());
         Script script = shell.parse(
                 executionContext.getExecutable().getContent(),
-                ContentScriptSyntax.MAIN_CLASS,
+                MockScriptSyntax.MAIN_CLASS,
                 executionContext.getBinding());
         if (script == null) {
             throw new AcmException(String.format(
@@ -49,7 +49,8 @@ public class MockScript implements Mock {
     public boolean request(HttpServletRequest request) throws MockRequestException {
         try {
             LOG.info("Mock '{}' is matching request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
-            Boolean result = (Boolean) script.invokeMethod("request", new Object[] {request});
+            Boolean result =
+                    (Boolean) script.invokeMethod(MockScriptSyntax.Method.REQUEST.givenName, new Object[] {request});
             if (BooleanUtils.isTrue(result)) {
                 LOG.info("Mock '{}' matched request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
             } else {
@@ -73,7 +74,7 @@ public class MockScript implements Mock {
                     getId(),
                     request.getMethod(),
                     request.getRequestURI());
-            script.invokeMethod("respond", new Object[] {request, response});
+            script.invokeMethod(MockScriptSyntax.Method.RESPOND.givenName, new Object[] {request, response});
             LOG.info("Mock '{}' responded to request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
         } catch (Exception e) {
             throw new MockResponseException(String.format("Mock script '%s' cannot respond properly", getId()), e);
@@ -89,7 +90,7 @@ public class MockScript implements Mock {
                     getId(),
                     request.getMethod(),
                     request.getRequestURI());
-            script.invokeMethod("fail", new Object[] {request, response, exception});
+            script.invokeMethod(MockScriptSyntax.Method.FAIL.givenName, new Object[] {request, response, exception});
             LOG.info("Mock '{}' handled failed request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
         } catch (Exception e) {
             throw new MockResponseException(

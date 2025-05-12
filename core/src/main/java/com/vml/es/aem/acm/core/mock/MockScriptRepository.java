@@ -42,7 +42,8 @@ public class MockScriptRepository {
     }
 
     public Stream<MockScriptExecutable> findAll() throws MockException {
-        return ResourceSpliterator.stream(getOrCreateRoot(), this::checkResource)
+        return ResourceSpliterator.stream(getOrCreateRoot())
+                .filter(this::checkResource)
                 .map(s -> s.adaptTo(MockScriptExecutable.class));
     }
 
