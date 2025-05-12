@@ -5,4 +5,11 @@ content: |
 documentation: |
   An argument holding a single value selected from a list of options.
   By default, the first option is selected.
-  Can be displayed as a dropdown or a radio.
+  
+  Display mode can be enforced by using `dropdown()` or `radio()` methods.
+
+  For example:
+  ```groovy
+  args.select("foo") { label = "Foo"; options = ["bar": "Bar", "baz": "Baz"]; value = "bar" }
+  args.select("foo") { options = ["bar", "baz"]; value = "bar" }
+  ```

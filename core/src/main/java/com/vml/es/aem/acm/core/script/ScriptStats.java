@@ -1,32 +1,35 @@
 package com.vml.es.aem.acm.core.script;
 
-import com.vml.es.aem.acm.core.code.Execution;
-import com.vml.es.aem.acm.core.code.ExecutionHistory;
-import com.vml.es.aem.acm.core.code.ExecutionQuery;
-import com.vml.es.aem.acm.core.code.ExecutionStatus;
+import com.vml.es.aem.acm.core.code.*;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import org.apache.sling.api.resource.ResourceResolver;
 
 public class ScriptStats implements Serializable {
 
     private final String path;
 
-    private Map<ExecutionStatus, Long> statusCount;
+    private final Map<ExecutionStatus, Long> statusCount;
 
-    private Execution lastExecution;
+    private final ExecutionSummary lastExecution;
 
-    public ScriptStats(String path, Map<ExecutionStatus, Long> statusCount, Execution lastExecution) {
+    private final Long averageDuration;
+
+    public ScriptStats(
+            String path, Map<ExecutionStatus, Long> statusCount, ExecutionSummary lastExecution, Long averageDuration) {
         this.path = path;
         this.statusCount = statusCount;
         this.lastExecution = lastExecution;
+        this.averageDuration = averageDuration;
     }
 
-    public static ScriptStats forCompletedByPath(ResourceResolver resourceResolver, String path, int limit) {
-        AtomicReference<Execution> lastExecution = new AtomicReference<>();
+    public static ScriptStats forCompletedByPath(ResourceResolver resourceResolver, String path, long limit) {
+        AtomicReference<ExecutionSummary> lastExecution = new AtomicReference<>();
         Map<ExecutionStatus, Long> statusCount =
                 ExecutionStatus.completed().stream().collect(HashMap::new, (m, s) -> m.put(s, 0L), HashMap::putAll);
 
@@ -46,31 +49,42 @@ public class ScriptStats implements Serializable {
                 query.setExecutableId(ScriptType.ENABLED.enforcePath(path));
                 break;
             case EXTENSION:
-                return new ScriptStats(path, Collections.emptyMap(), null);
+                return new ScriptStats(path, Collections.emptyMap(), null, null);
             default:
                 throw new IllegalStateException(String.format(
                         "Script type '%s' for path '%s' is not supported to calculate stats!", scriptType, path));
         }
 
-        history.findAll(query).limit(limit).forEach(e -> {
+        List<ExecutionSummary> executions =
+                history.findAllSummaries(query).limit(limit).collect(Collectors.toList());
+        Integer length = executions.size();
+        AtomicReference<Long> averageDuration = new AtomicReference<>(0L);
+
+        executions.forEach(e -> {
             if (lastExecution.get() == null) {
                 lastExecution.set(e);
             }
             statusCount.put(e.getStatus(), statusCount.get(e.getStatus()) + 1);
+            averageDuration.updateAndGet(v -> v + e.getDuration());
         });
 
-        return new ScriptStats(path, statusCount, lastExecution.get());
+        return new ScriptStats(
+                path, statusCount, lastExecution.get(), length == 0 ? 0 : averageDuration.get() / length);
     }
 
     public String getPath() {
         return path;
     }
 
+    public Long getAverageDuration() {
+        return averageDuration;
+    }
+
     public Map<ExecutionStatus, Long> getStatusCount() {
         return statusCount;
     }
 
-    public Execution getLastExecution() {
+    public ExecutionSummary getLastExecution() {
         return lastExecution;
     }
 }

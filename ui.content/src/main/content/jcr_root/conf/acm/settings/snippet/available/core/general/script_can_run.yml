@@ -1,0 +1,10 @@
+group: General
+name: general_script_can_run
+content: |
+  boolean canRun() {
+    // condition
+  }
+documentation: |
+  Checks if the script can be executed.
+  
+  This method is executed after `describeRun()` and before `doRun()` methods.

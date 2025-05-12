@@ -1,0 +1,22 @@
+group: Argument
+name: argument_datetime
+content: |
+  args.dateTime("${1:name}") { label = "${2:label}"; value = "${3:value}" }
+documentation: |
+  An argument that represents a date and time.
+  
+  Display mode can be enforced by using `datetime()` (default) or `date()` methods.<br>
+  Optionally `min` and `max` values can be set to restrict the date and time range in picker.<br>
+  
+  For example:
+  ```groovy
+  args.dateTime("publicationTime") { label = "Publication Time"; value = now() }
+  args.dateTime("releaseDate") { label = "Release Date"; date(); value = "2023-01-01" }
+  args.dateTime("birthTime") { value = "2023-01-01T12:00:00" }
+  args.dateTime("eventStart") { date(); setValue(2023, 10, 1) }
+  args.dateTime("eventEnd") { date(); value = now(); min = startOfToday().minusDays(7); max = endOfToday().plusDays(7) }
+  args.dateTime("holidayStart") { date(); min = "2025-07-01"; max = "2023-08-31"} }
+  args.dateTime("raceStart") { setValue(2025, 6, 1, 9, 0, 0) }
+  ```
+  
+  

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -90,6 +91,10 @@ public class RepoResource {
         return this;
     }
 
+    public Resource save(String key, Object value) {
+        return save(Collections.singletonMap(key, value));
+    }
+
     public Resource save(Map<String, Object> values) {
         Resource result = resolve();
         if (result == null) {
@@ -133,7 +138,7 @@ public class RepoResource {
         return properties().get(key);
     }
 
-    public void saveProperty(String key, Object value) {
+    public void updateProperty(String key, Function<Object, Object> valueUpdater) {
         Resource resource = resolve();
         if (resource == null) {
             throw new RepoException(
@@ -141,28 +146,42 @@ public class RepoResource {
         }
         ModifiableValueMap props = Objects.requireNonNull(resource.adaptTo(ModifiableValueMap.class));
         Object valueExisting = props.get(key);
-        if (Objects.equals(value, valueExisting)) {
+        Object valueUpdated = valueUpdater.apply(valueExisting);
+        if (Objects.equals(valueUpdated, valueExisting)) {
             LOG.info(
                     "Skipped saving property '{}' for resource at path '{}' as it already exists with the same value '{}'!",
                     key,
                     path,
-                    value);
+                    valueUpdated);
             return;
         }
-        props.put(key, value);
 
-        if (valueExisting == null) {
-            LOG.info("Created property '{}' with value '{}' for resource at path '{}'", key, value, path);
+        if (valueUpdated == null) {
+            props.remove(key);
+            LOG.info("Deleted property '{}' with value '{}' for resource at path '{}'", key, valueExisting, path);
+            repo.commit(String.format("deleting property '%s' at path '%s'", key, path));
+        } else if (valueExisting == null) {
+            props.put(key, valueUpdated);
+            LOG.info("Created property '{}' with value '{}' for resource at path '{}'", key, valueUpdated, path);
             repo.commit(String.format("creating property '%s' at path '%s'", key, path));
         } else {
+            props.put(key, valueUpdated);
             LOG.info(
                     "Updated property '{}' from value '{}' to '{}' for resource at path '{}'",
                     key,
                     valueExisting,
-                    value,
+                    valueUpdated,
                     path);
             repo.commit(String.format("updating property '%s' at path '%s'", key, path));
         }
+    }
+
+    public void saveProperty(String key, Object value) {
+        updateProperty(key, v -> value);
+    }
+
+    public void deleteProperty(String key) {
+        saveProperty(key, null);
     }
 
     public boolean delete() {
@@ -245,12 +264,12 @@ public class RepoResource {
         return repo.query(path, nodeType);
     }
 
-    public Stream<RepoResource> query(String nodeType, String whereSpec) {
-        return repo.query(path, nodeType, whereSpec);
+    public Stream<RepoResource> query(String nodeType, String where) {
+        return repo.query(path, nodeType, where);
     }
 
-    public Stream<RepoResource> query(String nodeType, String whereSpec, String orderBySpec) {
-        return repo.query(path, nodeType, whereSpec, orderBySpec);
+    public Stream<RepoResource> query(String nodeType, String where, String orderBy) {
+        return repo.query(path, nodeType, where, orderBy);
     }
 
     public Stream<RepoResource> descendants() {

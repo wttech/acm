@@ -5,8 +5,8 @@ content: |
 documentation: |
   An argument holding a integer number value.<br>
   This argument can be also displayed as a slider.<br>
-    **Example**:<br>
-    ```groovy
-    args.integerNumber("someName") { label = "Some label"; value = 20; min = 10; max = 60; step = 2; slider() }
-    ```
-    
+  **Example**:<br>
+  ```groovy
+  args.integerNumber("proportion") { label = "Proportion"; value = 20; min = 10; max = 60; step = 2; slider() }
+  args.integerNumber("maxSize") { label = "Max Size"; value = 30 }
+  ```

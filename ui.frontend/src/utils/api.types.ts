@@ -182,12 +182,21 @@ export type ExecutionOutput<E> = {
 
 export type AssistCodeOutput = {
   code: string;
-  suggestions: {
-    k: string; // kind
-    l: string; // label
-    it: string; // insert text
-    i: string; // info
-  }[];
+  suggestions: Suggestion[];
+};
+
+export enum SuggestionKind {
+  VARIABLE = 'variable',
+  RESOURCE = 'resource',
+  SNIPPET = 'snippet',
+  CLASS = 'class',
+}
+
+export type Suggestion = {
+  k: SuggestionKind; // kind
+  l: string; // label
+  it: string; // insert text
+  i: string; // info
 };
 
 export type SnippetOutput = {
@@ -220,7 +229,8 @@ export type Script = {
 export type ScriptStats = {
   path: string;
   statusCount: { [key in ExecutionStatus]: number };
-  lastExecution: Execution | null;
+  lastExecution: ExecutionSummary | null;
+  averageDuration: number;
 };
 
 export type ScriptOutput = {
@@ -238,6 +248,7 @@ export type State = {
 export type SpaSettings = {
   appStateInterval: number;
   executionPollInterval: number;
+  scriptStatsLimit: number;
 };
 
 export type InstanceSettings = {

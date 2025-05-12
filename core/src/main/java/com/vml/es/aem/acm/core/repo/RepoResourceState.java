@@ -1,5 +1,6 @@
 package com.vml.es.aem.acm.core.repo;
 
+import com.vml.es.aem.acm.core.code.ArgumentsValueMap;
 import com.vml.es.aem.acm.core.util.StringUtil;
 import java.io.Serializable;
 import java.util.Map;
@@ -8,7 +9,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.api.wrappers.ValueMapDecorator;
 
 /**
  * Immutable snapshot of a repository resource state (even not existing).
@@ -25,7 +25,7 @@ public class RepoResourceState implements Serializable {
     public RepoResourceState(String path, boolean exists, Map<String, Object> properties) {
         this.path = path;
         this.exists = exists;
-        this.properties = new ValueMapDecorator(properties);
+        this.properties = new ArgumentsValueMap(properties);
     }
 
     public String getPath() {

@@ -308,7 +308,7 @@ public class Condition {
     // Date-based (predetermined/static)
 
     public boolean isDate(String dateString) {
-        ZonedDateTime localDateTime = DateUtils.localDateTimeFromString(dateString);
+        ZonedDateTime localDateTime = DateUtils.zonedDateTimeFromString(dateString);
         return isDate(localDateTime);
     }
 

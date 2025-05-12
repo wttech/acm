@@ -1,0 +1,12 @@
+group: Repo
+name: repo_delete_property
+content: |
+  repo.get("${1:path}").deleteProperty("${2:key}")
+documentation: |
+  Delete the existing property of the resource in the repository.
+  Changes done are tracked and printed in the logs with actual values before and after the change.
+  
+  For example:
+  ```groovy
+  repo.get("/content/acme").deleteProperty("foo")
+  ```

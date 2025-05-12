@@ -45,11 +45,11 @@ public class Snippet implements Comparable<Snippet> {
     }
 
     public String getContent() throws AcmException {
-        return definition.getContent();
+        return StringUtils.trim(definition.getContent());
     }
 
     public String getDocumentation() throws AcmException {
-        return definition.getDocumentation();
+        return StringUtils.trim(definition.getDocumentation());
     }
 
     @JsonIgnore
@@ -74,7 +74,7 @@ public class Snippet implements Comparable<Snippet> {
     }
 
     public String getGroup() {
-        String result = definition.getGroup();
+        String result = StringUtils.trim(definition.getGroup());
         if (StringUtils.isBlank(result)) {
             result = StringUtils.substringBeforeLast(getPath(), "/");
         }

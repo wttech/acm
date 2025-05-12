@@ -2,6 +2,7 @@ package com.vml.es.aem.acm.core.code.arg;
 
 import com.vml.es.aem.acm.core.code.Argument;
 import com.vml.es.aem.acm.core.code.ArgumentType;
+import com.vml.es.aem.acm.core.util.DateUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -30,6 +31,18 @@ public class DateTimeArgument extends Argument<LocalDateTime> {
         this.min = min.atStartOfDay();
     }
 
+    public void setMin(int year, int month, int day) {
+        this.min = LocalDateTime.of(year, month, day, 0, 0, 0);
+    }
+
+    public void setMin(int year, int month, int day, int hour, int minute, int second) {
+        this.min = LocalDateTime.of(year, month, day, hour, minute, second);
+    }
+
+    public void setMin(String min) {
+        this.min = DateUtils.toLocalDateTime(min);
+    }
+
     public LocalDateTime getMax() {
         return max;
     }
@@ -40,6 +53,18 @@ public class DateTimeArgument extends Argument<LocalDateTime> {
 
     public void setMax(LocalDate max) {
         this.max = max.atStartOfDay();
+    }
+
+    public void setMax(int year, int month, int day) {
+        this.max = LocalDateTime.of(year, month, day, 23, 59, 59);
+    }
+
+    public void setMax(int year, int month, int day, int hour, int minute, int second) {
+        this.max = LocalDateTime.of(year, month, day, hour, minute, second);
+    }
+
+    public void setMax(String max) {
+        this.max = DateUtils.toLocalDateTime(max);
     }
 
     public DateTimeArgument.Variant getVariant() {
@@ -54,9 +79,20 @@ public class DateTimeArgument extends Argument<LocalDateTime> {
         this.variant = render;
     }
 
-    // Cast LocalDate to LocalDateTime in case of DATE variant
     public void setValue(LocalDate value) {
         setValue(value.atStartOfDay());
+    }
+
+    public void setValue(int year, int month, int day) {
+        setValue(LocalDate.of(year, month, day));
+    }
+
+    public void setValue(int year, int month, int day, int hour, int minute, int second) {
+        setValue(LocalDateTime.of(year, month, day, hour, minute, second));
+    }
+
+    public void setValue(String value) {
+        setValue(DateUtils.toLocalDateTime(value));
     }
 
     public void date() {
@@ -78,5 +114,17 @@ public class DateTimeArgument extends Argument<LocalDateTime> {
                     .orElseThrow(() -> new IllegalArgumentException(
                             String.format("Datetime variant '%s' is not supported!", name)));
         }
+    }
+
+    public LocalDateTime now() {
+        return LocalDateTime.now();
+    }
+
+    public LocalDateTime startOfToday() {
+        return LocalDate.now().atStartOfDay();
+    }
+
+    public LocalDateTime endOfToday() {
+        return LocalDate.now().atTime(23, 59, 59);
     }
 }

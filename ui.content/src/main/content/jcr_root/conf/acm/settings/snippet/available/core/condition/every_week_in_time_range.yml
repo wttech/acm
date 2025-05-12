@@ -4,4 +4,8 @@ content: |
   condition.everyWeekInTimeRange('${1:startTime}', '${2:endTime}')
 documentation: |
   Execute the script only once a week within a given time range.<br>
-  For example: `condition.everyWeekInTimeRange('2:00', '3:00')`.
+  
+  For example:
+  ```groovy
+  condition.everyWeekInTimeRange('2:00', '3:00')
+  ```

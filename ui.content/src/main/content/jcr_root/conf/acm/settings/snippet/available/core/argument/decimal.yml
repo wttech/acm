@@ -7,5 +7,7 @@ documentation: |
   can be displayed as an input and slider.<br>
   **Example**:<br>
   ```groovy
-  args.decimalNumber("someName") { label = "Some label"; value = 20.00; min = 10.00; max = 60.00; step = 0.5; slider() }
+  args.decimalNumber("discount") { label = "Discount (%)"; value = 15.5 }
+  args.decimalNumber("weight") { label = "Weight (kg)"; value = 75.3 }
+  args.decimalNumber("proportion") { label = "Proportion"; value = 20.00; min = 10.00; max = 60.00; step = 0.5; slider() }
   ```

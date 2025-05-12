@@ -37,7 +37,7 @@ public class ClassSuggestion implements Suggestion {
 
         info.add(String.format("Bundle: %s", classInfo.getBundle().getSymbolicName()));
         codeRepository.linkToClass(classInfo.getClassName()).ifPresent(link -> {
-            info.add(String.format("Source Code: [Open on GitHub](%s)", link));
+            info.add(String.format("Source Code: [Open](%s)", link));
         });
 
         return StringUtils.join(info, "\n\n");

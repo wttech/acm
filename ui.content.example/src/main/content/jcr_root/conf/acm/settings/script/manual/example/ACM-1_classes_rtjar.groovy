@@ -1,3 +1,13 @@
+/**
+ * Generate a list of all system classes in the current JVM.
+ * This version of the script is designed to be run in the context of AEM running on Java 8.
+ *
+ * Arguments allow to:
+ * - print the list (for debugging purposes),
+ * - save it directly in the repository in expected path.
+ *
+ * @author Krystian Panek <krystian.panek@vml.com>
+ */
 import com.vml.es.aem.acm.core.assist.JavaClassDictionary
 import java.util.function.Consumer
 import java.util.jar.JarFile
