@@ -11,6 +11,7 @@ public class Extender {
     private final List<ExtensionScript> scripts;
 
     public Extender(ExecutionContext contentContext) {
+
         this.scripts = new ScriptRepository(contentContext.getResourceResolver())
                 .findAll(ScriptType.EXTENSION)
                 .map(s -> new ExtensionScript(contentContext, s))
