@@ -1,7 +1,7 @@
 import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
+import { MarkdownString } from 'monaco-editor/esm/vs/base/common/htmlContent';
 import { LANGUAGE_ID } from '../../groovy.ts';
-import {MarkdownString} from "monaco-editor/esm/vs/base/common/htmlContent";
 
 export function registerCoreCompletions(instance: Monaco) {
   registerScriptCompletions(instance);
@@ -76,7 +76,7 @@ printf("Hello %s! You have %d new message(s)!", "John", 5)
 \`\`\`
 `),
           range,
-        }
+        },
       ];
 
       return { suggestions };
