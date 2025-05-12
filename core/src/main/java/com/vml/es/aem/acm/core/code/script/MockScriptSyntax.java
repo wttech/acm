@@ -1,13 +1,12 @@
 package com.vml.es.aem.acm.core.code.script;
 
+import static com.vml.es.aem.acm.core.code.script.ScriptUtils.*;
+
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.AbstractASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-
-import static com.vml.es.aem.acm.core.code.script.ScriptUtils.*;
 
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class MockScriptSyntax extends AbstractASTTransformation {

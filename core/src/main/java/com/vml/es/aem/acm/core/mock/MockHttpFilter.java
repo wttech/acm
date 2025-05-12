@@ -1,15 +1,17 @@
 package com.vml.es.aem.acm.core.mock;
 
+import com.vml.es.aem.acm.core.code.ExecutionContext;
+import com.vml.es.aem.acm.core.code.ExecutionId;
+import com.vml.es.aem.acm.core.code.ExecutionMode;
+import com.vml.es.aem.acm.core.code.Executor;
+import com.vml.es.aem.acm.core.code.script.MockScript;
+import com.vml.es.aem.acm.core.util.ResourceUtils;
 import java.io.IOException;
 import java.util.Iterator;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.vml.es.aem.acm.core.code.Executor;
-import com.vml.es.aem.acm.core.util.ResourceUtils;
 import org.apache.sling.api.resource.LoginException;
-import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.*;
@@ -25,18 +27,14 @@ import org.slf4j.LoggerFactory;
         property = {
             HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT + "=("
                     + HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME + "=*)"
-        },
-        configurationPolicy = ConfigurationPolicy.REQUIRE)
-@Designate(ocd = MockFilter.Config.class)
-public class MockFilter implements Filter {
+        })
+@Designate(ocd = MockHttpFilter.Config.class)
+public class MockHttpFilter implements Filter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MockFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MockHttpFilter.class);
 
     @Reference
     private ResourceResolverFactory resolverFactory;
-
-    @Reference
-    private MockManager manager;
 
     private Config config;
 
@@ -47,7 +45,7 @@ public class MockFilter implements Filter {
         boolean enabled() default true;
 
         @AttributeDefinition(name = "Whiteboard Filter Regex")
-        String[] osgi_http_whiteboard_filter_regex() default { "/mock/.*" };
+        String[] osgi_http_whiteboard_filter_regex() default {"/mock/.*"};
     }
 
     @Reference
@@ -71,13 +69,16 @@ public class MockFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
 
         try (ResourceResolver resolver = ResourceUtils.serviceResolver(resolverFactory, null)) {
-            MockRepository repository = new MockRepository(manager, resolver);
+            MockScriptRepository repository = new MockScriptRepository(resolver);
+
             try {
-                Iterator<Resource> it = repository.findStubs().iterator();
+                Iterator<MockScriptExecutable> it = repository.findAll().iterator();
                 while (it.hasNext()) {
-                    Resource mock = it.next();
-                    if (!manager.isSpecial(mock)) {
-                        // TODO connect somehow MockScript with executor.createContext(mock.getPath(), ExecutionMode.RUN, mock, resolver);
+                    MockScriptExecutable candidateScript = it.next();
+                    if (!repository.isSpecial(candidateScript.getId())) {
+                        ExecutionContext executionContext = executor.createContext(
+                                ExecutionId.generate(), ExecutionMode.RUN, candidateScript, resolver);
+                        MockScript mock = new MockScript(executionContext);
                         if (mock.request(request)) {
                             mock.respond(request, response);
                         }
@@ -87,9 +88,13 @@ public class MockFilter implements Filter {
             } catch (MockException e) {
                 LOG.error("Mock error!", e);
 
-                Mock mock = repository.findSpecialStub(MockManager.FAIL_PATH).orElse(null);
-                if (mock != null) {
+                MockScriptExecutable failScript =
+                        repository.findSpecial(MockScriptRepository.FAIL_PATH).orElse(null);
+                if (failScript != null) {
                     try {
+                        ExecutionContext executionContext =
+                                executor.createContext(ExecutionId.generate(), ExecutionMode.RUN, failScript, resolver);
+                        MockScript mock = new MockScript(executionContext);
                         mock.fail(request, response, e);
                     } catch (MockException e2) {
                         LOG.error("Mock fail error!", e2);
@@ -102,9 +107,13 @@ public class MockFilter implements Filter {
                 return;
             }
 
-            Mock mock = repository.findSpecialStub(MockManager.MISSING_PATH).orElse(null);
-            if (mock != null) {
+            MockScriptExecutable missingScript =
+                    repository.findSpecial(MockScriptRepository.MISSING_PATH).orElse(null);
+            if (missingScript != null) {
                 try {
+                    ExecutionContext executionContext =
+                            executor.createContext(ExecutionId.generate(), ExecutionMode.RUN, missingScript, resolver);
+                    MockScript mock = new MockScript(executionContext);
                     mock.respond(request, response);
                 } catch (MockException e) {
                     LOG.error("Mock missing error!", e);

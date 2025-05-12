@@ -7,12 +7,11 @@ import com.vml.es.aem.acm.core.mock.MockRequestException;
 import com.vml.es.aem.acm.core.mock.MockResponseException;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 public class MockScript implements Mock {
 

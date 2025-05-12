@@ -20,7 +20,8 @@ public final class ScriptUtils {
         // intentionally empty
     }
 
-    public static void visit(AbstractASTTransformation transformation, ASTNode[] nodes, SourceUnit source, String mainClassName) {
+    public static void visit(
+            AbstractASTTransformation transformation, ASTNode[] nodes, SourceUnit source, String mainClassName) {
         ClassNode mainClass = requireMainClass(source.getAST().getClasses(), mainClassName);
         for (MockScriptSyntax.Method methodValue : MockScriptSyntax.Method.values()) {
             if (methodValue.required || hasMethod(mainClass, methodValue.givenName)) {

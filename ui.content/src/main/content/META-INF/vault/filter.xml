@@ -2,4 +2,5 @@
 <workspaceFilter version="1.0">
     <filter root="/conf/acm/settings/assist/java"/>
     <filter root="/conf/acm/settings/snippet/available/core"/>
+    <filter root="/conf/acm/settings/mock/core"/>
 </workspaceFilter>
