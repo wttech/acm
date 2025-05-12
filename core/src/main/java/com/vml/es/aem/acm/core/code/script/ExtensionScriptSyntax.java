@@ -25,7 +25,7 @@ public class ExtensionScriptSyntax extends AbstractASTTransformation {
         ClassNode mainClass = requireMainClass(source.getAST().getClasses(), MAIN_CLASS);
         for (Method methodValue : Method.values()) {
             if (methodValue.required || hasMethod(mainClass, methodValue.givenName)) {
-                if (!isMethodValid(mainClass, methodValue.givenName, methodValue.returnType, 0)) {
+                if (!isMethodValid(mainClass, methodValue.givenName, methodValue.returnType, methodValue.paramCount)) {
                     addError(
                             String.format(
                                     "Top-level '%s %s()' method not found or has incorrect signature!",

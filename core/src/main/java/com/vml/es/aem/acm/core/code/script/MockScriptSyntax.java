@@ -25,7 +25,7 @@ public class MockScriptSyntax extends AbstractASTTransformation {
         ClassNode mainClass = requireMainClass(source.getAST().getClasses(), MAIN_CLASS);
         for (Method methodValue : Method.values()) {
             if (methodValue.required || hasMethod(mainClass, methodValue.givenName)) {
-                if (!isMethodValid(mainClass, methodValue.givenName, methodValue.returnType, 0)) {
+                if (!isMethodValid(mainClass, methodValue.givenName, methodValue.returnType, methodValue.paramCount)) {
                     addError(
                             String.format(
                                     "Top-level '%s %s()' method not found or has incorrect signature!",
@@ -37,9 +37,9 @@ public class MockScriptSyntax extends AbstractASTTransformation {
     }
 
     enum Method {
-        REQUEST("request", "boolean", true),
-        RESPOND("respond", "void", true),
-        FAIL("fail", "void", false);
+        REQUEST("request", "boolean", true, 1),
+        RESPOND("respond", "void", true, 2),
+        FAIL("fail", "void", false, 3);
 
         final String givenName;
 
@@ -47,10 +47,13 @@ public class MockScriptSyntax extends AbstractASTTransformation {
 
         final boolean required;
 
-        Method(String givenName, String returnType, boolean required) {
+        final int paramCount;
+
+        Method(String givenName, String returnType, boolean required, int paramCount) {
             this.givenName = givenName;
             this.returnType = returnType;
             this.required = required;
+            this.paramCount = paramCount;
         }
     }
 }
