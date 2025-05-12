@@ -8,7 +8,7 @@ public enum ScriptType {
     MANUAL(ScriptRepository.ROOT + "/manual"),
     ENABLED(ScriptRepository.ROOT + "/auto/enabled"),
     DISABLED(ScriptRepository.ROOT + "/auto/disabled"),
-    MOCK(ScriptRepository.ROOT + "/stub"),
+    MOCK(ScriptRepository.ROOT + "/mock"),
     EXTENSION(ScriptRepository.ROOT + "/extension");
 
     private final String root;

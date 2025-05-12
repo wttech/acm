@@ -1,6 +1,7 @@
 package com.vml.es.aem.acm.core.mock;
 
 import com.vml.es.aem.acm.core.AcmException;
+import com.vml.es.aem.acm.core.script.ScriptType;
 import com.vml.es.aem.acm.core.util.ResourceSpliterator;
 import com.vml.es.aem.acm.core.util.ResourceUtils;
 import java.util.Arrays;
@@ -12,8 +13,6 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
 
 public class MockScriptRepository {
-
-    public static final String ROOT = "/conf/acm/settings/script/mock";
 
     public static final String CORE_DIR = "core";
 
@@ -30,7 +29,7 @@ public class MockScriptRepository {
     }
 
     public Resource getOrCreateRoot() throws AcmException {
-        return ResourceUtils.makeFolders(resolver, ROOT);
+        return ResourceUtils.makeFolders(resolver, ScriptType.MOCK.root());
     }
 
     public boolean checkResource(Resource resource) {
@@ -38,7 +37,7 @@ public class MockScriptRepository {
     }
 
     private Optional<Resource> findResource(String subPath) {
-        return Optional.ofNullable(resolver.getResource(String.format("%s/%s", ROOT, subPath)));
+        return Optional.ofNullable(resolver.getResource(String.format("%s/%s", ScriptType.MOCK.root(), subPath)));
     }
 
     public Stream<MockScriptExecutable> findAll() throws MockException {
