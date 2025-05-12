@@ -6,7 +6,7 @@ import com.vml.es.aem.acm.core.code.Executable;
 import com.vml.es.aem.acm.core.repo.RepoResource;
 import org.apache.sling.api.resource.Resource;
 
-public class MockScriptExecutable implements Executable {
+public class MockScriptExecutable implements Executable { // TODO not executable!
 
     private final Resource resource;
 

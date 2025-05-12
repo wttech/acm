@@ -43,15 +43,15 @@ public class MockScriptRepository {
     public Stream<MockScriptExecutable> findAll() throws MockException {
         return ResourceSpliterator.stream(getOrCreateRoot())
                 .filter(this::checkResource)
-                .map(s -> s.adaptTo(MockScriptExecutable.class));
+                .map(MockScriptExecutable::new);
     }
 
     public Optional<MockScriptExecutable> find(String subPath) {
-        return findResource(subPath).filter(this::checkResource).map(s -> s.adaptTo(MockScriptExecutable.class));
+        return findResource(subPath).filter(this::checkResource).map(MockScriptExecutable::new);
     }
 
     public Optional<MockScriptExecutable> findSpecial(String subPath) {
-        return findResource(subPath).map(s -> s.adaptTo(MockScriptExecutable.class));
+        return findResource(subPath).map(MockScriptExecutable::new);
     }
 
     public boolean isSpecial(String id) {
