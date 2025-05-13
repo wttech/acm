@@ -15,11 +15,11 @@ const ScriptsExtensionHelpButton: React.FC = () => (
     </Button>
     {(close) => (
       <Dialog>
-        <Heading>Extension Script Capabilities</Heading>
+        <Heading>Extension Scripts</Heading>
         <Divider />
         <Content>
           <p>
-            <Code size="XS" /> Extension scripts allow you to define additional variables and utilities that can be used during script execution. This enables advanced customization and integration with project-specific logic.
+            <Code size="XS" /> Allows to define additional variables and utilities that can be used during script execution. This enables advanced customization and integration with project-specific logic.
           </p>
           <p>
             <Notification size="XS" /> These scripts can also handle post-execution operations, such as sending direct messages, emails, or other notifications in case of script failures. This ensures that critical issues are promptly

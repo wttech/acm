@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app.ts';
 import { toastRequest } from '../utils/api';
 import { InstanceType, ScriptOutput, ScriptType, instancePrefix } from '../utils/api.types';
-import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton.tsx';
-import ScriptsManualHelpButton from './ScriptsManualHelpButton.tsx';
+import ScriptsMockHelpButton from "./ScriptsMockHelpButton.tsx";
+import ScriptsExtensionHelpButton from "./ScriptsExtensionHelpButton.tsx";
 
 type ScriptListSimpleProps = {
   type: ScriptType;
@@ -70,10 +70,17 @@ const ScriptListSimple: React.FC<ScriptListSimpleProps> = ({ type }) => {
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight variant={appState.healthStatus.healthy ? 'positive' : 'negative'}>{appState.mockStatus.enabled ? <Text>Mocks enabled</Text> : <Text>Mocks disabled</Text>}</StatusLight>
+            {type === ScriptType.MOCK ? (
+                <StatusLight variant={appState.healthStatus.healthy ? 'positive' : 'negative'}>{appState.mockStatus.enabled ? <Text>Mocks enabled</Text> : <Text>Mocks disabled</Text>}</StatusLight>
+            ) : null}
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            {type === ScriptType.MANUAL ? <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton />}
+            {type === ScriptType.MOCK ? (
+                <ScriptsMockHelpButton />
+            ) : null}
+            {type === ScriptType.EXTENSION ? (
+                <ScriptsExtensionHelpButton />
+            ) : null}
           </Flex>
         </Flex>
       </View>
