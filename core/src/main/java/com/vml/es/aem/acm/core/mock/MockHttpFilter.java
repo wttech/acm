@@ -81,8 +81,8 @@ public class MockHttpFilter implements Filter {
                         MockScript mock = new MockScript(executionContext);
                         if (mock.request(request)) {
                             mock.respond(request, response);
+                            return;
                         }
-                        return;
                     }
                 }
             } catch (MockException e) {

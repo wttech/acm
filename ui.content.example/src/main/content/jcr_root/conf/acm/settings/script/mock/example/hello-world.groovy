@@ -1,5 +1,6 @@
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import org.apache.commons.lang3.StringUtils;
 
 boolean request(HttpServletRequest request) {
     return request.requestURI == "/mock/hello-world"
