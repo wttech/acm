@@ -1,0 +1,14 @@
+.scriptTabs div[role="tab"]:nth-child(3) {
+    position: relative;
+}
+
+.scriptTabs div[role="tab"]:nth-child(3)::after {
+    content: '';
+    position: absolute;
+    right: -14px;
+    width: 1px;
+    height: 90%;
+    bottom: 0;
+    background-color: var(--spectrum-global-color-gray-300);
+    opacity: 0.75;
+}
