@@ -134,13 +134,19 @@ public class MockHttpFilter implements Filter {
         // do nothing
     }
 
-    @ObjectClassDefinition(name = "AEM Content Manager - Mock HTTP Filter")
+    @ObjectClassDefinition(
+            name = "AEM Content Manager - Mock HTTP Filter",
+            description =
+                    "Dedicated for dynamic response generation for mocking purposes, ideal for simulating 3rd-party system responses when their base URL is redirected to this service.")
     public @interface Config {
 
         @AttributeDefinition(name = "Enabled")
         boolean enabled() default true;
 
-        @AttributeDefinition(name = "Whiteboard Filter Regex")
+        @AttributeDefinition(
+                name = "Whiteboard Filter Regex",
+                description =
+                        "Expressions which narrow down the scope of requests that mock scripts can evaluate. Mock scripts then determine their ability to handle requests within this filtered scope.")
         String[] osgi_http_whiteboard_filter_regex() default {"/mock/.*"};
     }
 }
