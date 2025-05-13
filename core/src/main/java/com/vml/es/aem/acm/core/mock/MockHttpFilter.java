@@ -145,8 +145,7 @@ public class MockHttpFilter implements Filter {
 
         @AttributeDefinition(
                 name = "Whiteboard Filter Regex",
-                description =
-                        "Expressions which narrow down the scope of requests that mock scripts can evaluate. Mock scripts then determine their ability to handle requests within this filtered scope.")
+                description = "Expressions which define the scope of requests that mock scripts can evaluate.")
         String[] osgi_http_whiteboard_filter_regex() default {"/mock/.*"};
     }
 }
