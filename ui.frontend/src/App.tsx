@@ -22,6 +22,9 @@ function App() {
       healthy: true,
       issues: [],
     },
+    mockStatus: {
+      enabled: true,
+    },
     instanceSettings: {
       id: 'default',
       timezoneId: 'UTC',

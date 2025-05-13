@@ -1,40 +1,18 @@
-import {
-  Button,
-  ButtonGroup,
-  Content,
-  Flex,
-  IllustratedMessage,
-  Item,
-  LabeledValue,
-  ProgressBar,
-  TabList,
-  TabPanels,
-  Tabs,
-  Text,
-  View
-} from '@adobe/react-spectrum';
-import {Field} from '@react-spectrum/label';
-import {ToastQueue} from '@react-spectrum/toast';
+import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Field } from '@react-spectrum/label';
+import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
-import {useEffect, useState} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import CodeExecuteButton from '../components/CodeExecuteButton.tsx';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
-import {NavigationSearchParams, useNavigationTab} from '../hooks/navigation.ts';
-import {toastRequest} from '../utils/api';
-import {
-  ArgumentValues,
-  Description,
-  ExecutionQueryParams,
-  QueueOutput,
-  Script,
-  ScriptOutput,
-  ScriptType
-} from '../utils/api.types';
-import {Urls} from '../utils/url.ts';
+import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation.ts';
+import { toastRequest } from '../utils/api';
+import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput, ScriptType } from '../utils/api.types';
+import { Urls } from '../utils/url.ts';
 
 const toastTimeout = 3000;
 
@@ -156,7 +134,7 @@ const ScriptView = () => {
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
                     <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={script.type !== 'MANUAL'} isPending={executing} />
-                    {(script.type !== ScriptType.EXTENSION && script.type !== ScriptType.MOCK) && (
+                    {script.type !== ScriptType.EXTENSION && script.type !== ScriptType.MOCK && (
                       <Button
                         variant="secondary"
                         style="outline"

@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-        service = Filter.class,
+        service = {Filter.class, MockHttpFilter.class},
         property = {
             HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT + "=("
                     + HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME + "=*)"
@@ -37,6 +37,10 @@ public class MockHttpFilter implements Filter {
     private ResourceResolverFactory resolverFactory;
 
     private Config config;
+
+    public MockStatus getMockStatus() {
+        return new MockStatus(config.enabled());
+    }
 
     @ObjectClassDefinition(name = "AEM Content Manager - Mock HTTP Filter")
     public @interface Config {
