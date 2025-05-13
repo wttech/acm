@@ -37,6 +37,10 @@ public enum ScriptType {
         return root + "/" + subPath;
     }
 
+    public boolean statsSupported() {
+        return this == MANUAL || this == ENABLED || this == DISABLED;
+    }
+
     public String root() {
         return root;
     }

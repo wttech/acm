@@ -103,7 +103,7 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
           </Flex>
         </Flex>
       </View>
-      {type === ScriptType.EXTENSION ? (
+      {(type === ScriptType.EXTENSION || type === ScriptType.MOCK) ? (
         <TableView flex="1" aria-label={`Script list (${type})`} renderEmptyState={renderEmptyState} onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}>
           <TableHeader>
             <Column>Name</Column>
