@@ -4,6 +4,7 @@ import com.vml.es.aem.acm.core.code.ExecutionSummary;
 import com.vml.es.aem.acm.core.gui.SpaSettings;
 import com.vml.es.aem.acm.core.instance.HealthStatus;
 import com.vml.es.aem.acm.core.instance.InstanceSettings;
+import com.vml.es.aem.acm.core.mock.MockStatus;
 import java.io.Serializable;
 import java.util.List;
 
@@ -30,11 +31,14 @@ public class State implements Serializable {
         this.mockStatus = mockStatus;
         this.instanceSettings = instanceSettings;
         this.queuedExecutions = queuedExecutions;
-
     }
 
     public HealthStatus getHealthStatus() {
         return healthStatus;
+    }
+
+    public MockStatus getMockStatus() {
+        return mockStatus;
     }
 
     public InstanceSettings getInstanceSettings() {

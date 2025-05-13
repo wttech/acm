@@ -38,22 +38,12 @@ public class MockHttpFilter implements Filter {
 
     private Config config;
 
-    public MockStatus getMockStatus() {
-        return new MockStatus(config.enabled());
-    }
-
-    @ObjectClassDefinition(name = "AEM Content Manager - Mock HTTP Filter")
-    public @interface Config {
-
-        @AttributeDefinition(name = "Enabled")
-        boolean enabled() default true;
-
-        @AttributeDefinition(name = "Whiteboard Filter Regex")
-        String[] osgi_http_whiteboard_filter_regex() default {"/mock/.*"};
-    }
-
     @Reference
     private Executor executor;
+
+    public MockStatus checkStatus() {
+        return new MockStatus(config.enabled());
+    }
 
     @Activate
     @Modified
@@ -142,5 +132,15 @@ public class MockHttpFilter implements Filter {
     @Override
     public void destroy() {
         // do nothing
+    }
+
+    @ObjectClassDefinition(name = "AEM Content Manager - Mock HTTP Filter")
+    public @interface Config {
+
+        @AttributeDefinition(name = "Enabled")
+        boolean enabled() default true;
+
+        @AttributeDefinition(name = "Whiteboard Filter Regex")
+        String[] osgi_http_whiteboard_filter_regex() default {"/mock/.*"};
     }
 }

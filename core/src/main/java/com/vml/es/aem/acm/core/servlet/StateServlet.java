@@ -10,6 +10,7 @@ import com.vml.es.aem.acm.core.gui.SpaSettings;
 import com.vml.es.aem.acm.core.instance.HealthChecker;
 import com.vml.es.aem.acm.core.instance.HealthStatus;
 import com.vml.es.aem.acm.core.mock.MockHttpFilter;
+import com.vml.es.aem.acm.core.mock.MockStatus;
 import com.vml.es.aem.acm.core.osgi.InstanceInfo;
 import com.vml.es.aem.acm.core.state.State;
 import java.io.IOException;
@@ -57,10 +58,11 @@ public class StateServlet extends SlingAllMethodsServlet {
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
-            MockStatus mockStatus = mockHttpFilter.getMockStatus();
+            MockStatus mockStatus = mockHttpFilter.checkStatus();
             List<ExecutionSummary> queuedExecutions =
                     executionQueue.findAllSummaries().collect(Collectors.toList());
-            State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getInstanceSettings(), queuedExecutions);
+            State state = new State(
+                    spaSettings, healthStatus, mockStatus, instanceInfo.getInstanceSettings(), queuedExecutions);
 
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {
