@@ -6,6 +6,7 @@ import com.vml.es.aem.acm.core.code.Executable;
 import com.vml.es.aem.acm.core.code.Execution;
 import com.vml.es.aem.acm.core.code.ExecutionContext;
 import com.vml.es.aem.acm.core.mock.MockContext;
+import groovy.lang.MissingMethodException;
 import groovy.lang.Script;
 
 public class ExtensionScript {
@@ -47,6 +48,8 @@ public class ExtensionScript {
     public void prepareMock(MockContext mockContext) {
         try {
             script.invokeMethod(ExtensionScriptSyntax.Method.PREPARE_MOCK.givenName, mockContext);
+        } catch (MissingMethodException e) {
+            // ignore as the method is optional
         } catch (Exception e) {
             throw new AcmException(
                     String.format("Cannot prepare mock context with extension script '%s'!", extensionScript.getId()),

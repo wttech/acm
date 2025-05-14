@@ -35,7 +35,7 @@ public class ContentScript {
         try {
             script.invokeMethod(ContentScriptSyntax.Method.DESCRIBE.givenName, null);
         } catch (MissingMethodException e) {
-            // ignore
+            // ignore as the method is optional
         }
     }
 

@@ -1,7 +1,7 @@
 package com.vml.es.aem.acm.core.code.script;
 
-import com.vml.es.aem.acm.core.AcmException;
 import com.vml.es.aem.acm.core.mock.MockContext;
+import com.vml.es.aem.acm.core.mock.MockException;
 import com.vml.es.aem.acm.core.mock.MockRequestException;
 import com.vml.es.aem.acm.core.mock.MockResponseException;
 import groovy.lang.GroovyShell;
@@ -29,16 +29,17 @@ public class MockScript {
     }
 
     private Script parseScript() {
-        GroovyShell shell = ScriptUtils.createShell(new MockScriptSyntax(type));
-        Script script = shell.parse(
-                context.getMock().getContent(),
-                MockScriptSyntax.MAIN_CLASS,
-                context.getCodeContext().getBinding());
-        if (script == null) {
-            throw new AcmException(String.format(
+        try {
+            GroovyShell shell = ScriptUtils.createShell(new MockScriptSyntax(type));
+            Script script = shell.parse(
+                    context.getMock().getContent(),
+                    MockScriptSyntax.MAIN_CLASS,
+                    context.getCodeContext().getBinding());
+            return script;
+        } catch (Exception e) {
+            throw new MockException(String.format(
                     "Mock script '%s' cannot be parsed!", context.getMock().getId()));
         }
-        return script;
     }
 
     public boolean request(HttpServletRequest request) throws MockRequestException {
