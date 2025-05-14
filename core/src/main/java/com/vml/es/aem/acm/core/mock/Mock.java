@@ -1,15 +1,22 @@
 package com.vml.es.aem.acm.core.mock;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.vml.es.aem.acm.core.AcmException;
+import com.vml.es.aem.acm.core.repo.RepoResource;
+import org.apache.sling.api.resource.Resource;
 
-public interface Mock {
+public class Mock {
 
-    String getId();
+    private final Resource resource;
 
-    boolean request(HttpServletRequest request) throws MockRequestException;
+    public Mock(Resource resource) {
+        this.resource = resource;
+    }
 
-    void respond(HttpServletRequest request, HttpServletResponse response) throws MockResponseException;
+    public String getId() {
+        return resource.getPath();
+    }
 
-    void fail(HttpServletRequest request, HttpServletResponse response, Exception e) throws MockResponseException;
+    public String getContent() throws AcmException {
+        return RepoResource.of(resource).readFileAsString();
+    }
 }

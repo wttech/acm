@@ -22,7 +22,7 @@ public class ContentScript {
         Script script = shell.parse(
                 executionContext.getExecutable().getContent(),
                 ContentScriptSyntax.MAIN_CLASS,
-                executionContext.getBinding());
+                executionContext.getCodeContext().getBinding());
         if (script == null) {
             throw new AcmException(String.format(
                     "Content script '%s' cannot be parsed!",

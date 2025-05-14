@@ -1,5 +1,6 @@
 package com.vml.es.aem.acm.core.code;
 
+import com.vml.es.aem.acm.core.osgi.InstanceInfo;
 import com.vml.es.aem.acm.core.osgi.InstanceType;
 import com.vml.es.aem.acm.core.script.ScriptScheduler;
 import com.vml.es.aem.acm.core.util.DateUtils;
@@ -17,7 +18,8 @@ public class Condition {
 
     public Condition(ExecutionContext executionContext) {
         this.executionContext = executionContext;
-        this.executionHistory = new ExecutionHistory(executionContext.getResourceResolver());
+        this.executionHistory =
+                new ExecutionHistory(executionContext.getCodeContext().getResourceResolver());
     }
 
     public boolean always() {
@@ -59,15 +61,11 @@ public class Condition {
     }
 
     public Stream<Execution> queuedExecutions() {
-        return executionContext.getOsgiContext().getExecutionQueue().findAll().filter(e -> !isSelfExecution(e));
+        return getExecutionQueue().findAll().filter(e -> !isSelfExecution(e));
     }
 
     public Stream<Execution> queuedSelfExecutions() {
-        return executionContext
-                .getOsgiContext()
-                .getExecutionQueue()
-                .findAll()
-                .filter(e -> !isSelfExecution(e) && isSameExecutable(e));
+        return getExecutionQueue().findAll().filter(e -> !isSelfExecution(e) && isSameExecutable(e));
     }
 
     public boolean isSelfExecution(Execution e) {
@@ -77,6 +75,10 @@ public class Condition {
     public boolean isSameExecutable(Execution e) {
         return StringUtils.equals(
                 e.getExecutable().getId(), executionContext.getExecutable().getId());
+    }
+
+    private ExecutionQueue getExecutionQueue() {
+        return executionContext.getCodeContext().getOsgiContext().getExecutionQueue();
     }
 
     // Time period-based
@@ -319,11 +321,12 @@ public class Condition {
     }
 
     public boolean isDate(LocalDateTime localDateTime) {
-        long intervalMillis = executionContext
-                .getOsgiContext()
-                .getService(ScriptScheduler.class)
-                .getIntervalMillis();
+        long intervalMillis = getScriptScheduler().getIntervalMillis();
         return DateUtils.isInRange(localDateTime, LocalDateTime.now(), intervalMillis);
+    }
+
+    private ScriptScheduler getScriptScheduler() {
+        return executionContext.getCodeContext().getOsgiContext().getService(ScriptScheduler.class);
     }
 
     // Duration-based since the last execution
@@ -359,30 +362,34 @@ public class Condition {
     // Instance-based
 
     public boolean isInstanceRunMode(String runMode) {
-        return executionContext.getOsgiContext().getInstanceInfo().isRunMode(runMode);
+        return getInstanceInfo().isRunMode(runMode);
+    }
+
+    private InstanceInfo getInstanceInfo() {
+        return executionContext.getCodeContext().getOsgiContext().getInstanceInfo();
     }
 
     public boolean isInstanceAuthor() {
-        return executionContext.getOsgiContext().getInstanceInfo().isAuthor();
+        return getInstanceInfo().isAuthor();
     }
 
     public boolean isInstancePublish() {
-        return executionContext.getOsgiContext().getInstanceInfo().isPublish();
+        return getInstanceInfo().isPublish();
     }
 
     public boolean isInstanceOnPrem() {
-        return executionContext.getOsgiContext().getInstanceInfo().getType() == InstanceType.ON_PREM;
+        return getInstanceInfo().getType() == InstanceType.ON_PREM;
     }
 
     public boolean isInstanceCloud() {
-        return executionContext.getOsgiContext().getInstanceInfo().getType().isCloud();
+        return getInstanceInfo().getType().isCloud();
     }
 
     public boolean isInstanceCloudContainer() {
-        return executionContext.getOsgiContext().getInstanceInfo().getType() == InstanceType.CLOUD_CONTAINER;
+        return getInstanceInfo().getType() == InstanceType.CLOUD_CONTAINER;
     }
 
     public boolean isInstanceCloudSdk() {
-        return executionContext.getOsgiContext().getInstanceInfo().getType() == InstanceType.CLOUD_SDK;
+        return getInstanceInfo().getType() == InstanceType.CLOUD_SDK;
     }
 }

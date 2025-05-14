@@ -1,8 +1,7 @@
 package com.vml.es.aem.acm.core.code.script;
 
 import com.vml.es.aem.acm.core.AcmException;
-import com.vml.es.aem.acm.core.code.ExecutionContext;
-import com.vml.es.aem.acm.core.mock.Mock;
+import com.vml.es.aem.acm.core.mock.MockContext;
 import com.vml.es.aem.acm.core.mock.MockRequestException;
 import com.vml.es.aem.acm.core.mock.MockResponseException;
 import groovy.lang.GroovyShell;
@@ -13,39 +12,32 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
-public class MockScript implements Mock {
+public class MockScript {
 
     private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(MockScript.class);
 
-    private final ExecutionContext executionContext;
+    private final MockContext context;
 
     private final Script script;
 
-    public MockScript(ExecutionContext executionContext) {
-        this.executionContext = executionContext;
+    public MockScript(MockContext context) {
+        this.context = context;
         this.script = parseScript();
     }
 
     private Script parseScript() {
         GroovyShell shell = ScriptUtils.createShell(new MockScriptSyntax());
         Script script = shell.parse(
-                executionContext.getExecutable().getContent(),
+                context.getMock().getContent(),
                 MockScriptSyntax.MAIN_CLASS,
-                executionContext.getBinding());
+                context.getCodeContext().getBinding());
         if (script == null) {
             throw new AcmException(String.format(
-                    "Mock script '%s' cannot be parsed!",
-                    executionContext.getExecutable().getId()));
+                    "Mock script '%s' cannot be parsed!", context.getMock().getId()));
         }
         return script;
     }
 
-    @Override
-    public String getId() {
-        return executionContext.getExecutable().getId();
-    }
-
-    @Override
     public boolean request(HttpServletRequest request) throws MockRequestException {
         try {
             LOG.info("Mock '{}' is matching request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
@@ -66,7 +58,6 @@ public class MockScript implements Mock {
         }
     }
 
-    @Override
     public void respond(HttpServletRequest request, HttpServletResponse response) throws MockResponseException {
         try {
             LOG.info(
@@ -81,7 +72,6 @@ public class MockScript implements Mock {
         }
     }
 
-    @Override
     public void fail(HttpServletRequest request, HttpServletResponse response, Exception exception)
             throws MockResponseException {
         try {
@@ -96,6 +86,10 @@ public class MockScript implements Mock {
             throw new MockResponseException(
                     String.format("Mock script '%s' cannot handle failed request properly", getId()), e);
         }
+    }
+
+    public String getId() {
+        return context.getMock().getId();
     }
 
     public String getDirPath() {

@@ -12,7 +12,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class ContentScriptSyntax extends AbstractASTTransformation {
 
-    public static final String MAIN_CLASS = "AcmConentScript";
+    public static final String MAIN_CLASS = "AcmContentScript";
 
     @Override
     public void visit(ASTNode[] nodes, SourceUnit source) {

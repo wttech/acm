@@ -26,8 +26,8 @@ const ErrorHandler: React.FC = () => {
         <Content>
           <Flex gap="size-250" direction="column">
             <Text>
-              Application encountered a problem.
-              <br />
+              Application encountered a problem.<br/>
+              Verify your authorization status.<br/>
               Ensure that AEM instance backend is available.
             </Text>
             <Disclosure>

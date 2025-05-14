@@ -1,5 +1,6 @@
 import com.vml.es.aem.acm.core.code.ExecutionContext
 import com.vml.es.aem.acm.core.code.Execution
+import com.vml.es.aem.acm.core.mock.MockContext
 
 void prepareRun(ExecutionContext executionContext) {
     executionContext.variable("acme", new AcmeFacade())
@@ -10,6 +11,10 @@ void completeRun(Execution execution) {
         log.error "Something nasty happened with '${execution.executable.id}'!"
         // TODO send notification on Slack, MS Teams, etc using HTTP client / WebAPI
     }
+}
+
+void prepareMock(MockContext mockContext) {
+    mockContext.variable("acme", new AcmeFacade())
 }
 
 class AcmeFacade {

@@ -1,10 +1,8 @@
 package com.vml.es.aem.acm.core.mock;
 
-import com.vml.es.aem.acm.core.code.ExecutionContext;
-import com.vml.es.aem.acm.core.code.ExecutionId;
-import com.vml.es.aem.acm.core.code.ExecutionMode;
-import com.vml.es.aem.acm.core.code.Executor;
+import com.vml.es.aem.acm.core.code.CodeContext;
 import com.vml.es.aem.acm.core.code.script.MockScript;
+import com.vml.es.aem.acm.core.osgi.OsgiContext;
 import com.vml.es.aem.acm.core.util.ResourceUtils;
 import java.io.IOException;
 import java.util.Iterator;
@@ -36,10 +34,10 @@ public class MockHttpFilter implements Filter {
     @Reference
     private ResourceResolverFactory resolverFactory;
 
-    private Config config;
-
     @Reference
-    private Executor executor;
+    private OsgiContext osgiContext;
+
+    private Config config;
 
     public MockStatus checkStatus() {
         return new MockStatus(config.enabled());
@@ -63,16 +61,17 @@ public class MockHttpFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
 
         try (ResourceResolver resolver = ResourceUtils.serviceResolver(resolverFactory, null)) {
-            MockScriptRepository repository = new MockScriptRepository(resolver);
+            CodeContext codeContext = new CodeContext(osgiContext, resolver);
+            MockRepository repository = new MockRepository(resolver);
 
             try {
-                Iterator<MockScriptExecutable> it = repository.findAll().iterator();
+                Iterator<Mock> it = repository.findAll().iterator();
                 while (it.hasNext()) {
-                    MockScriptExecutable candidateScript = it.next();
-                    if (!repository.isSpecial(candidateScript.getId())) {
-                        ExecutionContext executionContext = executor.createContext(
-                                ExecutionId.generate(), ExecutionMode.RUN, candidateScript, resolver);
-                        MockScript mock = new MockScript(executionContext);
+                    Mock candidateMock = it.next();
+                    if (!repository.isSpecial(candidateMock.getId())) {
+                        MockContext mockContext = new MockContext(codeContext, candidateMock);
+                        codeContext.prepareMock(mockContext);
+                        MockScript mock = new MockScript(mockContext);
                         if (mock.request(request)) {
                             mock.respond(request, response);
                             return;
@@ -82,13 +81,13 @@ public class MockHttpFilter implements Filter {
             } catch (MockException e) {
                 LOG.error("Mock error!", e);
 
-                MockScriptExecutable failScript =
-                        repository.findSpecial(MockScriptRepository.FAIL_PATH).orElse(null);
+                Mock failScript =
+                        repository.findSpecial(MockRepository.FAIL_PATH).orElse(null);
                 if (failScript != null) {
                     try {
-                        ExecutionContext executionContext =
-                                executor.createContext(ExecutionId.generate(), ExecutionMode.RUN, failScript, resolver);
-                        MockScript mock = new MockScript(executionContext);
+                        MockContext mockContext = new MockContext(codeContext, failScript);
+                        codeContext.prepareMock(mockContext);
+                        MockScript mock = new MockScript(mockContext);
                         mock.fail(request, response, e);
                     } catch (MockException e2) {
                         LOG.error("Mock fail error!", e2);
@@ -101,13 +100,13 @@ public class MockHttpFilter implements Filter {
                 return;
             }
 
-            MockScriptExecutable missingScript =
-                    repository.findSpecial(MockScriptRepository.MISSING_PATH).orElse(null);
+            Mock missingScript =
+                    repository.findSpecial(MockRepository.MISSING_PATH).orElse(null);
             if (missingScript != null) {
                 try {
-                    ExecutionContext executionContext =
-                            executor.createContext(ExecutionId.generate(), ExecutionMode.RUN, missingScript, resolver);
-                    MockScript mock = new MockScript(executionContext);
+                    MockContext mockContext = new MockContext(codeContext, missingScript);
+                    codeContext.prepareMock(mockContext);
+                    MockScript mock = new MockScript(mockContext);
                     mock.respond(request, response);
                 } catch (MockException e) {
                     LOG.error("Mock missing error!", e);

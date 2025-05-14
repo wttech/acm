@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
 
-public class MockScriptRepository {
+public class MockRepository {
 
     public static final String CORE_DIR = "core";
 
@@ -24,7 +24,7 @@ public class MockScriptRepository {
 
     private final ResourceResolver resolver;
 
-    public MockScriptRepository(ResourceResolver resolver) {
+    public MockRepository(ResourceResolver resolver) {
         this.resolver = resolver;
     }
 
@@ -40,18 +40,18 @@ public class MockScriptRepository {
         return Optional.ofNullable(resolver.getResource(String.format("%s/%s", ScriptType.MOCK.root(), subPath)));
     }
 
-    public Stream<MockScriptExecutable> findAll() throws MockException {
+    public Stream<Mock> findAll() throws MockException {
         return ResourceSpliterator.stream(getOrCreateRoot())
                 .filter(this::checkResource)
-                .map(MockScriptExecutable::new);
+                .map(Mock::new);
     }
 
-    public Optional<MockScriptExecutable> find(String subPath) {
-        return findResource(subPath).filter(this::checkResource).map(MockScriptExecutable::new);
+    public Optional<Mock> find(String subPath) {
+        return findResource(subPath).filter(this::checkResource).map(Mock::new);
     }
 
-    public Optional<MockScriptExecutable> findSpecial(String subPath) {
-        return findResource(subPath).map(MockScriptExecutable::new);
+    public Optional<Mock> findSpecial(String subPath) {
+        return findResource(subPath).map(Mock::new);
     }
 
     public boolean isSpecial(String id) {
