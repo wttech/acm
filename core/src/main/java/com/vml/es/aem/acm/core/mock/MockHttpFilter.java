@@ -140,8 +140,11 @@ public class MockHttpFilter implements Filter {
                     "Dedicated for dynamic response generation for mocking purposes, ideal for simulating 3rd-party system responses when their base URL is redirected to this service.")
     public @interface Config {
 
-        @AttributeDefinition(name = "Enabled")
-        boolean enabled() default true;
+        @AttributeDefinition(
+                name = "Enabled",
+                description =
+                        "When disabled, the filter will not process any requests. Also GUI no longer will display the mock scripts.")
+        boolean enabled() default false;
 
         @AttributeDefinition(
                 name = "Whiteboard Filter Regex",
