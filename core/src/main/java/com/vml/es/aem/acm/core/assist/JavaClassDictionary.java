@@ -3,15 +3,11 @@ package com.vml.es.aem.acm.core.assist;
 import com.vml.es.aem.acm.core.AcmException;
 import com.vml.es.aem.acm.core.repo.RepoResource;
 import com.vml.es.aem.acm.core.util.StreamUtils;
+import com.vml.es.aem.acm.core.util.YamlUtils;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Stream;
-
-import com.vml.es.aem.acm.core.util.YamlUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -62,7 +58,7 @@ public class JavaClassDictionary {
         return path(System.getProperty("java.specification.version"));
     }
 
-    public static String buildDocsUrl(String className) {
+    public static String buildDocsUrl(String className, String module) {
         if (!className.startsWith("java")) {
             return null;
         }
@@ -70,17 +66,13 @@ public class JavaClassDictionary {
             return String.format("https://docs.oracle.com/javase/8/docs/api/%s.html", className.replace(".", "/"));
         }
         return String.format(
-                "https://docs.oracle.com/en/java/javase/%s/java.base/docs/api/%s.html",
-                JAVA_VERSION, className.replace(".", "/"));
+                "https://docs.oracle.com/en/java/javase/%s/%s/docs/api/%s.html",
+                JAVA_VERSION, module, className.replace(".", "/"));
     }
 
-    public Stream<String> getClasses() {
+    public JavaDictionary getClasses() {
         try (InputStream input = RepoResource.of(resource).readFileAsStream()) {
-            Map<String, List<String>> loadedClasses = YamlUtils.readYaml(input, Map.class);
-            return loadedClasses.values().stream()
-                    .flatMap(Collection::stream)
-                    .map(String::trim)
-                    .filter(StringUtils::isNotBlank);
+            return YamlUtils.readYaml(input, JavaDictionary.class);
         } catch (IOException e) {
             throw new AcmException(
                     String.format("Cannot read Java class dictionary at path '%s'!", resource.getPath()), e);
