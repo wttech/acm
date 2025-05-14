@@ -1,5 +1,5 @@
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
-import Box from '@spectrum-icons/workflow/Box';
+import Beaker from '@spectrum-icons/workflow/Beaker';
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import Extension from '@spectrum-icons/workflow/Extension';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
@@ -30,7 +30,7 @@ const ScriptsPage = () => {
             <Text>Disabled</Text>
           </Item>
           <Item aria-label="Mock scripts" key="mock">
-            <Box />
+            <Beaker />
             <Text>Mock</Text>
           </Item>
           <Item aria-label="Extension scripts" key="extension">

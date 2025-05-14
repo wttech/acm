@@ -9,7 +9,6 @@ import groovy.lang.Script;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class MockScript {
@@ -90,16 +89,5 @@ public class MockScript {
 
     public String getId() {
         return context.getMock().getId();
-    }
-
-    public String getDirPath() {
-        return StringUtils.substringBeforeLast(getId(), "/");
-    }
-
-    public String resolvePath(String path) {
-        if (path.startsWith("/")) {
-            return path;
-        }
-        return getDirPath() + "/" + path;
     }
 }

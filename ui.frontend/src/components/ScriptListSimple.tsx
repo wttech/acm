@@ -15,6 +15,7 @@ type ScriptListSimpleProps = {
 
 const ScriptListSimple: React.FC<ScriptListSimpleProps> = ({ type }) => {
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);
+  const scriptCount = scripts?.list?.length ?? 0;
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   const appState = useAppState();
@@ -71,7 +72,20 @@ const ScriptListSimple: React.FC<ScriptListSimpleProps> = ({ type }) => {
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
             {type === ScriptType.MOCK ? (
-                <StatusLight variant={appState.healthStatus.healthy ? 'positive' : 'negative'}>{appState.mockStatus.enabled ? <Text>Mocks enabled</Text> : <Text>Mocks disabled</Text>}</StatusLight>
+                <StatusLight variant={appState.mockStatus.enabled ? (scriptCount > 0 ? 'positive' : 'neutral') : 'negative'}>
+                  {appState.mockStatus.enabled ? (
+                      scriptCount > 0 ? (
+                          <Text>Installed ({scriptCount})</Text>
+                      ) : (
+                          <Text>Not installed</Text>
+                      )
+                  ) : (
+                      <Text>Disabled</Text>
+                  )}
+                </StatusLight>
+            ) : null}
+            {type === ScriptType.EXTENSION ? (
+                <StatusLight variant={scriptCount > 0 ? 'positive' : 'negative'}>{(scriptCount > 0) ? <Text>Installed ({scriptCount})</Text> : <Text>Not installed</Text>}</StatusLight>
             ) : null}
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">

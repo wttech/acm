@@ -32,6 +32,7 @@ public class MockContext {
     private void customizeBinding() {
         Binding binding = getCodeContext().getBinding();
 
+        binding.setVariable("mock", mock);
         binding.setVariable(
                 "log",
                 LoggerFactory.getLogger(String.format("%s(%s)", getClass().getName(), mock.getId())));

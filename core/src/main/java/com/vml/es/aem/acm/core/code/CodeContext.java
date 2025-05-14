@@ -24,34 +24,20 @@ public class CodeContext {
 
     private final Binding binding;
 
-    private final List<ExtensionScript> scripts;
+    private final List<ExtensionScript> extensionScripts;
 
     public CodeContext(OsgiContext osgiContext, ResourceResolver resourceResolver) {
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
         this.binding = createBinding(osgiContext, resourceResolver);
-        this.scripts = new ScriptRepository(resourceResolver)
+        this.extensionScripts = findExtensionScripts(resourceResolver);
+    }
+
+    private List<ExtensionScript> findExtensionScripts(ResourceResolver resourceResolver) {
+        return new ScriptRepository(resourceResolver)
                 .findAll(ScriptType.EXTENSION)
                 .map(s -> new ExtensionScript(this, s))
                 .collect(Collectors.toList());
-    }
-
-    public void prepareRun(ExecutionContext executionContext) {
-        for (ExtensionScript script : scripts) {
-            script.prepareRun(executionContext);
-        }
-    }
-
-    public void completeRun(Execution execution) {
-        for (ExtensionScript script : scripts) {
-            script.completeRun(execution);
-        }
-    }
-
-    public void prepareMock(MockContext mockContext) {
-        for (ExtensionScript script : scripts) {
-            script.prepareMock(mockContext);
-        }
     }
 
     public Binding createBinding(OsgiContext osgiContext, ResourceResolver resourceResolver) {
@@ -66,6 +52,24 @@ public class CodeContext {
         result.setVariable("activator", new Activator(resourceResolver, osgiContext.getReplicator()));
 
         return result;
+    }
+
+    public void prepareRun(ExecutionContext executionContext) {
+        for (ExtensionScript script : extensionScripts) {
+            script.prepareRun(executionContext);
+        }
+    }
+
+    public void completeRun(Execution execution) {
+        for (ExtensionScript script : extensionScripts) {
+            script.completeRun(execution);
+        }
+    }
+
+    public void prepareMock(MockContext mockContext) {
+        for (ExtensionScript script : extensionScripts) {
+            script.prepareMock(mockContext);
+        }
     }
 
     public Binding getBinding() {
