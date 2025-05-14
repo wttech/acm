@@ -141,7 +141,7 @@ public class MockHttpFilter implements Filter {
     public @interface Config {
 
         @AttributeDefinition(name = "Enabled")
-        boolean enabled() default true;
+        boolean enabled() default false;
 
         @AttributeDefinition(
                 name = "Whiteboard Filter Regex",

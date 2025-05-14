@@ -18,12 +18,15 @@ public class SpaSettings implements Serializable {
 
     private long scriptStatsLimit;
 
+    private boolean mocksVisible;
+
     @Activate
     @Modified
     protected void activate(Config config) {
         this.appStateInterval = config.appStateInterval();
         this.executionPollInterval = config.executionPollInterval();
         this.scriptStatsLimit = config.scriptStatsLimit();
+        this.mocksVisible = config.mocksVisible();
     }
 
     public long getAppStateInterval() {
@@ -36,6 +39,10 @@ public class SpaSettings implements Serializable {
 
     public long getScriptStatsLimit() {
         return scriptStatsLimit;
+    }
+
+    public boolean isMocksVisible() {
+        return mocksVisible;
     }
 
     @ObjectClassDefinition(name = "AEM Content Manager - SPA Settings")
@@ -56,5 +63,10 @@ public class SpaSettings implements Serializable {
                 description =
                         "Limit for the number of historical executions to be considered to calculate the average duration.")
         long scriptStatsLimit() default 30;
+
+        @AttributeDefinition(
+                name = "Mocks Visible",
+                description = "Controls visibility of mocks under scripts section.")
+        boolean mocksVisible() default false;
     }
 }

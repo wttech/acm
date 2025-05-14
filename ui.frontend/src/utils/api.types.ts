@@ -228,6 +228,7 @@ export type SpaSettings = {
   appStateInterval: number;
   executionPollInterval: number;
   scriptStatsLimit: number;
+  mocksVisible: boolean;
 };
 
 export type InstanceSettings = {

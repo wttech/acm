@@ -9,8 +9,10 @@ import ScriptListSimple from '../components/ScriptListSimple.tsx';
 import { useNavigationTab } from '../hooks/navigation';
 import { ScriptType } from '../utils/api.types';
 import styles from './ScriptsPage.module.css';
+import {useAppState} from "../hooks/app.ts";
 
 const ScriptsPage = () => {
+  const appState = useAppState();
   const [selectedTab, handleTabChange] = useNavigationTab('manual');
 
   return (
@@ -29,10 +31,12 @@ const ScriptsPage = () => {
             <CloseCircle />
             <Text>Disabled</Text>
           </Item>
-          <Item aria-label="Mock scripts" key="mock">
-            <Beaker />
-            <Text>Mock</Text>
-          </Item>
+          {appState.spaSettings.mocksVisible ? (
+              <Item aria-label="Mock scripts" key="mock">
+                <Beaker />
+                <Text>Mock</Text>
+              </Item>
+          ) : null}
           <Item aria-label="Extension scripts" key="extension">
             <Extension />
             <Text>Extension</Text>
@@ -48,9 +52,11 @@ const ScriptsPage = () => {
           <Item key="disabled">
             <ScriptListRich type={ScriptType.DISABLED} />
           </Item>
-          <Item key="mock">
-            <ScriptListSimple type={ScriptType.MOCK} />
-          </Item>
+          {appState.spaSettings.mocksVisible ? (
+            <Item key="mock">
+              <ScriptListSimple type={ScriptType.MOCK} />
+            </Item>
+          ) : null}
           <Item key="extension">
             <ScriptListSimple type={ScriptType.EXTENSION} />
           </Item>
