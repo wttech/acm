@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app.ts';
 import { toastRequest } from '../utils/api';
 import { InstanceType, ScriptOutput, ScriptType, instancePrefix } from '../utils/api.types';
-import ScriptsMockHelpButton from "./ScriptsMockHelpButton.tsx";
-import ScriptsExtensionHelpButton from "./ScriptsExtensionHelpButton.tsx";
+import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
+import ScriptsMockHelpButton from './ScriptsMockHelpButton.tsx';
 
 type ScriptListSimpleProps = {
   type: ScriptType;
@@ -72,29 +72,15 @@ const ScriptListSimple: React.FC<ScriptListSimpleProps> = ({ type }) => {
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
             {type === ScriptType.MOCK ? (
-                <StatusLight variant={appState.mockStatus.enabled ? (scriptCount > 0 ? 'positive' : 'neutral') : 'negative'}>
-                  {appState.mockStatus.enabled ? (
-                      scriptCount > 0 ? (
-                          <Text>Installed ({scriptCount})</Text>
-                      ) : (
-                          <Text>Not installed</Text>
-                      )
-                  ) : (
-                      <Text>Disabled</Text>
-                  )}
-                </StatusLight>
+              <StatusLight variant={appState.mockStatus.enabled ? (scriptCount > 0 ? 'positive' : 'neutral') : 'negative'}>
+                {appState.mockStatus.enabled ? scriptCount > 0 ? <Text>Installed ({scriptCount})</Text> : <Text>Not installed</Text> : <Text>Disabled</Text>}
+              </StatusLight>
             ) : null}
-            {type === ScriptType.EXTENSION ? (
-                <StatusLight variant={scriptCount > 0 ? 'positive' : 'negative'}>{(scriptCount > 0) ? <Text>Installed ({scriptCount})</Text> : <Text>Not installed</Text>}</StatusLight>
-            ) : null}
+            {type === ScriptType.EXTENSION ? <StatusLight variant={scriptCount > 0 ? 'positive' : 'negative'}>{scriptCount > 0 ? <Text>Installed ({scriptCount})</Text> : <Text>Not installed</Text>}</StatusLight> : null}
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            {type === ScriptType.MOCK ? (
-                <ScriptsMockHelpButton />
-            ) : null}
-            {type === ScriptType.EXTENSION ? (
-                <ScriptsExtensionHelpButton />
-            ) : null}
+            {type === ScriptType.MOCK ? <ScriptsMockHelpButton /> : null}
+            {type === ScriptType.EXTENSION ? <ScriptsExtensionHelpButton /> : null}
           </Flex>
         </Flex>
       </View>

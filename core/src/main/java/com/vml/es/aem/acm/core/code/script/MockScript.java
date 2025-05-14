@@ -10,10 +10,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MockScript {
 
-    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(MockScript.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MockScript.class);
 
     private final MockContext context;
 
@@ -42,13 +43,13 @@ public class MockScript {
 
     public boolean request(HttpServletRequest request) throws MockRequestException {
         try {
-            LOG.info("Mock '{}' is matching request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
+            LOG.debug("Mock '{}' is matching request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
             Boolean result =
                     (Boolean) script.invokeMethod(MockScriptSyntax.Method.REQUEST.givenName, new Object[] {request});
             if (BooleanUtils.isTrue(result)) {
-                LOG.info("Mock '{}' matched request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
+                LOG.debug("Mock '{}' matched request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
             } else {
-                LOG.info(
+                LOG.debug(
                         "Mock '{}' did not match request '{} {}'",
                         getId(),
                         request.getMethod(),
@@ -62,13 +63,13 @@ public class MockScript {
 
     public void respond(HttpServletRequest request, HttpServletResponse response) throws MockResponseException {
         try {
-            LOG.info(
+            LOG.debug(
                     "Mock '{}' is responding to request '{} {}'",
                     getId(),
                     request.getMethod(),
                     request.getRequestURI());
             script.invokeMethod(MockScriptSyntax.Method.RESPOND.givenName, new Object[] {request, response});
-            LOG.info("Mock '{}' responded to request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
+            LOG.debug("Mock '{}' responded to request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
         } catch (Exception e) {
             throw new MockResponseException(String.format("Mock script '%s' cannot respond properly", getId()), e);
         }
@@ -77,13 +78,14 @@ public class MockScript {
     public void fail(HttpServletRequest request, HttpServletResponse response, Exception exception)
             throws MockResponseException {
         try {
-            LOG.info(
+            LOG.debug(
                     "Mock '{}' is handling failed request '{} {}'",
                     getId(),
                     request.getMethod(),
                     request.getRequestURI());
             script.invokeMethod(MockScriptSyntax.Method.FAIL.givenName, new Object[] {request, response, exception});
-            LOG.info("Mock '{}' handled failed request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
+            LOG.debug(
+                    "Mock '{}' handled failed request '{} {}'", getId(), request.getMethod(), request.getRequestURI());
         } catch (Exception e) {
             throw new MockResponseException(
                     String.format("Mock script '%s' cannot handle failed request properly", getId()), e);
