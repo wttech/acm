@@ -17,15 +17,18 @@ public class MockScript {
 
     private final MockContext context;
 
+    private final MockType type;
+
     private final Script script;
 
-    public MockScript(MockContext context) {
+    public MockScript(MockContext context, MockType type) {
         this.context = context;
+        this.type = type;
         this.script = parseScript();
     }
 
     private Script parseScript() {
-        GroovyShell shell = ScriptUtils.createShell(new MockScriptSyntax());
+        GroovyShell shell = ScriptUtils.createShell(new MockScriptSyntax(type));
         Script script = shell.parse(
                 context.getMock().getContent(),
                 MockScriptSyntax.MAIN_CLASS,

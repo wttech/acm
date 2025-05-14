@@ -3,10 +3,9 @@ import javax.servlet.http.HttpServletResponse
 
 void respond(HttpServletRequest request, HttpServletResponse response) {
     response.setStatus(404)
-    template.render(response, "missing.html", [
+    formatter.template.render(mock.resolvePath(repo.get("missing.html")).readFile(), [
             "request": request,
             "response": response,
-
-            "logo": repository.readAsBase64("logo-text.png"),
-    ])
+            "logo": formatter.base64.encodeToString(repo.get(mock.resolvePath("logo-text.png")).readFile()),
+    ], response.outputStream)
 }

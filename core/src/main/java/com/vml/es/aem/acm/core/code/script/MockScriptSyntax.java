@@ -14,6 +14,12 @@ public class MockScriptSyntax extends AbstractASTTransformation {
 
     public static final String MAIN_CLASS = "AcmMockScript";
 
+    private final MockType type;
+
+    public MockScriptSyntax(MockType type) {
+        this.type = type;
+    }
+
     @Override
     public void visit(ASTNode[] nodes, SourceUnit source) {
         if (source == null) {
@@ -24,7 +30,7 @@ public class MockScriptSyntax extends AbstractASTTransformation {
 
         ClassNode mainClass = requireMainClass(source.getAST().getClasses(), MAIN_CLASS);
         for (Method methodValue : Method.values()) {
-            if (methodValue.required || hasMethod(mainClass, methodValue.givenName)) {
+            if (isMethodRequired(methodValue) || hasMethod(mainClass, methodValue.givenName)) {
                 if (!isMethodValid(mainClass, methodValue.givenName, methodValue.returnType, methodValue.paramCount)) {
                     addError(
                             String.format(
@@ -36,23 +42,33 @@ public class MockScriptSyntax extends AbstractASTTransformation {
         }
     }
 
+    private boolean isMethodRequired(Method method) {
+        switch (type) {
+            case REGULAR:
+                return method == Method.REQUEST || method == Method.RESPOND;
+            case MISSING:
+                return method == Method.RESPOND;
+            case FAIL:
+                return method == Method.FAIL;
+            default:
+                return false;
+        }
+    }
+
     enum Method {
-        REQUEST("request", "boolean", true, 1),
-        RESPOND("respond", "void", true, 2),
-        FAIL("fail", "void", false, 3);
+        REQUEST("request", "boolean", 1),
+        RESPOND("respond", "void", 2),
+        FAIL("fail", "void", 3);
 
         final String givenName;
 
         final String returnType;
 
-        final boolean required;
-
         final int paramCount;
 
-        Method(String givenName, String returnType, boolean required, int paramCount) {
+        Method(String givenName, String returnType, int paramCount) {
             this.givenName = givenName;
             this.returnType = returnType;
-            this.required = required;
             this.paramCount = paramCount;
         }
     }
