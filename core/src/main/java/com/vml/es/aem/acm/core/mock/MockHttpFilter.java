@@ -2,7 +2,7 @@ package com.vml.es.aem.acm.core.mock;
 
 import com.vml.es.aem.acm.core.code.CodeContext;
 import com.vml.es.aem.acm.core.code.script.MockScript;
-import com.vml.es.aem.acm.core.code.script.MockType;
+import com.vml.es.aem.acm.core.code.script.MockScriptType;
 import com.vml.es.aem.acm.core.osgi.OsgiContext;
 import com.vml.es.aem.acm.core.util.ResourceUtils;
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class MockHttpFilter implements Filter {
                     if (!repository.isSpecial(candidateMock.getId())) {
                         MockContext mockContext = new MockContext(codeContext, candidateMock);
                         codeContext.prepareMock(mockContext);
-                        MockScript mock = new MockScript(mockContext, MockType.REGULAR);
+                        MockScript mock = new MockScript(mockContext, MockScriptType.REGULAR);
                         if (mock.request(request)) {
                             mock.respond(request, response);
                             return;
@@ -88,7 +88,7 @@ public class MockHttpFilter implements Filter {
                     try {
                         MockContext mockContext = new MockContext(codeContext, failScript);
                         codeContext.prepareMock(mockContext);
-                        MockScript mock = new MockScript(mockContext, MockType.FAIL);
+                        MockScript mock = new MockScript(mockContext, MockScriptType.FAIL);
                         mock.fail(request, response, e);
                     } catch (MockException e2) {
                         LOG.error("Mock fail error!", e2);
@@ -107,7 +107,7 @@ public class MockHttpFilter implements Filter {
                 try {
                     MockContext mockContext = new MockContext(codeContext, missingScript);
                     codeContext.prepareMock(mockContext);
-                    MockScript mock = new MockScript(mockContext, MockType.MISSING);
+                    MockScript mock = new MockScript(mockContext, MockScriptType.MISSING);
                     mock.respond(request, response);
                 } catch (MockException e) {
                     LOG.error("Mock missing error!", e);

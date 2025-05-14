@@ -18,11 +18,11 @@ public class MockScript {
 
     private final MockContext context;
 
-    private final MockType type;
+    private final MockScriptType type;
 
     private final Script script;
 
-    public MockScript(MockContext context, MockType type) {
+    public MockScript(MockContext context, MockScriptType type) {
         this.context = context;
         this.type = type;
         this.script = parseScript();

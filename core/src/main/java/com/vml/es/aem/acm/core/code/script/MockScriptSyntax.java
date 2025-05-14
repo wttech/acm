@@ -14,9 +14,9 @@ public class MockScriptSyntax extends AbstractASTTransformation {
 
     public static final String MAIN_CLASS = "AcmMockScript";
 
-    private final MockType type;
+    private final MockScriptType type;
 
-    public MockScriptSyntax(MockType type) {
+    public MockScriptSyntax(MockScriptType type) {
         this.type = type;
     }
 
