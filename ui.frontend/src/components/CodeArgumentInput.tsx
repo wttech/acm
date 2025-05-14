@@ -26,7 +26,6 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
       }
       if (arg.validator) {
         try {
-          // eslint-disable-next-line no-eval
           const validator = eval(arg.validator);
           const allValues = getValues();
           const errorMessage = validator(value, allValues);

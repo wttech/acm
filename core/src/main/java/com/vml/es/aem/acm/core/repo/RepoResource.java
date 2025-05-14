@@ -34,6 +34,10 @@ public class RepoResource {
         this.path = path;
     }
 
+    public static RepoResource of(ResourceResolver resourceResolver, String path) {
+        return new RepoResource(new Repo(resourceResolver), path);
+    }
+
     public static RepoResource of(Resource resource) {
         return new Repo(resource.getResourceResolver()).get(resource.getPath());
     }
@@ -225,6 +229,14 @@ public class RepoResource {
         }
         String childPath = String.format("%s/%s", path, name);
         return new RepoResource(repo, childPath);
+    }
+
+    public RepoResource sibling(String name) {
+        if (StringUtils.isBlank(name)) {
+            throw new IllegalArgumentException("Repo sibling resource name cannot be blank!");
+        }
+        String siblingPath = String.format("%s/%s", parentPath(), name);
+        return new RepoResource(repo, siblingPath);
     }
 
     public Stream<RepoResource> siblings() {

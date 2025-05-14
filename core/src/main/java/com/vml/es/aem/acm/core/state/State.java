@@ -4,12 +4,15 @@ import com.vml.es.aem.acm.core.code.ExecutionSummary;
 import com.vml.es.aem.acm.core.gui.SpaSettings;
 import com.vml.es.aem.acm.core.instance.HealthStatus;
 import com.vml.es.aem.acm.core.instance.InstanceSettings;
+import com.vml.es.aem.acm.core.mock.MockStatus;
 import java.io.Serializable;
 import java.util.List;
 
 public class State implements Serializable {
 
     private final HealthStatus healthStatus;
+
+    private final MockStatus mockStatus;
 
     private final InstanceSettings instanceSettings;
 
@@ -20,16 +23,22 @@ public class State implements Serializable {
     public State(
             SpaSettings spaSettings,
             HealthStatus healthStatus,
+            MockStatus mockStatus,
             InstanceSettings instanceSettings,
             List<ExecutionSummary> queuedExecutions) {
         this.spaSettings = spaSettings;
         this.healthStatus = healthStatus;
+        this.mockStatus = mockStatus;
         this.instanceSettings = instanceSettings;
         this.queuedExecutions = queuedExecutions;
     }
 
     public HealthStatus getHealthStatus() {
         return healthStatus;
+    }
+
+    public MockStatus getMockStatus() {
+        return mockStatus;
     }
 
     public InstanceSettings getInstanceSettings() {

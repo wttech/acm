@@ -22,7 +22,7 @@ public class ExtensionScriptSyntax extends AbstractASTTransformation {
 
         this.sourceUnit = source;
 
-        ClassNode mainClass = ScriptUtils.requireMainClass(source.getAST().getClasses(), MAIN_CLASS);
+        ClassNode mainClass = requireMainClass(source.getAST().getClasses(), MAIN_CLASS);
         for (Method methodValue : Method.values()) {
             if (methodValue.required || hasMethod(mainClass, methodValue.givenName)) {
                 if (!isMethodValid(mainClass, methodValue.givenName, methodValue.returnType, methodValue.paramCount)) {
@@ -37,8 +37,9 @@ public class ExtensionScriptSyntax extends AbstractASTTransformation {
     }
 
     enum Method {
-        PREPARE("prepareRun", "void", true, 1),
-        COMPLETE("completeRun", "void", true, 1);
+        PREPARE_RUN("prepareRun", "void", true, 1),
+        COMPLETE_RUN("completeRun", "void", true, 1),
+        PREPARE_MOCK("prepareMock", "void", true, 1);
 
         final String givenName;
         final String returnType;

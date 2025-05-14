@@ -11,7 +11,7 @@ import CodeExecuteButton from '../components/CodeExecuteButton.tsx';
 import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
 import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation.ts';
 import { toastRequest } from '../utils/api';
-import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput } from '../utils/api.types';
+import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput, ScriptType } from '../utils/api.types';
 import { Urls } from '../utils/url.ts';
 
 const toastTimeout = 3000;
@@ -134,7 +134,7 @@ const ScriptView = () => {
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
                     <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={script.type !== 'MANUAL'} isPending={executing} />
-                    {script.type !== 'EXTENSION' && (
+                    {script.type !== ScriptType.EXTENSION && script.type !== ScriptType.MOCK && (
                       <Button
                         variant="secondary"
                         style="outline"

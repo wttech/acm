@@ -4,23 +4,22 @@ import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppState } from '../hooks/app.ts';
-import { useFormatter } from '../hooks/formatter.ts';
+import { useAppState } from '../hooks/app';
+import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
 import { InstanceRole, isExecutionNegative, ScriptOutput, ScriptType } from '../utils/api.types';
-import DateExplained from './DateExplained.tsx';
+import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptSynchronizeButton from './ScriptSynchronizeButton';
 import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
-import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
 
-type ScriptListProps = {
+type ScriptListRichProps = {
   type: ScriptType;
 };
 
-const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
+const ScriptListRich: React.FC<ScriptListRichProps> = ({ type }) => {
   const appState = useAppState();
   const navigate = useNavigate();
   const formatter = useFormatter();
@@ -99,90 +98,75 @@ const ScriptList: React.FC<ScriptListProps> = ({ type }) => {
             </StatusLight>
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            {type === ScriptType.MANUAL ? <ScriptsManualHelpButton /> : type === ScriptType.EXTENSION ? <ScriptsExtensionHelpButton /> : <ScriptsAutomaticHelpButton />}
+            {type === ScriptType.MANUAL ? <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton />}
           </Flex>
         </Flex>
       </View>
-      {type === ScriptType.EXTENSION ? (
-        <TableView flex="1" aria-label={`Script list (${type})`} renderEmptyState={renderEmptyState} onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}>
-          <TableHeader>
-            <Column>Name</Column>
-          </TableHeader>
-          <TableBody>
-            {(scripts.list || []).map((script) => (
+      <TableView
+        flex="1"
+        aria-label={`Script list (${type})`}
+        selectionMode={type === ScriptType.MANUAL ? 'none' : 'multiple'}
+        selectedKeys={selectedKeys}
+        onSelectionChange={setSelectedKeys}
+        renderEmptyState={renderEmptyState}
+        onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
+      >
+        <TableHeader>
+          <Column>Name</Column>
+          <Column>Last Execution</Column>
+          <Column>
+            <Text>Average Duration</Text>
+            <ContextualHelp variant="help">
+              <Heading>Explanation</Heading>
+              <Content>Duration is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
+            </ContextualHelp>
+          </Column>
+          <Column>
+            <Text>Success Rate</Text>
+            <ContextualHelp variant="help">
+              <Heading>Explanation</Heading>
+              <Content>Success rate is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
+            </ContextualHelp>
+          </Column>
+        </TableHeader>
+        <TableBody>
+          {(scripts.list || []).map((script) => {
+            const scriptStats = scripts.stats.find((stat) => stat.path === script.id)!;
+            const lastExecution = scriptStats?.lastExecution;
+
+            return (
               <Row key={script.id}>
                 <Cell>{script.name}</Cell>
+                <Cell>
+                  <Flex alignItems="center" gap="size-100">
+                    {lastExecution ? (
+                      <>
+                        <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution">
+                          <Magnify />
+                        </Button>
+                        <Text>
+                          <DateExplained value={lastExecution.startDate} />
+                        </Text>
+                        <Text>by {lastExecution.userId}</Text>
+                      </>
+                    ) : (
+                      <Text>&mdash;</Text>
+                    )}
+                  </Flex>
+                </Cell>
+                <Cell>
+                  <Text>{lastExecution ? formatter.duration(scriptStats.averageDuration) : <>&mdash;</>}</Text>
+                </Cell>
+                <Cell>
+                  <ExecutionStatsBadge stats={scriptStats} />
+                </Cell>
               </Row>
-            ))}
-          </TableBody>
-        </TableView>
-      ) : (
-        <TableView
-          flex="1"
-          aria-label={`Script list (${type})`}
-          selectionMode={type === ScriptType.MANUAL ? 'none' : 'multiple'}
-          selectedKeys={selectedKeys}
-          onSelectionChange={setSelectedKeys}
-          renderEmptyState={renderEmptyState}
-          onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
-        >
-          <TableHeader>
-            <Column>Name</Column>
-            <Column>Last Execution</Column>
-            <Column>
-              <Text>Average Duration</Text>
-              <ContextualHelp variant="help">
-                <Heading>Explanation</Heading>
-                <Content>Duration is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
-              </ContextualHelp>
-            </Column>
-            <Column>
-              <Text>Success Rate</Text>
-              <ContextualHelp variant="help">
-                <Heading>Explanation</Heading>
-                <Content>Success rate is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
-              </ContextualHelp>
-            </Column>
-          </TableHeader>
-          <TableBody>
-            {(scripts.list || []).map((script) => {
-              const scriptStats = scripts.stats.find((stat) => stat.path === script.id)!;
-              const lastExecution = scriptStats?.lastExecution;
-
-              return (
-                <Row key={script.id}>
-                  <Cell>{script.name}</Cell>
-                  <Cell>
-                    <Flex alignItems="center" gap="size-100">
-                      {lastExecution ? (
-                        <>
-                          <Button variant={isExecutionNegative(lastExecution.status) ? 'negative' : 'secondary'} onPress={() => navigate(`/executions/view/${encodeURIComponent(lastExecution.id)}`)} aria-label="View Execution">
-                            <Magnify />
-                          </Button>
-                          <Text>
-                            <DateExplained value={lastExecution.startDate} />
-                          </Text>
-                          <Text>by {lastExecution.userId}</Text>
-                        </>
-                      ) : (
-                        <Text>&mdash;</Text>
-                      )}
-                    </Flex>
-                  </Cell>
-                  <Cell>
-                    <Text>{lastExecution ? formatter.duration(scriptStats.averageDuration) : <>&mdash;</>}</Text>
-                  </Cell>
-                  <Cell>
-                    <ExecutionStatsBadge stats={scriptStats} />
-                  </Cell>
-                </Row>
-              );
-            })}
-          </TableBody>
-        </TableView>
-      )}
+            );
+          })}
+        </TableBody>
+      </TableView>
     </Flex>
   );
 };
 
-export default ScriptList;
+export default ScriptListRich;
