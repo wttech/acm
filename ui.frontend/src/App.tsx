@@ -17,7 +17,6 @@ function App() {
       appStateInterval: 3000,
       executionPollInterval: 1000,
       scriptStatsLimit: 30,
-      mocksVisible: false,
     },
     healthStatus: {
       healthy: true,
