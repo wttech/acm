@@ -37,8 +37,11 @@ public class MockScript {
                     context.getCodeContext().getBinding());
             return script;
         } catch (Exception e) {
-            throw new MockException(String.format(
-                    "Mock script '%s' cannot be parsed!", context.getMock().getId()));
+            throw new MockException(
+                    String.format(
+                            "Mock script '%s' cannot be parsed!",
+                            context.getMock().getId()),
+                    e);
         }
     }
 
