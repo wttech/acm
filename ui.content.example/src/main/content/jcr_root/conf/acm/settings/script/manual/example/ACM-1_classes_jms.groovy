@@ -10,10 +10,6 @@
  */
 import com.vml.es.aem.acm.core.assist.JavaClassDictionary
 
-import java.lang.module.ModuleFinder
-import java.lang.module.ModuleReference
-import java.util.function.Consumer
-
 void describeRun() {
     args.select("mode") { options = ["print", "save"]; value = "print" }
 }
@@ -25,33 +21,40 @@ boolean canRun() {
 void doRun() {
     out.fromLogs()
 
+    def buffer = new StringBuffer()
+    def result = eachSystemClass()
+    mapToYaml(result, buffer)
     switch (args.value("mode")) {
         case "print":
-            eachSystemClass { className -> println "${className}" }
+            println(buffer.toString())
             break
         case "save":
-            def buffer = new StringBuffer()
-            eachSystemClass { className -> buffer.append("${className}\n") }
             def dictFile = repo.get(JavaClassDictionary.path())
             dictFile.parent().ensureFolder()
-            dictFile.saveFile(buffer.toString(), "text/plain")
+            dictFile.saveFile(buffer.toString(), "application/x-yaml")
             break
     }
 }
 
-def eachSystemClass(Consumer<String> callback) {
+def eachSystemClass() {
     def exportedPackages = osgi.osgiScanner.getSystemExportedPackages().sorted().toList()
+    def classMap = [:]
     ModuleLayer.boot().modules().forEach { module ->
         module.getPackages().findAll { pkg -> exportedPackages.contains(pkg) }.forEach { pkg ->
-            findSystemClasses(module, pkg).sorted().forEach { className ->
-                callback(className)
+            findSystemClasses(module, pkg).forEach { m ->
+                if (classMap.containsKey(m[1])) {
+                    classMap[m[1]].add(m[0])
+                } else {
+                    classMap[m[1]] = [m[0]]
+                }
             }
         }
     }
+    return classMap
 }
 
 def findSystemClasses(Module module, String packageName) {
-    def classNames = [] as List<String>
+    def classNames = [] as List<List<String>>
     def packagePathPrefix = packageName.replace('.', '/')
 
     module.getLayer().configuration().modules().stream()
@@ -65,11 +68,20 @@ def findSystemClasses(Module module, String packageName) {
                                 def className = resource.replace('/', '.').replace('.class', '')
                                 def normalizedClassName = osgi.osgiScanner.normalizeClassName(className).orElse(null)
                                 if (normalizedClassName) {
-                                    classNames.add(normalizedClassName)
+                                    classNames.add([normalizedClassName, resolvedModule.name()])
                                 }
                             }
                 }
             }
 
     return classNames.stream()
+}
+
+def mapToYaml(Map<String, List<String>> map, StringBuffer stringBuffer) {
+    map.each { key, valueList ->
+        stringBuffer.append("${key}:\n")
+        valueList.each { value ->
+            stringBuffer.append("   - ${value}\n")
+        }
+    }
 }

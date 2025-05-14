@@ -42,4 +42,8 @@ public class ClassSuggestion implements Suggestion {
 
         return StringUtils.join(info, "\n\n");
     }
+
+    public String getDocsUrl() {
+        return classInfo.getDocsUrl();
+    }
 }

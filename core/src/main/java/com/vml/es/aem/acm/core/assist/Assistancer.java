@@ -134,7 +134,7 @@ public class Assistancer {
             Bundle bundle = osgiScanner.getSystemBundle();
             JavaClassDictionary.determine(resolver)
                     .getClasses()
-                    .map(className -> new ClassInfo(className, bundle))
+                    .map(className -> new ClassInfo(className, bundle, JavaClassDictionary.buildDocsUrl(className)))
                     .forEach(result::add);
             osgiScanner.scanExportedClasses().forEach(result::add);
 

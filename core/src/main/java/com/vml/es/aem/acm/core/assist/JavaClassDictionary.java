@@ -6,10 +6,10 @@ import com.vml.es.aem.acm.core.util.StreamUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
+
+import com.vml.es.aem.acm.core.util.YamlUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
@@ -22,6 +22,8 @@ public class JavaClassDictionary {
 
     public static final String FILE_EXTENSION = "txt";
 
+    public static final String JAVA_VERSION = System.getProperty("java.specification.version");
+
     private final Resource resource;
 
     public JavaClassDictionary(Resource resource) {
@@ -29,9 +31,8 @@ public class JavaClassDictionary {
     }
 
     public static JavaClassDictionary determine(ResourceResolver resolver) {
-        return byJavaVersion(resolver, System.getProperty("java.specification.version"))
-                .orElseGet(() -> highestJavaVersion(resolver)
-                        .orElseThrow(() -> new IllegalStateException("Java class dictionary cannot be determined!")));
+        return byJavaVersion(resolver, JAVA_VERSION).orElseGet(() -> highestJavaVersion(resolver)
+                .orElseThrow(() -> new IllegalStateException("Java class dictionary cannot be determined!")));
     }
 
     public static Optional<JavaClassDictionary> byJavaVersion(ResourceResolver resolver, String javaVersion) {
@@ -61,9 +62,23 @@ public class JavaClassDictionary {
         return path(System.getProperty("java.specification.version"));
     }
 
+    public static String buildDocsUrl(String className) {
+        if (!className.startsWith("java")) {
+            return null;
+        }
+        if ("1.8".equals(JAVA_VERSION)) {
+            return String.format("https://docs.oracle.com/javase/8/docs/api/%s.html", className.replace(".", "/"));
+        }
+        return String.format(
+                "https://docs.oracle.com/en/java/javase/%s/java.base/docs/api/%s.html",
+                JAVA_VERSION, className.replace(".", "/"));
+    }
+
     public Stream<String> getClasses() {
         try (InputStream input = RepoResource.of(resource).readFileAsStream()) {
-            return StreamUtils.asStream(IOUtils.lineIterator(input, StandardCharsets.UTF_8))
+            Map<String, List<String>> loadedClasses = YamlUtils.readYaml(input, Map.class);
+            return loadedClasses.values().stream()
+                    .flatMap(Collection::stream)
                     .map(String::trim)
                     .filter(StringUtils::isNotBlank);
         } catch (IOException e) {

@@ -10,9 +10,16 @@ public class ClassInfo implements Comparable<ClassInfo> {
 
     private final Bundle bundle;
 
-    public ClassInfo(String className, Bundle bundle) {
+    private final String docsUrl;
+
+    public ClassInfo(String className, Bundle bundle, String docsUrl) {
         this.className = className;
         this.bundle = bundle;
+        this.docsUrl = docsUrl;
+    }
+
+    public ClassInfo(String className, Bundle bundle) {
+        this(className, bundle, null);
     }
 
     public String getClassName() {
@@ -21,6 +28,10 @@ public class ClassInfo implements Comparable<ClassInfo> {
 
     public Bundle getBundle() {
         return bundle;
+    }
+
+    public String getDocsUrl() {
+        return docsUrl;
     }
 
     @Override
