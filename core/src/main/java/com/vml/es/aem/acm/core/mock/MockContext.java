@@ -1,6 +1,7 @@
 package com.vml.es.aem.acm.core.mock;
 
 import com.vml.es.aem.acm.core.code.*;
+import com.vml.es.aem.acm.core.repo.RepoResource;
 import groovy.lang.Binding;
 import org.slf4j.LoggerFactory;
 
@@ -32,9 +33,13 @@ public class MockContext {
     private void customizeBinding() {
         Binding binding = getCodeContext().getBinding();
 
-        binding.setVariable("mock", mock);
+        binding.setVariable("mock", this);
         binding.setVariable(
                 "log",
                 LoggerFactory.getLogger(String.format("%s(%s)", getClass().getName(), mock.getId())));
+    }
+
+    public RepoResource getResource() {
+        return RepoResource.of(codeContext.getResourceResolver(), mock.getPath());
     }
 }
