@@ -1,3 +1,5 @@
+import { isProduction } from './node.ts';
+
 export type Executable = {
   id: string;
   content: string;
@@ -216,6 +218,7 @@ export enum ScriptType {
   ENABLED = 'ENABLED',
   DISABLED = 'DISABLED',
   EXTENSION = 'EXTENSION',
+  MOCK = 'MOCK',
 }
 
 export type Script = {
@@ -241,6 +244,7 @@ export type ScriptOutput = {
 export type State = {
   spaSettings: SpaSettings;
   healthStatus: HealthStatus;
+  mockStatus: MockStatus;
   instanceSettings: InstanceSettings;
   queuedExecutions: ExecutionSummary[];
 };
@@ -269,6 +273,8 @@ export enum InstanceType {
   CLOUD_CONTAINER = 'CLOUD_CONTAINER',
 }
 
+export const instancePrefix = isProduction() ? '' : 'http://localhost:4502';
+
 export type HealthStatus = {
   healthy: boolean;
   issues: HealthIssue[];
@@ -284,6 +290,10 @@ export enum HealthIssueSeverity {
   WARNING = 'WARNING',
   INFO = 'INFO',
 }
+
+export type MockStatus = {
+  enabled: boolean;
+};
 
 export enum ExecutionFormat {
   SUMMARY = 'SUMMARY',

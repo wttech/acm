@@ -14,11 +14,19 @@ public final class YamlUtils {
         // intentionally empty
     }
 
-    public static <T> T readYaml(InputStream inputStream, Class<T> clazz) throws IOException {
+    public static <T> T read(InputStream inputStream, Class<T> clazz) throws IOException {
         return YAML_MAPPER.readValue(inputStream, clazz);
     }
 
-    public static void writeYaml(OutputStream outputStream, Object data) throws IOException {
+    public static void write(OutputStream outputStream, Object data) throws IOException {
         YAML_MAPPER.writeValue(outputStream, data);
+    }
+
+    public static <T> T readFromString(String yaml, Class<T> clazz) throws IOException {
+        return YAML_MAPPER.readValue(yaml, clazz);
+    }
+
+    public static String writeToString(Object data) throws IOException {
+        return YAML_MAPPER.writeValueAsString(data);
     }
 }

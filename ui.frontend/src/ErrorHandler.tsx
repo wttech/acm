@@ -28,6 +28,8 @@ const ErrorHandler: React.FC = () => {
             <Text>
               Application encountered a problem.
               <br />
+              Verify your authorization status.
+              <br />
               Ensure that AEM instance backend is available.
             </Text>
             <Disclosure>

@@ -6,13 +6,11 @@ import Help from '@spectrum-icons/workflow/Help';
 import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
 import { useAppState } from '../hooks/app.ts';
-import { HealthIssueSeverity, InstanceType } from '../utils/api.types';
-import { isProduction } from '../utils/node.ts';
+import { HealthIssueSeverity, instancePrefix, InstanceType } from '../utils/api.types';
 
 const HealthChecker = () => {
   const appState = useAppState();
   const healthIssues = appState.healthStatus.issues;
-  const prefix = isProduction() ? '' : 'http://localhost:4502';
 
   const getSeverityVariant = (severity: HealthIssueSeverity): 'negative' | 'yellow' | 'neutral' => {
     switch (severity) {
@@ -37,7 +35,11 @@ const HealthChecker = () => {
       <View>
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
-            <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER} onPress={() => window.open(`${prefix}/system/console/configMgr/com.vml.es.aem.acm.core.instance.HealthChecker`, '_blank')}>
+            <Button
+              variant="negative"
+              isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
+              onPress={() => window.open(`${instancePrefix}/system/console/configMgr/com.vml.es.aem.acm.core.instance.HealthChecker`, '_blank')}
+            >
               <Settings />
               <Text>Configure</Text>
             </Button>

@@ -1,0 +1,16 @@
+/* Adds vertical line between 'disabled' and 'mock' tab headers */
+.scriptTabs div[role='tab']:nth-child(3) {
+  position: relative;
+  margin-right: var(--spectrum-global-dimension-size-300);
+}
+
+.scriptTabs div[role='tab']:nth-child(3)::after {
+  content: '';
+  position: absolute;
+  right: calc(var(--spectrum-global-dimension-size-300) * -1);
+  width: 1px;
+  height: 90%;
+  bottom: 0;
+  background-color: var(--spectrum-global-color-gray-300);
+  opacity: 0.75;
+}

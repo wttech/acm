@@ -65,7 +65,10 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             Map<String, Object> props = new HashMap<>();
 
             props.put("id", execution.getId());
-            props.put("userId", ResourceUtils.serviceOrImpersonatedUserId(context.getResourceResolver()));
+            props.put(
+                    "userId",
+                    ResourceUtils.serviceOrImpersonatedUserId(
+                            context.getCodeContext().getResourceResolver()));
             props.put("status", execution.getStatus().name());
             props.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
             props.put("endDate", DateUtils.toCalendar(execution.getEndDate()));

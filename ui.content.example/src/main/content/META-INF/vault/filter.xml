@@ -4,4 +4,5 @@
     <filter root="/conf/acm/settings/script/manual/example"/>
     <filter root="/conf/acm/settings/script/auto/enabled/example"/>
     <filter root="/conf/acm/settings/script/auto/disabled/example"/>
+    <filter root="/conf/acm/settings/script/mock/example"/>
 </workspaceFilter>

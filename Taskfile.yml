@@ -253,10 +253,12 @@ tasks:
       - sh npmw install
       - sh npmw run dev
 
-  develop:frontend:format:
+  develop:frontend:fix:
     desc: format frontend code
     dir: ui.frontend
-    cmd: sh npmw run format
+    cmds:
+      - sh npmw run format
+      - sh npmw run lint
 
   release:
     desc: Release a new version
