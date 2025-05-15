@@ -12,6 +12,11 @@
 
 # AEM Content Manager (ACM)
 
+<picture>
+    <source srcset="docs/acm-logo-white.svg" media="(prefers-color-scheme: dark)">
+    <img src="docs/acm-logo-black.svg" alt="VML Logo" height="100">
+</picture>
+
 ACM (AEM Content Manager) is a powerful tool designed to streamline your workflow and enhance productivity with an intuitive interface and robust features. It automates bulk content modifications and permission management, making it an ideal solution for tasks like content migration and managing permissions at scale. ACM provides an IDE-like experience with code completion, auto-import, and on-the-fly compilation. 
 
 It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
