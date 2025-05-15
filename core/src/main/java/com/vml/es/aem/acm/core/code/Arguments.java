@@ -41,6 +41,11 @@ public class Arguments implements Serializable {
         return new ArgumentsValueMap(props);
     }
 
+    @JsonIgnore
+    public ValueMap values() {
+        return getValues();
+    }
+
     public <T> T getValue(String name, Class<T> type) {
         return getValues().get(name, type);
     }
@@ -141,6 +146,32 @@ public class Arguments implements Serializable {
 
     public void integerNumber(String name, Closure<IntegerArgument> options) {
         IntegerArgument argument = new IntegerArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void color(String name) {
+        color(name, null);
+    }
+
+    public void color(String name, Closure<ColorArgument> options) {
+        ColorArgument argument = new ColorArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void integerRange(String name, Closure<IntegerRangeArgument> options) {
+        IntegerRangeArgument argument = new IntegerRangeArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void decimalRange(String name) {
+        decimalRange(name, null);
+    }
+
+    public void decimalRange(String name, Closure<DecimalRangeArgument> options) {
+        DecimalRangeArgument argument = new DecimalRangeArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }

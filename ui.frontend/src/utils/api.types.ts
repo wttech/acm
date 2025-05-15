@@ -25,8 +25,8 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME';
-export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined;
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'COLOR' | 'NUMBER_RANGE';
+export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue;
 export type ArgumentValues = Record<string, ArgumentValue>;
 
 export const ArgumentGroupDefault = 'general';
@@ -58,6 +58,23 @@ export type TextArgument = Argument<string> & {
 export type NumberArgument = Argument<number> & {
   min: number;
   max: number;
+  step: number;
+  display: 'INPUT' | 'SLIDER';
+};
+
+export type ColorArgument = Argument<string> & {
+  format: 'HEX' | 'RGBA' | 'HSL' | 'HSB';
+};
+
+type RangeValue = {
+  start: number;
+  end: number;
+};
+
+export type NumberRangeArgument = Argument<RangeValue> & {
+  min: number;
+  max: number;
+  step: number;
 };
 
 export type SelectArgument = Argument<ArgumentValue> & {
@@ -92,6 +109,14 @@ export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArg
 
 export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
   return arg.type === 'INTEGER' || arg.type === 'DECIMAL';
+}
+
+export function isColorArgument(arg: Argument<ArgumentValue>): arg is ColorArgument {
+  return arg.type === 'COLOR';
+}
+
+export function isRangeArgument(arg: Argument<ArgumentValue>): arg is NumberRangeArgument {
+  return arg.type === 'NUMBER_RANGE';
 }
 
 export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {

@@ -1,10 +1,32 @@
-import { Checkbox, CheckboxGroup, DatePicker, Flex, Item, ListView, NumberField, Picker, Radio, RadioGroup, Switch, TextArea, TextField, View } from '@adobe/react-spectrum';
+import {
+  Button,
+  Checkbox,
+  CheckboxGroup,
+  ColorEditor,
+  ColorFormat,
+  ColorPicker,
+  DatePicker,
+  Flex,
+  Item,
+  ListView,
+  NumberField,
+  parseColor,
+  Picker,
+  Radio,
+  RadioGroup,
+  RangeSlider,
+  Slider,
+  Switch,
+  TextArea,
+  TextField,
+  View,
+} from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import useFormCrossFieldValidation from '../hooks/form.ts';
-import { Argument, ArgumentValue, isBoolArgument, isDateTimeArgument, isMultiSelectArgument, isNumberArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
+import { Argument, ArgumentValue, isBoolArgument, isColorArgument, isDateTimeArgument, isMultiSelectArgument, isNumberArgument, isRangeArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates.ts';
 import { Strings } from '../utils/strings.ts';
 import styles from './CodeArgumentInput.module.css';
@@ -83,7 +105,6 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 errorMessage={fieldState.error ? fieldState.error.message : undefined}
                 validationState={fieldState.error ? 'invalid' : 'valid'}
                 aria-label={`Argument '${arg.name}'`}
-                width="100%"
               />
             </View>
           )}
@@ -215,6 +236,47 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
         />
       );
     } else if (isNumberArgument(arg)) {
+      if (arg.display === 'SLIDER') {
+        return (
+          <Controller
+            name={arg.name}
+            control={control}
+            rules={controllerRules(arg)}
+            render={({ field, fieldState }) => (
+              <View key={arg.name} marginBottom="size-200">
+                <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
+                  <Slider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                  {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
+                </Flex>
+              </View>
+            )}
+          />
+        );
+      } else {
+        return (
+          <Controller
+            name={arg.name}
+            control={control}
+            rules={controllerRules(arg)}
+            render={({ field, fieldState }) => (
+              <View key={arg.name} marginBottom="size-200">
+                <NumberField
+                  {...field}
+                  label={argLabel(arg)}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  minValue={arg.min !== null ? arg.min : undefined}
+                  maxValue={arg.max !== null ? arg.max : undefined}
+                  hideStepper={arg.type === 'DECIMAL'}
+                  formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
+                  aria-label={`Argument '${arg.name}'`}
+                />
+              </View>
+            )}
+          />
+        );
+      }
+    } else if (isColorArgument(arg)) {
       return (
         <Controller
           name={arg.name}
@@ -222,17 +284,37 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           rules={controllerRules(arg)}
           render={({ field, fieldState }) => (
             <View key={arg.name} marginBottom="size-200">
-              <NumberField
-                {...field}
-                label={argLabel(arg)}
-                errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                validationState={fieldState.error ? 'invalid' : 'valid'}
-                minValue={arg.min !== null ? arg.min : undefined}
-                maxValue={arg.max !== null ? arg.max : undefined}
-                hideStepper={arg.type === 'DECIMAL'}
-                formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
-                aria-label={`Argument '${arg.name}'`}
-              />
+              <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
+                <ColorPicker
+                  {...field}
+                  label={argLabel(arg)}
+                  aria-label={`Argument '${arg.name}'`}
+                  value={field.value ? parseColor(field.value) : ''}
+                  onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}
+                >
+                  <ColorEditor hideAlphaChannel={arg.format !== 'RGBA'} />
+                  <Button onPress={() => field.onChange('')} width={'100%'} marginTop={'size-200'} variant={'secondary'}>
+                    Clear
+                  </Button>
+                </ColorPicker>
+                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
+              </Flex>
+            </View>
+          )}
+        />
+      );
+    } else if (isRangeArgument(arg)) {
+      return (
+        <Controller
+          name={arg.name}
+          control={control}
+          rules={controllerRules(arg)}
+          render={({ field, fieldState }) => (
+            <View key={arg.name} marginBottom="size-200">
+              <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
+                <RangeSlider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
+              </Flex>
             </View>
           )}
         />
