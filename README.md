@@ -15,7 +15,7 @@
 <p>
 <picture>
     <source srcset="docs/acm-logo-white.svg" media="(prefers-color-scheme: dark)">
-    <img src="docs/acm-logo-black.svg" alt="VML Logo" height="160">
+    <img src="docs/acm-logo-black.svg" alt="VML Logo" height="140">
 </picture>
 </p>
 
