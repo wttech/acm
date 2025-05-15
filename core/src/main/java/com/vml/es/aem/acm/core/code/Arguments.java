@@ -41,6 +41,11 @@ public class Arguments implements Serializable {
         return new ArgumentsValueMap(props);
     }
 
+    @JsonIgnore
+    public ValueMap values() {
+        return getValues();
+    }
+
     public <T> T getValue(String name, Class<T> type) {
         return getValues().get(name, type);
     }

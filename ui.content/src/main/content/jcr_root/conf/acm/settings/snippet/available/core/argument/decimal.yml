@@ -4,8 +4,9 @@ content: |
   args.decimalNumber("${1:name}") { label = "${2:label}"; value = ${3:value} }
 documentation: |
   An argument holding a decimal number value.<br>
-  can be displayed as an input and slider.<br>
-  **Example**:<br>
+  Can be displayed as `input()` or `slider()`.
+  
+  For example:
   ```groovy
   args.decimalNumber("discount") { label = "Discount (%)"; value = 15.5 }
   args.decimalNumber("weight") { label = "Weight (kg)"; value = 75.3 }

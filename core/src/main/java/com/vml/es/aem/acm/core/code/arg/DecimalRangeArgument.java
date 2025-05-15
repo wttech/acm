@@ -2,11 +2,11 @@ package com.vml.es.aem.acm.core.code.arg;
 
 import com.vml.es.aem.acm.core.code.Argument;
 import com.vml.es.aem.acm.core.code.ArgumentType;
-import com.vml.es.aem.acm.core.util.RangeArgumentObject;
+import com.vml.es.aem.acm.core.util.Range;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class DecimalRangeArgument extends Argument<RangeArgumentObject<BigDecimal>> {
+public class DecimalRangeArgument extends Argument<Range<BigDecimal>> {
     private BigDecimal min;
 
     private BigDecimal max;
@@ -22,7 +22,7 @@ public class DecimalRangeArgument extends Argument<RangeArgumentObject<BigDecima
             throw new IllegalArgumentException(
                     String.format("Range value must be a list of two elements but specified '%s'!", value));
         }
-        super.setValue(new RangeArgumentObject<>(value.get(0), value.get(1)));
+        super.setValue(new Range<>(value.get(0), value.get(1)));
     }
 
     public BigDecimal getMin() {
