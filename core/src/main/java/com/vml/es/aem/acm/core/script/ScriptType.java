@@ -8,6 +8,7 @@ public enum ScriptType {
     MANUAL(ScriptRepository.ROOT + "/manual"),
     ENABLED(ScriptRepository.ROOT + "/auto/enabled"),
     DISABLED(ScriptRepository.ROOT + "/auto/disabled"),
+    MOCK(ScriptRepository.ROOT + "/mock"),
     EXTENSION(ScriptRepository.ROOT + "/extension");
 
     private final String root;
@@ -34,6 +35,10 @@ public enum ScriptType {
             subPath = StringUtils.removeStart(subPath, value.root() + "/");
         }
         return root + "/" + subPath;
+    }
+
+    public boolean statsSupported() {
+        return this == MANUAL || this == ENABLED || this == DISABLED;
     }
 
     public String root() {

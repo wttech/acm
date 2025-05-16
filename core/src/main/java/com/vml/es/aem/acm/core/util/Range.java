@@ -1,8 +1,9 @@
 package com.vml.es.aem.acm.core.util;
 
+import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 
-public class Range<T extends Comparable<T>> {
+public class Range<T extends Comparable<T>> implements Serializable {
 
     private final T start;
 

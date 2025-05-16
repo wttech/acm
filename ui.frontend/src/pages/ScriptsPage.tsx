@@ -1,19 +1,24 @@
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
+import Beaker from '@spectrum-icons/workflow/Beaker';
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import Extension from '@spectrum-icons/workflow/Extension';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import Hand from '@spectrum-icons/workflow/Hand';
-import ScriptList from '../components/ScriptList';
+import ScriptListRich from '../components/ScriptListRich.tsx';
+import ScriptListSimple from '../components/ScriptListSimple.tsx';
+import { useAppState } from '../hooks/app.ts';
 import { useNavigationTab } from '../hooks/navigation';
 import { ScriptType } from '../utils/api.types';
+import styles from './ScriptsPage.module.css';
 
 const ScriptsPage = () => {
+  const appState = useAppState();
   const [selectedTab, handleTabChange] = useNavigationTab('manual');
 
   return (
     <Flex direction="column" flex="1" gap="size-400">
       <Tabs flex="1" aria-label="Scripts" selectedKey={selectedTab} onSelectionChange={handleTabChange}>
-        <TabList>
+        <TabList UNSAFE_className={styles.scriptTabs}>
           <Item aria-label="Manual scripts" key="manual">
             <Hand />
             <Text>Manual</Text>
@@ -26,6 +31,12 @@ const ScriptsPage = () => {
             <CloseCircle />
             <Text>Disabled</Text>
           </Item>
+          {appState.mockStatus.enabled ? (
+            <Item aria-label="Mock scripts" key="mock">
+              <Beaker />
+              <Text>Mock</Text>
+            </Item>
+          ) : null}
           <Item aria-label="Extension scripts" key="extension">
             <Extension />
             <Text>Extension</Text>
@@ -33,16 +44,21 @@ const ScriptsPage = () => {
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="manual">
-            <ScriptList type={ScriptType.MANUAL} />
+            <ScriptListRich type={ScriptType.MANUAL} />
           </Item>
           <Item key="enabled">
-            <ScriptList type={ScriptType.ENABLED} />
+            <ScriptListRich type={ScriptType.ENABLED} />
           </Item>
           <Item key="disabled">
-            <ScriptList type={ScriptType.DISABLED} />
+            <ScriptListRich type={ScriptType.DISABLED} />
           </Item>
+          {appState.mockStatus.enabled ? (
+            <Item key="mock">
+              <ScriptListSimple type={ScriptType.MOCK} />
+            </Item>
+          ) : null}
           <Item key="extension">
-            <ScriptList type={ScriptType.EXTENSION} />
+            <ScriptListSimple type={ScriptType.EXTENSION} />
           </Item>
         </TabPanels>
       </Tabs>

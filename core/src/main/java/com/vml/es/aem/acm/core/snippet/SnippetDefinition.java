@@ -20,7 +20,7 @@ public class SnippetDefinition implements Serializable {
 
     public static SnippetDefinition fromYaml(String path, InputStream inputStream) {
         try {
-            return YamlUtils.readYaml(inputStream, SnippetDefinition.class);
+            return YamlUtils.read(inputStream, SnippetDefinition.class);
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     String.format("Snippet definition at path '%s' cannot be parsed as YML!", path), e);

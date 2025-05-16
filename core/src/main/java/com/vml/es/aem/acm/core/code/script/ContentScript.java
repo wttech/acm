@@ -1,6 +1,5 @@
 package com.vml.es.aem.acm.core.code.script;
 
-import com.vml.es.aem.acm.core.AcmException;
 import com.vml.es.aem.acm.core.code.*;
 import groovy.lang.GroovyShell;
 import groovy.lang.MissingMethodException;
@@ -19,23 +18,17 @@ public class ContentScript {
 
     private Script parseScript() {
         GroovyShell shell = ScriptUtils.createShell(new ContentScriptSyntax());
-        Script script = shell.parse(
+        return shell.parse(
                 executionContext.getExecutable().getContent(),
                 ContentScriptSyntax.MAIN_CLASS,
-                executionContext.getBinding());
-        if (script == null) {
-            throw new AcmException(String.format(
-                    "Content script '%s' cannot be parsed!",
-                    executionContext.getExecutable().getId()));
-        }
-        return script;
+                executionContext.getCodeContext().getBinding());
     }
 
     public void describe() {
         try {
             script.invokeMethod(ContentScriptSyntax.Method.DESCRIBE.givenName, null);
         } catch (MissingMethodException e) {
-            // ignore
+            // ignore as the method is optional
         }
     }
 

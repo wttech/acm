@@ -1,0 +1,13 @@
+group: Argument
+name: argument_color
+content: |
+  args.color("${1:name}") { label = "${2:label}"; value = ${3:value} }
+documentation: |
+    An argument that allows to choose a value from color picker.<br>
+    Supported formats: `rgba()` (default), `hex()`, `hsl()`, `hsb()`.
+
+    For example:
+    ```groovy
+    args.color("primaryColor") { label = "Primary Color"; value = "rgba(255, 0, 0, 1)" }
+    args.color("backgroundColor") { label = "Background Color"; value = "#ff0000"; hex() }
+    ```

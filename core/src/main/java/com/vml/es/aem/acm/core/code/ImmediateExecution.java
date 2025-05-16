@@ -130,7 +130,7 @@ public class ImmediateExecution implements Execution {
             return new ImmediateExecution(
                     context.getExecutable(),
                     context.getId(),
-                    context.getResourceResolver().getUserID(),
+                    context.getCodeContext().getResourceResolver().getUserID(),
                     status,
                     startDate,
                     endDate,

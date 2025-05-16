@@ -50,7 +50,8 @@ public class Executor {
 
     public ExecutionContext createContext(
             String id, ExecutionMode mode, Executable executable, ResourceResolver resourceResolver) {
-        ExecutionContext result = new ExecutionContext(id, mode, this, executable, osgiContext, resourceResolver);
+        CodeContext codeContext = new CodeContext(osgiContext, resourceResolver);
+        ExecutionContext result = new ExecutionContext(id, mode, this, executable, codeContext);
         result.setDebug(config.debug());
         result.setHistory(config.history());
         return result;
@@ -69,13 +70,15 @@ public class Executor {
     }
 
     public Execution execute(ExecutionContext context) throws AcmException {
+        context.getCodeContext().prepareRun(context);
         ImmediateExecution execution = executeImmediately(context);
         if (context.getMode() == ExecutionMode.RUN) {
             if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-                ExecutionHistory history = new ExecutionHistory(context.getResourceResolver());
+                ExecutionHistory history =
+                        new ExecutionHistory(context.getCodeContext().getResourceResolver());
                 history.save(context, execution);
             }
-            context.getExtender().complete(execution);
+            context.getCodeContext().completeRun(execution);
         }
         return execution;
     }

@@ -8,5 +8,7 @@ public enum ArgumentType {
     STRING,
     TEXT,
     SELECT,
-    MULTISELECT
+    MULTISELECT,
+    COLOR,
+    NUMBER_RANGE
 }
