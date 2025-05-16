@@ -101,7 +101,7 @@ public class ScriptScheduler implements Runnable {
         ExecutionContextOptions contextOptions =
                 new ExecutionContextOptions(ExecutionMode.RUN, config.userImpersonationId());
         try (ResourceResolver resourceResolver =
-                ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId())) {
+                ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId())) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
 
             scriptRepository.clean();

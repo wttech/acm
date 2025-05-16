@@ -13,32 +13,58 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public final class ResourceUtils {
 
+    public enum Subservice {
+        CONTENT("acm-content-service"),
+        MOCK("acm-mock-service");
+
+        public final String userId;
+
+        Subservice(String userId) {
+            this.userId = userId;
+        }
+
+        public String id() {
+            return name().toLowerCase();
+        }
+    }
+
     private ResourceUtils() {
         // intentionally empty
     }
 
-    public static ResourceResolver serviceResolver(
+    public static ResourceResolver contentResolver(
             ResourceResolverFactory resourceResolverFactory, String userImpersonationId) throws LoginException {
-        boolean impersonation = StringUtils.isNotBlank(userImpersonationId);
+        return serviceResolver(resourceResolverFactory, Subservice.CONTENT, userImpersonationId);
+    }
+
+    public static ResourceResolver mockResolver(ResourceResolverFactory resourceResolverFactory) throws LoginException {
+        return serviceResolver(resourceResolverFactory, Subservice.MOCK, null);
+    }
+
+    private static ResourceResolver serviceResolver(
+            ResourceResolverFactory resourceResolverFactory, Subservice subservice, String userImpersonationId)
+            throws LoginException {
         Map<String, Object> params = new HashMap<>();
-        params.put(ResourceResolverFactory.SUBSERVICE, "acm");
-        if (impersonation) {
-            params.put(ResourceResolverFactory.USER_IMPERSONATION, userImpersonationId);
+        params.put(ResourceResolverFactory.SUBSERVICE, subservice.id());
+
+        boolean impersonation = StringUtils.isNotBlank(userImpersonationId);
+        if (!impersonation) {
+            return resourceResolverFactory.getServiceResourceResolver(params);
         }
+
         try {
+            params.put(ResourceResolverFactory.USER_IMPERSONATION, userImpersonationId);
             ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(params);
-            if (impersonation) {
-                String userImpersonationIdEffective = serviceOrImpersonatedUserId(resolver);
-                if (!StringUtils.equals(userImpersonationId, userImpersonationIdEffective)) {
-                    throw new AcmException(String.format(
-                            "Cannot impersonate user '%s' as service user '%s' is used instead!",
-                            serviceOrImpersonatedUserId(resolver), userImpersonationId));
-                }
+            String userImpersonationIdEffective = serviceOrImpersonatedUserId(resolver);
+            if (!StringUtils.equals(userImpersonationId, userImpersonationIdEffective)) {
+                throw new AcmException(String.format(
+                        "Cannot impersonate user '%s' as service user '%s' is used instead!",
+                        serviceOrImpersonatedUserId(resolver), userImpersonationId));
             }
             return resolver;
         } catch (LoginException e) {
-            return resourceResolverFactory.getAdministrativeResourceResolver(
-                    params); // fix for 'Impersonation not allowed' on 6.5.0 (supported by login admin whitelist)
+            // fix for 'Impersonation not allowed' on 6.5.0 (supported by login admin whitelist)
+            return resourceResolverFactory.getAdministrativeResourceResolver(params);
         }
     }
 

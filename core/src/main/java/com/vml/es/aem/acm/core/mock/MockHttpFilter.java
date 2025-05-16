@@ -61,7 +61,7 @@ public class MockHttpFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
-        try (ResourceResolver resolver = ResourceUtils.serviceResolver(resolverFactory, null)) {
+        try (ResourceResolver resolver = ResourceUtils.mockResolver(resolverFactory)) {
             CodeContext codeContext = new CodeContext(osgiContext, resolver);
             MockRepository repository = new MockRepository(resolver);
 
