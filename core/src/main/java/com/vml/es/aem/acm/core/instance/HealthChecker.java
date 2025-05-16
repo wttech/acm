@@ -63,7 +63,7 @@ public class HealthChecker implements EventHandler {
     }
 
     public HealthStatus checkStatus() {
-        try (ResourceResolver resourceResolver = ResourceUtils.serviceResolver(resourceResolverFactory, null)) {
+        try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
             return checkStatus(resourceResolver);
         } catch (Exception e) {
             LOG.error("Health checker failed", e);

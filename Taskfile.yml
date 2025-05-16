@@ -180,6 +180,7 @@ tasks:
       - src/**/*
       - ../ui.apps/target/*.ui.apps-*.zip
       - ../ui.content/target/*.ui.content-*.zip
+      - ../ui.config/target/*.ui.config-*.zip
       - ../ui.content.migration/target/*.ui.content.migration-*.zip
       - ../ui.content.permissions/target/*.ui.content.permissions-*.zip
     generates: [ target/*.all-*.zip ]

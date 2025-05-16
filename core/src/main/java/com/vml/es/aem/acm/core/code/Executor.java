@@ -59,7 +59,7 @@ public class Executor {
 
     public Execution execute(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         try (ResourceResolver resourceResolver =
-                        ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId());
+                        ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
                 ExecutionContext executionContext = createContext(
                         ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resourceResolver)) {
             return execute(executionContext);

@@ -49,6 +49,8 @@
                     <properties>
                         <cloudManagerTarget>none</cloudManagerTarget>
                     </properties>
+                    <group>com.vml.es.aem.acm</group>
+                    <name>acm.ui.config</name>
                     <packageType>container</packageType>
                     <showImportPackageReport>false</showImportPackageReport>
                 </configuration>
