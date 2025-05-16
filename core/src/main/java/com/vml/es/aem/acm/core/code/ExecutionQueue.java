@@ -182,7 +182,7 @@ public class ExecutionQueue implements JobExecutor {
     private Execution executeAsync(ExecutionContextOptions contextOptions, QueuedExecution execution)
             throws AcmException {
         try (ResourceResolver resolver =
-                        ResourceUtils.serviceResolver(resourceResolverFactory, contextOptions.getUserId());
+                        ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
                 ExecutionContext context = executor.createContext(
                         execution.getJob().getId(),
                         contextOptions.getExecutionMode(),
