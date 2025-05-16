@@ -22,6 +22,10 @@ public final class ResourceUtils {
         Subservice(String userId) {
             this.userId = userId;
         }
+
+        public String id() {
+            return name().toLowerCase();
+        }
     }
 
     private ResourceUtils() {
@@ -30,18 +34,18 @@ public final class ResourceUtils {
 
     public static ResourceResolver contentResolver(
             ResourceResolverFactory resourceResolverFactory, String userImpersonationId) throws LoginException {
-        return serviceResolver(resourceResolverFactory, Subservice.CONTENT.userId, userImpersonationId);
+        return serviceResolver(resourceResolverFactory, Subservice.CONTENT, userImpersonationId);
     }
 
     public static ResourceResolver mockResolver(ResourceResolverFactory resourceResolverFactory) throws LoginException {
-        return serviceResolver(resourceResolverFactory, Subservice.MOCK.userId, null);
+        return serviceResolver(resourceResolverFactory, Subservice.MOCK, null);
     }
 
     private static ResourceResolver serviceResolver(
-            ResourceResolverFactory resourceResolverFactory, String subservice, String userImpersonationId)
+            ResourceResolverFactory resourceResolverFactory, Subservice subservice, String userImpersonationId)
             throws LoginException {
         Map<String, Object> params = new HashMap<>();
-        params.put(ResourceResolverFactory.SUBSERVICE, subservice);
+        params.put(ResourceResolverFactory.SUBSERVICE, subservice.id());
 
         boolean impersonation = StringUtils.isNotBlank(userImpersonationId);
         if (!impersonation) {

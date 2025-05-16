@@ -30,8 +30,6 @@ public class AclContext {
 
     private final PermissionsManager permissionsManager;
 
-    private final boolean compositeNodeStore;
-
     public AclContext(ResourceResolver resourceResolver) {
         try {
             this.logger = LoggerFactory.getLogger(AclContext.class);
@@ -42,7 +40,6 @@ public class AclContext {
             this.resourceResolver = resourceResolver;
             this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory);
-            this.compositeNodeStore = new Repo(resourceResolver).isCompositeNodeStore();
         } catch (RepositoryException e) {
             throw new AclException("Cannot access repository while obtaining ACL context!", e);
         }
@@ -65,7 +62,7 @@ public class AclContext {
     }
 
     public boolean isCompositeNodeStore() {
-        return compositeNodeStore;
+        return new Repo(resourceResolver).isCompositeNodeStore();
     }
 
     public AclUser determineUser(User user) {
