@@ -14,20 +14,9 @@ interface ExecutionProgressBarProps {
 const ExecutionProgressInterval = 800;
 
 const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, active }) => {
-  const standardLabel = () => {
-    if (execution) {
-      if (isExecutionPending(execution.status)) {
-        return `${Strings.capitalize(execution.status)}`;
-      } else {
-        return `${Strings.capitalize(execution.status)} after ${formatter.durationShort(execution.duration)}`;
-      }
-    }
-    return 'Not executing';
-  };
-
   const formatter = useFormatter();
-  const [progress, setProgress] = useState<number | null>(null);
-  const [label, setLabel] = useState<string>(standardLabel);
+  const [percentage, setPercentage] = useState<number | null>(null);
+  const [details, setDetails] = useState<string | null>(null);
   const [scriptStats, setScriptStats] = useState<ScriptStats | null>(null);
 
   useDeepCompareEffect(() => {
@@ -49,34 +38,44 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
     fetchScriptStats();
   }, [execution]);
 
-  const [intervalCompleted, setIntervalCompleted] = useState(false);
-
   useInterval(
-    () => {
-      if (execution) {
-        if (isExecutionPending(execution.status) && scriptStats) {
-          const { averageDuration } = scriptStats;
-          if (execution.startDate && averageDuration) {
-            const elapsedTime = formatter.durationTillNow(execution.startDate)!;
-            const percentage = Math.min((elapsedTime / averageDuration) * 100, 100);
+      () => {
+        if (execution) {
+          if (isExecutionPending(execution.status) && scriptStats) {
+            const { averageDuration } = scriptStats;
+            if (execution.startDate && averageDuration) {
+              const elapsedTime = formatter.durationTillNow(execution.startDate)!;
+              const percentage = Math.min((elapsedTime / averageDuration) * 100, 100);
 
-            setProgress(percentage);
-            setLabel(percentage >= 100 ? `${Strings.capitalize(execution.status)} - Almost done` : `${Strings.capitalize(execution.status)} - ${formatter.durationShort(averageDuration - elapsedTime)} left`);
+              setPercentage(percentage);
+              setDetails(percentage >= 100 ? `Almost done` : `${formatter.durationShort(averageDuration - elapsedTime)} left`);
+            } else {
+              setPercentage(null);
+              setDetails(`Stay tuned`);
+            }
           } else {
-            setProgress(null);
-            setLabel(`${Strings.capitalize(execution.status)} - Stay tuned`);
-          }
-        } else {
-          setProgress(null);
-          setLabel(standardLabel);
-          if (!isExecutionPending(execution.status)) {
-            setIntervalCompleted(true);
+            setPercentage(null);
+            setDetails(null);
           }
         }
-      }
-    },
-    !intervalCompleted ? ExecutionProgressInterval : null,
+      },
+      execution && isExecutionPending(execution.status) && scriptStats ? ExecutionProgressInterval : null
   );
+
+  const label = (() => {
+    if (execution) {
+      if (isExecutionPending(execution.status)) {
+        if (details) {
+          return `${Strings.capitalize(execution.status)} - ${details}`;
+        } else {
+          return `${Strings.capitalize(execution.status)}`;
+        }
+      } else {
+        return `${Strings.capitalize(execution.status)} after ${formatter.durationShort(execution.duration)}`;
+      }
+    }
+    return 'Not executing';
+  })();
 
   const variant = ((): 'positive' | 'informative' | 'warning' | 'critical' | undefined => {
     switch (execution?.status) {
@@ -97,8 +96,8 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
   }
 
   if (active || isExecutionPending(execution.status)) {
-    if (progress !== null && progress < 100) {
-      return <ProgressBar minWidth="size-3000" aria-label={label} label={label} value={progress} />;
+    if (percentage !== null && percentage < 100) {
+      return <ProgressBar minWidth="size-3000" aria-label={label} label={label} value={percentage} />;
     }
     return <ProgressBar minWidth="size-3000" aria-label={label} showValueLabel={false} label={label} isIndeterminate />;
   }
