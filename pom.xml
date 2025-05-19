@@ -877,7 +877,7 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
         </repository>
         -->
         <repository>
-            <id>ossrh</id>
+            <id>central</id>
             <name>OSSRH Releases</name>
             <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
