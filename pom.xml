@@ -314,6 +314,21 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                     <version>2.8.2</version>
                 </plugin>
                 -->
+                <!-- Maven GPG Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
                 <!-- OSSRH Deploy Plugin -->
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
