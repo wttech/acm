@@ -80,7 +80,10 @@ By simplifying data import implementation, ACM allows developers to focus more o
 
 ## Installation
 
-The ready-to-install AEM packages are available on [GitHub releases](https://github.com/wttech/acm/releases).
+The ready-to-install AEM packages are available on:
+
+- [GitHub releases](https://github.com/wttech/acm/releases).
+- [Maven Central](https://central.sonatype.com/search?q=dev.vml.es.acm).
 
 There are two ways to install AEM Content Manager on your AEM instances:
 
@@ -90,6 +93,35 @@ There are two ways to install AEM Content Manager on your AEM instances:
 2. **Using the 'minimal' package:**
     * Recommended for AEM instances that already contain some dependencies shared with other tools.
     * This package does not include Groovy bundles, which can be provided by other tools like [AEM Easy Content Upgrade](https://github.com/valtech/aem-easy-content-upgrade/releases) (AECU) or [AEM Groovy Console](https://github.com/orbinson/aem-groovy-console/releases).
+
+For AEM On-Premise and AEM Managed Service (AMS) deployments, just install the ACM package using the AEM Package Manager.
+
+For AEMaaCS deployments, embed the ACM package as a part of project-specific 'all' package (like [Core Components](https://github.com/adobe/aem-project-archetype/blob/develop/src/main/archetype/all/pom.xml) in the AEM Project Archetype:
+
+Adjust file 'all/pom.xml':
+
+1. Add dependency:
+
+    ```xml
+    <dependency>
+        <groupId>dev.vml.es</groupId>
+        <artifactId>acm.all</artifactId>
+        <version>${acm.version}</version>
+    </dependency>
+    ```
+
+2. Add embedding in *filevault-package-maven-plugin* configuration:
+
+    ```xml
+    <embedded>
+        <groupId>dev.vml.es</groupId>
+        <artifactId>acm.all</artifactId>
+        <type>zip</type>
+        <target>/apps/${appId}-vendor-packages/application/install</target>
+    </embedded>
+    ```
+
+Remember to replace `${acm.version}` and `${appId}` with the actual values.
 
 ## Compatibility
 
