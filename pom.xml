@@ -321,6 +321,7 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                     <version>0.7.0</version>
                     <extensions>true</extensions>
                     <configuration>
+                        <skipPublishing>${maven.deploy.skip}</skipPublishing>
                         <publishingServerId>central</publishingServerId>
                         <tokenAuth>true</tokenAuth>
                         <autoPublish>true</autoPublish>
