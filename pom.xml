@@ -322,6 +322,7 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                     <extensions>true</extensions>
                     <configuration>
                         <publishingServerId>central</publishingServerId>
+                        <tokenAuth>true</tokenAuth>
                         <autoPublish>true</autoPublish>
                         <waitUntil>published</waitUntil>
                     </configuration>
@@ -648,6 +649,17 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                         </plugin>
                     </plugins>
                 </pluginManagement>
+            </build>
+        </profile>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
             </build>
         </profile>
     </profiles>
