@@ -359,6 +359,10 @@ DynamicImport-Package: *
             <id>release</id>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                    </plugin>
                     <!-- Source JAR -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

@@ -652,17 +652,6 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                 </pluginManagement>
             </build>
         </profile>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
     <!-- ====================================================================== -->
     <!-- D E P E N D E N C I E S -->
