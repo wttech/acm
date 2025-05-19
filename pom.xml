@@ -319,7 +319,7 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.1.0</version>
                     <executions>
                         <execution>
                             <id>sign-artifacts</id>
@@ -327,6 +327,12 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                             <goals>
                                 <goal>sign</goal>
                             </goals>
+                            <configuration>
+                                <gpgArguments>
+                                    <arg>--pinentry-mode</arg>
+                                    <arg>loopback</arg>
+                                </gpgArguments>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
