@@ -23,7 +23,6 @@
     <version>${revision}</version>
     <name>AEM Content Manager</name>
     <description>AEM Content Manager</description>
-    <url>https://github.com/wttech/acm</url>
     <modules>
         <module>all</module>
         <module>min</module>
@@ -35,6 +34,7 @@
         <module>ui.content.example</module>
         <module>ui.frontend</module>
     </modules>
+    <url>https://github.com/wttech/acm</url>
     <scm>
         <connection>scm:git:ssh://git@github.com/wttech/acm.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/wttech/acm.git</developerConnection>
@@ -136,7 +136,8 @@
                 <version>1.1.0</version>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                    <flattenMode>ossrh</flattenMode>
+                    <!-- <flattenMode>resolveCiFriendliesOnly</flattenMode>-->
                 </configuration>
                 <executions>
                     <execution>
@@ -338,7 +339,6 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                     <configuration>
                         <skipPublishing>${maven.deploy.skip}</skipPublishing>
                         <publishingServerId>central</publishingServerId>
-                        <tokenAuth>true</tokenAuth>
                         <autoPublish>true</autoPublish>
                         <waitUntil>published</waitUntil>
                     </configuration>
