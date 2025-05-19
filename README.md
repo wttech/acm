@@ -257,8 +257,8 @@ To add own code binding or hook into execution process, you can create your own 
 #### Example extension script
 
 ```groovy
-import com.vml.es.aem.acm.core.code.ExecutionContext
-import com.vml.es.aem.acm.core.code.Execution
+import dev.vml.es.acm.core.code.ExecutionContext
+import dev.vml.es.acm.core.code.Execution
 
 void prepareRun(ExecutionContext executionContext) {
     executionContext.variable("acme", new AcmeFacade())

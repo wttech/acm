@@ -56,7 +56,7 @@ const ScriptExecutor = () => {
                   <Text>Configure</Text>
                 </Button>
                 <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
-                  <Item key="com.vml.es.aem.acm.core.script.ScriptScheduler">
+                  <Item key="dev.vml.es.acm.core.script.ScriptScheduler">
                     <ApplicationDelivery />
                     <Text>Script Scheduler</Text>
                   </Item>
@@ -64,7 +64,7 @@ const ScriptExecutor = () => {
                     <Clock />
                     <Text>Execution Queue</Text>
                   </Item>
-                  <Item key="com.vml.es.aem.acm.core.code.Executor">
+                  <Item key="dev.vml.es.acm.core.code.Executor">
                     <Code />
                     <Text>Code Executor</Text>
                   </Item>
