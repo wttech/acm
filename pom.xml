@@ -869,21 +869,4 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <distributionManagement>
-        <!--
-        <repository>
-            <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/wttech/acm</url>
-        </repository>
-        -->
-        <!--
-        <repository>
-            <id>central</id>
-            <name>OSSRH Releases</name>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        -->
-    </distributionManagement>
 </project>
