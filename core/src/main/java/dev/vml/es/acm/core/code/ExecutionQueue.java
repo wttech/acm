@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
         property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
 public class ExecutionQueue implements JobExecutor {
 
-    public static final String TOPIC = "com/vml/es/aem/acm/ExecutionQueue";
+    public static final String TOPIC = "com/vml/es/acm/ExecutionQueue";
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
 
