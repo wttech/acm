@@ -21,7 +21,7 @@
     <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
     <!-- ====================================================================== -->
     <parent>
-        <groupId>com.vml.es.aem</groupId>
+        <groupId>dev.vml.es</groupId>
         <artifactId>acm.root</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
@@ -49,7 +49,7 @@
                     <properties>
                         <cloudManagerTarget>none</cloudManagerTarget>
                     </properties>
-                    <group>com.vml.es.aem.acm</group>
+                    <group>dev.vml.es.acm</group>
                     <name>acm.ui.config</name>
                     <packageType>container</packageType>
                     <showImportPackageReport>false</showImportPackageReport>
@@ -64,7 +64,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.vml.es.aem</groupId>
+            <groupId>dev.vml.es</groupId>
             <artifactId>acm.ui.apps.structure</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

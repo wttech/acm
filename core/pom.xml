@@ -18,7 +18,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.vml.es.aem</groupId>
+        <groupId>dev.vml.es</groupId>
         <artifactId>acm.root</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
@@ -47,7 +47,7 @@
                         </goals>
                         <configuration>
                             <bnd><![CDATA[
-Export-Package com.vml.es.aem.acm.core.*
+Export-Package dev.vml.es.acm.core.*
 Import-Package: javax.annotation;version=0.0.0,*
 Private-Package: com.fasterxml.jackson.core.*,com.fasterxml.jackson.annotation.*,com.fasterxml.jackson.dataformat.*,com.fasterxml.jackson.databind.*,com.fasterxml.jackson.datatype.*,org.yaml.snakeyaml.*
 DynamicImport-Package: *

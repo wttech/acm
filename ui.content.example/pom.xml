@@ -21,7 +21,7 @@
     <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
     <!-- ====================================================================== -->
     <parent>
-        <groupId>com.vml.es.aem</groupId>
+        <groupId>dev.vml.es</groupId>
         <artifactId>acm.root</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
@@ -53,7 +53,7 @@
                     <properties>
                         <cloudManagerTarget>none</cloudManagerTarget>
                     </properties>
-                    <group>com.vml.es.aem.acm</group>
+                    <group>dev.vml.es.acm</group>
                     <name>acm.ui.content.example</name>
                     <packageType>content</packageType>
                     <!--<accessControlHandling>merge</accessControlHandling>-->
@@ -66,7 +66,7 @@
                     </validatorsSettings>
                     <dependencies>
                         <dependency>
-                            <groupId>com.vml.es.aem</groupId>
+                            <groupId>dev.vml.es</groupId>
                             <artifactId>acm.ui.apps</artifactId>
                             <version>${project.version}</version>
                         </dependency>
@@ -90,12 +90,12 @@
     <!-- ====================================================================== -->
     <dependencies>
         <dependency>
-            <groupId>com.vml.es.aem</groupId>
+            <groupId>dev.vml.es</groupId>
             <artifactId>acm.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.vml.es.aem</groupId>
+            <groupId>dev.vml.es</groupId>
             <artifactId>acm.ui.apps</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

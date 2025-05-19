@@ -38,7 +38,7 @@ const HealthChecker = () => {
             <Button
               variant="negative"
               isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
-              onPress={() => window.open(`${instancePrefix}/system/console/configMgr/com.vml.es.aem.acm.core.instance.HealthChecker`, '_blank')}
+              onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.instance.HealthChecker`, '_blank')}
             >
               <Settings />
               <Text>Configure</Text>

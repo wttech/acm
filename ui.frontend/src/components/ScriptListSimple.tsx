@@ -62,7 +62,7 @@ const ScriptListSimple: React.FC<ScriptListSimpleProps> = ({ type }) => {
                 <Button
                   variant="negative"
                   isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
-                  onPress={() => window.open(`${instancePrefix}/system/console/configMgr/com.vml.es.aem.acm.core.mock.MockHttpFilter`, '_blank')}
+                  onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.mock.MockHttpFilter`, '_blank')}
                 >
                   <Settings />
                   <Text>Configure</Text>

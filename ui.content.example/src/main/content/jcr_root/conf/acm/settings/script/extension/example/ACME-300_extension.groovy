@@ -1,5 +1,5 @@
-import com.vml.es.aem.acm.core.code.ExecutionContext
-import com.vml.es.aem.acm.core.code.Execution
+import dev.vml.es.acm.core.code.ExecutionContext
+import dev.vml.es.acm.core.code.Execution
 
 void prepareRun(ExecutionContext context) {
     context.variable("acme", new AcmeFacade())

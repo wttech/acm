@@ -8,7 +8,7 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
-import com.vml.es.aem.acm.core.assist.JavaClassDictionary
+import dev.vml.es.acm.core.assist.JavaClassDictionary
 
 import java.lang.module.ModuleFinder
 import java.lang.module.ModuleReference
