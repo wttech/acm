@@ -19,7 +19,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 @Designate(ocd = Executor.Config.class)
 public class Executor {
 
-    @ObjectClassDefinition(name = "AEM Content Manager - Executor")
+    @ObjectClassDefinition(name = "AEM Content Manager - Code Executor")
     public @interface Config {
 
         @AttributeDefinition(name = "Keep history", description = "Save executions in history.")
