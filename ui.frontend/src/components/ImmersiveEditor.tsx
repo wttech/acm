@@ -21,14 +21,13 @@ type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorCons
 const SaveViewStateDebounce = 1000;
 const SuggestWidgetHeight = 480;
 
-const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, id, language, value, initialValue, scrollToBottomOnUpdate, ...props }: ImmersiveEditorProps<C>) => {
+const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, id, language, value, initialValue, readOnly, scrollToBottomOnUpdate, ...props }: ImmersiveEditorProps<C>) => {
   const [isOpen, setIsOpen] = useState(false);
   const monacoRef = useMonaco();
   const containerRef = useRef<HTMLDivElement>(null);
   const debouncedViewStateUpdate = debounce((mountedEditor: editor.IStandaloneCodeEditor) => {
     modelStorage.updateViewState(id, mountedEditor.saveViewState());
   }, SaveViewStateDebounce);
-
   useEffect(() => {
     if (value) {
       const storedModel = modelStorage.getModel(id);
@@ -130,6 +129,14 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
       );
     }
   }, [id, monacoRef?.editor, syntaxError]);
+
+  // Update the 'readOnly' state in the editor when it changes
+  useEffect(() => {
+    const storedModel = modelStorage.getModel(id);
+    if (storedModel?.editor) {
+      storedModel.editor.updateOptions({ readOnly });
+    }
+  }, [id, readOnly]);
 
   return (
     <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50" {...containerProps}>

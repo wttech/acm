@@ -42,7 +42,7 @@ public class Repo {
         try {
             resourceResolver.commit();
         } catch (PersistenceException e) {
-            throw new RepoException("Cannot manually commit changes to repository!");
+            throw new RepoException("Cannot manually commit changes to repository!", e);
         }
     }
 
