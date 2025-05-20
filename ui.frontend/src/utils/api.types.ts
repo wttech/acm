@@ -11,9 +11,11 @@ export const ExecutableIdConsole = 'console';
 export function isExecutableConsole(id: string): boolean {
   return id === ExecutableIdConsole;
 }
+
 export function isExecutableScript(id: string): boolean {
   return id.startsWith('/conf/acm/settings/script');
 }
+
 export function isExecutableExplicit(id: string): boolean {
   return isExecutableConsole(id) || isExecutableScript(id);
 }
@@ -307,4 +309,19 @@ export enum ExecutionQueryParams {
   STATUS = 'status',
   EXECUTABLE_ID = 'executableId',
   DURATION = 'duration',
+}
+
+export enum NodeType {
+  FOLDER = 'nt:folder',
+  ORDERED_FOLDER = 'sling:OrderedFolder',
+  SLING_FOLDER = 'sling:Folder',
+  CQ_PROJECTS = 'cq/projects',
+  REDIRECT = 'sling:redirect',
+  ACL = 'rep:ACL',
+  PAGE = 'cq:Page',
+  FILE = 'nt:file',
+}
+
+export enum JCR_CONSTANTS {
+  JCR_CONTENT = 'jcr:content',
 }

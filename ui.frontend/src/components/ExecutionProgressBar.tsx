@@ -39,27 +39,27 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
   }, [execution]);
 
   useInterval(
-      () => {
-        if (execution) {
-          if (isExecutionPending(execution.status) && scriptStats) {
-            const { averageDuration } = scriptStats;
-            if (execution.startDate && averageDuration) {
-              const elapsedTime = formatter.durationTillNow(execution.startDate)!;
-              const percentage = Math.min((elapsedTime / averageDuration) * 100, 100);
+    () => {
+      if (execution) {
+        if (isExecutionPending(execution.status) && scriptStats) {
+          const { averageDuration } = scriptStats;
+          if (execution.startDate && averageDuration) {
+            const elapsedTime = formatter.durationTillNow(execution.startDate)!;
+            const percentage = Math.min((elapsedTime / averageDuration) * 100, 100);
 
-              setPercentage(percentage);
-              setDetails(percentage >= 100 ? `Almost done` : `${formatter.durationShort(averageDuration - elapsedTime)} left`);
-            } else {
-              setPercentage(null);
-              setDetails(`Stay tuned`);
-            }
+            setPercentage(percentage);
+            setDetails(percentage >= 100 ? `Almost done` : `${formatter.durationShort(averageDuration - elapsedTime)} left`);
           } else {
             setPercentage(null);
-            setDetails(null);
+            setDetails(`Stay tuned`);
           }
+        } else {
+          setPercentage(null);
+          setDetails(null);
         }
-      },
-      execution && isExecutionPending(execution.status) && scriptStats ? ExecutionProgressInterval : null
+      }
+    },
+    execution && isExecutionPending(execution.status) && scriptStats ? ExecutionProgressInterval : null,
   );
 
   const label = (() => {
