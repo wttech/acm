@@ -100,21 +100,23 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
   const groups = Array.from(new Set(descriptionArguments.map((arg) => arg.group)));
   const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== ArgumentGroupDefault);
   const validationFailed = Object.keys(formState.errors).length > 0;
+  const textFieldExists = descriptionArguments.some((arg) => arg.type === 'STRING' || arg.type === 'TEXT');
 
   return (
     <>
-      <PathPicker
-        onSelect={handlePathSelect}
-        onCancel={() => setPathPickerOpened(false)}
-        basePath="/"
-        confirmButtonLabel={
-          <>
-            <Copy size="XS" marginEnd="size-100" />
-            Copy to clipboard
-          </>
-        }
-        open={pathPickerOpened}
-      />
+      {textFieldExists && (
+        <PathPicker
+          onSelect={handlePathSelect}
+          onCancel={() => setPathPickerOpened(false)}
+          confirmButtonLabel={
+            <>
+              <Copy size="XS" marginEnd="size-100" />
+              Copy to clipboard
+            </>
+          }
+          open={pathPickerOpened}
+        />
+      )}
       <Button aria-label="Execute" variant="accent" onPress={handleExecute} isPending={isPending || described} isDisabled={isDisabled}>
         <Gears />
         <Text>Execute</Text>
@@ -153,12 +155,14 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
                   )}
                 </Form>
               </Content>
-              <Footer>
-                <Button aria-label="Pick Path" variant="secondary" onPress={() => setPathPickerOpened(true)}>
-                  <Gears size="XS" />
-                  <Text>Pick Path</Text>
-                </Button>
-              </Footer>
+              {textFieldExists && (
+                <Footer>
+                  <Button aria-label="Pick Path" variant="secondary" onPress={() => setPathPickerOpened(true)}>
+                    <Gears size="XS" />
+                    <Text>Pick Path</Text>
+                  </Button>
+                </Footer>
+              )}
               <ButtonGroup>
                 <Button aria-label="Cancel" variant="secondary" onPress={handleCloseDialog}>
                   <Close size="XS" />
