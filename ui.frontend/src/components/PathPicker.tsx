@@ -7,7 +7,7 @@ import Home from '@spectrum-icons/workflow/Home';
 import Project from '@spectrum-icons/workflow/Project';
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { apiRequest } from '../utils/api';
-import { AssistCodeOutput, NodeType } from '../utils/api.types';
+import { AssistCodeOutput, JCR_CONSTANTS, NodeType } from '../utils/api.types';
 import LoadingWrapper from './LoadingWrapper.tsx';
 
 const FOLDER_NODE_TYPES = [NodeType.FOLDER, NodeType.ORDERED_FOLDER, NodeType.SLING_FOLDER, NodeType.CQ_PROJECTS, NodeType.REDIRECT, NodeType.ACL] as const;
@@ -91,11 +91,11 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
               };
             })
             .sort((a, b) => {
-              if (a.name === 'jcr:content') {
+              if (a.name === JCR_CONSTANTS.JCR_CONTENT) {
                 return -1;
               }
 
-              if (b.name === 'jcr:content') {
+              if (b.name === JCR_CONSTANTS.JCR_CONTENT) {
                 return 1;
               }
 
