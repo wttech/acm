@@ -2,6 +2,7 @@ import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Footer,
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Close from '@spectrum-icons/workflow/Close';
 import Copy from '@spectrum-icons/workflow/Copy';
+import FolderOpen from '@spectrum-icons/workflow/FolderOpen';
 import Gears from '@spectrum-icons/workflow/Gears';
 import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -157,9 +158,9 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
               </Content>
               {textFieldExists && (
                 <Footer>
-                  <Button aria-label="Pick Path" variant="secondary" onPress={() => setPathPickerOpened(true)}>
-                    <Gears size="XS" />
-                    <Text>Pick Path</Text>
+                  <Button aria-label="Browse" variant="secondary" onPress={() => setPathPickerOpened(true)}>
+                    <FolderOpen size="XS" />
+                    <Text>Browse</Text>
                   </Button>
                 </Footer>
               )}

@@ -27,17 +27,7 @@ export type Description = {
   };
 };
 
-export type ArgumentType =
-  'BOOL'
-  | 'STRING'
-  | 'TEXT'
-  | 'SELECT'
-  | 'MULTISELECT'
-  | 'INTEGER'
-  | 'DECIMAL'
-  | 'DATETIME'
-  | 'COLOR'
-  | 'NUMBER_RANGE';
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'COLOR' | 'NUMBER_RANGE';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue;
 export type ArgumentValues = Record<string, ArgumentValue>;
 

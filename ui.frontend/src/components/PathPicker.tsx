@@ -1,4 +1,4 @@
-import { Breadcrumbs, Button, ButtonGroup, Content, Dialog, DialogContainer, Flex, Heading, Item, ListView, Selection, Text } from '@adobe/react-spectrum';
+import { Breadcrumbs, Button, ButtonGroup, Content, ContextualHelp, Dialog, DialogContainer, Flex, Heading, Item, ListView, Selection, Text } from '@adobe/react-spectrum';
 import { Key } from '@react-types/shared';
 import Document from '@spectrum-icons/workflow/Document';
 import FileCode from '@spectrum-icons/workflow/FileCode';
@@ -162,10 +162,21 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
   return (
     <DialogContainer onDismiss={onCancel}>
       {open && (
-        <Dialog height="75vh">
+        <Dialog height="60vh">
           <Heading>
             <Flex direction="column" gap="size-100">
-              <Text>{label}</Text>
+              <Flex gap="size-50">
+                <Text>{label}</Text>
+                <ContextualHelp variant="help">
+                  <Heading>Repository browsing</Heading>
+                  <Content>
+                    <Text>
+                      <p>Double-click on a folder to open it. Single-click on a resource to select it. After selecting, copy resource path to the clipboard and paste it in the desired text fields.</p>
+                      <p>Use the breadcrumbs to navigate back.</p>
+                    </Text>
+                  </Content>
+                </ContextualHelp>
+              </Flex>
               <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
                 {loadingPath.split('/').map((p, index) => {
                   const fullPath = loadingPath
