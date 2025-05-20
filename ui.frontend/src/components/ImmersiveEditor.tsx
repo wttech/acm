@@ -28,9 +28,6 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
   const debouncedViewStateUpdate = debounce((mountedEditor: editor.IStandaloneCodeEditor) => {
     modelStorage.updateViewState(id, mountedEditor.saveViewState());
   }, SaveViewStateDebounce);
-
-  console.log('readOnly', readOnly);
-
   useEffect(() => {
     if (value) {
       const storedModel = modelStorage.getModel(id);
@@ -43,18 +40,6 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
       }
     }
   }, [id, scrollToBottomOnUpdate, value]);
-
-  useEffect(() => {
-    const storedModel = modelStorage.getModel(id);
-    console.log('Stored model:', storedModel);
-
-    if (storedModel?.editor) {
-      storedModel.editor.updateOptions({ readOnly });
-      console.log('Updated readOnly state in editor:', readOnly);
-    } else {
-      console.log('Editor instance not found for id:', id);
-    }
-  }, [id, readOnly]);
 
   useEffect(() => {
     if (!containerRef.current || !monacoRef) {
