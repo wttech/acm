@@ -96,7 +96,7 @@ There are two ways to install AEM Content Manager on your AEM instances:
 
 For AEM On-Premise and AEM Managed Service (AMS) deployments, just install the ACM package using the AEM Package Manager.
 
-For AEMaaCS deployments, embed the ACM package as a part of project-specific 'all' package (like [Core Components](https://github.com/adobe/aem-project-archetype/blob/develop/src/main/archetype/all/pom.xml) in the AEM Project Archetype:
+For AEMaaCS deployments, embed the ACM package as a part of project-specific 'all' package like other vendor packages in the [AEM Project Archetype](https://github.com/adobe/aem-project-archetype/blob/develop/src/main/archetype/all/pom.xml):
 
 Adjust file 'all/pom.xml':
 
