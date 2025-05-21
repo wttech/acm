@@ -1,25 +1,27 @@
 import {
-    Button,
-    Checkbox,
-    CheckboxGroup,
-    ColorEditor,
-    ColorFormat,
-    ColorPicker, DateField,
-    DatePicker,
-    Flex,
-    Item,
-    ListView,
-    NumberField,
-    parseColor,
-    Picker,
-    Radio,
-    RadioGroup,
-    RangeSlider,
-    Slider,
-    Switch,
-    TextArea,
-    TextField, TimeField,
-    View,
+  Button,
+  Checkbox,
+  CheckboxGroup,
+  ColorEditor,
+  ColorFormat,
+  ColorPicker,
+  DateField,
+  DatePicker,
+  Flex,
+  Item,
+  ListView,
+  NumberField,
+  parseColor,
+  Picker,
+  Radio,
+  RadioGroup,
+  RangeSlider,
+  Slider,
+  Switch,
+  TextArea,
+  TextField,
+  TimeField,
+  View,
 } from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
@@ -61,101 +63,81 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
     },
   });
 
-  const renderInput = () => {
-    if (isBoolArgument(arg)) {
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom="size-200">
-              <Flex alignItems={'start'} justifyContent={'start'} direction={'column'}>
-                {arg.display === 'SWITCHER' ? (
-                  <Switch {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
-                    {argLabel(arg)}
-                  </Switch>
-                ) : (
-                  <Checkbox {...field} isSelected={field.value} isInvalid={!!fieldState.error} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
-                    {argLabel(arg)}
-                  </Checkbox>
-                )}
-                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
-              </Flex>
-            </View>
-          )}
-        />
-      );
-    } else if (isDateTimeArgument(arg)) {
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-              <View key={arg.name} marginBottom="size-200">
-                  {arg.type === 'DATE' ? (
-                      <DateField
-                          {...field}
-                          minValue={arg.min !== null ? Dates.toCalendarDateTimeOrNull(arg.min) : undefined}
-                          maxValue={arg.max !== null ? Dates.toCalendarDateTimeOrNull(arg.max) : undefined}
-                          value={Dates.toCalendarDateOrNull(field.value)}
-                          onChange={(dateValue) => field.onChange(dateValue?.toString())}
-                          label={argLabel(arg)}
-                          errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                          validationState={fieldState.error ? 'invalid' : 'valid'}
-                          aria-label={`Argument '${arg.name}'`}
-                      />
-                  ) : arg.type === 'TIME' ? (
-                      <TimeField
-                          {...field}
-                          value={Dates.toTimeOrNull(field.value)}
-                          onChange={(timeValue) => field.onChange(timeValue?.toString())}
-                          label={argLabel(arg)}
-                          errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                          validationState={fieldState.error ? 'invalid' : 'valid'}
-                          aria-label={`Argument '${arg.name}'`}
-                      />
+  // @ts-ignore
+  return (
+    <Controller
+      name={arg.name}
+      control={control}
+      rules={controllerRules(arg)}
+      render={({ field, fieldState }) => (
+        <View key={arg.name} marginBottom="size-200">
+          {(() => {
+            if (isBoolArgument(arg)) {
+              return (
+                <Flex alignItems={'start'} justifyContent={'start'} direction={'column'}>
+                  {arg.display === 'SWITCHER' ? (
+                    <Switch {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
+                      {argLabel(arg)}
+                    </Switch>
                   ) : (
-                      <DatePicker
-                          {...field}
-                          minValue={arg.min !== null ? Dates.toCalendarDateTimeOrNull(arg.min) : undefined}
-                          maxValue={arg.max !== null ? Dates.toCalendarDateTimeOrNull(arg.max) : undefined}
-                          value={Dates.toCalendarDateTimeOrNull(field.value)}
-                          onChange={(dateValue) => field.onChange(dateValue?.toString())}
-                          granularity="second"
-                          label={argLabel(arg)}
-                          errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                          validationState={fieldState.error ? 'invalid' : 'valid'}
-                          aria-label={`Argument '${arg.name}'`}
-                      />
+                    <Checkbox {...field} isSelected={field.value} isInvalid={!!fieldState.error} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
+                      {argLabel(arg)}
+                    </Checkbox>
                   )}
-              </View>
-          )}
-        />
-      );
-    } else if (isStringArgument(arg)) {
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom="size-200">
-              <TextField type={arg.display} {...field} label={argLabel(arg)} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`} width="100%" />
-            </View>
-          )}
-        />
-      );
-    } else if (isTextArgument(arg)) {
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-            <View key={arg.name} marginY="size-100">
-              {arg.language ? (
+                  {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
+                </Flex>
+              );
+            } else if (isDateTimeArgument(arg)) {
+              return arg.type === 'DATE' ? (
+                <DateField
+                  {...field}
+                  minValue={arg.min !== null ? Dates.toCalendarDateTimeOrNull(arg.min) : undefined}
+                  maxValue={arg.max !== null ? Dates.toCalendarDateTimeOrNull(arg.max) : undefined}
+                  value={Dates.toCalendarDateOrNull(field.value)}
+                  onChange={(dateValue) => field.onChange(dateValue?.toString())}
+                  label={argLabel(arg)}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  aria-label={`Argument '${arg.name}'`}
+                />
+              ) : arg.type === 'TIME' ? (
+                <TimeField
+                  {...field}
+                  value={Dates.toTimeOrNull(field.value)}
+                  onChange={(timeValue) => field.onChange(timeValue?.toString())}
+                  label={argLabel(arg)}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  aria-label={`Argument '${arg.name}'`}
+                />
+              ) : (
+                <DatePicker
+                  {...field}
+                  minValue={arg.min !== null ? Dates.toCalendarDateTimeOrNull(arg.min) : undefined}
+                  maxValue={arg.max !== null ? Dates.toCalendarDateTimeOrNull(arg.max) : undefined}
+                  value={Dates.toCalendarDateTimeOrNull(field.value)}
+                  onChange={(dateValue) => field.onChange(dateValue?.toString())}
+                  granularity="second"
+                  label={argLabel(arg)}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  aria-label={`Argument '${arg.name}'`}
+                />
+              );
+            } else if (isStringArgument(arg)) {
+              return (
+                <TextField
+                  type={arg.display}
+                  {...field}
+                  label={argLabel(arg)}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  aria-label={`Argument '${arg.name}'`}
+                  width="100%"
+                />
+              );
+            } else if (isTextArgument(arg)) {
+              return arg.language ? (
                 <Field label={argLabel(arg)} description={`Language: ${arg.language}`} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
                     <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
@@ -165,64 +147,46 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 </Field>
               ) : (
                 <TextArea {...field} label={argLabel(arg)} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`} width="100%" />
-              )}
-            </View>
-          )}
-        />
-      );
-    } else if (isSelectArgument(arg)) {
-      const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'RADIO' : 'DROPDOWN') : arg.display;
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom="size-200">
-              {display === 'RADIO' ? (
-                <RadioGroup
-                  {...field}
-                  orientation="horizontal"
-                  label={argLabel(arg)}
-                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
-                  aria-label={`Argument '${arg.name}'`}
-                >
-                  {Object.entries(arg.options).map(([label, val]) => (
-                    <Radio key={val?.toString()} value={val?.toString() || ''}>
-                      {label}
-                    </Radio>
-                  ))}
-                </RadioGroup>
-              ) : (
-                <Picker
-                  {...field}
-                  label={argLabel(arg)}
-                  selectedKey={field.value?.toString() || ''}
-                  onSelectionChange={field.onChange}
-                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
-                  aria-label={`Argument '${arg.name}'`}
-                >
-                  {Object.entries(arg.options).map(([label, val]) => (
-                    <Item key={val?.toString()}>{label}</Item>
-                  ))}
-                </Picker>
-              )}
-            </View>
-          )}
-        />
-      );
-    } else if (isMultiSelectArgument(arg)) {
-      const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'CHECKBOX' : 'LIST') : arg.display;
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom="size-200">
-              {display === 'CHECKBOX' ? (
+              );
+            } else if (isSelectArgument(arg)) {
+              const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'RADIO' : 'DROPDOWN') : arg.display;
+              return (
+                <View key={arg.name} marginBottom="size-200">
+                  {display === 'RADIO' ? (
+                    <RadioGroup
+                      {...field}
+                      orientation="horizontal"
+                      label={argLabel(arg)}
+                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                      validationState={fieldState.error ? 'invalid' : 'valid'}
+                      aria-label={`Argument '${arg.name}'`}
+                    >
+                      {Object.entries(arg.options).map(([label, val]) => (
+                        <Radio key={val?.toString()} value={val?.toString() || ''}>
+                          {label}
+                        </Radio>
+                      ))}
+                    </RadioGroup>
+                  ) : (
+                    <Picker
+                      {...field}
+                      label={argLabel(arg)}
+                      selectedKey={field.value?.toString() || ''}
+                      onSelectionChange={field.onChange}
+                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                      validationState={fieldState.error ? 'invalid' : 'valid'}
+                      aria-label={`Argument '${arg.name}'`}
+                    >
+                      {Object.entries(arg.options).map(([label, val]) => (
+                        <Item key={val?.toString()}>{label}</Item>
+                      ))}
+                    </Picker>
+                  )}
+                </View>
+              );
+            } else if (isMultiSelectArgument(arg)) {
+              const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'CHECKBOX' : 'LIST') : arg.display;
+              return display === 'CHECKBOX' ? (
                 <CheckboxGroup
                   {...field}
                   orientation="horizontal"
@@ -254,101 +218,63 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                     </ListView>
                   </div>
                 </Field>
-              )}
-            </View>
-          )}
-        />
-      );
-    } else if (isNumberArgument(arg)) {
-      if (arg.display === 'SLIDER') {
-        return (
-          <Controller
-            name={arg.name}
-            control={control}
-            rules={controllerRules(arg)}
-            render={({ field, fieldState }) => (
-              <View key={arg.name} marginBottom="size-200">
+              );
+            } else if (isNumberArgument(arg)) {
+              if (arg.display === 'SLIDER') {
+                return (
+                  <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
+                    <Slider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                    {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
+                  </Flex>
+                );
+              } else {
+                return (
+                  <NumberField
+                    {...field}
+                    label={argLabel(arg)}
+                    errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                    validationState={fieldState.error ? 'invalid' : 'valid'}
+                    minValue={arg.min !== null ? arg.min : undefined}
+                    maxValue={arg.max !== null ? arg.max : undefined}
+                    hideStepper={arg.type === 'DECIMAL'}
+                    formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
+                    aria-label={`Argument '${arg.name}'`}
+                  />
+                );
+              }
+            } else if (isColorArgument(arg)) {
+              return (
                 <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
-                  <Slider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                  <ColorPicker
+                    {...field}
+                    label={argLabel(arg)}
+                    aria-label={`Argument '${arg.name}'`}
+                    value={field.value ? parseColor(field.value) : ''}
+                    onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}
+                  >
+                    <ColorEditor hideAlphaChannel={arg.format !== 'RGBA'} />
+                    <Button onPress={() => field.onChange('')} width={'100%'} marginTop={'size-200'} variant={'secondary'}>
+                      Clear
+                    </Button>
+                  </ColorPicker>
                   {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
                 </Flex>
-              </View>
-            )}
-          />
-        );
-      } else {
-        return (
-          <Controller
-            name={arg.name}
-            control={control}
-            rules={controllerRules(arg)}
-            render={({ field, fieldState }) => (
-              <View key={arg.name} marginBottom="size-200">
-                <NumberField
-                  {...field}
-                  label={argLabel(arg)}
-                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
-                  minValue={arg.min !== null ? arg.min : undefined}
-                  maxValue={arg.max !== null ? arg.max : undefined}
-                  hideStepper={arg.type === 'DECIMAL'}
-                  formatOptions={arg.type === 'INTEGER' ? { maximumFractionDigits: 0 } : undefined}
-                  aria-label={`Argument '${arg.name}'`}
-                />
-              </View>
-            )}
-          />
-        );
-      }
-    } else if (isColorArgument(arg)) {
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom="size-200">
-              <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
-                <ColorPicker
-                  {...field}
-                  label={argLabel(arg)}
-                  aria-label={`Argument '${arg.name}'`}
-                  value={field.value ? parseColor(field.value) : ''}
-                  onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}
-                >
-                  <ColorEditor hideAlphaChannel={arg.format !== 'RGBA'} />
-                  <Button onPress={() => field.onChange('')} width={'100%'} marginTop={'size-200'} variant={'secondary'}>
-                    Clear
-                  </Button>
-                </ColorPicker>
-                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
-              </Flex>
-            </View>
-          )}
-        />
-      );
-    } else if (isRangeArgument(arg)) {
-      return (
-        <Controller
-          name={arg.name}
-          control={control}
-          rules={controllerRules(arg)}
-          render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom="size-200">
-              <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
-                <RangeSlider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
-                {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
-              </Flex>
-            </View>
-          )}
-        />
-      );
-    } else {
-      return null;
-    }
-  };
-
-  return <>{renderInput()}</>;
+              );
+            } else if (isRangeArgument(arg)) {
+              return (
+                <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
+                  <RangeSlider {...field} label={argLabel(arg)} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                  {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
+                </Flex>
+              );
+            } else {
+              return null;
+            }
+          })()}
+        </View>
+      )}
+    />
+  );
 };
 
 function argLabel(arg: Argument<ArgumentValue>): string {

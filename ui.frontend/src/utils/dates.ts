@@ -1,7 +1,6 @@
-import { CalendarDateTime, CalendarDate, Time, parseDate, parseDateTime, parseTime } from '@internationalized/date';
+import { CalendarDate, CalendarDateTime, Time, parseDate, parseDateTime, parseTime } from '@internationalized/date';
 
 export class Dates {
-
   static toCalendarDateTime(value: string | Date): CalendarDateTime {
     if (typeof value === 'string') {
       return parseDateTime(value);
@@ -32,7 +31,7 @@ export class Dates {
 
   static toTime(value: string | Date): Time | null {
     if (typeof value === 'string') {
-        return parseTime(value);
+      return parseTime(value);
     }
     return new Time(value.getHours(), value.getMinutes(), value.getSeconds());
   }
