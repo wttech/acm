@@ -19,6 +19,14 @@ public class Arguments implements Serializable {
         super();
     }
 
+    public Argument<?> get(String name) {
+        Argument<?> argument = definitions.get(name);
+        if (argument == null) {
+            throw new IllegalArgumentException(String.format("Argument '%s' is not defined!", name));
+        }
+        return argument;
+    }
+
     private void add(Argument<?> argument) {
         if (definitions.containsKey(argument.getName())) {
             throw new IllegalArgumentException(
@@ -38,7 +46,7 @@ public class Arguments implements Serializable {
         for (Argument<?> argument : definitions.values()) {
             props.put(argument.getName(), argument.getValue());
         }
-        return new ArgumentsValueMap(props);
+        return new ArgumentsValueMap(this, props);
     }
 
     @JsonIgnore
@@ -65,13 +73,8 @@ public class Arguments implements Serializable {
 
     public void setValues(ArgumentValues arguments) {
         arguments.forEach((name, value) -> {
-            Argument<?> argument = definitions.get(name);
-            if (argument == null) {
-                throw new IllegalArgumentException(
-                        String.format("Cannot set value for argument '%s' as it is not defined!", name));
-            } else {
-                setValue(argument, value);
-            }
+            Argument<?> argument = get(name);
+            setValue(argument, value); // TODO should convert to the type of the argument
         });
     }
 

@@ -15,7 +15,7 @@ public class MultiSelectArgument<V> extends Argument<V> {
     private Map<String, V> options = new LinkedHashMap<>();
 
     public MultiSelectArgument(String name) {
-        super(name, ArgumentType.MULTISELECT);
+        super(name, ArgumentType.MULTISELECT, null);
     }
 
     @Override

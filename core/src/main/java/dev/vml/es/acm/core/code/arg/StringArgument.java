@@ -9,7 +9,7 @@ public class StringArgument extends Argument<String> {
     private Display display = Display.TEXT;
 
     public StringArgument(String name) {
-        super(name, ArgumentType.STRING);
+        super(name, ArgumentType.STRING, String.class);
     }
 
     public Display getDisplay() {

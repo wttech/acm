@@ -18,7 +18,7 @@ public class SelectArgument<V> extends Argument<V> {
     private Map<String, V> options = new LinkedHashMap<>();
 
     public SelectArgument(String name) {
-        super(name, ArgumentType.SELECT);
+        super(name, ArgumentType.SELECT, null);
     }
 
     public Map<String, V> getOptions() {

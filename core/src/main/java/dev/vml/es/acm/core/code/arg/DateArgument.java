@@ -13,7 +13,7 @@ public class DateArgument extends Argument<LocalDate> {
     private LocalDate max;
 
     public DateArgument(String name) {
-        super(name, ArgumentType.DATE);
+        super(name, ArgumentType.DATE, LocalDate.class);
     }
 
     public LocalDate getMin() {

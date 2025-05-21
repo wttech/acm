@@ -13,7 +13,7 @@ public class TimeArgument extends Argument<LocalTime> {
     private LocalTime max;
 
     public TimeArgument(String name) {
-        super(name, ArgumentType.TIME);
+        super(name, ArgumentType.TIME, LocalTime.class);
     }
 
     public LocalTime getMin() {

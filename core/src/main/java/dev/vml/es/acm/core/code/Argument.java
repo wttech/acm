@@ -1,10 +1,14 @@
 package dev.vml.es.acm.core.code;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public abstract class Argument<V> {
 
     private final String name;
 
     private final ArgumentType type;
+
+    private final Class<?> valueType;
 
     private V value;
 
@@ -16,9 +20,10 @@ public abstract class Argument<V> {
 
     private String validator;
 
-    public Argument(String name, ArgumentType type) {
+    public Argument(String name, ArgumentType type, Class<?> valueType) {
         this.name = name;
         this.type = type;
+        this.valueType = valueType;
     }
 
     public String getName() {
@@ -27,6 +32,11 @@ public abstract class Argument<V> {
 
     public ArgumentType getType() {
         return type;
+    }
+
+    @JsonIgnore
+    public Class<?> getValueType() {
+        return valueType;
     }
 
     public V getValue() {

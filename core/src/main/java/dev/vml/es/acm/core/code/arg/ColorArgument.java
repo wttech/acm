@@ -5,10 +5,11 @@ import dev.vml.es.acm.core.code.ArgumentType;
 import java.util.Arrays;
 
 public class ColorArgument extends Argument<String> {
+
     private ColorArgument.Format format = ColorArgument.Format.RGBA;
 
     public ColorArgument(String name) {
-        super(name, ArgumentType.COLOR);
+        super(name, ArgumentType.COLOR, String.class);
     }
 
     public Format getFormat() {

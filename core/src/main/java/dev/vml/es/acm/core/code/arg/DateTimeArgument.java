@@ -14,7 +14,7 @@ public class DateTimeArgument extends Argument<LocalDateTime> {
     private LocalDateTime max;
 
     public DateTimeArgument(String name) {
-        super(name, ArgumentType.DATETIME);
+        super(name, ArgumentType.DATETIME, LocalDateTime.class);
     }
 
     public LocalDateTime getMin() {

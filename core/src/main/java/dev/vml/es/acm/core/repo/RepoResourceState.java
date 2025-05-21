@@ -1,6 +1,5 @@
 package dev.vml.es.acm.core.repo;
 
-import dev.vml.es.acm.core.code.ArgumentsValueMap;
 import dev.vml.es.acm.core.util.StringUtil;
 import java.io.Serializable;
 import java.util.Map;
@@ -25,7 +24,7 @@ public class RepoResourceState implements Serializable {
     public RepoResourceState(String path, boolean exists, Map<String, Object> properties) {
         this.path = path;
         this.exists = exists;
-        this.properties = new ArgumentsValueMap(properties);
+        this.properties = new RepoValueMap(properties);
     }
 
     public String getPath() {

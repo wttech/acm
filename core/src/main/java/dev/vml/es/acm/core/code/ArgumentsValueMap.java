@@ -1,51 +1,27 @@
 package dev.vml.es.acm.core.code;
 
-import dev.vml.es.acm.core.util.DateUtils;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Calendar;
-import java.util.Date;
+import dev.vml.es.acm.core.repo.RepoValueMap;
 import java.util.Map;
-import org.apache.sling.api.wrappers.ValueMapDecorator;
 
-public class ArgumentsValueMap extends ValueMapDecorator {
+public class ArgumentsValueMap extends RepoValueMap {
 
-    public ArgumentsValueMap(Map<String, Object> base) {
+    private final Arguments arguments;
+
+    public ArgumentsValueMap(Arguments arguments, Map<String, Object> base) {
         super(base);
+        this.arguments = arguments;
     }
 
+    /**
+     * Auto-convert the value to the type of the argument if it's known.
+     */
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> T get(String name, Class<T> type) {
-        Object value = get(name);
-
-        if (value instanceof String) {
-            if (type == LocalDateTime.class) {
-                return (T) DateUtils.toLocalDateTime((String) value);
-            } else if (type == LocalDate.class) {
-                return (T) DateUtils.toLocalDate((String) value);
-            } else if (type == LocalTime.class) {
-                return (T) DateUtils.toLocalTime((String) value);
-            }
-        } else if (value instanceof Date) {
-            if (type == LocalDateTime.class) {
-                return (T) DateUtils.toLocalDateTime((Date) value);
-            } else if (type == LocalDate.class) {
-                return (T) DateUtils.toLocalDateTime((Date) value).toLocalDate();
-            } else if (type == LocalTime.class) {
-                return (T) DateUtils.toLocalDateTime((Date) value).toLocalTime();
-            }
-        } else if (value instanceof Calendar) {
-            if (type == LocalDateTime.class) {
-                return (T) DateUtils.toLocalDateTime((Calendar) value);
-            } else if (type == LocalDate.class) {
-                return (T) DateUtils.toLocalDateTime((Calendar) value).toLocalDate();
-            } else if (type == LocalTime.class) {
-                return (T) DateUtils.toLocalDateTime((Calendar) value).toLocalTime();
-            }
+    public Object get(Object name) {
+        String key = (String) name;
+        Class<?> type = arguments.get(key).getValueType();
+        if (type == null) {
+            return super.get(name);
         }
-
-        return super.get(name, type);
+        return super.get(key, type);
     }
 }
