@@ -12,7 +12,7 @@ documentation: |
   args.date("releaseDate") { label = "Release Date"; value = "2023-01-01" }
   args.date("eventStart") { value = [2023, 10, 1] }
   args.date("eventEnd") { value = now(); min = now().minusDays(7); max = now().plusDays(7) }
-  args.date("santaXmasDeadline") { value = "2023-12-24"; min = "2023-12-01"; max = "2023-12-25" }
+  args.date("santaDeadline") { value = "2023-12-24"; min = "2023-12-01"; max = "2023-12-25" }
   ```
   
   Usage:

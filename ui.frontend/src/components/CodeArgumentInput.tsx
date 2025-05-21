@@ -41,7 +41,7 @@ interface CodeArgumentInputProps {
 
 const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
   const { control, controllerRules } = useArgumentInput(arg);
-  const label = arg.label || Strings.capitalize(arg.name);
+  const label = arg.label || Strings.capitalizeWords(arg.name);
 
   return (
     <Controller
@@ -243,7 +243,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 </Flex>
               );
             } else {
-              return null;
+              throw new Error(`Unsupported argument type: ${arg.type}`);
             }
           })()}
         </View>
