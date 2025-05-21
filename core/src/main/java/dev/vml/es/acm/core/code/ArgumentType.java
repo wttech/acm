@@ -3,6 +3,8 @@ package dev.vml.es.acm.core.code;
 public enum ArgumentType {
     BOOL,
     DATETIME,
+    DATE,
+    TIME,
     INTEGER,
     DECIMAL,
     STRING,

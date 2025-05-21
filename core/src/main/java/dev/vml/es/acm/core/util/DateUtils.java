@@ -2,10 +2,7 @@ package dev.vml.es.acm.core.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
@@ -68,7 +65,7 @@ public final class DateUtils {
                 // ignore
             }
         }
-        throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", text));
+        throw new IllegalArgumentException(String.format("Cannot parse zoned datetime '%s'!", text));
     }
 
     public static LocalDateTime toLocalDateTime(String text) {
@@ -80,7 +77,7 @@ public final class DateUtils {
                 // ignore
             }
         }
-        throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", text));
+        throw new IllegalArgumentException(String.format("Cannot parse datetime '%s'!", text));
     }
 
     public static Calendar toCalendar(Date date) {
@@ -141,15 +138,19 @@ public final class DateUtils {
                 .orElse(null);
     }
 
-    public static LocalDate toLocalDate(String obj) {
-        for (String format : LOCAL_DATE_TIME_FORMATS) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.of(TIMEZONE_ID));
-            try {
-                return LocalDate.parse(obj, formatter);
-            } catch (DateTimeParseException ignored) {
-                // ignore
-            }
+    public static LocalDate toLocalDate(String text) {
+        try {
+            return LocalDate.parse(text);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", text), e);
         }
-        throw new IllegalArgumentException(String.format("Cannot parse date '%s'!", obj));
+    }
+
+    public static LocalTime toLocalTime(String text) {
+        try {
+            return LocalTime.parse(text);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException(String.format("Cannot parse time '%s'!", text), e);
+        }
     }
 }

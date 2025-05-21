@@ -1,25 +1,25 @@
 import {
-  Button,
-  Checkbox,
-  CheckboxGroup,
-  ColorEditor,
-  ColorFormat,
-  ColorPicker,
-  DatePicker,
-  Flex,
-  Item,
-  ListView,
-  NumberField,
-  parseColor,
-  Picker,
-  Radio,
-  RadioGroup,
-  RangeSlider,
-  Slider,
-  Switch,
-  TextArea,
-  TextField,
-  View,
+    Button,
+    Checkbox,
+    CheckboxGroup,
+    ColorEditor,
+    ColorFormat,
+    ColorPicker, DateField,
+    DatePicker,
+    Flex,
+    Item,
+    ListView,
+    NumberField,
+    parseColor,
+    Picker,
+    Radio,
+    RadioGroup,
+    RangeSlider,
+    Slider,
+    Switch,
+    TextArea,
+    TextField, TimeField,
+    View,
 } from '@adobe/react-spectrum';
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
@@ -93,20 +93,44 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           control={control}
           rules={controllerRules(arg)}
           render={({ field, fieldState }) => (
-            <View key={arg.name} marginBottom="size-200">
-              <DatePicker
-                {...field}
-                minValue={arg.min !== null ? Dates.toCalendarOrNull(arg.min) : undefined}
-                maxValue={arg.max !== null ? Dates.toCalendarOrNull(arg.max) : undefined}
-                value={Dates.toCalendarOrNull(field.value)}
-                onChange={(dateValue) => field.onChange(dateValue?.toString())}
-                granularity={arg.variant === 'DATETIME' ? 'second' : 'day'}
-                label={argLabel(arg)}
-                errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                validationState={fieldState.error ? 'invalid' : 'valid'}
-                aria-label={`Argument '${arg.name}'`}
-              />
-            </View>
+              <View key={arg.name} marginBottom="size-200">
+                  {arg.type === 'DATE' ? (
+                      <DateField
+                          {...field}
+                          minValue={arg.min !== null ? Dates.toCalendarDateTimeOrNull(arg.min) : undefined}
+                          maxValue={arg.max !== null ? Dates.toCalendarDateTimeOrNull(arg.max) : undefined}
+                          value={Dates.toCalendarDateOrNull(field.value)}
+                          onChange={(dateValue) => field.onChange(dateValue?.toString())}
+                          label={argLabel(arg)}
+                          errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                          validationState={fieldState.error ? 'invalid' : 'valid'}
+                          aria-label={`Argument '${arg.name}'`}
+                      />
+                  ) : arg.type === 'TIME' ? (
+                      <TimeField
+                          {...field}
+                          value={Dates.toTimeOrNull(field.value)}
+                          onChange={(timeValue) => field.onChange(timeValue?.toString())}
+                          label={argLabel(arg)}
+                          errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                          validationState={fieldState.error ? 'invalid' : 'valid'}
+                          aria-label={`Argument '${arg.name}'`}
+                      />
+                  ) : (
+                      <DatePicker
+                          {...field}
+                          minValue={arg.min !== null ? Dates.toCalendarDateTimeOrNull(arg.min) : undefined}
+                          maxValue={arg.max !== null ? Dates.toCalendarDateTimeOrNull(arg.max) : undefined}
+                          value={Dates.toCalendarDateTimeOrNull(field.value)}
+                          onChange={(dateValue) => field.onChange(dateValue?.toString())}
+                          granularity="second"
+                          label={argLabel(arg)}
+                          errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                          validationState={fieldState.error ? 'invalid' : 'valid'}
+                          aria-label={`Argument '${arg.name}'`}
+                      />
+                  )}
+              </View>
           )}
         />
       );
@@ -118,7 +142,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           rules={controllerRules(arg)}
           render={({ field, fieldState }) => (
             <View key={arg.name} marginBottom="size-200">
-              <TextField {...field} label={argLabel(arg)} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`} width="100%" />
+              <TextField type={arg.display} {...field} label={argLabel(arg)} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`} width="100%" />
             </View>
           )}
         />

@@ -15,59 +15,35 @@ public class ArgumentsValueMap extends ValueMapDecorator {
         super(base);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T get(String name, Class<T> type) {
         Object value = get(name);
 
-        // LocalDateTime conversion
-        if (value instanceof Date && type == LocalDateTime.class) {
-            // Convert Date to LocalDateTime
-            return (T) DateUtils.toLocalDateTime((Date) value);
-        } else if (value instanceof Calendar && type == LocalDateTime.class) {
-            // Convert Calendar to LocalDateTime
-            return (T) DateUtils.toLocalDateTime((Calendar) value);
-        } else if (value instanceof LocalDateTime && type == Date.class) {
-            // Convert LocalDateTime to Date
-            return (T) DateUtils.toDate((LocalDateTime) value);
-        } else if (value instanceof LocalDateTime && type == Calendar.class) {
-            // Convert LocalDateTime to Calendar
-            return (T) DateUtils.toCalendar((LocalDateTime) value);
-        } else if (value instanceof LocalDateTime && type == LocalDate.class) {
-            // Convert LocalDateTime to LocalDate
-            return (T) ((LocalDateTime) value).toLocalDate();
-        }
-
-        // LocalDate conversion
-        if (value instanceof Date && type == LocalDate.class) {
-            // Convert Date to LocalDate
-            return (T) DateUtils.toLocalDateTime((Date) value).toLocalDate();
-        } else if (value instanceof Calendar && type == LocalDate.class) {
-            // Convert Calendar to LocalDate
-            return (T) DateUtils.toLocalDateTime((Calendar) value).toLocalDate();
-        } else if (value instanceof LocalDate && type == Date.class) {
-            // Convert LocalDate to Date
-            return (T) DateUtils.toDate(((LocalDate) value).atTime(LocalTime.MIN));
-        } else if (value instanceof LocalDate && type == Calendar.class) {
-            // Convert LocalDate to Calendar
-            return (T) DateUtils.toCalendar(((LocalDate) value).atTime(LocalTime.MIN));
-        } else if (value instanceof LocalDate && type == LocalDateTime.class) {
-            // Convert LocalDate to LocalDateTime
-            return (T) ((LocalDate) value).atTime(LocalTime.MIN);
-        }
-
-        // String conversion
-        if (value instanceof String && type == LocalDateTime.class) {
-            // Convert String to LocalDateTime
-            return (T) DateUtils.toLocalDateTime((String) value);
-        } else if (value instanceof String && type == Date.class) {
-            // Convert String to Date
-            return (T) DateUtils.fromString((String) value);
-        } else if (value instanceof String && type == Calendar.class) {
-            // Convert String to Calendar
-            return (T) DateUtils.toCalendar((String) value);
-        } else if (value instanceof String && type == LocalDate.class) {
-            // Convert String to LocalDate
-            return (T) DateUtils.toLocalDate((String) value);
+        if (value instanceof String) {
+            if (type == LocalDateTime.class) {
+                return (T) DateUtils.toLocalDateTime((String) value);
+            } else if (type == LocalDate.class) {
+                return (T) DateUtils.toLocalDate((String) value);
+            } else if (type == LocalTime.class) {
+                return (T) DateUtils.toLocalTime((String) value);
+            }
+        } else if (value instanceof Date) {
+            if (type == LocalDateTime.class) {
+                return (T) DateUtils.toLocalDateTime((Date) value);
+            } else if (type == LocalDate.class) {
+                return (T) DateUtils.toLocalDateTime((Date) value).toLocalDate();
+            } else if (type == LocalTime.class) {
+                return (T) DateUtils.toLocalDateTime((Date) value).toLocalTime();
+            }
+        } else if (value instanceof Calendar) {
+            if (type == LocalDateTime.class) {
+                return (T) DateUtils.toLocalDateTime((Calendar) value);
+            } else if (type == LocalDate.class) {
+                return (T) DateUtils.toLocalDateTime((Calendar) value).toLocalDate();
+            } else if (type == LocalTime.class) {
+                return (T) DateUtils.toLocalDateTime((Calendar) value).toLocalTime();
+            }
         }
 
         return super.get(name, type);

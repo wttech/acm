@@ -100,6 +100,26 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
+    public void date(String name) {
+        date(name, null);
+    }
+
+    public void date(String name, Closure<DateArgument> options) {
+        DateArgument argument = new DateArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void time(String name) {
+        time(name, null);
+    }
+
+    public void time(String name, Closure<TimeArgument> options) {
+        TimeArgument argument = new TimeArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
     public void string(String name) {
         string(name, null);
     }

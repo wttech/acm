@@ -27,7 +27,7 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'COLOR' | 'NUMBER_RANGE';
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue;
 export type ArgumentValues = Record<string, ArgumentValue>;
 
@@ -48,13 +48,16 @@ export type BoolArgument = Argument<boolean> & {
 };
 
 export type DateTimeArgument = Argument<string> & {
-  variant: 'DATE' | 'DATETIME';
   min: string;
   max: string;
 };
 
 export type TextArgument = Argument<string> & {
   language?: string;
+};
+
+export type StringArgument = Argument<string> & {
+  display: 'PLAIN' | 'PASSWORD';
 };
 
 export type NumberArgument = Argument<number> & {
@@ -89,7 +92,7 @@ export type MultiSelectArgument = Argument<ArgumentValue> & {
   display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN';
 };
 
-export function isStringArgument(arg: Argument<ArgumentValue>): arg is Argument<string> {
+export function isStringArgument(arg: Argument<ArgumentValue>): arg is StringArgument {
   return arg.type === 'STRING';
 }
 
@@ -98,7 +101,7 @@ export function isBoolArgument(arg: Argument<ArgumentValue>): arg is BoolArgumen
 }
 
 export function isDateTimeArgument(arg: Argument<ArgumentValue>): arg is DateTimeArgument {
-  return arg.type === 'DATETIME';
+  return arg.type === 'DATETIME' || arg.type === 'DATE' || arg.type === 'TIME';
 }
 
 export function isTextArgument(arg: Argument<ArgumentValue>): arg is TextArgument {
