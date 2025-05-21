@@ -7,14 +7,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
-public final class TypeConverter {
+public final class TypeUtils {
 
-    private TypeConverter() {
+    private TypeUtils() {
         // intentionally empty
     }
 
     @SuppressWarnings("unchecked")
-    public static  <T> Optional<T> convert(Object value, Class<T> type) {
+    public static <T> Optional<T> convert(Object value, Class<T> type) {
         if (value instanceof String) {
             if (type == LocalDateTime.class) {
                 return Optional.ofNullable((T) DateUtils.toLocalDateTime((String) value));
@@ -46,5 +46,4 @@ public final class TypeConverter {
         }
         return Optional.empty();
     }
-
 }
