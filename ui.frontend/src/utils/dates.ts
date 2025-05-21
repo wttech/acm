@@ -29,7 +29,7 @@ export class Dates {
     return Dates.toCalendarDate(value);
   }
 
-  static toTime(value: string | Date): Time | null {
+  static toTime(value: string | Date): Time {
     if (typeof value === 'string') {
       return parseTime(value);
     }

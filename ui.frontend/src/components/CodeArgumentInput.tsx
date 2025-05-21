@@ -26,11 +26,11 @@ import {
 import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
-import useFormCrossFieldValidation from '../hooks/form.ts';
+import { Controller } from 'react-hook-form';
+import { useArgumentInput } from '../hooks/form';
 import { Argument, ArgumentValue, isBoolArgument, isColorArgument, isDateTimeArgument, isMultiSelectArgument, isNumberArgument, isRangeArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
-import { Dates } from '../utils/dates.ts';
-import { Strings } from '../utils/strings.ts';
+import { Dates } from '../utils/dates';
+import { Strings } from '../utils/strings';
 import styles from './CodeArgumentInput.module.css';
 
 interface CodeArgumentInputProps {
@@ -40,29 +40,8 @@ interface CodeArgumentInputProps {
 }
 
 const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
-  const { control, getValues } = useFormContext();
-  useFormCrossFieldValidation(arg.name);
-
+  const { control, controllerRules } = useArgumentInput(arg);
   const label = arg.label || Strings.capitalize(arg.name);
-  const controllerRules = {
-    validate: (value: ArgumentValue) => {
-      if (arg.required && (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value)) || (typeof value == 'boolean' && !value))) {
-        return 'Value is required';
-      }
-      if (arg.validator) {
-        try {
-          const validator = eval(arg.validator);
-          const allValues = getValues();
-          const errorMessage = validator(value, allValues);
-          return errorMessage || true;
-        } catch (error) {
-          console.error(`Validator for argument '${arg.name}' failed!`, error);
-          return `Validator failed`;
-        }
-      }
-      return true;
-    },
-  };
 
   return (
     <Controller
@@ -91,9 +70,9 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return arg.type === 'DATE' ? (
                 <DateField
                   {...field}
-                  minValue={arg.min !== null ? Dates.toCalendarDateTimeOrNull(arg.min) : undefined}
-                  maxValue={arg.max !== null ? Dates.toCalendarDateTimeOrNull(arg.max) : undefined}
                   value={Dates.toCalendarDateOrNull(field.value)}
+                  minValue={arg.min !== null ? Dates.toCalendarDate(arg.min) : undefined}
+                  maxValue={arg.max !== null ? Dates.toCalendarDate(arg.max) : undefined}
                   onChange={(dateValue) => field.onChange(dateValue?.toString())}
                   label={label}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
@@ -104,6 +83,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 <TimeField
                   {...field}
                   value={Dates.toTimeOrNull(field.value)}
+                  minValue={arg.min !== null ? Dates.toTime(arg.min) : undefined}
+                  maxValue={arg.max !== null ? Dates.toTime(arg.max) : undefined}
                   onChange={(timeValue) => field.onChange(timeValue?.toString())}
                   label={label}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
@@ -113,9 +94,9 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               ) : (
                 <DatePicker
                   {...field}
-                  minValue={arg.min !== null ? Dates.toCalendarDateTimeOrNull(arg.min) : undefined}
-                  maxValue={arg.max !== null ? Dates.toCalendarDateTimeOrNull(arg.max) : undefined}
                   value={Dates.toCalendarDateTimeOrNull(field.value)}
+                  minValue={arg.min !== null ? Dates.toCalendarDateTime(arg.min) : undefined}
+                  maxValue={arg.max !== null ? Dates.toCalendarDateTime(arg.max) : undefined}
                   onChange={(dateValue) => field.onChange(dateValue?.toString())}
                   granularity="second"
                   label={label}

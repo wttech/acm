@@ -71,7 +71,7 @@ export type ColorArgument = Argument<string> & {
   format: 'HEX' | 'RGBA' | 'HSL' | 'HSB';
 };
 
-type RangeValue = {
+export type RangeValue = {
   start: number;
   end: number;
 };
