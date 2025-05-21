@@ -43,6 +43,10 @@ public abstract class Argument<V> {
         return value;
     }
 
+    public V value() {
+        return getValue();
+    }
+
     public void setValue(V value) {
         this.value = value;
     }

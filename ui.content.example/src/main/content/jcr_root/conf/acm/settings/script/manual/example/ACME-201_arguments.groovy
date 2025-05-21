@@ -35,7 +35,6 @@ void doRun() {
     println "Last Vet Visit: ${args.value('lastVetVisit')}"
     println "Favorite Color: ${args.value('favoriteColor')}"
     println "Secret Code: ${args.value('secretCode')}"
-    println "Description: ${args.value('description')}"
 
     if (args.value('allergicToDogs') && args.value('animalType') == 'dog') {
         println "${args.value('animalName')} cannot be around dogs due to allergies!"
