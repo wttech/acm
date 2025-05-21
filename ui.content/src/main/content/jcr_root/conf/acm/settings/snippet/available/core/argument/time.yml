@@ -1,0 +1,20 @@
+group: Argument
+name: argument_time
+content: |
+  args.time("${1:name}") { label = "${2:label}"; value = "${3:value}" }
+documentation: |
+  An argument that represents a time.
+  
+  Optionally `min` and `max` values can be set to restrict the date and time range in picker.
+  
+  For example:
+  ```groovy
+  args.dateTime("eventStart") { value = "09:00:00" }
+  args.dateTime("eventEnd") { value = "17:00:00" }
+  args.dateTime("raceStart") { value = [9, 0, 0]; min = "08:00:00"; max = "10:00:00" }
+  ```
+  
+  Usage:
+  ```groovy
+  def eventStart = args.value("eventStart", java.time.LocalTime.class)
+  ```
