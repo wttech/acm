@@ -152,6 +152,7 @@ public class Assistancer {
             LOG.info("Variables cache - updating");
             try (ExecutionContext context = executor.createContext(
                     ExecutionId.generate(), ExecutionMode.PARSE, Code.consoleMinimal(), resolver)) {
+                context.getCodeContext().prepareRun(context);
                 variablesCache = context.getCodeContext().getBindingVariables();
                 variablesCacheTimestamp = currentTime;
             }
