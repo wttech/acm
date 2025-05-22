@@ -107,6 +107,7 @@ Adjust file 'all/pom.xml':
         <groupId>dev.vml.es</groupId>
         <artifactId>acm.all</artifactId>
         <version>${acm.version}</version>
+        <type>zip</type>
     </dependency>
     ```
 
