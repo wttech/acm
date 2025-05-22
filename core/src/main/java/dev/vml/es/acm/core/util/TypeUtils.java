@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
+import org.apache.sling.api.wrappers.ValueMapDecorator;
 
 public final class TypeUtils {
 
@@ -13,7 +15,9 @@ public final class TypeUtils {
         // intentionally empty
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Convert value to the specified type. Fallback to implicit usage of {@link org.apache.sling.api.wrappers.impl.ObjectConverter}.
+     */
     public static <T> Optional<T> convert(Object value, Class<T> type) {
         if (value instanceof String) {
             if (type == LocalDateTime.class) {
@@ -42,6 +46,11 @@ public final class TypeUtils {
             } else if (type == LocalTime.class) {
                 return Optional.ofNullable(
                         (T) DateUtils.toLocalDateTime((Calendar) value).toLocalTime());
+            }
+        } else if (value != null) {
+            T convertedValue = new ValueMapDecorator(Collections.singletonMap("v", value)).get("v", type);
+            if (convertedValue != null) {
+                return Optional.of(convertedValue);
             }
         }
         return Optional.empty();

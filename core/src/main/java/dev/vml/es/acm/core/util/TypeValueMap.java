@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.util;
 
 import java.util.Map;
-import java.util.Optional;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 
 /**
@@ -16,7 +15,6 @@ public class TypeValueMap extends ValueMapDecorator {
 
     @Override
     public <T> T get(String name, Class<T> type) {
-        Optional<T> convertedValue = TypeUtils.convert(super.get(name), type);
-        return convertedValue.orElseGet(() -> super.get(name, type));
+        return TypeUtils.convert(get(name), type).orElse(null);
     }
 }
