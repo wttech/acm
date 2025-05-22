@@ -73,7 +73,6 @@
         <bnd.version>5.1.2</bnd.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
     <build>
         <plugins>
@@ -343,7 +342,6 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                     <version>0.7.0</version>
                     <extensions>true</extensions>
                     <configuration>
-                        <skipPublishing>${maven.deploy.skip}</skipPublishing>
                         <publishingServerId>central</publishingServerId>
                         <autoPublish>true</autoPublish>
                         <waitUntil>published</waitUntil>
