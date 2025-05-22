@@ -681,6 +681,10 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
