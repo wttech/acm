@@ -47,12 +47,15 @@ public final class TypeUtils {
                 return Optional.ofNullable(
                         (T) DateUtils.toLocalDateTime((Calendar) value).toLocalTime());
             }
-        } else if (value != null) {
+        }
+
+        if (value != null && !type.isAssignableFrom(value.getClass())) {
             T convertedValue = new ValueMapDecorator(Collections.singletonMap("v", value)).get("v", type);
             if (convertedValue != null) {
                 return Optional.of(convertedValue);
             }
         }
+
         return Optional.empty();
     }
 }
