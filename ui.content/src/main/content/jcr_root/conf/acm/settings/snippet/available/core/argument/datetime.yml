@@ -5,18 +5,21 @@ content: |
 documentation: |
   An argument that represents a date and time.
   
-  Display mode can be enforced by using `datetime()` (default) or `date()` methods.<br>
-  Optionally `min` and `max` values can be set to restrict the date and time range in picker.<br>
+  Optionally `min` and `max` values can be set to restrict the date and time range in picker.
   
   For example:
   ```groovy
-  args.dateTime("publicationTime") { label = "Publication Time"; value = now() }
-  args.dateTime("releaseDate") { label = "Release Date"; date(); value = "2023-01-01" }
+  args.dateTime("publicationDate") { label = "Publication Time"; value = now() }
+  args.dateTime("releaseDate") { label = "Release Date"; value = "2023-01-01" }
   args.dateTime("birthTime") { value = "2023-01-01T12:00:00" }
-  args.dateTime("eventStart") { date(); setValue(2023, 10, 1) }
-  args.dateTime("eventEnd") { date(); value = now(); min = startOfToday().minusDays(7); max = endOfToday().plusDays(7) }
-  args.dateTime("holidayStart") { date(); min = "2025-07-01"; max = "2023-08-31"} }
+  args.dateTime("eventStart") { setValue(2023, 10, 1) }
+  args.dateTime("eventEnd") { value = now(); min = startOfToday().minusDays(7); max = endOfToday().plusDays(7) }
+  args.dateTime("holidayStart") { min = "2025-07-01T09:00:00"; max = "2023-08-31T23:00:00"} }
   args.dateTime("raceStart") { setValue(2025, 6, 1, 9, 0, 0) }
   ```
   
+  Usage:
+  ```groovy
+  def publicationDate = args.value("publicationDate", java.time.LocalDateTime.class)
+  ```
   

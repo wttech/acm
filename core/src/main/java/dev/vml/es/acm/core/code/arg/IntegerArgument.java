@@ -15,7 +15,7 @@ public class IntegerArgument extends Argument<Integer> {
     private Integer step;
 
     public IntegerArgument(String name) {
-        super(name, ArgumentType.INTEGER);
+        super(name, ArgumentType.INTEGER, Integer.class);
     }
 
     public Integer getMin() {

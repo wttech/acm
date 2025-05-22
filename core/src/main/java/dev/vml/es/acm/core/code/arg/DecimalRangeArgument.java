@@ -14,7 +14,7 @@ public class DecimalRangeArgument extends Argument<Range<BigDecimal>> {
     private BigDecimal step;
 
     public DecimalRangeArgument(String name) {
-        super(name, ArgumentType.NUMBER_RANGE);
+        super(name, ArgumentType.NUMBER_RANGE, null);
     }
 
     public void setValue(List<BigDecimal> value) {

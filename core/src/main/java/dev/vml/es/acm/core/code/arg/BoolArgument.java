@@ -9,7 +9,7 @@ public class BoolArgument extends Argument<Boolean> {
     private Display display = Display.SWITCHER;
 
     public BoolArgument(String name) {
-        super(name, ArgumentType.BOOL);
+        super(name, ArgumentType.BOOL, Boolean.class);
         setRequired(false);
     }
 

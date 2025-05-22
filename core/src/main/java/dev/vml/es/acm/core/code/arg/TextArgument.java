@@ -8,7 +8,7 @@ public class TextArgument extends Argument<String> {
     private String language;
 
     public TextArgument(String name) {
-        super(name, ArgumentType.TEXT);
+        super(name, ArgumentType.TEXT, String.class);
     }
 
     public String getLanguage() {

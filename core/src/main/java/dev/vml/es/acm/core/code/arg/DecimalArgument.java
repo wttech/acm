@@ -16,7 +16,7 @@ public class DecimalArgument extends Argument<BigDecimal> {
     private BigDecimal step;
 
     public DecimalArgument(String name) {
-        super(name, ArgumentType.DECIMAL);
+        super(name, ArgumentType.DECIMAL, BigDecimal.class);
     }
 
     public BigDecimal getMin() {

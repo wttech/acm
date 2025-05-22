@@ -4,11 +4,14 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vml.es.acm.core.code.arg.*;
 import dev.vml.es.acm.core.util.GroovyUtils;
+import dev.vml.es.acm.core.util.TypeUtils;
+import dev.vml.es.acm.core.util.TypeValueMap;
 import groovy.lang.Closure;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.sling.api.resource.ValueMap;
 
 public class Arguments implements Serializable {
@@ -17,6 +20,14 @@ public class Arguments implements Serializable {
 
     public Arguments() {
         super();
+    }
+
+    public Argument<?> get(String name) {
+        Argument<?> argument = definitions.get(name);
+        if (argument == null) {
+            throw new IllegalArgumentException(String.format("Argument '%s' is not defined!", name));
+        }
+        return argument;
     }
 
     private void add(Argument<?> argument) {
@@ -38,7 +49,7 @@ public class Arguments implements Serializable {
         for (Argument<?> argument : definitions.values()) {
             props.put(argument.getName(), argument.getValue());
         }
-        return new ArgumentsValueMap(props);
+        return new TypeValueMap(props);
     }
 
     @JsonIgnore
@@ -65,19 +76,24 @@ public class Arguments implements Serializable {
 
     public void setValues(ArgumentValues arguments) {
         arguments.forEach((name, value) -> {
-            Argument<?> argument = definitions.get(name);
-            if (argument == null) {
-                throw new IllegalArgumentException(
-                        String.format("Cannot set value for argument '%s' as it is not defined!", name));
-            } else {
-                setValue(argument, value);
-            }
+            Argument<?> argument = get(name);
+            setValue(argument, value);
         });
     }
 
     @SuppressWarnings("unchecked")
     private <T> void setValue(Argument<T> argument, Object value) {
-        argument.setValue((T) value);
+        Class<?> valueType = argument.getValueType();
+        if (valueType == null) {
+            argument.setValue((T) value);
+        } else {
+            Optional<?> convertedValue = TypeUtils.convert(value, valueType);
+            if (convertedValue.isPresent()) {
+                argument.setValue((T) convertedValue.get());
+            } else {
+                argument.setValue((T) value);
+            }
+        }
     }
 
     public void bool(String name) {
@@ -96,6 +112,26 @@ public class Arguments implements Serializable {
 
     public void dateTime(String name, Closure<DateTimeArgument> options) {
         DateTimeArgument argument = new DateTimeArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void date(String name) {
+        date(name, null);
+    }
+
+    public void date(String name, Closure<DateArgument> options) {
+        DateArgument argument = new DateArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void time(String name) {
+        time(name, null);
+    }
+
+    public void time(String name, Closure<TimeArgument> options) {
+        TimeArgument argument = new TimeArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }

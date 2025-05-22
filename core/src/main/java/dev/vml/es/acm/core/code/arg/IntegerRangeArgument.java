@@ -13,7 +13,7 @@ public class IntegerRangeArgument extends Argument<Range<Integer>> {
     private Integer step;
 
     public IntegerRangeArgument(String name) {
-        super(name, ArgumentType.NUMBER_RANGE);
+        super(name, ArgumentType.NUMBER_RANGE, null);
     }
 
     public void setValue(List<Integer> value) {
