@@ -222,7 +222,7 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
               ) : (
                 <IllustratedMessage>
                   <NoSearchResults />
-                  <Content>The selected folder is empty. Please navigate to a different location or go back.</Content>
+                  <Content>The selected hierarchy resource is empty. Please navigate to a different location or go back.</Content>
                 </IllustratedMessage>
               )}
             </LoadingWrapper>
@@ -241,7 +241,7 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
   );
 };
 
-const PathPickerField = ({ onSelect, root, ...props }: PathPickerFieldProps) => {
+const PathField = ({ onSelect, root, ...props }: PathPickerFieldProps) => {
   const [pathPickerOpened, setPathPickerOpened] = useState(false);
 
   const handleSelectPath = (path: string) => {
@@ -260,4 +260,4 @@ const PathPickerField = ({ onSelect, root, ...props }: PathPickerFieldProps) => 
   );
 };
 
-export default PathPickerField;
+export default PathField;

@@ -45,7 +45,7 @@ import {
 import { Dates } from '../utils/dates';
 import { Strings } from '../utils/strings';
 import styles from './CodeArgumentInput.module.css';
-import PathPickerField from './PathPicker.tsx';
+import PathField from './PathPicker.tsx';
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -258,14 +258,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               );
             } else if (isPathArgument(arg)) {
               return (
-                <PathPickerField
-                  label={label}
-                  root={arg.root}
-                  onSelect={field.onChange}
-                  value={field.value ?? ''}
-                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
-                />
+                <PathField label={label} root={arg.root} onSelect={field.onChange} value={field.value ?? ''} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} />
               );
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);

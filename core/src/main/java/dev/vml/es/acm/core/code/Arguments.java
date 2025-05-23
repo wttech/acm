@@ -7,11 +7,13 @@ import dev.vml.es.acm.core.util.GroovyUtils;
 import dev.vml.es.acm.core.util.TypeUtils;
 import dev.vml.es.acm.core.util.TypeValueMap;
 import groovy.lang.Closure;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+
 import org.apache.sling.api.resource.ValueMap;
 
 public class Arguments implements Serializable {
@@ -222,12 +224,12 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void path(String name) {
-        text(name, null);
+    public void path(String path) {
+        text(path, null);
     }
 
-    public void path(String name, Closure<PathArgument> options) {
-        PathArgument argument = new PathArgument(name);
+    public void path(String path, Closure<PathArgument> options) {
+        PathArgument argument = new PathArgument(path);
         GroovyUtils.with(argument, options);
         add(argument);
     }
