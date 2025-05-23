@@ -1,15 +1,14 @@
-group: argument
+group: Argument
 name: argument_path
 content: |
   args.path("${1:name}") { label = "${2:label}"; root = "${4:value}" }
 documentation: |
   An argument that represents a repository path with a path picker dialog.
-  
   The path picker allows users to browse and select paths from the JCR repository.
 
-For example:
+  For example:
   ```groovy
   args.path("contentPath") { label = "Content Path" }
   args.path("assetPath") { label = "Asset Path"; root = "/content/dam" }
   args.path("templatePath") { label = "Template Path"; root = "/conf/mysite/settings/wcm/templates" }
-
+  ```
