@@ -1,0 +1,14 @@
+group: Condition
+name: condition_retry
+content: |
+  condition.retry(${1:count})
+documentation: |
+  Execute the script only if:
+  - is idle itself (no other parallel executions are running),
+  - is executed for the first time or no more than specified consecutive failures occurred right before the current execution.
+  
+  For example:
+  
+  ```groovy
+  condition.retry(3)
+  ```

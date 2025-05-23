@@ -18,6 +18,11 @@ public final class ServletUtils {
         return value != null ? Integer.valueOf(value) : null;
     }
 
+    public static Boolean boolParam(SlingHttpServletRequest request, String name) {
+        String value = stringParam(request, name);
+        return value != null ? Boolean.valueOf(value) : null;
+    }
+
     public static Long longParam(SlingHttpServletRequest request, String name) {
         String value = stringParam(request, name);
         return value != null ? Long.valueOf(value) : null;

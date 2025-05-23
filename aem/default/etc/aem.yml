@@ -5,7 +5,7 @@ instance:
   config:
     local_author:
       active: [[.Env.AEM_AUTHOR_ACTIVE | default true ]]
-      http_url: [[.Env.AEM_AUTHOR_HTTP_URL | default "http://127.0.0.1:4502" ]]
+      http_url: [[.Env.AEM_AUTHOR_HTTP_URL | default "http://127.0.0.1:5502" ]]
       user: [[.Env.AEM_AUTHOR_USER | default "admin" ]]
       password: [[.Env.AEM_AUTHOR_PASSWORD | default "admin" ]]
       run_modes: [ local ]
@@ -13,7 +13,7 @@ instance:
         - -server
         - -Djava.awt.headless=true
         - -Djava.io.tmpdir=[[canonicalPath .Path "aem/home/tmp"]]
-        - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=[[.Env.AEM_AUTHOR_DEBUG_ADDR | default "0.0.0.0:14502" ]]
+        - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=[[.Env.AEM_AUTHOR_DEBUG_ADDR | default "0.0.0.0:15502" ]]
         - -Duser.language=en
         - -Duser.country=US
         - -Duser.timezone=UTC
@@ -25,7 +25,7 @@ instance:
       sling_props: []
     local_publish:
       active: [[.Env.AEM_PUBLISH_ACTIVE | default false ]]
-      http_url: [[.Env.AEM_PUBLISH_HTTP_URL | default "http://127.0.0.1:4503" ]]
+      http_url: [[.Env.AEM_PUBLISH_HTTP_URL | default "http://127.0.0.1:5503" ]]
       user: [[.Env.AEM_PUBLISH_USER | default "admin" ]]
       password: [[.Env.AEM_PUBLISH_PASSWORD | default "admin" ]]
       run_modes: [ local ]
@@ -33,7 +33,7 @@ instance:
         - -server
         - -Djava.awt.headless=true
         - -Djava.io.tmpdir=[[canonicalPath .Path "aem/home/tmp"]]
-        - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=[[.Env.AEM_PUBLISH_DEBUG_ADDR | default "0.0.0.0:14503" ]]
+        - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=[[.Env.AEM_PUBLISH_DEBUG_ADDR | default "0.0.0.0:15503" ]]
         - -Duser.language=en
         - -Duser.country=US
         - -Duser.timezone=UTC

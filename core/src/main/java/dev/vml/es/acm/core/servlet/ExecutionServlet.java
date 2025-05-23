@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.Servlet;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -34,6 +35,8 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
     private static final String ID_PARAM = "id";
 
     private static final String FORMAT_PARAM = "format";
+
+    private static final String QUEUED_PARAM = "queued";
 
     @Reference
     private ExecutionQueue queue;
@@ -64,7 +67,12 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
                 if (format == ExecutionFormat.FULL) {
                     executions = executionHistory.findAll(criteria).collect(Collectors.toList());
                 } else {
-                    executions = executionHistory.findAllSummaries(criteria).collect(Collectors.toList());
+                    Boolean queued = boolParam(request, QUEUED_PARAM);
+                    if (BooleanUtils.isTrue(queued)) {
+                        executions = queue.findAllSummaries().collect(Collectors.toList());
+                    } else {
+                        executions = executionHistory.findAllSummaries(criteria).collect(Collectors.toList());
+                    }
                 }
             }
 

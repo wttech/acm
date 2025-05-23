@@ -1,5 +1,6 @@
 import { defaultTheme, Flex, Provider, View } from '@adobe/react-spectrum';
 import { ToastContainer } from '@react-spectrum/toast';
+import equal from 'fast-deep-equal';
 import { useEffect, useRef, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import './App.css';
@@ -31,7 +32,6 @@ function App() {
       role: InstanceRole.AUTHOR,
       type: InstanceType.CLOUD_CONTAINER,
     },
-    queuedExecutions: [],
   });
 
   const isFetching = useRef(false);
@@ -51,7 +51,14 @@ function App() {
           timeout: intervalToTimeout(state.spaSettings.appStateInterval),
           quiet: true,
         });
-        setState(response.data.data);
+        if (!equal(response.data.data, state)) {
+          setState((prevState) => {
+            if (!equal(response.data.data, prevState)) {
+              return response.data.data;
+            }
+            return prevState;
+          });
+        }
       } catch (error) {
         console.warn('Cannot fetch application state:', error);
       } finally {

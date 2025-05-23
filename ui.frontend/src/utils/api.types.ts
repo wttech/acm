@@ -251,7 +251,6 @@ export type State = {
   healthStatus: HealthStatus;
   mockStatus: MockStatus;
   instanceSettings: InstanceSettings;
-  queuedExecutions: ExecutionSummary[];
 };
 
 export type SpaSettings = {

@@ -8,6 +8,8 @@ import java.io.Serializable;
 
 public class InstanceSettings implements Serializable {
 
+    private final String id;
+
     private final String timezoneId;
 
     private final InstanceRole role;
@@ -15,9 +17,14 @@ public class InstanceSettings implements Serializable {
     private final InstanceType type;
 
     public InstanceSettings(InstanceInfo instanceInfo) {
+        this.id = "default"; // TODO - replace with Sling ID
         this.timezoneId = DateUtils.TIMEZONE_ID;
         this.role = instanceInfo.getRole();
         this.type = instanceInfo.getType();
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getTimezoneId() {
