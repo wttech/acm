@@ -27,7 +27,7 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE';
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE' | 'PATH';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue;
 export type ArgumentValues = Record<string, ArgumentValue>;
 
@@ -92,6 +92,10 @@ export type MultiSelectArgument = Argument<ArgumentValue> & {
   display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN';
 };
 
+export type PathArgument = Argument<ArgumentValue> & {
+  root: string;
+};
+
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is StringArgument {
   return arg.type === 'STRING';
 }
@@ -122,6 +126,10 @@ export function isColorArgument(arg: Argument<ArgumentValue>): arg is ColorArgum
 
 export function isRangeArgument(arg: Argument<ArgumentValue>): arg is NumberRangeArgument {
   return arg.type === 'NUMBER_RANGE';
+}
+
+export function isPathArgument(arg: Argument<ArgumentValue>): arg is PathArgument {
+  return arg.type === 'PATH';
 }
 
 export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {

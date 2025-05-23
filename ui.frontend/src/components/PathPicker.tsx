@@ -1,11 +1,13 @@
-import { Breadcrumbs, Button, ButtonGroup, Content, ContextualHelp, Dialog, DialogContainer, Flex, Heading, Item, ListView, Selection, Text } from '@adobe/react-spectrum';
+import { Breadcrumbs, Button, ButtonGroup, Content, ContextualHelp, Dialog, DialogContainer, Flex, Heading, IllustratedMessage, Item, ListView, Selection, SpectrumTextFieldProps, Text, TextField } from '@adobe/react-spectrum';
 import { Key } from '@react-types/shared';
+import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
 import Document from '@spectrum-icons/workflow/Document';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Folder from '@spectrum-icons/workflow/Folder';
+import FolderSearch from '@spectrum-icons/workflow/FolderSearch';
 import Home from '@spectrum-icons/workflow/Home';
 import Project from '@spectrum-icons/workflow/Project';
-import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { apiRequest } from '../utils/api';
 import { AssistCodeOutput, JCR_CONSTANTS, NodeType } from '../utils/api.types';
 import LoadingWrapper from './LoadingWrapper.tsx';
@@ -25,9 +27,16 @@ interface PathPickerProps {
   onSelect: (path: string) => void;
   onCancel: () => void;
   label?: ReactNode;
-  basePath?: string;
+  root?: string;
   confirmButtonLabel?: ReactNode;
 }
+
+type PathPickerFieldProps = {
+  onSelect: (value: string) => void;
+  value?: string;
+  root?: string;
+  label?: ReactNode;
+} & SpectrumTextFieldProps;
 
 const getIconForType = (type: string) => {
   switch (type) {
@@ -46,17 +55,17 @@ const getIconForType = (type: string) => {
   }
 };
 
-const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', confirmButtonLabel = 'Confirm', open }: PathPickerProps) => {
+export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '', confirmButtonLabel = 'Confirm', open }: PathPickerProps) => {
   const [selectedItemData, setSelectedItemData] = useState<PathItem | null>(null);
-  const [loadingPath, setLoadingPath] = useState<string>(basePath);
-  const [loadedPath, setLoadedPath] = useState<string>(basePath);
+  const [loadingPath, setLoadingPath] = useState<string>(root);
+  const [loadedPath, setLoadedPath] = useState<string>(root);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadedPaths, setLoadedPaths] = useState<Record<string, PathItem[]>>({});
+  const loadedPaths = useRef<Record<string, PathItem[]>>({});
 
   useEffect(() => {
     const fetchItems = async () => {
       setSelectedItemData(null);
-      if (loadedPaths[loadingPath]) {
+      if (loadedPaths.current[loadingPath]) {
         setLoadedPath(loadingPath);
         return;
       }
@@ -74,7 +83,7 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
         const responseItems = responseData?.data.suggestions;
 
         if (responseItems && Array.isArray(responseItems)) {
-          const newItems = responseItems
+          loadedPaths.current[loadingPath] = responseItems
             .map((item) => {
               const resourceTypeMatch = item.i.match(/Resource Type: (.+)/);
               const resourceType = resourceTypeMatch ? resourceTypeMatch[1] : 'unknown';
@@ -107,8 +116,6 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
 
               return a.name.localeCompare(b.name);
             });
-
-          setLoadedPaths((prev) => ({ ...prev, [loadingPath]: newItems }));
           setLoadedPath(loadingPath);
         }
       } catch (error) {
@@ -119,8 +126,6 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
     };
 
     fetchItems();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingPath]);
 
   const handleItemClick = useCallback((item: PathItem) => {
@@ -138,7 +143,7 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
 
     const selectedKeys = Array.from(keys);
     const key = String(selectedKeys[0]);
-    const item = loadedPaths[loadedPath].find((item) => item.id === key);
+    const item = loadedPaths.current[loadedPath]?.find((item) => item.id === key);
 
     if (item) {
       setSelectedItemData(item);
@@ -152,7 +157,7 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
   }, [selectedItemData, onSelect]);
 
   const handleAction = (key: Key) => {
-    const item = loadedPaths[loadedPath].find((item) => item.id === key);
+    const item = loadedPaths.current[loadedPath]?.find((item) => item.id === key);
 
     if (item?.hasChildren) {
       handleItemClick(item);
@@ -165,7 +170,7 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
         <Dialog height="60vh">
           <Heading>
             <Flex direction="column" gap="size-100">
-              <Flex gap="size-50">
+              <Flex gap="size-50" alignItems="center">
                 <Text>{label}</Text>
                 <ContextualHelp variant="help">
                   <Heading>Repository browsing</Heading>
@@ -178,38 +183,48 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
                 </ContextualHelp>
               </Flex>
               <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
-                {loadingPath.split('/').map((p, index) => {
-                  const fullPath = loadingPath
-                    .split('/')
-                    .slice(0, index + 1)
-                    .join('/');
-                  const label = index === 0 ? <Home size="S" /> : p;
+                {loadingPath
+                  .replace(root, '')
+                  .split('/')
+                  .map((p, index) => {
+                    const fullPath = loadingPath
+                      .split('/')
+                      .slice(0, index + 1)
+                      .join('/');
+                    const label = index === 0 ? <Home size="S" /> : p;
 
-                  return <Item key={fullPath}>{label}</Item>;
-                })}
+                    return <Item key={index === 0 ? root : fullPath}>{label}</Item>;
+                  })}
               </Breadcrumbs>
             </Flex>
           </Heading>
           <Content>
             <LoadingWrapper isRefreshing={isLoading}>
-              <ListView
-                aria-label="Path items"
-                density="compact"
-                selectionMode="single"
-                selectionStyle="highlight"
-                selectedKeys={selectedItemData ? [selectedItemData.id] : undefined}
-                onSelectionChange={handleSelectionChange}
-                items={loadedPaths[loadedPath] ?? []}
-                onAction={handleAction}
-              >
-                {(item) => (
-                  <Item key={item.id} textValue={item.name} hasChildItems={item.hasChildren}>
-                    <Text>{item.name}</Text>
-                    {getIconForType(item.type)}
-                    <Text slot="description">{item.type}</Text>
-                  </Item>
-                )}
-              </ListView>
+              {loadedPaths.current[loadedPath]?.length || isLoading ? (
+                <ListView
+                  aria-label="Path items"
+                  density="compact"
+                  selectionMode="single"
+                  selectionStyle="highlight"
+                  selectedKeys={selectedItemData ? [selectedItemData.id] : []}
+                  onSelectionChange={handleSelectionChange}
+                  items={loadedPaths.current[loadedPath]}
+                  onAction={handleAction}
+                >
+                  {(item) => (
+                    <Item key={item.id} textValue={item.name} hasChildItems={item.hasChildren}>
+                      <Text>{item.name}</Text>
+                      {getIconForType(item.type)}
+                      <Text slot="description">{item.type}</Text>
+                    </Item>
+                  )}
+                </ListView>
+              ) : (
+                <IllustratedMessage>
+                  <NoSearchResults />
+                  <Content>The selected folder is empty. Please navigate to a different location or go back.</Content>
+                </IllustratedMessage>
+              )}
             </LoadingWrapper>
           </Content>
           <ButtonGroup>
@@ -226,4 +241,23 @@ const PathPicker = ({ onSelect, onCancel, label = 'Select Path', basePath = '', 
   );
 };
 
-export default PathPicker;
+const PathPickerField = ({ onSelect, root, ...props }: PathPickerFieldProps) => {
+  const [pathPickerOpened, setPathPickerOpened] = useState(false);
+
+  const handleSelectPath = (path: string) => {
+    onSelect(path);
+    setPathPickerOpened(false);
+  };
+
+  return (
+    <Flex gap="size-100">
+      <TextField flexGrow={1} isReadOnly {...props} />
+      <Button variant="secondary" style="outline" onPress={() => setPathPickerOpened(true)} aria-label="Pick a path" marginTop="size-300">
+        <FolderSearch />
+      </Button>
+      <PathPicker onSelect={handleSelectPath} onCancel={() => setPathPickerOpened(false)} confirmButtonLabel="Choose" root={root} open={pathPickerOpened} />
+    </Flex>
+  );
+};
+
+export default PathPickerField;
