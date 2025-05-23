@@ -69,6 +69,7 @@ function App() {
     fetchState();
     const intervalId = setInterval(fetchState, state.spaSettings.appStateInterval);
     return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.spaSettings.appStateInterval]);
 
   return (

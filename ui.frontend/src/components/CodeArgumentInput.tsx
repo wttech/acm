@@ -28,10 +28,24 @@ import { Field } from '@react-spectrum/label';
 import React from 'react';
 import { Controller } from 'react-hook-form';
 import { useArgumentInput } from '../hooks/form';
-import { Argument, ArgumentValue, isBoolArgument, isColorArgument, isDateTimeArgument, isMultiSelectArgument, isNumberArgument, isRangeArgument, isSelectArgument, isStringArgument, isTextArgument } from '../utils/api.types.ts';
+import {
+  Argument,
+  ArgumentValue,
+  isBoolArgument,
+  isColorArgument,
+  isDateTimeArgument,
+  isMultiSelectArgument,
+  isNumberArgument,
+  isPathArgument,
+  isRangeArgument,
+  isSelectArgument,
+  isStringArgument,
+  isTextArgument,
+} from '../utils/api.types.ts';
 import { Dates } from '../utils/dates';
 import { Strings } from '../utils/strings';
 import styles from './CodeArgumentInput.module.css';
+import PathField from './PathPicker.tsx';
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -241,6 +255,10 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   <RangeSlider {...field} label={label} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
                   {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
                 </Flex>
+              );
+            } else if (isPathArgument(arg)) {
+              return (
+                <PathField label={label} root={arg.root} onSelect={field.onChange} value={field.value ?? ''} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} />
               );
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);
