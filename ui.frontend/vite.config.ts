@@ -5,14 +5,17 @@ import { defineConfig, HttpProxy, normalizePath } from 'vite';
 import eslint from 'vite-plugin-eslint'; // TODO fixed by workaround: https://github.com/gxmari007/vite-plugin-eslint/issues/74#issuecomment-1647431890
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
+const aemInstanceTarget = 'http://localhost:5502';
+const aemInstanceCredentials = 'admin:admin';
+
 function serverProxyConfig() {
   return {
-    target: 'http://localhost:4502',
+    target: aemInstanceTarget,
     changeOrigin: true,
     configure: (proxy: HttpProxy.Server) => {
       proxy.on('proxyReq', (proxyReq: ClientRequest) => {
-        proxyReq.setHeader('Authorization', `Basic ${btoa('admin:admin')}`);
-        proxyReq.setHeader('Origin', 'http://localhost:4502'); // use it to trick AEM's CSRF Filter
+        proxyReq.setHeader('Authorization', `Basic ${btoa(aemInstanceCredentials)}`);
+        proxyReq.setHeader('Origin', aemInstanceTarget); // use it to trick AEM's CSRF Filter
       });
     },
   };

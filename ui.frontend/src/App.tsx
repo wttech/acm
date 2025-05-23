@@ -10,6 +10,7 @@ import router from './router';
 import { apiRequest } from './utils/api';
 import { InstanceRole, InstanceType, State } from './utils/api.types';
 import { intervalToTimeout } from './utils/spectrum.ts';
+import equal from 'fast-deep-equal';
 
 function App() {
   const [state, setState] = useState<State>({
@@ -31,7 +32,7 @@ function App() {
       role: InstanceRole.AUTHOR,
       type: InstanceType.CLOUD_CONTAINER,
     },
-    queuedExecutions: [],
+    queuedExecutions: [], // TODO remove it to avoid unnecessary re-renders
   });
 
   const isFetching = useRef(false);
@@ -51,7 +52,14 @@ function App() {
           timeout: intervalToTimeout(state.spaSettings.appStateInterval),
           quiet: true,
         });
-        setState(response.data.data);
+        if (!equal(response.data.data, state)) {
+          setState(prevState => {
+            if (!equal(response.data.data, prevState)) {
+              return response.data.data;
+            }
+            return prevState;
+          });
+        }
       } catch (error) {
         console.warn('Cannot fetch application state:', error);
       } finally {
