@@ -1,5 +1,6 @@
 import { defaultTheme, Flex, Provider, View } from '@adobe/react-spectrum';
 import { ToastContainer } from '@react-spectrum/toast';
+import equal from 'fast-deep-equal';
 import { useEffect, useRef, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import './App.css';
@@ -10,7 +11,6 @@ import router from './router';
 import { apiRequest } from './utils/api';
 import { InstanceRole, InstanceType, State } from './utils/api.types';
 import { intervalToTimeout } from './utils/spectrum.ts';
-import equal from 'fast-deep-equal';
 
 function App() {
   const [state, setState] = useState<State>({
@@ -32,7 +32,6 @@ function App() {
       role: InstanceRole.AUTHOR,
       type: InstanceType.CLOUD_CONTAINER,
     },
-    queuedExecutions: [], // TODO remove it to avoid unnecessary re-renders
   });
 
   const isFetching = useRef(false);
@@ -53,7 +52,7 @@ function App() {
           quiet: true,
         });
         if (!equal(response.data.data, state)) {
-          setState(prevState => {
+          setState((prevState) => {
             if (!equal(response.data.data, prevState)) {
               return response.data.data;
             }

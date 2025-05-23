@@ -10,11 +10,13 @@ import Code from '@spectrum-icons/workflow/Code';
 import Help from '@spectrum-icons/workflow/Help';
 import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app.ts';
-import { InstanceType } from '../utils/api.types.ts';
+import { apiRequest } from '../utils/api.ts';
+import { ExecutionOutput, ExecutionSummary, InstanceType } from '../utils/api.types.ts';
 import { isProduction } from '../utils/node';
+import { intervalToTimeout } from '../utils/spectrum.ts';
 import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
@@ -25,7 +27,36 @@ const ScriptExecutor = () => {
   const navigate = useNavigate();
 
   const appState = useAppState();
-  const executions = appState.queuedExecutions;
+
+  const [executions, setExecutions] = useState<ExecutionSummary[]>([]);
+  const isFetching = useRef(false);
+  useEffect(() => {
+    const fetchExecutions = async () => {
+      if (isFetching.current) {
+        return; // no overlaps
+      }
+      isFetching.current = true;
+      try {
+        const response = await apiRequest<ExecutionOutput<ExecutionSummary>>({
+          operation: 'Fetch queued executions',
+          url: '/apps/acm/api/execution.json?queued=true&format=summary',
+          method: 'get',
+          timeout: intervalToTimeout(appState.spaSettings.appStateInterval),
+          quiet: true,
+        });
+        setExecutions(response.data.data.list);
+      } catch (error) {
+        console.warn('Cannot fetch queued executions:', error);
+      } finally {
+        isFetching.current = false;
+      }
+    };
+    fetchExecutions();
+    const intervalId = setInterval(fetchExecutions, appState.spaSettings.appStateInterval);
+    return () => clearInterval(intervalId);
+  }, [appState.spaSettings.appStateInterval]);
+
+  console.log('executions', executions);
 
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
   const selectedIds = (selectedKeys: Selection): string[] => {
