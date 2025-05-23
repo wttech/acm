@@ -365,6 +365,9 @@ public class Condition {
     // Retry-based
 
     public boolean retry(long count) {
+        if (count < 1) {
+            throw new IllegalArgumentException("Retry count must be greater than zero!");
+        }
         if (!idleSelf()) {
             return false;
         }
