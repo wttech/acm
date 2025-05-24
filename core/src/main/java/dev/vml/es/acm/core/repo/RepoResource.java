@@ -143,6 +143,10 @@ public class RepoResource {
         return properties().get(key);
     }
 
+    public boolean hasProperty(String key) {
+        return properties().containsKey(key);
+    }
+
     public void updateProperty(String key, Function<Object, Object> valueUpdater) {
         Resource resource = resolve();
         if (resource == null) {

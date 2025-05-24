@@ -6,7 +6,7 @@ documentation: |
   Query resources under the given path in the repository.<br>
   The result is a stream of resources that match the query.<br>
   
-  Under the hood uses the JCR SQL2 to perform:
+  Under the hood uses the [JCR SQL2](https://jackrabbit.apache.org/oak/docs/query/grammar-sql2.html) to perform:
   ```sql
   SELECT * FROM [${NODE_TYPE}] AS n WHERE ISDESCENDANTNODE(n, [${PATH}]) AND ${WHERE} ORDER BY ${ORDER_BY}
   ```

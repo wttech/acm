@@ -8,5 +8,5 @@ documentation: |
   
   For example:
   ```groovy
-  repo.get("/content/acme").updateProperty("foo") { v -> v.replaceAll("bar", "baz") }
+  repo.get("/content/acme/us/en/jcr:content").updateProperty("foo") { v -> v.replaceAll("bar", "baz") }
   ```
