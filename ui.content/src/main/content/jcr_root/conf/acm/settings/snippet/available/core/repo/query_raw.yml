@@ -1,0 +1,20 @@
+group: Repo
+name: repo_query_raw
+content: |
+  repo.queryRaw("${1:sql}")
+documentation: |
+  Query resources using [JCR-SQL2](https://jackrabbit.apache.org/oak/docs/query/grammar-sql2.html).
+  
+  The result is a stream of resources that match the query.<br>
+  
+  For example:
+  ```groovy
+  repo.queryRaw("""
+    SELECT * FROM [cq:PageContent] AS p
+    WHERE ISDESCENDANTNODE(p, [/content/acme])
+    AND p.[sling:resourceType] = 'acme/components/page'
+    ORDER BY p.[jcr:created] DESC
+  """).forEach { page ->
+    println "Page content: ${page.path}"
+  }
+  ```
