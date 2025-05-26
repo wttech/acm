@@ -7,13 +7,11 @@ import dev.vml.es.acm.core.util.GroovyUtils;
 import dev.vml.es.acm.core.util.TypeUtils;
 import dev.vml.es.acm.core.util.TypeValueMap;
 import groovy.lang.Closure;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
-
 import org.apache.sling.api.resource.ValueMap;
 
 public class Arguments implements Serializable {

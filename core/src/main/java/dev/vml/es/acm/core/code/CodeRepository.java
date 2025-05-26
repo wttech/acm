@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import dev.vml.es.acm.core.osgi.ClassInfo;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,16 @@ public class CodeRepository {
         return result;
     }
 
+    // TODO consider 'module' and 'JavaClassDictionary.version()' to generate links to specific versions
+    public Optional<String> linkToClass(ClassInfo classInfo) {
+        return classLinks.entrySet().stream()
+                .filter(entry -> StringUtils.startsWith(classInfo.getClassName(), entry.getKey()))
+                .findFirst()
+                .map(entry -> String.format(
+                        "%s/%s.java", entry.getValue(), StringUtils.replace(classInfo.getClassName(), ".", "/")));
+    }
+
+    // TODO unify it with method above if possible
     public Optional<String> linkToClass(String className) {
         return classLinks.entrySet().stream()
                 .filter(entry -> StringUtils.startsWith(className, entry.getKey()))

@@ -1,17 +1,15 @@
 package dev.vml.es.acm.core.assist;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.util.StreamUtils;
+import dev.vml.es.acm.core.util.YamlUtils;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -22,16 +20,21 @@ public class JavaClassDictionary {
 
     public static final String FILE_EXTENSION = "txt";
 
-    private final Resource resource;
+    private Map<String, List<String>> modules = new HashMap<>();
 
-    public JavaClassDictionary(Resource resource) {
-        this.resource = resource;
+    @JsonAnySetter
+    public void addEntry(String key, List<String> value) {
+        modules.put(key, value);
+    }
+
+    @JsonAnyGetter
+    public Map<String, List<String>> getModules() {
+        return modules;
     }
 
     public static JavaClassDictionary determine(ResourceResolver resolver) {
-        return byJavaVersion(resolver, System.getProperty("java.specification.version"))
-                .orElseGet(() -> highestJavaVersion(resolver)
-                        .orElseThrow(() -> new IllegalStateException("Java class dictionary cannot be determined!")));
+        return byJavaVersion(resolver, javaVersion()).orElseGet(() -> highestJavaVersion(resolver)
+                .orElseThrow(() -> new IllegalStateException("Java class dictionary cannot be determined!")));
     }
 
     public static Optional<JavaClassDictionary> byJavaVersion(ResourceResolver resolver, String javaVersion) {
@@ -40,7 +43,7 @@ public class JavaClassDictionary {
                 .map(resolver::getResource)
                 .filter(Objects::nonNull)
                 .filter(r -> r.isResourceType(JcrConstants.NT_FILE))
-                .map(JavaClassDictionary::new);
+                .map(JavaClassDictionary::read);
     }
 
     public static Optional<JavaClassDictionary> highestJavaVersion(ResourceResolver resolver) {
@@ -49,8 +52,28 @@ public class JavaClassDictionary {
                 .orElse(Stream.empty())
                 .filter(r -> r.isResourceType(JcrConstants.NT_FILE))
                 .sorted(Comparator.comparing(Resource::getName).reversed())
-                .map(JavaClassDictionary::new)
+                .map(JavaClassDictionary::read)
                 .findFirst();
+    }
+
+    public static JavaClassDictionary read(Resource resource) {
+        try (InputStream input = RepoResource.of(resource).readFileAsStream()) {
+            return YamlUtils.read(input, JavaClassDictionary.class);
+        } catch (IOException e) {
+            throw new AcmException(
+                    String.format("Cannot read Java class dictionary at path '%s'!", resource.getPath()), e);
+        }
+    }
+
+    public static void save(JavaClassDictionary dictionary, ResourceResolver resolver, String version) {
+        RepoResource.of(resolver, path(version)).saveFile("application/x-yaml", output -> {
+            try {
+                YamlUtils.write(output, dictionary);
+            } catch (IOException e) {
+                throw new AcmException(
+                        String.format("Cannot save Java class dictionary for version '%s'!", version), e);
+            }
+        });
     }
 
     public static String path(String version) {
@@ -61,14 +84,7 @@ public class JavaClassDictionary {
         return path(System.getProperty("java.specification.version"));
     }
 
-    public Stream<String> getClasses() {
-        try (InputStream input = RepoResource.of(resource).readFileAsStream()) {
-            return StreamUtils.asStream(IOUtils.lineIterator(input, StandardCharsets.UTF_8))
-                    .map(String::trim)
-                    .filter(StringUtils::isNotBlank);
-        } catch (IOException e) {
-            throw new AcmException(
-                    String.format("Cannot read Java class dictionary at path '%s'!", resource.getPath()), e);
-        }
+    public static String javaVersion() {
+        return System.getProperty("java.specification.version");
     }
 }
