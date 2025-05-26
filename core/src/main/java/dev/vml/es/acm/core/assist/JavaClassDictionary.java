@@ -1,33 +1,36 @@
 package dev.vml.es.acm.core.assist;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.util.StreamUtils;
 import dev.vml.es.acm.core.util.YamlUtils;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Stream;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 
-public class JavaClassDictionary {
+public class JavaClassDictionary implements Serializable {
 
     public static final String ROOT = "/conf/acm/settings/assist/java";
 
     public static final String FILE_EXTENSION = "txt";
 
-    private Map<String, List<String>> modules = new HashMap<>();
-
-    @JsonAnySetter
-    public void addEntry(String key, List<String> value) {
-        modules.put(key, value);
+    public JavaClassDictionary(String s, Map<String, List<String>> modules) {
+        // for deserialization
     }
 
-    @JsonAnyGetter
+    private String version;
+
+    private Map<String, List<String>> modules = new HashMap<>();
+
+    public String getVersion() {
+        return version;
+    }
+
     public Map<String, List<String>> getModules() {
         return modules;
     }
@@ -65,13 +68,14 @@ public class JavaClassDictionary {
         }
     }
 
-    public static void save(JavaClassDictionary dictionary, ResourceResolver resolver, String version) {
-        RepoResource.of(resolver, path(version)).saveFile("application/x-yaml", output -> {
+    public static void save(ResourceResolver resolver, Map<String, List<String>> modules) {
+        JavaClassDictionary dictionary = new JavaClassDictionary(javaVersion(), modules);
+        RepoResource.of(resolver, dictionary.version).saveFile("application/x-yaml", output -> {
             try {
                 YamlUtils.write(output, dictionary);
             } catch (IOException e) {
                 throw new AcmException(
-                        String.format("Cannot save Java class dictionary for version '%s'!", version), e);
+                        String.format("Cannot save Java class dictionary for version '%s'!", dictionary.version), e);
             }
         });
     }

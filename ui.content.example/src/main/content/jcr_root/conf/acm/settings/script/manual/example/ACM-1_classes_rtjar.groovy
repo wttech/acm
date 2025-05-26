@@ -34,6 +34,7 @@ void doRun() {
             def dictFile = repo.get(JavaClassDictionary.path())
             dictFile.parent().ensureFolder()
             dictFile.saveFile(buffer.toString(), "text/plain")
+            // TODO JavaClassDictionary.save(resourceResolver, modules)
             break;
     }
 }
