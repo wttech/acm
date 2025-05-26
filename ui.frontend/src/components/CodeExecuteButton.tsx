@@ -24,11 +24,9 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
   const [dialogOpen, setDialogOpen] = useState(false);
   const [described, setDescribed] = useState(false);
   const methods = useForm<ArgumentValues>({
-    mode: 'all',
+    mode: 'onChange',
     reValidateMode: 'onChange',
   });
-
-  console.info('***methods', methods.formState.errors);
 
   const { formState } = methods;
 

@@ -20,6 +20,7 @@ import {
 } from '@adobe/react-spectrum';
 import { Key } from '@react-types/shared';
 import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
+import Close from '@spectrum-icons/workflow/Close';
 import Copy from '@spectrum-icons/workflow/Copy';
 import Document from '@spectrum-icons/workflow/Document';
 import FileCode from '@spectrum-icons/workflow/FileCode';
@@ -254,6 +255,7 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
           </Content>
           <ButtonGroup>
             <Button variant="secondary" onPress={onCancel} isDisabled={isLoading}>
+              <Close size="XS" marginEnd="size-100" />
               Cancel
             </Button>
             <Button variant="accent" onPress={handleConfirm} isDisabled={!selectedItemData || isLoading}>
