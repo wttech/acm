@@ -19,13 +19,14 @@ public class JavaClassDictionary implements Serializable {
 
     public static final String FILE_EXTENSION = "txt";
 
-    public JavaClassDictionary(String s, Map<String, List<String>> modules) {
-        // for deserialization
+    private final String version;
+
+    private final Map<String, List<String>> modules;
+
+    public JavaClassDictionary(String version, Map<String, List<String>> modules) {
+        this.version = version;
+        this.modules = modules;
     }
-
-    private String version;
-
-    private Map<String, List<String>> modules = new HashMap<>();
 
     public String getVersion() {
         return version;
