@@ -126,7 +126,8 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   {...field}
                   label={label}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  {...(fieldState.error && { validationState: 'invalid' })}
+                  isRequired={arg.required}
                   aria-label={`Argument '${arg.name}'`}
                   width="100%"
                 />
@@ -258,7 +259,16 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               );
             } else if (isPathArgument(arg)) {
               return (
-                <PathField label={label} root={arg.root} onSelect={field.onChange} value={field.value ?? ''} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} />
+                <PathField
+                  label={label}
+                  isRequired={arg.required}
+                  root={arg.root}
+                  onSelect={field.onChange}
+                  value={field.value ?? ''}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  onChange={field.onChange}
+                  {...(fieldState.error && { validationState: 'invalid' })}
+                />
               );
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);

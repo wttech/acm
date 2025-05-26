@@ -1,6 +1,26 @@
-import { Breadcrumbs, Button, ButtonGroup, Content, ContextualHelp, Dialog, DialogContainer, Flex, Heading, IllustratedMessage, Item, ListView, Selection, SpectrumTextFieldProps, Text, TextField } from '@adobe/react-spectrum';
+import {
+  Breadcrumbs,
+  Button,
+  ButtonGroup,
+  Content,
+  ContextualHelp,
+  Dialog,
+  DialogContainer,
+  Flex,
+  Header,
+  Heading,
+  IllustratedMessage,
+  Item,
+  LabeledValue,
+  ListView,
+  Selection,
+  SpectrumTextFieldProps,
+  Text,
+  TextField,
+} from '@adobe/react-spectrum';
 import { Key } from '@react-types/shared';
 import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
+import Copy from '@spectrum-icons/workflow/Copy';
 import Document from '@spectrum-icons/workflow/Document';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Folder from '@spectrum-icons/workflow/Folder';
@@ -169,63 +189,68 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
       {open && (
         <Dialog height="60vh">
           <Heading>
-            <Flex direction="column" gap="size-100">
-              <Flex gap="size-50" alignItems="center">
-                <Text>{label}</Text>
-                <ContextualHelp variant="help">
-                  <Heading>Repository browsing</Heading>
-                  <Content>
-                    <Text>
-                      <p>Double-click on a folder to open it. Single-click on a resource to select it. After selecting, copy resource path to the clipboard and paste it in the desired text fields.</p>
-                      <p>Use the breadcrumbs to navigate back.</p>
-                    </Text>
-                  </Content>
-                </ContextualHelp>
-              </Flex>
-              <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
-                {loadingPath
-                  .replace(root, '')
-                  .split('/')
-                  .map((p, index) => {
-                    const fullPath = loadingPath
-                      .split('/')
-                      .slice(0, index + 1)
-                      .join('/');
-                    const label = index === 0 ? <Home size="S" /> : p;
-
-                    return <Item key={index === 0 ? root : fullPath}>{label}</Item>;
-                  })}
-              </Breadcrumbs>
+            <Flex gap="size-50" alignItems="center">
+              <Text>{label}</Text>
+              <ContextualHelp variant="help">
+                <Heading>Repository browsing</Heading>
+                <Content>
+                  <Text>
+                    <p>Double-click on a folder to open it. Single-click on a resource to select it. After selecting, copy resource path to the clipboard and paste it in the desired text fields.</p>
+                    <p>Use the breadcrumbs to navigate back.</p>
+                  </Text>
+                </Content>
+              </ContextualHelp>
             </Flex>
           </Heading>
-          <Content>
-            <LoadingWrapper isRefreshing={isLoading}>
-              {loadedPaths.current[loadedPath]?.length || isLoading ? (
-                <ListView
-                  aria-label="Path items"
-                  density="compact"
-                  selectionMode="single"
-                  selectionStyle="highlight"
-                  selectedKeys={selectedItemData ? [selectedItemData.id] : []}
-                  onSelectionChange={handleSelectionChange}
-                  items={loadedPaths.current[loadedPath]}
-                  onAction={handleAction}
-                >
-                  {(item) => (
-                    <Item key={item.id} textValue={item.name} hasChildItems={item.hasChildren}>
-                      <Text>{item.name}</Text>
-                      {getIconForType(item.type)}
-                      <Text slot="description">{item.type}</Text>
-                    </Item>
-                  )}
-                </ListView>
-              ) : (
-                <IllustratedMessage>
-                  <NoSearchResults />
-                  <Content>The selected hierarchy resource is empty. Please navigate to a different location or go back.</Content>
-                </IllustratedMessage>
-              )}
-            </LoadingWrapper>
+          <Header>
+            <LabeledValue value={root} label="Base path" labelPosition="side" />
+          </Header>
+          <Content height="100%">
+            <Flex height="100%" direction="column">
+              <Flex width="100%" justifyContent="space-between">
+                <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
+                  {loadingPath
+                    .replace(root, '')
+                    .split('/')
+                    .map((p, index) => {
+                      const fullPath = loadingPath
+                        .split('/')
+                        .slice(0, index + 1)
+                        .join('/');
+                      const label = index === 0 ? <Home size="S" /> : p;
+
+                      return <Item key={index === 0 ? root : fullPath}>{label}</Item>;
+                    })}
+                </Breadcrumbs>
+              </Flex>
+              <LoadingWrapper isRefreshing={isLoading}>
+                {loadedPaths.current[loadedPath]?.length || isLoading ? (
+                  <ListView
+                    aria-label="Path items"
+                    density="compact"
+                    selectionMode="single"
+                    selectionStyle="highlight"
+                    selectedKeys={selectedItemData ? [selectedItemData.id] : []}
+                    onSelectionChange={handleSelectionChange}
+                    items={loadedPaths.current[loadedPath]}
+                    onAction={handleAction}
+                  >
+                    {(item) => (
+                      <Item key={item.id} textValue={item.name} hasChildItems={item.hasChildren}>
+                        <Text>{item.name}</Text>
+                        {getIconForType(item.type)}
+                        <Text slot="description">{item.type}</Text>
+                      </Item>
+                    )}
+                  </ListView>
+                ) : (
+                  <IllustratedMessage>
+                    <NoSearchResults />
+                    <Content>The selected hierarchy resource is empty. Please navigate to a different location or go back.</Content>
+                  </IllustratedMessage>
+                )}
+              </LoadingWrapper>
+            </Flex>
           </Content>
           <ButtonGroup>
             <Button variant="secondary" onPress={onCancel} isDisabled={isLoading}>
@@ -251,11 +276,22 @@ const PathField = ({ onSelect, root, ...props }: PathPickerFieldProps) => {
 
   return (
     <Flex gap="size-100">
-      <TextField flexGrow={1} isReadOnly {...props} />
+      <TextField flexGrow={1} {...props} />
       <Button variant="secondary" style="outline" onPress={() => setPathPickerOpened(true)} aria-label="Pick a path" marginTop="size-300">
         <FolderSearch />
       </Button>
-      <PathPicker onSelect={handleSelectPath} onCancel={() => setPathPickerOpened(false)} confirmButtonLabel="Choose" root={root} open={pathPickerOpened} />
+      <PathPicker
+        onSelect={handleSelectPath}
+        onCancel={() => setPathPickerOpened(false)}
+        confirmButtonLabel={
+          <>
+            <Copy marginEnd="size-100" />
+            Select
+          </>
+        }
+        root={root}
+        open={pathPickerOpened}
+      />
     </Flex>
   );
 };
