@@ -23,9 +23,8 @@ public class CodeRepository {
         @AttributeDefinition(
                 name = "Class Link Mappings",
                 description =
-                        "Mapping of class prefixes to their corresponding documentation URLs in the format 'package=url'."
-                                + " Used to generate links to class documentation in code assistance."
-                                + " Available variables: ${pkg} - package name, ${clazz} - class name.")
+                        "Mapping of class prefixes to their corresponding documentation URLs in the format 'package=url'."+
+                                " Used to generate links to class documentation in code assistance.")
         String[] classLinkMappings() default {
             "dev.vml.es.acm.core=https://github.com/wttech/acm/blob/main/core/src/main/java/%s.java",
             "org.apache.commons.lang3=https://commons.apache.org/proper/commons-lang/apidocs/%s.html",
@@ -38,15 +37,13 @@ public class CodeRepository {
 
         @AttributeDefinition(
                 name = "Class Link for RT Jar",
-                description = "URL to the Java 8 documentation, used for linking classes from runtime jar."
-                        + " Available variables: ${clazz} - class name.")
+                description = "URL to the Java 8 documentation, used for linking classes from runtime jar.")
         String classLinkRtJar() default "https://docs.oracle.com/javase/8/docs/api/%s.html";
 
         @AttributeDefinition(
                 name = "Class Link for JMS",
-                description = "URL to the Java 9+ documentation, used for linking classes from JMS."
-                        + " Available variables: " + "${module} - module name, ${clazz} - class name.")
-        String classLinkJms() default "https://docs.oracle.com/en/java/javase/%s/docs/api/%s.html";
+                description = "URL to the Java 9+ documentation, used for linking classes from JMS.")
+        String classLinkJms() default "https://docs.oracle.com/en/java/javase/%s/docs/api/%s/%s.html";
     }
 
     private Config config;
@@ -80,8 +77,10 @@ public class CodeRepository {
         } else {
             return Optional.of(String.format(
                     config.classLinkJms(),
+                    JavaClassDictionary.javaVersion(),
                     classInfo.getModule(),
-                    StringUtils.replace(classInfo.getClassName(), ".", "/")));
+                    StringUtils.replace(classInfo.getClassName(), ".", "/"))
+            );
         }
     }
 
