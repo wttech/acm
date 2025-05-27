@@ -17,9 +17,14 @@ public class JavaClassDictionary implements Serializable {
 
     public static final String ROOT = "/conf/acm/settings/assist/java";
 
-    private final String version;
+    private String version;
 
-    private final Map<String, List<String>> modules;
+    private Map<String, List<String>> modules;
+
+    @SuppressWarnings("unused")
+    public JavaClassDictionary() {
+        // for deserialization
+    }
 
     public JavaClassDictionary(String version, Map<String, List<String>> modules) {
         this.version = version;
