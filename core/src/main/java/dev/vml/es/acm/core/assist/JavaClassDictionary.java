@@ -17,6 +17,8 @@ public class JavaClassDictionary implements Serializable {
 
     public static final String ROOT = "/conf/acm/settings/assist/java";
 
+    public static final String RTJAR_MODULE = "rtjar";
+
     private String version;
 
     private Map<String, List<String>> modules;

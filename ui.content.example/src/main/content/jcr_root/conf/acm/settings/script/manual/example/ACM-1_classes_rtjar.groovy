@@ -29,8 +29,8 @@ void doRun() {
             eachSystemClass { className -> println "${className}" }
             break
         case "save":
-            def modules = ["rtjar": []]
-            eachSystemClass { className -> modules["rtjar"] << className }
+            def modules = [(JavaClassDictionary.RTJAR_MODULE): []]
+            eachSystemClass { className -> modules[JavaClassDictionary.RTJAR_MODULE] << className }
             JavaClassDictionary.save(resourceResolver, modules)
             break
     }
