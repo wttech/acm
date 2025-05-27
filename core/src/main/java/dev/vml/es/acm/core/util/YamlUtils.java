@@ -8,6 +8,10 @@ import java.io.OutputStream;
 
 public final class YamlUtils {
 
+    public static final String MIME_TYPE = "application/x-yaml";
+
+    public static final String EXTENSION = "yml";
+
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
 
     private YamlUtils() {

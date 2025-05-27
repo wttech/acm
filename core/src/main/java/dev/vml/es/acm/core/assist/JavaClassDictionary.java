@@ -17,8 +17,6 @@ public class JavaClassDictionary implements Serializable {
 
     public static final String ROOT = "/conf/acm/settings/assist/java";
 
-    public static final String FILE_EXTENSION = "txt";
-
     private final String version;
 
     private final Map<String, List<String>> modules;
@@ -71,7 +69,7 @@ public class JavaClassDictionary implements Serializable {
 
     public static void save(ResourceResolver resolver, Map<String, List<String>> modules) {
         JavaClassDictionary dictionary = new JavaClassDictionary(javaVersion(), modules);
-        RepoResource.of(resolver, dictionary.version).saveFile("application/x-yaml", output -> {
+        RepoResource.of(resolver, path()).saveFile(YamlUtils.MIME_TYPE, output -> {
             try {
                 YamlUtils.write(output, dictionary);
             } catch (IOException e) {
@@ -82,11 +80,11 @@ public class JavaClassDictionary implements Serializable {
     }
 
     public static String path(String version) {
-        return String.format("%s/%s.%s", ROOT, version, FILE_EXTENSION);
+        return String.format("%s/%s.%s", ROOT, version, YamlUtils.EXTENSION);
     }
 
     public static String path() {
-        return path(System.getProperty("java.specification.version"));
+        return path(javaVersion());
     }
 
     public static String javaVersion() {

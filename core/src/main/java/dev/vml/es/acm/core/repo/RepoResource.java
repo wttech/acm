@@ -350,7 +350,7 @@ public class RepoResource {
                 mainResource = repo.getResourceResolver().create(parent, name, mainValues);
 
                 Map<String, Object> contentValues = new HashMap<>();
-                setFileContent(contentValues, data, dataWriter, mimeType);
+                setFileContent(contentValues, mimeType, data, dataWriter);
                 repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
 
                 repo.commit(String.format("creating file at path '%s'", path));
@@ -359,12 +359,12 @@ public class RepoResource {
                 Resource contentResource = mainResource.getChild(JcrConstants.JCR_CONTENT);
                 if (contentResource == null) {
                     Map<String, Object> contentValues = new HashMap<>();
-                    setFileContent(contentValues, data, dataWriter, mimeType);
+                    setFileContent(contentValues, mimeType, data, dataWriter);
                     repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
                 } else {
                     ModifiableValueMap contentValues =
                             Objects.requireNonNull(contentResource.adaptTo(ModifiableValueMap.class));
-                    setFileContent(contentValues, data, dataWriter, mimeType);
+                    setFileContent(contentValues, mimeType, data, dataWriter);
                 }
 
                 repo.commit(String.format("updating file at path '%s'", path));
@@ -377,15 +377,15 @@ public class RepoResource {
     }
 
     private void setFileContent(
-            Map<String, Object> contentValues, Object data, Consumer<OutputStream> dataWriter, String mimeType) {
+            Map<String, Object> contentValues, String mimeType, Object data, Consumer<OutputStream> dataWriter) {
         if (dataWriter != null) {
-            setFileContent(contentValues, dataWriter, mimeType);
+            setFileContent(contentValues, mimeType, dataWriter);
         } else {
-            setFileContent(contentValues, data, mimeType);
+            setFileContent(contentValues, mimeType, data);
         }
     }
 
-    private void setFileContent(Map<String, Object> contentValues, Object data, String mimeType) {
+    private void setFileContent(Map<String, Object> contentValues, String mimeType, Object data) {
         contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
         contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
         contentValues.put(JcrConstants.JCR_MIMETYPE, mimeType);
@@ -393,7 +393,7 @@ public class RepoResource {
     }
 
     // https://stackoverflow.com/a/27172165
-    private void setFileContent(Map<String, Object> contentValues, Consumer<OutputStream> data, String mimeType) {
+    private void setFileContent(Map<String, Object> contentValues, String mimeType, Consumer<OutputStream> dataWriter) {
         contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
         contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
         contentValues.put(JcrConstants.JCR_MIMETYPE, mimeType);
@@ -402,7 +402,7 @@ public class RepoResource {
             final PipedOutputStream pos = new PipedOutputStream(pis);
             Executors.newSingleThreadExecutor().submit(() -> {
                 try {
-                    data.accept(pos);
+                    dataWriter.accept(pos);
                 } catch (Exception e) {
                     throw new RepoException(String.format("Cannot write data to file at path '%s'!", path), e);
                 }

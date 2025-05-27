@@ -26,16 +26,13 @@ void doRun() {
 
     switch (args.value("mode")) {
         case "print":
-            eachSystemClass { className -> println "${className}"}
-            break;
+            eachSystemClass { className -> println "${className}" }
+            break
         case "save":
-            def buffer = new StringBuffer();
-            eachSystemClass { className -> buffer.append("${className}\n")}
-            def dictFile = repo.get(JavaClassDictionary.path())
-            dictFile.parent().ensureFolder()
-            dictFile.saveFile(buffer.toString(), "text/plain")
-            // TODO JavaClassDictionary.save(resourceResolver, modules)
-            break;
+            def modules = ["rtjar": []]
+            eachSystemClass { className -> modules["rtjar"] << className }
+            JavaClassDictionary.save(resourceResolver, modules)
+            break
     }
 }
 
