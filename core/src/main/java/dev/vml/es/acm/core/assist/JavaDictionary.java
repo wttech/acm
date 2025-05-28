@@ -69,8 +69,7 @@ public class JavaDictionary implements Serializable {
         try (InputStream input = RepoResource.of(resource).readFileAsStream()) {
             return YamlUtils.read(input, JavaDictionary.class);
         } catch (IOException e) {
-            throw new AcmException(
-                    String.format("Cannot read Java dictionary at path '%s'!", resource.getPath()), e);
+            throw new AcmException(String.format("Cannot read Java dictionary at path '%s'!", resource.getPath()), e);
         }
     }
 

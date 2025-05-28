@@ -23,8 +23,8 @@ public class CodeRepository {
         @AttributeDefinition(
                 name = "Class Link Mappings",
                 description =
-                        "Mapping of class prefixes to their corresponding documentation URLs in the format 'package=url'."+
-                                " Used to generate links to class documentation in code assistance.")
+                        "Mapping of class prefixes to their corresponding documentation URLs in the format 'package=url'."
+                                + " Used to generate links to class documentation in code assistance.")
         String[] classLinkMappings() default {
             "dev.vml.es.acm.core=https://github.com/wttech/acm/blob/main/core/src/main/java/%s.java",
             "org.apache.commons.lang3=https://commons.apache.org/proper/commons-lang/apidocs/%s.html",
@@ -79,8 +79,7 @@ public class CodeRepository {
                     config.classLinkJms(),
                     JavaDictionary.currentVersion(),
                     classInfo.getModule(),
-                    StringUtils.replace(classInfo.getClassName(), ".", "/"))
-            );
+                    StringUtils.replace(classInfo.getClassName(), ".", "/")));
         }
     }
 

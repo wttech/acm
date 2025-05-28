@@ -405,6 +405,12 @@ public class RepoResource {
                     dataWriter.accept(pos);
                 } catch (Exception e) {
                     throw new RepoException(String.format("Cannot write data to file at path '%s'!", path), e);
+                } finally {
+                    try {
+                        pos.close();
+                    } catch (IOException e) {
+                        LOG.warn("Cannot close output stream for file at path '{}'", path, e);
+                    }
                 }
             });
             contentValues.put(JcrConstants.JCR_DATA, pis);
