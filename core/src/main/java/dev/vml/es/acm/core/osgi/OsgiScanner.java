@@ -100,7 +100,7 @@ public class OsgiScanner {
                             .orElse(null))
                     .filter(Objects::nonNull)
                     .filter(className -> isDirectChildOfPackage(className, packageName))
-                    .map(c -> new ClassInfo(c, bundle));
+                    .map(c -> new ClassInfo(c, bundle, null));
         } catch (Exception e) {
             LOG.error("Error scanning classes in bundle '{}'", bundle.getSymbolicName(), e);
             return Stream.empty();

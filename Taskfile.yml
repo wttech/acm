@@ -209,6 +209,12 @@ tasks:
     desc: deploy minimal AEM package to AEM instances
     cmd: sh aemw package deploy --file "min/target/acm.min-*.zip"
 
+  develop:
+    desc: build & deploy AEM packages to instances
+    cmds:
+      - task: develop:all
+      - task: develop:content:example
+
   develop:all:
     desc: build & deploy all AEM package to instances
     deps: [ build:inc ]

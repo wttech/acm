@@ -1,0 +1,22 @@
+group: Repo
+name: repo_save_file_stream
+content: |
+  repo.get("${1:path}").saveFile(${2:mimeType}) { output ->
+      
+  }
+documentation: |
+  Creates or updates a file at the specified path in the repository.
+  
+  To work directly with `OutputStream` using the standard AEM API requires significant boilerplate.
+  This method streamlines the process by allowing direct writing to an output stream via a closure.
+  
+  For example:
+  ```groovy
+  repo.get("/content/dam/us/en/posts/hello-world.yml").saveFile("application/x-yaml") { output ->
+    formatter.yml.write(output, [
+        title: "Hello World",
+        description: "This is a sample post.",
+        tags: ["sample", "post"]
+    ])
+  }
+  ```

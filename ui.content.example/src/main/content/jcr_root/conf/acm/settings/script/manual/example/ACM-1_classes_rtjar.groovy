@@ -8,7 +8,7 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
-import dev.vml.es.acm.core.assist.JavaClassDictionary
+import dev.vml.es.acm.core.assist.JavaDictionary
 import java.util.function.Consumer
 import java.util.jar.JarFile
 import java.io.File
@@ -26,15 +26,13 @@ void doRun() {
 
     switch (args.value("mode")) {
         case "print":
-            eachSystemClass { className -> println "${className}"}
-            break;
+            eachSystemClass { className -> println "${className}" }
+            break
         case "save":
-            def buffer = new StringBuffer();
-            eachSystemClass { className -> buffer.append("${className}\n")}
-            def dictFile = repo.get(JavaClassDictionary.path())
-            dictFile.parent().ensureFolder()
-            dictFile.saveFile(buffer.toString(), "text/plain")
-            break;
+            def modules = [(JavaDictionary.RTJAR_MODULE): []]
+            eachSystemClass { className -> modules[JavaDictionary.RTJAR_MODULE] << className }
+            JavaDictionary.save(resourceResolver, modules)
+            break
     }
 }
 
