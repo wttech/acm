@@ -1,7 +1,11 @@
 .markdown code {
   font-size: 12px;
 }
-.markdown p {
-  margin-block-start: 0.5em;
-  margin-block-end: 0.5em;
+
+.markdown p:first-child {
+  margin-block-start: 0;
+}
+
+.markdown p:last-child {
+  margin-block-end: 0;
 }

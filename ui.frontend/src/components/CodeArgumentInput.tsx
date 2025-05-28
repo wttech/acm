@@ -7,7 +7,6 @@ import {
   ColorPicker,
   DateField,
   DatePicker,
-  Flex,
   Item,
   ListView,
   NumberField,
@@ -44,9 +43,8 @@ import {
 } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates';
 import { Strings } from '../utils/strings';
-import styles from './CodeArgumentInput.module.css';
-import PathField from './PathPicker.tsx';
-import Markdown from "./Markdown.tsx";
+import Markdown from './Markdown';
+import PathField from './PathPicker';
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -69,18 +67,19 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
           {(() => {
             if (isBoolArgument(arg)) {
               return (
-                <Flex alignItems={'start'} justifyContent={'start'} direction={'column'}>
-                  {arg.display === 'SWITCHER' ? (
-                    <Switch {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
-                      {label}
-                    </Switch>
-                  ) : (
-                    <Checkbox {...field} isSelected={field.value} isInvalid={!!fieldState.error} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
-                      {label}
-                    </Checkbox>
-                  )}
-                  {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
-                </Flex>
+                <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                  <div>
+                    {arg.display === 'SWITCHER' ? (
+                      <Switch {...field} isSelected={field.value} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
+                        {label}
+                      </Switch>
+                    ) : (
+                      <Checkbox {...field} isSelected={field.value} isInvalid={!!fieldState.error} onChange={field.onChange} aria-label={`Argument '${arg.name}'`}>
+                        {label}
+                      </Checkbox>
+                    )}
+                  </div>
+                </Field>
               );
             } else if (isDateTimeArgument(arg)) {
               return arg.type === 'DATE' ? (
@@ -226,10 +225,11 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
             } else if (isNumberArgument(arg)) {
               if (arg.display === 'SLIDER') {
                 return (
-                  <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
-                    <Slider {...field} label={label} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
-                    {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
-                  </Flex>
+                  <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                    <div>
+                      <Slider {...field} label={label} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                    </div>
+                  </Field>
                 );
               } else {
                 return (
@@ -249,26 +249,42 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               }
             } else if (isColorArgument(arg)) {
               return (
-                <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
-                  <ColorPicker {...field} label={label} aria-label={`Argument '${arg.name}'`} value={field.value ? parseColor(field.value) : ''} onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}>
-                    <ColorEditor hideAlphaChannel={arg.format !== 'RGBA'} />
-                    <Button onPress={() => field.onChange('')} width={'100%'} marginTop={'size-200'} variant={'secondary'}>
-                      Clear
-                    </Button>
-                  </ColorPicker>
-                  {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
-                </Flex>
+                <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                  <div>
+                    <ColorPicker
+                      {...field}
+                      label={label}
+                      aria-label={`Argument '${arg.name}'`}
+                      value={field.value ? parseColor(field.value) : ''}
+                      onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}
+                    >
+                      <ColorEditor hideAlphaChannel={arg.format !== 'RGBA'} />
+                      <Button onPress={() => field.onChange('')} width={'100%'} marginTop={'size-200'} variant={'secondary'}>
+                        Clear
+                      </Button>
+                    </ColorPicker>
+                  </div>
+                </Field>
               );
             } else if (isRangeArgument(arg)) {
               return (
-                <Flex justifyContent={'start'} alignItems={'start'} direction={'column'}>
-                  <RangeSlider {...field} label={label} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
-                  {fieldState.error && <p className={styles.error}>{fieldState.error.message}</p>}
-                </Flex>
+                <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                  <div>
+                    <RangeSlider {...field} label={label} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                  </div>
+                </Field>
               );
             } else if (isPathArgument(arg)) {
               return (
-                <PathField label={label} description={description} root={arg.root} onSelect={field.onChange} value={field.value ?? ''} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} />
+                <PathField
+                  label={label}
+                  description={description}
+                  root={arg.root}
+                  onSelect={field.onChange}
+                  value={field.value ?? ''}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                />
               );
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);
