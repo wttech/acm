@@ -35,7 +35,14 @@ public class Repo {
     }
 
     public void setAutoCommit(boolean autoCommit) {
-        this.autoCommit = autoCommit;
+        if (this.autoCommit != autoCommit) {
+            if (autoCommit) {
+                LOG.debug("Auto-commit is now enabled. Changes will be committed after each operation.");
+            } else {
+                LOG.debug("Auto-commit is now disabled. Changes will not be committed after each operation.");
+            }
+            this.autoCommit = autoCommit;
+        }
     }
 
     public void commit() {
