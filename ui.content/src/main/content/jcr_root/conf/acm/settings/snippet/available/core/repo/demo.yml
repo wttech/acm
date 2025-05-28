@@ -18,14 +18,7 @@ content: |
     
   void doRun() {
     out.fromLogs()
-  
-    if (args.value("dryRun")) {
-      repo.autoCommit = false
-      println "Running in dry run mode. No changes will be committed to the repository."
-    } else {
-      repo.autoCommit = true
-      println "Running in normal mode. Changes will be committed to the repository."
-    }
+    repo.autoCommit = args.value("dryRun")
   
     println "Creating a folder structure in the temporary directory of the repository."
     def folder = repo.get("/tmp/acm/demo").ensureFolder()
