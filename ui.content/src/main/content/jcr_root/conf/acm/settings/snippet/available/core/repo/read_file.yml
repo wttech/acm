@@ -1,0 +1,11 @@
+group: Repo
+name: repo_read_file
+content: |
+  repo.get("${1:path}").readFileAsString()
+documentation: |
+  Reads the content of a file at the specified path in the repository as a `String`.
+  
+  For example:
+  ```groovy
+  def json = repo.get("/content/dam/us/en/posts/hello-world.json").readFileAsString()
+  ```

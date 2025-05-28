@@ -1,0 +1,22 @@
+group: Repo
+name: repo_save_file
+content: |
+  repo.get("${1:path}").saveFile(${2:mimeType}, ${3:data})
+documentation: |
+  Creates or updates a file at the specified path in the repository.
+  
+  Note that this method accepts data types supported by [ModifiableValueMap](https://sling.apache.org/apidocs/sling10/org/apache/sling/api/resource/ModifiableValueMap.html), such as `String`, `byte[]`, or `InputStream`.
+  If `OutputStream` is needed, use `repo.get(path).saveFile(mimeType) { output -> ... }` instead.
+  
+  For example:
+  ```groovy
+  def post = repo.get("/content/dam/us/en/posts/hello-world.json")
+  post.parent().ensureFolder()
+  post.saveFile("application/json", """
+  {
+    "title": "Hello World",
+    "description": "This is a sample post.",
+    "tags": ["sample", "post"]
+  }
+  """)
+  ```
