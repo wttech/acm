@@ -10,7 +10,7 @@ documentation: |
   
   For example:
   ```groovy
-  def post = repo.get("/content/dam/us/en/posts/hello-world.json")
+  def post = repo.get("/content/dam/acme/en/posts/hello-world.json")
   post.parent().ensureFolder()
   post.saveFile("application/json", """
   {

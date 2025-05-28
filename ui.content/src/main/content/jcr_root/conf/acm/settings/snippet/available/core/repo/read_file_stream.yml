@@ -7,5 +7,5 @@ documentation: |
   
   For example:
   ```groovy
-  def inputStream = repo.get("/content/dam/us/en/posts/hello-world.json").readFileAsStream()
+  def inputStream = repo.get("/content/dam/acme/en/posts/hello-world.json").readFileAsStream()
   ```

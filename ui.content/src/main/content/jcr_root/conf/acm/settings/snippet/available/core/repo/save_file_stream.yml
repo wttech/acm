@@ -12,7 +12,7 @@ documentation: |
   
   For example:
   ```groovy
-  repo.get("/content/dam/us/en/posts/hello-world.yml").saveFile("application/x-yaml") { output ->
+  repo.get("/content/dam/acme/en/posts/hello-world.yml").saveFile("application/x-yaml") { output ->
     formatter.yml.write(output, [
         title: "Hello World",
         description: "This is a sample post.",
