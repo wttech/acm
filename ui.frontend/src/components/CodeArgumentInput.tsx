@@ -89,7 +89,10 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   maxValue={arg.max !== null ? Dates.toCalendarDate(arg.max) : undefined}
                   onChange={(dateValue) => field.onChange(dateValue?.toString())}
                   label={label}
-                  {...(fieldState.error && { validationState: 'invalid', errorMessage: fieldState.error.message })}
+                  {...(fieldState.error && {
+                    validationState: 'invalid',
+                    errorMessage: fieldState.error.message,
+                  })}
                   aria-label={`Argument '${arg.name}'`}
                 />
               ) : arg.type === 'TIME' ? (
@@ -100,7 +103,10 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   maxValue={arg.max !== null ? Dates.toTime(arg.max) : undefined}
                   onChange={(timeValue) => field.onChange(timeValue?.toString())}
                   label={label}
-                  {...(fieldState.error && { validationState: 'invalid', errorMessage: fieldState.error.message })}
+                  {...(fieldState.error && {
+                    validationState: 'invalid',
+                    errorMessage: fieldState.error.message,
+                  })}
                   aria-label={`Argument '${arg.name}'`}
                 />
               ) : (
@@ -112,7 +118,10 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   onChange={(dateValue) => field.onChange(dateValue?.toString())}
                   granularity="second"
                   label={label}
-                  {...(fieldState.error && { validationState: 'invalid', errorMessage: fieldState.error.message })}
+                  {...(fieldState.error && {
+                    validationState: 'invalid',
+                    errorMessage: fieldState.error.message,
+                  })}
                   aria-label={`Argument '${arg.name}'`}
                 />
               );
@@ -121,6 +130,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 <TextField
                   type={arg.display}
                   {...field}
+                  value={field.value ?? ''}
                   label={label}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
                   {...(fieldState.error && { validationState: 'invalid' })}
@@ -149,6 +159,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               ) : (
                 <TextArea
                   {...field}
+                  value={field.value ?? ''}
                   label={label}
                   {...(fieldState.error && {
                     validationState: 'invalid',
@@ -196,13 +207,17 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               );
             } else if (isMultiSelectArgument(arg)) {
               const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'CHECKBOX' : 'LIST') : arg.display;
+
               return display === 'CHECKBOX' ? (
                 <CheckboxGroup
-                  {...field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  isRequired={arg.required}
                   orientation="horizontal"
                   label={label}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  isInvalid={!!fieldState.error}
                   aria-label={`Argument '${arg.name}'`}
                 >
                   {Object.entries(arg.options).map(([label, val]) => (
@@ -242,8 +257,11 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   <NumberField
                     {...field}
                     label={label}
-                    errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                    validationState={fieldState.error ? 'invalid' : 'valid'}
+                    {...(fieldState.error && {
+                      validationState: 'invalid',
+                      errorMessage: fieldState.error.message,
+                    })}
+                    isRequired={arg.required}
                     minValue={arg.min !== null ? arg.min : undefined}
                     maxValue={arg.max !== null ? arg.max : undefined}
                     hideStepper={arg.type === 'DECIMAL'}

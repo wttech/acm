@@ -28,10 +28,18 @@ import Folder from '@spectrum-icons/workflow/Folder';
 import FolderSearch from '@spectrum-icons/workflow/FolderSearch';
 import Home from '@spectrum-icons/workflow/Home';
 import Project from '@spectrum-icons/workflow/Project';
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  forwardRef,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react';
 import { apiRequest } from '../utils/api';
 import { AssistCodeOutput, JCR_CONSTANTS, NodeType } from '../utils/api.types';
 import LoadingWrapper from './LoadingWrapper.tsx';
+import { TextFieldRef } from '@react-types/textfield';
 
 const FOLDER_NODE_TYPES = [NodeType.FOLDER, NodeType.ORDERED_FOLDER, NodeType.SLING_FOLDER, NodeType.CQ_PROJECTS, NodeType.REDIRECT, NodeType.ACL] as const;
 
@@ -268,7 +276,7 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
   );
 };
 
-const PathField = ({ onSelect, root, ...props }: PathPickerFieldProps) => {
+const PathField = forwardRef<TextFieldRef, PathPickerFieldProps>(({ onSelect, root, ...props }, ref) => {
   const [pathPickerOpened, setPathPickerOpened] = useState(false);
 
   const handleSelectPath = (path: string) => {
@@ -278,7 +286,7 @@ const PathField = ({ onSelect, root, ...props }: PathPickerFieldProps) => {
 
   return (
     <Flex gap="size-100">
-      <TextField flexGrow={1} {...props} />
+      <TextField ref={ref} flexGrow={1} {...props} />
       <Button variant="secondary" style="outline" onPress={() => setPathPickerOpened(true)} aria-label="Pick a path" marginTop="size-300">
         <FolderSearch />
       </Button>
@@ -296,6 +304,6 @@ const PathField = ({ onSelect, root, ...props }: PathPickerFieldProps) => {
       />
     </Flex>
   );
-};
+});
 
 export default PathField;
