@@ -4,6 +4,10 @@ documentation: |
   Showcase of the `repo` code variable.
   Creates a folder structure and deletes it again.
 content: |
+  void describeRun() {
+    args.checkbox("dryRun") { description = "Controls if changes will be written to the repository." }
+  }
+  
   boolean canRun() {
     return condition.idleSelf()
   }

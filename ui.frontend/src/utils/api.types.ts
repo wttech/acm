@@ -38,6 +38,7 @@ export type Argument<T> = {
   type: ArgumentType;
   value: T;
   label: string;
+  description?: string;
   required: boolean;
   group: string;
   validator?: string;
