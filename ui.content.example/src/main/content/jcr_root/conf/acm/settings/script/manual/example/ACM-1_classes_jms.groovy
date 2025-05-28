@@ -8,7 +8,7 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
-import dev.vml.es.acm.core.assist.JavaClassDictionary
+import dev.vml.es.acm.core.assist.JavaDictionary
 
 import java.lang.module.ModuleFinder
 import java.lang.module.ModuleReference
@@ -27,24 +27,25 @@ void doRun() {
 
     switch (args.value("mode")) {
         case "print":
-            eachSystemClass { className -> println "${className}" }
+            eachSystemClass { moduleName, className -> println "${moduleName}: ${className}" }
             break
         case "save":
-            def buffer = new StringBuffer()
-            eachSystemClass { className -> buffer.append("${className}\n") }
-            def dictFile = repo.get(JavaClassDictionary.path())
-            dictFile.parent().ensureFolder()
-            dictFile.saveFile(buffer.toString(), "text/plain")
+            def modules = [:].withDefault { [] }
+            eachSystemClass { moduleName, className ->
+                modules[moduleName] << className
+            }
+            JavaDictionary.save(resourceResolver, modules)
             break
     }
 }
 
-def eachSystemClass(Consumer<String> callback) {
+def eachSystemClass(Closure callback) {
     def exportedPackages = osgi.osgiScanner.getSystemExportedPackages().sorted().toList()
     ModuleLayer.boot().modules().forEach { module ->
+        def moduleName = module.getName().toString()
         module.getPackages().findAll { pkg -> exportedPackages.contains(pkg) }.forEach { pkg ->
             findSystemClasses(module, pkg).sorted().forEach { className ->
-                callback(className)
+                callback(moduleName, className.toString())
             }
         }
     }

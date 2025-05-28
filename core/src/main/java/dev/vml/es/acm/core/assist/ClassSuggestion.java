@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 public class ClassSuggestion implements Suggestion {
 
     private final ClassInfo classInfo;
+
     private final CodeRepository codeRepository;
 
     public ClassSuggestion(ClassInfo classInfo, CodeRepository codeRepository) {
@@ -36,8 +37,8 @@ public class ClassSuggestion implements Suggestion {
         List<String> info = new LinkedList<>();
 
         info.add(String.format("Bundle: %s", classInfo.getBundle().getSymbolicName()));
-        codeRepository.linkToClass(classInfo.getClassName()).ifPresent(link -> {
-            info.add(String.format("Source Code: [Open](%s)", link));
+        codeRepository.linkToClass(classInfo).ifPresent(link -> {
+            info.add(String.format("Documentation: [Open](%s)", link));
         });
 
         return StringUtils.join(info, "\n\n");

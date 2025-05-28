@@ -14,6 +14,8 @@ public abstract class Argument<V> {
 
     private String label;
 
+    private String description;
+
     private String group = "general";
 
     private boolean required = true;
@@ -57,6 +59,14 @@ public abstract class Argument<V> {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public boolean isRequired() {

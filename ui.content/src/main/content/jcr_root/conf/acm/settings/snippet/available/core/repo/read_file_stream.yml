@@ -1,0 +1,11 @@
+group: Repo
+name: repo_read_file_stream
+content: |
+  repo.get("${1:path}").readFileAsStream()
+documentation: |
+  Reads the content of a file at the specified path in the repository as an `InputStream`.
+  
+  For example:
+  ```groovy
+  def inputStream = repo.get("/content/dam/acme/en/posts/hello-world.json").readFileAsStream()
+  ```
