@@ -16,9 +16,10 @@ public final class TypeUtils {
     }
 
     /**
-     * Convert value to the specified type. Fallback to implicit usage of {@link org.apache.sling.api.wrappers.impl.ObjectConverter}.
+     * Convert a value to the specified type.
+     * Fallback uses implicitly {@link org.apache.sling.api.wrappers.impl.ObjectConverter}.
      */
-    public static <T> Optional<T> convert(Object value, Class<T> type) {
+    public static <T> Optional<T> convert(Object value, Class<T> type, boolean fallback) {
         if (value instanceof String) {
             if (type == LocalDateTime.class) {
                 return Optional.ofNullable((T) DateUtils.toLocalDateTime((String) value));
@@ -49,7 +50,7 @@ public final class TypeUtils {
             }
         }
 
-        if (value != null && !type.isAssignableFrom(value.getClass())) {
+        if (fallback && value != null && !type.isAssignableFrom(value.getClass())) {
             T convertedValue = new ValueMapDecorator(Collections.singletonMap("v", value)).get("v", type);
             if (convertedValue != null) {
                 return Optional.of(convertedValue);

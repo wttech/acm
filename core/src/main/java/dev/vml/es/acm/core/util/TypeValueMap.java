@@ -15,6 +15,6 @@ public class TypeValueMap extends ValueMapDecorator {
 
     @Override
     public <T> T get(String name, Class<T> type) {
-        return TypeUtils.convert(get(name), type).orElse(null);
+        return TypeUtils.convert(get(name), type, false).orElse(super.get(name, type));
     }
 }
