@@ -8,7 +8,7 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
-import dev.vml.es.acm.core.assist.JavaClassDictionary
+import dev.vml.es.acm.core.assist.JavaDictionary
 
 import java.lang.module.ModuleFinder
 import java.lang.module.ModuleReference
@@ -34,7 +34,7 @@ void doRun() {
             eachSystemClass { moduleName, className ->
                 modules[moduleName] << className
             }
-            JavaClassDictionary.save(resourceResolver, modules)
+            JavaDictionary.save(resourceResolver, modules)
             break
     }
 }

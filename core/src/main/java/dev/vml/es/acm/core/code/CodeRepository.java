@@ -1,6 +1,6 @@
 package dev.vml.es.acm.core.code;
 
-import dev.vml.es.acm.core.assist.JavaClassDictionary;
+import dev.vml.es.acm.core.assist.JavaDictionary;
 import dev.vml.es.acm.core.osgi.ClassInfo;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,13 +71,13 @@ public class CodeRepository {
     public Optional<String> linkToClass(ClassInfo classInfo) {
         if (classInfo.getModule() == null) {
             return linkToClass(classInfo.getClassName());
-        } else if (JavaClassDictionary.RTJAR_MODULE.equals(classInfo.getModule())) {
+        } else if (JavaDictionary.RTJAR_MODULE.equals(classInfo.getModule())) {
             return Optional.of(
                     String.format(config.classLinkRtJar(), StringUtils.replace(classInfo.getClassName(), ".", "/")));
         } else {
             return Optional.of(String.format(
                     config.classLinkJms(),
-                    JavaClassDictionary.javaVersion(),
+                    JavaDictionary.currentVersion(),
                     classInfo.getModule(),
                     StringUtils.replace(classInfo.getClassName(), ".", "/"))
             );

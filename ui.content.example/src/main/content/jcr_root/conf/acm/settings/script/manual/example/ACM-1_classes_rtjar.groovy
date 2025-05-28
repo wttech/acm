@@ -8,7 +8,7 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
-import dev.vml.es.acm.core.assist.JavaClassDictionary
+import dev.vml.es.acm.core.assist.JavaDictionary
 import java.util.function.Consumer
 import java.util.jar.JarFile
 import java.io.File
@@ -29,9 +29,9 @@ void doRun() {
             eachSystemClass { className -> println "${className}" }
             break
         case "save":
-            def modules = [(JavaClassDictionary.RTJAR_MODULE): []]
-            eachSystemClass { className -> modules[JavaClassDictionary.RTJAR_MODULE] << className }
-            JavaClassDictionary.save(resourceResolver, modules)
+            def modules = [(JavaDictionary.RTJAR_MODULE): []]
+            eachSystemClass { className -> modules[JavaDictionary.RTJAR_MODULE] << className }
+            JavaDictionary.save(resourceResolver, modules)
             break
     }
 }

@@ -132,7 +132,7 @@ public class Assistancer {
             Set<ClassInfo> result = new TreeSet<>(classCache);
 
             Bundle bundle = osgiScanner.getSystemBundle();
-            JavaClassDictionary.determine(resolver).getModules().forEach((module, classNames) -> {
+            JavaDictionary.determine(resolver).getModules().forEach((module, classNames) -> {
                 classNames.forEach(className -> result.add(new ClassInfo(className, bundle, module)));
             });
             osgiScanner.scanExportedClasses().forEach(result::add);

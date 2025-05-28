@@ -13,7 +13,7 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 
-public class JavaClassDictionary implements Serializable {
+public class JavaDictionary implements Serializable {
 
     public static final String ROOT = "/conf/acm/settings/assist/java";
 
@@ -24,11 +24,11 @@ public class JavaClassDictionary implements Serializable {
     private Map<String, List<String>> modules;
 
     @SuppressWarnings("unused")
-    public JavaClassDictionary() {
+    public JavaDictionary() {
         // for deserialization
     }
 
-    public JavaClassDictionary(String version, Map<String, List<String>> modules) {
+    public JavaDictionary(String version, Map<String, List<String>> modules) {
         this.version = version;
         this.modules = modules;
     }
@@ -41,47 +41,47 @@ public class JavaClassDictionary implements Serializable {
         return modules;
     }
 
-    public static JavaClassDictionary determine(ResourceResolver resolver) {
-        return byJavaVersion(resolver, javaVersion()).orElseGet(() -> highestJavaVersion(resolver)
-                .orElseThrow(() -> new IllegalStateException("Java class dictionary cannot be determined!")));
+    public static JavaDictionary determine(ResourceResolver resolver) {
+        return byVersion(resolver, currentVersion()).orElseGet(() -> forHighestVersion(resolver)
+                .orElseThrow(() -> new IllegalStateException("Java dictionary cannot be determined!")));
     }
 
-    public static Optional<JavaClassDictionary> byJavaVersion(ResourceResolver resolver, String javaVersion) {
+    public static Optional<JavaDictionary> byVersion(ResourceResolver resolver, String javaVersion) {
         return Optional.ofNullable(javaVersion)
-                .map(JavaClassDictionary::path)
+                .map(JavaDictionary::path)
                 .map(resolver::getResource)
                 .filter(Objects::nonNull)
                 .filter(r -> r.isResourceType(JcrConstants.NT_FILE))
-                .map(JavaClassDictionary::read);
+                .map(JavaDictionary::read);
     }
 
-    public static Optional<JavaClassDictionary> highestJavaVersion(ResourceResolver resolver) {
+    public static Optional<JavaDictionary> forHighestVersion(ResourceResolver resolver) {
         return Optional.ofNullable(resolver.getResource(ROOT))
                 .map(r -> StreamUtils.asStream(r.listChildren()))
                 .orElse(Stream.empty())
                 .filter(r -> r.isResourceType(JcrConstants.NT_FILE))
                 .sorted(Comparator.comparing(Resource::getName).reversed())
-                .map(JavaClassDictionary::read)
+                .map(JavaDictionary::read)
                 .findFirst();
     }
 
-    public static JavaClassDictionary read(Resource resource) {
+    public static JavaDictionary read(Resource resource) {
         try (InputStream input = RepoResource.of(resource).readFileAsStream()) {
-            return YamlUtils.read(input, JavaClassDictionary.class);
+            return YamlUtils.read(input, JavaDictionary.class);
         } catch (IOException e) {
             throw new AcmException(
-                    String.format("Cannot read Java class dictionary at path '%s'!", resource.getPath()), e);
+                    String.format("Cannot read Java dictionary at path '%s'!", resource.getPath()), e);
         }
     }
 
     public static void save(ResourceResolver resolver, Map<String, List<String>> modules) {
-        JavaClassDictionary dictionary = new JavaClassDictionary(javaVersion(), modules);
+        JavaDictionary dictionary = new JavaDictionary(currentVersion(), modules);
         RepoResource.of(resolver, path()).saveFile(YamlUtils.MIME_TYPE, output -> {
             try {
                 YamlUtils.write(output, dictionary);
             } catch (IOException e) {
                 throw new AcmException(
-                        String.format("Cannot save Java class dictionary for version '%s'!", dictionary.version), e);
+                        String.format("Cannot save Java dictionary for version '%s'!", dictionary.version), e);
             }
         });
     }
@@ -91,10 +91,10 @@ public class JavaClassDictionary implements Serializable {
     }
 
     public static String path() {
-        return path(javaVersion());
+        return path(currentVersion());
     }
 
-    public static String javaVersion() {
+    public static String currentVersion() {
         return System.getProperty("java.specification.version");
     }
 }
