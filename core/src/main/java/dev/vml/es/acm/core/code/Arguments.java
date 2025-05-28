@@ -87,7 +87,7 @@ public class Arguments implements Serializable {
         if (valueType == null) {
             argument.setValue((T) value);
         } else {
-            Optional<?> convertedValue = TypeUtils.convert(value, valueType);
+            Optional<?> convertedValue = TypeUtils.convert(value, valueType, true);
             if (convertedValue.isPresent()) {
                 argument.setValue((T) convertedValue.get());
             } else {

@@ -1,22 +1,33 @@
 group: Repo
 name: repo_demo
 documentation: |
-  Showcase of the `repo` code variable.
-  Creates a folder structure and deletes it again.
+  Showcase of the `repo` code variable. Creates a folder structure and deletes it again.
+  
+  Documentation:
+    - [Repo](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/repo/Repo.java)
+    - [RepoResource](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/repo/RepoResource.java)
 content: |
   void describeRun() {
-    args.checkbox("dryRun") { description = "Controls if changes will be written to the repository." }
+    args.bool("dryRun") { value = true; switcher(); description = "Do not commit changes to the repository" }
+    args.bool("clean") { value = true; switcher(); description = "Finally delete all created resources" }
   }
-  
+    
   boolean canRun() {
     return condition.idleSelf()
   }
-
+    
   void doRun() {
     out.fromLogs()
   
-    println "Creating a folder structure in the temporary directory of the repository."
+    if (args.value("dryRun")) {
+      repo.autoCommit = false
+      println "Running in dry run mode. No changes will be committed to the repository."
+    } else {
+      repo.autoCommit = true
+      println "Running in normal mode. Changes will be committed to the repository."
+    }
   
+    println "Creating a folder structure in the temporary directory of the repository."
     def folder = repo.get("/tmp/acm/demo").ensureFolder()
     for (int i = 0; i < 5; i++) {
       def child = folder.child("child-\${i+1}")
@@ -25,5 +36,7 @@ content: |
   
     println "Folder '${folder.path}' has now ${folder.descendants().count()} descendant(s)."
   
-    folder.delete()
+    if (args.value("clean")) {
+      folder.delete()
+    }
   }
