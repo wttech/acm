@@ -1,0 +1,31 @@
+group: Repo
+name: repo_dry_run
+content: |
+  repo.dryRun(${1:enabled}) {
+    // operations
+  }
+documentation: |
+  Allow to perform operations on the repository in two modes:
+  - dry run (when enabled) - operations are not committed to the repository, but can be previewed in the logs,
+  - normal run (when disabled) - operations are committed to the repository.
+  
+  When exception is thrown during dry run, the revert operation is performed, so no changes are made to the repository.
+  Useful especially when combined with `args.bool("dryRun")` to allow user to choose whether to perform dry run or not.
+  
+  For example:
+  ```groovy
+  void describeRun() {
+    args.bool("dryRun") { value = true; switcher(); description = "Do not commit changes to the repository" }
+  }
+  
+  boolean canRun() {
+    return condition.idleSelf()
+  }
+    
+  void doRun() { 
+    out.fromLogs()
+    repo.dryRun(args.value("dryRun")) {
+      repo.get("/content/acme").ensureFolder()
+    }
+  }
+  ```

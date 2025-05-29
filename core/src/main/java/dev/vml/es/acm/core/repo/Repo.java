@@ -35,18 +35,23 @@ public class Repo {
     }
 
     public void setAutoCommit(boolean autoCommit) {
-        if (this.autoCommit != autoCommit) {
-            if (autoCommit) {
-                LOG.debug("Auto-commit is now enabled. Changes will be committed after each operation.");
+        this.autoCommit = autoCommit;
+    }
+
+    public void autoCommit(boolean enabled) {
+        if (this.autoCommit != enabled) {
+            if (enabled) {
+                LOG.info("Auto-commit is now enabled. Changes will be committed after each operation.");
             } else {
-                LOG.debug("Auto-commit is now disabled. Changes will not be committed after each operation.");
+                LOG.info("Auto-commit is now disabled. Changes will not be committed after each operation.");
             }
-            this.autoCommit = autoCommit;
+            this.autoCommit = enabled;
         }
     }
 
     public void commit() {
         try {
+            LOG.debug("Committing manually changes to repository.");
             resourceResolver.commit();
         } catch (PersistenceException e) {
             throw new RepoException("Cannot manually commit changes to repository!", e);
@@ -63,6 +68,38 @@ public class Repo {
             }
         } catch (PersistenceException e) {
             throw new RepoException(String.format("Cannot commit changes to repository while %s!", context), e);
+        }
+    }
+
+    public void revert() {
+        try {
+            resourceResolver.revert();
+        } catch (Exception e) {
+            throw new RepoException("Cannot revert changes in repository!", e);
+        }
+    }
+
+    public void dryRun(boolean enabled, Runnable operation) {
+        boolean autoCommitInitial = this.autoCommit;
+        try {
+            if (enabled) {
+                LOG.info("Dry run is enabled. Changes will not be committed to the repository.");
+                if (autoCommitInitial) {
+                    this.autoCommit = false;
+                }
+                operation.run();
+            } else {
+                LOG.info("Dry run is disabled. Changes will be commited to the repository.");
+                operation.run();
+            }
+        } finally {
+            if (enabled) {
+                if (autoCommitInitial) {
+                    this.autoCommit = true;
+                }
+                revert();
+                LOG.info("Dry run completed. Changes reverted.");
+            }
         }
     }
 

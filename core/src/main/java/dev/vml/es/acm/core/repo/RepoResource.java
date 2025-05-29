@@ -3,6 +3,7 @@ package dev.vml.es.acm.core.repo;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
 import dev.vml.es.acm.core.util.StreamUtils;
 import dev.vml.es.acm.core.util.StringUtil;
+import dev.vml.es.acm.core.util.TypeValueMap;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -129,7 +130,11 @@ public class RepoResource {
     }
 
     public ValueMap properties() {
-        return require().getValueMap();
+        return new TypeValueMap(require().getValueMap());
+    }
+
+    private ValueMap propertiesOrEmpty() {
+        return new TypeValueMap(get().map(Resource::getValueMap).orElse(ValueMap.EMPTY));
     }
 
     public <V> V property(String key, Class<V> clazz) {
@@ -467,7 +472,7 @@ public class RepoResource {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("path", path)
                 .append("exists", exists())
-                .append("properties", StringUtil.toString(properties()))
+                .append("properties", StringUtil.toString(propertiesOrEmpty()))
                 .toString();
     }
 }
