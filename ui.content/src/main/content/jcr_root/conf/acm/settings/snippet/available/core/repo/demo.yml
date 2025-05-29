@@ -1,7 +1,10 @@
 group: Repo
 name: repo_demo
 documentation: |
-  Showcase of the `repo` code variable. Creates a folder structure and deletes it again.
+  Setup some repository resources to demonstrate the usage of the `repo` code variable.
+  Creates a folder structure, a post, and updates properties of the created resources.
+  Finally, it can clean up the created resources if requested. 
+  Can be run in dry run mode, where no changes are committed to the repository, or in normal mode, where changes are committed.
   
   Documentation:
     - [Repo](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/repo/Repo.java)
@@ -18,18 +21,32 @@ content: |
     
   void doRun() {
     out.fromLogs()
-    repo.autoCommit = args.value("dryRun")
   
-    println "Creating a folder structure in the temporary directory of the repository."
-    def folder = repo.get("/tmp/acm/demo").ensureFolder()
-    for (int i = 0; i < 5; i++) {
-      def child = folder.child("child-\${i+1}")
-      child.save(["foo": "bar"])
-    }
-  
-    println "Folder '${folder.path}' has now ${folder.descendants().count()} descendant(s)."
-  
-    if (args.value("clean")) {
-      folder.delete()
+    repo.dryRun(args.value("dryRun")) {
+      println "Creating a folder structure in the temporary directory of the repository."
+      def dataFolder = repo.get("/tmp/acm/demo/data").ensureFolder()
+      for (int i = 0; i < 5; i++) {
+        def child = dataFolder.child("child-\${i+1}")
+        child.save(["foo": "bar"])
+        child.updateProperty("foo") { v -> v.toUpperCase() }
+      }
+      println "Folder '${dataFolder.path}' has now ${dataFolder.descendants().count()} descendant(s)."
+    
+      println "Creating a post in the temporary directory of the repository."
+      def postFolder = repo.get("/tmp/acm/demo/posts").ensureFolder()
+      def post = postFolder.child("hello-world.yml")
+      post.saveFile("application/x-yaml") { output ->
+        formatter.yml.write(output, [
+            title: "Hello World",
+            description: "This is a sample post.",
+            tags: ["sample", "post"]
+        ])
+      }
+      println "Post '${post.path}' has been created at ${post.property("jcr:created", java.time.LocalDateTime)}"
+    
+      if (args.value("clean")) {
+        dataFolder.delete()
+        postFolder.delete()
+      }
     }
   }
