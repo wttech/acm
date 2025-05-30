@@ -21,6 +21,7 @@ import {
 import { Key } from '@react-types/shared';
 import { TextFieldRef } from '@react-types/textfield';
 import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
+import Unauthorized from '@spectrum-icons/illustrations/Unauthorized';
 import Close from '@spectrum-icons/workflow/Close';
 import Document from '@spectrum-icons/workflow/Document';
 import FileCode from '@spectrum-icons/workflow/FileCode';
@@ -245,16 +246,24 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
           <Content height="100%">
             <Flex height="100%" direction="column">
               <Flex width="100%" justifyContent="space-between">
-                <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
+                <Breadcrumbs
+                    marginTop="size-100"
+                    showRoot
+                    size="M"
+                    isDisabled={isLoading}
+                    onAction={(p) => setLoadingPath(p.toString())}
+                >
                   {(() => {
-                    const relativePath = loadingPath.startsWith(root) ? loadingPath.slice(root.length) : loadingPath;
-                    const segments = relativePath.split('/').filter(Boolean);
                     const crumbs = [<Item key={root}>{<Home size="S" />}</Item>];
-                    let pathSoFar = root.endsWith('/') ? root.slice(0, -1) : root;
-                    segments.forEach((segment) => {
-                      pathSoFar += '/' + segment;
-                      crumbs.push(<Item key={pathSoFar}>{segment}</Item>);
-                    });
+                    if (loadingPath.startsWith(root) && loadingPath.length > root.length) {
+                      const relativePath = loadingPath.slice(root.length).replace(/^\/+/, '');
+                      const segments = relativePath.split('/').filter(Boolean);
+                      let pathSoFar = root.endsWith('/') ? root.slice(0, -1) : root;
+                      segments.forEach((segment) => {
+                        pathSoFar += '/' + segment;
+                        crumbs.push(<Item key={pathSoFar}><Text>{segment}</Text></Item>);
+                      });
+                    }
                     return crumbs;
                   })()}
                 </Breadcrumbs>
@@ -280,10 +289,24 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
                     )}
                   </ListView>
                 ) : (
-                  <IllustratedMessage>
-                    <NoSearchResults />
-                    <Content>The selected hierarchy resource is empty.<br/>Please navigate to a different location or go back.</Content>
-                  </IllustratedMessage>
+                    <IllustratedMessage>
+                      {value && !value.startsWith(root) ? (
+                          <>
+                            <Unauthorized />
+                            <Content>
+                              Path '{value}' is outside of the base path.<br />
+                            </Content>
+                          </>
+                      ) : (
+                          <>
+                            <NoSearchResults />
+                            <Content>
+                              No children found under current resource.<br />
+                              Please navigate to a different location or go back.
+                            </Content>
+                          </>
+                      )}
+                    </IllustratedMessage>
                 )}
               </LoadingWrapper>
             </Flex>
