@@ -22,17 +22,17 @@ import { Key } from '@react-types/shared';
 import { TextFieldRef } from '@react-types/textfield';
 import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
 import Close from '@spectrum-icons/workflow/Close';
-import Copy from '@spectrum-icons/workflow/Copy';
 import Document from '@spectrum-icons/workflow/Document';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Folder from '@spectrum-icons/workflow/Folder';
 import FolderSearch from '@spectrum-icons/workflow/FolderSearch';
 import Home from '@spectrum-icons/workflow/Home';
 import Project from '@spectrum-icons/workflow/Project';
-import { forwardRef, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { apiRequest } from '../utils/api';
 import { AssistCodeOutput, JCR_CONSTANTS, NodeType } from '../utils/api.types';
 import LoadingWrapper from './LoadingWrapper.tsx';
+import Checkmark from "@spectrum-icons/workflow/Checkmark";
 
 const FOLDER_NODE_TYPES = [NodeType.FOLDER, NodeType.ORDERED_FOLDER, NodeType.SLING_FOLDER, NodeType.CQ_PROJECTS, NodeType.REDIRECT, NodeType.ACL] as const;
 
@@ -50,7 +50,7 @@ interface PathPickerProps {
   onCancel: () => void;
   label?: ReactNode;
   root?: string;
-  confirmButtonLabel?: ReactNode;
+  value?: string;
 }
 
 type PathPickerFieldProps = {
@@ -77,7 +77,7 @@ const getIconForType = (type: string) => {
   }
 };
 
-export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '', confirmButtonLabel = 'Confirm', open }: PathPickerProps) => {
+export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathPickerProps) => {
   const [selectedItemData, setSelectedItemData] = useState<PathItem | null>(null);
   const [loadingPath, setLoadingPath] = useState<string>(root);
   const [loadedPath, setLoadedPath] = useState<string>(root);
@@ -85,10 +85,41 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
   const loadedPaths = useRef<Record<string, PathItem[]>>({});
 
   useEffect(() => {
-    const fetchItems = async () => {
+    if (open && value) {
+      const lastSlash = value.lastIndexOf('/');
+      let parentPath: string;
+      if (lastSlash <= 0) {
+        parentPath = root || '/';
+      } else {
+        parentPath = value.substring(0, lastSlash);
+      }
+      setLoadingPath(parentPath);
+      setSelectedItemData({
+        id: value,
+        name: value.split('/').pop() || value,
+        path: value,
+        type: '', // type will be set after loading
+      });
+    }
+    if (open && !value) {
+      setLoadingPath(root);
       setSelectedItemData(null);
+    }
+  }, [open, value, root]);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      setSelectedItemData((prev) => {
+        if (!prev || prev.path !== value) {
+          return null;
+        }
+        return prev;
+      });
       if (loadedPaths.current[loadingPath]) {
         setLoadedPath(loadingPath);
+        if (selectedItemData && loadedPaths.current[loadingPath].some((i) => i.id === selectedItemData.id)) {
+          setSelectedItemData(selectedItemData);
+        }
         return;
       }
 
@@ -139,6 +170,10 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
               return a.name.localeCompare(b.name);
             });
           setLoadedPath(loadingPath);
+
+          if (selectedItemData && loadedPaths.current[loadingPath].some((i) => i.id === selectedItemData.id)) {
+            setSelectedItemData(selectedItemData);
+          }
         }
       } catch (error) {
         console.error('Error fetching paths:', error);
@@ -148,7 +183,7 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
     };
 
     fetchItems();
-  }, [loadingPath]);
+  }, [loadingPath, selectedItemData, value]);
 
   const handleItemClick = useCallback((item: PathItem) => {
     setLoadingPath(item.path);
@@ -192,7 +227,7 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
         <Dialog height="60vh">
           <Heading>
             <Flex gap="size-50" alignItems="center">
-              <Text>{label}</Text>
+              <Text>Resource path</Text>
               <ContextualHelp variant="help">
                 <Heading>Repository browsing</Heading>
                 <Content>
@@ -247,7 +282,7 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
                 ) : (
                   <IllustratedMessage>
                     <NoSearchResults />
-                    <Content>The selected hierarchy resource is empty. Please navigate to a different location or go back.</Content>
+                    <Content>The selected hierarchy resource is empty.<br/>Please navigate to a different location or go back.</Content>
                   </IllustratedMessage>
                 )}
               </LoadingWrapper>
@@ -255,11 +290,12 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
           </Content>
           <ButtonGroup>
             <Button variant="secondary" onPress={onCancel} isDisabled={isLoading}>
-              <Close size="XS" marginEnd="size-100" />
-              Cancel
+              <Close size="XS"/>
+              <Text>Cancel</Text>
             </Button>
             <Button variant="accent" onPress={handleConfirm} isDisabled={!selectedItemData || isLoading}>
-              {confirmButtonLabel}
+              <Checkmark size="XS" />
+              <Text>Select</Text>
             </Button>
           </ButtonGroup>
         </Dialog>
@@ -268,7 +304,7 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
   );
 };
 
-const PathField = forwardRef<TextFieldRef, PathPickerFieldProps>(({ onSelect, root, ...props }, ref) => {
+const PathField = forwardRef<TextFieldRef, PathPickerFieldProps>(({ onSelect, root, value, ...props }, ref) => {
   const [pathPickerOpened, setPathPickerOpened] = useState(false);
 
   const handleSelectPath = (path: string) => {
@@ -276,25 +312,18 @@ const PathField = forwardRef<TextFieldRef, PathPickerFieldProps>(({ onSelect, ro
     setPathPickerOpened(false);
   };
 
-  console.log('Path field props', props, 'Root:', root);
-
   return (
     <Flex gap="size-100">
-      <TextField ref={ref} flexGrow={1} {...props} />
+      <TextField ref={ref} flexGrow={1} value={value} {...props} />
       <Button variant="secondary" style="outline" onPress={() => setPathPickerOpened(true)} aria-label="Pick a path" marginTop="size-300">
         <FolderSearch />
       </Button>
       <PathPicker
         onSelect={handleSelectPath}
         onCancel={() => setPathPickerOpened(false)}
-        confirmButtonLabel={
-          <>
-            <Copy marginEnd="size-100" />
-            Select
-          </>
-        }
         root={root}
         open={pathPickerOpened}
+        value={value}
       />
     </Flex>
   );
