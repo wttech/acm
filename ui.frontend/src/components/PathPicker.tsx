@@ -87,26 +87,26 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
   const isOutsideRoot = !!value && !value.startsWith(root);
 
   useEffect(() => {
-    if (open && value) {
-      const lastSlash = value.lastIndexOf('/');
-      let parentPath: string;
-      if (lastSlash <= 0) {
-        parentPath = root || '/';
-      } else {
-        parentPath = value.substring(0, lastSlash);
-      }
-      setLoadingPath(parentPath);
-      setSelectedItemData({
-        id: value,
-        name: value.split('/').pop() || value,
-        path: value,
-        type: '', // type will be set after loading
-      });
+    if (!open) {
+      return;
     }
-    if (open && !value) {
+    const normalize = (p: string = '') => p.replace(/\/+$/, '');
+    const valueNormalized = normalize(value);
+    const rootNormalized = normalize(root);
+    if (!value || valueNormalized === rootNormalized) {
       setLoadingPath(root);
       setSelectedItemData(null);
+      return;
     }
+    const valueSlashLast = value.lastIndexOf('/');
+    const loadingPathInitial = valueSlashLast <= 0 ? root || '/' : value.substring(0, valueSlashLast);
+    setLoadingPath(loadingPathInitial);
+    setSelectedItemData({
+      id: value,
+      name: value.split('/').pop() || value,
+      path: value,
+      type: '', // type will be set after loading
+    });
   }, [open, value, root]);
 
   useEffect(() => {
