@@ -246,27 +246,25 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
           </Header>
           <Content height="100%">
             <Flex height="100%" direction="column">
-              {!isOutsideRoot && (
-                <Flex width="100%" justifyContent="space-between">
-                  <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
-                    {(() => {
-                      const crumbs = [<Item key={root}>{<Home size="S" />}</Item>];
-                      const relativePath = loadingPath.slice(root.length).replace(/^\/+/, '');
-                      const segments = relativePath.split('/').filter(Boolean);
-                      let pathSoFar = root.endsWith('/') ? root.slice(0, -1) : root;
-                      segments.forEach((segment) => {
-                        pathSoFar += '/' + segment;
-                        crumbs.push(
-                          <Item key={pathSoFar}>
-                            <Text>{segment}</Text>
-                          </Item>,
-                        );
-                      });
-                      return crumbs;
-                    })()}
-                  </Breadcrumbs>
-                </Flex>
-              )}
+              <Flex width="100%" justifyContent="space-between">
+                <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
+                  {(() => {
+                    const crumbs = [<Item key={root}>{<Home size="S" />}</Item>];
+                    const relativePath = loadingPath.slice(root.length).replace(/^\/+/, '');
+                    const segments = relativePath.split('/').filter(Boolean);
+                    let pathSoFar = root.endsWith('/') ? root.slice(0, -1) : root;
+                    segments.forEach((segment) => {
+                      pathSoFar += '/' + segment;
+                      crumbs.push(
+                        <Item key={pathSoFar}>
+                          <Text>{segment}</Text>
+                        </Item>,
+                      );
+                    });
+                    return crumbs;
+                  })()}
+                </Breadcrumbs>
+              </Flex>
               <LoadingWrapper isRefreshing={isLoading}>
                 {loadedPaths.current[loadedPath]?.length || isLoading ? (
                   <ListView
@@ -317,7 +315,7 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
               <Close size="XS" />
               <Text>Cancel</Text>
             </Button>
-            <Button variant="accent" onPress={handleConfirm} isDisabled={!selectedItemData || isLoading || isOutsideRoot}>
+            <Button variant="accent" onPress={handleConfirm} isDisabled={!selectedItemData || isLoading}>
               <Checkmark size="XS" />
               <Text>Select</Text>
             </Button>
