@@ -84,6 +84,7 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
   const [loadedPath, setLoadedPath] = useState<string>(root);
   const [isLoading, setIsLoading] = useState(false);
   const loadedPaths = useRef<Record<string, PathItem[]>>({});
+  const isOutsideRoot = !!value && !value.startsWith(root);
 
   useEffect(() => {
     if (open && value) {
@@ -290,7 +291,7 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
                   </ListView>
                 ) : (
                     <IllustratedMessage>
-                      {value && !value.startsWith(root) ? (
+                      {isOutsideRoot ? (
                           <>
                             <Unauthorized />
                             <Content>
@@ -316,7 +317,7 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
               <Close size="XS"/>
               <Text>Cancel</Text>
             </Button>
-            <Button variant="accent" onPress={handleConfirm} isDisabled={!selectedItemData || isLoading}>
+            <Button variant="accent" onPress={handleConfirm} isDisabled={!selectedItemData || isLoading || isOutsideRoot}>
               <Checkmark size="XS" />
               <Text>Select</Text>
             </Button>
