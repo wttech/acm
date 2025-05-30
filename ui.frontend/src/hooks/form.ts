@@ -65,8 +65,8 @@ function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): Va
   } else if (isPathArgument(arg) && typeof value === 'string') {
     if (!value.startsWith('/')) {
       return `Path must start with '/'`;
-    } else if (arg.root && !value.startsWith(`${arg.root}/`)) {
-      return `Path must start with '${arg.root}/'`;
+    } else if (arg.root && !value.startsWith(`${arg.root}`)) {
+      return `Path must start with '${arg.root}'`;
     }
   } else if (isDateTimeArgument(arg) && typeof value === 'string') {
     if (arg.type === 'DATE') {

@@ -99,7 +99,7 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
       return;
     }
     const valueSlashLast = value.lastIndexOf('/');
-    const loadingPathInitial = valueSlashLast <= 0 ? root || '/' : value.substring(0, valueSlashLast);
+    const loadingPathInitial = (isOutsideRoot || valueSlashLast <= 0) ? root || '/' : value.substring(0, valueSlashLast);
     setLoadingPath(loadingPathInitial);
     setSelectedItemData({
       id: value,
