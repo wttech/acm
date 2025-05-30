@@ -90,9 +90,11 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   maxValue={arg.max !== null ? Dates.toCalendarDate(arg.max) : undefined}
                   onChange={(dateValue) => field.onChange(dateValue?.toString())}
                   label={label}
+                  {...(fieldState.error && {
+                    validationState: 'invalid',
+                    errorMessage: fieldState.error.message,
+                  })}
                   description={description}
-                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
                   aria-label={`Argument '${arg.name}'`}
                 />
               ) : arg.type === 'TIME' ? (
@@ -103,9 +105,11 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   maxValue={arg.max !== null ? Dates.toTime(arg.max) : undefined}
                   onChange={(timeValue) => field.onChange(timeValue?.toString())}
                   label={label}
+                  {...(fieldState.error && {
+                    validationState: 'invalid',
+                    errorMessage: fieldState.error.message,
+                  })}
                   description={description}
-                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
                   aria-label={`Argument '${arg.name}'`}
                 />
               ) : (
@@ -117,9 +121,11 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   onChange={(dateValue) => field.onChange(dateValue?.toString())}
                   granularity="second"
                   label={label}
+                  {...(fieldState.error && {
+                    validationState: 'invalid',
+                    errorMessage: fieldState.error.message,
+                  })}
                   description={description}
-                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
                   aria-label={`Argument '${arg.name}'`}
                 />
               );
@@ -128,17 +134,27 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 <TextField
                   type={arg.display}
                   {...field}
+                  value={field.value ?? ''}
                   label={label}
                   description={description}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  {...(fieldState.error && { validationState: 'invalid' })}
+                  isRequired={arg.required}
                   aria-label={`Argument '${arg.name}'`}
                   width="100%"
                 />
               );
             } else if (isTextArgument(arg)) {
               return arg.language ? (
-                <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                <Field
+                  label={label}
+                  description={description}
+                  width="100%"
+                  {...(fieldState.error && {
+                    validationState: 'invalid',
+                    errorMessage: fieldState.error.message,
+                  })}
+                >
                   <div>
                     <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
                       <Editor aria-label={`Argument '${arg.name}'`} language={arg.language} theme="vs-dark" height="200px" options={{ scrollBeyondLastLine: false }} value={field.value?.toString() || ''} onChange={field.onChange} />
@@ -146,7 +162,17 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   </div>
                 </Field>
               ) : (
-                <TextArea {...field} label={label} errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'} aria-label={`Argument '${arg.name}'`} width="100%" />
+                <TextArea
+                  {...field}
+                  value={field.value ?? ''}
+                  label={label}
+                  {...(fieldState.error && {
+                    validationState: 'invalid',
+                    errorMessage: fieldState.error.message,
+                  })}
+                  aria-label={`Argument '${arg.name}'`}
+                  width="100%"
+                />
               );
             } else if (isSelectArgument(arg)) {
               const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'RADIO' : 'DROPDOWN') : arg.display;
@@ -188,14 +214,18 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               );
             } else if (isMultiSelectArgument(arg)) {
               const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'CHECKBOX' : 'LIST') : arg.display;
+
               return display === 'CHECKBOX' ? (
                 <CheckboxGroup
-                  {...field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  isRequired={arg.required}
                   orientation="horizontal"
                   label={label}
                   description={description}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  isInvalid={!!fieldState.error}
                   aria-label={`Argument '${arg.name}'`}
                 >
                   {Object.entries(arg.options).map(([label, val]) => (
@@ -236,9 +266,12 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   <NumberField
                     {...field}
                     label={label}
+                    {...(fieldState.error && {
+                      validationState: 'invalid',
+                      errorMessage: fieldState.error.message,
+                    })}
+                    isRequired={arg.required}
                     description={description}
-                    errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                    validationState={fieldState.error ? 'invalid' : 'valid'}
                     minValue={arg.min !== null ? arg.min : undefined}
                     maxValue={arg.max !== null ? arg.max : undefined}
                     hideStepper={arg.type === 'DECIMAL'}
@@ -277,13 +310,16 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
             } else if (isPathArgument(arg)) {
               return (
                 <PathField
-                  label={label}
+                  {...field}
                   description={description}
-                  root={arg.root}
+                  label={label}
+                  isRequired={arg.required}
+                  root={arg.rootPath}
                   onSelect={field.onChange}
                   value={field.value ?? ''}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  validationState={fieldState.error ? 'invalid' : 'valid'}
+                  onChange={field.onChange}
+                  {...(fieldState.error && { validationState: 'invalid' })}
                 />
               );
             } else {

@@ -1,14 +1,11 @@
-import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Argument, ArgumentValue, isDateTimeArgument, isNumberArgument } from '../utils/api.types.ts';
+import { Argument, ArgumentValue, isDateTimeArgument, isNumberArgument, isPathArgument } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates';
 
 type ValidationResult = string | true | undefined;
 
 export const useArgumentInput = (arg: Argument<ArgumentValue>) => {
   const { control, getValues } = useFormContext();
-
-  useCrossFieldValidation(arg.name);
 
   const controllerRules = {
     validate: (value: ArgumentValue): ValidationResult => {
@@ -27,22 +24,16 @@ export const useArgumentInput = (arg: Argument<ArgumentValue>) => {
   return { control, controllerRules };
 };
 
-export const useCrossFieldValidation = (currentField: string) => {
-  const { watch, trigger, getValues } = useFormContext();
-
-  useEffect(() => {
-    const subscription = watch((value, { name }) => {
-      if (name === currentField) {
-        const otherFields = Object.keys(getValues()).filter((field) => field !== currentField);
-        trigger(otherFields);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, trigger, getValues, currentField]);
-};
-
 function isValueEmpty(value: ArgumentValue): boolean {
-  return value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value)) || (typeof value == 'boolean' && !value);
+  return (
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    (typeof value === 'number' && isNaN(value)) ||
+    (typeof value == 'boolean' && !value) ||
+    (Array.isArray(value) && value.length === 0) ||
+    (typeof value === 'object' && Object.keys(value).length === 0)
+  );
 }
 
 function isValueAvailable(value: ArgumentValue): boolean {
@@ -70,6 +61,22 @@ function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): Va
     }
     if (arg.step && (value - (arg.min || 0)) % arg.step !== 0) {
       return `Value must be a multiple of '${arg.step}'`;
+    }
+  } else if (isPathArgument(arg) && typeof value === 'string') {
+    if (!value.startsWith('/')) {
+      return `Path must start with '/'`;
+    } else if (value.includes('//')) {
+      return `Path must not contain consecutive slashes '//'`;
+    } else if (value.endsWith(' ')) {
+      return `Path must not end with a space`;
+    } else if (arg.rootPath) {
+      if (value !== '/' && value.endsWith('/')) {
+        return `Path must not end with '/'`;
+      } else if (arg.rootInclusive && !value.startsWith(arg.rootPath)) {
+        return `Path must start with '${arg.rootPath}'`;
+      } else if (!arg.rootInclusive && !value.startsWith(`${arg.rootPath}/`)) {
+        return `Path must start with '${arg.rootPath}/'`;
+      }
     }
   } else if (isDateTimeArgument(arg) && typeof value === 'string') {
     if (arg.type === 'DATE') {

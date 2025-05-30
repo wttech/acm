@@ -222,12 +222,12 @@ public class Arguments implements Serializable {
         add(argument);
     }
 
-    public void path(String path) {
-        text(path, null);
+    public void path(String name) {
+        text(name, null);
     }
 
-    public void path(String path, Closure<PathArgument> options) {
-        PathArgument argument = new PathArgument(path);
+    public void path(String name, Closure<PathArgument> options) {
+        PathArgument argument = new PathArgument(name);
         GroovyUtils.with(argument, options);
         add(argument);
     }

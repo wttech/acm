@@ -10,6 +10,6 @@ documentation: |
   
   For example:
   ```groovy
-  args.multiSelect("foo") { label = "Foo"; options = ["bar": "Bar", "baz": "Baz"]; value = ["bar"] }
+  args.multiSelect("foo") { label = "Foo"; options = ["bar": "Bar", "baz": "Baz"]; value = ["Bar"] }
   args.multiSelect("foo") { options = ["bar", "baz"]; value = ["bar"] }
   ```

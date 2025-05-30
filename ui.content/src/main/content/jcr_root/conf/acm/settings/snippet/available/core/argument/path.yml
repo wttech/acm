@@ -7,7 +7,8 @@ documentation: |
 
   For example:
   ```groovy
-  args.path("contentPath") { label = "Content Path" }
-  args.path("assetPath") { label = "Asset Path"; root = "/content/dam" }
-  args.path("templatePath") { label = "Template Path"; root = "/conf/acme/settings/wcm/templates" }
+  args.path("contentPath")
+  args.path("thumbnailPath") { rootPathExclusive = "/content/dam"; description = "Asset to use as page thumbnail" }
+  args.path("templatePath") { rootPathExclusive = "/conf/acme/settings/wcm/templates"; description = "Template to use for page creation" }
+  args.path("pagePath") { rootPathInclusive = "/content"; description = "Pages to export" }
   ```

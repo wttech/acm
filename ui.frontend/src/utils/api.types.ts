@@ -94,7 +94,8 @@ export type MultiSelectArgument = Argument<ArgumentValue> & {
 };
 
 export type PathArgument = Argument<ArgumentValue> & {
-  root: string;
+  rootPath: string;
+  rootInclusive: boolean;
 };
 
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is StringArgument {

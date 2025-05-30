@@ -58,7 +58,7 @@ function registerWordCompletion(instance: Monaco) {
 }
 
 function registerResourceCompletion(instance: Monaco) {
-  instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+  instance.languages.registerCompletionItemProvider('*', {
     triggerCharacters: ['/'],
 
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
