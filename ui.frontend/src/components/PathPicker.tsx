@@ -22,6 +22,7 @@ import { Key } from '@react-types/shared';
 import { TextFieldRef } from '@react-types/textfield';
 import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
 import Unauthorized from '@spectrum-icons/illustrations/Unauthorized';
+import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Close from '@spectrum-icons/workflow/Close';
 import Document from '@spectrum-icons/workflow/Document';
 import FileCode from '@spectrum-icons/workflow/FileCode';
@@ -29,11 +30,10 @@ import Folder from '@spectrum-icons/workflow/Folder';
 import FolderSearch from '@spectrum-icons/workflow/FolderSearch';
 import Home from '@spectrum-icons/workflow/Home';
 import Project from '@spectrum-icons/workflow/Project';
-import React, { forwardRef, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { apiRequest } from '../utils/api';
 import { AssistCodeOutput, JCR_CONSTANTS, NodeType } from '../utils/api.types';
 import LoadingWrapper from './LoadingWrapper.tsx';
-import Checkmark from "@spectrum-icons/workflow/Checkmark";
 
 const FOLDER_NODE_TYPES = [NodeType.FOLDER, NodeType.ORDERED_FOLDER, NodeType.SLING_FOLDER, NodeType.CQ_PROJECTS, NodeType.REDIRECT, NodeType.ACL] as const;
 
@@ -246,29 +246,27 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
           </Header>
           <Content height="100%">
             <Flex height="100%" direction="column">
-              <Flex width="100%" justifyContent="space-between">
-                <Breadcrumbs
-                    marginTop="size-100"
-                    showRoot
-                    size="M"
-                    isDisabled={isLoading}
-                    onAction={(p) => setLoadingPath(p.toString())}
-                >
-                  {(() => {
-                    const crumbs = [<Item key={root}>{<Home size="S" />}</Item>];
-                    if (loadingPath.startsWith(root) && loadingPath.length > root.length) {
+              {!isOutsideRoot && (
+                <Flex width="100%" justifyContent="space-between">
+                  <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
+                    {(() => {
+                      const crumbs = [<Item key={root}>{<Home size="S" />}</Item>];
                       const relativePath = loadingPath.slice(root.length).replace(/^\/+/, '');
                       const segments = relativePath.split('/').filter(Boolean);
                       let pathSoFar = root.endsWith('/') ? root.slice(0, -1) : root;
                       segments.forEach((segment) => {
                         pathSoFar += '/' + segment;
-                        crumbs.push(<Item key={pathSoFar}><Text>{segment}</Text></Item>);
+                        crumbs.push(
+                          <Item key={pathSoFar}>
+                            <Text>{segment}</Text>
+                          </Item>,
+                        );
                       });
-                    }
-                    return crumbs;
-                  })()}
-                </Breadcrumbs>
-              </Flex>
+                      return crumbs;
+                    })()}
+                  </Breadcrumbs>
+                </Flex>
+              )}
               <LoadingWrapper isRefreshing={isLoading}>
                 {loadedPaths.current[loadedPath]?.length || isLoading ? (
                   <ListView
@@ -290,31 +288,33 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
                     )}
                   </ListView>
                 ) : (
-                    <IllustratedMessage>
-                      {isOutsideRoot ? (
-                          <>
-                            <Unauthorized />
-                            <Content>
-                              Path '{value}' is outside of the base path.<br />
-                            </Content>
-                          </>
-                      ) : (
-                          <>
-                            <NoSearchResults />
-                            <Content>
-                              No children found under current resource.<br />
-                              Please navigate to a different location or go back.
-                            </Content>
-                          </>
-                      )}
-                    </IllustratedMessage>
+                  <IllustratedMessage>
+                    {isOutsideRoot ? (
+                      <>
+                        <Unauthorized />
+                        <Content>
+                          Path '{value}' is outside of the base path.
+                          <br />
+                        </Content>
+                      </>
+                    ) : (
+                      <>
+                        <NoSearchResults />
+                        <Content>
+                          No children found under current resource.
+                          <br />
+                          Please navigate to a different location or go back.
+                        </Content>
+                      </>
+                    )}
+                  </IllustratedMessage>
                 )}
               </LoadingWrapper>
             </Flex>
           </Content>
           <ButtonGroup>
             <Button variant="secondary" onPress={onCancel} isDisabled={isLoading}>
-              <Close size="XS"/>
+              <Close size="XS" />
               <Text>Cancel</Text>
             </Button>
             <Button variant="accent" onPress={handleConfirm} isDisabled={!selectedItemData || isLoading || isOutsideRoot}>
@@ -342,13 +342,7 @@ const PathField = forwardRef<TextFieldRef, PathPickerFieldProps>(({ onSelect, ro
       <Button variant="secondary" style="outline" onPress={() => setPathPickerOpened(true)} aria-label="Pick a path" marginTop="size-300">
         <FolderSearch />
       </Button>
-      <PathPicker
-        onSelect={handleSelectPath}
-        onCancel={() => setPathPickerOpened(false)}
-        root={root}
-        open={pathPickerOpened}
-        value={value}
-      />
+      <PathPicker onSelect={handleSelectPath} onCancel={() => setPathPickerOpened(false)} root={root} open={pathPickerOpened} value={value} />
     </Flex>
   );
 });

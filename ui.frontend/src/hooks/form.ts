@@ -1,5 +1,5 @@
 import { useFormContext } from 'react-hook-form';
-import { Argument, ArgumentValue, isDateTimeArgument, isNumberArgument } from '../utils/api.types.ts';
+import { Argument, ArgumentValue, isDateTimeArgument, isNumberArgument, isPathArgument } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates';
 
 type ValidationResult = string | true | undefined;
@@ -61,6 +61,12 @@ function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): Va
     }
     if (arg.step && (value - (arg.min || 0)) % arg.step !== 0) {
       return `Value must be a multiple of '${arg.step}'`;
+    }
+  } else if (isPathArgument(arg) && typeof value === 'string') {
+    if (!value.startsWith('/')) {
+      return `Path must start with '/'`;
+    } else if (arg.root && !value.startsWith(`${arg.root}/`)) {
+      return `Path must start with '${arg.root}/'`;
     }
   } else if (isDateTimeArgument(arg) && typeof value === 'string') {
     if (arg.type === 'DATE') {
