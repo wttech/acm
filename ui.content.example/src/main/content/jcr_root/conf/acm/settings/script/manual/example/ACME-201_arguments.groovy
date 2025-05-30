@@ -22,7 +22,7 @@ void describeRun() {
     args.dateTime("lastVetVisit") { label = "Last Vet Visit"; value = "2025-05-01T10:10:10"; group = "Details" }
     args.string("secretCode") { label = "Secret Code"; value = "1234"; password(); group = "Security" }
     args.color("favoriteColor") { label = "Favorite Color"; value = "#ffcc00"; group = "Preferences" }
-    args.path("profilePicture") { label = "Profile Picture"; group = "Media"; root = "/content/dam" }
+    args.path("profilePicture") { label = "Profile Picture"; group = "Media"; rootPathExclusive = "/content/dam" }
 }
 
 boolean canRun() {

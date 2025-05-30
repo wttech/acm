@@ -46,18 +46,18 @@ interface PathItem {
 }
 
 interface PathPickerProps {
+  root: string;
   open?: boolean;
   onSelect: (path: string) => void;
   onCancel: () => void;
   label?: ReactNode;
-  root?: string;
   value?: string;
 }
 
 type PathPickerFieldProps = {
+  root: string;
   onSelect: (value: string) => void;
   value?: string;
-  root?: string;
   label?: ReactNode;
 } & SpectrumTextFieldProps;
 
@@ -78,7 +78,7 @@ const getIconForType = (type: string) => {
   }
 };
 
-export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathPickerProps) => {
+export const PathPicker = ({ root, onSelect, onCancel, open, value }: PathPickerProps) => {
   const [selectedItemData, setSelectedItemData] = useState<PathItem | null>(null);
   const [loadingPath, setLoadingPath] = useState<string>(root);
   const [loadedPath, setLoadedPath] = useState<string>(root);
@@ -99,7 +99,7 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
       return;
     }
     const valueSlashLast = value.lastIndexOf('/');
-    const loadingPathInitial = (isOutsideRoot || valueSlashLast <= 0) ? root || '/' : value.substring(0, valueSlashLast);
+    const loadingPathInitial = isOutsideRoot || valueSlashLast <= 0 ? root || '/' : value.substring(0, valueSlashLast);
     setLoadingPath(loadingPathInitial);
     setSelectedItemData({
       id: value,
@@ -326,7 +326,7 @@ export const PathPicker = ({ onSelect, onCancel, root = '', open, value }: PathP
   );
 };
 
-const PathField = forwardRef<TextFieldRef, PathPickerFieldProps>(({ onSelect, root, value, ...props }, ref) => {
+const PathField = forwardRef<TextFieldRef, PathPickerFieldProps>(({ root, onSelect, value, ...props }, ref) => {
   const [pathPickerOpened, setPathPickerOpened] = useState(false);
 
   const handleSelectPath = (path: string) => {

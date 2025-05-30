@@ -314,7 +314,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   description={description}
                   label={label}
                   isRequired={arg.required}
-                  root={arg.root}
+                  root={arg.rootPath}
                   onSelect={field.onChange}
                   value={field.value ?? ''}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
