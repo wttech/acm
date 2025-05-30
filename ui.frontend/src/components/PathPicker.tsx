@@ -19,6 +19,7 @@ import {
   TextField,
 } from '@adobe/react-spectrum';
 import { Key } from '@react-types/shared';
+import { TextFieldRef } from '@react-types/textfield';
 import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
 import Close from '@spectrum-icons/workflow/Close';
 import Copy from '@spectrum-icons/workflow/Copy';
@@ -28,18 +29,10 @@ import Folder from '@spectrum-icons/workflow/Folder';
 import FolderSearch from '@spectrum-icons/workflow/FolderSearch';
 import Home from '@spectrum-icons/workflow/Home';
 import Project from '@spectrum-icons/workflow/Project';
-import React, {
-  forwardRef,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react';
+import { forwardRef, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { apiRequest } from '../utils/api';
 import { AssistCodeOutput, JCR_CONSTANTS, NodeType } from '../utils/api.types';
 import LoadingWrapper from './LoadingWrapper.tsx';
-import { TextFieldRef } from '@react-types/textfield';
 
 const FOLDER_NODE_TYPES = [NodeType.FOLDER, NodeType.ORDERED_FOLDER, NodeType.SLING_FOLDER, NodeType.CQ_PROJECTS, NodeType.REDIRECT, NodeType.ACL] as const;
 
@@ -218,18 +211,17 @@ export const PathPicker = ({ onSelect, onCancel, label = 'Select Path', root = '
             <Flex height="100%" direction="column">
               <Flex width="100%" justifyContent="space-between">
                 <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
-                  {loadingPath
-                    .replace(root, '')
-                    .split('/')
-                    .map((p, index) => {
-                      const fullPath = loadingPath
-                        .split('/')
-                        .slice(0, index + 1)
-                        .join('/');
-                      const label = index === 0 ? <Home size="S" /> : p;
-
-                      return <Item key={index === 0 ? root : fullPath}>{label}</Item>;
-                    })}
+                  {(() => {
+                    const relativePath = loadingPath.startsWith(root) ? loadingPath.slice(root.length) : loadingPath;
+                    const segments = relativePath.split('/').filter(Boolean);
+                    const crumbs = [<Item key={root}>{<Home size="S" />}</Item>];
+                    let pathSoFar = root.endsWith('/') ? root.slice(0, -1) : root;
+                    segments.forEach((segment) => {
+                      pathSoFar += '/' + segment;
+                      crumbs.push(<Item key={pathSoFar}>{segment}</Item>);
+                    });
+                    return crumbs;
+                  })()}
                 </Breadcrumbs>
               </Flex>
               <LoadingWrapper isRefreshing={isLoading}>
@@ -283,6 +275,8 @@ const PathField = forwardRef<TextFieldRef, PathPickerFieldProps>(({ onSelect, ro
     onSelect(path);
     setPathPickerOpened(false);
   };
+
+  console.log('Path field props', props, 'Root:', root);
 
   return (
     <Flex gap="size-100">
