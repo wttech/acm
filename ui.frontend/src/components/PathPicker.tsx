@@ -78,13 +78,14 @@ const getIconForType = (type: string) => {
   }
 };
 
+const isOutsideRoot = (value: string | undefined, root: string): boolean => !!value && !value.startsWith(root);
+
 export const PathPicker = ({ root, onSelect, onCancel, open, value }: PathPickerProps) => {
   const [selectedItemData, setSelectedItemData] = useState<PathItem | null>(null);
   const [loadingPath, setLoadingPath] = useState<string>(root);
   const [loadedPath, setLoadedPath] = useState<string>(root);
   const [isLoading, setIsLoading] = useState(false);
   const loadedPaths = useRef<Record<string, PathItem[]>>({});
-  const isOutsideRoot = !!value && !value.startsWith(root);
 
   useEffect(() => {
     if (!open) {
@@ -99,7 +100,7 @@ export const PathPicker = ({ root, onSelect, onCancel, open, value }: PathPicker
       return;
     }
     const valueSlashLast = value.lastIndexOf('/');
-    const loadingPathInitial = isOutsideRoot || valueSlashLast <= 0 ? root || '/' : value.substring(0, valueSlashLast);
+    const loadingPathInitial = isOutsideRoot(value, root) || valueSlashLast <= 0 ? root || '/' : value.substring(0, valueSlashLast);
     setLoadingPath(loadingPathInitial);
     setSelectedItemData({
       id: value,
@@ -247,9 +248,13 @@ export const PathPicker = ({ root, onSelect, onCancel, open, value }: PathPicker
           <Content height="100%">
             <Flex height="100%" direction="column">
               <Flex width="100%" justifyContent="space-between">
-                <Breadcrumbs marginTop="size-100" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
+                <Breadcrumbs marginTop="size-100" width="100%" showRoot size="M" isDisabled={isLoading} onAction={(p) => setLoadingPath(p.toString())}>
                   {(() => {
-                    const crumbs = [<Item key={root}>{<Home size="S" />}</Item>];
+                    const crumbs = [
+                      <Item key={root}>
+                        <Home size="XXS" />
+                      </Item>,
+                    ];
                     const relativePath = loadingPath.slice(root.length).replace(/^\/+/, '');
                     const segments = relativePath.split('/').filter(Boolean);
                     let pathSoFar = root.endsWith('/') ? root.slice(0, -1) : root;
@@ -257,7 +262,7 @@ export const PathPicker = ({ root, onSelect, onCancel, open, value }: PathPicker
                       pathSoFar += '/' + segment;
                       crumbs.push(
                         <Item key={pathSoFar}>
-                          <Text>{segment}</Text>
+                          <Folder size="XXS" /> <Text>{segment}</Text>
                         </Item>,
                       );
                     });
@@ -265,7 +270,7 @@ export const PathPicker = ({ root, onSelect, onCancel, open, value }: PathPicker
                   })()}
                 </Breadcrumbs>
               </Flex>
-              <LoadingWrapper isRefreshing={isLoading}>
+              <LoadingWrapper loading={isLoading}>
                 {loadedPaths.current[loadedPath]?.length || isLoading ? (
                   <ListView
                     aria-label="Path items"
@@ -287,7 +292,7 @@ export const PathPicker = ({ root, onSelect, onCancel, open, value }: PathPicker
                   </ListView>
                 ) : (
                   <IllustratedMessage>
-                    {isOutsideRoot ? (
+                    {isOutsideRoot(value, root) ? (
                       <>
                         <Unauthorized />
                         <Content>
@@ -298,11 +303,7 @@ export const PathPicker = ({ root, onSelect, onCancel, open, value }: PathPicker
                     ) : (
                       <>
                         <NoSearchResults />
-                        <Content>
-                          No children found under current resource.
-                          <br />
-                          Please navigate to a different location or go back.
-                        </Content>
+                        <Content>No children found under current resource.</Content>
                       </>
                     )}
                   </IllustratedMessage>
