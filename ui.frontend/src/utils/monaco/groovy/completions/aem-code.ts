@@ -58,11 +58,12 @@ function registerWordCompletion(instance: Monaco) {
 }
 
 function registerResourceCompletion(instance: Monaco) {
-  instance.languages.registerCompletionItemProvider('*', {
+  instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
     triggerCharacters: ['/'],
 
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
       const path = extractPath(model.getLineContent(position.lineNumber), position);
+
       if (path.length == 0) {
         return { suggestions: [], incomplete: true };
       }
