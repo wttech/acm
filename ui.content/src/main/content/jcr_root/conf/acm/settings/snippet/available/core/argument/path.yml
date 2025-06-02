@@ -1,7 +1,7 @@
 group: Argument
 name: argument_path
 content: |
-  args.path("${1:name}") { label = "${2:label}"; root = "${3:value}" }
+  args.path("${1:name}") { label = "${2:Label}"; root = "${3:value}" }
 documentation: |
   The path picker allows users to browse and select paths from the JCR repository.
 

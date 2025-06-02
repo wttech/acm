@@ -1,7 +1,7 @@
 group: Argument
 name: argument_time
 content: |
-  args.time("${1:name}") { label = "${2:label}"; value = "${3:value}" }
+  args.time("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
 documentation: |
   An argument that represents a time.
   

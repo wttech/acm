@@ -1,7 +1,7 @@
 group: Argument
 name: argument_color
 content: |
-  args.color("${1:name}") { label = "${2:label}"; value = ${3:value} }
+  args.color("${1:name}") { label = "${2:Label}"; value = ${3:value} }
 documentation: |
     An argument that allows to choose a value from color picker.<br>
     Supported formats: `rgba()` (default), `hex()`, `hsl()`, `hsb()`.

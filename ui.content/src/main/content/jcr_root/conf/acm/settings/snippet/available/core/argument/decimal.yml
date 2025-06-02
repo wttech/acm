@@ -1,7 +1,7 @@
 group: Argument
 name: argument_decimal
 content: |
-  args.decimalNumber("${1:name}") { label = "${2:label}"; value = ${3:value} }
+  args.decimalNumber("${1:name}") { label = "${2:Label}"; value = ${3:value} }
 documentation: |
   An argument holding a decimal number value.<br>
   Can be displayed as `input()` or `slider()`.

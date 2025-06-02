@@ -1,7 +1,7 @@
 group: Argument
 name: argument_date
 content: |
-  args.date("${1:name}") { label = "${2:label}"; value = "${3:value}" }
+  args.date("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
 documentation: |
   An argument that represents a date.
   

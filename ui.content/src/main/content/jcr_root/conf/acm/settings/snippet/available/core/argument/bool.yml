@@ -1,7 +1,7 @@
 group: Argument
 name: argument_bool
 content: |
-  args.bool("${1:name}") { label = "${2:label}"; value = ${3:value} }
+  args.bool("${1:name}") { label = "${2:Label}"; value = ${3:value} }
 documentation: |
   An argument that can be either true or false.<br>
   Display mode can be adjusted by using `checkbox()` or `toggle()` methods.
