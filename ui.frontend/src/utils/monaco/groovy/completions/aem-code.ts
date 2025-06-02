@@ -63,6 +63,7 @@ function registerResourceCompletion(instance: Monaco) {
 
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
       const path = extractPath(model.getLineContent(position.lineNumber), position);
+
       if (path.length == 0) {
         return { suggestions: [], incomplete: true };
       }

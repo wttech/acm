@@ -1,25 +1,20 @@
-import { Flex, ProgressCircle, View } from '@adobe/react-spectrum';
+import { Flex, ProgressBar } from '@adobe/react-spectrum';
 import { PropsWithChildren } from 'react';
 
 type LoadingWrapperProps = PropsWithChildren<{
-  isRefreshing?: boolean;
+  loading?: boolean;
 }>;
 
-const LoadingWrapper = ({ isRefreshing, children }: LoadingWrapperProps) => {
-  if (isRefreshing) {
+const LoadingWrapper = ({ loading, children }: LoadingWrapperProps) => {
+  if (loading) {
     return (
-      <View position="relative">
-        <Flex position="absolute" alignItems="center" height="100%" width="100%" justifyContent="center" zIndex={5}>
-          <ProgressCircle isIndeterminate />
-        </Flex>
-        <View backgroundColor="static-white" UNSAFE_style={{ opacity: 0.5 }}>
-          {children}
-        </View>
-      </View>
+      <Flex direction="column" alignItems="center" justifyContent="center" height="100%">
+        <ProgressBar label="Loading…" isIndeterminate />
+      </Flex>
     );
+  } else {
+    return children;
   }
-
-  return children;
 };
 
 export default LoadingWrapper;

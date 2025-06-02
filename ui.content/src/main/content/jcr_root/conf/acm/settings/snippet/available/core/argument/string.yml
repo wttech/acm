@@ -1,7 +1,7 @@
 group: Argument
 name: argument_string
 content: |
-  args.string("${1:name}") { label = "${2:label}"; value = "${3:value}" }
+  args.string("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
 documentation: |
   An argument holding a string value.<br>
   
