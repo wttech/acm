@@ -14,6 +14,7 @@ import { useDebounce } from 'react-use';
 import DateExplained from '../components/DateExplained';
 import ExecutableIdValue from '../components/ExecutableIdValue';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
+import UserInfo from '../components/UserInfo';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
 import { ExecutionFormat, ExecutionOutput, ExecutionQueryParams, ExecutionStatus, ExecutionSummary, isExecutableExplicit } from '../utils/api.types';
@@ -136,7 +137,7 @@ const HistoryPage = () => {
                   <ExecutableIdValue id={execution.executableId} />
                 </Cell>
                 <Cell>
-                  <Text>{execution.userId}</Text>
+                  <UserInfo id={execution.userId}/>
                 </Cell>
                 <Cell>
                   <DateExplained value={execution.startDate} />
