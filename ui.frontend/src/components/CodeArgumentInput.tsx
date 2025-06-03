@@ -177,94 +177,90 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
             } else if (isSelectArgument(arg)) {
               const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'RADIO' : 'DROPDOWN') : arg.display;
               return (
-                  <View key={arg.name} marginBottom="size-200">
-                    {display === 'RADIO' ? (
-                        <RadioGroup
-                            value={field.value}
-                            onChange={field.onChange}
-                            onBlur={field.onBlur}
-                            orientation="horizontal"
-                            label={label}
-                            description={description}
-                            errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                            validationState={fieldState.error ? 'invalid' : 'valid'}
-                            aria-label={`Argument '${arg.name}'`}
-                        >
-                          {Object.entries(arg.options).map(([label, val]) => (
-                              <Radio key={val?.toString()} value={val?.toString() || ''}>
-                                {label}
-                              </Radio>
-                          ))}
-                        </RadioGroup>
-                    ) : (
-                        <Picker
-                            label={label}
-                            description={description}
-                            selectedKey={field.value?.toString() || ''}
-                            onSelectionChange={field.onChange}
-                            onBlur={field.onBlur}
-                            errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                            validationState={fieldState.error ? 'invalid' : 'valid'}
-                            aria-label={`Argument '${arg.name}'`}
-                        >
-                          {Object.entries(arg.options).map(([label, val]) => (
-                              <Item key={val?.toString()}>{label}</Item>
-                          ))}
-                        </Picker>
-                    )}
-                  </View>
+                <View key={arg.name} marginBottom="size-200">
+                  {display === 'RADIO' ? (
+                    <RadioGroup
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      orientation="horizontal"
+                      label={label}
+                      description={description}
+                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                      validationState={fieldState.error ? 'invalid' : 'valid'}
+                      aria-label={`Argument '${arg.name}'`}
+                    >
+                      {Object.entries(arg.options).map(([label, val]) => (
+                        <Radio key={val?.toString()} value={val?.toString() || ''}>
+                          {label}
+                        </Radio>
+                      ))}
+                    </RadioGroup>
+                  ) : (
+                    <Picker
+                      label={label}
+                      description={description}
+                      selectedKey={field.value?.toString() || ''}
+                      onSelectionChange={field.onChange}
+                      onBlur={field.onBlur}
+                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                      validationState={fieldState.error ? 'invalid' : 'valid'}
+                      aria-label={`Argument '${arg.name}'`}
+                    >
+                      {Object.entries(arg.options).map(([label, val]) => (
+                        <Item key={val?.toString()}>{label}</Item>
+                      ))}
+                    </Picker>
+                  )}
+                </View>
               );
             } else if (isMultiSelectArgument(arg)) {
               const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'CHECKBOX' : 'LIST') : arg.display;
 
               return display === 'CHECKBOX' ? (
-                  <CheckboxGroup
-                      value={field.value ?? []}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      isRequired={arg.required}
-                      orientation="horizontal"
-                      label={label}
-                      description={description}
-                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                      isInvalid={!!fieldState.error}
-                      aria-label={`Argument '${arg.name}'`}
-                  >
-                    {Object.entries(arg.options).map(([label, val]) => (
-                        <Checkbox key={val?.toString()} value={val?.toString() || ''}>
-                          {label}
-                        </Checkbox>
-                    ))}
-                  </CheckboxGroup>
+                <CheckboxGroup
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  isRequired={arg.required}
+                  orientation="horizontal"
+                  label={label}
+                  description={description}
+                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                  isInvalid={!!fieldState.error}
+                  aria-label={`Argument '${arg.name}'`}
+                >
+                  {Object.entries(arg.options).map(([label, val]) => (
+                    <Checkbox key={val?.toString()} value={val?.toString() || ''}>
+                      {label}
+                    </Checkbox>
+                  ))}
+                </CheckboxGroup>
               ) : (
-                  <Field
-                      label={label}
-                      description={description}
-                      width="100%"
-                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                      validationState={fieldState.error ? 'invalid' : 'valid'}
-                  >
-                    <div>
-                      <ListView
-                          maxHeight="size-1600"
-                          selectionMode="multiple"
-                          selectedKeys={field.value as string[]}
-                          onSelectionChange={(val) => field.onChange(Array.from(val as Set<string>))}
-                          aria-label={`Argument '${arg.name}'`}
-                      >
-                        {Object.entries(arg.options).map(([label, val]) => (
-                            <Item key={val?.toString()}>{label}</Item>
-                        ))}
-                      </ListView>
-                    </div>
-                  </Field>
+                <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                  <div>
+                    <ListView maxHeight="size-1600" selectionMode="multiple" selectedKeys={field.value as string[]} onSelectionChange={(val) => field.onChange(Array.from(val as Set<string>))} aria-label={`Argument '${arg.name}'`}>
+                      {Object.entries(arg.options).map(([label, val]) => (
+                        <Item key={val?.toString()}>{label}</Item>
+                      ))}
+                    </ListView>
+                  </div>
+                </Field>
               );
             } else if (isNumberArgument(arg)) {
               if (arg.display === 'SLIDER') {
                 return (
                   <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                     <div>
-                      <Slider {...field} label={label} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                      <Slider
+                        value={typeof field.value === 'number' ? field.value : (arg.value ?? 0)}
+                        onChange={field.onChange}
+                        label={label}
+                        minValue={arg.min !== null ? arg.min : 0}
+                        maxValue={arg.max !== null ? arg.max : 100}
+                        step={arg.step ? arg.step : 1}
+                        aria-label={`Argument '${arg.name}'`}
+                      />
                     </div>
                   </Field>
                 );
@@ -291,13 +287,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <ColorPicker
-                      {...field}
-                      label={label}
-                      aria-label={`Argument '${arg.name}'`}
-                      value={field.value ? parseColor(field.value) : ''}
-                      onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}
-                    >
+                    <ColorPicker label={label} aria-label={`Argument '${arg.name}'`} value={field.value ? parseColor(field.value) : undefined} onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}>
                       <ColorEditor hideAlphaChannel={arg.format !== 'RGBA'} />
                       <Button onPress={() => field.onChange('')} width={'100%'} marginTop={'size-200'} variant={'secondary'}>
                         Clear
@@ -310,23 +300,28 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <RangeSlider {...field} label={label} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                    <RangeSlider
+                        {...field}
+                        label={label}
+                        minValue={arg.min !== null ? arg.min : 0}
+                        maxValue={arg.max !== null ? arg.max : 100}
+                        step={arg.step ? arg.step : 1}
+                        aria-label={`Argument '${arg.name}'`}
+                    />
                   </div>
                 </Field>
               );
             } else if (isPathArgument(arg)) {
               return (
                 <PathField
-                  {...field}
+                  value={field.value ?? ''}
+                  onSelect={field.onChange}
                   description={description}
                   label={label}
                   isRequired={arg.required}
                   root={arg.rootPath}
-                  onSelect={field.onChange}
-                  value={field.value ?? ''}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  onChange={field.onChange}
-                  {...(fieldState.error && { validationState: 'invalid' })}
+                  validationState={fieldState.error ? 'invalid' : 'valid'}
                 />
               );
             } else {
