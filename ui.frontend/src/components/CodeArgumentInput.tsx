@@ -141,7 +141,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   {...(fieldState.error && { validationState: 'invalid' })}
                   isRequired={arg.required}
                   aria-label={`Argument '${arg.name}'`}
-                  width="100%"
+                  width={arg.display !== 'PASSWORD' ? '100%' : undefined}
                 />
               );
             } else if (isTextArgument(arg)) {
