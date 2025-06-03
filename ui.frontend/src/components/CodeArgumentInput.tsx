@@ -218,41 +218,46 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'CHECKBOX' : 'LIST') : arg.display;
 
               return display === 'CHECKBOX' ? (
-                <CheckboxGroup
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  isRequired={arg.required}
-                  orientation="horizontal"
-                  label={label}
-                  description={description}
-                  errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  isInvalid={!!fieldState.error}
-                  aria-label={`Argument '${arg.name}'`}
-                >
-                  {Object.entries(arg.options).map(([label, val]) => (
-                    <Checkbox key={val?.toString()} value={val?.toString() || ''}>
-                      {label}
-                    </Checkbox>
-                  ))}
-                </CheckboxGroup>
-              ) : (
-                <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
-                  <div>
-                    <ListView
-                      {...field}
-                      maxHeight="size-1600"
-                      selectionMode="multiple"
-                      selectedKeys={field.value as string[]}
-                      onSelectionChange={(val) => field.onChange(Array.from(val as Set<string>))}
+                  <CheckboxGroup
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      isRequired={arg.required}
+                      orientation="horizontal"
+                      label={label}
+                      description={description}
+                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                      isInvalid={!!fieldState.error}
                       aria-label={`Argument '${arg.name}'`}
-                    >
-                      {Object.entries(arg.options).map(([label, val]) => (
-                        <Item key={val?.toString()}>{label}</Item>
-                      ))}
-                    </ListView>
-                  </div>
-                </Field>
+                  >
+                    {Object.entries(arg.options).map(([label, val]) => (
+                        <Checkbox key={val?.toString()} value={val?.toString() || ''}>
+                          {label}
+                        </Checkbox>
+                    ))}
+                  </CheckboxGroup>
+              ) : (
+                  <Field
+                      label={label}
+                      description={description}
+                      width="100%"
+                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                      validationState={fieldState.error ? 'invalid' : 'valid'}
+                  >
+                    <div>
+                      <ListView
+                          maxHeight="size-1600"
+                          selectionMode="multiple"
+                          selectedKeys={field.value as string[]}
+                          onSelectionChange={(val) => field.onChange(Array.from(val as Set<string>))}
+                          aria-label={`Argument '${arg.name}'`}
+                      >
+                        {Object.entries(arg.options).map(([label, val]) => (
+                            <Item key={val?.toString()}>{label}</Item>
+                        ))}
+                      </ListView>
+                    </div>
+                  </Field>
               );
             } else if (isNumberArgument(arg)) {
               if (arg.display === 'SLIDER') {
