@@ -177,40 +177,42 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
             } else if (isSelectArgument(arg)) {
               const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'RADIO' : 'DROPDOWN') : arg.display;
               return (
-                <View key={arg.name} marginBottom="size-200">
-                  {display === 'RADIO' ? (
-                    <RadioGroup
-                      {...field}
-                      orientation="horizontal"
-                      label={label}
-                      description={description}
-                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                      validationState={fieldState.error ? 'invalid' : 'valid'}
-                      aria-label={`Argument '${arg.name}'`}
-                    >
-                      {Object.entries(arg.options).map(([label, val]) => (
-                        <Radio key={val?.toString()} value={val?.toString() || ''}>
-                          {label}
-                        </Radio>
-                      ))}
-                    </RadioGroup>
-                  ) : (
-                    <Picker
-                      {...field}
-                      label={label}
-                      description={description}
-                      selectedKey={field.value?.toString() || ''}
-                      onSelectionChange={field.onChange}
-                      errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                      validationState={fieldState.error ? 'invalid' : 'valid'}
-                      aria-label={`Argument '${arg.name}'`}
-                    >
-                      {Object.entries(arg.options).map(([label, val]) => (
-                        <Item key={val?.toString()}>{label}</Item>
-                      ))}
-                    </Picker>
-                  )}
-                </View>
+                  <View key={arg.name} marginBottom="size-200">
+                    {display === 'RADIO' ? (
+                        <RadioGroup
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            orientation="horizontal"
+                            label={label}
+                            description={description}
+                            errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                            validationState={fieldState.error ? 'invalid' : 'valid'}
+                            aria-label={`Argument '${arg.name}'`}
+                        >
+                          {Object.entries(arg.options).map(([label, val]) => (
+                              <Radio key={val?.toString()} value={val?.toString() || ''}>
+                                {label}
+                              </Radio>
+                          ))}
+                        </RadioGroup>
+                    ) : (
+                        <Picker
+                            label={label}
+                            description={description}
+                            selectedKey={field.value?.toString() || ''}
+                            onSelectionChange={field.onChange}
+                            onBlur={field.onBlur}
+                            errorMessage={fieldState.error ? fieldState.error.message : undefined}
+                            validationState={fieldState.error ? 'invalid' : 'valid'}
+                            aria-label={`Argument '${arg.name}'`}
+                        >
+                          {Object.entries(arg.options).map(([label, val]) => (
+                              <Item key={val?.toString()}>{label}</Item>
+                          ))}
+                        </Picker>
+                    )}
+                  </View>
               );
             } else if (isMultiSelectArgument(arg)) {
               const display = arg.display === 'AUTO' ? (Object.entries(arg.options).length <= 3 ? 'CHECKBOX' : 'LIST') : arg.display;
