@@ -21,6 +21,10 @@ public class PathArgument extends Argument<String> {
         return rootInclusive;
     }
 
+    public void root(String path, boolean inclusive) {
+        setRoot(path, inclusive);
+    }
+
     public void setRoot(String path, boolean inclusive) {
         this.rootPath = path;
         this.rootInclusive = inclusive;

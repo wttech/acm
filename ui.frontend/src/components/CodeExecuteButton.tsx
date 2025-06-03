@@ -1,4 +1,5 @@
-import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Form, Heading, Item, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Form, Heading, Item, TabList, Tabs, Text, View } from '@adobe/react-spectrum';
+import Alert from '@spectrum-icons/workflow/Alert';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Close from '@spectrum-icons/workflow/Close';
 import Gears from '@spectrum-icons/workflow/Gears';
@@ -23,6 +24,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
   const [description, setDescription] = useState<Description | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [described, setDescribed] = useState(false);
+  const [selectedTab, setSelectedTab] = useState(0);
   const methods = useForm<ArgumentValues>();
 
   const { formState } = methods;
@@ -89,6 +91,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
   const groups = Array.from(new Set(descriptionArguments.map((arg) => arg.group)));
   const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== ArgumentGroupDefault);
   const validationFailed = Object.keys(formState.errors).length > 0;
+  const groupHasError = (group: string): boolean => descriptionArguments.filter((arg) => arg.group === group).some((arg) => !!formState.errors[arg.name]);
 
   return (
     <>
@@ -98,33 +101,34 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
       </Button>
       <DialogContainer onDismiss={handleCloseDialog}>
         {dialogOpen && (
-          <Dialog>
+          <Dialog minWidth="40vw">
             <FormProvider {...methods}>
               <Heading>Provide Arguments</Heading>
               <Divider />
               <Content>
                 <Form onSubmit={methods.handleSubmit(handleFormSubmit)}>
                   {shouldRenderTabs ? (
-                    <Tabs aria-label="Argument Groups">
-                      <TabList>
-                        {groups.map((group) => (
-                          <Item key={group}>{Strings.capitalize(group)}</Item>
-                        ))}
-                      </TabList>
-                      <TabPanels>
-                        {groups.map((group) => (
-                          <Item key={group}>
-                            <View marginY="size-200">
-                              {descriptionArguments
-                                .filter((arg) => arg.group === group)
-                                .map((arg) => (
-                                  <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />
-                                ))}
-                            </View>
-                          </Item>
-                        ))}
-                      </TabPanels>
-                    </Tabs>
+                    <>
+                      <Tabs aria-label="Argument Groups" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(Number(key))}>
+                        <TabList>
+                          {groups.map((group, idx) => (
+                            <Item key={idx} textValue={Strings.capitalize(group)}>
+                              {groupHasError(group) && <Alert color="negative" />}
+                              <Text>{Strings.capitalize(group)}</Text>
+                            </Item>
+                          ))}
+                        </TabList>
+                      </Tabs>
+                      {groups.map((group, idx) => (
+                        <View key={group} marginY="size-200" UNSAFE_style={{ display: selectedTab === idx ? 'block' : 'none' }}>
+                          {descriptionArguments
+                            .filter((arg) => arg.group === group)
+                            .map((arg) => (
+                              <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />
+                            ))}
+                        </View>
+                      ))}
+                    </>
                   ) : (
                     descriptionArguments.map((arg) => <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />)
                   )}

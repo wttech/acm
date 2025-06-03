@@ -141,7 +141,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   {...(fieldState.error && { validationState: 'invalid' })}
                   isRequired={arg.required}
                   aria-label={`Argument '${arg.name}'`}
-                  width="100%"
+                  width={arg.display !== 'PASSWORD' ? '100%' : undefined}
                 />
               );
             } else if (isTextArgument(arg)) {
@@ -180,7 +180,9 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 <View key={arg.name} marginBottom="size-200">
                   {display === 'RADIO' ? (
                     <RadioGroup
-                      {...field}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
                       orientation="horizontal"
                       label={label}
                       description={description}
@@ -196,11 +198,11 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                     </RadioGroup>
                   ) : (
                     <Picker
-                      {...field}
                       label={label}
                       description={description}
                       selectedKey={field.value?.toString() || ''}
                       onSelectionChange={field.onChange}
+                      onBlur={field.onBlur}
                       errorMessage={fieldState.error ? fieldState.error.message : undefined}
                       validationState={fieldState.error ? 'invalid' : 'valid'}
                       aria-label={`Argument '${arg.name}'`}
@@ -217,7 +219,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
 
               return display === 'CHECKBOX' ? (
                 <CheckboxGroup
-                  value={field.value}
+                  value={field.value ?? []}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   isRequired={arg.required}
@@ -237,14 +239,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               ) : (
                 <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <ListView
-                      {...field}
-                      maxHeight="size-1600"
-                      selectionMode="multiple"
-                      selectedKeys={field.value as string[]}
-                      onSelectionChange={(val) => field.onChange(Array.from(val as Set<string>))}
-                      aria-label={`Argument '${arg.name}'`}
-                    >
+                    <ListView maxHeight="size-1600" selectionMode="multiple" selectedKeys={field.value as string[]} onSelectionChange={(val) => field.onChange(Array.from(val as Set<string>))} aria-label={`Argument '${arg.name}'`}>
                       {Object.entries(arg.options).map(([label, val]) => (
                         <Item key={val?.toString()}>{label}</Item>
                       ))}
@@ -257,7 +252,15 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 return (
                   <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                     <div>
-                      <Slider {...field} label={label} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                      <Slider
+                        value={typeof field.value === 'number' ? field.value : (arg.value ?? 0)}
+                        onChange={field.onChange}
+                        label={label}
+                        minValue={arg.min !== null ? arg.min : 0}
+                        maxValue={arg.max !== null ? arg.max : 100}
+                        step={arg.step ? arg.step : 1}
+                        aria-label={`Argument '${arg.name}'`}
+                      />
                     </div>
                   </Field>
                 );
@@ -284,13 +287,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <ColorPicker
-                      {...field}
-                      label={label}
-                      aria-label={`Argument '${arg.name}'`}
-                      value={field.value ? parseColor(field.value) : ''}
-                      onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}
-                    >
+                    <ColorPicker label={label} aria-label={`Argument '${arg.name}'`} value={field.value ? parseColor(field.value) : undefined} onChange={(value) => field.onChange(value.toString(arg.format.toLowerCase() as ColorFormat))}>
                       <ColorEditor hideAlphaChannel={arg.format !== 'RGBA'} />
                       <Button onPress={() => field.onChange('')} width={'100%'} marginTop={'size-200'} variant={'secondary'}>
                         Clear
@@ -303,23 +300,21 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <RangeSlider {...field} label={label} minValue={arg.min !== null ? arg.min : 0} maxValue={arg.max !== null ? arg.max : 100} step={arg.step ? arg.step : 1} aria-label={`Argument '${arg.name}'`} />
+                    <RangeSlider value={field.value ?? { start: 0, end: 0 }} onChange={field.onChange} minValue={arg.min ?? 0} maxValue={arg.max ?? 100} step={arg.step ?? 1} label={label} aria-label={`Argument '${arg.name}'`} />
                   </div>
                 </Field>
               );
             } else if (isPathArgument(arg)) {
               return (
                 <PathField
-                  {...field}
+                  value={field.value ?? ''}
+                  onSelect={field.onChange}
                   description={description}
                   label={label}
                   isRequired={arg.required}
                   root={arg.rootPath}
-                  onSelect={field.onChange}
-                  value={field.value ?? ''}
                   errorMessage={fieldState.error ? fieldState.error.message : undefined}
-                  onChange={field.onChange}
-                  {...(fieldState.error && { validationState: 'invalid' })}
+                  validationState={fieldState.error ? 'invalid' : 'valid'}
                 />
               );
             } else {
