@@ -8,8 +8,8 @@ documentation: |
 
   For example:
   ```groovy
-  args.path("contentPath")
-  args.path("thumbnailPath") { rootPathExclusive = "/content/dam"; description = "Asset to use as page thumbnail" }
-  args.path("templatePath") { rootPathExclusive = "/conf/acme/settings/wcm/templates"; description = "Template to use for page creation" }
-  args.path("pagePath") { rootPathInclusive = "/content"; description = "Pages to export" }
+  arguments.path("contentPath")
+  arguments.path("thumbnailPath") { rootPathExclusive = "/content/dam"; description = "Asset to use as page thumbnail" }
+  arguments.path("templatePath") { rootPathExclusive = "/conf/acme/settings/wcm/templates"; description = "Template to use for page creation" }
+  arguments.path("pagePath") { rootPathInclusive = "/content"; description = "Pages to export" }
   ```

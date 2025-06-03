@@ -10,11 +10,11 @@ documentation: |
   For example:
   ```groovy
   arguments.dateTime("eventStart") { value = "09:00:00" }
-  args.dateTime("eventEnd") { value = "17:00:00" }
-  args.dateTime("raceStart") { value = [9, 0, 0]; min = "08:00:00"; max = "10:00:00" }
+  arguments.dateTime("eventEnd") { value = "17:00:00" }
+  arguments.dateTime("raceStart") { value = [9, 0, 0]; min = "08:00:00"; max = "10:00:00" }
   ```
   
   Usage:
   ```groovy
-  def eventStart = args.value("eventStart", java.time.LocalTime.class)
+  def eventStart = arguments.value("eventStart", java.time.LocalTime.class)
   ```

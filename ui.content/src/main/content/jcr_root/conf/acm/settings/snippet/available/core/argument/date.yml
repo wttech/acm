@@ -1,7 +1,7 @@
 group: Argument
 name: argument_date
 content: |
-  args.date("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
+  arguments.date("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
 documentation: |
   An argument that represents a date.
   
@@ -9,13 +9,13 @@ documentation: |
   
   For example:
   ```groovy
-  args.date("releaseDate") { label = "Release Date"; value = "2023-01-01" }
-  args.date("eventStart") { value = [2023, 10, 1] }
-  args.date("eventEnd") { value = now(); min = now().minusDays(7); max = now().plusDays(7) }
-  args.date("santaDeadline") { value = "2023-12-24"; min = "2023-12-01"; max = "2023-12-25" }
+  arguments.date("releaseDate") { label = "Release Date"; value = "2023-01-01" }
+  arguments.date("eventStart") { value = [2023, 10, 1] }
+  arguments.date("eventEnd") { value = now(); min = now().minusDays(7); max = now().plusDays(7) }
+  arguments.date("santaDeadline") { value = "2023-12-24"; min = "2023-12-01"; max = "2023-12-25" }
   ```
   
   Usage:
   ```groovy
-  def releaseDate = args.value("releaseDate", java.time.LocalDate.class)
+  def releaseDate = arguments.value("releaseDate", java.time.LocalDate.class)
   ```
