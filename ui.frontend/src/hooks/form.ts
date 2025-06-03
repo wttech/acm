@@ -51,6 +51,7 @@ function validateCustom(arg: Argument<ArgumentValue>, value: ArgumentValue, allV
   }
 }
 
+// TODO validation does not catch profilePicture when submitting the form immediately after loading the form
 function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): ValidationResult {
   if (isNumberArgument(arg) && typeof value === 'number') {
     if (arg.min && value < arg.min) {

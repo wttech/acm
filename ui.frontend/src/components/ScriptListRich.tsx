@@ -14,6 +14,7 @@ import ScriptSynchronizeButton from './ScriptSynchronizeButton';
 import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
+import UserInfo from './UserInfo.tsx';
 
 type ScriptListRichProps = {
   type: ScriptType;
@@ -112,18 +113,18 @@ const ScriptListRich: React.FC<ScriptListRichProps> = ({ type }) => {
         onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
       >
         <TableHeader>
-          <Column>Name</Column>
-          <Column>Last Execution</Column>
-          <Column>
+          <Column width="4fr">Name</Column>
+          <Column width="5fr">Last Execution</Column>
+          <Column width="3fr">
             <Text>Average Duration</Text>
-            <ContextualHelp variant="help">
+            <ContextualHelp variant="info">
               <Heading>Explanation</Heading>
               <Content>Duration is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
             </ContextualHelp>
           </Column>
-          <Column>
+          <Column width="2fr" align="end">
             <Text>Success Rate</Text>
-            <ContextualHelp variant="help">
+            <ContextualHelp variant="info">
               <Heading>Explanation</Heading>
               <Content>Success rate is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
             </ContextualHelp>
@@ -147,7 +148,8 @@ const ScriptListRich: React.FC<ScriptListRichProps> = ({ type }) => {
                         <Text>
                           <DateExplained value={lastExecution.startDate} />
                         </Text>
-                        <Text>by {lastExecution.userId}</Text>
+                        <Text>by</Text>
+                        <UserInfo id={lastExecution.userId} />
                       </>
                     ) : (
                       <Text>&mdash;</Text>

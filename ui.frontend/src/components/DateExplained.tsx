@@ -18,7 +18,7 @@ const DateExplained: React.FC<DateExplainedProps> = ({ value }) => {
       <>
         <Text>{formatter.dateAtInstance(value)}</Text>
         &nbsp;
-        <ContextualHelp variant="info">
+        <ContextualHelp variant="help">
           <Heading>Timezone Difference</Heading>
           <Content>
             <Text>
