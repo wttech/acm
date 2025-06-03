@@ -1,7 +1,7 @@
 group: Argument
 name: argument_datetime
 content: |
-  args.dateTime("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
+  arguments.dateTime("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
 documentation: |
   An argument that represents a date and time.
   
@@ -9,17 +9,17 @@ documentation: |
   
   For example:
   ```groovy
-  args.dateTime("publicationDate") { label = "Publication Time"; value = now() }
-  args.dateTime("releaseDate") { label = "Release Date"; value = "2023-01-01" }
-  args.dateTime("birthTime") { value = "2023-01-01T12:00:00" }
-  args.dateTime("eventStart") { setValue(2023, 10, 1) }
-  args.dateTime("eventEnd") { value = now(); min = startOfToday().minusDays(7); max = endOfToday().plusDays(7) }
-  args.dateTime("holidayStart") { min = "2025-07-01T09:00:00"; max = "2023-08-31T23:00:00"} }
-  args.dateTime("raceStart") { setValue(2025, 6, 1, 9, 0, 0) }
+  arguments.dateTime("publicationDate") { label = "Publication Time"; value = now() }
+  arguments.dateTime("releaseDate") { label = "Release Date"; value = "2023-01-01" }
+  arguments.dateTime("birthTime") { value = "2023-01-01T12:00:00" }
+  arguments.dateTime("eventStart") { setValue(2023, 10, 1) }
+  arguments.dateTime("eventEnd") { value = now(); min = startOfToday().minusDays(7); max = endOfToday().plusDays(7) }
+  arguments.dateTime("holidayStart") { min = "2025-07-01T09:00:00"; max = "2023-08-31T23:00:00"} }
+  arguments.dateTime("raceStart") { setValue(2025, 6, 1, 9, 0, 0) }
   ```
   
   Usage:
   ```groovy
-  def publicationDate = args.value("publicationDate", java.time.LocalDateTime.class)
+  def publicationDate = arguments.value("publicationDate", java.time.LocalDateTime.class)
   ```
   

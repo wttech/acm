@@ -210,8 +210,8 @@ Scripts could accept arguments, which are passed to the script when it is execut
 
 ```groovy
 void describeRun() {
-    args.string("name") { value = "John" }
-    args.string("surname") { value = "Doe" }
+    arguments.string("name") { value = "John" }
+    arguments.string("surname") { value = "Doe" }
 }
 
 boolean canRun() {
@@ -219,7 +219,7 @@ boolean canRun() {
 }
 
 void doRun() {
-    println "Hello ${args.value('name')} ${args.value('surname')}!"
+    println "Hello ${arguments.value('name')} ${arguments.value('surname')}!"
 }
 ```
 

@@ -1,13 +1,13 @@
 group: Argument
 name: argument_integer
 content: |
-  args.integerNumber("${1:name}") { label = "${2:Label}"; value = ${3:value} }
+  arguments.integerNumber("${1:name}") { label = "${2:Label}"; value = ${3:value} }
 documentation: |
   An argument holding a integer number value.<br>
   This argument can be also displayed as a slider.
   
   For example:
   ```groovy
-  args.integerNumber("proportion") { label = "Proportion"; value = 20; min = 10; max = 60; step = 2; slider() }
-  args.integerNumber("maxSize") { label = "Max Size"; value = 30 }
+  arguments.integerNumber("proportion") { label = "Proportion"; value = 20; min = 10; max = 60; step = 2; slider() }
+  arguments.integerNumber("maxSize") { label = "Max Size"; value = 30 }
   ```

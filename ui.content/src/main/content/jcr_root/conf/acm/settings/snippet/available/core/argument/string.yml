@@ -1,11 +1,11 @@
 group: Argument
 name: argument_string
 content: |
-  args.string("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
+  arguments.string("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
 documentation: |
   An argument holding a string value.<br>
   
   For example:
   ```groovy
-  args.string("foo") { label = "Foo"; value = "bar" }
+  arguments.string("foo") { label = "Foo"; value = "bar" }
   ```

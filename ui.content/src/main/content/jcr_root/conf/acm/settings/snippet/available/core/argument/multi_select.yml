@@ -1,7 +1,7 @@
 group: Argument
 name: argument_multi_select
 content: |
-  args.multiSelect("${1:name}") { label = "${2:Label}"; options = ["${3:Option 1}": "${4:value1}", "${5:Option 2}": "${6:value2}"]; value = ["${4:value}"] }
+  arguments.multiSelect("${1:name}") { label = "${2:Label}"; options = ["${3:Option 1}": "${4:value1}", "${5:Option 2}": "${6:value2}"]; value = ["${4:value}"] }
 documentation: |
   An argument holding multiple values selected from a list of options.
   By default, the first option is selected.
@@ -10,6 +10,6 @@ documentation: |
   
   For example:
   ```groovy
-  args.multiSelect("foo") { label = "Foo"; options = ["Bar": "bar", "Baz": "baz"]; value = ["bar"] }
-  args.multiSelect("foo") { options = ["bar", "baz"]; value = ["bar"] }
+  arguments.multiSelect("foo") { label = "Foo"; options = ["Bar": "bar", "Baz": "baz"]; value = ["bar"] }
+  arguments.multiSelect("foo") { options = ["bar", "baz"]; value = ["bar"] }
   ```

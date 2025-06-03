@@ -15,7 +15,7 @@ import java.lang.module.ModuleReference
 import java.util.function.Consumer
 
 void describeRun() {
-    args.select("mode") { options = ["print", "save"]; value = "print" }
+    arguments.select("mode") { options = ["print", "save"]; value = "print" }
 }
 
 boolean canRun() {
@@ -25,7 +25,7 @@ boolean canRun() {
 void doRun() {
     out.fromLogs()
 
-    switch (args.value("mode")) {
+    switch (arguments.value("mode")) {
         case "print":
             eachSystemClass { moduleName, className -> println "${moduleName}: ${className}" }
             break

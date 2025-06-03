@@ -1,7 +1,7 @@
 group: Argument
 name: argument_time
 content: |
-  args.time("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
+  arguments.time("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
 documentation: |
   An argument that represents a time.
   
@@ -9,7 +9,7 @@ documentation: |
   
   For example:
   ```groovy
-  args.dateTime("eventStart") { value = "09:00:00" }
+  arguments.dateTime("eventStart") { value = "09:00:00" }
   args.dateTime("eventEnd") { value = "17:00:00" }
   args.dateTime("raceStart") { value = [9, 0, 0]; min = "08:00:00"; max = "10:00:00" }
   ```

@@ -82,7 +82,7 @@ public class ExecutionContext implements AutoCloseable {
     private void customizeBinding() {
         Binding binding = getCodeContext().getBinding();
 
-        binding.setVariable("args", arguments);
+        binding.setVariable("arguments", arguments);
         binding.setVariable("condition", new Condition(this));
         binding.setVariable(
                 "log",
