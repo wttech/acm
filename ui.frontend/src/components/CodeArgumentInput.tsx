@@ -300,14 +300,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <RangeSlider
-                        {...field}
-                        label={label}
-                        minValue={arg.min !== null ? arg.min : 0}
-                        maxValue={arg.max !== null ? arg.max : 100}
-                        step={arg.step ? arg.step : 1}
-                        aria-label={`Argument '${arg.name}'`}
-                    />
+                    <RangeSlider value={field.value ?? { start: 0, end: 0 }} onChange={field.onChange} minValue={arg.min ?? 0} maxValue={arg.max ?? 100} step={arg.step ?? 1} label={label} aria-label={`Argument '${arg.name}'`} />
                   </div>
                 </Field>
               );
