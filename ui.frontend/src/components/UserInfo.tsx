@@ -31,7 +31,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
       <>
         <Text>{name}</Text>
         <ContextualHelp variant="info">
-          <Heading>Email</Heading>
+          <Heading>E-mail</Heading>
           <Content>
             <Link href={`mailto:${id}`}>{id}</Link>
           </Content>
@@ -47,7 +47,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
       <>
         <Text>{user}</Text>
         <ContextualHelp variant="info">
-          <Heading>Email</Heading>
+          <Heading>E-mail</Heading>
           <Content>
             <Link href={`mailto:${id}`}>{id}</Link>
           </Content>
