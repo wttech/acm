@@ -4,11 +4,11 @@ import { Key } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Alert from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
-import User from '@spectrum-icons/workflow/User';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Pause from '@spectrum-icons/workflow/Pause';
 import Search from '@spectrum-icons/workflow/Search';
 import Star from '@spectrum-icons/workflow/Star';
+import User from '@spectrum-icons/workflow/User';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'react-use';
@@ -53,7 +53,7 @@ const HistoryPage = () => {
           const params = new URLSearchParams();
           params.append(ExecutionQueryParams.FORMAT, ExecutionFormat.SUMMARY);
           if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, isExecutableExplicit(executableId) ? executableId : `%${executableId}%`);
-          if (userId) params.append(ExecutionQueryParams.USER_ID, userId);
+          if (userId) params.append(ExecutionQueryParams.USER_ID, `%${userId}%`);
           if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
           if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
           if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status);
@@ -90,14 +90,14 @@ const HistoryPage = () => {
   return (
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View borderBottomWidth="thick" borderColor="gray-300" paddingBottom="size-200" marginBottom="size-10">
-        <Flex direction="row" gap="size-200" alignItems="center" justifyContent="space-around">
-          <TextField icon={<Search />} label="Executable" value={executableId} type="search" onChange={setExecutableId} placeholder="e.g. script name" />
-          <TextField icon={<User />} label="User" value={userId} type="search" onChange={setUserId} placeholder="ID"/>
-          <DatePicker label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
-          <DatePicker label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
-          <NumberField label="Min Duration (ms)" value={durationMin} onChange={setDurationMin} />
-          <NumberField label="Max Duration (ms)" value={durationMax} onChange={setDurationMax} />
-          <Picker label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
+        <Flex direction="row" gap="size-200" alignItems="center">
+          <TextField flex="1" icon={<Search />} label="Executable" value={executableId} type="search" onChange={setExecutableId} placeholder="e.g. script name" />
+          <TextField flex="1" icon={<User />} label="User" value={userId} type="search" onChange={setUserId} placeholder="ID" />
+          <DatePicker width="size-3000" label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
+          <DatePicker width="size-3000" label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
+          <NumberField width="size-1600" label="Min Duration (ms)" value={durationMin} onChange={setDurationMin} />
+          <NumberField width="size-1600" label="Max Duration (ms)" value={durationMax} onChange={setDurationMax} />
+          <Picker width="size-2000" label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
             <Item textValue="All" key="all">
               <Star size="S" />
               <Text>All</Text>
@@ -132,7 +132,9 @@ const HistoryPage = () => {
             <Column width="3fr">User</Column>
             <Column width="4fr">Started</Column>
             <Column width="3fr">Duration</Column>
-            <Column width="2fr" align="end">Status</Column>
+            <Column width="2fr" align="end">
+              Status
+            </Column>
           </TableHeader>
           <TableBody>
             {(executions?.list || []).map((execution) => (
@@ -141,7 +143,7 @@ const HistoryPage = () => {
                   <ExecutableIdValue id={execution.executableId} />
                 </Cell>
                 <Cell>
-                  <UserInfo id={execution.userId}/>
+                  <UserInfo id={execution.userId} />
                 </Cell>
                 <Cell>
                   <DateExplained value={execution.startDate} />
