@@ -320,6 +320,7 @@ export enum ExecutionQueryParams {
   END_DATE = 'endDate',
   STATUS = 'status',
   EXECUTABLE_ID = 'executableId',
+  USER_ID = 'userId',
   DURATION = 'duration',
 }
 

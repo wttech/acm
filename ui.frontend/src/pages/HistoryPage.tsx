@@ -4,6 +4,7 @@ import { Key } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Alert from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
+import User from '@spectrum-icons/workflow/User';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Pause from '@spectrum-icons/workflow/Pause';
 import Search from '@spectrum-icons/workflow/Search';
@@ -31,6 +32,7 @@ const HistoryPage = () => {
   const [endDate, setEndDate] = useState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.END_DATE)));
   const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
   const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');
+  const [userId, setUserId] = useState<string>(searchState.get(ExecutionQueryParams.USER_ID) || '');
 
   const [durationMinInitial, durationMaxInitial] = (() => {
     const searchParam = searchState.get(ExecutionQueryParams.DURATION);
@@ -51,6 +53,7 @@ const HistoryPage = () => {
           const params = new URLSearchParams();
           params.append(ExecutionQueryParams.FORMAT, ExecutionFormat.SUMMARY);
           if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, isExecutableExplicit(executableId) ? executableId : `%${executableId}%`);
+          if (userId) params.append(ExecutionQueryParams.USER_ID, userId);
           if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
           if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
           if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status);
@@ -74,7 +77,7 @@ const HistoryPage = () => {
       fetchExecutions();
     },
     500,
-    [startDate, endDate, status, executableId, durationMin, durationMax],
+    [startDate, endDate, status, executableId, userId, durationMin, durationMax],
   );
 
   const renderEmptyState = () => (
@@ -89,6 +92,7 @@ const HistoryPage = () => {
       <View borderBottomWidth="thick" borderColor="gray-300" paddingBottom="size-200" marginBottom="size-10">
         <Flex direction="row" gap="size-200" alignItems="center" justifyContent="space-around">
           <TextField icon={<Search />} label="Executable" value={executableId} type="search" onChange={setExecutableId} placeholder="e.g. script name" />
+          <TextField icon={<User />} label="User" value={userId} type="search" onChange={setUserId} placeholder="ID"/>
           <DatePicker label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
           <DatePicker label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
           <NumberField label="Min Duration (ms)" value={durationMin} onChange={setDurationMin} />
@@ -124,11 +128,11 @@ const HistoryPage = () => {
       ) : (
         <TableView flex="1" aria-label="Executions table" selectionMode="none" renderEmptyState={renderEmptyState} onAction={(key: Key) => navigate(`/executions/view/${encodeURIComponent(key)}`)}>
           <TableHeader>
-            <Column>Executable</Column>
-            <Column>User</Column>
-            <Column>Started</Column>
-            <Column>Duration</Column>
-            <Column>Status</Column>
+            <Column width="6fr">Executable</Column>
+            <Column width="3fr">User</Column>
+            <Column width="4fr">Started</Column>
+            <Column width="3fr">Duration</Column>
+            <Column width="2fr" align="end">Status</Column>
           </TableHeader>
           <TableBody>
             {(executions?.list || []).map((execution) => (

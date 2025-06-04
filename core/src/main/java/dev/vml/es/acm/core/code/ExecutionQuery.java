@@ -9,11 +9,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
+// TODO use Text.escapeIllegalJcrChars() to escape JCR query strings
 public class ExecutionQuery {
 
     private String path = ExecutionHistory.ROOT;
 
     private String executableId;
+
+    private String userId;
 
     private Date startDate;
 
@@ -26,6 +29,7 @@ public class ExecutionQuery {
     public static ExecutionQuery from(SlingHttpServletRequest request) {
         ExecutionQuery result = new ExecutionQuery();
         result.setExecutableId(ServletUtils.stringParam(request, "executableId"));
+        result.setUserId(ServletUtils.stringParam(request, "userId"));
         result.setStartDate(DateUtils.fromString(ServletUtils.stringParam(request, "startDate")));
         result.setEndDate(DateUtils.fromString(ServletUtils.stringParam(request, "endDate")));
         result.setStatuses(ExecutionStatus.manyOf(ServletUtils.stringsParam(request, "status")));
@@ -51,6 +55,14 @@ public class ExecutionQuery {
 
     public void setExecutableId(String executableId) {
         this.executableId = executableId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    private void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public Date getStartDate() {
@@ -101,6 +113,13 @@ public class ExecutionQuery {
                 filters.add(String.format("s.[executableId] LIKE '%s'", StringUtils.replace(executableId, "%", "%%")));
             } else {
                 filters.add(String.format("s.[executableId] = '%s'", executableId));
+            }
+        }
+        if (userId != null) {
+            if (StringUtils.contains(userId, "%")) {
+                filters.add(String.format("s.[userId] LIKE '%s'", StringUtils.replace(userId, "%", "%%")));
+            } else {
+                filters.add(String.format("s.[userId] = '%s'", userId));
             }
         }
         if (CollectionUtils.isNotEmpty(statuses)) {
