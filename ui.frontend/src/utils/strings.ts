@@ -41,4 +41,10 @@ export class Strings {
     }
     return text.substring(0, lastIndex);
   }
+  static replaceAll(text: string, search: string, replacement: string): string {
+    if (!text || !search || !replacement) {
+      return text;
+    }
+    return text.split(search).join(replacement);
+  }
 }

@@ -22,6 +22,8 @@ import { ExecutionFormat, ExecutionOutput, ExecutionQueryParams, ExecutionStatus
 import { Dates } from '../utils/dates';
 import { Urls } from '../utils/url';
 
+const HistoryFilterDelay = 1500;
+
 const HistoryPage = () => {
   const navigate = useNavigate();
   const [executions, setExecutions] = useState<ExecutionOutput<ExecutionSummary> | null>(null);
@@ -46,38 +48,46 @@ const HistoryPage = () => {
   const formatter = useFormatter();
 
   useDebounce(
-    () => {
-      const fetchExecutions = async () => {
-        setLoading(true);
-        try {
-          const params = new URLSearchParams();
-          params.append(ExecutionQueryParams.FORMAT, ExecutionFormat.SUMMARY);
-          if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, isExecutableExplicit(executableId) ? executableId : `%${executableId}%`);
-          if (userId) params.append(ExecutionQueryParams.USER_ID, `%${userId}%`);
-          if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
-          if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
-          if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status);
-          if (durationMin || durationMax) params.append(ExecutionQueryParams.DURATION, `${durationMin || ''},${durationMax || ''}`);
+      () => {
+        const fetchExecutions = async () => {
+          setLoading(true);
+          try {
+            const params = new URLSearchParams();
+            params.append(ExecutionQueryParams.FORMAT, ExecutionFormat.SUMMARY);
+            if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, executableId);
+            if (userId) params.append(ExecutionQueryParams.USER_ID, userId);
+            if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
+            if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
+            if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status);
+            if (durationMin || durationMax) params.append(ExecutionQueryParams.DURATION, `${durationMin || ''},${durationMax || ''}`);
 
-          setSearchState(params.toString(), { replace: true });
+            setSearchState(params.toString(), {replace: true});
 
-          const response = await toastRequest<ExecutionOutput<ExecutionSummary>>({
-            method: 'GET',
-            url: Urls.compose('/apps/acm/api/execution.json', params),
-            operation: `Executions loading`,
-            positive: false,
-          });
-          setExecutions(response.data.data);
-        } catch (error) {
-          console.error('Cannot load executions:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchExecutions();
-    },
-    500,
-    [startDate, endDate, status, executableId, userId, durationMin, durationMax],
+            const response = await toastRequest<ExecutionOutput<ExecutionSummary>>({
+              method: 'GET',
+              url: Urls.compose('/apps/acm/api/execution.json',  (() => {
+                const result = new URLSearchParams(params);
+                const wildcard = '@W@';
+                result.delete(ExecutionQueryParams.EXECUTABLE_ID);
+                result.append(ExecutionQueryParams.EXECUTABLE_ID, isExecutableExplicit(executableId) ? executableId : `${wildcard}${executableId}${wildcard}`);
+                result.delete(ExecutionQueryParams.USER_ID);
+                result.append(ExecutionQueryParams.USER_ID, `${wildcard}${userId}${wildcard}`);
+                return result;
+              })()),
+              operation: `Executions loading`,
+              positive: false,
+            });
+            setExecutions(response.data.data);
+          } catch (error) {
+            console.error('Cannot load executions:', error);
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchExecutions();
+      },
+      HistoryFilterDelay,
+      [startDate, endDate, status, executableId, userId, durationMin, durationMax],
   );
 
   const renderEmptyState = () => (

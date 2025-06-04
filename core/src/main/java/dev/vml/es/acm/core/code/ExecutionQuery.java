@@ -9,8 +9,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
-// TODO use Text.escapeIllegalJcrChars() to escape JCR query strings
 public class ExecutionQuery {
+
+    private static final String WILDCARD = "@W@";
 
     private String path = ExecutionHistory.ROOT;
 
@@ -25,6 +26,12 @@ public class ExecutionQuery {
     private List<ExecutionStatus> statuses = new LinkedList<>();
 
     private Range<Integer> duration;
+
+    // TODO do more escaping e.g. for JCR illegal characters, but beware that e.g. Text.escapeIllegalJcrChars is too aggressive for paths
+    public static String escape(String param) {
+        String escaped = StringUtils.replace(param, "%", "%%");
+        return StringUtils.replace(escaped, WILDCARD, "%");
+    }
 
     public static ExecutionQuery from(SlingHttpServletRequest request) {
         ExecutionQuery result = new ExecutionQuery();
@@ -106,20 +113,20 @@ public class ExecutionQuery {
         filters.add(String.format(
                 "s.[%s] = '%s'", JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, HistoricalExecution.RESOURCE_TYPE));
         if (path != null) {
-            filters.add(String.format("ISDESCENDANTNODE(s, '%s')", path));
+            filters.add(String.format("ISDESCENDANTNODE(s, '%s')", escape(path)));
         }
         if (executableId != null) {
-            if (StringUtils.contains(executableId, "%")) {
-                filters.add(String.format("s.[executableId] LIKE '%s'", StringUtils.replace(executableId, "%", "%%")));
+            if (StringUtils.contains(executableId, WILDCARD)) {
+                filters.add(String.format("s.[executableId] LIKE '%s'", escape(executableId)));
             } else {
-                filters.add(String.format("s.[executableId] = '%s'", executableId));
+                filters.add(String.format("s.[executableId] = '%s'", escape(executableId)));
             }
         }
         if (userId != null) {
-            if (StringUtils.contains(userId, "%")) {
-                filters.add(String.format("s.[userId] LIKE '%s'", StringUtils.replace(userId, "%", "%%")));
+            if (StringUtils.contains(userId, WILDCARD)) {
+                filters.add(String.format("s.[userId] LIKE '%s'", escape(userId)));
             } else {
-                filters.add(String.format("s.[userId] = '%s'", userId));
+                filters.add(String.format("s.[userId] = '%s'", escape(userId)));
             }
         }
         if (CollectionUtils.isNotEmpty(statuses)) {
