@@ -6,7 +6,7 @@ type UserInfoProps = {
   id: string;
 };
 
-const getNameFromEmail = (email: string): string | null => {
+const extractFullNameFromEmail = (email: string): string | null => {
   const match = /^([a-zA-Z]+)\.([a-zA-Z]+)@/.exec(email);
   if (match) {
     const [, first, last] = match;
@@ -15,33 +15,57 @@ const getNameFromEmail = (email: string): string | null => {
   return null;
 };
 
-const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
-  // ACM service IDs
-  if (id.startsWith('acm-')) {
-    return (
-      <>
-        <Text>acm</Text>
-        <ContextualHelp variant="info">
-          <Heading>User ID</Heading>
-          <Content>{id}</Content>
-        </ContextualHelp>
-      </>
-    );
+const extractUserFromEmail = (email: string): string | null => {
+  if (email.includes('@')) {
+    const parts = email.split('@');
+    return parts.length > 0 ? parts[0] : null;
   }
+  return null;
+}
 
-  // Email with the single dot
-  const name = getNameFromEmail(id);
+const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
+  // For example, john.doe@acme.com => John Doe
+  const name = extractFullNameFromEmail(id);
   if (name) {
     return (
       <>
         <Text>{name}</Text>
         <ContextualHelp variant="info">
-          <Heading>User ID</Heading>
+          <Heading>Email</Heading>
           <Content>
             <Link href={`mailto:${id}`}>{id}</Link>
           </Content>
         </ContextualHelp>
       </>
+    );
+  }
+
+  // For example, jdoe@acme.com => jdoe
+  const user = extractUserFromEmail(id)
+  if (user) {
+    return (
+      <>
+        <Text>{user}</Text>
+        <ContextualHelp variant="info">
+          <Heading>Email</Heading>
+          <Content>
+            <Link href={`mailto:${id}`}>{id}</Link>
+          </Content>
+        </ContextualHelp>
+      </>
+    );
+  }
+
+  // ACM service IDs
+  if (id.startsWith('acm-')) {
+    return (
+        <>
+          <Text>acm</Text>
+          <ContextualHelp variant="info">
+            <Heading>User ID</Heading>
+            <Content>{id}</Content>
+          </ContextualHelp>
+        </>
     );
   }
 
