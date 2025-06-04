@@ -21,8 +21,10 @@ import { toastRequest } from '../utils/api';
 import { ExecutionFormat, ExecutionOutput, ExecutionQueryParams, ExecutionStatus, ExecutionSummary, isExecutableExplicit } from '../utils/api.types';
 import { Dates } from '../utils/dates';
 import { Urls } from '../utils/url';
+import { useDebouncedState } from '@mantine/hooks';
 
-const HistoryFilterDelay = 1500;
+const HistoryFetchDelay = 1000;
+const HistoryFilterDelay = 1000;
 
 const HistoryPage = () => {
   const navigate = useNavigate();
@@ -30,11 +32,11 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [searchState, setSearchState] = useSearchParams();
-  const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendarDateTime(Dates.daysAgoAtMidnight(7)));
-  const [endDate, setEndDate] = useState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.END_DATE)));
-  const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
-  const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');
-  const [userId, setUserId] = useState<string>(searchState.get(ExecutionQueryParams.USER_ID) || '');
+  const [startDate, setStartDate] = useDebouncedState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendarDateTime(Dates.daysAgoAtMidnight(7)), HistoryFilterDelay);
+  const [endDate, setEndDate] = useDebouncedState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.END_DATE)), HistoryFilterDelay);
+  const [status, setStatus] = useDebouncedState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all', HistoryFilterDelay);
+  const [executableId, setExecutableId] = useDebouncedState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '', HistoryFilterDelay);
+  const [userId, setUserId] = useDebouncedState<string>(searchState.get(ExecutionQueryParams.USER_ID) || '', HistoryFilterDelay);
 
   const [durationMinInitial, durationMaxInitial] = (() => {
     const searchParam = searchState.get(ExecutionQueryParams.DURATION);
@@ -42,8 +44,8 @@ const HistoryPage = () => {
     const [min, max] = searchParam.split(',');
     return [Number(min), Number(max)];
   })();
-  const [durationMin, setDurationMin] = useState<number | undefined>(durationMinInitial);
-  const [durationMax, setDurationMax] = useState<number | undefined>(durationMaxInitial);
+  const [durationMin, setDurationMin] = useDebouncedState<number | undefined>(durationMinInitial, HistoryFilterDelay);
+  const [durationMax, setDurationMax] = useDebouncedState<number | undefined>(durationMaxInitial, HistoryFilterDelay);
 
   const formatter = useFormatter();
 
@@ -86,7 +88,7 @@ const HistoryPage = () => {
         };
         fetchExecutions();
       },
-      HistoryFilterDelay,
+      HistoryFetchDelay,
       [startDate, endDate, status, executableId, userId, durationMin, durationMax],
   );
 
