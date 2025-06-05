@@ -1,6 +1,7 @@
 import { Content, ContextualHelp, Heading, Link, Text } from '@adobe/react-spectrum';
 import React from 'react';
-import { Strings } from '../utils/strings.ts';
+import { UserIdServicePrefix } from '../utils/api.types';
+import { Strings } from '../utils/strings';
 
 type UserInfoProps = {
   id: string;
@@ -21,15 +22,29 @@ const extractUserFromEmail = (email: string): string | null => {
     return parts.length > 0 ? parts[0] : null;
   }
   return null;
-}
+};
 
 const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
-  // For example, john.doe@acme.com => John Doe
-  const name = extractFullNameFromEmail(id);
-  if (name) {
+
+  // ACM service IDs like 'acm-content-service'
+  if (id.startsWith(UserIdServicePrefix)) {
     return (
       <>
-        <Text>{name}</Text>
+        <Text>acm</Text>
+        <ContextualHelp variant="info">
+          <Heading>User ID</Heading>
+          <Content>{id}</Content>
+        </ContextualHelp>
+      </>
+    );
+  }
+
+  // For example, john.doe@acme.com => John Doe, jdoe@acme.com => jdoe
+  const idShort = extractFullNameFromEmail(id) || extractUserFromEmail(id);
+  if (idShort) {
+    return (
+      <>
+        <Text>{idShort}</Text>
         <ContextualHelp variant="info">
           <Heading>E-mail</Heading>
           <Content>
@@ -37,35 +52,6 @@ const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
           </Content>
         </ContextualHelp>
       </>
-    );
-  }
-
-  // For example, jdoe@acme.com => jdoe
-  const user = extractUserFromEmail(id)
-  if (user) {
-    return (
-      <>
-        <Text>{user}</Text>
-        <ContextualHelp variant="info">
-          <Heading>E-mail</Heading>
-          <Content>
-            <Link href={`mailto:${id}`}>{id}</Link>
-          </Content>
-        </ContextualHelp>
-      </>
-    );
-  }
-
-  // ACM service IDs
-  if (id.startsWith('acm-')) {
-    return (
-        <>
-          <Text>acm</Text>
-          <ContextualHelp variant="info">
-            <Heading>User ID</Heading>
-            <Content>{id}</Content>
-          </ContextualHelp>
-        </>
     );
   }
 
