@@ -45,6 +45,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
         - [History](#history)
     - [Extension Scripts](#extension-scripts)
     - [Snippets](#snippets)
+    - [Mocks](#mocks)
 - [Development](#development)
 - [Authors](#authors)
 - [Contributing](#contributing)
@@ -122,7 +123,12 @@ Adjust file 'all/pom.xml':
     </embedded>
     ```
 
-Remember to replace `${acm.version}` and `${appId}` with the actual values.
+    Remember to replace `${acm.version}` and `${appId}` with the actual values.
+
+3. Consider refining the ACL settings
+
+   The default settings are defined in the [repo init OSGi config](https://github.com/wttech/acm/blob/main/ui.config/src/main/content/jcr_root/apps/acm-config/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~acm.config), which effectively restrict access to the tool and script execution to administrators only—a recommended practice for production environments.
+   If you require further customization, you can create your own repo init OSGi config to override or extend the default configuration.
 
 ## Compatibility
 
@@ -202,7 +208,7 @@ The `canRun()` method is used to determine if the script should be executed.
 The `doRun()` method contains the actual code to be executed.
 
 Notice that the script on their own decide when to run without a need to specify any additional metadata. In that way the-sky-is-the-limit. You can run the script once, periodically, or at an exact date and time.
-There are many built-in, ready-to-use conditions available in the `condition` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/Condition.java).
+There are many built-in, ready-to-use conditions available in the `condition` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Condition.java).
 
 #### Arguments example
 
@@ -227,7 +233,7 @@ The `describeRun()` method is used to define the arguments that can be passed to
 The `args` service is used to define the arguments that can be passed to the script.
 When the script is executed, the arguments are passed to the `doRun()` method.
 
-There are many built-in argument types to use handling different types of data like string, boolean, number, date, etc. Just check `args` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/Arguments.java) for more details.
+There are many built-in argument types to use handling different types of data like string, boolean, number, date, etc. Just check `arguments` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Arguments.java) for more details.
 
 <img src="docs/screenshot-content-script-arguments.png" width="720" alt="ACM Console">
 
@@ -335,6 +341,14 @@ documentation: |
 ```
 
 <img src="docs/screenshot-snippets.png" width="720" alt="ACM Snippets">
+
+### Mocks
+
+ACM has incorporated the [AEM Stubs tool](https://github.com/wttech/aem-stubs), which allows you to create mock HTTP responses for testing purposes also via Groovy Scripts.
+This feature is disabled by default, but you can enable it in the [OSGi configuration](http://localhost:4502/system/console/configMgr/com.vml.es.aem.acm.core.mock.MockHttpFilter).
+
+<img src="docs/screenshot-scripts-mock-tab.png" width="720" alt="ACM Mocks - List">
+<img src="docs/screenshot-scripts-mock-code.png" width="720" alt="ACM Mocks - Code">
 
 ## Development
 

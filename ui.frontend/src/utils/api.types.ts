@@ -150,6 +150,8 @@ export type Execution = {
   error: string | null;
 };
 
+export const UserIdServicePrefix = 'acm-';
+
 export type ExecutionSummary = {
   id: string;
   userId: string;
