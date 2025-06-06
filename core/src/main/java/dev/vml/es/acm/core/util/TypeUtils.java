@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.util;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -18,6 +19,7 @@ public final class TypeUtils {
     /**
      * Convert a value to the specified type.
      * Fallback uses implicitly {@link org.apache.sling.api.wrappers.impl.ObjectConverter}.
+     * TODO support converting to arrays and collections.
      */
     public static <T> Optional<T> convert(Object value, Class<T> type, boolean fallback) {
         if (value instanceof String) {
@@ -27,6 +29,8 @@ public final class TypeUtils {
                 return Optional.ofNullable((T) DateUtils.toLocalDate((String) value));
             } else if (type == LocalTime.class) {
                 return Optional.ofNullable((T) DateUtils.toLocalTime((String) value));
+            } else if (type == File.class) {
+                return Optional.ofNullable((T) new File((String) value));
             }
         } else if (value instanceof Date) {
             if (type == LocalDateTime.class) {

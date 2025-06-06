@@ -33,6 +33,8 @@ import {
   isBoolArgument,
   isColorArgument,
   isDateTimeArgument,
+  isFileArgument,
+  isMultiFileArgument,
   isMultiSelectArgument,
   isNumberArgument,
   isPathArgument,
@@ -43,6 +45,7 @@ import {
 } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates';
 import { Strings } from '../utils/strings';
+import FileField from './FileField';
 import Markdown from './Markdown';
 import PathField from './PathPicker';
 
@@ -317,6 +320,10 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   validationState={fieldState.error ? 'invalid' : 'valid'}
                 />
               );
+            } else if (isFileArgument(arg)) {
+              return <FileField allowMultiple={false} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />;
+            } else if (isMultiFileArgument(arg)) {
+              return <FileField allowMultiple={true} min={arg.min ? arg.min : undefined} max={arg.max ? arg.max : undefined} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />;
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);
             }

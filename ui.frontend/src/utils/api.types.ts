@@ -27,7 +27,7 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE' | 'PATH';
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE' | 'PATH' | 'FILE' | 'MULTIFILE';
 export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue;
 export type ArgumentValues = Record<string, ArgumentValue>;
 
@@ -98,6 +98,16 @@ export type PathArgument = Argument<ArgumentValue> & {
   rootInclusive: boolean;
 };
 
+export type FileArgument = Argument<ArgumentValue> & {
+  mimeTypes: string[];
+};
+
+export type MultiFileArgument = Argument<ArgumentValue> & {
+  mimeTypes: string[];
+  min: number;
+  max: number;
+};
+
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is StringArgument {
   return arg.type === 'STRING';
 }
@@ -118,6 +128,10 @@ export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArg
   return arg.type === 'SELECT';
 }
 
+export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {
+  return arg.type === 'MULTISELECT';
+}
+
 export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
   return arg.type === 'INTEGER' || arg.type === 'DECIMAL';
 }
@@ -134,8 +148,12 @@ export function isPathArgument(arg: Argument<ArgumentValue>): arg is PathArgumen
   return arg.type === 'PATH';
 }
 
-export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {
-  return arg.type === 'MULTISELECT';
+export function isFileArgument(arg: Argument<ArgumentValue>): arg is FileArgument {
+  return arg.type === 'FILE';
+}
+
+export function isMultiFileArgument(arg: Argument<ArgumentValue>): arg is MultiFileArgument {
+  return arg.type === 'MULTIFILE';
 }
 
 export type Execution = {
@@ -340,3 +358,7 @@ export enum NodeType {
 export enum JCR_CONSTANTS {
   JCR_CONTENT = 'jcr:content',
 }
+
+export type FileOutput = {
+  files: string[];
+};
