@@ -355,4 +355,4 @@ export enum JCR_CONSTANTS {
 
 export type FileOutput = {
   files: string[];
-}
+};

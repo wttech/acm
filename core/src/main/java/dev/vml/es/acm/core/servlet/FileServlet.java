@@ -22,6 +22,7 @@ import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
         property = {
             ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + FileServlet.RT,
             ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=DELETE",
             ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
         })
 public class FileServlet extends SlingAllMethodsServlet {
@@ -34,7 +35,7 @@ public class FileServlet extends SlingAllMethodsServlet {
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             // TODO support uploading multiple files
-            File file = new File("/tmp/acm/executableId/number/originalFileName.txt");
+            File file = new File("/tmp/acm/file/yyyy/mm/dd/number/originalFileName.txt");
             FileOutput output = new FileOutput(Collections.singletonList(file));
             respondJson(response, ok("File uploaded successfully", output));
         } catch (Exception e) {
@@ -42,4 +43,18 @@ public class FileServlet extends SlingAllMethodsServlet {
             respondJson(response, error(String.format("File cannot be uploaded! %s", e.getMessage().trim())));
         }
     }
+
+    @Override
+    protected void doDelete(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        try {
+            // TODO support deleting multiple files
+            File file = new File("/tmp/acm/file/yyyy/mm/dd/number/originalFileName.txt");
+            FileOutput output = new FileOutput(Collections.singletonList(file));
+            respondJson(response, ok("File deleted successfully", output));
+        } catch (Exception e) {
+            LOG.error("File cannot be deleted!", e);
+            respondJson(response, error(String.format("File cannot be deleted! %s", e.getMessage().trim())));
+        }
+    }
+
 }
