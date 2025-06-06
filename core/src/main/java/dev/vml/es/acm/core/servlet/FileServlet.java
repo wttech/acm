@@ -1,10 +1,12 @@
 package dev.vml.es.acm.core.servlet;
 
+import dev.vml.es.acm.core.code.FileManager;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,9 @@ public class FileServlet extends SlingAllMethodsServlet {
     public static final String RT = "acm/api/file";
 
     private static final Logger LOG = LoggerFactory.getLogger(FileServlet.class);
+
+    @Reference
+    private FileManager fileManager;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
