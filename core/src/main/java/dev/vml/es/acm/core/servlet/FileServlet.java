@@ -11,13 +11,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.Servlet;
+import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import static dev.vml.es.acm.core.util.ServletResult.error;
 import static dev.vml.es.acm.core.util.ServletResult.ok;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
+import static dev.vml.es.acm.core.util.ServletUtils.stringsParam;
 
 @Component(
         service = {Servlet.class},
@@ -33,32 +36,39 @@ public class FileServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileServlet.class);
 
+    private static final String PATH_PARAM = "path";
+
     @Reference
-    private FileManager fileManager;
+    private FileManager manager;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
-            // TODO support uploading multiple files
-            File file = new File("/tmp/acm/file/yyyy/mm/dd/number/originalFileName.txt");
-            FileOutput output = new FileOutput(Collections.singletonList(file));
-            respondJson(response, ok("File uploaded successfully", output));
+            List<File> filesUploaded = new LinkedList<>();
+            for (Part part : request.getParts()) {
+                if (part.getSubmittedFileName() != null) {
+                    File file = manager.save(part.getInputStream(), part.getSubmittedFileName());
+                    filesUploaded.add(file);
+                }
+            }
+            FileOutput output = new FileOutput(filesUploaded);
+            respondJson(response, ok("Files uploaded successfully", output));
         } catch (Exception e) {
-            LOG.error("File cannot be uploaded!", e);
-            respondJson(response, error(String.format("File cannot be uploaded! %s", e.getMessage().trim())));
+            LOG.error("Files cannot be uploaded!", e);
+            respondJson(response, error(String.format("Files cannot be uploaded! %s", e.getMessage().trim())));
         }
     }
 
     @Override
     protected void doDelete(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
-            // TODO support deleting multiple files
-            File file = new File("/tmp/acm/file/yyyy/mm/dd/number/originalFileName.txt");
-            FileOutput output = new FileOutput(Collections.singletonList(file));
-            respondJson(response, ok("File deleted successfully", output));
+            List<String> paths = stringsParam(request, PATH_PARAM);
+            List<File> deleted = manager.deleteAll(paths);
+            FileOutput output = new FileOutput(deleted);
+            respondJson(response, ok("Files deleted successfully", output));
         } catch (Exception e) {
-            LOG.error("File cannot be deleted!", e);
-            respondJson(response, error(String.format("File cannot be deleted! %s", e.getMessage().trim())));
+            LOG.error("Files cannot be deleted!", e);
+            respondJson(response, error(String.format("Files cannot be deleted! %s", e.getMessage().trim())));
         }
     }
 

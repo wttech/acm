@@ -34,14 +34,13 @@ const uploadFiles = async (files: File[]): Promise<string[]> => {
   return response.data.data.files;
 };
 
-const deleteFile = async (path: string): Promise<void> => {
-  await apiRequest<FileOutput>({
+const deleteFile = async (path: string): Promise<string> => {
+  const response = await apiRequest<FileOutput>({
     operation: 'File delete',
-    url: '/apps/acm/api/file.json',
+    url: `/apps/acm/api/file.json?path=${encodeURIComponent(path)}`,
     method: 'DELETE',
-    data: { path },
-    headers: { 'Content-Type': 'application/json' },
   });
+  return response.data.data.files[0];
 };
 
 const FileField: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, min, max }) => {
@@ -89,23 +88,26 @@ const FileField: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allow
     }
   };
 
+  // TODO add <Field> to support validation, min/max, etc.
   return (
     <Flex direction="column" gap="size-200">
       <FileTrigger onSelect={handleFiles} allowsMultiple={allowMultiple} acceptedFileTypes={mimeTypes ? mimeTypes : undefined}>
-        <Button width="size-2000" variant="primary">{allowMultiple ? 'Upload Files' : 'Upload File'}</Button>
+        <Button width="size-2000" variant="primary">
+          {allowMultiple ? 'Upload Files' : 'Upload File'}
+        </Button>
       </FileTrigger>
       <ListView aria-label="Uploaded files" selectionMode="none" items={files}>
         {(file) => (
           <Item key={file.path || file.name}>
             <Flex direction="row" alignItems="center" gap="size-100">
               {file.uploading ? (
-                  <ProgressCircle isIndeterminate size="S" aria-label="Uploading" />
+                <ProgressCircle isIndeterminate size="S" aria-label="Uploading" />
               ) : file.deleting ? (
-                  <ProgressCircle isIndeterminate size="S" aria-label="Deleting" />
+                <ProgressCircle isIndeterminate size="S" aria-label="Deleting" />
               ) : (
-                  <Button variant="negative" isPending={file.deleting} onPress={() => handleDelete(file)} aria-label="Delete file" isDisabled={file.uploading}>
-                    <Delete />
-                  </Button>
+                <Button variant="negative" isPending={file.deleting} onPress={() => handleDelete(file)} aria-label="Delete file" isDisabled={file.uploading}>
+                  <Delete />
+                </Button>
               )}
               <Text>{file.name}</Text>
             </Flex>
