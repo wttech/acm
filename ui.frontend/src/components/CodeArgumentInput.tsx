@@ -32,7 +32,7 @@ import {
   ArgumentValue,
   isBoolArgument,
   isColorArgument,
-  isDateTimeArgument,
+  isDateTimeArgument, isFileArgument, isMultiFileArgument,
   isMultiSelectArgument,
   isNumberArgument,
   isPathArgument,
@@ -317,6 +317,10 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   validationState={fieldState.error ? 'invalid' : 'valid'}
                 />
               );
+            } else if (isFileArgument(arg)) {
+              // TODO implement single-file argument input
+            } else if (isMultiFileArgument(arg)) {
+              // TODO implement multi-file argument input
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);
             }

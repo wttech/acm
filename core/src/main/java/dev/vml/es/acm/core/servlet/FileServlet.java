@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 
 import static dev.vml.es.acm.core.util.ServletResult.error;
 import static dev.vml.es.acm.core.util.ServletResult.ok;
@@ -32,8 +33,9 @@ public class FileServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
+            // TODO support uploading multiple files
             File file = new File("/tmp/acm/executableId/number/originalFileName.txt");
-            FileOutput output = new FileOutput(file);
+            FileOutput output = new FileOutput(Collections.singletonList(file));
             respondJson(response, ok("File uploaded successfully", output));
         } catch (Exception e) {
             LOG.error("File cannot be uploaded!", e);
