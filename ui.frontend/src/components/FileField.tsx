@@ -6,9 +6,11 @@ import { FileOutput } from '../utils/api.types.ts';
 
 interface FileFieldProps {
   value: string | string[];
+  onChange: (value: string | string[]) => void;
   allowMultiple: boolean;
   mimeTypes?: string[];
-  onChange: (value: string | string[]) => void;
+  min?: number;
+  max?: number;
 }
 
 type FileItem = {
@@ -42,7 +44,7 @@ const deleteFile = async (path: string): Promise<void> => {
   });
 };
 
-const FileField: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple }) => {
+const FileField: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, min, max }) => {
   const [files, setFiles] = useState<FileItem[]>(
     (Array.isArray(value) ? value : value ? [value] : []).map((path) => ({
       name: path.split('/').pop() ?? path,

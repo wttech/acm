@@ -323,7 +323,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
             } else if (isFileArgument(arg)) {
               return <FileField allowMultiple={false} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />;
             } else if (isMultiFileArgument(arg)) {
-              return <FileField allowMultiple={true} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />;
+              return <FileField allowMultiple={true} min={arg.min ? arg.min : undefined} max={arg.max ? arg.max : undefined} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />;
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);
             }

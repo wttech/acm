@@ -102,6 +102,12 @@ export type FileArgument = Argument<ArgumentValue> & {
   mimeTypes: string[];
 };
 
+export type MultiFileArgument = Argument<ArgumentValue> & {
+  mimeTypes: string[];
+  min: number;
+  max: number;
+};
+
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is StringArgument {
   return arg.type === 'STRING';
 }
@@ -146,7 +152,7 @@ export function isFileArgument(arg: Argument<ArgumentValue>): arg is FileArgumen
   return arg.type === 'FILE';
 }
 
-export function isMultiFileArgument(arg: Argument<ArgumentValue>): arg is FileArgument {
+export function isMultiFileArgument(arg: Argument<ArgumentValue>): arg is MultiFileArgument {
   return arg.type === 'MULTIFILE';
 }
 
