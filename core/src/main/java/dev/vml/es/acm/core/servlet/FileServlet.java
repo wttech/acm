@@ -1,0 +1,43 @@
+package dev.vml.es.acm.core.servlet;
+
+import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.servlets.ServletResolverConstants;
+import org.apache.sling.api.servlets.SlingAllMethodsServlet;
+import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.Servlet;
+import java.io.File;
+import java.io.IOException;
+
+import static dev.vml.es.acm.core.util.ServletResult.error;
+import static dev.vml.es.acm.core.util.ServletResult.ok;
+import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
+
+@Component(
+        service = {Servlet.class},
+        property = {
+            ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + FileServlet.RT,
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+            ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
+        })
+public class FileServlet extends SlingAllMethodsServlet {
+
+    public static final String RT = "acm/api/file";
+
+    private static final Logger LOG = LoggerFactory.getLogger(FileServlet.class);
+
+    @Override
+    protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        try {
+            File file = new File("/tmp/acm/executableId/number/originalFileName.txt");
+            FileOutput output = new FileOutput(file);
+            respondJson(response, ok("File uploaded successfully", output));
+        } catch (Exception e) {
+            LOG.error("File cannot be uploaded!", e);
+            respondJson(response, error(String.format("File cannot be uploaded! %s", e.getMessage().trim())));
+        }
+    }
+}

@@ -231,4 +231,14 @@ public class Arguments implements Serializable {
         GroovyUtils.with(argument, options);
         add(argument);
     }
+
+    public void file(String name) {
+        file(name, null);
+    }
+
+    public void file(String name, Closure<FileArgument> options) {
+        FileArgument argument = new FileArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
 }
