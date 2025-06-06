@@ -45,6 +45,7 @@ import { Dates } from '../utils/dates';
 import { Strings } from '../utils/strings';
 import Markdown from './Markdown';
 import PathField from './PathPicker';
+import FileField from './FileInput';
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;
@@ -318,9 +319,21 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 />
               );
             } else if (isFileArgument(arg)) {
-              // TODO implement single-file argument input
+              return (
+                  <FileField
+                      arg={arg}
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                  />
+              )
             } else if (isMultiFileArgument(arg)) {
-              // TODO implement multi-file argument input
+              return (
+                  <FileField
+                      arg={arg}
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                  />
+              )
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);
             }

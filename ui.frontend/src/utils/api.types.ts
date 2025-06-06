@@ -352,3 +352,7 @@ export enum NodeType {
 export enum JCR_CONSTANTS {
   JCR_CONTENT = 'jcr:content',
 }
+
+export type FileOutput = {
+  files: string[];
+}
