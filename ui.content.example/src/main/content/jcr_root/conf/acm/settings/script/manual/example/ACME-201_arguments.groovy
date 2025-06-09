@@ -22,6 +22,7 @@ void describeRun() {
     arguments.time("feedingTime") { label = "Feeding Time"; value = "12:00"; group = "Details" }
     arguments.dateTime("lastVetVisit") { label = "Last Vet Visit"; value = "2025-05-01T10:10:10"; group = "Details" }
     arguments.path("profilePicture") { label = "Profile Picture"; group = "Media"; rootPathExclusive = "/content/dam" }
+    arguments.multiFile("holidayPictures") { label = "Holiday Pictures"; group = "Media"; images(); optional(); max = 3 }
     arguments.color("favoriteColor") { label = "Favorite Color"; value = "#ffcc00"; group = "Media" }
 }
 
