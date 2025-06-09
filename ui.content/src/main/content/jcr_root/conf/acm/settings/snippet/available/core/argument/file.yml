@@ -1,0 +1,19 @@
+group: Argument
+name: argument_file
+content: |
+  arguments.file("${1:name}") { label = "${2:Label}" }
+documentation: |
+  An argument that allows to use uploaded file.
+  
+  Type of files that can be uploaded can be restricted by setting `mimeTypes`.
+  There are predefined mime types available: `images()`, `videos()`, `audios()`, `pdfs()`.
+  
+  For example:
+  ```groovy
+  arguments.file("imageFile") { images() }
+  ```
+  
+  Usage:
+  ```groovy
+  def file = arguments.value("imageFile") // java.io.File
+  ```

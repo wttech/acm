@@ -116,8 +116,8 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
 
   return (
     <Flex direction="column" gap="size-200">
-      {!atMax && (
-        <FileTrigger onSelect={handleFiles} allowsMultiple={allowMultiple} acceptedFileTypes={mimeTypes ? mimeTypes : undefined}>
+      {((allowMultiple && !atMax) || (!allowMultiple && files.length === 0)) && (
+        <FileTrigger onSelect={handleFiles} allowsMultiple={allowMultiple} acceptedFileTypes={mimeTypes}>
           <Button width="size-1250" variant="primary">
             <FileAdd />
             <Text>Upload</Text>
@@ -130,9 +130,9 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
             <Item key={file.id}>
               <Flex direction="row" alignItems="center" gap="size-100">
                 {file.uploading ? (
-                  <ProgressCircle isIndeterminate size="S" aria-label="Uploading" />
+                  <ProgressCircle isIndeterminate size="M" aria-label="Uploading" />
                 ) : file.deleting ? (
-                  <ProgressCircle isIndeterminate size="S" aria-label="Deleting" />
+                  <ProgressCircle isIndeterminate size="M" aria-label="Deleting" />
                 ) : (
                   <Button variant="negative" isPending={file.deleting} onPress={() => handleDelete(file)} aria-label="Delete file" isDisabled={file.uploading}>
                     <Delete />

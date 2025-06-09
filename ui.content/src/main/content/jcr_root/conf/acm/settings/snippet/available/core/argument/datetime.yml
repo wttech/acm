@@ -20,6 +20,6 @@ documentation: |
   
   Usage:
   ```groovy
-  def publicationDate = arguments.value("publicationDate", java.time.LocalDateTime.class)
+  def publicationDate = arguments.value("publicationDate") // java.time.LocalDateTime
   ```
   

@@ -16,5 +16,5 @@ documentation: |
   
   Usage:
   ```groovy
-  def eventStart = arguments.value("eventStart", java.time.LocalTime.class)
+  def eventStart = arguments.value("eventStart") // java.time.LocalTime
   ```
