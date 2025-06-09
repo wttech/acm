@@ -332,10 +332,6 @@ public class RepoResource {
         return new RepoResourceState(path, true, resource.getValueMap());
     }
 
-    public Resource saveFile(String mimeType, Object data) {
-        return saveFileInternal(mimeType, data, null);
-    }
-
     public Resource saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
         return saveFileInternal(mimeType, null, dataWriter);
     }
@@ -348,6 +344,10 @@ public class RepoResource {
                 throw new RepoException(String.format("Cannot write file '%s' to path '%s'!", file.getPath(), path), e);
             }
         });
+    }
+
+    public Resource saveFile(String mimeType, Object data) {
+        return saveFileInternal(mimeType, data, null);
     }
 
     private Resource saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
