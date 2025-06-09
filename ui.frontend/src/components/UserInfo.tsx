@@ -25,7 +25,6 @@ const extractUserFromEmail = (email: string): string | null => {
 };
 
 const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
-
   // ACM service IDs like 'acm-content-service'
   if (id.startsWith(UserIdServicePrefix)) {
     return (

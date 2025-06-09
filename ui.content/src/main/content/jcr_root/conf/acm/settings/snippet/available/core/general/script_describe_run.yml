@@ -2,7 +2,7 @@ group: General
 name: general_script_describe_run
 content: |
   void describeRun() {
-    // args
+    // arguments.xxx(name) { ... }
   }
 documentation: |
   Describes the script characteristics.

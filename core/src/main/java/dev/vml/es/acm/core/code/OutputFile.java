@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class OutputFile implements Output {
 
-    public static final String TMP_DIR = "acm";
+    public static final String TMP_DIR = "acm/output";
 
     private final String executionId;
 

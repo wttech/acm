@@ -13,5 +13,7 @@ public enum ArgumentType {
     MULTISELECT,
     COLOR,
     NUMBER_RANGE,
-    PATH
+    PATH,
+    FILE,
+    MULTIFILE,
 }

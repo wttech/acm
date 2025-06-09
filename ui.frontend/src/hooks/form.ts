@@ -1,5 +1,5 @@
 import { useFormContext } from 'react-hook-form';
-import { Argument, ArgumentValue, isDateTimeArgument, isNumberArgument, isPathArgument } from '../utils/api.types.ts';
+import { Argument, ArgumentValue, isDateTimeArgument, isMultiFileArgument, isNumberArgument, isPathArgument } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates';
 
 type ValidationResult = string | true | undefined;
@@ -52,7 +52,22 @@ function validateCustom(arg: Argument<ArgumentValue>, value: ArgumentValue, allV
 }
 
 function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): ValidationResult {
-  if (isNumberArgument(arg) && typeof value === 'number') {
+  if (isMultiFileArgument(arg)) {
+    const files = Array.isArray(value) ? value : value ? [value] : [];
+    const min = typeof arg.min === 'number' ? arg.min : undefined;
+    const max = typeof arg.max === 'number' ? arg.max : undefined;
+
+    if ((min && files.length < min) || (max && files.length > max)) {
+      let msg = 'Files count allowed:';
+      if (min) {
+        msg += ` minimum ${min}`;
+      }
+      if (max) {
+        msg += `, maximum ${max}`;
+      }
+      return msg;
+    }
+  } else if (isNumberArgument(arg) && typeof value === 'number') {
     if (arg.min && value < arg.min) {
       return `Value must be greater than or equal to '${arg.min}'`;
     }
@@ -74,8 +89,14 @@ function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): Va
         return `Path must not end with '/'`;
       } else if (arg.rootInclusive && !value.startsWith(arg.rootPath)) {
         return `Path must start with '${arg.rootPath}'`;
-      } else if (!arg.rootInclusive && !value.startsWith(`${arg.rootPath}/`)) {
-        return `Path must start with '${arg.rootPath}/'`;
+      } else if (!arg.rootInclusive) {
+        if (arg.rootPath === '/') {
+          if (!value.startsWith('/')) {
+            return `Path must start with '/'`;
+          }
+        } else if (!value.startsWith(`${arg.rootPath}/`)) {
+          return `Path must start with '${arg.rootPath}/'`;
+        }
       }
     }
   } else if (isDateTimeArgument(arg) && typeof value === 'string') {

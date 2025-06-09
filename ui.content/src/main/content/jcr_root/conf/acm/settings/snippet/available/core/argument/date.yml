@@ -17,5 +17,5 @@ documentation: |
   
   Usage:
   ```groovy
-  def releaseDate = arguments.value("releaseDate", java.time.LocalDate.class)
+  def releaseDate = arguments.value("releaseDate") // java.time.LocalDate
   ```
