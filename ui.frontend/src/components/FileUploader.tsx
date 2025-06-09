@@ -79,20 +79,19 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
   };
 
   const handleDelete = async (fileObj: FileItem) => {
-    setFiles((prev) => prev.map((f) => (f === fileObj ? { ...f, deleting: true } : f)));
+    setFiles((prev) => prev.map((f) => (f.path === fileObj.path ? { ...f, deleting: true } : f)));
     try {
       await deleteFile(fileObj.path);
-      const updated = files.filter((f) => f !== fileObj);
-      setFiles(updated);
-      const updatedPaths = updated.filter((f) => f.path).map((f) => f.path);
-      onChange(allowMultiple ? updatedPaths : updatedPaths[0] || '');
+      setFiles((prev) => {
+        const updated = prev.filter((f) => f.path !== fileObj.path);
+        const updatedPaths = updated.filter((f) => f.path).map((f) => f.path);
+        onChange(allowMultiple ? updatedPaths : updatedPaths[0] || '');
+        return updated;
+      });
     } catch {
-      setFiles((prev) => prev.map((f) => (f === fileObj ? { ...f, deleting: false } : f)));
+      setFiles((prev) => prev.map((f) => (f.path === fileObj.path ? { ...f, deleting: false } : f)));
     }
   };
-
-  // TODO remove it
-  console.debug('Files uploaded', files);
 
   return (
       <Flex direction="column" gap="size-200">
