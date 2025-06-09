@@ -43,7 +43,7 @@ const deleteFile = async (path: string): Promise<string> => {
   return response.data.data.files[0];
 };
 
-const FileField: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, min, max }) => {
+const FilePicker: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, min, max }) => {
   const [files, setFiles] = useState<FileItem[]>(
     (Array.isArray(value) ? value : value ? [value] : []).map((path) => ({
       name: path.split('/').pop() ?? path,
@@ -118,4 +118,4 @@ const FileField: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allow
   );
 };
 
-export default FileField;
+export default FilePicker;

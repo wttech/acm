@@ -45,7 +45,7 @@ import {
 } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates';
 import { Strings } from '../utils/strings';
-import FileField from './FileField';
+import FilePicker from './FilePicker';
 import Markdown from './Markdown';
 import PathField from './PathPicker';
 
@@ -321,9 +321,21 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 />
               );
             } else if (isFileArgument(arg)) {
-              return <FileField allowMultiple={false} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />;
+              return (
+                <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                  <div>
+                    <FilePicker allowMultiple={false} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />
+                  </div>
+                </Field>
+              );
             } else if (isMultiFileArgument(arg)) {
-              return <FileField allowMultiple={true} min={arg.min ? arg.min : undefined} max={arg.max ? arg.max : undefined} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />;
+              return (
+                <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                  <div>
+                    <FilePicker allowMultiple={true} min={arg.min ? arg.min : undefined} max={arg.max ? arg.max : undefined} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />
+                  </div>
+                </Field>
+              );
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);
             }
