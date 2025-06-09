@@ -2,7 +2,7 @@ import { Button, FileTrigger, Flex, Item, ListView, ProgressCircle, Text } from 
 import Delete from '@spectrum-icons/workflow/Delete';
 import FileAdd from '@spectrum-icons/workflow/FileAdd';
 import { useState } from 'react';
-import { apiRequest } from '../utils/api';
+import {apiRequest, toastRequest} from '../utils/api';
 import { FileOutput } from '../utils/api.types.ts';
 
 interface FileFieldProps {
@@ -28,8 +28,9 @@ type FileItem = {
 const uploadFiles = async (files: File[]): Promise<string[]> => {
   const formData = new FormData();
   files.forEach((file) => formData.append(file.name, file));
-  const response = await apiRequest<FileOutput>({
+  const response = await toastRequest<FileOutput>({
     operation: 'File upload',
+    positive: false,
     url: '/apps/acm/api/file.json',
     method: 'POST',
     data: formData,
@@ -38,13 +39,15 @@ const uploadFiles = async (files: File[]): Promise<string[]> => {
   return response.data.data.files;
 };
 
-const deleteFile = async (path: string): Promise<string> => {
-  const response = await apiRequest<FileOutput>({
+const deleteFiles = async (paths: string[]): Promise<string[]> => {
+  const query = paths.map((p) => `path=${encodeURIComponent(p)}`).join('&');
+  const response = await toastRequest<FileOutput>({
     operation: 'File delete',
-    url: `/apps/acm/api/file.json?path=${encodeURIComponent(path)}`,
+    positive: false,
+    url: `/apps/acm/api/file.json?${query}`,
     method: 'DELETE',
   });
-  return response.data.data.files[0];
+  return response.data.data.files;
 };
 
 const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, max }) => {
@@ -94,7 +97,7 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
   const handleDelete = async (fileObj: FileItem) => {
     setFiles((prev) => prev.map((f) => (f.path === fileObj.path ? { ...f, deleting: true } : f)));
     try {
-      await deleteFile(fileObj.path);
+      await deleteFiles([fileObj.path]);
       setFiles((prev) => {
         const updated = prev.filter((f) => f.path !== fileObj.path);
         const updatedPaths = updated.filter((f) => f.path).map((f) => f.path);
