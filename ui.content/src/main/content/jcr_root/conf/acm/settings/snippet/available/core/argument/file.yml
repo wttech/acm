@@ -6,7 +6,7 @@ documentation: |
   An argument that allows to use uploaded file.
   
   Type of files that can be uploaded can be restricted by setting `mimeTypes`.
-  There are predefined mime types available: `images()`, `videos()`, `audios()`, `pdfs()`.
+  Predefined mime types available: `images()`, `videos()`, `audios()`, `archives()`, `pdfs()`, `zips()`.
   
   For example:
   ```groovy

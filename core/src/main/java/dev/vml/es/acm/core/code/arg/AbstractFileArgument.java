@@ -39,6 +39,17 @@ abstract class AbstractFileArgument<V> extends Argument<V> {
         this.mimeTypes = Arrays.asList("audio/mpeg", "audio/wav", "audio/ogg", "audio/aac", "audio/flac", "audio/mp3");
     }
 
+    public void archives() {
+        this.mimeTypes = Arrays.asList(
+                "application/zip", "application/x-zip-compressed", "application/gzip", "application/x-gzip",
+                "application/x-tar", "application/x-rar-compressed", "application/x-7z-compressed"
+        );
+    }
+
+    public void zips() {
+        this.mimeTypes = Collections.singletonList("application/zip");
+    }
+
     public void pdfs() {
         this.mimeTypes = Collections.singletonList("application/pdf");
     }
