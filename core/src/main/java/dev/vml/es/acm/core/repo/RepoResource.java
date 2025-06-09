@@ -6,6 +6,7 @@ import dev.vml.es.acm.core.util.StringUtil;
 import dev.vml.es.acm.core.util.TypeValueMap;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -337,6 +338,16 @@ public class RepoResource {
 
     public Resource saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
         return saveFileInternal(mimeType, null, dataWriter);
+    }
+
+    public Resource saveFile(String mimeType, File file) {
+        return saveFile(mimeType, (OutputStream os) -> {
+            try (InputStream is = Files.newInputStream(file.toPath())) {
+                IOUtils.copy(is, os);
+            } catch (IOException e) {
+                throw new RepoException(String.format("Cannot write file '%s' to path '%s'!", file.getPath(), path), e);
+            }
+        });
     }
 
     private Resource saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
