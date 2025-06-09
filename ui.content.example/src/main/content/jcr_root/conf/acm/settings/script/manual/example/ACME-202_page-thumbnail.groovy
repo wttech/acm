@@ -17,12 +17,11 @@ boolean canRun() {
 void doRun() {
     out.fromLogs()
 
-    def pageThumbnailFile = arguments.value("pageThumbnailFile")
     def page = repo.get(arguments.value("pagePath"))
 
     def pageThumbnails = page.child("jcr:content/image/file/jcr:content/dam:thumbnails")
     pageThumbnails.delete()
 
     def pageThumbnail = page.child("jcr:content/image/file")
-    pageThumbnail.saveFile("image/jpeg", pageThumbnailFile)
+    pageThumbnail.saveFile("image/jpeg", arguments.value("pageThumbnailFile"))
 }
