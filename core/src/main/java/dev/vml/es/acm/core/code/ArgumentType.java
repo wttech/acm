@@ -14,5 +14,6 @@ public enum ArgumentType {
     COLOR,
     NUMBER_RANGE,
     PATH,
-    FILE
+    FILE,
+    MULTIFILE,
 }

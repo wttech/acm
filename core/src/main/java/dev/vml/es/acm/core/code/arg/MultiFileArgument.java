@@ -11,7 +11,7 @@ public class MultiFileArgument extends AbstractFileArgument<File[]> {
     private Integer max;
 
     public MultiFileArgument(String name) {
-        super(name, ArgumentType.FILE, File[].class);
+        super(name, ArgumentType.MULTIFILE, File[].class);
     }
 
     public Integer getMin() {

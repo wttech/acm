@@ -45,7 +45,7 @@ import {
 } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates';
 import { Strings } from '../utils/strings';
-import FilePicker from './FilePicker';
+import FileUploader from './FileUploader';
 import Markdown from './Markdown';
 import PathField from './PathPicker';
 
@@ -324,7 +324,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <FilePicker allowMultiple={false} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />
+                    <FileUploader allowMultiple={false} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />
                   </div>
                 </Field>
               );
@@ -332,7 +332,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <FilePicker allowMultiple={true} min={arg.min ? arg.min : undefined} max={arg.max ? arg.max : undefined} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />
+                    <FileUploader allowMultiple={true} min={arg.min ? arg.min : undefined} max={arg.max ? arg.max : undefined} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />
                   </div>
                 </Field>
               );

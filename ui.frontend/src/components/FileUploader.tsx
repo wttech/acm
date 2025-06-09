@@ -3,6 +3,7 @@ import Delete from '@spectrum-icons/workflow/Delete';
 import { useState } from 'react';
 import { apiRequest } from '../utils/api';
 import { FileOutput } from '../utils/api.types.ts';
+import FileAdd from '@spectrum-icons/workflow/FileAdd';
 
 interface FileFieldProps {
   value: string | string[];
@@ -43,7 +44,7 @@ const deleteFile = async (path: string): Promise<string> => {
   return response.data.data.files[0];
 };
 
-const FilePicker: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, min, max }) => {
+const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, max }) => {
   const [files, setFiles] = useState<FileItem[]>(
     (Array.isArray(value) ? value : value ? [value] : []).map((path) => ({
       name: path.split('/').pop() ?? path,
@@ -52,6 +53,8 @@ const FilePicker: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allo
       deleting: false,
     })),
   );
+  const uploadedCount = files.filter((f) => f.path).length;
+  const atMax = typeof max === 'number' && uploadedCount >= max;
 
   const handleFiles = async (selectedFiles: FileList | null) => {
     if (!selectedFiles) {
@@ -88,34 +91,43 @@ const FilePicker: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allo
     }
   };
 
-  // TODO add <Field> to support validation, min/max, etc.
   return (
     <Flex direction="column" gap="size-200">
-      <FileTrigger onSelect={handleFiles} allowsMultiple={allowMultiple} acceptedFileTypes={mimeTypes ? mimeTypes : undefined}>
-        <Button width="size-2000" variant="primary">
-          {allowMultiple ? 'Upload Files' : 'Upload File'}
+      {atMax ? (
+        <Button width="size-1250" variant="primary" isDisabled>
+          <FileAdd/>
+          <Text>Upload</Text>
         </Button>
-      </FileTrigger>
-      <ListView aria-label="Uploaded files" selectionMode="none" items={files}>
-        {(file) => (
-          <Item key={file.path || file.name}>
-            <Flex direction="row" alignItems="center" gap="size-100">
-              {file.uploading ? (
-                <ProgressCircle isIndeterminate size="S" aria-label="Uploading" />
-              ) : file.deleting ? (
-                <ProgressCircle isIndeterminate size="S" aria-label="Deleting" />
-              ) : (
-                <Button variant="negative" isPending={file.deleting} onPress={() => handleDelete(file)} aria-label="Delete file" isDisabled={file.uploading}>
-                  <Delete />
-                </Button>
-              )}
-              <Text>{file.name}</Text>
-            </Flex>
-          </Item>
-        )}
-      </ListView>
+      ) : (
+        <FileTrigger onSelect={handleFiles} allowsMultiple={allowMultiple} acceptedFileTypes={mimeTypes ? mimeTypes : undefined}>
+          <Button width="size-1250" variant="primary">
+            <FileAdd/>
+            <Text>Upload</Text>
+          </Button>
+        </FileTrigger>
+      )}
+      {uploadedCount > 0 && (
+        <ListView aria-label="Uploaded files" selectionMode="none" items={files}>
+          {(file) => (
+            <Item key={file.path || file.name}>
+              <Flex direction="row" alignItems="center" gap="size-100">
+                {file.uploading ? (
+                  <ProgressCircle isIndeterminate size="S" aria-label="Uploading" />
+                ) : file.deleting ? (
+                  <ProgressCircle isIndeterminate size="S" aria-label="Deleting" />
+                ) : (
+                  <Button variant="negative" isPending={file.deleting} onPress={() => handleDelete(file)} aria-label="Delete file" isDisabled={file.uploading}>
+                    <Delete />
+                  </Button>
+                )}
+                <Text>{file.name}</Text>
+              </Flex>
+            </Item>
+          )}
+        </ListView>
+      )}
     </Flex>
   );
 };
 
-export default FilePicker;
+export default FileUploader;
