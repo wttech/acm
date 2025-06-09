@@ -2,7 +2,7 @@ import { Button, FileTrigger, Flex, Item, ListView, ProgressCircle, Text } from 
 import Delete from '@spectrum-icons/workflow/Delete';
 import FileAdd from '@spectrum-icons/workflow/FileAdd';
 import { useState } from 'react';
-import {apiRequest, toastRequest} from '../utils/api';
+import { toastRequest } from '../utils/api';
 import { FileOutput } from '../utils/api.types.ts';
 
 interface FileFieldProps {
@@ -51,6 +51,7 @@ const deleteFiles = async (paths: string[]): Promise<string[]> => {
 };
 
 const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, max }) => {
+  const effectiveMax = allowMultiple ? max : 1;
   const [files, setFiles] = useState<FileItem[]>(
     (Array.isArray(value) ? value : value ? [value] : []).map((path) => ({
       id: generateId(),
@@ -61,14 +62,14 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
     })),
   );
   const uploadedCount = files.filter((f) => f.path).length;
-  const atMax = typeof max === 'number' && uploadedCount >= max;
+  const atMax = typeof effectiveMax === 'number' && uploadedCount >= effectiveMax;
 
   const handleFiles = async (selectedFiles: FileList | null) => {
     if (!selectedFiles) {
       return;
     }
     const uploadedCount = files.filter((f) => f.path).length;
-    const remaining = typeof max === 'number' ? Math.max(0, max - uploadedCount) : selectedFiles.length;
+    const remaining = typeof effectiveMax === 'number' ? Math.max(0, effectiveMax - uploadedCount) : selectedFiles.length;
     const filesToUpload = Array.from(selectedFiles).slice(0, remaining);
 
     const newFiles: FileItem[] = filesToUpload.map((file) => ({
@@ -115,12 +116,7 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
 
   return (
     <Flex direction="column" gap="size-200">
-      {atMax ? (
-        <Button width="size-1250" variant="primary" isDisabled>
-          <FileAdd />
-          <Text>Upload</Text>
-        </Button>
-      ) : (
+      {!atMax && (
         <FileTrigger onSelect={handleFiles} allowsMultiple={allowMultiple} acceptedFileTypes={mimeTypes ? mimeTypes : undefined}>
           <Button width="size-1250" variant="primary">
             <FileAdd />
