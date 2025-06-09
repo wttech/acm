@@ -24,7 +24,7 @@ type FileItem = {
 
 const uploadFiles = async (files: File[]): Promise<string[]> => {
   const formData = new FormData();
-  files.forEach((file) => formData.append('file', file));
+  files.forEach((file) => formData.append(file.name, file));
   const response = await apiRequest<FileOutput>({
     operation: 'File upload',
     url: '/apps/acm/api/file.json',
@@ -46,12 +46,12 @@ const deleteFile = async (path: string): Promise<string> => {
 
 const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, max }) => {
   const [files, setFiles] = useState<FileItem[]>(
-    (Array.isArray(value) ? value : value ? [value] : []).map((path) => ({
-      name: path.split('/').pop() ?? path,
-      path,
-      uploading: false,
-      deleting: false,
-    })),
+      (Array.isArray(value) ? value : value ? [value] : []).map((path) => ({
+        name: path.split('/').pop() ?? path,
+        path,
+        uploading: false,
+        deleting: false,
+      })),
   );
   const uploadedCount = files.filter((f) => f.path).length;
   const atMax = typeof max === 'number' && uploadedCount >= max;
@@ -91,42 +91,45 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
     }
   };
 
+  // TODO remove it
+  console.debug('Files uploaded', files);
+
   return (
-    <Flex direction="column" gap="size-200">
-      {atMax ? (
-        <Button width="size-1250" variant="primary" isDisabled>
-          <FileAdd/>
-          <Text>Upload</Text>
-        </Button>
-      ) : (
-        <FileTrigger onSelect={handleFiles} allowsMultiple={allowMultiple} acceptedFileTypes={mimeTypes ? mimeTypes : undefined}>
-          <Button width="size-1250" variant="primary">
-            <FileAdd/>
-            <Text>Upload</Text>
-          </Button>
-        </FileTrigger>
-      )}
-      {uploadedCount > 0 && (
-        <ListView aria-label="Uploaded files" selectionMode="none" items={files}>
-          {(file) => (
-            <Item key={file.path || file.name}>
-              <Flex direction="row" alignItems="center" gap="size-100">
-                {file.uploading ? (
-                  <ProgressCircle isIndeterminate size="S" aria-label="Uploading" />
-                ) : file.deleting ? (
-                  <ProgressCircle isIndeterminate size="S" aria-label="Deleting" />
-                ) : (
-                  <Button variant="negative" isPending={file.deleting} onPress={() => handleDelete(file)} aria-label="Delete file" isDisabled={file.uploading}>
-                    <Delete />
-                  </Button>
-                )}
-                <Text>{file.name}</Text>
-              </Flex>
-            </Item>
-          )}
-        </ListView>
-      )}
-    </Flex>
+      <Flex direction="column" gap="size-200">
+        {atMax ? (
+            <Button width="size-1250" variant="primary" isDisabled>
+              <FileAdd/>
+              <Text>Upload</Text>
+            </Button>
+        ) : (
+            <FileTrigger onSelect={handleFiles} allowsMultiple={allowMultiple} acceptedFileTypes={mimeTypes ? mimeTypes : undefined}>
+              <Button width="size-1250" variant="primary">
+                <FileAdd/>
+                <Text>Upload</Text>
+              </Button>
+            </FileTrigger>
+        )}
+        {uploadedCount > 0 && (
+            <ListView aria-label="Uploaded files" selectionMode="none" items={files}>
+              {(file) => (
+                  <Item key={file.path || file.name}>
+                    <Flex direction="row" alignItems="center" gap="size-100">
+                      {file.uploading ? (
+                          <ProgressCircle isIndeterminate size="S" aria-label="Uploading" />
+                      ) : file.deleting ? (
+                          <ProgressCircle isIndeterminate size="S" aria-label="Deleting" />
+                      ) : (
+                          <Button variant="negative" isPending={file.deleting} onPress={() => handleDelete(file)} aria-label="Delete file" isDisabled={file.uploading}>
+                            <Delete />
+                          </Button>
+                      )}
+                      <Text>{file.name}</Text>
+                    </Flex>
+                  </Item>
+              )}
+            </ListView>
+        )}
+      </Flex>
   );
 };
 
