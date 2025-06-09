@@ -14,7 +14,7 @@ interface FileFieldProps {
   max?: number;
 }
 
-const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
 type FileItem = {
   id: string;
