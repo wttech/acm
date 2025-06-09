@@ -67,7 +67,11 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
     if (!selectedFiles) {
       return;
     }
-    const newFiles: FileItem[] = Array.from(selectedFiles).map((file) => ({
+    const uploadedCount = files.filter((f) => f.path).length;
+    const remaining = typeof max === 'number' ? Math.max(0, max - uploadedCount) : selectedFiles.length;
+    const filesToUpload = Array.from(selectedFiles).slice(0, remaining);
+
+    const newFiles: FileItem[] = filesToUpload.map((file) => ({
       id: generateId(),
       name: file.name,
       path: '',
