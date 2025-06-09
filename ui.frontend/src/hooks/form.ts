@@ -89,8 +89,14 @@ function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): Va
         return `Path must not end with '/'`;
       } else if (arg.rootInclusive && !value.startsWith(arg.rootPath)) {
         return `Path must start with '${arg.rootPath}'`;
-      } else if (!arg.rootInclusive && !value.startsWith(`${arg.rootPath}/`)) {
-        return `Path must start with '${arg.rootPath}/'`;
+      } else if (!arg.rootInclusive) {
+        if (arg.rootPath === '/') {
+          if (!value.startsWith('/')) {
+            return `Path must start with '/'`;
+          }
+        } else if (!value.startsWith(`${arg.rootPath}/`)) {
+          return `Path must start with '${arg.rootPath}/'`;
+        }
       }
     }
   } else if (isDateTimeArgument(arg) && typeof value === 'string') {

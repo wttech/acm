@@ -19,6 +19,10 @@ abstract class AbstractFileArgument<V> extends Argument<V> {
         return mimeTypes;
     }
 
+    public void setMimeType(String mimeType) {
+        this.mimeTypes = Collections.singletonList(mimeType);
+    }
+
     public void setMimeTypes(List<String> mimeTypes) {
         this.mimeTypes = mimeTypes;
     }
