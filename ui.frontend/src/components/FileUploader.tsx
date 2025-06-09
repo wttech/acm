@@ -14,7 +14,10 @@ interface FileFieldProps {
   max?: number;
 }
 
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
 type FileItem = {
+  id: string;
   name: string;
   path: string;
   uploading: boolean;
@@ -47,6 +50,7 @@ const deleteFile = async (path: string): Promise<string> => {
 const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, allowMultiple, max }) => {
   const [files, setFiles] = useState<FileItem[]>(
     (Array.isArray(value) ? value : value ? [value] : []).map((path) => ({
+      id: generateId(),
       name: path.split('/').pop() ?? path,
       path,
       uploading: false,
@@ -61,29 +65,30 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
       return;
     }
     const newFiles: FileItem[] = Array.from(selectedFiles).map((file) => ({
+      id: generateId(),
       name: file.name,
       path: '',
       uploading: true,
       deleting: false,
       file,
     }));
-    setFiles((prev) => [...prev, ...newFiles]);
-    try {
-      const uploadedPaths = await uploadFiles(newFiles.map((f) => f.file!));
-      setFiles((prev) =>
-        prev.map((f) => {
-          const idx = newFiles.findIndex((nf) => nf.name === f.name && f.uploading && !f.path);
-          if (idx !== -1) {
-            return { ...f, path: uploadedPaths[idx], uploading: false };
-          }
-          return f;
-        }),
-      );
-      const updatedPaths = [...files.filter((f) => f.path).map((f) => f.path), ...uploadedPaths];
-      onChange(allowMultiple ? updatedPaths : uploadedPaths[0] || '');
-    } catch {
-      setFiles((prev) => prev.filter((f) => !newFiles.some((nf) => nf.name === f.name && f.uploading && !f.path)));
+
+    setFiles((prev) => [...prev, ...newFiles]); // Pre-render all loading indicators
+
+    for (const fileItem of newFiles) {
+      try {
+        const [uploadedPath] = await uploadFiles([fileItem.file!]);
+        setFiles((prev) => prev.map((f) => (f.id === fileItem.id ? { ...f, path: uploadedPath, uploading: false } : f)));
+      } catch {
+        setFiles((prev) => prev.filter((f) => f.id !== fileItem.id));
+      }
     }
+
+    setFiles((prev) => {
+      const updatedPaths = prev.filter((f) => f.path).map((f) => f.path);
+      onChange(allowMultiple ? updatedPaths : updatedPaths[0] || '');
+      return prev;
+    });
   };
 
   const handleDelete = async (fileObj: FileItem) => {
@@ -116,10 +121,10 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
           </Button>
         </FileTrigger>
       )}
-      {uploadedCount > 0 && (
+      {files.length > 0 && (
         <ListView aria-label="Uploaded files" selectionMode="none" items={files}>
           {(file) => (
-            <Item key={file.path || file.name}>
+            <Item key={file.id}>
               <Flex direction="row" alignItems="center" gap="size-100">
                 {file.uploading ? (
                   <ProgressCircle isIndeterminate size="S" aria-label="Uploading" />
