@@ -14,6 +14,7 @@
   "dependencies": {
     "@adobe/react-spectrum": "^3.40.1",
     "@monaco-editor/react": "^4.6.0",
+    "@preact/signals-react": "^3.2.0",
     "@react-spectrum/toast": "^3.0.1",
     "@spectrum-icons/illustrations": "^3.6.20",
     "@spectrum-icons/workflow": "^4.2.19",
