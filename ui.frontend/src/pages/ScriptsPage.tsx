@@ -6,13 +6,12 @@ import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import Hand from '@spectrum-icons/workflow/Hand';
 import ScriptListRich from '../components/ScriptListRich.tsx';
 import ScriptListSimple from '../components/ScriptListSimple.tsx';
-import { useAppState } from '../hooks/app.ts';
+import { appState } from '../hooks/app.ts';
 import { useNavigationTab } from '../hooks/navigation';
 import { ScriptType } from '../utils/api.types';
 import styles from './ScriptsPage.module.css';
 
 const ScriptsPage = () => {
-  const appState = useAppState();
   const [selectedTab, handleTabChange] = useNavigationTab('manual');
 
   return (
@@ -31,7 +30,7 @@ const ScriptsPage = () => {
             <CloseCircle />
             <Text>Disabled</Text>
           </Item>
-          {appState.mockStatus.enabled ? (
+          {appState.value.mockStatus.enabled ? (
             <Item aria-label="Mock scripts" key="mock">
               <Beaker />
               <Text>Mock</Text>
@@ -52,7 +51,7 @@ const ScriptsPage = () => {
           <Item key="disabled">
             <ScriptListRich type={ScriptType.DISABLED} />
           </Item>
-          {appState.mockStatus.enabled ? (
+          {appState.value.mockStatus.enabled ? (
             <Item key="mock">
               <ScriptListSimple type={ScriptType.MOCK} />
             </Item>

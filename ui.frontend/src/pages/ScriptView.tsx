@@ -7,9 +7,9 @@ import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import CodeExecuteButton from '../components/CodeExecuteButton.tsx';
-import ImmersiveEditor from '../components/ImmersiveEditor.tsx';
-import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation.ts';
+import CodeEditor from '../components/CodeEditor';
+import CodeExecuteButton from '../components/CodeExecuteButton';
+import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation';
 import { toastRequest } from '../utils/api';
 import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput, ScriptType } from '../utils/api.types';
 import { Urls } from '../utils/url.ts';
@@ -137,7 +137,7 @@ const ScriptView = () => {
                     {script.type !== ScriptType.EXTENSION && script.type !== ScriptType.MOCK && (
                       <Button
                         variant="secondary"
-                        style="outline"
+                        style="fill"
                         onPress={() =>
                           navigate(
                             Urls.compose('/history', {
@@ -177,7 +177,7 @@ const ScriptView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <ImmersiveEditor id="script-view" value={script.content} language="groovy" readOnly />
+              <CodeEditor id="script-view" value={script.content} language="groovy" readOnly />
             </Flex>
           </Item>
         </TabPanels>

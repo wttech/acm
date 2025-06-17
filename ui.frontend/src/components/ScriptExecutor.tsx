@@ -12,7 +12,7 @@ import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppState } from '../hooks/app.ts';
+import { appState } from '../hooks/app.ts';
 import { apiRequest } from '../utils/api.ts';
 import { ExecutionOutput, ExecutionSummary, InstanceType } from '../utils/api.types.ts';
 import { isProduction } from '../utils/node';
@@ -25,8 +25,6 @@ import ExecutionStatusBadge from './ExecutionStatusBadge';
 const ScriptExecutor = () => {
   const prefix = isProduction() ? '' : 'http://localhost:4502';
   const navigate = useNavigate();
-
-  const appState = useAppState();
 
   const [executions, setExecutions] = useState<ExecutionSummary[]>([]);
   const isFetching = useRef(false);
@@ -41,7 +39,7 @@ const ScriptExecutor = () => {
           operation: 'Fetch queued executions',
           url: '/apps/acm/api/execution.json?queued=true&format=summary',
           method: 'get',
-          timeout: intervalToTimeout(appState.spaSettings.appStateInterval),
+          timeout: intervalToTimeout(appState.value.spaSettings.appStateInterval),
           quiet: true,
         });
         setExecutions(response.data.data.list);
@@ -52,9 +50,9 @@ const ScriptExecutor = () => {
       }
     };
     fetchExecutions();
-    const intervalId = setInterval(fetchExecutions, appState.spaSettings.appStateInterval);
+    const intervalId = setInterval(fetchExecutions, appState.value.spaSettings.appStateInterval);
     return () => clearInterval(intervalId);
-  }, [appState.spaSettings.appStateInterval]);
+  }, []);
 
   console.log('executions', executions);
 
@@ -82,7 +80,7 @@ const ScriptExecutor = () => {
             <ButtonGroup>
               <ExecutionsAbortButton selectedKeys={selectedIds(selectedKeys)} />
               <MenuTrigger>
-                <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}>
+                <Button variant="negative" isDisabled={appState.value.instanceSettings.type === InstanceType.CLOUD_CONTAINER}>
                   <Settings />
                   <Text>Configure</Text>
                 </Button>

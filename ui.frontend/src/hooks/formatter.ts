@@ -2,13 +2,10 @@ import { DateFormatter } from '@adobe/react-spectrum';
 import { useDateFormatter } from '@react-aria/i18n';
 import { formatDistance, formatDuration, intervalToDuration } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import { useContext } from 'react';
-import { AppContext } from '../AppContext';
+import { appState } from './app';
 
 export function useFormatter() {
-  const context = useContext(AppContext)!;
-
-  const instanceTimezoneId = context.instanceSettings.timezoneId;
+  const instanceTimezoneId = appState.value.instanceSettings.timezoneId;
   const instanceDateFormatter = useDateFormatter({
     dateStyle: 'long',
     timeStyle: 'short',

@@ -3,15 +3,15 @@ import { ToastQueue } from '@react-spectrum/toast';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Print from '@spectrum-icons/workflow/Print';
 import { useEffect, useState } from 'react';
+import CodeEditor from '../components/CodeEditor.tsx';
 import CodeExecuteButton from '../components/CodeExecuteButton';
 import CompilationStatus from '../components/CompilationStatus';
 import ConsoleHelpButton from '../components/ConsoleHelpButton';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
-import ImmersiveEditor from '../components/ImmersiveEditor';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
-import { useAppState } from '../hooks/app';
+import { appState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
 import { apiRequest } from '../utils/api';
@@ -21,12 +21,11 @@ import { StorageKeys } from '../utils/storage';
 import ConsoleCodeGroovy from './ConsoleCode.groovy';
 
 const ConsolePage = () => {
-  const appState = useAppState();
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCodeGroovy);
   const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
   const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
-  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id || null, appState.spaSettings.executionPollInterval);
+  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id || null, appState.value.spaSettings.executionPollInterval);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
 
   useEffect(() => {
@@ -99,7 +98,7 @@ const ConsolePage = () => {
                   <KeyboardShortcutsButton />
                 </Flex>
               </Flex>
-              <ImmersiveEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
+              <CodeEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
             </Flex>
           </Item>
           <Item key="output">
@@ -121,7 +120,7 @@ const ConsolePage = () => {
                   <ConsoleHelpButton />
                 </Flex>
               </Flex>
-              <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
+              <CodeEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
             </Flex>
           </Item>
         </TabPanels>

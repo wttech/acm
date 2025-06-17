@@ -4,11 +4,10 @@ import { useInterval } from 'react-use';
 import { apiRequest } from '../utils/api';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
 import { intervalToTimeout, ToastTimeoutQuick } from '../utils/spectrum';
-import { useAppState } from './app';
+import { appState } from './app';
 import { useFormatter } from './formatter';
 
 export const useExecutionPolling = (executionId: string | undefined | null, pollInterval: number) => {
-  const appState = useAppState();
   const [execution, setExecution] = useState<Execution | null>(null);
   const [executing, setExecuting] = useState<boolean>(!!executionId);
   const [loading, setLoading] = useState<boolean>(true);
@@ -56,7 +55,7 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
         pollExecutionState(executionId);
       }
     },
-    executing && executionId ? appState.spaSettings.executionPollInterval : null,
+    executing && executionId ? appState.value.spaSettings.executionPollInterval : null,
   );
 
   return { execution, setExecution, executing, setExecuting, loading };
