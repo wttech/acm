@@ -52,7 +52,7 @@ const ScriptExecutor = () => {
     fetchExecutions();
     const intervalId = setInterval(fetchExecutions, appState.value.spaSettings.appStateInterval);
     return () => clearInterval(intervalId);
-  }, [appState.value.spaSettings.appStateInterval]);
+  }, []);
 
   console.log('executions', executions);
 

@@ -9,18 +9,18 @@ import History from '@spectrum-icons/workflow/History';
 import InfoOutline from '@spectrum-icons/workflow/InfoOutline';
 import Print from '@spectrum-icons/workflow/Print';
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import CodeEditor from '../components/CodeEditor.tsx';
 import ExecutableIdValue from '../components/ExecutableIdValue';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
-import CodeEditor from '../components/CodeEditor.tsx';
 import { appState } from '../hooks/app.ts';
 import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
-import { isExecutionPending } from '../utils/api.types';
+import { isExecutableScript, isExecutionPending } from '../utils/api.types';
 import { Objects } from '../utils/objects';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
@@ -30,6 +30,7 @@ const ExecutionView = () => {
   const [autoscrollOutput, setAutoscrollOutput] = useState<boolean>(true);
   const { execution, setExecution, loading } = useExecutionPolling(executionId, appState.value.spaSettings.executionPollInterval);
   const [selectedTab, handleTabChange] = useNavigationTab('details');
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -150,6 +151,12 @@ const ExecutionView = () => {
                   <ButtonGroup>
                     <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     <ExecutionCopyOutputButton output={executionOutput} />
+                    {isExecutableScript(execution.executable.id) && (
+                      <Button variant="secondary" style="fill" onPress={() => navigate(`/scripts/view/${encodeURIComponent(execution?.executable.id)}`)}>
+                        <FileCode />
+                        <Text>Show in scripts</Text>
+                      </Button>
+                    )}
                   </ButtonGroup>
                   <Switch isSelected={autoscrollOutput} isDisabled={!isExecutionPending(execution.status)} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}>
                     <Text>Autoscroll</Text>
