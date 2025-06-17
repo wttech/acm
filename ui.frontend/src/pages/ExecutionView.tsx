@@ -15,7 +15,7 @@ import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
-import ImmersiveEditor from '../components/ImmersiveEditor';
+import CodeEditor from '../components/CodeEditor.tsx';
 import { appState } from '../hooks/app.ts';
 import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
@@ -140,7 +140,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <ImmersiveEditor id="execution-view" value={execution.executable.content} language="groovy" readOnly />
+              <CodeEditor id="execution-view" value={execution.executable.content} language="groovy" readOnly />
             </Flex>
           </Item>
           <Item key="output">
@@ -162,7 +162,7 @@ const ExecutionView = () => {
                   &nbsp;
                 </Flex>
               </Flex>
-              <ImmersiveEditor id="execution-output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} />
+              <CodeEditor id="execution-output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} />
             </Flex>
           </Item>
         </TabPanels>

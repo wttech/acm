@@ -9,7 +9,7 @@ import { debounce } from '../utils/debounce';
 import { modelStorage } from '../utils/modelStorage';
 import { registerGroovyLanguage } from '../utils/monaco/groovy';
 
-type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & {
+type CodeEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & {
   id: string;
   scrollToBottomOnUpdate?: boolean;
   initialValue?: string;
@@ -21,7 +21,7 @@ type ImmersiveEditorProps<C extends ColorVersion> = editor.IStandaloneEditorCons
 const SaveViewStateDebounce = 1000;
 const SuggestWidgetHeight = 480;
 
-const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, id, language, value, initialValue, readOnly, scrollToBottomOnUpdate, ...props }: ImmersiveEditorProps<C>) => {
+const CodeEditor = <C extends ColorVersion>({ containerProps, syntaxError, onChange, id, language, value, initialValue, readOnly, scrollToBottomOnUpdate, ...props }: CodeEditorProps<C>) => {
   const [isOpen, setIsOpen] = useState(false);
   const monacoRef = useMonaco();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -169,4 +169,4 @@ const ImmersiveEditor = <C extends ColorVersion>({ containerProps, syntaxError, 
   );
 };
 
-export default ImmersiveEditor;
+export default CodeEditor;

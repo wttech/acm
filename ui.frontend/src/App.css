@@ -6,3 +6,7 @@ body {
 input[type='search'] {
   box-sizing: border-box !important;
 }
+
+.coral3-Shell-header {
+  z-index: 1;
+}

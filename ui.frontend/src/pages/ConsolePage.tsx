@@ -9,7 +9,7 @@ import ConsoleHelpButton from '../components/ConsoleHelpButton';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
-import ImmersiveEditor from '../components/ImmersiveEditor';
+import CodeEditor from '../components/CodeEditor.tsx';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import { appState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
@@ -98,7 +98,7 @@ const ConsolePage = () => {
                   <KeyboardShortcutsButton />
                 </Flex>
               </Flex>
-              <ImmersiveEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
+              <CodeEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
             </Flex>
           </Item>
           <Item key="output">
@@ -120,7 +120,7 @@ const ConsolePage = () => {
                   <ConsoleHelpButton />
                 </Flex>
               </Flex>
-              <ImmersiveEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
+              <CodeEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
             </Flex>
           </Item>
         </TabPanels>
