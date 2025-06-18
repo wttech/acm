@@ -19,7 +19,9 @@
 </picture>
 </p>
 
-ACM (AEM Content Manager) is a powerful tool designed to streamline your workflow and enhance productivity with an intuitive interface and robust features. It automates bulk content modifications and permission management, making it an ideal solution for tasks like content migration and managing permissions at scale. ACM provides an IDE-like experience with code completion, auto-import, and on-the-fly compilation. 
+**Manage permissions & content updates as-a-code.**
+
+ACM streamlines workflows and boosts productivity with an intuitive interface and robust features. It automates bulk content and permission changes, making it ideal for content migration and large-scale permission management. ACM offers an IDE-like experience with code completion, auto-import, and on-the-fly compilation.
 
 It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
 
@@ -233,9 +235,11 @@ The `describeRun()` method is used to define the arguments that can be passed to
 The `args` service is used to define the arguments that can be passed to the script.
 When the script is executed, the arguments are passed to the `doRun()` method.
 
-There are many built-in argument types to use handling different types of data like string, boolean, number, date, etc. Just check `arguments` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Arguments.java) for more details.
+There are many built-in argument types to use handling different types of data like string, boolean, number, date, file, etc. Just check `arguments` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Arguments.java) for more details.
 
 <img src="docs/screenshot-content-script-arguments.png" width="720" alt="ACM Console">
+
+Be inspired by reviewing examples like [page thumbnail script](https://github.com/wttech/acm/blob/main/ui.content.example/src/main/content/jcr_root/conf/acm/settings/script/manual/example/ACME-202_page-thumbnail.groovy) which allows user to upload a thumbnail image and set it as a page thumbnail with only a few clicks and a few lines of code.
 
 #### ACL example
 
@@ -248,28 +252,27 @@ boolean canRun() {
 
 void doRun() {
     out.fromAclLogs()
-    
+
     println "ACL setup started"
-    
+
     def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
     acmeService.with {
-      purge()
-      allow { path = "/content"; permissions = ["jcr:read", "jcr:write"] }
+        // purge()
+        allow { path = "/content"; permissions = ["jcr:read", "jcr:write"] }
     }
-    
-    acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
-    def johnDoe = acl.getUser { id = "john.doe" }
+
+    def johnDoe = acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
     johnDoe?.with {
-      purge()
-      allow("/content", ["jcr:read"])
+        // purge()
+        allow("/content", ["jcr:read"])
     }
-    
+
     acl.createGroup { id = "test.group" }.with {
-      removeAllMembers()
-      addMember(acmeService)
-      addMember(johnDoe)
+        // removeAllMembers()
+        addMember(acmeService)
+        addMember(johnDoe)
     }
-    
+
     println "ACL setup done"
 }
 ```
