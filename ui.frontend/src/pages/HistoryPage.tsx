@@ -54,12 +54,12 @@ const HistoryPage = () => {
         setLoading(true);
         try {
           const params = new URLSearchParams();
-          params.append(ExecutionQueryParams.FORMAT, ExecutionFormat.SUMMARY);
+          params.append(ExecutionQueryParams.FORMAT, ExecutionFormat.SUMMARY.toLowerCase());
           if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, executableId);
           if (userId) params.append(ExecutionQueryParams.USER_ID, userId);
           if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
           if (endDate) params.append(ExecutionQueryParams.END_DATE, endDate.toString());
-          if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status);
+          if (status && status !== 'all') params.append(ExecutionQueryParams.STATUS, status?.toLowerCase());
           if (durationMin || durationMax) params.append(ExecutionQueryParams.DURATION, `${durationMin || ''},${durationMax || ''}`);
 
           setSearchState(params.toString(), { replace: true });

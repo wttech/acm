@@ -5,6 +5,8 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
+
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,18 +15,18 @@ import org.slf4j.LoggerFactory;
 
 public class CodePrintStream extends PrintStream {
 
-    private final ExecutionContext executionContext;
+    private final String id;
 
     private final List<Logger> loggers;
 
-    public CodePrintStream(ExecutionContext executionContext) {
-        super(executionContext.getOutput().write());
-        this.executionContext = executionContext;
+    public CodePrintStream(String id, OutputStream output) {
+        super(output);
+        this.id = id;
         this.loggers = new LinkedList<>();
     }
 
     public String getAppenderName() {
-        return executionContext.getId();
+        return id;
     }
 
     public void registerLogger(Logger logger) {

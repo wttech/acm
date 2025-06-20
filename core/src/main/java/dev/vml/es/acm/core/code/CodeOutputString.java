@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-public class OutputString implements Output {
+public class CodeOutputString implements CodeOutput {
 
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 

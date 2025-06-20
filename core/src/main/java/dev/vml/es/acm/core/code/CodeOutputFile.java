@@ -12,7 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public class OutputFile implements Output {
+public class CodeOutputFile implements CodeOutput {
 
     public static final String TMP_DIR = "acm/output";
 
@@ -20,7 +20,7 @@ public class OutputFile implements Output {
 
     private final List<Closeable> closebles = new LinkedList<>();
 
-    public OutputFile(String executionId) {
+    public CodeOutputFile(String executionId) {
         this.executionId = executionId;
     }
 

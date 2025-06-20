@@ -154,19 +154,18 @@ const ExecutionView = () => {
                     {isExecutableScript(execution.executable.id) && (
                       <Button variant="secondary" style="fill" onPress={() => navigate(`/scripts/view/${encodeURIComponent(execution?.executable.id)}`)}>
                         <FileCode />
-                        <Text>Show in scripts</Text>
+                        <Text>View in scripts</Text>
                       </Button>
                     )}
                   </ButtonGroup>
-                  <Switch isSelected={autoscrollOutput} isDisabled={!isExecutionPending(execution.status)} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}>
-                    <Text>Autoscroll</Text>
-                  </Switch>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">
                   <ExecutionProgressBar execution={execution} />
                 </Flex>
                 <Flex flex="1" justifyContent="end" alignItems="center">
-                  &nbsp;
+                  <Switch isSelected={autoscrollOutput} isDisabled={!isExecutionPending(execution.status)} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}>
+                    <Text>Autoscroll</Text>
+                  </Switch>
                 </Flex>
               </Flex>
               <CodeEditor id="execution-output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} />

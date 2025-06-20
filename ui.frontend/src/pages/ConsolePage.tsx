@@ -109,14 +109,14 @@ const ConsolePage = () => {
                     <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>
-                  <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
-                    <Text>Autoscroll</Text>
-                  </Switch>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">
                   <ExecutionProgressBar execution={execution} active={executing} />
                 </Flex>
                 <Flex flex="1" justifyContent="end" alignItems="center">
+                  <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
+                    <Text>Autoscroll</Text>
+                  </Switch>
                   <ConsoleHelpButton />
                 </Flex>
               </Flex>

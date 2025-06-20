@@ -1,7 +1,9 @@
-import { Button, Text } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Heading, Text } from '@adobe/react-spectrum';
 import { ToastQueue } from '@react-spectrum/toast';
 import Cancel from '@spectrum-icons/workflow/Cancel';
+import StopCircle from '@spectrum-icons/workflow/StopCircle';
 import React, { useState } from 'react';
+import { useDeepCompareEffect } from 'react-use';
 import { appState } from '../hooks/app.ts';
 import { pollExecutionPending } from '../hooks/execution';
 import { apiRequest } from '../utils/api';
@@ -14,7 +16,15 @@ interface ExecutionAbortButtonProps {
 }
 
 const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, onComplete }) => {
+  const [showDialog, setShowDialog] = useState(false);
   const [isAborting, setIsAborting] = useState(false);
+
+  // Auto-close dialog if execution is no longer pending
+  useDeepCompareEffect(() => {
+    if (showDialog && (!execution || !isExecutionPending(execution.status))) {
+      setShowDialog(false);
+    }
+  }, [execution, showDialog]);
 
   const onAbort = async () => {
     if (!execution?.id) {
@@ -49,14 +59,37 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
       });
     } finally {
       setIsAborting(false);
+      setShowDialog(false);
     }
   };
 
   return (
-    <Button variant="negative" isDisabled={!execution || !isExecutionPending(execution.status) || isAborting} onPress={onAbort}>
-      <Cancel />
-      <Text>Abort</Text>
-    </Button>
+    <DialogTrigger isOpen={showDialog} onOpenChange={setShowDialog}>
+      <Button variant="negative" isDisabled={!execution || !isExecutionPending(execution.status) || isAborting} onPress={() => setShowDialog(true)}>
+        <StopCircle />
+        <Text>Abort</Text>
+      </Button>
+      <Dialog>
+        <Heading>
+          <Text>Confirmation</Text>
+        </Heading>
+        <Divider />
+        <Content>
+          <p>This action will abort current code execution.</p>
+          <p>Be aware that aborting execution may leave data in an inconsistent state.</p>
+        </Content>
+        <ButtonGroup>
+          <Button variant="secondary" onPress={() => setShowDialog(false)} isDisabled={isAborting}>
+            <Cancel />
+            <Text>Cancel</Text>
+          </Button>
+          <Button variant="negative" style="fill" onPress={onAbort} isPending={isAborting}>
+            <StopCircle />
+            <Text>Abort</Text>
+          </Button>
+        </ButtonGroup>
+      </Dialog>
+    </DialogTrigger>
   );
 };
 

@@ -31,40 +31,36 @@ const ScriptSynchronizeButton: React.FC<ScriptSynchronizeButtonProps> = ({ selec
     }
   };
 
-  const renderSyncDialog = () => (
-    <>
-      <Heading>
-        <Text>Confirmation</Text>
-      </Heading>
-      <Divider />
-      <Content>
-        <p>
-          This action will synchronize <strong>all scripts</strong> between the author and publish instances. This ensures consistency across the whole environment.
-        </p>
-        <p>
-          Notice that <strong>both enabled and disabled</strong> scripts will be synchronized.
-        </p>
-      </Content>
-      <ButtonGroup>
-        <Button variant="secondary" onPress={() => setSyncDialogOpen(false)} isDisabled={isLoading}>
-          <Cancel />
-          <Text>Cancel</Text>
-        </Button>
-        <Button variant="negative" style="fill" onPress={handleSyncConfirm} isPending={isLoading}>
-          <Checkmark />
-          <Text>Confirm</Text>
-        </Button>
-      </ButtonGroup>
-    </>
-  );
-
   return (
     <DialogTrigger isOpen={syncDialogOpen} onOpenChange={setSyncDialogOpen}>
       <Button variant="primary" onPress={() => setSyncDialogOpen(true)} isDisabled={selectedKeys.length > 0}>
         <UploadToCloud />
         <Text>Synchronize</Text>
       </Button>
-      <Dialog>{renderSyncDialog()}</Dialog>
+      <Dialog>
+        <Heading>
+          <Text>Confirmation</Text>
+        </Heading>
+        <Divider />
+        <Content>
+          <p>
+            This action will synchronize <strong>all scripts</strong> between the author and publish instances. This ensures consistency across the whole environment.
+          </p>
+          <p>
+            Notice that <strong>both enabled and disabled</strong> scripts will be synchronized.
+          </p>
+        </Content>
+        <ButtonGroup>
+          <Button variant="secondary" onPress={() => setSyncDialogOpen(false)} isDisabled={isLoading}>
+            <Cancel />
+            <Text>Cancel</Text>
+          </Button>
+          <Button variant="negative" style="fill" onPress={handleSyncConfirm} isPending={isLoading}>
+            <Checkmark />
+            <Text>Confirm</Text>
+          </Button>
+        </ButtonGroup>
+      </Dialog>
     </DialogTrigger>
   );
 };

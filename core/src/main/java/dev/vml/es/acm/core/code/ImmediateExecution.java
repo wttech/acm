@@ -80,11 +80,11 @@ public class ImmediateExecution implements Execution {
 
     @Override
     public String getOutput() {
-        return new OutputFile(getId()).readString().orElse(null);
+        return new CodeOutputFile(getId()).readString().orElse(null);
     }
 
     public InputStream readOutput() throws AcmException {
-        return new OutputFile(getId()).read();
+        return new CodeOutputFile(getId()).read();
     }
 
     @Override

@@ -9,13 +9,15 @@ public class ExecutionContext implements AutoCloseable {
 
     private final ExecutionMode mode;
 
-    private final Output output;
-
     private final Executor executor;
 
     private final Executable executable;
 
     private final CodeContext codeContext;
+
+    private final CodeOutput codeOutput;
+
+    private final CodePrintStream codePrintStream;
 
     private boolean history = true;
 
@@ -27,10 +29,11 @@ public class ExecutionContext implements AutoCloseable {
             String id, ExecutionMode mode, Executor executor, Executable executable, CodeContext codeContext) {
         this.id = id;
         this.mode = mode;
-        this.output = mode == ExecutionMode.RUN ? new OutputFile(id) : new OutputString();
         this.executor = executor;
         this.executable = executable;
         this.codeContext = codeContext;
+        this.codeOutput = mode == ExecutionMode.RUN ? new CodeOutputFile(id) : new CodeOutputString();
+        this.codePrintStream = new CodePrintStream(id, codeOutput.write());
 
         customizeBinding();
     }
@@ -39,8 +42,8 @@ public class ExecutionContext implements AutoCloseable {
         return id;
     }
 
-    public Output getOutput() {
-        return output;
+    public CodeOutput getOutput() {
+        return codeOutput;
     }
 
     public Executor getExecutor() {
@@ -87,12 +90,13 @@ public class ExecutionContext implements AutoCloseable {
         binding.setVariable(
                 "log",
                 LoggerFactory.getLogger(String.format("%s(%s)", getClass().getName(), executable.getId())));
-        binding.setVariable("out", new CodePrintStream(this));
+        binding.setVariable("out", codePrintStream);
     }
 
     @Override
     public void close() {
-        output.close();
+        codePrintStream.close();
+        codeOutput.close();
     }
 
     public void variable(String name, Object value) {
