@@ -25,6 +25,10 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Use JCR Session API for writing, use Sling Resource API for reading.
+ * The purpose of doing that is to allow for revertible operations like copy, move, rename, etc.
+ */
 public class RepoResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(RepoResource.class);
@@ -237,11 +241,6 @@ public class RepoResource {
         copy(target, false);
     }
 
-    /**
-     * Revertible copy method.
-     * Note that resource resolver copy allows copying resources to the same parent path but only with a different name.
-     * Session workspace copy writes changes immediately, so it is not possible to revert the copy operation.
-     */
     public void copy(RepoResource target, boolean replace) {
         if (StringUtils.equals(path, target.path)) {
             throw new RepoException(String.format("Cannot copy resource to itself at path '%s'!", path));
@@ -262,44 +261,11 @@ public class RepoResource {
             }
         }
 
-        if (isSibling(target)) {
-            copySiblingRevertible(target, sourceResource);
-        } else {
-            try {
-                repo.getResourceResolver().copy(sourceResource.getPath(), targetParentResource.getPath());
-            } catch (PersistenceException e) {
-                throw new RepoException(
-                        String.format("Cannot copy resource from '%s' to '%s'!", path, target.getPath()), e);
-            }
-        }
+        // TODO resolver does not see transient resources (just created) ; so it does not work in dry-run
+        // repo.getResourceResolver().copy(sourceResource.getPath(), targetParentResource.getPath());
+
         repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
         LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
-    }
-
-    private void copySiblingRevertible(RepoResource target, Resource sourceResource) {
-        String tempParentPath = target.parentPath() + "/tmp-" + UUID.randomUUID();
-        String tempPath = tempParentPath + "/" + target.getName();
-        String tempType = JcrConstants.NT_UNSTRUCTURED;
-
-        Resource tempResource = null;
-        try {
-            ResourceUtil.getOrCreateResource(
-                    repo.getResourceResolver(), tempParentPath, tempType, tempType, repo.isAutoCommit());
-            repo.getResourceResolver().copy(sourceResource.getPath(), tempPath);
-            repo.getSession().move(tempPath, target.getPath());
-            tempResource = repo.getResourceResolver().getResource(tempParentPath);
-        } catch (PersistenceException | RepositoryException e) {
-            throw new RepoException(
-                    String.format("Cannot copy resource from '%s' to sibling '%s'!", path, target.getPath()), e);
-        } finally {
-            if (tempResource != null) {
-                try {
-                    repo.getResourceResolver().delete(tempResource);
-                } catch (PersistenceException e) {
-                    LOG.warn("Cannot delete sibling temporary copy resource '{}'!", tempResource, e);
-                }
-            }
-        }
     }
 
     public void move(String targetPath) {
