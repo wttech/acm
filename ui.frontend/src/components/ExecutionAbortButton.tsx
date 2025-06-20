@@ -63,36 +63,32 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
     }
   };
 
-  const renderAbortDialog = useCallback(() => (
-    <>
-      <Heading>
-        <Text>Confirmation</Text>
-      </Heading>
-      <Divider />
-      <Content>
-        <p>This action will abort current code execution.</p>
-        <p>Be aware that aborting execution may leave data in an inconsistent state.</p>
-      </Content>
-      <ButtonGroup>
-        <Button variant="secondary" onPress={() => setShowDialog(false)} isDisabled={isAborting}>
-          <Cancel />
-          <Text>Cancel</Text>
-        </Button>
-        <Button variant="negative" style="fill" onPress={onAbort} isPending={isAborting}>
-          <StopCircle />
-          <Text>Abort</Text>
-        </Button>
-      </ButtonGroup>
-    </>
-  );
-
   return (
     <DialogTrigger isOpen={showDialog} onOpenChange={setShowDialog}>
       <Button variant="negative" isDisabled={!execution || !isExecutionPending(execution.status) || isAborting} onPress={() => setShowDialog(true)}>
         <StopCircle />
         <Text>Abort</Text>
       </Button>
-      <Dialog>{renderAbortDialog()}</Dialog>
+      <Dialog>
+        <Heading>
+          <Text>Confirmation</Text>
+        </Heading>
+        <Divider />
+        <Content>
+          <p>This action will abort current code execution.</p>
+          <p>Be aware that aborting execution may leave data in an inconsistent state.</p>
+        </Content>
+        <ButtonGroup>
+          <Button variant="secondary" onPress={() => setShowDialog(false)} isDisabled={isAborting}>
+            <Cancel />
+            <Text>Cancel</Text>
+          </Button>
+          <Button variant="negative" style="fill" onPress={onAbort} isPending={isAborting}>
+            <StopCircle />
+            <Text>Abort</Text>
+          </Button>
+        </ButtonGroup>
+      </Dialog>
     </DialogTrigger>
   );
 };
