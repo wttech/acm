@@ -63,7 +63,7 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
     }
   };
 
-  const renderAbortDialog = () => (
+  const renderAbortDialog = useCallback(() => (
     <>
       <Heading>
         <Text>Confirmation</Text>
