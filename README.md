@@ -288,7 +288,7 @@ Logging is very descriptive allowing you to see what was done and what was skipp
 You can leverage the [repository service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/repo/Repo.java) (`repo`) to efficiently perform JCR operations such as reading, writing, and deleting nodes with concise, expressive code.
 The out-of-the-box AEM API often requires extensive boilerplate code and can behave unpredictably in certain scenarios. The [RepoResource](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/repo/RepoResource.java) API streamlines these operations, making repository programming more enjoyable, concise, and reliable.
 
-The repo service abstracts away the complexity of managing dry-run and auto-commit behaviors—features that are often error-prone and cumbersome to implement manually—ensuring safe, predictable, and streamlined repository operations.
+The repo service abstracts away the complexity of managing dry-run and auto-commit behaviors—features that are often error-prone and cumbersome to implement manually — ensuring safe, predictable, and streamlined repository operations.
 
 ```groovy
 void describeRun() {
@@ -307,16 +307,14 @@ void doRun() {
         println "Creating a folder structure in the temporary directory of the repository."
         def dataFolder = repo.get("/tmp/acm/demo/data").ensureFolder()
         for (int i = 0; i < 5; i++) {
-            def child = dataFolder.child("child-\${i+1}")
-            child.save(["foo": "bar"])
+            def child = dataFolder.child("child-\${i+1}").save(["foo": "bar"])
             child.updateProperty("foo") { v -> v.toUpperCase() }
         }
         println "Folder '${dataFolder.path}' has now ${dataFolder.descendants().count()} descendant(s)."
 
         println "Creating a post in the temporary directory of the repository."
         def postFolder = repo.get("/tmp/acm/demo/posts").ensureFolder()
-        def post = postFolder.child("hello-world.yml")
-        post.saveFile("application/x-yaml") { output ->
+        def post = postFolder.child("hello-world.yml").saveFile("application/x-yaml") { output ->
             formatter.yml.write(output, [
                     title: "Hello World",
                     description: "This is a sample post.",

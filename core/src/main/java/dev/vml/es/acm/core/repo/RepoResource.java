@@ -116,11 +116,12 @@ public class RepoResource {
         return this;
     }
 
-    public Resource save(String key, Object value) {
-        return save(Collections.singletonMap(key, value));
+    public RepoResource save(String key, Object value) {
+        save(Collections.singletonMap(key, value));
+        return this;
     }
 
-    public Resource save(Map<String, Object> values) {
+    public RepoResource save(Map<String, Object> values) {
         Resource result = resolve();
         if (result == null) {
             String parentPath = StringUtils.substringBeforeLast(path, "/");
@@ -134,7 +135,7 @@ public class RepoResource {
                 result = repo.getResourceResolver().create(parent, name, values);
                 repo.commit(String.format("creating resource at path '%s'", path));
                 LOG.info("Created resource at path '{}'", path);
-                return result;
+                return this;
             } catch (PersistenceException e) {
                 throw new RepoException(String.format("Cannot save resource at path '%s'!", path), e);
             }
@@ -144,7 +145,7 @@ public class RepoResource {
             repo.commit(String.format("updating resource at path '%s'", path));
             LOG.info("Updated resource at path '{}'", path);
         }
-        return result;
+        return this;
     }
 
     public ValueMap properties() {
@@ -491,11 +492,12 @@ public class RepoResource {
         return new RepoResourceState(path, true, resource.getValueMap());
     }
 
-    public void saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
+    public RepoResource saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
         saveFileInternal(mimeType, null, dataWriter);
+        return this;
     }
 
-    public void saveFile(String mimeType, File file) {
+    public RepoResource saveFile(String mimeType, File file) {
         saveFile(mimeType, (OutputStream os) -> {
             try (InputStream is = Files.newInputStream(file.toPath())) {
                 IOUtils.copy(is, os);
@@ -503,10 +505,12 @@ public class RepoResource {
                 throw new RepoException(String.format("Cannot write file '%s' to path '%s'!", file.getPath(), path), e);
             }
         });
+        return this;
     }
 
-    public void saveFile(String mimeType, Object data) {
+    public RepoResource saveFile(String mimeType, Object data) {
         saveFileInternal(mimeType, data, null);
+        return this;
     }
 
     private void saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
