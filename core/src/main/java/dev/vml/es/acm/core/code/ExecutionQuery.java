@@ -27,7 +27,8 @@ public class ExecutionQuery {
 
     private Range<Integer> duration;
 
-    // TODO do more escaping e.g. for JCR illegal characters, but beware that e.g. Text.escapeIllegalJcrChars is too aggressive for paths
+    // TODO do more escaping e.g. for JCR illegal characters
+    // TODO beware that e.g. Text.escapeIllegalJcrChars is too aggressive for paths
     public static String escape(String param) {
         String escaped = StringUtils.replace(param, "%", "%%");
         return StringUtils.replace(escaped, WILDCARD, "%");

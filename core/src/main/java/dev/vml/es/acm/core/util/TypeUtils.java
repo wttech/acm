@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 
 public final class TypeUtils {

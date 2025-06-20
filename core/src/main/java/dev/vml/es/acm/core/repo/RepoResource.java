@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.jcr.RepositoryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -47,6 +48,14 @@ public class RepoResource {
 
     public String getPath() {
         return path;
+    }
+
+    public String getName() {
+        return StringUtils.substringAfterLast(path, "/");
+    }
+
+    public int getDepth() {
+        return StringUtils.countMatches(path, "/");
     }
 
     public Optional<Resource> get() {
@@ -214,6 +223,122 @@ public class RepoResource {
         LOG.info("Deleted resource at path '{}'", path);
         repo.commit(String.format("deleting resource at path '%s'", path));
         return true;
+    }
+
+    public void copy(String targetPath) {
+        copy(targetPath, false);
+    }
+
+    public void copy(String targetPath, boolean replace) {
+        copy(new RepoResource(repo, targetPath), replace);
+    }
+
+    public void copy(RepoResource target) {
+        copy(target, false);
+    }
+
+    public void copy(RepoResource target, boolean replace) {
+        Resource sourceResource = require();
+        Resource targetParentResource = target.parent().require();
+
+        if (target.exists()) {
+            if (replace) {
+                target.delete();
+            } else {
+                throw new RepoException(String.format(
+                        "Cannot copy resource '%s' to '%s' as it already exists!", path, target.getPath()));
+            }
+        }
+
+        try {
+            repo.getResourceResolver().copy(sourceResource.getPath(), targetParentResource.getPath());
+            repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
+            LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
+        } catch (PersistenceException e) {
+            throw new RepoException(
+                    String.format("Cannot copy resource from '%s' to '%s'!", path, target.getPath()), e);
+        }
+    }
+
+    public void move(String targetPath) {
+        move(targetPath, false);
+    }
+
+    public void move(String targetPath, boolean replace) {
+        move(new RepoResource(repo, targetPath), replace);
+    }
+
+    public void move(RepoResource target) {
+        move(target, false);
+    }
+
+    public void move(RepoResource target, boolean replace) {
+        Resource sourceResource = require();
+        Resource targetParentResource = target.parent().require();
+
+        if (target.exists()) {
+            if (replace) {
+                target.delete();
+            } else {
+                throw new RepoException(String.format(
+                        "Cannot move resource '%s' to '%s' as it already exists!", path, target.getPath()));
+            }
+        }
+
+        try {
+            repo.getResourceResolver().move(sourceResource.getPath(), targetParentResource.getPath());
+            repo.commit(String.format("moving resource from '%s' to '%s'", path, target.getPath()));
+            LOG.info("Moved resource from '{}' to '{}'", path, target.getPath());
+        } catch (PersistenceException e) {
+            throw new RepoException(
+                    String.format("Cannot move resource from '%s' to '%s'!", path, target.getPath()), e);
+        }
+    }
+
+    public void rename(String newName) {
+        rename(newName, false);
+    }
+
+    public void rename(String newName, boolean replace) {
+        if (StringUtils.isBlank(newName)) {
+            throw new IllegalArgumentException(
+                    String.format("Cannot rename resource '%s' as new name is blank!", path));
+        }
+        String parent = parentPath();
+        if (parent == null) {
+            throw new RepoException(String.format("Cannot rename root resource '%s'!", path));
+        }
+        String targetPath = parent.endsWith("/") ? parent + newName : parent + "/" + newName;
+        move(targetPath, replace);
+    }
+
+    public void moveInPlace(RepoResource target) {
+        moveInPlace(target, false);
+    }
+
+    public void moveInPlace(RepoResource target, boolean replace) {
+        if (!repo.isAutoCommit()) {
+            throw new RepoException(
+                    "Cannot move resource in place as auto-commit is disabled! This operation always does an immediate commit.");
+        }
+
+        if (target.exists()) {
+            if (replace) {
+                target.delete();
+            } else {
+                throw new RepoException(String.format(
+                        "Cannot move in place resource '%s' to '%s' as it already exists!", path, target.getPath()));
+            }
+        }
+
+        try {
+            repo.getSession().getWorkspace().move(path, target.getPath());
+        } catch (RepositoryException e) {
+            throw new RepoException(
+                    String.format("Cannot move resource in place from '%s' to '%s'!", path, target.getPath()), e);
+        } finally {
+            LOG.info("Moved resource in place from '{}' to '{}'", path, target.getPath());
+        }
     }
 
     public RepoResource parent() {
