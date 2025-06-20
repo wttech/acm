@@ -172,7 +172,7 @@ public class RepoResource {
         return properties().containsKey(key);
     }
 
-    public void updateProperty(String key, Function<Object, Object> valueUpdater) {
+    public RepoResource updateProperty(String key, Function<Object, Object> valueUpdater) {
         Resource resource = resolve();
         if (resource == null) {
             throw new RepoException(
@@ -187,7 +187,7 @@ public class RepoResource {
                     key,
                     path,
                     valueUpdated);
-            return;
+            return this;
         }
 
         if (valueUpdated == null) {
@@ -208,14 +208,15 @@ public class RepoResource {
                     path);
             repo.commit(String.format("updating property '%s' at path '%s'", key, path));
         }
+        return this;
     }
 
-    public void saveProperty(String key, Object value) {
-        updateProperty(key, v -> value);
+    public RepoResource saveProperty(String key, Object value) {
+        return updateProperty(key, v -> value);
     }
 
-    public void deleteProperty(String key) {
-        saveProperty(key, null);
+    public RepoResource deleteProperty(String key) {
+        return saveProperty(key, null);
     }
 
     public boolean delete() {
@@ -234,19 +235,19 @@ public class RepoResource {
         return true;
     }
 
-    public void copy(String targetPath) {
-        copy(targetPath, false);
+    public RepoResource copy(String targetPath) {
+        return copy(targetPath, false);
     }
 
-    public void copy(String targetPath, boolean replace) {
-        copy(new RepoResource(repo, targetPath), replace);
+    public RepoResource copy(String targetPath, boolean replace) {
+        return copy(new RepoResource(repo, targetPath), replace);
     }
 
-    public void copy(RepoResource target) {
-        copy(target, false);
+    public RepoResource copy(RepoResource target) {
+        return copy(target, false);
     }
 
-    public void copy(RepoResource target, boolean replace) {
+    public RepoResource copy(RepoResource target, boolean replace) {
         if (StringUtils.equals(path, target.path)) {
             throw new RepoException(String.format("Cannot copy resource to itself at path '%s'!", path));
         }
@@ -270,21 +271,22 @@ public class RepoResource {
 
         repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
         LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
+        return target;
     }
 
-    public void move(String targetPath) {
-        move(targetPath, false);
+    public RepoResource move(String targetPath) {
+        return move(targetPath, false);
     }
 
-    public void move(String targetPath, boolean replace) {
-        move(new RepoResource(repo, targetPath), replace);
+    public RepoResource move(String targetPath, boolean replace) {
+        return move(new RepoResource(repo, targetPath), replace);
     }
 
-    public void move(RepoResource target) {
-        move(target, false);
+    public RepoResource move(RepoResource target) {
+        return move(target, false);
     }
 
-    public void move(RepoResource target, boolean replace) {
+    public RepoResource move(RepoResource target, boolean replace) {
         if (StringUtils.equals(path, target.path)) {
             throw new RepoException(String.format("Cannot move resource to itself at path '%s'!", path));
         }
@@ -313,13 +315,14 @@ public class RepoResource {
             throw new RepoException(
                     String.format("Cannot move resource from '%s' to '%s'!", path, target.getPath()), e);
         }
+        return target;
     }
 
-    public void rename(String newName) {
-        rename(newName, false);
+    public RepoResource rename(String newName) {
+        return rename(newName, false);
     }
 
-    public void rename(String newName, boolean replace) {
+    public RepoResource rename(String newName, boolean replace) {
         if (StringUtils.isBlank(newName)) {
             throw new IllegalArgumentException(
                     String.format("Cannot rename resource '%s' as new name is blank!", path));
@@ -329,14 +332,14 @@ public class RepoResource {
             throw new RepoException(String.format("Cannot rename root resource '%s'!", path));
         }
         String targetPath = parent.endsWith("/") ? parent + newName : parent + "/" + newName;
-        move(targetPath, replace);
+        return move(targetPath, replace);
     }
 
-    public void moveInPlace(RepoResource target) {
-        moveInPlace(target, false);
+    public RepoResource moveInPlace(RepoResource target) {
+        return moveInPlace(target, false);
     }
 
-    public void moveInPlace(RepoResource target, boolean replace) {
+    public RepoResource moveInPlace(RepoResource target, boolean replace) {
         if (!repo.isAutoCommit()) {
             throw new RepoException(
                     "Cannot move resource in place as auto-commit is disabled! This operation always does an immediate commit.");
@@ -358,6 +361,7 @@ public class RepoResource {
             throw new RepoException(
                     String.format("Cannot move resource in place from '%s' to '%s'!", path, target.getPath()), e);
         }
+        return target;
     }
 
     public RepoResource parent() {
