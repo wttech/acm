@@ -1,9 +1,6 @@
 package dev.vml.es.acm.core.repo;
 
-import dev.vml.es.acm.core.util.ResourceSpliterator;
-import dev.vml.es.acm.core.util.StreamUtils;
-import dev.vml.es.acm.core.util.StringUtil;
-import dev.vml.es.acm.core.util.TypeValueMap;
+import dev.vml.es.acm.core.util.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,8 +23,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Use JCR Session API for writing, use Sling Resource API for reading.
- * The purpose of doing that is to allow for revertible operations like copy, move, rename, etc.
+ * A fluent, active-record-style wrapper for Sling resources, simplifying common repository operations.
+ * <p>
+ * This class abstracts and streamlines the standard AEM and Sling APIs, which are often verbose and complex,
+ * by providing a concise and developer-friendly interface for resource management tasks such as creation,
+ * retrieval, update, deletion, traversal, and property manipulation.
+ * <p>
+ * All operations are performed using the underlying {@link ResourceResolver} and JCR session, supporting both
+ * transient and committed changes. This enables efficient scripting, automation, and integration scenarios
+ * within AEM and Sling-based applications.
  */
 public class RepoResource {
 
@@ -261,8 +265,7 @@ public class RepoResource {
             }
         }
 
-        // TODO resolver does not see transient resources (just created) ; so it does not work in dry-run
-        // repo.getResourceResolver().copy(sourceResource.getPath(), targetParentResource.getPath());
+        ResourceUtils.copy(repo.getResourceResolver(), sourceResource.getPath(), target.getPath());
 
         repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
         LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
@@ -489,12 +492,12 @@ public class RepoResource {
         return new RepoResourceState(path, true, resource.getValueMap());
     }
 
-    public Resource saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
-        return saveFileInternal(mimeType, null, dataWriter);
+    public void saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
+        saveFileInternal(mimeType, null, dataWriter);
     }
 
-    public Resource saveFile(String mimeType, File file) {
-        return saveFile(mimeType, (OutputStream os) -> {
+    public void saveFile(String mimeType, File file) {
+        saveFile(mimeType, (OutputStream os) -> {
             try (InputStream is = Files.newInputStream(file.toPath())) {
                 IOUtils.copy(is, os);
             } catch (IOException e) {
@@ -503,11 +506,11 @@ public class RepoResource {
         });
     }
 
-    public Resource saveFile(String mimeType, Object data) {
-        return saveFileInternal(mimeType, data, null);
+    public void saveFile(String mimeType, Object data) {
+        saveFileInternal(mimeType, data, null);
     }
 
-    private Resource saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
+    private void saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
         Resource mainResource = resolve();
         try {
             if (mainResource == null) {
@@ -546,7 +549,6 @@ public class RepoResource {
         } catch (PersistenceException e) {
             throw new RepoException(String.format("Cannot save file at path '%s'!", path), e);
         }
-        return mainResource;
     }
 
     private void setFileContent(
