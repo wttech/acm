@@ -5,4 +5,4 @@ content: |
 documentation: |
   Configures loggers to start printing entries to the console.<br>
   Log entries are emitted when performing operations on `acl` and `repo` code variables.<br>
-  For more details, see the [implementation](https://github.com/wttech/acm/blob/main/core/src/main/java/com/wttech/aem/acm/core/code/CodePrintStream.java).
+  For more details, see the [implementation](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/CodePrintStream.java).

@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
 
-public interface Output {
+public interface CodeOutput {
 
     Optional<String> readString();
 
