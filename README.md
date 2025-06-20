@@ -44,6 +44,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
         - [Minimal Example](#minimal-example)
         - [Arguments Example](#arguments-example)
         - [ACL Example](#acl-example)
+        - [Repo Example](#repo-example)
         - [History](#history)
     - [Extension Scripts](#extension-scripts)
     - [Snippets](#snippets)
@@ -243,7 +244,7 @@ Be inspired by reviewing examples like [page thumbnail script](https://github.co
 
 #### ACL example
 
-The following example demonstrates how to create a user and a group, assign permissions, and add members to the group.
+The following example demonstrates how to create a user and a group, assign permissions, and add members to the group using the [ACL service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/acl/Acl.java) (`acl`).
 
 ```groovy
 boolean canRun() {
@@ -281,6 +282,58 @@ Operations done by `acl` service are idempotent, so you can run the script multi
 Logging is very descriptive allowing you to see what was done and what was skipped.
 
 <img src="docs/screenshot-content-script-acl-output.png" width="720" alt="ACM ACL Script Output">
+
+#### Repo example
+
+You can leverage the [repository service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/repo/Repo.java) (repo) to efficiently perform JCR operations such as reading, writing, and deleting nodes with concise, expressive code.
+The out-of-the-box AEM API often requires extensive boilerplate code and can behave unpredictably in certain scenarios. The [RepoResource](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/repo/RepoResource.java) API streamlines these operations, making repository programming more enjoyable, concise, and reliable.
+
+The repo service abstracts away the complexity of managing dry-run and auto-commit behaviors—features that are often error-prone and cumbersome to implement manually—ensuring safe, predictable, and streamlined repository operations.
+
+```groovy
+void describeRun() {
+    arguments.bool("dryRun") { value = true; switcher(); description = "Do not commit changes to the repository" }
+    arguments.bool("clean") { value = true; switcher(); description = "Finally delete all created resources" }
+}
+
+boolean canRun() {
+    return condition.idleSelf()
+}
+
+void doRun() {
+    out.fromLogs()
+
+    repo.dryRun(arguments.value("dryRun")) {
+        println "Creating a folder structure in the temporary directory of the repository."
+        def dataFolder = repo.get("/tmp/acm/demo/data").ensureFolder()
+        for (int i = 0; i < 5; i++) {
+            def child = dataFolder.child("child-\${i+1}")
+            child.save(["foo": "bar"])
+            child.updateProperty("foo") { v -> v.toUpperCase() }
+        }
+        println "Folder '${dataFolder.path}' has now ${dataFolder.descendants().count()} descendant(s)."
+
+        println "Creating a post in the temporary directory of the repository."
+        def postFolder = repo.get("/tmp/acm/demo/posts").ensureFolder()
+        def post = postFolder.child("hello-world.yml")
+        post.saveFile("application/x-yaml") { output ->
+            formatter.yml.write(output, [
+                    title: "Hello World",
+                    description: "This is a sample post.",
+                    tags: ["sample", "post"]
+            ])
+        }
+        println "Post '${post.path}' has been created at ${post.property("jcr:created", java.time.LocalDateTime)}"
+
+        if (arguments.value("clean")) {
+            dataFolder.delete()
+            postFolder.delete()
+        }
+    }
+}
+```
+
+<img src="docs/screenshot-content-script-repo-output.png" width="720" alt="ACM ACL Repo Output">
 
 ### History
 

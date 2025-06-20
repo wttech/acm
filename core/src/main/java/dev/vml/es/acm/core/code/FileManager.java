@@ -1,11 +1,6 @@
 package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmException;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.osgi.service.component.annotations.Component;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
@@ -13,6 +8,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.osgi.service.component.annotations.Component;
 
 @Component(immediate = true, service = FileManager.class)
 public class FileManager {
@@ -23,7 +22,8 @@ public class FileManager {
 
     public File get(String path) {
         if (!StringUtils.startsWith(path, root().getAbsolutePath())) {
-            throw new AcmException(String.format("File path must start with the root directory'%s'!", root().getAbsolutePath()));
+            throw new AcmException(
+                    String.format("File path must start with the root directory '%s'!", root().getAbsolutePath()));
         }
         return new File(path);
     }
@@ -31,7 +31,7 @@ public class FileManager {
     public File save(InputStream stream, String fileName) {
         try {
             String datePath = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
-            String randomDir = System.currentTimeMillis() + "-" + (int)(Math.random() * 10000);
+            String randomDir = System.currentTimeMillis() + "-" + (int) (Math.random() * 10000);
             File dir = new File(root(), datePath + "/" + randomDir);
             if (!dir.exists() && !dir.mkdirs()) {
                 throw new AcmException("File directory cannot be created: " + dir.getAbsolutePath());

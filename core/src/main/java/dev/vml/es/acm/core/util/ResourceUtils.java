@@ -4,11 +4,10 @@ import dev.vml.es.acm.core.AcmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.Workspace;
+import javax.jcr.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.*;
+import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public final class ResourceUtils {
@@ -115,6 +114,56 @@ public final class ResourceUtils {
                     true);
         } catch (Exception e) {
             throw new AcmException(String.format("Folders cannot be created for path '%s'", path), e);
+        }
+    }
+
+    /**
+     * Performs a deep, recursive copy of a resource from the specified source path to the target path.
+     * <p>
+     * This operation is executed in transient mode, meaning all changes remain in-memory and are not persisted
+     * until an explicit commit is performed on the {@link ResourceResolver}. Unlike {@link ResourceResolver#copy(String, String)},
+     * this method allows for dry-run scenarios and supports uncommitted changes, making it suitable for batch operations
+     * and complex repository manipulations.
+     */
+    public static void copy(ResourceResolver resourceResolver, String sourcePath, String targetPath) {
+        Session session = resourceResolver.adaptTo(Session.class);
+        if (session == null) {
+            throw new IllegalStateException("Cannot copy resource as session is not provided!");
+        }
+        try {
+            Node sourceNode = session.getNode(sourcePath);
+            String parentTargetPath = StringUtils.substringBeforeLast(targetPath, "/");
+            String targetName = StringUtils.substringAfterLast(targetPath, "/");
+            Node targetParent = session.getNode(parentTargetPath);
+
+            copyInternal(sourceNode, targetParent, targetName);
+        } catch (RepositoryException e) {
+            throw new AcmException(String.format("Cannot copy resource from '%s' to '%s'!", sourcePath, targetPath), e);
+        }
+    }
+
+    private static void copyInternal(Node sourceNode, Node targetParent, String targetName) throws RepositoryException {
+        Node targetNode =
+                targetParent.addNode(targetName, sourceNode.getPrimaryNodeType().getName());
+
+        // Copy properties
+        PropertyIterator properties = sourceNode.getProperties();
+        while (properties.hasNext()) {
+            Property property = properties.nextProperty();
+            if (!property.getDefinition().isProtected()) {
+                if (property.isMultiple()) {
+                    targetNode.setProperty(property.getName(), property.getValues());
+                } else {
+                    targetNode.setProperty(property.getName(), property.getValue());
+                }
+            }
+        }
+
+        // Recursively copy child nodes
+        NodeIterator children = sourceNode.getNodes();
+        while (children.hasNext()) {
+            Node child = children.nextNode();
+            copyInternal(child, targetNode, child.getName());
         }
     }
 }

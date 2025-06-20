@@ -32,6 +32,10 @@ content: |
       }
       println "Folder '${dataFolder.path}' has now ${dataFolder.descendants().count()} descendant(s)."
     
+      def dataBackupFolder = dataFolder.sibling(dataFolder.name + "-backup")
+      println "Backing up the data folder '${dataBackupFolder.path}'"
+      dataFolder.copy(dataBackupFolder, true)
+    
       println "Creating a post in the temporary directory of the repository."
       def postFolder = repo.get("/tmp/acm/demo/posts").ensureFolder()
       def post = postFolder.child("hello-world.yml")
@@ -46,6 +50,7 @@ content: |
     
       if (arguments.value("clean")) {
         dataFolder.delete()
+        dataBackupFolder.delete()
         postFolder.delete()
       }
     }

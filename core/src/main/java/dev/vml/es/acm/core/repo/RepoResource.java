@@ -1,9 +1,6 @@
 package dev.vml.es.acm.core.repo;
 
-import dev.vml.es.acm.core.util.ResourceSpliterator;
-import dev.vml.es.acm.core.util.StreamUtils;
-import dev.vml.es.acm.core.util.StringUtil;
-import dev.vml.es.acm.core.util.TypeValueMap;
+import dev.vml.es.acm.core.util.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.jcr.RepositoryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -24,6 +22,17 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A fluent, active-record-style wrapper for Sling resources, simplifying common repository operations.
+ * <p>
+ * This class abstracts and streamlines the standard AEM and Sling APIs, which are often verbose and complex,
+ * by providing a concise and developer-friendly interface for resource management tasks such as creation,
+ * retrieval, update, deletion, traversal, and property manipulation.
+ * <p>
+ * All operations are performed using the underlying {@link ResourceResolver} and JCR session, supporting both
+ * transient and committed changes. This enables efficient scripting, automation, and integration scenarios
+ * within AEM and Sling-based applications.
+ */
 public class RepoResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(RepoResource.class);
@@ -47,6 +56,14 @@ public class RepoResource {
 
     public String getPath() {
         return path;
+    }
+
+    public String getName() {
+        return StringUtils.substringAfterLast(path, "/");
+    }
+
+    public int getDepth() {
+        return StringUtils.countMatches(path, "/");
     }
 
     public Optional<Resource> get() {
@@ -216,6 +233,132 @@ public class RepoResource {
         return true;
     }
 
+    public void copy(String targetPath) {
+        copy(targetPath, false);
+    }
+
+    public void copy(String targetPath, boolean replace) {
+        copy(new RepoResource(repo, targetPath), replace);
+    }
+
+    public void copy(RepoResource target) {
+        copy(target, false);
+    }
+
+    public void copy(RepoResource target, boolean replace) {
+        if (StringUtils.equals(path, target.path)) {
+            throw new RepoException(String.format("Cannot copy resource to itself at path '%s'!", path));
+        }
+
+        Resource sourceResource = require();
+        RepoResource targetParentResource = target.parent();
+        if (!targetParentResource.exists()) {
+            throw new RepoException(String.format(
+                    "Cannot copy resource '%s' to '%s' as target parent does not exist!", path, target.getPath()));
+        }
+        if (target.exists()) {
+            if (replace) {
+                target.delete();
+            } else {
+                throw new RepoException(String.format(
+                        "Cannot copy resource '%s' to '%s' as it already exists!", path, target.getPath()));
+            }
+        }
+
+        ResourceUtils.copy(repo.getResourceResolver(), sourceResource.getPath(), target.getPath());
+
+        repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
+        LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
+    }
+
+    public void move(String targetPath) {
+        move(targetPath, false);
+    }
+
+    public void move(String targetPath, boolean replace) {
+        move(new RepoResource(repo, targetPath), replace);
+    }
+
+    public void move(RepoResource target) {
+        move(target, false);
+    }
+
+    public void move(RepoResource target, boolean replace) {
+        if (StringUtils.equals(path, target.path)) {
+            throw new RepoException(String.format("Cannot move resource to itself at path '%s'!", path));
+        }
+
+        Resource sourceResource = require();
+        RepoResource targetParentResource = target.parent();
+        if (!targetParentResource.exists()) {
+            throw new RepoException(String.format(
+                    "Cannot move resource '%s' to '%s' as target parent does not exist!", path, target.getPath()));
+        }
+
+        if (target.exists()) {
+            if (replace) {
+                target.delete();
+            } else {
+                throw new RepoException(String.format(
+                        "Cannot move resource '%s' to '%s' as it already exists!", path, target.getPath()));
+            }
+        }
+
+        try {
+            repo.getSession().move(sourceResource.getPath(), target.getPath());
+            repo.commit(String.format("moving resource from '%s' to '%s'", path, target.getPath()));
+            LOG.info("Moved resource from '{}' to '{}'", path, target.getPath());
+        } catch (RepositoryException e) {
+            throw new RepoException(
+                    String.format("Cannot move resource from '%s' to '%s'!", path, target.getPath()), e);
+        }
+    }
+
+    public void rename(String newName) {
+        rename(newName, false);
+    }
+
+    public void rename(String newName, boolean replace) {
+        if (StringUtils.isBlank(newName)) {
+            throw new IllegalArgumentException(
+                    String.format("Cannot rename resource '%s' as new name is blank!", path));
+        }
+        String parent = parentPath();
+        if (parent == null) {
+            throw new RepoException(String.format("Cannot rename root resource '%s'!", path));
+        }
+        String targetPath = parent.endsWith("/") ? parent + newName : parent + "/" + newName;
+        move(targetPath, replace);
+    }
+
+    public void moveInPlace(RepoResource target) {
+        moveInPlace(target, false);
+    }
+
+    public void moveInPlace(RepoResource target, boolean replace) {
+        if (!repo.isAutoCommit()) {
+            throw new RepoException(
+                    "Cannot move resource in place as auto-commit is disabled! This operation always does an immediate commit.");
+        }
+
+        if (target.exists()) {
+            if (replace) {
+                target.delete();
+            } else {
+                throw new RepoException(String.format(
+                        "Cannot move in place resource '%s' to '%s' as it already exists!", path, target.getPath()));
+            }
+        }
+
+        try {
+            repo.getSession().getWorkspace().move(path, target.getPath());
+            LOG.info("Moved resource in place from '{}' to '{}'", path, target.getPath());
+        } catch (RepositoryException e) {
+            throw new RepoException(
+                    String.format("Cannot move resource in place from '%s' to '%s'!", path, target.getPath()), e);
+        }
+    }
+
     public RepoResource parent() {
         String parentPath = parentPath();
         if (parentPath == null) {
@@ -243,12 +386,28 @@ public class RepoResource {
         return new RepoResource(repo, childPath);
     }
 
+    public boolean isChild(String otherPath) {
+        return isChild(new RepoResource(repo, otherPath));
+    }
+
+    public boolean isChild(RepoResource other) {
+        return StringUtils.equals(path, other.parentPath()) && !StringUtils.equals(getName(), other.getName());
+    }
+
     public RepoResource sibling(String name) {
         if (StringUtils.isBlank(name)) {
             throw new IllegalArgumentException("Repo sibling resource name cannot be blank!");
         }
         String siblingPath = String.format("%s/%s", parentPath(), name);
         return new RepoResource(repo, siblingPath);
+    }
+
+    public boolean isSibling(String otherPath) {
+        return isSibling(new RepoResource(repo, otherPath));
+    }
+
+    public boolean isSibling(RepoResource other) {
+        return StringUtils.equals(parentPath(), other.parentPath()) && !StringUtils.equals(getName(), other.getName());
     }
 
     public Stream<RepoResource> siblings() {
@@ -332,12 +491,12 @@ public class RepoResource {
         return new RepoResourceState(path, true, resource.getValueMap());
     }
 
-    public Resource saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
-        return saveFileInternal(mimeType, null, dataWriter);
+    public void saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
+        saveFileInternal(mimeType, null, dataWriter);
     }
 
-    public Resource saveFile(String mimeType, File file) {
-        return saveFile(mimeType, (OutputStream os) -> {
+    public void saveFile(String mimeType, File file) {
+        saveFile(mimeType, (OutputStream os) -> {
             try (InputStream is = Files.newInputStream(file.toPath())) {
                 IOUtils.copy(is, os);
             } catch (IOException e) {
@@ -346,11 +505,11 @@ public class RepoResource {
         });
     }
 
-    public Resource saveFile(String mimeType, Object data) {
-        return saveFileInternal(mimeType, data, null);
+    public void saveFile(String mimeType, Object data) {
+        saveFileInternal(mimeType, data, null);
     }
 
-    private Resource saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
+    private void saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
         Resource mainResource = resolve();
         try {
             if (mainResource == null) {
@@ -389,7 +548,6 @@ public class RepoResource {
         } catch (PersistenceException e) {
             throw new RepoException(String.format("Cannot save file at path '%s'!", path), e);
         }
-        return mainResource;
     }
 
     private void setFileContent(

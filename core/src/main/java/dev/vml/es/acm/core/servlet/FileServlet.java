@@ -1,6 +1,17 @@
 package dev.vml.es.acm.core.servlet;
 
+import static dev.vml.es.acm.core.util.ServletResult.error;
+import static dev.vml.es.acm.core.util.ServletResult.ok;
+import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
+import static dev.vml.es.acm.core.util.ServletUtils.stringsParam;
+
 import dev.vml.es.acm.core.code.FileManager;
+import java.io.File;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import javax.servlet.Servlet;
+import javax.servlet.http.Part;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -9,18 +20,6 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.Servlet;
-import javax.servlet.http.Part;
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-
-import static dev.vml.es.acm.core.util.ServletResult.error;
-import static dev.vml.es.acm.core.util.ServletResult.ok;
-import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
-import static dev.vml.es.acm.core.util.ServletUtils.stringsParam;
 
 @Component(
         service = {Servlet.class},
@@ -55,7 +54,10 @@ public class FileServlet extends SlingAllMethodsServlet {
             respondJson(response, ok("Files uploaded successfully", output));
         } catch (Exception e) {
             LOG.error("Files cannot be uploaded!", e);
-            respondJson(response, error(String.format("Files cannot be uploaded! %s", e.getMessage().trim())));
+            respondJson(
+                    response,
+                    error(String.format(
+                            "Files cannot be uploaded! %s", e.getMessage().trim())));
         }
     }
 
@@ -68,8 +70,10 @@ public class FileServlet extends SlingAllMethodsServlet {
             respondJson(response, ok("Files deleted successfully", output));
         } catch (Exception e) {
             LOG.error("Files cannot be deleted!", e);
-            respondJson(response, error(String.format("Files cannot be deleted! %s", e.getMessage().trim())));
+            respondJson(
+                    response,
+                    error(String.format(
+                            "Files cannot be deleted! %s", e.getMessage().trim())));
         }
     }
-
 }
