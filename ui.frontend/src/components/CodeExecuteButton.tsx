@@ -2,7 +2,7 @@ import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Form, H
 import Alert from '@spectrum-icons/workflow/Alert';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Close from '@spectrum-icons/workflow/Close';
-import Gears from '@spectrum-icons/workflow/Gears';
+import PlayCircle from '@spectrum-icons/workflow/PlayCircle';
 import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toastRequest } from '../utils/api';
@@ -96,7 +96,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
   return (
     <>
       <Button aria-label="Execute" variant="accent" onPress={handleExecute} isPending={isPending || described} isDisabled={isDisabled}>
-        <Gears />
+        <PlayCircle />
         <Text>Execute</Text>
       </Button>
       <DialogContainer onDismiss={handleCloseDialog}>
