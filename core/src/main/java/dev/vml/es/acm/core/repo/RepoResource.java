@@ -352,11 +352,10 @@ public class RepoResource {
 
         try {
             repo.getSession().getWorkspace().move(path, target.getPath());
+            LOG.info("Moved resource in place from '{}' to '{}'", path, target.getPath());
         } catch (RepositoryException e) {
             throw new RepoException(
                     String.format("Cannot move resource in place from '%s' to '%s'!", path, target.getPath()), e);
-        } finally {
-            LOG.info("Moved resource in place from '{}' to '{}'", path, target.getPath());
         }
     }
 
