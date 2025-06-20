@@ -237,10 +237,22 @@ public class RepoResource {
         copy(target, false);
     }
 
+    /**
+     * Revertible copy method.
+     * Note that resource resolver copy allows copying resources to the same parent path but only with a different name.
+     * Session workspace copy writes changes immediately, so it is not possible to revert the copy operation.
+     */
     public void copy(RepoResource target, boolean replace) {
-        Resource sourceResource = require();
-        Resource targetParentResource = target.parent().require();
+        if (StringUtils.equals(path, target.path)) {
+            throw new RepoException(String.format("Cannot copy resource to itself at path '%s'!", path));
+        }
 
+        Resource sourceResource = require();
+        RepoResource targetParentResource = target.parent();
+        if (!targetParentResource.exists()) {
+            throw new RepoException(String.format(
+                    "Cannot copy resource '%s' to '%s' as target parent does not exist!", path, target.getPath()));
+        }
         if (target.exists()) {
             if (replace) {
                 target.delete();
@@ -250,13 +262,43 @@ public class RepoResource {
             }
         }
 
+        if (isSibling(target)) {
+            copySiblingRevertible(target, sourceResource);
+        } else {
+            try {
+                repo.getResourceResolver().copy(sourceResource.getPath(), targetParentResource.getPath());
+            } catch (PersistenceException e) {
+                throw new RepoException(
+                        String.format("Cannot copy resource from '%s' to '%s'!", path, target.getPath()), e);
+            }
+        }
+        repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
+        LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
+    }
+
+    private void copySiblingRevertible(RepoResource target, Resource sourceResource) {
+        String tempParentPath = target.parentPath() + "/tmp-" + UUID.randomUUID();
+        String tempPath = tempParentPath + "/" + target.getName();
+        String tempType = JcrConstants.NT_UNSTRUCTURED;
+
+        Resource tempResource = null;
         try {
-            repo.getResourceResolver().copy(sourceResource.getPath(), targetParentResource.getPath());
-            repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
-            LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
-        } catch (PersistenceException e) {
+            ResourceUtil.getOrCreateResource(
+                    repo.getResourceResolver(), tempParentPath, tempType, tempType, repo.isAutoCommit());
+            repo.getResourceResolver().copy(sourceResource.getPath(), tempPath);
+            repo.getSession().move(tempPath, target.getPath());
+            tempResource = repo.getResourceResolver().getResource(tempParentPath);
+        } catch (PersistenceException | RepositoryException e) {
             throw new RepoException(
-                    String.format("Cannot copy resource from '%s' to '%s'!", path, target.getPath()), e);
+                    String.format("Cannot copy resource from '%s' to sibling '%s'!", path, target.getPath()), e);
+        } finally {
+            if (tempResource != null) {
+                try {
+                    repo.getResourceResolver().delete(tempResource);
+                } catch (PersistenceException e) {
+                    LOG.warn("Cannot delete sibling temporary copy resource '{}'!", tempResource, e);
+                }
+            }
         }
     }
 
@@ -273,8 +315,16 @@ public class RepoResource {
     }
 
     public void move(RepoResource target, boolean replace) {
+        if (StringUtils.equals(path, target.path)) {
+            throw new RepoException(String.format("Cannot move resource to itself at path '%s'!", path));
+        }
+
         Resource sourceResource = require();
-        Resource targetParentResource = target.parent().require();
+        RepoResource targetParentResource = target.parent();
+        if (!targetParentResource.exists()) {
+            throw new RepoException(String.format(
+                    "Cannot move resource '%s' to '%s' as target parent does not exist!", path, target.getPath()));
+        }
 
         if (target.exists()) {
             if (replace) {
@@ -286,10 +336,10 @@ public class RepoResource {
         }
 
         try {
-            repo.getResourceResolver().move(sourceResource.getPath(), targetParentResource.getPath());
+            repo.getSession().move(sourceResource.getPath(), target.getPath());
             repo.commit(String.format("moving resource from '%s' to '%s'", path, target.getPath()));
             LOG.info("Moved resource from '{}' to '{}'", path, target.getPath());
-        } catch (PersistenceException e) {
+        } catch (RepositoryException e) {
             throw new RepoException(
                     String.format("Cannot move resource from '%s' to '%s'!", path, target.getPath()), e);
         }
@@ -368,12 +418,28 @@ public class RepoResource {
         return new RepoResource(repo, childPath);
     }
 
+    public boolean isChild(String otherPath) {
+        return isChild(new RepoResource(repo, otherPath));
+    }
+
+    public boolean isChild(RepoResource other) {
+        return StringUtils.equals(path, other.parentPath()) && !StringUtils.equals(getName(), other.getName());
+    }
+
     public RepoResource sibling(String name) {
         if (StringUtils.isBlank(name)) {
             throw new IllegalArgumentException("Repo sibling resource name cannot be blank!");
         }
         String siblingPath = String.format("%s/%s", parentPath(), name);
         return new RepoResource(repo, siblingPath);
+    }
+
+    public boolean isSibling(String otherPath) {
+        return isSibling(new RepoResource(repo, otherPath));
+    }
+
+    public boolean isSibling(RepoResource other) {
+        return StringUtils.equals(parentPath(), other.parentPath()) && !StringUtils.equals(getName(), other.getName());
     }
 
     public Stream<RepoResource> siblings() {
