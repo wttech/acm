@@ -215,6 +215,15 @@ public class RepoResource {
         return updateProperty(key, v -> value);
     }
 
+    public RepoResource saveProperties(Map<String, Object> properties) {
+        if (properties == null || properties.isEmpty()) {
+            LOG.info("Skipped saving properties for resource at path '{}' as no properties were provided!", path);
+            return this;
+        }
+        properties.forEach(this::saveProperty);
+        return this;
+    }
+
     public RepoResource deleteProperty(String key) {
         return saveProperty(key, null);
     }
