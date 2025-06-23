@@ -159,7 +159,7 @@ To achieve that, ACM provides a set of features to help you with the development
 
 2. **Manually executed scripts**
    - Navigate to the 'Scripts' page and select the 'Manual' tab.
-   - Code executed here also runs in the context of the current user (due to impersonation).
+   - Code executed here also runs in the context of the current user.
 
 3. **Automatically executed scripts**
    - Navigate to the 'Scripts' page and select the 'Automatic' tab.
@@ -383,7 +383,7 @@ Just create a YAML files in the `/conf/acm/settings/snippet/available/{project}`
 #### Example snippet
 
 Note that snippets could contain placeholders, which are replaced with actual values when the snippet is inserted into the script.
-Also, snippet documentation could be a GitHub Flavored Markdown file, which is rendered in the UI. As a consequence you can use HTML tags as well, provide links, images, etc.
+Also, snippet documentation could be a [GitHub Flavored Markdown](https://github.github.com/gfm/) file, which is rendered in the UI. As a consequence you can use HTML tags as well, provide links, images, etc.
 
 Let's assume a snippet located at path `/conf/acm/settings/snippet/available/acme/hello.yml` with the following content:
 
