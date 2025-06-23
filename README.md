@@ -250,7 +250,7 @@ The following example demonstrates how to create a user and a group, assign perm
 
 ```groovy
 boolean canRun() {
-    return condition.idleSelf()
+    return condition.idleSelf() && condition.everyHour()
 }
 
 void doRun() {
@@ -281,7 +281,9 @@ void doRun() {
 ```
 
 Operations done by `acl` service are idempotent, so you can run the script multiple times without worrying about duplicates, failures, or other issues.
-Logging is very descriptive allowing you to see what was done and what was skipped.
+Logging is very descriptive, allowing you to see what was done and what was skipped.
+
+ACL scripts can be scheduled to run at regular intervals, automatically adapting permissions to the evolving, project-specific structure of your AEM content.
 
 <img src="docs/screenshot-content-script-acl-output.png" width="720" alt="ACM ACL Script Output">
 
