@@ -104,7 +104,7 @@ For AEMaaCS deployments, embed the ACM package as a part of project-specific 'al
 
 Adjust file 'all/pom.xml':
 
-1. Add dependency:
+1. Add dependency to *all* or *minimal* package in the *dependencies* section:
 
     ```xml
     <dependency>
@@ -127,6 +127,8 @@ Adjust file 'all/pom.xml':
     ```
 
     Remember to replace `${acm.version}` and `${appId}` with the actual values.
+
+    Repeat the same for *ui.content.example* package if you want to install demonstrative ACM scripts to get you started quickly.
 
 3. Consider refining the ACL settings
 
