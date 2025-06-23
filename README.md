@@ -383,7 +383,7 @@ Just create a YAML files in the `/conf/acm/settings/snippet/available/{project}`
 #### Example snippet
 
 Note that snippets could contain placeholders, which are replaced with actual values when the snippet is inserted into the script.
-Also, snippet documentation could be a [GitHub Flavored Markdown](https://github.github.com/gfm/) file, which is rendered in the UI. As a consequence you can use HTML tags as well, provide links, images, etc.
+Also, snippet documentation could use [GitHub Flavored Markdown](https://github.github.com/gfm/) syntax, which is later rendered in the UI. As a consequence, you can use HTML tags as well, provide links, images, etc.
 
 Let's assume a snippet located at path `/conf/acm/settings/snippet/available/acme/hello.yml` with the following content:
 
