@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A fluent, active-record-style wrapper for Sling resources, simplifying common repository operations.
+ * A fluent wrapper for Sling/JCR resources, simplifying common repository operations.
  * <p>
  * This class abstracts and streamlines the standard AEM and Sling APIs, which are often verbose and complex,
  * by providing a concise and developer-friendly interface for resource management tasks such as creation,
@@ -80,14 +80,6 @@ public class RepoResource {
 
     public boolean exists() {
         return get().isPresent();
-    }
-
-    public boolean existsStrict(String path) {
-        try {
-            return repo.getSession().nodeExists(path);
-        } catch (Exception e) {
-            throw new RepoException(String.format("Resource at path '%s' cannot be checked for existence!", path), e);
-        }
     }
 
     public RepoResource ensureFolder() {
@@ -265,19 +257,18 @@ public class RepoResource {
         RepoResource targetParentResource = target.parent();
         if (!targetParentResource.exists()) {
             throw new RepoException(String.format(
-                    "Cannot copy resource '%s' to '%s' as target parent does not exist!", path, target.getPath()));
+                    "Cannot copy resource from '%s' to '%s' as target parent does not exist!", path, target.getPath()));
         }
         if (target.exists()) {
             if (replace) {
                 target.delete();
             } else {
-                throw new RepoException(String.format(
-                        "Cannot copy resource '%s' to '%s' as it already exists!", path, target.getPath()));
+                LOG.info("Skipped copying resource from '{}' to '{}' as it already exists", path, target.getPath());
+                return target;
             }
         }
 
         ResourceUtils.copy(repo.getResourceResolver(), sourceResource.getPath(), target.getPath());
-
         repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
         LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
         return target;
@@ -311,8 +302,8 @@ public class RepoResource {
             if (replace) {
                 target.delete();
             } else {
-                throw new RepoException(String.format(
-                        "Cannot move resource '%s' to '%s' as it already exists!", path, target.getPath()));
+                LOG.info("Skipped moving resource from '{}' to '{}' as it already exists", path, target.getPath());
+                return target;
             }
         }
 
