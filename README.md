@@ -265,7 +265,7 @@ void doRun() {
     }
 
     def johnDoe = acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
-    johnDoe?.with {
+    johnDoe.with {
         // purge()
         allow("/content", ["jcr:read"])
     }
@@ -311,7 +311,7 @@ void doRun() {
         println "Creating a folder structure in the temporary directory of the repository."
         def dataFolder = repo.get("/tmp/acm/demo/data").ensureFolder()
         for (int i = 0; i < 5; i++) {
-            def child = dataFolder.child("child-\${i+1}").save(["foo": "bar"])
+            def child = dataFolder.child("child-${i+1}").save(["foo": "bar"])
             child.updateProperty("foo") { v -> v.toUpperCase() }
         }
         println "Folder '${dataFolder.path}' has now ${dataFolder.descendants().count()} descendant(s)."
