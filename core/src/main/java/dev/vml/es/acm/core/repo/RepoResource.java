@@ -114,8 +114,8 @@ public class RepoResource {
     }
 
     public RepoResource save(Map<String, Object> values) {
-        Resource result = resolve();
-        if (result == null) {
+        Resource resource = resolve();
+        if (resource == null) {
             String parentPath = StringUtils.substringBeforeLast(path, "/");
             Resource parent = repo.getResourceResolver().getResource(parentPath);
             if (parent == null) {
@@ -124,7 +124,7 @@ public class RepoResource {
             }
             try {
                 String name = StringUtils.substringAfterLast(path, "/");
-                result = repo.getResourceResolver().create(parent, name, values);
+                repo.getResourceResolver().create(parent, name, values);
                 repo.commit(String.format("creating resource at path '%s'", path));
                 LOG.info("Created resource at path '{}'", path);
                 return this;
@@ -132,7 +132,7 @@ public class RepoResource {
                 throw new RepoException(String.format("Cannot save resource at path '%s'!", path), e);
             }
         } else {
-            ModifiableValueMap valueMap = Objects.requireNonNull(result.adaptTo(ModifiableValueMap.class));
+            ModifiableValueMap valueMap = Objects.requireNonNull(resource.adaptTo(ModifiableValueMap.class));
             valueMap.putAll(values);
             repo.commit(String.format("updating resource at path '%s'", path));
             LOG.info("Updated resource at path '{}'", path);
