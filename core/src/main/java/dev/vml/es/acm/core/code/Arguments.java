@@ -75,6 +75,9 @@ public class Arguments implements Serializable {
     }
 
     public void setValues(ArgumentValues arguments) {
+        if (arguments == null) {
+            return; // input arguments may be skipped then default values will be used
+        }
         arguments.forEach((name, value) -> {
             Argument<?> argument = get(name);
             setValue(argument, value);
