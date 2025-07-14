@@ -19,7 +19,7 @@
 </picture>
 </p>
 
-**Manage permissions & content updates as-a-code.**
+**Manage permissions & content updates as code.**
 
 ACM streamlines workflows and boosts productivity with an intuitive interface and robust features. It automates bulk content and permission changes, making it ideal for content migration and large-scale permission management. ACM offers an IDE-like experience with code completion, auto-import, and on-the-fly compilation.
 
