@@ -15,7 +15,7 @@ public class KeyValueListArgument extends Argument<List<KeyValue<String, String>
     private Integer max;
 
     public KeyValueListArgument(String name) {
-        super(name, ArgumentType.MAP, Map.class);
+        super(name, ArgumentType.KEY_VALUE_LIST, Map.class);
     }
 
     public Integer getMin() {
