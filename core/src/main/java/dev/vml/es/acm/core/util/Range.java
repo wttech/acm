@@ -2,6 +2,8 @@ package dev.vml.es.acm.core.util;
 
 import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class Range<T extends Comparable<T>> implements Serializable {
 
@@ -47,6 +49,9 @@ public class Range<T extends Comparable<T>> implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("Range[%s, %s]", start, end);
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("start", getStart())
+                .append("end", getEnd())
+                .toString();
     }
 }

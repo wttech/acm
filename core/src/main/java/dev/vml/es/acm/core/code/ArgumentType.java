@@ -6,6 +6,8 @@ public enum ArgumentType {
     DATE,
     TIME,
     INTEGER,
+    MAP,
+    KEY_VALUE_LIST,
     DECIMAL,
     STRING,
     TEXT,
