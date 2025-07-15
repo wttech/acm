@@ -48,9 +48,9 @@ import {
 import { Dates } from '../utils/dates';
 import { Strings } from '../utils/strings';
 import FileUploader from './FileUploader';
+import KeyValueEditor from './KeyValueEditor';
 import Markdown from './Markdown';
 import PathField from './PathPicker';
-import KeyValueEditor from "./KeyValueEditor";
 
 interface CodeArgumentInputProps {
   arg: Argument<ArgumentValue>;

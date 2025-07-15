@@ -1,4 +1,6 @@
-import { Button, Flex, TextField, View } from '@adobe/react-spectrum';
+import { Button, Flex, Text, TextField, View } from '@adobe/react-spectrum';
+import Add from '@spectrum-icons/workflow/Add';
+import Delete from '@spectrum-icons/workflow/Delete';
 import React, { useState } from 'react';
 
 interface KeyValue {
@@ -10,9 +12,15 @@ interface KeyValueEditorProps {
   items: KeyValue[];
   onChange: (items: KeyValue[]) => void;
   uniqueKeys?: boolean;
+  keyLabel?: string;
+  valueLabel?: string;
 }
 
-const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, uniqueKeys }) => {
+const KEY_COL_WIDTH = 'size-2000';
+const VALUE_COL_WIDTH = 'size-3000';
+const ACTION_COL_WIDTH = 'size-600';
+
+const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, uniqueKeys, keyLabel = 'Key', valueLabel = 'Value' }) => {
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
 
@@ -34,34 +42,55 @@ const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, unique
   };
 
   return (
-    <View>
+    <Flex direction="column" gap="size-100">
+      <Flex direction="row" alignItems="center" gap="size-100">
+        <View width={KEY_COL_WIDTH}>
+          <Text>{keyLabel}</Text>
+        </View>
+        <View width={VALUE_COL_WIDTH}>
+          <Text>{valueLabel}</Text>
+        </View>
+        <View width={ACTION_COL_WIDTH} />
+      </Flex>
       {items.map((item, idx) => {
         const isDuplicate = uniqueKeys && items.some((it, i) => it.key === item.key && i !== idx);
         return (
-          <Flex key={idx} direction="row" gap="size-100" alignItems="end" marginBottom="size-100">
-            <TextField label="Key" value={item.key} onChange={(k) => updateItem(idx, k, item.value)} width="size-2000" errorMessage={isDuplicate ? 'Duplicate key' : undefined} validationState={isDuplicate ? 'invalid' : undefined} />
-            <TextField label="Value" value={item.value} onChange={(v) => updateItem(idx, item.key, v)} width="size-3000" />
-            <Button variant="negative" onPress={() => removeItem(idx)}>
-              Remove
-            </Button>
+          <Flex key={idx} direction="row" alignItems="end" gap="size-100">
+            <View width={KEY_COL_WIDTH}>
+              <TextField aria-label={keyLabel} value={item.key} onChange={(k) => updateItem(idx, k, item.value)} errorMessage={isDuplicate ? 'Duplicate key' : undefined} validationState={isDuplicate ? 'invalid' : undefined} width="100%" />
+            </View>
+            <View width={VALUE_COL_WIDTH}>
+              <TextField aria-label={valueLabel} value={item.value} onChange={(v) => updateItem(idx, item.key, v)} width="100%" />
+            </View>
+            <View width={ACTION_COL_WIDTH}>
+              <Button variant="negative" onPress={() => removeItem(idx)} aria-label="Remove" isQuiet>
+                <Delete />
+              </Button>
+            </View>
           </Flex>
         );
       })}
-      <Flex direction="row" gap="size-100" alignItems="end">
-        <TextField
-          label="Key"
-          value={newKey}
-          onChange={setNewKey}
-          width="size-2000"
-          errorMessage={uniqueKeys && items.some((item) => item.key === newKey) ? 'Duplicate key' : undefined}
-          validationState={uniqueKeys && items.some((item) => item.key === newKey) ? 'invalid' : undefined}
-        />
-        <TextField label="Value" value={newValue} onChange={setNewValue} width="size-3000" />
-        <Button variant="primary" onPress={addItem} isDisabled={!newKey || (uniqueKeys && items.some((item) => item.key === newKey))}>
-          Add
-        </Button>
+      <Flex direction="row" alignItems="end" gap="size-100">
+        <View width={KEY_COL_WIDTH}>
+          <TextField
+            aria-label={keyLabel}
+            value={newKey}
+            onChange={setNewKey}
+            errorMessage={uniqueKeys && items.some((item) => item.key === newKey) ? 'Duplicate key' : undefined}
+            validationState={uniqueKeys && items.some((item) => item.key === newKey) ? 'invalid' : undefined}
+            width="100%"
+          />
+        </View>
+        <View width={VALUE_COL_WIDTH}>
+          <TextField aria-label={valueLabel} value={newValue} onChange={setNewValue} width="100%" />
+        </View>
+        <View width={ACTION_COL_WIDTH}>
+          <Button variant="primary" onPress={addItem} isDisabled={!newKey || (uniqueKeys && items.some((item) => item.key === newKey))} aria-label="Add" isQuiet>
+            <Add />
+          </Button>
+        </View>
       </Flex>
-    </View>
+    </Flex>
   );
 };
 
