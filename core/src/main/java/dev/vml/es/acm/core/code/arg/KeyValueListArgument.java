@@ -5,7 +5,6 @@ import dev.vml.es.acm.core.code.ArgumentType;
 import dev.vml.es.acm.core.util.KeyValue;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class KeyValueListArgument extends Argument<List<KeyValue<String, String>>> {
@@ -15,7 +14,7 @@ public class KeyValueListArgument extends Argument<List<KeyValue<String, String>
     private Integer max;
 
     public KeyValueListArgument(String name) {
-        super(name, ArgumentType.KEY_VALUE_LIST, Map.class);
+        super(name, ArgumentType.KEY_VALUE_LIST, null);
     }
 
     public Integer getMin() {
