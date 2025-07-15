@@ -3,11 +3,13 @@ package dev.vml.es.acm.core.code.arg;
 import dev.vml.es.acm.core.code.Argument;
 import dev.vml.es.acm.core.code.ArgumentType;
 import dev.vml.es.acm.core.util.KeyValue;
+import dev.vml.es.acm.core.util.KeyValueList;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class KeyValueListArgument extends Argument<List<KeyValue<String, String>>> {
+public class KeyValueListArgument extends Argument<KeyValueList<String, String>> {
 
     private Integer min;
 
@@ -40,7 +42,19 @@ public class KeyValueListArgument extends Argument<List<KeyValue<String, String>
             if (value.stream().anyMatch(v -> v.size() != 2)) {
                 throw new IllegalArgumentException("Key-value list must contain pairs of key and value!");
             }
-            super.setValue(value.stream().map(v -> new KeyValue<>(v.get(0), v.get(1))).collect(Collectors.toList()));
+            super.setValue(value.stream()
+                    .map(v -> new KeyValue<>(v.get(0), v.get(1)))
+                    .collect(Collectors.toCollection(KeyValueList::new)));
+        }
+    }
+
+    public void setValue(Map<String, String> value) {
+        if (value == null) {
+            super.setValue(null);
+        } else {
+            super.setValue(value.entrySet().stream()
+                    .map(entry -> new KeyValue<>(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toCollection(KeyValueList::new)));
         }
     }
 }
