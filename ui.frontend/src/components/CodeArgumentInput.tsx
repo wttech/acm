@@ -34,6 +34,8 @@ import {
   isColorArgument,
   isDateTimeArgument,
   isFileArgument,
+  isKeyValueListArgument,
+  isMapArgument,
   isMultiFileArgument,
   isMultiSelectArgument,
   isNumberArgument,
@@ -336,6 +338,10 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                   </div>
                 </Field>
               );
+            } else if (isMapArgument(arg)) {
+              return null // TODO impl
+            } else if (isKeyValueListArgument(arg)) {
+              return null // TODO impl
             } else {
               throw new Error(`Unsupported argument type: ${arg.type}`);
             }
