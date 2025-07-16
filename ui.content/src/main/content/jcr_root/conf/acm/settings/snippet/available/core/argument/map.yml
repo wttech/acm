@@ -4,6 +4,7 @@ content: |
   arguments.map("${1:name}") { label = "${2:Label}"; value = ${3:value} }
 documentation: |
   An argument that allows to input a map of key-value pairs.
+  
   For non-unique keys use `keyValueList` argument instead.
 
   For example:
