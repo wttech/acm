@@ -340,7 +340,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 </Field>
               );
             } else if (isMapArgument(arg)) {
-              const items = Object.entries(field.value ?? {}).map(([key, value]) => ({ key, value }));
+              const items = Object.entries(field.value ?? {}).map(([key, value]) => ({key, value: value?.toString() ?? ''}));
               const handleChange = (items: { key: string; value: string }[]) => {
                 const record = Object.fromEntries(items.map(({ key, value }) => [key, value]));
                 field.onChange(record);
