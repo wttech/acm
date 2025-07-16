@@ -1,7 +1,7 @@
 import { Button, Grid, Text, TextField, View } from '@adobe/react-spectrum';
 import Add from '@spectrum-icons/workflow/Add';
 import Delete from '@spectrum-icons/workflow/Delete';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface KeyValue {
   key: string;
@@ -21,29 +21,47 @@ const VALUE_COL_WIDTH = 'size-3000';
 const ACTION_COL_WIDTH = 'size-600';
 
 const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, uniqueKeys, keyLabel = 'Key', valueLabel = 'Value' }) => {
+  const [localItems, setLocalItems] = useState<KeyValue[]>(items);
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
 
+  useEffect(() => {
+    setLocalItems(items);
+  }, [items]);
+
+  const hasDuplicates = (arr: KeyValue[]) => {
+    const keys = arr.map((item) => item.key);
+    return new Set(keys).size !== keys.length;
+  };
+
+  const tryUpdate = (updated: KeyValue[]) => {
+    setLocalItems(updated);
+    if (!uniqueKeys || !hasDuplicates(updated)) {
+      onChange(updated);
+    }
+  };
+
   const addItem = () => {
     if (!newKey) return;
-    if (uniqueKeys && items.some((item) => item.key === newKey)) return;
-    onChange([...items, { key: newKey, value: newValue }]);
+    const updated = [...localItems, { key: newKey, value: newValue }];
+    tryUpdate(updated);
     setNewKey('');
     setNewValue('');
   };
 
   const removeItem = (idx: number) => {
-    onChange(items.filter((_, i) => i !== idx));
+    const updated = localItems.filter((_, i) => i !== idx);
+    tryUpdate(updated);
   };
 
   const updateItem = (idx: number, key: string, value: string) => {
-    const updated = items.map((item, i) => (i === idx ? { key, value } : item));
-    onChange(updated);
+    const updated = localItems.map((item, i) => (i === idx ? { key, value } : item));
+    tryUpdate(updated);
   };
 
   // Define grid areas for all rows
-  const areas = ['key value action', ...items.map((_, i) => `key${i} value${i} action${i}`), 'keyNew valueNew actionNew'];
-  const rows = ['auto', ...items.map(() => 'auto'), 'auto'];
+  const areas = ['key value action', ...localItems.map((_, i) => `key${i} value${i} action${i}`), 'keyNew valueNew actionNew'];
+  const rows = ['auto', ...localItems.map(() => 'auto'), 'auto'];
 
   return (
     <Grid areas={areas} columns={[KEY_COL_WIDTH, VALUE_COL_WIDTH, ACTION_COL_WIDTH]} rows={rows} gap="size-100">
@@ -55,8 +73,8 @@ const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, unique
       </View>
       <View gridArea="action" />
 
-      {items.map((item, idx) => {
-        const isDuplicate = uniqueKeys && items.some((it, i) => it.key === item.key && i !== idx);
+      {localItems.map((item, idx) => {
+        const isDuplicate = uniqueKeys && localItems.some((it, i) => it.key === item.key && i !== idx);
         return (
           <React.Fragment key={idx}>
             <TextField
@@ -84,14 +102,14 @@ const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, unique
         aria-label={keyLabel}
         value={newKey}
         onChange={setNewKey}
-        errorMessage={uniqueKeys && items.some((item) => item.key === newKey) ? 'Duplicate key' : undefined}
-        validationState={uniqueKeys && items.some((item) => item.key === newKey) ? 'invalid' : undefined}
+        errorMessage={uniqueKeys && localItems.some((item) => item.key === newKey) && newKey ? 'Duplicate key' : undefined}
+        validationState={uniqueKeys && localItems.some((item) => item.key === newKey) && newKey ? 'invalid' : undefined}
         description=" "
         width="100%"
       />
       <TextField gridArea="valueNew" aria-label={valueLabel} value={newValue} onChange={setNewValue} description=" " width="100%" />
       <View gridArea="actionNew">
-        <Button variant="primary" onPress={addItem} isDisabled={!newKey || (uniqueKeys && items.some((item) => item.key === newKey))} aria-label="Add" isQuiet>
+        <Button variant="primary" onPress={addItem} isDisabled={!newKey || (uniqueKeys && localItems.some((item) => item.key === newKey))} aria-label="Add" isQuiet>
           <Add />
         </Button>
       </View>
