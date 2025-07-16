@@ -65,7 +65,7 @@ const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, unique
   const rows = ['auto', ...localItems.map(() => 'auto'), 'auto'];
 
   return (
-    <Grid areas={areas} columns={[KEY_COL_WIDTH, VALUE_COL_WIDTH, ACTION_COL_WIDTH]} rows={rows} gap="size-100">
+    <Grid areas={areas} columns={[KEY_COL_WIDTH, VALUE_COL_WIDTH, ACTION_COL_WIDTH]} rows={rows} rowGap="size-0" columnGap="size-100">
       <View gridArea="key">
         <Text>{keyLabel}</Text>
       </View>
@@ -85,12 +85,11 @@ const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, unique
               onChange={(k) => updateItem(idx, k, item.value)}
               errorMessage={isDuplicate ? 'Duplicate key' : undefined}
               validationState={isDuplicate ? 'invalid' : undefined}
-              description=" "
               width="100%"
             />
             <TextField gridArea={`value${idx}`} aria-label={valueLabel} value={item.value} onChange={(v) => updateItem(idx, item.key, v)} description=" " width="100%" />
             <View gridArea={`action${idx}`}>
-              <Button variant="negative" onPress={() => removeItem(idx)} aria-label="Remove" isQuiet>
+              <Button variant="negative" onPress={() => removeItem(idx)} aria-label="Remove">
                 <Delete />
               </Button>
             </View>
@@ -105,7 +104,6 @@ const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, unique
         onChange={setNewKey}
         errorMessage={uniqueKeys && localItems.some((item) => item.key === newKey) && newKey ? 'Duplicate key' : undefined}
         validationState={uniqueKeys && localItems.some((item) => item.key === newKey) && newKey ? 'invalid' : undefined}
-        description=" "
         width="100%"
       />
       <TextField gridArea="valueNew" aria-label={valueLabel} value={newValue} onChange={setNewValue} description=" " width="100%" />
