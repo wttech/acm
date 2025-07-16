@@ -20,6 +20,7 @@ const KEY_COL_WIDTH = 'size-2000';
 const VALUE_COL_WIDTH = 'size-3000';
 const ACTION_COL_WIDTH = 'size-600';
 
+// TODO minimize space, empty row visible after clicking add button
 const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, uniqueKeys, keyLabel = 'Key', valueLabel = 'Value' }) => {
   const [localItems, setLocalItems] = useState<KeyValue[]>(items);
   const [newKey, setNewKey] = useState('');

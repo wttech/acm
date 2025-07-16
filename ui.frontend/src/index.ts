@@ -1,6 +1,6 @@
 import { loader as monacoLoader } from '@monaco-editor/react';
 import axios from 'axios';
-import { isProduction } from './utils/node.ts';
+import { isProduction, devServerPort } from './utils/node.ts';
 
 // Integrate with AEM's CSRF Protection
 // See: https://experienceleague.adobe.com/en/docs/experience-manager-learn/cloud-service/developing/advanced/csrf-protection#fetch-with-csrf-protection
@@ -28,6 +28,6 @@ axios.interceptors.request.use(
 // Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
 monacoLoader.config({
   paths: {
-    vs: isProduction() ? `${window.origin}/apps/acm/spa/js/monaco-editor/vs` : 'http://localhost:5173/node_modules/monaco-editor/min/vs',
+    vs: isProduction() ? `${window.origin}/apps/acm/spa/js/monaco-editor/vs` : `http://localhost:${devServerPort}/node_modules/monaco-editor/min/vs`,
   },
 });
