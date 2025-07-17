@@ -9,5 +9,5 @@ documentation: |
 
   For example:
   ```groovy
-  arguments.map("languages") { value = ["pl-PL": "Polski", "es-ES": "Español"] }
+  arguments.map("languages") { keyLabel = "ISO Code"; valueLabel = "Name"; value = ["pl-PL": "Polski", "es-ES": "Español"] }
   ```
