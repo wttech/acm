@@ -15,7 +15,7 @@ import { appState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
 import { apiRequest, toastRequest } from '../utils/api';
-import { ArgumentValues, Description, ExecutableIdConsole, Execution, isExecutionPending, QueueOutput, ScriptOutput } from '../utils/api.types.ts';
+import { ArgumentValues, ConsoleDefaultScriptPath, Description, ExecutableIdConsole, Execution, isExecutionPending, QueueOutput, ScriptOutput } from '../utils/api.types.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { StorageKeys } from '../utils/storage';
 
@@ -31,13 +31,12 @@ const ConsolePage = () => {
     if (code === undefined) {
       toastRequest<ScriptOutput>({
         method: 'GET',
-        url: '/apps/acm/api/script.json?id=/conf/acm/settings/script/template/core/default.groovy',
+        url: `/apps/acm/api/script.json?id=${ConsoleDefaultScriptPath}`,
         operation: 'Loading default console script',
         positive: false,
       })
         .then((data) => {
-          const content = data.data.data.list?.[0]?.content || '';
-          setCode(content);
+          setCode(data.data.data.list?.[0]?.content || '');
         })
         .catch((error) => {
           console.error('Loading default console script failed!', error);
