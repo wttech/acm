@@ -14,19 +14,36 @@ import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import { appState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
-import { apiRequest } from '../utils/api';
-import { ArgumentValues, Description, ExecutableIdConsole, Execution, isExecutionPending, QueueOutput } from '../utils/api.types.ts';
+import { apiRequest, toastRequest } from '../utils/api';
+import { ArgumentValues, Description, ExecutableIdConsole, Execution, isExecutionPending, QueueOutput, ScriptOutput } from '../utils/api.types.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { StorageKeys } from '../utils/storage';
-import ConsoleCodeGroovy from './ConsoleCode.groovy';
 
 const ConsolePage = () => {
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
-  const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || ConsoleCodeGroovy);
+  const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
   const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
   const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
   const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id || null, appState.value.spaSettings.executionPollInterval);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (code === undefined) {
+      toastRequest<ScriptOutput>({
+        method: 'GET',
+        url: '/apps/acm/api/script.json?id=/conf/acm/settings/script/template/core/default.groovy',
+        operation: 'Loading default console script',
+        positive: false,
+      })
+        .then((data) => {
+          const content = data.data.data.list?.[0]?.content || '';
+          setCode(content);
+        })
+        .catch((error) => {
+          console.error('Loading default console script failed!', error);
+        });
+    }
+  }, [code]);
 
   useEffect(() => {
     setExecution(parseExecution);

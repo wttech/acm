@@ -3,4 +3,5 @@
     <filter root="/conf/acm/settings/assist/java"/>
     <filter root="/conf/acm/settings/snippet/available/core"/>
     <filter root="/conf/acm/settings/script/mock/core"/>
+    <filter root="/conf/acm/settings/script/template/core"/>
 </workspaceFilter>
