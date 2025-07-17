@@ -49,7 +49,9 @@ public class KeyValueListArgument extends AbstractKeyValueArgument<KeyValueList<
                 KeyValue<String, String> kv = (KeyValue<String, String>) v;
                 newList.add(kv);
             } else {
-                throw new IllegalArgumentException(String.format("Key-value list element type '%s' is not supported!", v.getClass().getName()));
+                throw new IllegalArgumentException(String.format(
+                        "Key-value list element type '%s' is not supported!",
+                        v.getClass().getName()));
             }
         }
         super.setValue(newList);

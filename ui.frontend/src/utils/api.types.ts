@@ -6,6 +6,18 @@ export type Executable = {
   arguments: ArgumentValues;
 };
 
+export const ScriptRootPath = '/conf/acm/settings/script';
+export const ConsoleDefaultScriptPath = `${ScriptRootPath}/template/core/default.groovy`;
+export const ConsoleDefaultScriptContent = `
+boolean canRun() {
+  return condition.always()
+}
+  
+void doRun() {
+  println "Hello World!"
+}
+`.trim();
+
 export const ExecutableIdConsole = 'console';
 
 export function isExecutableConsole(id: string): boolean {
@@ -13,7 +25,7 @@ export function isExecutableConsole(id: string): boolean {
 }
 
 export function isExecutableScript(id: string): boolean {
-  return id.startsWith('/conf/acm/settings/script');
+  return id.startsWith(ScriptRootPath);
 }
 
 export function isExecutableExplicit(id: string): boolean {

@@ -9,7 +9,8 @@ public enum ScriptType {
     ENABLED(ScriptRepository.ROOT + "/auto/enabled"),
     DISABLED(ScriptRepository.ROOT + "/auto/disabled"),
     MOCK(ScriptRepository.ROOT + "/mock"),
-    EXTENSION(ScriptRepository.ROOT + "/extension");
+    EXTENSION(ScriptRepository.ROOT + "/extension"),
+    TEMPLATE(ScriptRepository.ROOT + "/template");
 
     private final String root;
 

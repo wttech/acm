@@ -60,8 +60,8 @@ public class ScriptRepository {
         if (script == null) {
             throw new AcmException(String.format("Script at path '%s' does not exist!", path));
         }
-        if (script.getType() == ScriptType.ENABLED) {
-            throw new AcmException(String.format("Script at path '%s' is already enabled!", path));
+        if (script.getType() != ScriptType.DISABLED) {
+            throw new AcmException(String.format("Script at path '%s' is not disabled!", path));
         }
         try {
             String sourcePath = script.getPath();
@@ -78,8 +78,8 @@ public class ScriptRepository {
         if (script == null) {
             throw new AcmException(String.format("Script at path '%s' does not exist!", path));
         }
-        if (script.getType() == ScriptType.DISABLED) {
-            throw new AcmException(String.format("Script at path '%s' is already disabled!", path));
+        if (script.getType() != ScriptType.ENABLED) {
+            throw new AcmException(String.format("Script at path '%s' is not enabled!", path));
         }
         try {
             String sourcePath = script.getPath();
