@@ -340,7 +340,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 </Field>
               );
             } else if (isMapArgument(arg)) {
-              const items = Object.entries(field.value ?? {}).map(([key, value]) => ({key, value: value?.toString() ?? ''}));
+              const items = Object.entries(field.value ?? {}).map(([key, value]) => ({ key, value: value?.toString() ?? '' }));
               const handleChange = (items: { key: string; value: string }[]) => {
                 const record = Object.fromEntries(items.map(({ key, value }) => [key, value]));
                 field.onChange(record);
@@ -348,7 +348,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <KeyValueEditor items={items} onChange={handleChange} uniqueKeys />
+                    <KeyValueEditor items={items} onChange={handleChange} uniqueKeys/>
                   </div>
                 </Field>
               );

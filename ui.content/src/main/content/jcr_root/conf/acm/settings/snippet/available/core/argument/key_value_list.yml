@@ -9,5 +9,5 @@ documentation: |
 
   For example:
   ```groovy
-  arguments.keyValueList("queryParams") { value = [ ["tag", "a"], ["tag", "b"] ] }
+  arguments.keyValueList("queryParams") { value = [ ["tag": "a"], ["tag": "b"] ] }
   ```

@@ -1,6 +1,6 @@
 import { loader as monacoLoader } from '@monaco-editor/react';
 import axios from 'axios';
-import { isProduction, devServerPort } from './utils/node.ts';
+import { devServerPort, isProduction } from './utils/node.ts';
 
 // Integrate with AEM's CSRF Protection
 // See: https://experienceleague.adobe.com/en/docs/experience-manager-learn/cloud-service/developing/advanced/csrf-protection#fetch-with-csrf-protection

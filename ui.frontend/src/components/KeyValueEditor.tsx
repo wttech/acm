@@ -55,7 +55,6 @@ const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, unique
     tryUpdate(updated);
   };
 
-  // Define grid areas for all rows
   const areas = ['key value action', ...localItems.map((_, i) => `key${i} value${i} action${i}`), 'keyNew valueNew actionNew'];
   const rows = ['auto', ...localItems.map(() => 'auto'), 'auto'];
 

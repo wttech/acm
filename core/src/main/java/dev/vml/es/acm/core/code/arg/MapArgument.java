@@ -6,27 +6,7 @@ import java.util.Map;
 
 public class MapArgument extends Argument<Map<String, String>> {
 
-    private Integer min;
-
-    private Integer max;
-
     public MapArgument(String name) {
         super(name, ArgumentType.MAP, Map.class);
-    }
-
-    public Integer getMin() {
-        return min;
-    }
-
-    public void setMin(Integer min) {
-        this.min = min;
-    }
-
-    public Integer getMax() {
-        return max;
-    }
-
-    public void setMax(Integer max) {
-        this.max = max;
     }
 }
