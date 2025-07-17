@@ -1,6 +1,5 @@
 package dev.vml.es.acm.core.code.arg;
 
-import dev.vml.es.acm.core.code.Argument;
 import dev.vml.es.acm.core.code.ArgumentType;
 import dev.vml.es.acm.core.util.KeyValue;
 import dev.vml.es.acm.core.util.KeyValueList;
@@ -8,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class KeyValueListArgument extends Argument<KeyValueList<String, String>> {
+public class KeyValueListArgument extends AbstractKeyValueArgument<KeyValueList<String, String>> {
 
     public KeyValueListArgument(String name) {
         super(name, ArgumentType.KEY_VALUE_LIST, null);

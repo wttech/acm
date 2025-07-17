@@ -348,7 +348,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <KeyValueEditor items={items} onChange={handleChange} uniqueKeys/>
+                    <KeyValueEditor items={items} onChange={handleChange} uniqueKeys keyLabel={arg.keyLabel} valueLabel={arg.valueLabel} />
                   </div>
                 </Field>
               );
@@ -356,7 +356,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
               return (
                 <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
-                    <KeyValueEditor items={field.value ?? []} onChange={field.onChange} />
+                    <KeyValueEditor items={field.value ?? []} onChange={field.onChange} keyLabel={arg.keyLabel} valueLabel={arg.valueLabel} />
                   </div>
                 </Field>
               );

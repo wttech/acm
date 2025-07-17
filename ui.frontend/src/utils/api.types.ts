@@ -117,9 +117,14 @@ export type MultiFileArgument = Argument<ArgumentValue> &
     mimeTypes: string[];
   };
 
-export type MapArgument = Argument<MapValue> & MinMaxArgument & {};
+type KeyValueBaseArgument = {
+  keyLabel: string;
+  valueLabel: string;
+};
 
-export type KeyValueListArgument = Argument<KeyValue> & MinMaxArgument & {};
+export type MapArgument = Argument<MapValue> & KeyValueBaseArgument & {};
+
+export type KeyValueListArgument = Argument<KeyValue> & KeyValueBaseArgument & {};
 
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is StringArgument {
   return arg.type === 'STRING';
