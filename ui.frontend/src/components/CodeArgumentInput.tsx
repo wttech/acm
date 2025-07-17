@@ -69,7 +69,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
       control={control}
       rules={controllerRules}
       render={({ field, fieldState }) => (
-        <View key={arg.name} marginBottom="size-200">
+        <View key={arg.name} marginBottom="size-150" marginTop="size-0">
           {(() => {
             if (isBoolArgument(arg)) {
               return (
