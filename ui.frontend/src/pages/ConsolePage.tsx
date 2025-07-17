@@ -35,8 +35,9 @@ const ConsolePage = () => {
         operation: 'Loading default console script',
         positive: false,
       })
-        .then((data) => {
-          setCode(data.data.data.list?.[0]?.content || '');
+        .then((response) => {
+          const scriptOutput = response.data.data;
+          setCode(scriptOutput.list?.[0]?.content || '');
         })
         .catch((error) => {
           console.error('Loading default console script failed!', error);
