@@ -15,7 +15,7 @@ import { appState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
 import { apiRequest, toastRequest } from '../utils/api';
-import { ArgumentValues, ConsoleDefaultScriptPath, Description, ExecutableIdConsole, Execution, isExecutionPending, QueueOutput, ScriptOutput } from '../utils/api.types.ts';
+import { ArgumentValues, ConsoleDefaultScriptContent, ConsoleDefaultScriptPath, Description, ExecutableIdConsole, Execution, isExecutionPending, QueueOutput, ScriptOutput } from '../utils/api.types.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { StorageKeys } from '../utils/storage';
 
@@ -32,15 +32,23 @@ const ConsolePage = () => {
       toastRequest<ScriptOutput>({
         method: 'GET',
         url: `/apps/acm/api/script.json?id=${ConsoleDefaultScriptPath}`,
-        operation: 'Loading default console script',
+        operation: 'Loading console default script',
         positive: false,
       })
         .then((response) => {
           const scriptOutput = response.data.data;
-          setCode(scriptOutput.list?.[0]?.content || '');
+          const scriptDefault = scriptOutput.list?.[0];
+          if (scriptDefault) {
+            setCode(scriptDefault.content);
+          } else {
+            const errorMessage = `Loading console default script failed! Not found at path '${ConsoleDefaultScriptPath}'`;
+            console.warn(errorMessage);
+            ToastQueue.negative(errorMessage);
+            setCode(ConsoleDefaultScriptContent);
+          }
         })
         .catch((error) => {
-          console.error('Loading default console script failed!', error);
+          console.error('Loading console default script failed!', error);
         });
     }
   }, [code]);

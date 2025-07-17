@@ -8,6 +8,15 @@ export type Executable = {
 
 export const ScriptRootPath = '/conf/acm/settings/script';
 export const ConsoleDefaultScriptPath = `${ScriptRootPath}/template/core/default.groovy`;
+export const ConsoleDefaultScriptContent = `
+boolean canRun() {
+  return condition.always()
+}
+  
+void doRun() {
+  println "Hello World!"
+}
+`.trim();
 
 export const ExecutableIdConsole = 'console';
 
