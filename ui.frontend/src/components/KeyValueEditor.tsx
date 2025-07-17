@@ -16,11 +16,6 @@ interface KeyValueEditorProps {
   valueLabel?: string;
 }
 
-const KEY_COL_WIDTH = 'size-2000';
-const VALUE_COL_WIDTH = 'size-3000';
-const ACTION_COL_WIDTH = 'size-600';
-
-// TODO minimize space, empty row visible after clicking add button
 const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, uniqueKeys, keyLabel = 'Key', valueLabel = 'Value' }) => {
   const [localItems, setLocalItems] = useState<KeyValue[]>(items);
   const [newKey, setNewKey] = useState('');
@@ -65,7 +60,7 @@ const KeyValueEditor: React.FC<KeyValueEditorProps> = ({ items, onChange, unique
   const rows = ['auto', ...localItems.map(() => 'auto'), 'auto'];
 
   return (
-    <Grid areas={areas} columns={[KEY_COL_WIDTH, VALUE_COL_WIDTH, ACTION_COL_WIDTH]} rows={rows} rowGap="size-0" columnGap="size-100">
+    <Grid areas={areas} columns={['1fr', '2fr']} rows={rows} rowGap="size-0" columnGap="size-100">
       <View gridArea="key">
         <Text>{keyLabel}</Text>
       </View>

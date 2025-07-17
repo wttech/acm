@@ -1,7 +1,7 @@
 group: Argument
 name: argument_key_value_list
 content: |
-  arguments.keyValueList("${1:name}") { label = "${2:Label}"; value = ${3:value} }
+  arguments.keyValueList("${1:name}") { label = "${2:Label}"; value = [ ["${3:key}", "${4:value}"] ] }
 documentation: |
   An argument that allows to input a list of key-value pairs.
   
