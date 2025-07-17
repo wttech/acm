@@ -27,8 +27,8 @@ export type Description = {
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE' | 'PATH' | 'FILE' | 'MULTIFILE';
-export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue;
+export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE' | 'PATH' | 'FILE' | 'MULTIFILE' | 'MAP' | 'KEY_VALUE_LIST';
+export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue | KeyValue | MapValue;
 export type ArgumentValues = Record<string, ArgumentValue>;
 
 export const ArgumentGroupDefault = 'general';
@@ -42,6 +42,11 @@ export type Argument<T> = {
   required: boolean;
   group: string;
   validator?: string;
+};
+
+export type MinMaxArgument = Argument<ArgumentValue> & {
+  min: number;
+  max: number;
 };
 
 export type BoolArgument = Argument<boolean> & {
@@ -61,12 +66,11 @@ export type StringArgument = Argument<string> & {
   display: 'PLAIN' | 'PASSWORD';
 };
 
-export type NumberArgument = Argument<number> & {
-  min: number;
-  max: number;
-  step: number;
-  display: 'INPUT' | 'SLIDER';
-};
+export type NumberArgument = Argument<number> &
+  MinMaxArgument & {
+    step: number;
+    display: 'INPUT' | 'SLIDER';
+  };
 
 export type ColorArgument = Argument<string> & {
   format: 'HEX' | 'RGBA' | 'HSL' | 'HSB';
@@ -77,11 +81,17 @@ export type RangeValue = {
   end: number;
 };
 
-export type NumberRangeArgument = Argument<RangeValue> & {
-  min: number;
-  max: number;
-  step: number;
+export type KeyValue = {
+  key: string;
+  value: string;
 };
+
+export type MapValue = Record<string, string>;
+
+export type NumberRangeArgument = Argument<RangeValue> &
+  MinMaxArgument & {
+    step: number;
+  };
 
 export type SelectArgument = Argument<ArgumentValue> & {
   options: Record<string, ArgumentValue>;
@@ -102,11 +112,19 @@ export type FileArgument = Argument<ArgumentValue> & {
   mimeTypes: string[];
 };
 
-export type MultiFileArgument = Argument<ArgumentValue> & {
-  mimeTypes: string[];
-  min: number;
-  max: number;
+export type MultiFileArgument = Argument<ArgumentValue> &
+  MinMaxArgument & {
+    mimeTypes: string[];
+  };
+
+type KeyValueBaseArgument = {
+  keyLabel: string;
+  valueLabel: string;
 };
+
+export type MapArgument = Argument<MapValue> & KeyValueBaseArgument & {};
+
+export type KeyValueListArgument = Argument<KeyValue> & KeyValueBaseArgument & {};
 
 export function isStringArgument(arg: Argument<ArgumentValue>): arg is StringArgument {
   return arg.type === 'STRING';
@@ -154,6 +172,14 @@ export function isFileArgument(arg: Argument<ArgumentValue>): arg is FileArgumen
 
 export function isMultiFileArgument(arg: Argument<ArgumentValue>): arg is MultiFileArgument {
   return arg.type === 'MULTIFILE';
+}
+
+export function isMapArgument(arg: Argument<ArgumentValue>): arg is MapArgument {
+  return arg.type === 'MAP';
+}
+
+export function isKeyValueListArgument(arg: Argument<ArgumentValue>): arg is KeyValueListArgument {
+  return arg.type === 'KEY_VALUE_LIST';
 }
 
 export type Execution = {

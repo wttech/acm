@@ -5,6 +5,7 @@ import { defineConfig, HttpProxy, normalizePath } from 'vite';
 import eslint from 'vite-plugin-eslint'; // TODO fixed by workaround: https://github.com/gxmari007/vite-plugin-eslint/issues/74#issuecomment-1647431890
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
+const devServerPort = 5501;
 const aemInstanceTarget = 'http://localhost:5502';
 const aemInstanceCredentials = 'admin:admin';
 
@@ -38,7 +39,7 @@ export default defineConfig({
   ],
   server: {
     strictPort: true,
-    port: 5173,
+    port: devServerPort,
     fs: {
       allow: ['node_modules', 'src'],
     },

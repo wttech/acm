@@ -1,0 +1,13 @@
+group: Argument
+name: argument_map
+content: |
+  arguments.map("${1:name}") { label = "${2:Label}"; value = ["${3:key}": "${4:value}"] }
+documentation: |
+  An argument that allows to input a map of key-value pairs.
+  
+  For non-unique keys use `keyValueList` argument instead.
+
+  For example:
+  ```groovy
+  arguments.map("languages") { keyLabel = "ISO Code"; valueLabel = "Name"; value = ["pl-PL": "Polski", "es-ES": "Español"] }
+  ```

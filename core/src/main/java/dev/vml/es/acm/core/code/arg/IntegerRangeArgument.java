@@ -6,6 +6,7 @@ import dev.vml.es.acm.core.util.Range;
 import java.util.List;
 
 public class IntegerRangeArgument extends Argument<Range<Integer>> {
+
     private Integer min;
 
     private Integer max;
@@ -17,11 +18,15 @@ public class IntegerRangeArgument extends Argument<Range<Integer>> {
     }
 
     public void setValue(List<Integer> value) {
-        if (value.size() != 2) {
-            throw new IllegalArgumentException(
-                    String.format("Range value must be a list of two elements but specified '%s'!", value));
+        if (value == null) {
+            super.setValue(null);
+        } else {
+            if (value.size() != 2) {
+                throw new IllegalArgumentException(
+                        String.format("Range value must be a list of two elements but specified '%s'!", value));
+            }
+            super.setValue(new Range<>(value.get(0), value.get(1)));
         }
-        super.setValue(new Range<>(value.get(0), value.get(1)));
     }
 
     public Integer getMin() {

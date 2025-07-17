@@ -34,6 +34,8 @@ import {
   isColorArgument,
   isDateTimeArgument,
   isFileArgument,
+  isKeyValueListArgument,
+  isMapArgument,
   isMultiFileArgument,
   isMultiSelectArgument,
   isNumberArgument,
@@ -46,6 +48,7 @@ import {
 import { Dates } from '../utils/dates';
 import { Strings } from '../utils/strings';
 import FileUploader from './FileUploader';
+import KeyValueEditor from './KeyValueEditor';
 import Markdown from './Markdown';
 import PathField from './PathPicker';
 
@@ -66,7 +69,7 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
       control={control}
       rules={controllerRules}
       render={({ field, fieldState }) => (
-        <View key={arg.name} marginBottom="size-200">
+        <View key={arg.name} marginBottom="size-150" marginTop="size-0">
           {(() => {
             if (isBoolArgument(arg)) {
               return (
@@ -333,6 +336,27 @@ const CodeArgumentInput: React.FC<CodeArgumentInputProps> = ({ arg }) => {
                 <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
                   <div>
                     <FileUploader allowMultiple={true} min={arg.min ? arg.min : undefined} max={arg.max ? arg.max : undefined} mimeTypes={arg.mimeTypes} value={field.value ?? ''} onChange={field.onChange} />
+                  </div>
+                </Field>
+              );
+            } else if (isMapArgument(arg)) {
+              const items = Object.entries(field.value ?? {}).map(([key, value]) => ({ key, value: value?.toString() ?? '' }));
+              const handleChange = (items: { key: string; value: string }[]) => {
+                const record = Object.fromEntries(items.map(({ key, value }) => [key, value]));
+                field.onChange(record);
+              };
+              return (
+                <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                  <div>
+                    <KeyValueEditor items={items} onChange={handleChange} uniqueKeys keyLabel={arg.keyLabel} valueLabel={arg.valueLabel} />
+                  </div>
+                </Field>
+              );
+            } else if (isKeyValueListArgument(arg)) {
+              return (
+                <Field label={label} description={description} width="100%" errorMessage={fieldState.error ? fieldState.error.message : undefined} validationState={fieldState.error ? 'invalid' : 'valid'}>
+                  <div>
+                    <KeyValueEditor items={field.value ?? []} onChange={field.onChange} keyLabel={arg.keyLabel} valueLabel={arg.valueLabel} />
                   </div>
                 </Field>
               );

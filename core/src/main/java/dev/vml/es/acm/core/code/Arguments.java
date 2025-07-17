@@ -254,4 +254,24 @@ public class Arguments implements Serializable {
         GroovyUtils.with(argument, options);
         add(argument);
     }
+
+    public void map(String name) {
+        map(name, null);
+    }
+
+    public void map(String name, Closure<MapArgument> options) {
+        MapArgument argument = new MapArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
+
+    public void keyValueList(String name) {
+        keyValueList(name, null);
+    }
+
+    public void keyValueList(String name, Closure<KeyValueListArgument> options) {
+        KeyValueListArgument argument = new KeyValueListArgument(name);
+        GroovyUtils.with(argument, options);
+        add(argument);
+    }
 }
