@@ -12,7 +12,6 @@ import dev.vml.es.acm.core.util.quartz.CronExpression;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;

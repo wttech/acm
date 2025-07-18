@@ -2,9 +2,8 @@ package dev.vml.es.acm.core.osgi;
 
 import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.code.ExecutionQueue;
-import java.util.Optional;
-
 import dev.vml.es.acm.core.script.ScriptScheduler;
+import java.util.Optional;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -48,7 +47,7 @@ public class OsgiContext {
     }
 
     public ScriptScheduler getScriptScheduler() {
-       return getService(ScriptScheduler.class);
+        return getService(ScriptScheduler.class);
     }
 
     public ExecutionQueue getExecutionQueue() {

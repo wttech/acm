@@ -49,7 +49,9 @@ public class Condition {
 
     public boolean retryChanged() {
         Execution passedExecution = passedExecution();
-        return passedExecution == null || !isSameExecutableContent(passedExecution) || passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
+        return passedExecution == null
+                || !isSameExecutableContent(passedExecution)
+                || passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
     }
 
     public boolean retry(long count) {
@@ -111,7 +113,9 @@ public class Condition {
     }
 
     public boolean isSameExecutableContent(Execution execution) {
-        return StringUtils.equals(execution.getExecutable().getContent(), executionContext.getExecutable().getContent());
+        return StringUtils.equals(
+                execution.getExecutable().getContent(),
+                executionContext.getExecutable().getContent());
     }
 
     private ExecutionQueue getExecutionQueue() {
