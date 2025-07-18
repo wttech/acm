@@ -419,10 +419,10 @@ public class Condition {
         return instanceChanged(passedExecution);
     }
 
-    public boolean instanceChangedAfterFailure() {
+    public boolean retryIfInstanceChanged() {
         Execution passedExecution = passedExecution();
         if (passedExecution == null) {
-            return false;
+            return true;
         }
         boolean passedFailed = passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
         return passedFailed && instanceChanged(passedExecution);

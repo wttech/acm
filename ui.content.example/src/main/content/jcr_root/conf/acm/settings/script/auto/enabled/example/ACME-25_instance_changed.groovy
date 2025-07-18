@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.idleSelf() && (condition.contentChanged() || condition.instanceChangedAfterFailure())
+    return condition.idleSelf() && (condition.contentChanged() || condition.retryIfInstanceChanged())
 }
 
 void doRun() {
