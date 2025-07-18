@@ -398,9 +398,9 @@ public class Condition {
 
     // Run-count-based
 
-    public boolean isFrequentRun(long frequency) {
+    public boolean everyNthRun(long frequency) {
         if (frequency < 1) {
-            throw new IllegalArgumentException("Run count frequency must be greater than zero!");
+            throw new IllegalArgumentException("Run frequency must be greater than zero!");
         }
         return runCount() % frequency == 0;
     }
