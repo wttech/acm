@@ -31,16 +31,48 @@ public class Condition {
         return false;
     }
 
+    // History or queue-based
+
     public boolean once() {
-        return !passedExecutions().findAny().isPresent();
+        return passedExecution() == null;
     }
 
     public boolean changed() {
-        return passedExecutions().noneMatch(e -> {
-            return StringUtils.equals(
-                    e.getExecutable().getContent(),
-                    executionContext.getExecutable().getContent());
-        });
+        Execution passedExecution = passedExecution();
+        return passedExecution == null || !isSameExecutableContent(passedExecution);
+    }
+
+    public boolean retry() {
+        Execution passedExecution = passedExecution();
+        return passedExecution == null || passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
+    }
+
+    public boolean retryChanged() {
+        Execution passedExecution = passedExecution();
+        return passedExecution == null || !isSameExecutableContent(passedExecution) || passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
+    }
+
+    public boolean retry(long count) {
+        if (count < 1) {
+            throw new IllegalArgumentException("Retry count must be greater than zero!");
+        }
+        Execution passedExecution = passedExecution();
+        if (passedExecution == null) {
+            return true;
+        }
+        if (passedExecution.getStatus() == ExecutionStatus.SUCCEEDED) {
+            return false;
+        }
+        long consecutiveFailures = 0;
+        Iterator<Execution> it = passedExecutions().iterator();
+        while (it.hasNext()) {
+            Execution e = it.next();
+            if (e.getStatus() == ExecutionStatus.SUCCEEDED) {
+                break;
+            }
+            consecutiveFailures++;
+        }
+        return consecutiveFailures < count;
     }
 
     public Execution passedExecution() {
@@ -76,6 +108,10 @@ public class Condition {
     public boolean isSameExecutable(Execution e) {
         return StringUtils.equals(
                 e.getExecutable().getId(), executionContext.getExecutable().getId());
+    }
+
+    public boolean isSameExecutableContent(Execution execution) {
+        return StringUtils.equals(execution.getExecutable().getContent(), executionContext.getExecutable().getContent());
     }
 
     private ExecutionQueue getExecutionQueue() {
@@ -329,7 +365,7 @@ public class Condition {
     }
 
     private ScriptScheduler getScriptScheduler() {
-        return executionContext.getCodeContext().getOsgiContext().getService(ScriptScheduler.class);
+        return executionContext.getCodeContext().getOsgiContext().getScriptScheduler();
     }
 
     // Duration-based since the last execution
@@ -362,32 +398,25 @@ public class Condition {
         return duration == null || duration.toDays() >= days;
     }
 
-    // Retry-based
+    // Run-count-based
 
-    public boolean retry(long count) {
-        if (count < 1) {
-            throw new IllegalArgumentException("Retry count must be greater than zero!");
+    public boolean deployed() {
+        return isFirstRun();
+    }
+
+    public boolean isFirstRun() {
+        return runCount() == 0;
+    }
+
+    public boolean isFrequentRun(long frequency) {
+        if (frequency < 1) {
+            throw new IllegalArgumentException("Run count frequency must be greater than zero!");
         }
-        if (!idleSelf()) {
-            return false;
-        }
-        Execution passedExecution = passedExecution();
-        if (passedExecution == null) {
-            return true;
-        }
-        if (passedExecution.getStatus() == ExecutionStatus.SUCCEEDED) {
-            return false;
-        }
-        long consecutiveFailures = 0;
-        Iterator<Execution> it = passedExecutions().iterator();
-        while (it.hasNext()) {
-            Execution e = it.next();
-            if (e.getStatus() == ExecutionStatus.SUCCEEDED) {
-                break;
-            }
-            consecutiveFailures++;
-        }
-        return consecutiveFailures < count;
+        return runCount() % frequency == 0;
+    }
+
+    public long runCount() {
+        return getScriptScheduler().getRunCount();
     }
 
     // Instance-based

@@ -1,0 +1,6 @@
+group: Condition
+name: condition_deployed
+content: |
+  condition.deployed()
+documentation: |
+  Allows to limit execution of the script to the time when AEM instance is started after deployment or upgrade.<br>
