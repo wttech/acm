@@ -6,7 +6,6 @@ import dev.vml.es.acm.core.script.ScriptScheduler;
 import dev.vml.es.acm.core.util.DateUtils;
 import java.time.*;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -39,11 +38,11 @@ public class Condition {
 
     public boolean changed() {
         Execution passedExecution = passedExecution();
-        return passedExecution == null || !isSameExecutableContent(passedExecution);
+        return passedExecution == null || isChangedExecutableContent(passedExecution);
     }
 
     public boolean attempts(long maxCount) {
-        long current = getAttemptCounter().incrementAndGet(executionContext.getExecutable().getId());
+        long current = getAttemptCounter().incrementAndGet(executionContext.getExecutable());
         return current <= maxCount;
     }
 
@@ -66,9 +65,7 @@ public class Condition {
 
     public boolean retryChanged(long maxCount) {
         Execution passedExecution = passedExecution();
-        return passedExecution == null
-                || !isSameExecutableContent(passedExecution)
-                || (passedExecution.getStatus() != ExecutionStatus.SUCCEEDED && attempts(maxCount));
+        return passedExecution == null || isChangedExecutableContent(passedExecution) || (passedExecution.getStatus() != ExecutionStatus.SUCCEEDED && attempts(maxCount));
     }
 
     public Execution passedExecution() {
@@ -106,10 +103,8 @@ public class Condition {
                 e.getExecutable().getId(), executionContext.getExecutable().getId());
     }
 
-    public boolean isSameExecutableContent(Execution execution) {
-        return StringUtils.equals(
-                execution.getExecutable().getContent(),
-                executionContext.getExecutable().getContent());
+    public boolean isChangedExecutableContent(Execution execution) {
+        return !StringUtils.equals(execution.getExecutable().getContent(), executionContext.getExecutable().getContent());
     }
 
     private ExecutionQueue getExecutionQueue() {
