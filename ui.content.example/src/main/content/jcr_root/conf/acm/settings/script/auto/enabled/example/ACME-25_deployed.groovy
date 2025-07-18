@@ -1,5 +1,5 @@
 boolean canRun() {
-    return deployed() && idleSelf() && retryChanged()
+    return condition.deployed() && condition.idleSelf() && condition.retryChanged()
 }
 
 void doRun() {
