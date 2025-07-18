@@ -37,7 +37,7 @@ public class Condition {
         return passedExecution() == null;
     }
 
-    public boolean changed() {
+    public boolean contentChanged() {
         Execution passedExecution = passedExecution();
         return passedExecution == null || isChangedExecutableContent(passedExecution);
     }
@@ -87,8 +87,8 @@ public class Condition {
 
     // Retry-based
 
-    // TODO retry only when system has changed (leverage execution.getSystem())
-    public boolean retry(long count, boolean systemChanged) {
+    // TODO is it still needed?
+    public boolean retry(long count) {
         if (count < 1) {
             throw new IllegalArgumentException("Retry count must be greater than zero!");
         }
@@ -408,6 +408,29 @@ public class Condition {
     }
 
     // Instance-based
+
+    public boolean instanceChanged() {
+        Execution passedExecution = passedExecution();
+        if (passedExecution == null) {
+            return true;
+        }
+        return instanceChanged(passedExecution);
+    }
+
+    public boolean instanceChangedAfterFailure() {
+        Execution passedExecution = passedExecution();
+        if (passedExecution == null) {
+            return true;
+        }
+        boolean passedFailed = passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
+        return passedFailed && instanceChanged(passedExecution);
+    }
+
+    public boolean instanceChanged(Execution execution) {
+        String stateCurrent = executionContext.getCodeContext().getOsgiContext().readInstanceState();
+        String statePassed = execution.getInstance();
+        return !StringUtils.equals(stateCurrent, statePassed);
+    }
 
     public boolean isInstanceRunMode(String runMode) {
         return getInstanceInfo().isRunMode(runMode);

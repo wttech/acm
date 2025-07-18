@@ -64,7 +64,7 @@ public class OsgiContext {
         return getService(ExecutionQueue.class);
     }
 
-    public String readSystemInfo() {
+    public String readInstanceState() {
         return String.format("modified=%s;bundles=%s",
                 getModified().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                 getOsgiScanner().computeBundlesHashCode()

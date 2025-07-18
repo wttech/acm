@@ -23,7 +23,7 @@ public class ImmediateExecution implements Execution {
 
     private final String error;
 
-    private final String system;
+    private final String instance;
 
     public ImmediateExecution(
             Executable executable,
@@ -33,7 +33,7 @@ public class ImmediateExecution implements Execution {
             Date startDate,
             Date endDate,
             String error,
-            String system) {
+            String instance) {
         this.executable = executable;
         this.id = id;
         this.userId = userId;
@@ -41,7 +41,7 @@ public class ImmediateExecution implements Execution {
         this.startDate = startDate;
         this.endDate = endDate;
         this.error = error;
-        this.system = system;
+        this.instance = instance;
     }
 
     @Override
@@ -88,8 +88,8 @@ public class ImmediateExecution implements Execution {
     }
 
     @Override
-    public String getSystem() {
-        return system;
+    public String getInstance() {
+        return instance;
     }
 
     public InputStream readOutput() throws AcmException {
@@ -144,7 +144,7 @@ public class ImmediateExecution implements Execution {
                     startDate,
                     endDate,
                     error,
-                    context.getCodeContext().getOsgiContext().readSystemInfo()
+                    context.getCodeContext().getOsgiContext().readInstanceState()
             );
         }
     }
