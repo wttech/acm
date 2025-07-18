@@ -25,5 +25,7 @@ public interface Execution extends Serializable {
 
     String getOutput();
 
+    String getSystem();
+
     Executable getExecutable();
 }
