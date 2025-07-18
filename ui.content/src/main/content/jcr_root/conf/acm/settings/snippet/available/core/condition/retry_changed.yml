@@ -1,0 +1,15 @@
+group: Condition
+name: condition_retry_changed
+content: |
+  condition.retryChanged(${1:maxCount})
+documentation: |
+  Execute the script only if it has never been executed before, content changed, or the last execution has not been successful.
+  
+  Control the number of retries by setting the `maxCount` parameter. 
+  It is also possible to skip the parameter, in which case the default value of `1` will be used.
+  
+  For example:
+  ```groovy
+  condition.retryChanged()
+  condition.retryChanged(3)
+  ```
