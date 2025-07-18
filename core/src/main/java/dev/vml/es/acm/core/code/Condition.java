@@ -41,33 +41,6 @@ public class Condition {
         return passedExecution == null || isChangedExecutableContent(passedExecution);
     }
 
-    public boolean attempts(long maxCount) {
-        long current = getAttemptCounter().incrementAndGet(executionContext.getExecutable());
-        return current <= maxCount;
-    }
-
-    private ExecutionAttemptCounter getAttemptCounter() {
-        return executionContext.getCodeContext().getOsgiContext().getExecutionAttemptCounter();
-    }
-
-    public boolean retry() {
-        return retry(1);
-    }
-
-    public boolean retry(long maxCount) {
-        Execution passedExecution = passedExecution();
-        return passedExecution == null || (passedExecution.getStatus() != ExecutionStatus.SUCCEEDED && attempts(maxCount));
-    }
-
-    public boolean retryChanged() {
-        return retryChanged(1);
-    }
-
-    public boolean retryChanged(long maxCount) {
-        Execution passedExecution = passedExecution();
-        return passedExecution == null || isChangedExecutableContent(passedExecution) || (passedExecution.getStatus() != ExecutionStatus.SUCCEEDED && attempts(maxCount));
-    }
-
     public Execution passedExecution() {
         return passedExecutions().findFirst().orElse(null);
     }
@@ -363,32 +336,32 @@ public class Condition {
 
     // Duration-based since the last execution
 
+    public boolean passed(Duration duration) {
+        checkDuration(duration);
+        Duration passedDuration = passedDuration();
+        return passedDuration == null || passedDuration.compareTo(duration) >= 0;
+    }
+
+    public boolean passed(long seconds) {
+        return passed(Duration.ofSeconds(seconds));
+    }
+
     public Duration passedDuration() {
-        Execution lastExecution = passedExecution();
-        if (lastExecution == null) {
+        Execution execution = passedExecution();
+        if (execution == null) {
             return null;
         }
-        return Duration.between(lastExecution.getEndDate().toInstant(), Instant.now());
+        return passedDuration(execution);
     }
 
-    public boolean passedSeconds(long seconds) {
-        Duration duration = passedDuration();
-        return duration == null || duration.getSeconds() >= seconds;
+    public Duration passedDuration(Execution execution) {
+        return Duration.between(execution.getEndDate().toInstant(), Instant.now());
     }
 
-    public boolean passedMinutes(long minutes) {
-        Duration duration = passedDuration();
-        return duration == null || duration.toMinutes() >= minutes;
-    }
-
-    public boolean passedHours(long hours) {
-        Duration duration = passedDuration();
-        return duration == null || duration.toHours() >= hours;
-    }
-
-    public boolean passedDays(long days) {
-        Duration duration = passedDuration();
-        return duration == null || duration.toDays() >= days;
+    private void checkDuration(Duration duration) {
+        if (duration == null || duration.isNegative() || duration.isZero()) {
+            throw new IllegalArgumentException(String.format("Duration '%s' must be a positive value!", duration));
+        }
     }
 
     // Run-count-based
