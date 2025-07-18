@@ -422,7 +422,7 @@ public class Condition {
     public boolean instanceChangedAfterFailure() {
         Execution passedExecution = passedExecution();
         if (passedExecution == null) {
-            return true;
+            return false;
         }
         boolean passedFailed = passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
         return passedFailed && instanceChanged(passedExecution);
