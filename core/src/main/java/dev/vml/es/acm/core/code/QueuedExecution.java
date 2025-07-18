@@ -61,6 +61,11 @@ public class QueuedExecution implements Execution {
     }
 
     @Override
+    public String getInstance() {
+        return null; // not needed at the moment
+    }
+
+    @Override
     public String getError() {
         return null;
     }

@@ -144,8 +144,7 @@ public class ImmediateExecution implements Execution {
                     startDate,
                     endDate,
                     error,
-                    context.getCodeContext().getOsgiContext().readInstanceState()
-            );
+                    context.getCodeContext().getOsgiContext().readInstanceState());
         }
     }
 }

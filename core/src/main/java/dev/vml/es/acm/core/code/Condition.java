@@ -78,7 +78,9 @@ public class Condition {
     }
 
     public boolean isChangedExecutableContent(Execution execution) {
-        return !StringUtils.equals(execution.getExecutable().getContent(), executionContext.getExecutable().getContent());
+        return !StringUtils.equals(
+                execution.getExecutable().getContent(),
+                executionContext.getExecutable().getContent());
     }
 
     private ExecutionQueue getExecutionQueue() {

@@ -3,7 +3,6 @@ package dev.vml.es.acm.core.osgi;
 import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.code.ExecutionQueue;
 import dev.vml.es.acm.core.script.ScriptScheduler;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -65,9 +64,9 @@ public class OsgiContext {
     }
 
     public String readInstanceState() {
-        return String.format("modified=%s;bundles=%s",
+        return String.format(
+                "modified=%s;bundles=%s",
                 getModified().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                getOsgiScanner().computeBundlesHashCode()
-        );
+                getOsgiScanner().computeBundlesHashCode());
     }
 }
