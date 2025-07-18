@@ -1,0 +1,12 @@
+group: Condition
+name: condition_passed
+content: |
+  condition.passed(${1:duration})
+documentation: |
+  Wait for the specified duration before allowing the script to execute again.
+  
+  For example:
+  ```groovy
+  condition.passed(Duration.ofDays(1))
+  condition.passed(3600) // seconds (1 hour)
+  ```

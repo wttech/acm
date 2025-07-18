@@ -31,16 +31,15 @@ public class Condition {
         return false;
     }
 
+    // History or queue-based
+
     public boolean once() {
-        return !passedExecutions().findAny().isPresent();
+        return passedExecution() == null;
     }
 
-    public boolean changed() {
-        return passedExecutions().noneMatch(e -> {
-            return StringUtils.equals(
-                    e.getExecutable().getContent(),
-                    executionContext.getExecutable().getContent());
-        });
+    public boolean contentChanged() {
+        Execution passedExecution = passedExecution();
+        return passedExecution == null || isChangedExecutableContent(passedExecution);
     }
 
     public Execution passedExecution() {
@@ -78,8 +77,43 @@ public class Condition {
                 e.getExecutable().getId(), executionContext.getExecutable().getId());
     }
 
+    public boolean isChangedExecutableContent(Execution execution) {
+        return !StringUtils.equals(
+                execution.getExecutable().getContent(),
+                executionContext.getExecutable().getContent());
+    }
+
     private ExecutionQueue getExecutionQueue() {
         return executionContext.getCodeContext().getOsgiContext().getExecutionQueue();
+    }
+
+    // Retry-based
+
+    // TODO is it still needed?
+    public boolean retry(long count) {
+        if (count < 1) {
+            throw new IllegalArgumentException("Retry count must be greater than zero!");
+        }
+        if (!idleSelf()) {
+            return false;
+        }
+        Execution passedExecution = passedExecution();
+        if (passedExecution == null) {
+            return true;
+        }
+        if (passedExecution.getStatus() == ExecutionStatus.SUCCEEDED) {
+            return false;
+        }
+        long consecutiveFailures = 0;
+        Iterator<Execution> it = passedExecutions().iterator();
+        while (it.hasNext()) {
+            Execution e = it.next();
+            if (e.getStatus() == ExecutionStatus.SUCCEEDED) {
+                break;
+            }
+            consecutiveFailures++;
+        }
+        return consecutiveFailures < count;
     }
 
     // Time period-based
@@ -329,68 +363,76 @@ public class Condition {
     }
 
     private ScriptScheduler getScriptScheduler() {
-        return executionContext.getCodeContext().getOsgiContext().getService(ScriptScheduler.class);
+        return executionContext.getCodeContext().getOsgiContext().getScriptScheduler();
     }
 
     // Duration-based since the last execution
 
+    public boolean passed(Duration duration) {
+        checkDuration(duration);
+        Duration passedDuration = passedDuration();
+        return passedDuration == null || passedDuration.compareTo(duration) >= 0;
+    }
+
+    public boolean passed(long seconds) {
+        return passed(Duration.ofSeconds(seconds));
+    }
+
     public Duration passedDuration() {
-        Execution lastExecution = passedExecution();
-        if (lastExecution == null) {
+        Execution execution = passedExecution();
+        if (execution == null) {
             return null;
         }
-        return Duration.between(lastExecution.getEndDate().toInstant(), Instant.now());
+        return passedDuration(execution);
     }
 
-    public boolean passedSeconds(long seconds) {
-        Duration duration = passedDuration();
-        return duration == null || duration.getSeconds() >= seconds;
+    public Duration passedDuration(Execution execution) {
+        return Duration.between(execution.getEndDate().toInstant(), Instant.now());
     }
 
-    public boolean passedMinutes(long minutes) {
-        Duration duration = passedDuration();
-        return duration == null || duration.toMinutes() >= minutes;
-    }
-
-    public boolean passedHours(long hours) {
-        Duration duration = passedDuration();
-        return duration == null || duration.toHours() >= hours;
-    }
-
-    public boolean passedDays(long days) {
-        Duration duration = passedDuration();
-        return duration == null || duration.toDays() >= days;
-    }
-
-    // Retry-based
-
-    public boolean retry(long count) {
-        if (count < 1) {
-            throw new IllegalArgumentException("Retry count must be greater than zero!");
+    private void checkDuration(Duration duration) {
+        if (duration == null || duration.isNegative() || duration.isZero()) {
+            throw new IllegalArgumentException(String.format("Duration '%s' must be a positive value!", duration));
         }
-        if (!idleSelf()) {
-            return false;
+    }
+
+    // Run-count-based
+
+    public boolean everyNthRun(long frequency) {
+        if (frequency < 1) {
+            throw new IllegalArgumentException("Run frequency must be greater than zero!");
         }
+        return runCount() % frequency == 0;
+    }
+
+    public long runCount() {
+        return getScriptScheduler().getRunCount();
+    }
+
+    // Instance-based
+
+    public boolean instanceChanged() {
         Execution passedExecution = passedExecution();
         if (passedExecution == null) {
             return true;
         }
-        if (passedExecution.getStatus() == ExecutionStatus.SUCCEEDED) {
-            return false;
-        }
-        long consecutiveFailures = 0;
-        Iterator<Execution> it = passedExecutions().iterator();
-        while (it.hasNext()) {
-            Execution e = it.next();
-            if (e.getStatus() == ExecutionStatus.SUCCEEDED) {
-                break;
-            }
-            consecutiveFailures++;
-        }
-        return consecutiveFailures < count;
+        return instanceChanged(passedExecution);
     }
 
-    // Instance-based
+    public boolean retryIfInstanceChanged() {
+        Execution passedExecution = passedExecution();
+        if (passedExecution == null) {
+            return true;
+        }
+        boolean passedFailed = passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
+        return passedFailed && instanceChanged(passedExecution);
+    }
+
+    public boolean instanceChanged(Execution execution) {
+        String stateCurrent = executionContext.getCodeContext().getOsgiContext().readInstanceState();
+        String statePassed = execution.getInstance();
+        return !StringUtils.equals(stateCurrent, statePassed);
+    }
 
     public boolean isInstanceRunMode(String runMode) {
         return getInstanceInfo().isRunMode(runMode);
