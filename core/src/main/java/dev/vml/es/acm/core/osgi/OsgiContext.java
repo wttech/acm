@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.osgi;
 
 import com.day.cq.replication.Replicator;
+import dev.vml.es.acm.core.code.ExecutionAttemptCounter;
 import dev.vml.es.acm.core.code.ExecutionQueue;
 import dev.vml.es.acm.core.script.ScriptScheduler;
 import java.util.Optional;
@@ -52,5 +53,9 @@ public class OsgiContext {
 
     public ExecutionQueue getExecutionQueue() {
         return getService(ExecutionQueue.class);
+    }
+
+    public ExecutionAttemptCounter getExecutionAttemptCounter() {
+        return getService(ExecutionAttemptCounter.class);
     }
 }

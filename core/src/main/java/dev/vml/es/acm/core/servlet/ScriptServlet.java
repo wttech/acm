@@ -5,6 +5,7 @@ import static dev.vml.es.acm.core.util.ServletResult.ok;
 import static dev.vml.es.acm.core.util.ServletUtils.*;
 
 import com.day.cq.replication.Replicator;
+import dev.vml.es.acm.core.code.ExecutionAttemptCounter;
 import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.replication.Activator;
 import dev.vml.es.acm.core.script.Script;
@@ -62,6 +63,9 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     @Reference
     private Replicator replicator;
+
+    @Reference
+    private ExecutionAttemptCounter executionAttemptCounter;
 
     @Reference
     private SpaSettings spaSettings;
@@ -130,10 +134,12 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             switch (action.get()) {
                 case ENABLE:
                     paths.forEach(repository::enable);
+                    paths.forEach(executionAttemptCounter::reset);
                     respondJson(response, ok(String.format("%d script(s) enabled successfully", paths.size())));
                     break;
                 case DISABLE:
                     paths.forEach(repository::disable);
+                    paths.forEach(executionAttemptCounter::reset);
                     respondJson(response, ok(String.format("%d script(s) disabled successfully", paths.size())));
                     break;
                 case SYNC_ALL:

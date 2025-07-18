@@ -42,39 +42,33 @@ public class Condition {
         return passedExecution == null || !isSameExecutableContent(passedExecution);
     }
 
+    public boolean attempts(long maxCount) {
+        long current = getAttemptCounter().incrementAndGet(executionContext.getExecutable().getId());
+        return current <= maxCount;
+    }
+
+    private ExecutionAttemptCounter getAttemptCounter() {
+        return executionContext.getCodeContext().getOsgiContext().getExecutionAttemptCounter();
+    }
+
     public boolean retry() {
+        return retry(1);
+    }
+
+    public boolean retry(long maxCount) {
         Execution passedExecution = passedExecution();
-        return passedExecution == null || passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
+        return passedExecution == null || (passedExecution.getStatus() != ExecutionStatus.SUCCEEDED && attempts(maxCount));
     }
 
     public boolean retryChanged() {
+        return retryChanged(1);
+    }
+
+    public boolean retryChanged(long maxCount) {
         Execution passedExecution = passedExecution();
         return passedExecution == null
                 || !isSameExecutableContent(passedExecution)
-                || passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
-    }
-
-    public boolean retry(long count) {
-        if (count < 1) {
-            throw new IllegalArgumentException("Retry count must be greater than zero!");
-        }
-        Execution passedExecution = passedExecution();
-        if (passedExecution == null) {
-            return true;
-        }
-        if (passedExecution.getStatus() == ExecutionStatus.SUCCEEDED) {
-            return false;
-        }
-        long consecutiveFailures = 0;
-        Iterator<Execution> it = passedExecutions().iterator();
-        while (it.hasNext()) {
-            Execution e = it.next();
-            if (e.getStatus() == ExecutionStatus.SUCCEEDED) {
-                break;
-            }
-            consecutiveFailures++;
-        }
-        return consecutiveFailures < count;
+                || (passedExecution.getStatus() != ExecutionStatus.SUCCEEDED && attempts(maxCount));
     }
 
     public Execution passedExecution() {
@@ -403,14 +397,6 @@ public class Condition {
     }
 
     // Run-count-based
-
-    public boolean deployed() {
-        return isFirstRun();
-    }
-
-    public boolean isFirstRun() {
-        return runCount() == 0;
-    }
 
     public boolean isFrequentRun(long frequency) {
         if (frequency < 1) {
