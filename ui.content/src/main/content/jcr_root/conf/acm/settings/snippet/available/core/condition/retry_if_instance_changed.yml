@@ -1,0 +1,17 @@
+group: Condition
+name: condition_retry_if_instance_changed
+content: |
+  condition.retryIfInstanceChanged()
+documentation: |
+  Execute the script only if the previous execution failed and the instance has changed due to a deployment, such as an instance restart or an OSGi bundle change.
+  
+  For example:
+  ```groovy
+  boolean canRun() {
+    return condition.idleSelf() && (condition.contentChanged() || condition.retryIfInstanceChanged())
+  }
+  
+  void doRun() {
+    println("I should run when content changes or when the instance changes after a failure!")
+  }
+  ```

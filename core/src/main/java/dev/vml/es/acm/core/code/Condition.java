@@ -87,35 +87,6 @@ public class Condition {
         return executionContext.getCodeContext().getOsgiContext().getExecutionQueue();
     }
 
-    // Retry-based
-
-    // TODO is it still needed?
-    public boolean retry(long count) {
-        if (count < 1) {
-            throw new IllegalArgumentException("Retry count must be greater than zero!");
-        }
-        if (!idleSelf()) {
-            return false;
-        }
-        Execution passedExecution = passedExecution();
-        if (passedExecution == null) {
-            return true;
-        }
-        if (passedExecution.getStatus() == ExecutionStatus.SUCCEEDED) {
-            return false;
-        }
-        long consecutiveFailures = 0;
-        Iterator<Execution> it = passedExecutions().iterator();
-        while (it.hasNext()) {
-            Execution e = it.next();
-            if (e.getStatus() == ExecutionStatus.SUCCEEDED) {
-                break;
-            }
-            consecutiveFailures++;
-        }
-        return consecutiveFailures < count;
-    }
-
     // Time period-based
 
     public boolean everyMinute() {
