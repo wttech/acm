@@ -30,7 +30,7 @@ public class CodePrintStream extends PrintStream {
     public CodePrintStream(String id, OutputStream output) {
         super(output);
         this.id = id;
-        this.selfLogger = getLoggerContext().getLogger(String.format("%s(%s)", getClass().getName(), id));
+        this.selfLogger = getLoggerContext().getLogger(id);
         this.registeredLoggers = new CopyOnWriteArrayList<>();
     }
 
@@ -57,7 +57,7 @@ public class CodePrintStream extends PrintStream {
     }
 
     public void fromLogger(String loggerName) {
-                getLoggerContext().getLoggerList().stream()
+        getLoggerContext().getLoggerList().stream()
                 .filter(logger -> logger.getName().contains(loggerName))
                 .filter(logger -> logger.getAppender(getAppenderName()) == null)
                 .forEach(this::fromLogger);

@@ -8,6 +8,7 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
+
 import dev.vml.es.acm.core.assist.JavaDictionary
 import java.util.function.Consumer
 import java.util.jar.JarFile

@@ -172,7 +172,8 @@ public class Condition {
 
     public boolean everyMinute(int second) {
         LocalTime now = LocalTime.now();
-        LocalDateTime scheduledDateTime = LocalDate.now().atTime(now.withSecond(second).withNano(0));
+        LocalDateTime scheduledDateTime =
+                LocalDate.now().atTime(now.withSecond(second).withNano(0));
         return isDate(scheduledDateTime);
     }
 
@@ -182,7 +183,8 @@ public class Condition {
 
     public boolean everyHour(int minute) {
         LocalTime now = LocalTime.now();
-        LocalDateTime scheduledDateTime = LocalDate.now().atTime(now.withMinute(minute).withSecond(0).withNano(0));
+        LocalDateTime scheduledDateTime =
+                LocalDate.now().atTime(now.withMinute(minute).withSecond(0).withNano(0));
         return isDate(scheduledDateTime);
     }
 

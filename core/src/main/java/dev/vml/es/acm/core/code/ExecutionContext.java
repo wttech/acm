@@ -32,7 +32,7 @@ public class ExecutionContext implements AutoCloseable {
         this.executable = executable;
         this.codeContext = codeContext;
         this.codeOutput = mode == ExecutionMode.RUN ? new CodeOutputFile(id) : new CodeOutputString();
-        this.codePrintStream = new CodePrintStream(id, codeOutput.write());
+        this.codePrintStream = new CodePrintStream(String.format("%s|%s", executable.getId(), id), codeOutput.write());
 
         customizeBinding();
     }
