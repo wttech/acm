@@ -35,10 +35,6 @@ public class Condition {
         return passedExecution() == null;
     }
 
-    public boolean changed() {
-        return contentChanged() || instanceChanged();
-    }
-
     public boolean contentChanged() {
         Execution passedExecution = passedExecution();
         return passedExecution == null || isChangedExecutableContent(passedExecution);
