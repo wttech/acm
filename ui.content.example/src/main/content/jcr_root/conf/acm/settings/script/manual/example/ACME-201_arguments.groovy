@@ -5,6 +5,7 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
+
 void describeRun() {
     arguments.string("animalName") { value = "Whiskers";
         validator = "(v, a) => a.animalType === 'cat' ? (v && v.startsWith('W') || 'Cat name must start with W!') : true" }

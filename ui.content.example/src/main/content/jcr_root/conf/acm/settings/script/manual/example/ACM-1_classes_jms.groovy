@@ -8,6 +8,7 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
+
 import dev.vml.es.acm.core.assist.JavaDictionary
 
 import java.lang.module.ModuleFinder

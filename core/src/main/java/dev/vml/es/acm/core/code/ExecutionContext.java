@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.code;
 
 import groovy.lang.Binding;
-import org.slf4j.LoggerFactory;
 
 public class ExecutionContext implements AutoCloseable {
 
@@ -33,7 +32,7 @@ public class ExecutionContext implements AutoCloseable {
         this.executable = executable;
         this.codeContext = codeContext;
         this.codeOutput = mode == ExecutionMode.RUN ? new CodeOutputFile(id) : new CodeOutputString();
-        this.codePrintStream = new CodePrintStream(id, codeOutput.write());
+        this.codePrintStream = new CodePrintStream(String.format("%s|%s", executable.getId(), id), codeOutput.write());
 
         customizeBinding();
     }
@@ -87,10 +86,8 @@ public class ExecutionContext implements AutoCloseable {
 
         binding.setVariable("arguments", arguments);
         binding.setVariable("condition", new Condition(this));
-        binding.setVariable(
-                "log",
-                LoggerFactory.getLogger(String.format("%s(%s)", getClass().getName(), executable.getId())));
         binding.setVariable("out", codePrintStream);
+        binding.setVariable("log", codePrintStream.getLogger());
     }
 
     @Override

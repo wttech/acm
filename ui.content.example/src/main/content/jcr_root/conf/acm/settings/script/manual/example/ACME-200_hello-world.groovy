@@ -5,6 +5,7 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
+
 boolean canRun() {
     return condition.always()
 }
