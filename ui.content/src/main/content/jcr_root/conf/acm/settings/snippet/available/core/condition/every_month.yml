@@ -5,11 +5,12 @@ content: |
 documentation: |
   Execute the script only once a month.
   
-  Optionally, you can specify a specific day of the month when the script should run. If no day is specified, it defaults to the first day of the month.
+  Optionally, you can specify a specific day of the month and/or a time of day when the script should run. If no day is specified, it defaults to the first day of the month. If no time is specified, it defaults to midnight (00:00).
   
   For example:
 
   ```groovy
   condition.everyMonth()
   condition.everyMonth(15)
+  condition.everyMonth(1, "2:00")
   ```

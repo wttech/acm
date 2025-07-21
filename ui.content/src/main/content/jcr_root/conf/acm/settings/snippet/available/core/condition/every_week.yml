@@ -5,9 +5,10 @@ content: |
 documentation: |
   Execute the script only once a week.
   
-  Optionally, you can specify a specific day of the week when the script should run. If no day is specified, it defaults to Monday.
+  Optionally, you can specify a specific day of the week and/or a time of day when the script should run. If no day is specified, it defaults to the first day of the week (Monday). If no time is specified, it defaults to midnight (00:00).
   
   For example:
   ```groovy
     condition.everyWeek()
-    condition.everyWeek("Friday")
+    condition.everyWeek("Wednesday", "14:00")
+  ```

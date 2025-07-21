@@ -213,6 +213,10 @@ public class Condition {
         return everyMonth(1, LocalTime.MIDNIGHT);
     }
 
+    public boolean everyMonth(int dayOfMonth) {
+        return everyMonth(dayOfMonth, LocalTime.MIDNIGHT);
+    }
+
     public boolean everyMonth(int dayOfMonth, LocalTime time) {
         LocalDate startOfMonth = LocalDate.now().withDayOfMonth(dayOfMonth);
         LocalDateTime scheduledDateTime = startOfMonth.atTime(time);
