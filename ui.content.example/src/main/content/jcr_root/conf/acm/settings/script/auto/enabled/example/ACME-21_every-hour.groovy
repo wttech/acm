@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.idleSelf() && condition.everyHour(7)
+    return condition.idleSelf() && condition.everyHour(43)
 }
 
 void doRun() {
