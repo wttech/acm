@@ -5,6 +5,7 @@ import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.script.ScriptScheduler;
 import dev.vml.es.acm.core.util.DateUtils;
 import java.time.*;
+import java.util.Locale;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
@@ -84,68 +85,27 @@ public class Condition {
         return executionContext.getCodeContext().getOsgiContext().getExecutionQueue();
     }
 
-    // Time period-based
+    // Date-time-based
 
-    public boolean everyMinute() {
-        return everyMinute(0);
+    public boolean isDate(String dateString) {
+        ZonedDateTime localDateTime = DateUtils.zonedDateTimeFromString(dateString);
+        return isDate(localDateTime);
     }
 
-    public boolean everyMinute(int second) {
-        LocalTime now = LocalTime.now();
-        LocalDateTime scheduledDateTime = LocalDate.now().atTime(now.withSecond(second).withNano(0));
-        return isDate(scheduledDateTime);
+    public boolean isDate(ZonedDateTime zonedDateTime) {
+        LocalDateTime localDateTime =
+                zonedDateTime.withZoneSameLocal(DateUtils.ZONE_ID).toLocalDateTime();
+        return isDate(localDateTime);
     }
 
-    public boolean everyHour() {
-        return everyHour(0);
+    public boolean isDate(LocalDateTime localDateTime) {
+        long intervalMillis = getScriptScheduler().getIntervalMillis();
+        return DateUtils.isInRange(localDateTime, LocalDateTime.now(), intervalMillis);
     }
 
-    public boolean everyHour(int minute) {
-        LocalTime now = LocalTime.now();
-        LocalDateTime scheduledDateTime = LocalDate.now().atTime(now.withMinute(minute).withSecond(0).withNano(0));
-        return isDate(scheduledDateTime);
+    private ScriptScheduler getScriptScheduler() {
+        return executionContext.getCodeContext().getOsgiContext().getScriptScheduler();
     }
-
-    public boolean everyDay() {
-        return everyDay(LocalTime.MIDNIGHT);
-    }
-
-    public boolean everyDay(LocalTime time) {
-        LocalDateTime scheduledDateTime = LocalDate.now().atTime(time);
-        return isDate(scheduledDateTime);
-    }
-
-    public boolean everyWeek() {
-        return everyWeek(DayOfWeek.MONDAY, LocalTime.MIDNIGHT);
-    }
-
-    public boolean everyWeek(DayOfWeek dayOfWeek, LocalTime time) {
-        LocalDate startOfWeek = LocalDate.now().with(dayOfWeek);
-        LocalDateTime scheduledDateTime = startOfWeek.atTime(time);
-        return isDate(scheduledDateTime);
-    }
-
-    public boolean everyMonth() {
-        return everyMonth(1, LocalTime.MIDNIGHT);
-    }
-
-    public boolean everyMonth(int dayOfMonth, LocalTime time) {
-        LocalDate startOfMonth = LocalDate.now().withDayOfMonth(dayOfMonth);
-        LocalDateTime scheduledDateTime = startOfMonth.atTime(time);
-        return isDate(scheduledDateTime);
-    }
-
-    public boolean everyYear() {
-        return everyYear(Month.JANUARY, 1, LocalTime.MIDNIGHT);
-    }
-
-    public boolean everyYear(Month month, int dayOfMonth, LocalTime time) {
-        LocalDate targetDay = LocalDate.now().withMonth(month.getValue()).withDayOfMonth(dayOfMonth);
-        LocalDateTime scheduledDateTime = targetDay.atTime(time);
-        return isDate(scheduledDateTime);
-    }
-
-    // Current time-based
 
     public boolean isWeekend() {
         DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
@@ -202,26 +162,91 @@ public class Condition {
         return LocalTime.of(23, 59, 59, 999999999);
     }
 
-    // Date-based (predetermined/static)
-
-    public boolean isDate(String dateString) {
-        ZonedDateTime localDateTime = DateUtils.zonedDateTimeFromString(dateString);
-        return isDate(localDateTime);
+    public boolean everyMinute() {
+        return everyMinute(0);
     }
 
-    public boolean isDate(ZonedDateTime zonedDateTime) {
-        LocalDateTime localDateTime =
-                zonedDateTime.withZoneSameLocal(DateUtils.ZONE_ID).toLocalDateTime();
-        return isDate(localDateTime);
+    public boolean everyMinute(int second) {
+        LocalTime now = LocalTime.now();
+        LocalDateTime scheduledDateTime = LocalDate.now().atTime(now.withSecond(second).withNano(0));
+        return isDate(scheduledDateTime);
     }
 
-    public boolean isDate(LocalDateTime localDateTime) {
-        long intervalMillis = getScriptScheduler().getIntervalMillis();
-        return DateUtils.isInRange(localDateTime, LocalDateTime.now(), intervalMillis);
+    public boolean everyHour() {
+        return everyHour(0);
     }
 
-    private ScriptScheduler getScriptScheduler() {
-        return executionContext.getCodeContext().getOsgiContext().getScriptScheduler();
+    public boolean everyHour(int minute) {
+        LocalTime now = LocalTime.now();
+        LocalDateTime scheduledDateTime = LocalDate.now().atTime(now.withMinute(minute).withSecond(0).withNano(0));
+        return isDate(scheduledDateTime);
+    }
+
+    public boolean everyDay() {
+        return everyDay(LocalTime.MIDNIGHT);
+    }
+
+    public boolean everyDay(LocalTime time) {
+        LocalDateTime scheduledDateTime = LocalDate.now().atTime(time);
+        return isDate(scheduledDateTime);
+    }
+
+    public boolean everyDay(String time) {
+        return everyDay(parseTime(time));
+    }
+
+    public boolean everyWeek() {
+        return everyWeek(DayOfWeek.MONDAY, LocalTime.MIDNIGHT);
+    }
+
+    public boolean everyWeek(DayOfWeek dayOfWeek, LocalTime time) {
+        LocalDate startOfWeek = LocalDate.now().with(dayOfWeek);
+        LocalDateTime scheduledDateTime = startOfWeek.atTime(time);
+        return isDate(scheduledDateTime);
+    }
+
+    public boolean everyWeek(String dayOfWeek, String time) {
+        return everyWeek(parseDayOfWeek(dayOfWeek), parseTime(time));
+    }
+
+    public boolean everyMonth() {
+        return everyMonth(1, LocalTime.MIDNIGHT);
+    }
+
+    public boolean everyMonth(int dayOfMonth, LocalTime time) {
+        LocalDate startOfMonth = LocalDate.now().withDayOfMonth(dayOfMonth);
+        LocalDateTime scheduledDateTime = startOfMonth.atTime(time);
+        return isDate(scheduledDateTime);
+    }
+
+    public boolean everyMonth(int dayOfMonth, String time) {
+        return everyMonth(dayOfMonth, parseTime(time));
+    }
+
+    public boolean everyYear() {
+        return everyYear(Month.JANUARY, 1, LocalTime.MIDNIGHT);
+    }
+
+    public boolean everyYear(Month month, int dayOfMonth, LocalTime time) {
+        LocalDate targetDay = LocalDate.now().withMonth(month.getValue()).withDayOfMonth(dayOfMonth);
+        LocalDateTime scheduledDateTime = targetDay.atTime(time);
+        return isDate(scheduledDateTime);
+    }
+
+    public boolean everyYear(String month, int dayOfMonth, String time) {
+        return everyYear(parseMonth(month), dayOfMonth, parseTime(time));
+    }
+
+    private LocalTime parseTime(String time) {
+        return LocalTime.parse(time);
+    }
+
+    private Month parseMonth(String month) {
+        return Month.valueOf(month.trim().toUpperCase(Locale.ENGLISH));
+    }
+
+    private DayOfWeek parseDayOfWeek(String dayOfWeek) {
+        return DayOfWeek.valueOf(dayOfWeek.trim().toUpperCase(Locale.ENGLISH));
     }
 
     // Duration-based since the last execution
