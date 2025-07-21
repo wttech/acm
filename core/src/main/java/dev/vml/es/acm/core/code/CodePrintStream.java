@@ -7,40 +7,45 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Allows writing logs simultaneously to the log files and to the code output.
+ * Allows copying logs from the specified/extra loggers to the code output stream.
+ */
 public class CodePrintStream extends PrintStream {
 
     private final String id;
 
-    private final List<Logger> loggers;
+    private final Logger selfLogger;
+
+    private final List<Logger> registeredLoggers;
+
+    private static LoggerContext getLoggerContext() {
+        return (LoggerContext) LoggerFactory.getILoggerFactory();
+    }
 
     public CodePrintStream(String id, OutputStream output) {
         super(output);
         this.id = id;
-        this.loggers = new LinkedList<>();
+        this.selfLogger = getLoggerContext().getLogger(String.format("%s(%s)", getClass().getName(), id));
+        this.registeredLoggers = new CopyOnWriteArrayList<>();
     }
 
     public String getAppenderName() {
         return id;
     }
 
-    public void registerLogger(Logger logger) {
-        loggers.add(logger);
-    }
-
-    @Override
-    public void close() {
-        loggers.forEach(logger -> logger.detachAppender(getAppenderName()));
-        super.close();
-    }
-
     public void fromLogs() {
+        fromSelfLogs();
         fromRepoLogs();
         fromAclLogs();
+    }
+
+    private void fromSelfLogs() {
+        fromLogger(selfLogger);
     }
 
     public void fromAclLogs() {
@@ -51,31 +56,51 @@ public class CodePrintStream extends PrintStream {
         fromLogger("dev.vml.es.acm.core.repo");
     }
 
-    public List<String> fromLogger(String loggerName) {
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        List<Logger> loggers = loggerContext.getLoggerList().stream()
+    public void fromLogger(String loggerName) {
+                getLoggerContext().getLoggerList().stream()
                 .filter(logger -> logger.getName().contains(loggerName))
                 .filter(logger -> logger.getAppender(getAppenderName()) == null)
-                .collect(Collectors.toList());
-        loggers.forEach(logger -> {
+                .forEach(this::fromLogger);
+    }
+
+    public void fromLogger(Logger logger) {
+        if (logger.getAppender(getAppenderName()) == null && !registeredLoggers.contains(logger)) {
             registerLogger(logger);
+        }
+    }
 
-            OutputStreamAppender<ILoggingEvent> appender = new OutputStreamAppender<>();
-            appender.setName(getAppenderName());
-            appender.setContext(loggerContext);
-            appender.setOutputStream(this);
+    private void registerLogger(Logger logger) {
+        registeredLoggers.add(logger);
 
-            PatternLayout layout = new PatternLayout();
-            layout.setContext(loggerContext);
-            layout.setPattern("%msg%n");
-            layout.start();
+        OutputStreamAppender<ILoggingEvent> appender = new OutputStreamAppender<>();
+        appender.setName(getAppenderName());
+        appender.setContext(getLoggerContext());
+        appender.setOutputStream(this);
 
-            appender.setLayout(layout);
-            appender.start();
+        PatternLayout layout = new PatternLayout();
+        layout.setContext(getLoggerContext());
+        layout.setPattern("%msg%n");
+        layout.start();
 
-            logger.addAppender(appender);
-            logger.setAdditive(false);
-        });
-        return loggers.stream().map(Logger::getName).collect(Collectors.toList());
+        appender.setLayout(layout);
+        appender.start();
+
+        logger.addAppender(appender);
+        logger.setAdditive(true);
+    }
+
+    private void unregisterLoggers() {
+        registeredLoggers.forEach(logger -> logger.detachAppender(getAppenderName()));
+        registeredLoggers.clear();
+    }
+
+    @Override
+    public void close() {
+        unregisterLoggers();
+        super.close();
+    }
+
+    public Logger getLogger() {
+        return selfLogger;
     }
 }
