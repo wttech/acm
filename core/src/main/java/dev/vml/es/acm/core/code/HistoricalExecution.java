@@ -35,6 +35,8 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
 
     private final String output;
 
+    private final String instance;
+
     private final Executable executable;
 
     public HistoricalExecution(Resource resource) {
@@ -49,6 +51,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             this.duration = props.get("duration", Long.class);
             this.error = props.get("error", String.class);
             this.output = props.get("output", String.class);
+            this.instance = props.get("instance", String.class);
 
             this.executable = new Code(
                     props.get("executableId", String.class),
@@ -75,6 +78,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             props.put("duration", execution.getDuration());
             props.put("error", execution.getError());
             props.put("output", execution.readOutput());
+            props.put("instance", execution.getInstance());
 
             props.put("executableId", execution.getExecutable().getId());
             props.put("executableContent", execution.getExecutable().getContent());
@@ -136,6 +140,11 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
     @Override
     public String getOutput() {
         return output;
+    }
+
+    @Override
+    public String getInstance() {
+        return instance;
     }
 
     @Override

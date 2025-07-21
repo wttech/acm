@@ -3,5 +3,12 @@ name: condition_every_year
 content: |
   condition.everyYear()
 documentation: |
-  Execute the script only once a year.<br>
-  The script content is not considered.
+  Execute the script only once a year.
+  
+  Optionally, you can specify a specific month, day of the month, and/or a time of day when the script should run. If no month is specified, it defaults to January. If no day is specified, it defaults to the first day of the month. If no time is specified, it defaults to midnight (00:00).
+
+  For example:
+  ```groovy
+  condition.everyYear()
+  condition.everyYear("June", 15, "14:00")
+  ```

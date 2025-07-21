@@ -3,5 +3,12 @@ name: condition_every_hour
 content: |
   condition.everyHour()
 documentation: |
-  Execute the script only once an hour.<br>
-  The script content is not considered.
+  Execute the script only once an hour.
+  
+  Optionally, you can specify a specific minute when the script should run. If no minute is specified, it defaults to the start of the hour (00 minutes).
+  
+  For example:
+  ```groovy
+  condition.everyHour()
+  condition.everyHour(30)
+  ```

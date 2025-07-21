@@ -2,6 +2,9 @@ package dev.vml.es.acm.core.osgi;
 
 import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.code.ExecutionQueue;
+import dev.vml.es.acm.core.script.ScriptScheduler;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -13,10 +16,17 @@ public class OsgiContext {
 
     private BundleContext bundleContext;
 
+    private LocalDateTime modified;
+
     @Activate
     @Modified
     protected void activate(BundleContext bundleContext) {
+        this.modified = LocalDateTime.now();
         this.bundleContext = bundleContext;
+    }
+
+    public LocalDateTime getModified() {
+        return modified;
     }
 
     public BundleContext getBundleContext() {
@@ -45,7 +55,18 @@ public class OsgiContext {
         return getService(InstanceInfo.class);
     }
 
+    public ScriptScheduler getScriptScheduler() {
+        return getService(ScriptScheduler.class);
+    }
+
     public ExecutionQueue getExecutionQueue() {
         return getService(ExecutionQueue.class);
+    }
+
+    public String readInstanceState() {
+        return String.format(
+                "modified=%s;bundles=%s",
+                getModified().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                getOsgiScanner().computeBundlesHashCode());
     }
 }

@@ -5,7 +5,7 @@ import java.util.Date;
 
 /**
  * Full representation of an execution.
- * Contains heavy data (executable arguments, error and output).
+ * Contains heavy data (executable arguments, error and output, instance state).
  */
 public interface Execution extends Serializable {
 
@@ -24,6 +24,8 @@ public interface Execution extends Serializable {
     String getError();
 
     String getOutput();
+
+    String getInstance();
 
     Executable getExecutable();
 }

@@ -11,6 +11,7 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import dev.vml.es.acm.core.util.quartz.CronExpression;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;
@@ -67,6 +68,8 @@ public class ScriptScheduler implements Runnable {
 
     private long intervalMillis;
 
+    private final AtomicLong runCount = new AtomicLong(0);
+
     @Activate
     @Modified
     protected void activate(Config config) {
@@ -109,6 +112,8 @@ public class ScriptScheduler implements Runnable {
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
                 queue.submit(contextOptions, script);
             });
+
+            runCount.incrementAndGet();
         } catch (Exception e) {
             LOG.error("Failed to access repository while scheduling enabled scripts to execution queue", e);
         }
@@ -116,5 +121,9 @@ public class ScriptScheduler implements Runnable {
 
     public long getIntervalMillis() {
         return this.intervalMillis;
+    }
+
+    public long getRunCount() {
+        return this.runCount.get();
     }
 }

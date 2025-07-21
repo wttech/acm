@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.idleSelf() && condition.everyWeek()
+    return condition.idleSelf() && condition.everyWeek("Monday", "07:48")
 }
 
 void doRun() {
