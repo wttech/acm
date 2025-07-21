@@ -3,5 +3,11 @@ name: condition_every_week
 content: |
   condition.everyWeek()
 documentation: |
-  Execute the script only once a week.<br>
-  The script content is not considered.
+  Execute the script only once a week.
+  
+  Optionally, you can specify a specific day of the week when the script should run. If no day is specified, it defaults to Monday.
+  
+  For example:
+  ```groovy
+    condition.everyWeek()
+    condition.everyWeek("Friday")

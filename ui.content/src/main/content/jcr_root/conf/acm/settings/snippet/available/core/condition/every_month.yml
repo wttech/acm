@@ -3,5 +3,13 @@ name: condition_every_month
 content: |
   condition.everyMonth()
 documentation: |
-  Execute the script only once a month.<br>
-  The script content is not considered.
+  Execute the script only once a month.
+  
+  Optionally, you can specify a specific day of the month when the script should run. If no day is specified, it defaults to the first day of the month.
+  
+  For example:
+
+  ```groovy
+  condition.everyMonth()
+  condition.everyMonth(15)
+  ```
