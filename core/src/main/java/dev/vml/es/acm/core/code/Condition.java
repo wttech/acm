@@ -302,6 +302,24 @@ public class Condition {
         return getScriptScheduler().getRunCount();
     }
 
+    // Lock-based
+
+    public boolean unlocked() {
+        return !locked();
+    }
+
+    public boolean locked() {
+        return locked(executionContext.getExecutable().getId());
+    }
+
+    public boolean unlocked(String name) {
+        return !locked(name);
+    }
+
+    public boolean locked(String name) {
+        return executionContext.getCodeContext().getLocker().isLocked(name);
+    }
+
     // Instance-based
 
     public boolean instanceChanged() {

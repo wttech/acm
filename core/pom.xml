@@ -293,8 +293,20 @@ DynamicImport-Package: *
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <artifactId>org.apache.sling.commons.scheduler</artifactId>
+            <version>2.7.12</version>
+            <groupId>org.apache.sling</groupId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <artifactId>org.apache.sling.jcr.resource</artifactId>
             <version>3.0.18</version>
+            <groupId>org.apache.sling</groupId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <artifactId>org.apache.sling.discovery.api</artifactId>
+            <version>1.0.4</version>
             <groupId>org.apache.sling</groupId>
             <scope>provided</scope>
         </dependency>

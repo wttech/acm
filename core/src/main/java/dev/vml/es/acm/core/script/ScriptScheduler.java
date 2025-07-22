@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.commons.scheduler.Scheduler;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -26,7 +27,8 @@ import org.slf4j.LoggerFactory;
 
 @Component(
         immediate = true,
-        service = {Runnable.class, ScriptScheduler.class})
+        service = {Runnable.class, ScriptScheduler.class},
+        property = {Scheduler.PROPERTY_SCHEDULER_RUN_ON + "=" + Scheduler.VALUE_RUN_ON_LEADER})
 @Designate(ocd = ScriptScheduler.Config.class)
 public class ScriptScheduler implements Runnable {
 

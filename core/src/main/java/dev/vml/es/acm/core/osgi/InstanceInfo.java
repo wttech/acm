@@ -84,6 +84,10 @@ public class InstanceInfo {
         return false;
     }
 
+    public boolean isCluster() {
+        return isAuthor() && InstanceType.CLOUD_CONTAINER.equals(getType());
+    }
+
     public boolean isRunMode(String runMode) {
         return getRunModes().stream().anyMatch(rm -> StringUtils.equalsIgnoreCase(rm, runMode));
     }

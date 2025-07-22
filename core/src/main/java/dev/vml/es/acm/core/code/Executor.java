@@ -30,6 +30,12 @@ public class Executor {
                 description =
                         "Enables debug mode for troubleshooting. Changed behaviors include: start saving skipped executions in history.")
         boolean debug() default false;
+
+        @AttributeDefinition(
+                name = "Locking",
+                description =
+                        "Prevents concurrent execution of the same executable. Enable this option and use 'condition.unlocked()' in your scripts. This is especially useful for scripts running on clustered author instances in AEMaaCS.")
+        boolean locking() default true;
     }
 
     @Reference
@@ -109,9 +115,18 @@ public class Executor {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            statuses.put(context.getId(), ExecutionStatus.RUNNING);
-            contentScript.run();
-            return execution.end(ExecutionStatus.SUCCEEDED);
+            try {
+                if (config.locking()) {
+                    context.getCodeContext().getLocker().lock(executableLockName(context));
+                }
+                statuses.put(context.getId(), ExecutionStatus.RUNNING);
+                contentScript.run();
+                return execution.end(ExecutionStatus.SUCCEEDED);
+            } finally {
+                if (config.locking()) {
+                    context.getCodeContext().getLocker().unlock(executableLockName(context));
+                }
+            }
         } catch (Throwable e) {
             execution.error(e);
             if ((e.getCause() != null && e.getCause() instanceof InterruptedException)) {
@@ -121,6 +136,10 @@ public class Executor {
         } finally {
             statuses.remove(context.getId());
         }
+    }
+
+    private String executableLockName(ExecutionContext context) {
+        return context.getExecutable().getId();
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {

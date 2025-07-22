@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.script;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
 import dev.vml.es.acm.core.util.ResourceUtils;
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 public class ScriptRepository {
 
-    public static final String ROOT = "/conf/acm/settings/script";
+    public static final String ROOT = AcmConstants.SETTINGS_ROOT + "/script";
 
     private static final Logger LOG = LoggerFactory.getLogger(ScriptRepository.class);
 
