@@ -3,7 +3,9 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ResourceUtils;
-import java.util.Collections;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
@@ -19,6 +21,8 @@ public class Locker {
     private static final Logger LOG = LoggerFactory.getLogger(Locker.class);
 
     private static final String RESOURCE_TYPE = JcrConstants.NT_UNSTRUCTURED;
+
+    private static final String CREATED_PROP = "created";
 
     private final ResourceResolver resolver;
 
@@ -50,8 +54,10 @@ public class Locker {
                 dirResource = ResourceUtils.makeFolders(resolver, ROOT);
                 nodeName = name;
             }
-            resolver.create(
-                    dirResource, nodeName, Collections.singletonMap(JcrConstants.JCR_PRIMARYTYPE, RESOURCE_TYPE));
+            Map<String, Object> props = new HashMap<>();
+            props.put(JcrConstants.JCR_PRIMARYTYPE, RESOURCE_TYPE);
+            props.put(CREATED_PROP, Calendar.getInstance());
+            resolver.create(dirResource, nodeName, props);
             resolver.commit();
             LOG.debug("Created lock '{}'", name);
         } catch (PersistenceException e) {
