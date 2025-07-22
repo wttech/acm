@@ -49,6 +49,7 @@ public class Locker {
                 nodeName = name;
             }
             resolver.create(dirResource, nodeName, Collections.singletonMap(CREATED_PROP, new Date()));
+            resolver.commit();
             LOG.debug("Created lock '{}'", name);
         } catch (PersistenceException e) {
             throw new AcmException(String.format("Cannot create lock '%s'!", name), e);
