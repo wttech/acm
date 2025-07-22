@@ -10,6 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.discovery.DiscoveryService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -40,6 +41,9 @@ public class HealthChecker implements EventHandler {
 
     @Reference
     private SlingInstaller slingInstaller;
+
+    @Reference
+    private DiscoveryService discoveryService;
 
     private Config config;
 
@@ -73,6 +77,7 @@ public class HealthChecker implements EventHandler {
 
     private HealthStatus checkStatus(ResourceResolver resourceResolver) {
         HealthStatus result = new HealthStatus();
+        checkCluster(result);
         checkRepository(result, resourceResolver);
         checkInstaller(result, resourceResolver);
         checkBundles(result);
@@ -80,6 +85,18 @@ public class HealthChecker implements EventHandler {
         checkComponents(result);
         result.healthy = CollectionUtils.isEmpty(result.issues);
         return result;
+    }
+
+    private void checkCluster(HealthStatus result) {
+        if (!config.clusterChecking()) {
+            return;
+        }
+        if (!instanceInfo.isAuthor() || !InstanceType.CLOUD_CONTAINER.equals(instanceInfo.getType())) {
+            return;
+        }
+        if (!discoveryService.getTopology().getLocalInstance().isLeader()) {
+            result.issues.add(new HealthIssue(HealthIssueSeverity.CRITICAL, "Instance is not a cluster leader"));
+        }
     }
 
     // TODO seems to not work on AEMaaCS as there is no Sling Installer JMX MBean
@@ -189,6 +206,11 @@ public class HealthChecker implements EventHandler {
 
     @ObjectClassDefinition(name = "AEM Content Manager - Health Checker")
     public @interface Config {
+        @AttributeDefinition(
+                name = "Cluster Checking",
+                description = "Check if the instance is a author instance cluster leader. Supported only on AEMaaCS")
+        boolean clusterChecking() default true;
+
         @AttributeDefinition(name = "Bundle Checking")
         boolean bundleChecking() default true;
 
@@ -228,7 +250,7 @@ public class HealthChecker implements EventHandler {
         @AttributeDefinition(
                 name = "Installer Checking",
                 description =
-                        "Check if any CRX package is currently installed. Supported only on AEM 6.x - not supported on AEMaaCS")
+                        "Check if any CRX package is currently installed. Supported only on AEM On-Premise")
         boolean installerChecking() default false;
     }
 }

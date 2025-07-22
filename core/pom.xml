@@ -299,6 +299,12 @@ DynamicImport-Package: *
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <artifactId>org.apache.sling.discovery.api</artifactId>
+            <version>1.0.4</version>
+            <groupId>org.apache.sling</groupId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy</artifactId>
             <version>4.0.18</version>
