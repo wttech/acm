@@ -43,11 +43,15 @@ public final class ServletUtils {
                 .collect(Collectors.toList());
     }
 
+    public static void respondJson(SlingHttpServletResponse response, ServletResult<?> result)  throws IOException {
+        respondJsonBuffered(response, result);
+    }
+
     /**
      * Responds with JSON result in streaming mode.
      * Consumes less memory, but JSON may be malformed in case of serialization errors.
      */
-    public static void respondJson(SlingHttpServletResponse response, ServletResult<?> result) throws IOException {
+    public static void respondJsonStreamed(SlingHttpServletResponse response, ServletResult<?> result) throws IOException {
         response.setStatus(result.getStatus());
         response.setContentType(JsonUtils.APPLICATION_JSON_UTF8);
 

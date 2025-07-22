@@ -2,7 +2,6 @@ package dev.vml.es.acm.core.servlet;
 
 import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
-import static dev.vml.es.acm.core.util.ServletUtils.respondJsonBuffered;
 
 import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.util.JsonUtils;
@@ -51,7 +50,7 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
                     ExecutionId.generate(), ExecutionMode.PARSE, code, request.getResourceResolver())) {
                 Description description = executor.describe(context);
 
-                respondJsonBuffered(
+                respondJson(
                         response,
                         ok(String.format("Code from '%s' described successfully", code.getId()), description));
             } catch (Exception e) {
