@@ -33,6 +33,11 @@ public class Executor {
                 description =
                         "Enables debug mode for troubleshooting. Changed behaviors include: start saving skipped executions in history.")
         boolean debug() default false;
+
+        @AttributeDefinition(
+                name = "Locking",
+                description = "Prevents concurrent execution of the same executable. Enable this option and use 'condition.unlocked()' in your scripts. This is especially useful for scripts running on clustered author instances in AEMaaCS.")
+        boolean locking() default true;
     }
 
     @Reference
@@ -90,7 +95,9 @@ public class Executor {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
         try {
-            context.getCodeContext().getLocker().lock(executableLockName(context));
+            if (config.locking()) {
+                context.getCodeContext().getLocker().lock(executableLockName(context));
+            }
             statuses.put(context.getId(), ExecutionStatus.PARSING);
 
             ContentScript contentScript = new ContentScript(context);
@@ -124,7 +131,9 @@ public class Executor {
             return execution.end(ExecutionStatus.FAILED);
         } finally {
             statuses.remove(context.getId());
-            context.getCodeContext().getLocker().unlock(executableLockName(context));
+            if (config.locking()) {
+                context.getCodeContext().getLocker().unlock(executableLockName(context));
+            }
         }
     }
 

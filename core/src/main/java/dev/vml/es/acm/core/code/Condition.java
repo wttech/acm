@@ -30,24 +30,6 @@ public class Condition {
         return false;
     }
 
-    // Lock-based
-
-    public boolean unlocked() {
-        return !locked();
-    }
-
-    public boolean locked() {
-        return locked(executionContext.getExecutable().getId());
-    }
-
-    public boolean unlocked(String name) {
-        return !locked(name);
-    }
-
-    public boolean locked(String name) {
-        return executionContext.getCodeContext().getLocker().isLocked(name);
-    }
-
     // History or queue-based
 
     public boolean once() {
@@ -319,6 +301,24 @@ public class Condition {
 
     public long runCount() {
         return getScriptScheduler().getRunCount();
+    }
+
+    // Lock-based
+
+    public boolean unlocked() {
+        return !locked();
+    }
+
+    public boolean locked() {
+        return locked(executionContext.getExecutable().getId());
+    }
+
+    public boolean unlocked(String name) {
+        return !locked(name);
+    }
+
+    public boolean locked(String name) {
+        return executionContext.getCodeContext().getLocker().isLocked(name);
     }
 
     // Instance-based
