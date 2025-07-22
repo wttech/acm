@@ -1,6 +1,5 @@
 package dev.vml.es.acm.core.code;
 
-import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.script.ContentScript;
 import dev.vml.es.acm.core.osgi.OsgiContext;
@@ -8,8 +7,6 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -36,7 +33,8 @@ public class Executor {
 
         @AttributeDefinition(
                 name = "Locking",
-                description = "Prevents concurrent execution of the same executable. Enable this option and use 'condition.unlocked()' in your scripts. This is especially useful for scripts running on clustered author instances in AEMaaCS.")
+                description =
+                        "Prevents concurrent execution of the same executable. Enable this option and use 'condition.unlocked()' in your scripts. This is especially useful for scripts running on clustered author instances in AEMaaCS.")
         boolean locking() default true;
     }
 
@@ -95,9 +93,6 @@ public class Executor {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
         try {
-            if (config.locking()) {
-                context.getCodeContext().getLocker().lock(executableLockName(context));
-            }
             statuses.put(context.getId(), ExecutionStatus.PARSING);
 
             ContentScript contentScript = new ContentScript(context);
@@ -120,9 +115,18 @@ public class Executor {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            statuses.put(context.getId(), ExecutionStatus.RUNNING);
-            contentScript.run();
-            return execution.end(ExecutionStatus.SUCCEEDED);
+            try {
+                if (config.locking()) {
+                    context.getCodeContext().getLocker().lock(executableLockName(context));
+                }
+                statuses.put(context.getId(), ExecutionStatus.RUNNING);
+                contentScript.run();
+                return execution.end(ExecutionStatus.SUCCEEDED);
+            } finally {
+                if (config.locking()) {
+                    context.getCodeContext().getLocker().unlock(executableLockName(context));
+                }
+            }
         } catch (Throwable e) {
             execution.error(e);
             if ((e.getCause() != null && e.getCause() instanceof InterruptedException)) {
@@ -131,9 +135,6 @@ public class Executor {
             return execution.end(ExecutionStatus.FAILED);
         } finally {
             statuses.remove(context.getId());
-            if (config.locking()) {
-                context.getCodeContext().getLocker().unlock(executableLockName(context));
-            }
         }
     }
 

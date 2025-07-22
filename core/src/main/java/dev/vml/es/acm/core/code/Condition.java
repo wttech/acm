@@ -9,7 +9,6 @@ import java.util.Locale;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
-
 public class Condition {
 
     private final ExecutionContext executionContext;
