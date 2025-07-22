@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ResourceUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
@@ -17,7 +18,7 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ExecutionHistory {
 
-    public static final String ROOT = "/var/acm/execution/history";
+    public static final String ROOT = AcmConstants.VAR_ROOT + "/execution/history";
 
     private final ResourceResolver resourceResolver;
 

@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.script.ContentScript;
 import dev.vml.es.acm.core.osgi.OsgiContext;
@@ -7,6 +8,8 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -87,7 +90,7 @@ public class Executor {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
         try {
-            context.getCodeContext().getLocker().lock(context.getExecutable().getId());
+            context.getCodeContext().getLocker().lock(executableLockName(context));
             statuses.put(context.getId(), ExecutionStatus.PARSING);
 
             ContentScript contentScript = new ContentScript(context);
@@ -121,8 +124,12 @@ public class Executor {
             return execution.end(ExecutionStatus.FAILED);
         } finally {
             statuses.remove(context.getId());
-            context.getCodeContext().getLocker().unlock(context.getExecutable().getId());
+            context.getCodeContext().getLocker().unlock(executableLockName(context));
         }
+    }
+
+    private String executableLockName(ExecutionContext context) {
+        return StringUtils.removeStart(context.getExecutable().getId(), AcmConstants.SETTINGS_ROOT + "/");
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {

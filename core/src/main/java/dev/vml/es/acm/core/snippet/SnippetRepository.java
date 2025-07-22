@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.snippet;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.util.ResourceUtils;
@@ -12,7 +13,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 
 public class SnippetRepository {
 
-    public static final String ROOT = "/conf/acm/settings/snippet";
+    public static final String ROOT = AcmConstants.SETTINGS_ROOT + "/snippet";
 
     private final ResourceResolver resourceResolver;
 
