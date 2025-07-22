@@ -138,7 +138,7 @@ public class Executor {
     }
 
     private String executableLockName(ExecutionContext context) {
-        return StringUtils.removeStart(context.getExecutable().getId(), AcmConstants.SETTINGS_ROOT + "/");
+        return context.getExecutable().getId();
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {
