@@ -11,6 +11,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.discovery.DiscoveryService;
+import org.apache.sling.discovery.InstanceDescription;
+import org.apache.sling.discovery.TopologyView;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -88,15 +90,20 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkCluster(HealthStatus result) {
-        if (!config.clusterChecking()) {
+        if (!config.clusterChecking() || !instanceInfo.isCluster()) {
             return;
         }
-        if (!instanceInfo.isAuthor() || !InstanceType.CLOUD_CONTAINER.equals(instanceInfo.getType())) {
-            return;
-        }
-        if (!discoveryService.getTopology().getLocalInstance().isLeader()) {
+        if (!isClusterLeader()) {
             result.issues.add(new HealthIssue(HealthIssueSeverity.CRITICAL, "Instance is not a cluster leader"));
         }
+    }
+
+    private boolean isClusterLeader() {
+        return Optional.ofNullable(discoveryService)
+                .map(DiscoveryService::getTopology)
+                .map(TopologyView::getLocalInstance)
+                .map(InstanceDescription::isLeader)
+                .orElse(false);
     }
 
     // TODO seems to not work on AEMaaCS as there is no Sling Installer JMX MBean
