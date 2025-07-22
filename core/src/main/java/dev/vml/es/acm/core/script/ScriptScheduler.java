@@ -21,12 +21,14 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.apache.sling.commons.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
         immediate = true,
-        service = {Runnable.class, ScriptScheduler.class})
+        service = {Runnable.class, ScriptScheduler.class},
+property = {Scheduler.PROPERTY_SCHEDULER_RUN_ON + "=" + Scheduler.VALUE_RUN_ON_LEADER})
 @Designate(ocd = ScriptScheduler.Config.class)
 public class ScriptScheduler implements Runnable {
 

@@ -215,7 +215,7 @@ public class HealthChecker implements EventHandler {
     public @interface Config {
         @AttributeDefinition(
                 name = "Cluster Checking",
-                description = "Check if the instance is a author instance cluster leader. Supported only on AEMaaCS")
+                description = "Check if the instance is an author instance cluster leader. Supported only on AEMaaCS")
         boolean clusterChecking() default true;
 
         @AttributeDefinition(name = "Bundle Checking")
