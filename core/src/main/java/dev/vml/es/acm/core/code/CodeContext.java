@@ -26,25 +26,29 @@ public class CodeContext {
 
     private final List<ExtensionScript> extensionScripts;
 
+    private final Locker locker;
+
     public CodeContext(OsgiContext osgiContext, ResourceResolver resourceResolver) {
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
-        this.binding = createBinding(osgiContext, resourceResolver);
-        this.extensionScripts = findExtensionScripts(resourceResolver);
+        this.locker = new Locker(resourceResolver);
+        this.binding = createBinding();
+        this.extensionScripts = findExtensionScripts();
     }
 
-    private List<ExtensionScript> findExtensionScripts(ResourceResolver resourceResolver) {
+    private List<ExtensionScript> findExtensionScripts() {
         return new ScriptRepository(resourceResolver)
                 .findAll(ScriptType.EXTENSION)
                 .map(s -> new ExtensionScript(this, s))
                 .collect(Collectors.toList());
     }
 
-    public Binding createBinding(OsgiContext osgiContext, ResourceResolver resourceResolver) {
+    public Binding createBinding() {
         Binding result = new Binding();
 
         result.setVariable("log", LoggerFactory.getLogger(getClass()));
         result.setVariable("resourceResolver", resourceResolver);
+        result.setVariable("locker", locker);
         result.setVariable("osgi", osgiContext);
         result.setVariable("repo", new Repo(resourceResolver));
         result.setVariable("acl", new Acl(resourceResolver));
@@ -90,5 +94,9 @@ public class CodeContext {
 
     public OsgiContext getOsgiContext() {
         return osgiContext;
+    }
+
+    public Locker getLocker() {
+        return locker;
     }
 }

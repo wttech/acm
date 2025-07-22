@@ -87,6 +87,7 @@ public class Executor {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
 
         try {
+            context.getCodeContext().getLocker().lock(context.getExecutable().getId());
             statuses.put(context.getId(), ExecutionStatus.PARSING);
 
             ContentScript contentScript = new ContentScript(context);
@@ -120,6 +121,7 @@ public class Executor {
             return execution.end(ExecutionStatus.FAILED);
         } finally {
             statuses.remove(context.getId());
+            context.getCodeContext().getLocker().unlock(context.getExecutable().getId());
         }
     }
 

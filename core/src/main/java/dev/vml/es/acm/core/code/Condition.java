@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
+
 public class Condition {
 
     private final ExecutionContext executionContext;
@@ -27,6 +28,24 @@ public class Condition {
 
     public boolean never() {
         return false;
+    }
+
+    // Lock-based
+
+    public boolean unlocked() {
+        return !locked();
+    }
+
+    public boolean locked() {
+        return locked(executionContext.getExecutable().getId());
+    }
+
+    public boolean unlocked(String name) {
+        return !locked(name);
+    }
+
+    public boolean locked(String name) {
+        return executionContext.getCodeContext().getLocker().isLocked(name);
     }
 
     // History or queue-based
