@@ -7,7 +7,7 @@ export type Executable = {
 };
 
 export const ScriptRootPath = '/conf/acm/settings/script';
-export const ConsoleDefaultScriptPath = `${ScriptRootPath}/template/core/default.groovy`;
+export const ConsoleDefaultScriptPath = `${ScriptRootPath}/template/core/console.groovy`;
 export const ConsoleDefaultScriptContent = `
 boolean canRun() {
   return conditions.always()
