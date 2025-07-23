@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.code;
 
 import groovy.lang.Binding;
+import org.slf4j.Logger;
 
 public class ExecutionContext implements AutoCloseable {
 
@@ -14,9 +15,9 @@ public class ExecutionContext implements AutoCloseable {
 
     private final CodeContext codeContext;
 
-    private final CodeOutput codeOutput;
+    private final CodeOutput output;
 
-    private final CodePrintStream codePrintStream;
+    private final CodePrintStream printStream;
 
     private boolean history = true;
 
@@ -33,8 +34,8 @@ public class ExecutionContext implements AutoCloseable {
         this.executor = executor;
         this.executable = executable;
         this.codeContext = codeContext;
-        this.codeOutput = mode == ExecutionMode.RUN ? new CodeOutputFile(id) : new CodeOutputString();
-        this.codePrintStream = new CodePrintStream(String.format("%s|%s", executable.getId(), id), codeOutput.write());
+        this.output = mode == ExecutionMode.RUN ? new CodeOutputFile(id) : new CodeOutputString();
+        this.printStream = new CodePrintStream(String.format("%s|%s", executable.getId(), id), output.write());
         this.arguments = new Arguments();
         this.conditions = new Conditions(this);
 
@@ -43,10 +44,6 @@ public class ExecutionContext implements AutoCloseable {
 
     public String getId() {
         return id;
-    }
-
-    public CodeOutput getOutput() {
-        return codeOutput;
     }
 
     public Executor getExecutor() {
@@ -59,6 +56,22 @@ public class ExecutionContext implements AutoCloseable {
 
     public CodeContext getCodeContext() {
         return codeContext;
+    }
+
+    public CodeOutput getOutput() {
+        return output;
+    }
+
+    public CodePrintStream getOut() {
+        return getPrintStream();
+    }
+
+    public CodePrintStream getPrintStream() {
+        return printStream;
+    }
+
+    public Logger getLogger() {
+        return printStream.getLogger();
     }
 
     public ExecutionMode getMode() {
@@ -94,17 +107,21 @@ public class ExecutionContext implements AutoCloseable {
 
         binding.setVariable("arguments", arguments);
         binding.setVariable("conditions", conditions);
-        binding.setVariable("out", codePrintStream);
-        binding.setVariable("log", codePrintStream.getLogger());
+        binding.setVariable("out", getOut());
+        binding.setVariable("log", getLogger());
     }
 
     @Override
     public void close() {
-        codePrintStream.close();
-        codeOutput.close();
+        printStream.close();
+        output.close();
     }
 
     public void variable(String name, Object value) {
         codeContext.getBinding().setVariable(name, value);
+    }
+
+    public Object variable(String name) {
+        return codeContext.getBinding().getVariable(name);
     }
 }

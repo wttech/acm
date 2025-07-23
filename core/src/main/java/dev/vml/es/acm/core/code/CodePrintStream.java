@@ -63,6 +63,16 @@ public class CodePrintStream extends PrintStream {
                 .forEach(this::fromLogger);
     }
 
+    public void fromLogs(String... loggerNames) {
+        for (String loggerName : loggerNames) {
+            fromLogger(loggerName);
+        }
+    }
+
+    public void fromLogs(List<String> loggerNames) {
+        loggerNames.forEach(this::fromLogger);
+    }
+
     public void fromLogger(Logger logger) {
         if (logger.getAppender(getAppenderName()) == null && !registeredLoggers.contains(logger)) {
             registerLogger(logger);
@@ -100,7 +110,7 @@ public class CodePrintStream extends PrintStream {
         super.close();
     }
 
-    public Logger getLogger() {
+    protected Logger getLogger() {
         return selfLogger;
     }
 }
