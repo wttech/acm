@@ -12,20 +12,20 @@ const MaintenancePage = () => {
     <Flex direction="column" flex="1" gap="size-400">
       <Tabs flex="1" aria-label="Maintenance tabs" selectedKey={selectedTab} onSelectionChange={setSelectedTab}>
         <TabList>
-          <Item key="script-executor">
+          <Item key="script-executor" aria-label="Script Executor">
             <Code />
             <Text>Script Executor</Text>
           </Item>
-          <Item key="health-checker">
+          <Item key="health-checker" aria-label="Health Checker">
             <Heart />
             <Text>Health Checker</Text>
           </Item>
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-          <Item key="script-executor">
+          <Item key="script-executor" aria-label="Script Executor">
             <ScriptExecutor />
           </Item>
-          <Item key="health-checker">
+          <Item key="health-checker" aria-label="Health Checker">
             <HealthChecker />
           </Item>
         </TabPanels>

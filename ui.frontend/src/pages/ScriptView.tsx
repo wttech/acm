@@ -118,7 +118,7 @@ const ScriptView = () => {
     <Flex direction="column" flex="1" gap="size-400">
       <Tabs flex="1" aria-label="Script Details" selectedKey={selectedTab} onSelectionChange={handleTabChange}>
         <TabList>
-          <Item key="details">
+          <Item key="details" aria-label="Script">
             <FileCode />
             <Text>Script</Text>
           </Item>
@@ -128,7 +128,7 @@ const ScriptView = () => {
           </Item>
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-          <Item key="details">
+          <Item key="details" aria-label="Details">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View>
                 <Flex justifyContent="space-between" alignItems="center">
@@ -165,7 +165,7 @@ const ScriptView = () => {
               </View>
             </Flex>
           </Item>
-          <Item key="code">
+          <Item key="code" aria-label="Code">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View>
                 <Flex justifyContent="space-between" alignItems="center">

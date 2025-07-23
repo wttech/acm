@@ -68,7 +68,7 @@ const ExecutionView = () => {
     <Flex direction="column" flex="1" gap="size-400">
       <Tabs flex="1" aria-label="Executions" selectedKey={selectedTab} onSelectionChange={handleTabChange}>
         <TabList>
-          <Item key="details">
+          <Item key="details" aria-label="Details">
             <History />
             <Text>Execution</Text>
           </Item>
@@ -76,13 +76,13 @@ const ExecutionView = () => {
             <FileCode />
             <Text>Code</Text>
           </Item>
-          <Item key="output" aria-label="Execution">
+          <Item key="output" aria-label="Output">
             <Print />
             <Text>Output</Text>
           </Item>
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-          <Item key="details">
+          <Item key="details" aria-label="Details">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
@@ -129,7 +129,7 @@ const ExecutionView = () => {
               </View>
             </Flex>
           </Item>
-          <Item key="code">
+          <Item key="code" aria-label="Code">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <View>
                 <Flex justifyContent="space-between" alignItems="center">
@@ -144,7 +144,7 @@ const ExecutionView = () => {
               <CodeEditor id="execution-view" value={execution.executable.content} language="groovy" readOnly />
             </Flex>
           </Item>
-          <Item key="output">
+          <Item key="output" aria-label="Output">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">

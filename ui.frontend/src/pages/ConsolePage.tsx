@@ -108,7 +108,7 @@ const ConsolePage = () => {
           </Item>
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-          <Item key="code">
+          <Item key="code" aria-label="Code">
             <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
@@ -126,7 +126,7 @@ const ConsolePage = () => {
               <CodeEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
             </Flex>
           </Item>
-          <Item key="output">
+          <Item key="output" aria-label="Output">
             <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
