@@ -42,21 +42,21 @@ const ScriptsPage = () => {
           </Item>
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-          <Item key="manual">
+          <Item key="manual" aria-label="Manual">
             <ScriptListRich type={ScriptType.MANUAL} />
           </Item>
-          <Item key="enabled">
+          <Item key="enabled" aria-label="Enabled">
             <ScriptListRich type={ScriptType.ENABLED} />
           </Item>
-          <Item key="disabled">
+          <Item key="disabled" aria-label="Disabled">
             <ScriptListRich type={ScriptType.DISABLED} />
           </Item>
           {appState.value.mockStatus.enabled ? (
-            <Item key="mock">
+            <Item key="mock" aria-label="Mock">
               <ScriptListSimple type={ScriptType.MOCK} />
             </Item>
           ) : null}
-          <Item key="extension">
+          <Item key="extension" aria-label="Extension">
             <ScriptListSimple type={ScriptType.EXTENSION} />
           </Item>
         </TabPanels>

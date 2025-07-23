@@ -4,7 +4,7 @@ import { InstanceRole, InstanceType, State } from '../utils/api.types';
 export const appState = signal<State>({
   spaSettings: {
     appStateInterval: 3000,
-    executionPollInterval: 1000,
+    executionPollInterval: 1400,
     scriptStatsLimit: 30,
   },
   healthStatus: {

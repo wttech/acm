@@ -62,7 +62,7 @@ const SnippetsPage = () => {
         {Object.keys(snippetGroups)
           .sort()
           .map((group, groupIndex) => (
-            <Item key={group}>
+            <Item key={group} aria-label={group}>
               {snippetGroupIcons[groupIndex % snippetGroupIcons.length]}
               <Text>{group}</Text>
             </Item>
@@ -72,7 +72,7 @@ const SnippetsPage = () => {
         {Object.keys(snippetGroups)
           .sort()
           .map((group) => (
-            <Item key={group}>
+            <Item key={group} aria-label={group}>
               <Flex direction="column" flex="1" gap="size-100" marginY="size-100">
                 {snippetGroups[group]
                   .sort((a, b) => a.name.localeCompare(b.name))

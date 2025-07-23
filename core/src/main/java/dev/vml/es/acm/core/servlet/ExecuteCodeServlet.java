@@ -2,7 +2,6 @@ package dev.vml.es.acm.core.servlet;
 
 import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
-import static dev.vml.es.acm.core.util.ServletUtils.respondJsonBuffered;
 
 import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.util.JsonUtils;
@@ -66,7 +65,7 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
             try {
                 Execution execution = executor.execute(context);
 
-                respondJsonBuffered(
+                respondJson(
                         response, ok(String.format("Code from '%s' executed successfully", code.getId()), execution));
             } catch (Exception e) {
                 LOG.error("Code from '{}' cannot be executed!", code.getId(), e);

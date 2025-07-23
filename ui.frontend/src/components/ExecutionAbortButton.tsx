@@ -45,7 +45,7 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
           timeout: ToastTimeoutQuick,
         });
       } else {
-        console.warn('Code execution aborting failed!');
+        console.warn('Code execution aborting failed!', queuedExecution);
         ToastQueue.negative('Code execution aborting failed!', {
           timeout: ToastTimeoutQuick,
         });

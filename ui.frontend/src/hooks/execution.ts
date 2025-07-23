@@ -20,6 +20,7 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
         operation: 'Code execution state',
         url: `/apps/acm/api/queue-code.json?executionId=${executionId}`,
         method: 'get',
+        quiet: true,
         timeout: intervalToTimeout(pollInterval),
       });
       const queuedExecution = response.data.data.executions.find((e: Execution) => e.id === executionId)!;
@@ -65,15 +66,20 @@ export const pollExecutionPending = async (executionId: string, pollInterval: nu
   let queuedExecution: Execution | null = null;
 
   while (queuedExecution === null || isExecutionPending(queuedExecution.status)) {
-    const response = await apiRequest<QueueOutput>({
-      operation: 'Code execution state',
-      url: `/apps/acm/api/queue-code.json?executionId=${executionId}`,
-      method: 'get',
-      timeout: intervalToTimeout(pollInterval),
-    });
-    queuedExecution = response.data.data.executions[0]!;
+    try {
+      const response = await apiRequest<QueueOutput>({
+        operation: 'Code execution pending state',
+        url: `/apps/acm/api/queue-code.json?executionId=${executionId}`,
+        method: 'get',
+        quiet: true,
+        timeout: intervalToTimeout(pollInterval),
+      });
+      queuedExecution = response.data.data.executions[0]!;
+    } catch (error) {
+      console.warn('Code execution pending state unknown:', error);
+    }
     await new Promise((resolve) => setTimeout(resolve, pollInterval));
   }
 
-  return queuedExecution;
+  return queuedExecution!;
 };

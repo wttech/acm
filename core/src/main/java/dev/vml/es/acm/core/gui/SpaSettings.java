@@ -49,7 +49,7 @@ public class SpaSettings implements Serializable {
         @AttributeDefinition(
                 name = "Execution Poll Interval",
                 description = "Interval in milliseconds to poll execution status.")
-        long executionPollInterval() default 1000;
+        long executionPollInterval() default 1400;
 
         @AttributeDefinition(
                 name = "Script Stats Limit",
