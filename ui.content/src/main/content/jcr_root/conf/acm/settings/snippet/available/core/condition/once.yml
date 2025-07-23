@@ -1,6 +1,6 @@
 group: Condition
 name: condition_once
 content: |
-  condition.once()
+  conditions.once()
 documentation: |
   Execute the script only once per its path.<br>

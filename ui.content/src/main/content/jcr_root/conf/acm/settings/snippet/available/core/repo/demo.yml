@@ -16,7 +16,7 @@ content: |
   }
     
   boolean canRun() {
-    return condition.idleSelf()
+    return conditions.idleSelf()
   }
     
   void doRun() {

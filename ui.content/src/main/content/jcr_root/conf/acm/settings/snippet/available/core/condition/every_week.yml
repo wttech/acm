@@ -1,7 +1,7 @@
 group: Condition
 name: condition_every_week
 content: |
-  condition.everyWeek()
+  conditions.everyWeek()
 documentation: |
   Execute the script only once a week.
   
@@ -9,6 +9,6 @@ documentation: |
   
   For example:
   ```groovy
-    condition.everyWeek()
-    condition.everyWeek("Wednesday", "14:00")
+    conditions.everyWeek()
+    conditions.everyWeek("Wednesday", "14:00")
   ```

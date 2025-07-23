@@ -1,7 +1,7 @@
 group: Condition
 name: condition_every_day
 content: |
-  condition.everyDay()
+  conditions.everyDay()
 documentation: |
   Execute the script only once a day.
   
@@ -9,6 +9,6 @@ documentation: |
   
   For example:
   ```groovy
-  condition.everyDay()
-  condition.everyDay("2:00")
+  conditions.everyDay()
+  conditions.everyDay("2:00")
   ```

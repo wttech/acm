@@ -1,7 +1,7 @@
 group: Condition
 name: condition_every_year
 content: |
-  condition.everyYear()
+  conditions.everyYear()
 documentation: |
   Execute the script only once a year.
   
@@ -9,6 +9,6 @@ documentation: |
 
   For example:
   ```groovy
-  condition.everyYear()
-  condition.everyYear("June", 15, "14:00")
+  conditions.everyYear()
+  conditions.everyYear("June", 15, "14:00")
   ```

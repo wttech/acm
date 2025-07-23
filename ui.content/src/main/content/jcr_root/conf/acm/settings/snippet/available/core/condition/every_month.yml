@@ -1,7 +1,7 @@
 group: Condition
 name: condition_every_month
 content: |
-  condition.everyMonth()
+  conditions.everyMonth()
 documentation: |
   Execute the script only once a month.
   
@@ -10,7 +10,7 @@ documentation: |
   For example:
 
   ```groovy
-  condition.everyMonth()
-  condition.everyMonth(15)
-  condition.everyMonth(1, "2:00")
+  conditions.everyMonth()
+  conditions.everyMonth(15)
+  conditions.everyMonth(1, "2:00")
   ```

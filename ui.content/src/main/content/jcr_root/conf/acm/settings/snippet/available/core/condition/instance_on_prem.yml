@@ -1,6 +1,6 @@
 group: Condition
 name: condition_instance_on_prem
 content: |
-  condition.isInstanceOnPrem()
+  conditions.isInstanceOnPrem()
 documentation: |
   Execute the script only on instance running on premise.

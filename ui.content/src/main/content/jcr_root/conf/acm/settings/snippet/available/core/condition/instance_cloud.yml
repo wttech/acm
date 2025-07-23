@@ -1,6 +1,6 @@
 group: Condition
 name: condition_instance_cloud
 content: |
-  condition.isInstanceCloud()
+  conditions.isInstanceCloud()
 documentation: |
   Execute the script only on instance running on AEMaaCS container or SDK.

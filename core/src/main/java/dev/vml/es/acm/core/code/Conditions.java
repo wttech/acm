@@ -9,13 +9,13 @@ import java.util.Locale;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
-public class Condition {
+public class Conditions {
 
     private final ExecutionContext executionContext;
 
     private final ExecutionHistory executionHistory;
 
-    public Condition(ExecutionContext executionContext) {
+    public Conditions(ExecutionContext executionContext) {
         this.executionContext = executionContext;
         this.executionHistory =
                 new ExecutionHistory(executionContext.getCodeContext().getResourceResolver());

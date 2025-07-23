@@ -1,6 +1,6 @@
 group: Condition
 name: condition_never
 content: |
-  condition.never()
+  conditions.never()
 documentation: |
   Disallow the script to run regardless of circumstances.
