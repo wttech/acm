@@ -201,7 +201,7 @@ Below is a minimal example of a Groovy script that prints "Hello World!" to the 
 
 ```groovy
 boolean canRun() {
-    return condition.always()
+    return conditions.always()
 }
 
 void doRun() {
@@ -213,7 +213,7 @@ The `canRun()` method is used to determine if the script should be executed.
 The `doRun()` method contains the actual code to be executed.
 
 Notice that the script on their own decide when to run without a need to specify any additional metadata. In that way the-sky-is-the-limit. You can run the script once, periodically, or at an exact date and time.
-There are many built-in, ready-to-use conditions available in the `condition` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Condition.java).
+There are many built-in, ready-to-use conditions available in the `conditions` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Conditions.java).
 
 #### Arguments example
 
@@ -226,7 +226,7 @@ void describeRun() {
 }
 
 boolean canRun() {
-    return condition.always()
+    return conditions.always()
 }
 
 void doRun() {
@@ -250,7 +250,7 @@ The following example demonstrates how to create a user and a group, assign perm
 
 ```groovy
 boolean canRun() {
-    return condition.idleSelf() && condition.everyHour()
+    return conditions.idleSelf() && conditions.everyHour()
 }
 
 void doRun() {
@@ -301,7 +301,7 @@ void describeRun() {
 }
 
 boolean canRun() {
-    return condition.idleSelf()
+    return conditions.idleSelf()
 }
 
 void doRun() {

@@ -10,7 +10,7 @@ export const ScriptRootPath = '/conf/acm/settings/script';
 export const ConsoleDefaultScriptPath = `${ScriptRootPath}/template/core/default.groovy`;
 export const ConsoleDefaultScriptContent = `
 boolean canRun() {
-  return condition.always()
+  return conditions.always()
 }
   
 void doRun() {

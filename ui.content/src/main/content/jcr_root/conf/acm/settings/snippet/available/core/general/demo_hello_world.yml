@@ -2,7 +2,7 @@ group: General
 name: general_demo_hello_world
 content: |
   boolean canRun() {
-    return condition.always()
+    return conditions.always()
   }
     
   void doRun() {

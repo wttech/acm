@@ -1,7 +1,7 @@
 group: Condition
 name: condition_every_hour
 content: |
-  condition.everyHour()
+  conditions.everyHour()
 documentation: |
   Execute the script only once an hour.
   
@@ -9,6 +9,6 @@ documentation: |
   
   For example:
   ```groovy
-  condition.everyHour()
-  condition.everyHour(30)
+  conditions.everyHour()
+  conditions.everyHour(30)
   ```

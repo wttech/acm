@@ -19,7 +19,7 @@ void describeRun() {
 }
 
 boolean canRun() {
-    return condition.always()
+    return conditions.always()
 }
 
 void doRun() {

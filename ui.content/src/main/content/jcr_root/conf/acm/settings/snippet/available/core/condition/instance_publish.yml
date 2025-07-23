@@ -1,6 +1,6 @@
 group: Condition
 name: condition_instance_publish
 content: |
-  condition.isInstancePublish()
+  conditions.isInstancePublish()
 documentation: |
   Execute the script only on publish instance.

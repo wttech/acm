@@ -1,5 +1,5 @@
 boolean canRun() {
-    return condition.retry(3)
+    return conditions.retry(3)
 }
 
 void doRun() {

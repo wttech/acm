@@ -5,17 +5,18 @@ import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.script.ScriptScheduler;
 import dev.vml.es.acm.core.util.DateUtils;
 import java.time.*;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
-public class Condition {
+public class Conditions {
 
     private final ExecutionContext executionContext;
 
     private final ExecutionHistory executionHistory;
 
-    public Condition(ExecutionContext executionContext) {
+    public Conditions(ExecutionContext executionContext) {
         this.executionContext = executionContext;
         this.executionHistory =
                 new ExecutionHistory(executionContext.getCodeContext().getResourceResolver());
@@ -375,5 +376,33 @@ public class Condition {
 
     public boolean isInstanceCloudSdk() {
         return getInstanceInfo().getType() == InstanceType.CLOUD_SDK;
+    }
+
+    // Retry-based
+
+    public boolean retry(long count) {
+        if (count < 1) {
+            throw new IllegalArgumentException("Retry count must be greater than zero!");
+        }
+        if (!idleSelf()) {
+            return false;
+        }
+        Execution passedExecution = passedExecution();
+        if (passedExecution == null) {
+            return true;
+        }
+        if (passedExecution.getStatus() == ExecutionStatus.SUCCEEDED) {
+            return false;
+        }
+        long consecutiveFailures = 0;
+        Iterator<Execution> it = passedExecutions().iterator();
+        while (it.hasNext()) {
+            Execution e = it.next();
+            if (e.getStatus() == ExecutionStatus.SUCCEEDED) {
+                break;
+            }
+            consecutiveFailures++;
+        }
+        return consecutiveFailures < count;
     }
 }
