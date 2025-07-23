@@ -85,7 +85,7 @@ public class ExecutionContext implements AutoCloseable {
         return arguments;
     }
 
-    public Conditions getCondition() {
+    public Conditions getConditions() {
         return conditions;
     }
 
