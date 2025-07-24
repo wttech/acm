@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashSet;
@@ -54,8 +56,11 @@ public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent event) {
         String loggerName = event.getLoggerName();
-        if (loggerNames.stream().anyMatch(loggerName::startsWith)) {
-            printStream.println(event.getFormattedMessage());
+        for (String loggerPrefix : loggerNames) {
+            if (StringUtils.startsWith(loggerName, loggerPrefix)) {
+                printStream.println(event.getFormattedMessage());
+                break;
+            }
         }
     }
 }
