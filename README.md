@@ -256,7 +256,7 @@ boolean canRun() {
 void doRun() {
     out.fromAclLogs()
 
-    println "ACL setup started"
+    log.info "ACL setup started"
 
     def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
     acmeService.with {
@@ -276,7 +276,7 @@ void doRun() {
         addMember(johnDoe)
     }
 
-    println "ACL setup done"
+    log.info "ACL setup done"
 }
 ```
 
@@ -308,15 +308,15 @@ void doRun() {
     out.fromLogs()
 
     repo.dryRun(arguments.value("dryRun")) {
-        println "Creating a folder structure in the temporary directory of the repository."
+        log.info "Creating a folder structure in the temporary directory of the repository."
         def dataFolder = repo.get("/tmp/acm/demo/data").ensureFolder()
         for (int i = 0; i < 5; i++) {
             def child = dataFolder.child("child-${i+1}").save(["foo": "bar"])
             child.updateProperty("foo") { v -> v.toUpperCase() }
         }
-        println "Folder '${dataFolder.path}' has now ${dataFolder.descendants().count()} descendant(s)."
+        log.info "Folder '${dataFolder.path}' has now ${dataFolder.descendants().count()} descendant(s)."
 
-        println "Creating a post in the temporary directory of the repository."
+        log.info "Creating a post in the temporary directory of the repository."
         def postFolder = repo.get("/tmp/acm/demo/posts").ensureFolder()
         def post = postFolder.child("hello-world.yml").saveFile("application/x-yaml") { output ->
             formatter.yml.write(output, [
@@ -325,7 +325,7 @@ void doRun() {
                     tags: ["sample", "post"]
             ])
         }
-        println "Post '${post.path}' has been created at ${post.property("jcr:created", java.time.LocalDateTime)}"
+        log.info "Post '${post.path}' has been created at ${post.property("jcr:created", java.time.LocalDateTime)}"
 
         if (arguments.value("clean")) {
             dataFolder.delete()

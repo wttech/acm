@@ -35,7 +35,7 @@ public class ExecutionContext implements AutoCloseable {
         this.executable = executable;
         this.codeContext = codeContext;
         this.output = mode == ExecutionMode.RUN ? new CodeOutputFile(id) : new CodeOutputString();
-        this.printStream = new CodePrintStream(String.format("%s|%s", executable.getId(), id), output.write());
+        this.printStream = new CodePrintStream(output.write(), String.format("%s|%s", executable.getId(), id));
         this.arguments = new Arguments();
         this.conditions = new Conditions(this);
 

@@ -2,13 +2,11 @@ package dev.vml.es.acm.core.code;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.PatternLayout;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.OutputStreamAppender;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.slf4j.LoggerFactory;
 
 /**
@@ -17,25 +15,17 @@ import org.slf4j.LoggerFactory;
  */
 public class CodePrintStream extends PrintStream {
 
-    private final String id;
+    private final Logger logger;
 
-    private final Logger selfLogger;
+    private final CodeLoggerPrinter loggerPrinter;
 
-    private final List<Logger> registeredLoggers;
-
-    private static LoggerContext getLoggerContext() {
-        return (LoggerContext) LoggerFactory.getILoggerFactory();
-    }
-
-    public CodePrintStream(String id, OutputStream output) {
+    public CodePrintStream(OutputStream output, String id) {
         super(output);
-        this.id = id;
-        this.selfLogger = getLoggerContext().getLogger(id);
-        this.registeredLoggers = new CopyOnWriteArrayList<>();
-    }
 
-    public String getAppenderName() {
-        return id;
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        this.loggerPrinter = new CodeLoggerPrinter(loggerContext, output);
+        this.logger = loggerContext.getLogger(id);
     }
 
     public void fromLogs() {
@@ -45,7 +35,7 @@ public class CodePrintStream extends PrintStream {
     }
 
     private void fromSelfLogs() {
-        fromLogger(selfLogger);
+        fromLogger(logger.getName());
     }
 
     public void fromAclLogs() {
@@ -57,10 +47,7 @@ public class CodePrintStream extends PrintStream {
     }
 
     public void fromLogger(String loggerName) {
-        getLoggerContext().getLoggerList().stream()
-                .filter(logger -> logger.getName().contains(loggerName))
-                .filter(logger -> logger.getAppender(getAppenderName()) == null)
-                .forEach(this::fromLogger);
+        loggerPrinter.fromLogger(loggerName);
     }
 
     public void fromLogs(String... loggerNames) {
@@ -73,44 +60,13 @@ public class CodePrintStream extends PrintStream {
         loggerNames.forEach(this::fromLogger);
     }
 
-    public void fromLogger(Logger logger) {
-        if (logger.getAppender(getAppenderName()) == null && !registeredLoggers.contains(logger)) {
-            registerLogger(logger);
-        }
-    }
-
-    private void registerLogger(Logger logger) {
-        registeredLoggers.add(logger);
-
-        OutputStreamAppender<ILoggingEvent> appender = new OutputStreamAppender<>();
-        appender.setName(getAppenderName());
-        appender.setContext(getLoggerContext());
-        appender.setOutputStream(this);
-
-        PatternLayout layout = new PatternLayout();
-        layout.setContext(getLoggerContext());
-        layout.setPattern("%msg%n");
-        layout.start();
-
-        appender.setLayout(layout);
-        appender.start();
-
-        logger.addAppender(appender);
-        logger.setAdditive(true);
-    }
-
-    private void unregisterLoggers() {
-        registeredLoggers.forEach(logger -> logger.detachAppender(getAppenderName()));
-        registeredLoggers.clear();
-    }
-
     @Override
     public void close() {
-        unregisterLoggers();
+        loggerPrinter.disable();
         super.close();
     }
 
     protected Logger getLogger() {
-        return selfLogger;
+        return logger;
     }
 }
