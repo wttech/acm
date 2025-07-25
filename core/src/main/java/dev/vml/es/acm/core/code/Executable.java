@@ -5,6 +5,8 @@ import java.io.Serializable;
 
 public interface Executable extends Serializable {
 
+    String ID_CONSOLE = "console";
+
     String getId();
 
     String getContent() throws AcmException;
