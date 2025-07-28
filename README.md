@@ -301,12 +301,10 @@ void describeRun() {
 }
 
 boolean canRun() {
-    return conditions.idleSelf()
+    return conditions.notRunning()
 }
 
 void doRun() {
-    out.fromLogs()
-
     repo.dryRun(arguments.value("dryRun")) {
         log.info "Creating a folder structure in the temporary directory of the repository."
         def dataFolder = repo.get("/tmp/acm/demo/data").ensureFolder()

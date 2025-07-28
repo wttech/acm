@@ -56,11 +56,29 @@ public class Conditions {
     }
 
     public boolean idle() {
-        return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
+        return noneRunning();
     }
 
     public boolean idleSelf() {
-        return queuedSelfExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
+        return notRunning();
+    }
+
+    public boolean notRunning() {
+        if (executionContext.getExecutor().isLocking()) {
+            return unlockedSelf();
+        }
+        return noneRunning(queuedSelfExecutions());
+    }
+
+    public boolean noneRunning() {
+        if (executionContext.getExecutor().isLocking()) {
+            return unlockedAll();
+        }
+        return noneRunning(queuedExecutions());
+    }
+
+    private boolean noneRunning(Stream<Execution> queuedExecutions) {
+        return queuedExecutions.noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
     }
 
     public Stream<Execution> queuedExecutions() {
@@ -305,11 +323,11 @@ public class Conditions {
 
     // Lock-based
 
-    public boolean unlocked() {
-        return !locked();
+    public boolean unlockedSelf() {
+        return !lockedSelf();
     }
 
-    public boolean locked() {
+    public boolean lockedSelf() {
         return locked(executionContext.getExecutable().getId());
     }
 
@@ -318,7 +336,19 @@ public class Conditions {
     }
 
     public boolean locked(String name) {
+        requireLocking();
         return executionContext.getCodeContext().getLocker().isLocked(name);
+    }
+
+    public boolean unlockedAll() {
+        requireLocking();
+        return !executionContext.getCodeContext().getLocker().anyLocked();
+    }
+
+    private void requireLocking() {
+        if (!executionContext.getExecutor().isLocking()) {
+            throw new IllegalStateException("Executor locking is disabled, so cannot check if lock exists!");
+        }
     }
 
     // Instance-based

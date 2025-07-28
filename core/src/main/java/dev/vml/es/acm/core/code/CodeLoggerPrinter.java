@@ -2,16 +2,21 @@ package dev.vml.es.acm.core.code;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import org.apache.commons.lang3.StringUtils;
-
+import ch.qos.logback.core.AppenderBase;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Set;
 
+import dev.vml.es.acm.core.AcmException;
+import org.apache.commons.lang3.StringUtils;
+
 public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {
+
+    public static final String NAME_ACL = "dev.vml.es.acm.core.acl";
+    public static final String NAME_REPO = "dev.vml.es.acm.core.repo";
+    public static final String[] NAMES = {NAME_ACL, NAME_REPO};
 
     private final LoggerContext loggerContext;
 
@@ -26,6 +31,9 @@ public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {
     }
 
     public void fromLogger(String name) {
+        if (StringUtils.isBlank(name)) {
+            throw new AcmException("Logger name cannot be blank!");
+        }
         enable();
         loggerNames.add(name);
     }

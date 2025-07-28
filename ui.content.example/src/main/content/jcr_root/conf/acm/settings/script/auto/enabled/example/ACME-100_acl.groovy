@@ -1,10 +1,8 @@
 boolean canRun() {
-    return conditions.idleSelf() && conditions.everyDay()
+    return conditions.notRunning() && conditions.everyDay()
 }
 
 void doRun() {
-    out.fromLogs()
-
     def experiences = [
             [
                     name: "gokk",

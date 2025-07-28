@@ -2,10 +2,12 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.util.ResourceSpliterator;
 import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
@@ -22,7 +24,7 @@ public class Locker {
 
     private static final String RESOURCE_TYPE = JcrConstants.NT_UNSTRUCTURED;
 
-    private static final String CREATED_PROP = "created";
+    private static final String LOCKED_PROP = "locked";
 
     private final ResourceResolver resolver;
 
@@ -33,7 +35,7 @@ public class Locker {
     public boolean isLocked(String lockName) {
         String name = normalizeName(lockName);
         Resource lock = getLock(name);
-        return lock != null && lock.isResourceType(RESOURCE_TYPE);
+        return isLock(lock);
     }
 
     public void lock(String lockName) {
@@ -56,7 +58,7 @@ public class Locker {
             }
             Map<String, Object> props = new HashMap<>();
             props.put(JcrConstants.JCR_PRIMARYTYPE, RESOURCE_TYPE);
-            props.put(CREATED_PROP, Calendar.getInstance());
+            props.put(LOCKED_PROP, Calendar.getInstance());
             resolver.create(dirResource, nodeName, props);
             resolver.commit();
             LOG.debug("Created lock '{}'", name);
@@ -91,5 +93,23 @@ public class Locker {
 
     private String normalizeName(String lockName) {
         return StringUtils.removeStart(lockName, AcmConstants.SETTINGS_ROOT + "/");
+    }
+
+    private Stream<Resource> locks() {
+        Resource resource = resolver.getResource(ROOT);
+        if (resource == null) {
+            return Stream.empty();
+        }
+        return ResourceSpliterator.stream(resource).skip(1).filter(this::isLock);
+    }
+
+    private boolean isLock(Resource lock) {
+        return lock != null
+                && lock.isResourceType(RESOURCE_TYPE)
+                && lock.getValueMap().containsKey(LOCKED_PROP);
+    }
+
+    public boolean anyLocked() {
+        return locks().findAny().isPresent();
     }
 }

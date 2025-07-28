@@ -23,8 +23,6 @@ boolean canRun() {
 }
 
 void doRun() {
-    out.fromLogs()
-
     switch (arguments.value("mode")) {
         case "print":
             eachSystemClass { className -> println "${className}" }
