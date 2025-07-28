@@ -341,7 +341,8 @@ public class Conditions {
 
     public boolean locked(String name) {
         if (!executionContext.getExecutor().isLocking()) {
-            throw new IllegalStateException(String.format("Executor locking is disabled, so cannot check lock '%s'!", name));
+            throw new IllegalStateException(
+                    String.format("Executor locking is disabled, so cannot check lock '%s'!", name));
         }
         return executionContext.getCodeContext().getLocker().isLocked(name);
     }

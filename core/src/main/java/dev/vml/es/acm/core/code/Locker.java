@@ -8,7 +8,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
@@ -101,13 +100,13 @@ public class Locker {
         if (resource == null) {
             return Stream.empty();
         }
-        return ResourceSpliterator.stream(resource)
-                .skip(1)
-                .filter(this::isLock);
+        return ResourceSpliterator.stream(resource).skip(1).filter(this::isLock);
     }
 
     private boolean isLock(Resource lock) {
-        return lock != null && lock.isResourceType(RESOURCE_TYPE) && lock.getValueMap().containsKey(LOCKED_PROP);
+        return lock != null
+                && lock.isResourceType(RESOURCE_TYPE)
+                && lock.getValueMap().containsKey(LOCKED_PROP);
     }
 
     public boolean anyLocked() {

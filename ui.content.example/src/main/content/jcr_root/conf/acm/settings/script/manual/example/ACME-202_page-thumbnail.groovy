@@ -16,8 +16,6 @@ boolean canRun() {
 }
 
 void doRun() {
-    out.fromLogs()
-
     def page = repo.get(arguments.value("pagePath"))
 
     def pageThumbnails = page.child("jcr:content/image/file/jcr:content/dam:thumbnails")

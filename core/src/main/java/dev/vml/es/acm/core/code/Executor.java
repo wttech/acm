@@ -36,6 +36,17 @@ public class Executor {
                 description =
                         "Prevents concurrent execution of the same executable. Enable this option and use 'conditions.unlocked()' in your scripts. This is especially useful for scripts running on clustered author instances in AEMaaCS.")
         boolean locking() default true;
+
+        @AttributeDefinition(
+                name = "Log Printing Enabled",
+                description =
+                        "Prints logs in the execution output. Disable if strict control over the script output is needed.")
+        boolean logPrintingEnabled() default true;
+
+        @AttributeDefinition(
+                name = "Log Printing Names",
+                description = "Additional loggers to print logs from (class names or package names)")
+        String[] logPrintingNames() default {CodeLoggerPrinter.NAME_ACL, CodeLoggerPrinter.NAME_REPO};
     }
 
     @Reference
@@ -120,6 +131,10 @@ public class Executor {
                     context.getCodeContext().getLocker().lock(executableLockName(context));
                 }
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
+                if (config.logPrintingEnabled()) {
+                    context.getOut().fromSelfLogger();
+                    context.getOut().fromLoggers(config.logPrintingNames());
+                }
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {

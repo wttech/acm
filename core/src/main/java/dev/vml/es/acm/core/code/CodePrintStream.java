@@ -2,11 +2,9 @@ package dev.vml.es.acm.core.code;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
-
 import org.slf4j.LoggerFactory;
 
 /**
@@ -29,34 +27,33 @@ public class CodePrintStream extends PrintStream {
     }
 
     public void fromLogs() {
-        fromSelfLogs();
-        fromRepoLogs();
-        fromAclLogs();
+        fromLoggers();
     }
 
-    private void fromSelfLogs() {
+    public void fromLoggers() {
+        fromSelfLogger();
+        fromRecommendedLoggers();
+    }
+
+    public void fromSelfLogger() {
         fromLogger(logger.getName());
     }
 
-    public void fromAclLogs() {
-        fromLogger("dev.vml.es.acm.core.acl");
-    }
-
-    public void fromRepoLogs() {
-        fromLogger("dev.vml.es.acm.core.repo");
+    public void fromRecommendedLoggers() {
+        fromLoggers(CodeLoggerPrinter.NAMES);
     }
 
     public void fromLogger(String loggerName) {
         loggerPrinter.fromLogger(loggerName);
     }
 
-    public void fromLogs(String... loggerNames) {
+    public void fromLoggers(String... loggerNames) {
         for (String loggerName : loggerNames) {
             fromLogger(loggerName);
         }
     }
 
-    public void fromLogs(List<String> loggerNames) {
+    public void fromLoggers(List<String> loggerNames) {
         loggerNames.forEach(this::fromLogger);
     }
 

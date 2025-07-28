@@ -3,5 +3,4 @@ name: condition_idle_self
 content: |
   conditions.idleSelf()
 documentation: |
-  Execute the script only if it is not already queued, active, etc.<br>
-  Ensures that the script is not executed in parallel (but other scripts may be).<br>
+  Alias for `conditions.notRunning()`.

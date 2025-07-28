@@ -19,11 +19,10 @@ documentation: |
   }
   
   boolean canRun() {
-    return conditions.idleSelf()
+    return conditions.notRunning()
   }
     
   void doRun() { 
-    out.fromLogs()
     repo.dryRun(arguments.value("dryRun")) {
       repo.get("/content/acme").ensureFolder()
     }
