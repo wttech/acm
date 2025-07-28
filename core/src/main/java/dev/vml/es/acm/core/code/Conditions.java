@@ -323,10 +323,6 @@ public class Conditions {
 
     // Lock-based
 
-    public boolean unlockedAll() {
-        return !executionContext.getCodeContext().getLocker().anyLocked();
-    }
-
     public boolean unlockedSelf() {
         return !lockedSelf();
     }
@@ -340,11 +336,19 @@ public class Conditions {
     }
 
     public boolean locked(String name) {
-        if (!executionContext.getExecutor().isLocking()) {
-            throw new IllegalStateException(
-                    String.format("Executor locking is disabled, so cannot check lock '%s'!", name));
-        }
+        requireLocking();
         return executionContext.getCodeContext().getLocker().isLocked(name);
+    }
+
+    public boolean unlockedAll() {
+        requireLocking();
+        return !executionContext.getCodeContext().getLocker().anyLocked();
+    }
+
+    private void requireLocking() {
+        if (!executionContext.getExecutor().isLocking()) {
+            throw new IllegalStateException("Executor locking is disabled, so cannot check if lock exists!");
+        }
     }
 
     // Instance-based
