@@ -159,4 +159,16 @@ public class Executor {
             return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
         }
     }
+
+    public boolean isDebug() {
+        return config.debug();
+    }
+
+    public boolean isHistory() {
+        return config.history();
+    }
+
+    public boolean isLocking() {
+        return config.locking();
+    }
 }

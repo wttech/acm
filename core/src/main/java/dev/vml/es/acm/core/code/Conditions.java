@@ -56,11 +56,29 @@ public class Conditions {
     }
 
     public boolean idle() {
-        return queuedExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
+        return noneRunning();
     }
 
     public boolean idleSelf() {
-        return queuedSelfExecutions().noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
+        return notRunning();
+    }
+
+    public boolean notRunning() {
+        if (executionContext.getExecutor().isLocking()) {
+            return unlockedSelf();
+        }
+        return noneRunning(queuedSelfExecutions());
+    }
+
+    public boolean noneRunning() {
+        if (executionContext.getExecutor().isLocking()) {
+            return unlockedAll();
+        }
+        return noneRunning(queuedExecutions());
+    }
+
+    private boolean noneRunning(Stream<Execution> queuedExecutions) {
+        return queuedExecutions.noneMatch(e -> e.getStatus() == ExecutionStatus.RUNNING);
     }
 
     public Stream<Execution> queuedExecutions() {
@@ -305,11 +323,15 @@ public class Conditions {
 
     // Lock-based
 
-    public boolean unlocked() {
-        return !locked();
+    public boolean unlockedAll() {
+        return !executionContext.getCodeContext().getLocker().anyLocked();
     }
 
-    public boolean locked() {
+    public boolean unlockedSelf() {
+        return !lockedSelf();
+    }
+
+    public boolean lockedSelf() {
         return locked(executionContext.getExecutable().getId());
     }
 
