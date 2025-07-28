@@ -34,7 +34,7 @@ public class Executor {
         @AttributeDefinition(
                 name = "Locking",
                 description =
-                        "Prevents concurrent execution of the same executable. Enable this option and use 'conditions.unlocked()' in your scripts. This is especially useful for scripts running on clustered author instances in AEMaaCS.")
+                        "Prevents concurrent execution of the same executable. Especially useful for scripts running on clustered author instances on AEMaaCS. Use together with 'conditions.notRunning()' or 'conditions.noneRunning() in the script.")
         boolean locking() default true;
 
         @AttributeDefinition(
