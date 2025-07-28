@@ -4,12 +4,11 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+import dev.vml.es.acm.core.AcmException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Set;
-
-import dev.vml.es.acm.core.AcmException;
 import org.apache.commons.lang3.StringUtils;
 
 public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {

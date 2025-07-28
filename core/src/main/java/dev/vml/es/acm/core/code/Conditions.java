@@ -2,12 +2,15 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.InstanceType;
+import dev.vml.es.acm.core.script.ScriptRepository;
 import dev.vml.es.acm.core.script.ScriptScheduler;
+import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.util.DateUtils;
 import java.time.*;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.stream.Stream;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class Conditions {
@@ -406,6 +409,32 @@ public class Conditions {
 
     public boolean isInstanceCloudSdk() {
         return getInstanceInfo().getType() == InstanceType.CLOUD_SDK;
+    }
+
+    // Executable-based
+
+    public boolean isConsole() {
+        return Executable.ID_CONSOLE.equals(executableId());
+    }
+
+    public boolean isAutomaticScript() {
+        return StringUtils.startsWith(executableId(), ScriptType.ENABLED.root() + "/");
+    }
+
+    public boolean isManualScript() {
+        return StringUtils.startsWith(executableId(), ScriptType.MANUAL.root() + "/");
+    }
+
+    public boolean isScript() {
+        return StringUtils.startsWith(executableId(), ScriptRepository.ROOT + "/");
+    }
+
+    public boolean isExecutable(String idPattern) {
+        return FilenameUtils.wildcardMatch(executableId(), idPattern);
+    }
+
+    public String executableId() {
+        return executionContext.getExecutable().getId();
     }
 
     // Retry-based
