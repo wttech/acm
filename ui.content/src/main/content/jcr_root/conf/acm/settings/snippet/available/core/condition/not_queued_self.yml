@@ -1,6 +1,6 @@
 group: Condition
-name: condition_idle_self
+name: condition_not_queued_self
 content: |
-  conditions.idleSelf()
+  conditions.notQueuedSelf()
 documentation: |
   Similar to `conditions.notRunningSelf()` but also checks if the script is not even queued for execution.

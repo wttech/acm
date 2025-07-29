@@ -1,5 +1,5 @@
 boolean canRun() {
-    return conditions.idleSelf() && conditions.once()
+    return conditions.notQueuedSelf() && conditions.once()
 }
 
 void doRun() {

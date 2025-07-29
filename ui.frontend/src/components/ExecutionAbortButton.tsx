@@ -4,7 +4,7 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import StopCircle from '@spectrum-icons/workflow/StopCircle';
 import React, { useState } from 'react';
 import { useDeepCompareEffect } from 'react-use';
-import { appState } from '../hooks/app.ts';
+import { useAppState } from '../hooks/app.ts';
 import { pollExecutionPending } from '../hooks/execution';
 import { apiRequest } from '../utils/api';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
@@ -16,6 +16,8 @@ interface ExecutionAbortButtonProps {
 }
 
 const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, onComplete }) => {
+  const appState = useAppState();
+
   const [showDialog, setShowDialog] = useState(false);
   const [isAborting, setIsAborting] = useState(false);
 
@@ -39,7 +41,7 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
         method: 'delete',
       });
 
-      const queuedExecution = await pollExecutionPending(execution.id, appState.value.spaSettings.executionPollInterval);
+      const queuedExecution = await pollExecutionPending(execution.id, appState.spaSettings.executionPollInterval);
       if (queuedExecution?.status === ExecutionStatus.ABORTED) {
         ToastQueue.positive('Code execution aborted successfully!', {
           timeout: ToastTimeoutQuick,

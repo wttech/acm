@@ -11,7 +11,7 @@ import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
-import { appState } from '../hooks/app';
+import { useAppState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
 import { apiRequest, toastRequest } from '../utils/api';
@@ -20,11 +20,13 @@ import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { StorageKeys } from '../utils/storage';
 
 const ConsolePage = () => {
+  const appState = useAppState();
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
   const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
   const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
-  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id || null, appState.value.spaSettings.executionPollInterval);
+
+  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id, appState.spaSettings.executionPollInterval);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
 
   useEffect(() => {
@@ -56,6 +58,12 @@ const ConsolePage = () => {
   useEffect(() => {
     setExecution(parseExecution);
   }, [parseExecution, setExecution]);
+
+  useEffect(() => {
+    if (!isExecutionPending(queuedExecution?.status)) {
+      setExecuting(false);
+    }
+  }, [queuedExecution, setExecuting]);
 
   const onDescribeFailed = (description: Description) => {
     console.error('Code description failed:', description);

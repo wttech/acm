@@ -1,10 +1,7 @@
 package dev.vml.es.acm.core.script;
 
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.code.ExecutionContextOptions;
-import dev.vml.es.acm.core.code.ExecutionMode;
-import dev.vml.es.acm.core.code.ExecutionQueue;
-import dev.vml.es.acm.core.code.Executor;
+import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.util.ResourceUtils;
@@ -114,12 +111,34 @@ public class ScriptScheduler implements Runnable {
             scriptRepository.clean();
 
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
-                queue.submit(contextOptions, script);
+                if (checkScript(script, resourceResolver)) {
+                    submitScript(script, contextOptions);
+                }
             });
 
             runCount.incrementAndGet();
         } catch (Exception e) {
-            LOG.error("Failed to access repository while scheduling enabled scripts to execution queue", e);
+            LOG.error("Cannot access repository while scheduling enabled scripts to execution queue!", e);
+        }
+    }
+
+    private boolean checkScript(Script script, ResourceResolver resourceResolver) {
+        try (ExecutionContext context =
+                     executor.createContext(ExecutionId.generate(), ExecutionMode.CHECK, script, resourceResolver)) {
+            Execution execution = executor.execute(context);
+            LOG.debug("Script checked '{}'", execution);
+            return execution.getStatus() != ExecutionStatus.SKIPPED;
+        } catch (Exception e) {
+            LOG.error("Cannot check script '{}' while scheduling to execution queue!", script.getId(), e);
+            return false;
+        }
+    }
+
+    private void submitScript(Script script, ExecutionContextOptions contextOptions) {
+        try {
+            queue.submit(contextOptions, script);
+        } catch (Exception e) {
+            LOG.error("Cannot submit script '{}' to execution queue!", script.getId(), e);
         }
     }
 

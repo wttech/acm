@@ -61,25 +61,26 @@ public class Conditions {
         return executionHistory.findAll(query);
     }
 
-    public boolean idleSelf() {
-        if (executionContext.getExecutor().isLocking() && lockedSelf()) {
-            return false;
-        }
-        return !queuedSelfExecutions().findAny().isPresent();
-    }
-
-    public boolean notRunningSelf() {
-        if (executionContext.getExecutor().isLocking() && lockedSelf()) {
-            return false;
-        }
-        return noneRunning(queuedSelfExecutions());
-    }
-
     public boolean idle() {
+        return notQueued();
+    }
+
+    public boolean idleSelf() {
+        return notQueuedSelf();
+    }
+
+    public boolean notQueued() {
         if (executionContext.getExecutor().isLocking() && lockedAny()) {
             return false;
         }
         return !queuedExecutions().findAny().isPresent();
+    }
+
+    public boolean notQueuedSelf() {
+        if (executionContext.getExecutor().isLocking() && lockedSelf()) {
+            return false;
+        }
+        return !queuedSelfExecutions().findAny().isPresent();
     }
 
     public boolean notRunning() {
@@ -87,6 +88,13 @@ public class Conditions {
             return false;
         }
         return noneRunning(queuedExecutions());
+    }
+
+    public boolean notRunningSelf() {
+        if (executionContext.getExecutor().isLocking() && lockedAny()) {
+            return false;
+        }
+        return noneRunning(queuedSelfExecutions());
     }
 
     private boolean noneRunning(Stream<Execution> queuedExecutions) {
@@ -627,7 +635,7 @@ public class Conditions {
         if (count < 1) {
             throw new IllegalArgumentException("Retry count must be greater than zero!");
         }
-        if (!idleSelf()) {
+        if (!notQueuedSelf()) {
             return false;
         }
         Execution passedExecution = passedExecution();

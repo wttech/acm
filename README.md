@@ -250,7 +250,7 @@ The following example demonstrates how to create a user and a group, assign perm
 
 ```groovy
 boolean canRun() {
-    return conditions.idleSelf() && conditions.everyHour()
+    return conditions.notQueuedSelf() && conditions.everyHour()
 }
 
 void doRun() {

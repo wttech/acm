@@ -82,7 +82,7 @@ public class Executor {
             return execute(executionContext);
         } catch (LoginException e) {
             throw new AcmException(
-                    String.format("Cannot access repository while executing '%s'", executable.getId()), e);
+                    String.format("Cannot access repository while executing '%s'!", executable.getId()), e);
         }
     }
 
