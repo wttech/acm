@@ -114,12 +114,31 @@ public class ScriptScheduler implements Runnable {
             scriptRepository.clean();
 
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
-                queue.submit(contextOptions, script);
+                if (checkScript(script, contextOptions)) {
+                    queueScript(script, contextOptions);
+                }
             });
 
             runCount.incrementAndGet();
         } catch (Exception e) {
-            LOG.error("Failed to access repository while scheduling enabled scripts to execution queue", e);
+            LOG.error("Failed to access repository while scheduling enabled scripts to execution queue!", e);
+        }
+    }
+
+    private boolean checkScript(Script script, ExecutionContextOptions contextOptions) {
+        try {
+            return executor.check(script, contextOptions);
+        } catch (Exception e) {
+            LOG.error("Failed to check if script '{}' could be queued!", script.getId(), e);
+            return false;
+        }
+    }
+
+    private void queueScript(Script script, ExecutionContextOptions contextOptions) {
+        try {
+            queue.submit(contextOptions, script);
+        } catch (Exception e) {
+            LOG.error("Failed while submitting script '{}' to execution queue!", script.getId(), e);
         }
     }
 

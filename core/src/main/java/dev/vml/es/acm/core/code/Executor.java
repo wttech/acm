@@ -82,7 +82,7 @@ public class Executor {
             return execute(executionContext);
         } catch (LoginException e) {
             throw new AcmException(
-                    String.format("Cannot access repository while executing '%s'", executable.getId()), e);
+                    String.format("Cannot access repository while executing '%s'!", executable.getId()), e);
         }
     }
 
@@ -172,6 +172,27 @@ public class Executor {
         } catch (Throwable e) {
             execution.error(e);
             return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
+        }
+    }
+
+    public boolean check(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
+        try (ResourceResolver resourceResolver =
+                        ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
+                ExecutionContext context = createContext(
+                        ExecutionId.generate(), ExecutionMode.CHECK, executable, resourceResolver)) {
+            return check(context);
+        } catch (LoginException e) {
+            throw new AcmException(
+                    String.format("Cannot access repository while checking executable '%s'!", executable.getId()), e);
+        }
+    }
+
+    public boolean check(ExecutionContext context) {
+        try {
+            ContentScript contentScript = new ContentScript(context);
+            return contentScript.canRun();
+        } catch (Throwable e) {
+            throw new AcmException(String.format("Cannot check executable '%s'!", context.getExecutable().getId()), e);
         }
     }
 

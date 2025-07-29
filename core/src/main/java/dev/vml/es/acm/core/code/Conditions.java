@@ -61,21 +61,22 @@ public class Conditions {
         return executionHistory.findAll(query);
     }
 
-    public boolean idleSelf() {
-        if (executionContext.getExecutor().isLocking() && lockedSelf()) {
-            return false;
-        }
-        return !queuedSelfExecutions().findAny().isPresent();
+    public boolean idle() {
+        return notQueued();
     }
 
-    public boolean notRunningSelf() {
+    public boolean idleSelf() {
+        return notQueuedSelf();
+    }
+
+    public boolean notQueuedSelf() {
         if (executionContext.getExecutor().isLocking() && lockedSelf()) {
             return false;
         }
         return noneRunning(queuedSelfExecutions());
     }
 
-    public boolean idle() {
+    public boolean notQueued() {
         if (executionContext.getExecutor().isLocking() && lockedAny()) {
             return false;
         }
