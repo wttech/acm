@@ -300,7 +300,7 @@ public class Conditions {
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
         }
-        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+        return !executedInRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean everyMinuteInRange(int startSecond, int endSecond) {
@@ -311,7 +311,7 @@ public class Conditions {
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
         }
-        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+        return !executedInRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean everyHourInRange() {
@@ -322,7 +322,7 @@ public class Conditions {
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
         }
-        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+        return !executedInRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean everyHourInRange(int startMinute, int endMinute) {
@@ -333,7 +333,7 @@ public class Conditions {
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
         }
-        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+        return !executedInRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean everyDayInRange() {
@@ -346,7 +346,7 @@ public class Conditions {
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
             return false;
         }
-        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+        return !executedInRange(LocalDate.now(), startTime, endTime);
     }
 
     public boolean everyDayInRange(String startTime, String endTime) {
@@ -366,7 +366,7 @@ public class Conditions {
         LocalDate today = LocalDate.now();
         LocalDate startOfWeek = today.with(DayOfWeek.MONDAY);
         LocalDate endOfWeek = today.with(DayOfWeek.SUNDAY);
-        return !executedInTimeRange(startOfWeek, startTime, endOfWeek, endTime);
+        return !executedInRange(startOfWeek, startTime, endOfWeek, endTime);
     }
 
     public boolean everyWeekInRange(String startTime, String endTime) {
@@ -386,7 +386,7 @@ public class Conditions {
         LocalDate today = LocalDate.now();
         LocalDate startOfMonth = today.withDayOfMonth(1);
         LocalDate endOfMonth = today.withDayOfMonth(today.lengthOfMonth());
-        return !executedInTimeRange(startOfMonth, startTime, endOfMonth, endTime);
+        return !executedInRange(startOfMonth, startTime, endOfMonth, endTime);
     }
 
     public boolean everyMonthInRange(String startTime, String endTime) {
@@ -406,18 +406,18 @@ public class Conditions {
         LocalDate today = LocalDate.now();
         LocalDate startOfYear = today.withDayOfYear(1);
         LocalDate endOfYear = today.withDayOfYear(today.lengthOfYear());
-        return !executedInTimeRange(startOfYear, startTime, endOfYear, endTime);
+        return !executedInRange(startOfYear, startTime, endOfYear, endTime);
     }
 
     public boolean everyYearInRange(String startTime, String endTime) {
         return everyYearInRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
     }
 
-    public boolean executedInTimeRange(LocalDate date, LocalTime startTime, LocalTime endTime) {
-        return executedInTimeRange(date, startTime, date, endTime);
+    public boolean executedInRange(LocalDate date, LocalTime startTime, LocalTime endTime) {
+        return executedInRange(date, startTime, date, endTime);
     }
 
-    public boolean executedInTimeRange(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
+    public boolean executedInRange(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
         ExecutionQuery query = new ExecutionQuery();
         query.setExecutableId(executionContext.getExecutable().getId());
         query.setStartDate(Date.from(
@@ -429,11 +429,11 @@ public class Conditions {
         return executionInTimeRange.isPresent();
     }
 
-    public boolean executedInTimeRange(String startDateTime, String endDateTime) {
-        return executedInTimeRange(LocalDateTime.parse(startDateTime), LocalDateTime.parse(endDateTime));
+    public boolean executedInRange(String startDateTime, String endDateTime) {
+        return executedInRange(LocalDateTime.parse(startDateTime), LocalDateTime.parse(endDateTime));
     }
 
-    public boolean executedInTimeRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    public boolean executedInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
         return passedExecutionsInTimeRange(startDateTime, endDateTime).findAny().isPresent();
     }
 
