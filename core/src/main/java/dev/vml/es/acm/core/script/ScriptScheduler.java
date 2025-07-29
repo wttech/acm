@@ -118,17 +118,18 @@ public class ScriptScheduler implements Runnable {
 
             runCount.incrementAndGet();
         } catch (Exception e) {
-            LOG.error("Failed to access repository while scheduling enabled scripts to execution queue!", e);
+            LOG.error("Cannot access repository while scheduling enabled scripts to execution queue!", e);
         }
     }
 
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
         try (ExecutionContext context =
                      executor.createContext(ExecutionId.generate(), ExecutionMode.CHECK, script, resourceResolver)) {
-            Execution checkExecution = executor.execute(context);
-            return checkExecution.getStatus() != ExecutionStatus.SKIPPED;
+            Execution execution = executor.execute(context);
+            LOG.debug("Script checked '{}'", execution);
+            return execution.getStatus() != ExecutionStatus.SKIPPED;
         } catch (Exception e) {
-            LOG.error("Failed to check script '{}' while scheduling to execution queue!", script.getId(), e);
+            LOG.error("Cannot check script '{}' while scheduling to execution queue!", script.getId(), e);
             return false;
         }
     }
@@ -137,10 +138,9 @@ public class ScriptScheduler implements Runnable {
         try {
             queue.submit(contextOptions, script);
         } catch (Exception e) {
-            LOG.error("Failed while submitting script '{}' to execution queue!", script.getId(), e);
+            LOG.error("Cannot submit script '{}' to execution queue!", script.getId(), e);
         }
     }
-
 
     public long getIntervalMillis() {
         return this.intervalMillis;
