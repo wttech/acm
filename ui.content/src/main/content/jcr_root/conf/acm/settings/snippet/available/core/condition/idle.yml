@@ -3,4 +3,4 @@ name: condition_idle
 content: |
   conditions.idle()
 documentation: |
-  Alias for `conditions.noneRunning()`.
+  Similar to `conditions.notRunning()` but also checks if none of the scripts are queued for execution.

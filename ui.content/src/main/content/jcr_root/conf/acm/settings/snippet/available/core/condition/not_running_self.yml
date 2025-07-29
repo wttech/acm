@@ -1,7 +1,7 @@
 group: Condition
-name: condition_not_running
+name: condition_not_running_self
 content: |
-  conditions.notRunning()
+  conditions.notRunningSelf()
 documentation: |
   Execute the script only if it is not already running.
   

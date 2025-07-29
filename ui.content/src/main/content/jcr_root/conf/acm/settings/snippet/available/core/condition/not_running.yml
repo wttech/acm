@@ -1,7 +1,7 @@
 group: Condition
-name: condition_none_running
+name: condition_not_running
 content: |
-  conditions.noneRunning()
+  conditions.notRunning()
 documentation: |
   Execute the script only if none of the scripts are running.
   

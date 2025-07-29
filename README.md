@@ -301,7 +301,7 @@ void describeRun() {
 }
 
 boolean canRun() {
-    return conditions.notRunning()
+    return conditions.notRunningSelf()
 }
 
 void doRun() {
