@@ -9,6 +9,7 @@ documentation: |
   
   For example:
   ```groovy
-    conditions.everyWeek()
-    conditions.everyWeek("Wednesday", "14:00")
+  conditions.everyWeekInRange()
+  conditions.everyWeekStart()
+  conditions.everyWeekAt("Wednesday", "14:00")
   ```

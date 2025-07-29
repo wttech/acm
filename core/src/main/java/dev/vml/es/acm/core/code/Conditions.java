@@ -193,85 +193,85 @@ public class Conditions {
         return LocalTime.of(23, 59, 59, 999999999);
     }
 
-    public boolean everyMinute() {
-        return everyMinute(0);
+    public boolean everyMinuteStart() {
+        return everyMinuteAt(0);
     }
 
-    public boolean everyMinute(int second) {
+    public boolean everyMinuteAt(int second) {
         LocalTime now = LocalTime.now();
         LocalDateTime scheduledDateTime =
                 LocalDate.now().atTime(now.withSecond(second).withNano(0));
         return isDate(scheduledDateTime);
     }
 
-    public boolean everyHour() {
-        return everyHour(0);
+    public boolean everyHourStart() {
+        return everyHourAt(0);
     }
 
-    public boolean everyHour(int minute) {
+    public boolean everyHourAt(int minute) {
         LocalTime now = LocalTime.now();
         LocalDateTime scheduledDateTime =
                 LocalDate.now().atTime(now.withMinute(minute).withSecond(0).withNano(0));
         return isDate(scheduledDateTime);
     }
 
-    public boolean everyDay() {
-        return everyDay(LocalTime.MIDNIGHT);
+    public boolean everyDayStart() {
+        return everyDayAt(LocalTime.MIDNIGHT);
     }
 
-    public boolean everyDay(LocalTime time) {
+    public boolean everyDayAt(LocalTime time) {
         LocalDateTime scheduledDateTime = LocalDate.now().atTime(time);
         return isDate(scheduledDateTime);
     }
 
-    public boolean everyDay(String time) {
-        return everyDay(parseTime(time));
+    public boolean everyDayAt(String time) {
+        return everyDayAt(parseTime(time));
     }
 
-    public boolean everyWeek() {
-        return everyWeek(DayOfWeek.MONDAY, LocalTime.MIDNIGHT);
+    public boolean everyWeekStart() {
+        return everyWeekAt(DayOfWeek.MONDAY, LocalTime.MIDNIGHT);
     }
 
-    public boolean everyWeek(DayOfWeek dayOfWeek, LocalTime time) {
+    public boolean everyWeekAt(DayOfWeek dayOfWeek, LocalTime time) {
         LocalDate startOfWeek = LocalDate.now().with(dayOfWeek);
         LocalDateTime scheduledDateTime = startOfWeek.atTime(time);
         return isDate(scheduledDateTime);
     }
 
-    public boolean everyWeek(String dayOfWeek, String time) {
-        return everyWeek(parseDayOfWeek(dayOfWeek), parseTime(time));
+    public boolean everyWeekAt(String dayOfWeek, String time) {
+        return everyWeekAt(parseDayOfWeek(dayOfWeek), parseTime(time));
     }
 
-    public boolean everyMonth() {
-        return everyMonth(1, LocalTime.MIDNIGHT);
+    public boolean everyMonthStart() {
+        return everyMonthAt(1, LocalTime.MIDNIGHT);
     }
 
-    public boolean everyMonth(int dayOfMonth) {
-        return everyMonth(dayOfMonth, LocalTime.MIDNIGHT);
+    public boolean everyMonthAt(int dayOfMonth) {
+        return everyMonthAt(dayOfMonth, LocalTime.MIDNIGHT);
     }
 
-    public boolean everyMonth(int dayOfMonth, LocalTime time) {
+    public boolean everyMonthAt(int dayOfMonth, LocalTime time) {
         LocalDate startOfMonth = LocalDate.now().withDayOfMonth(dayOfMonth);
         LocalDateTime scheduledDateTime = startOfMonth.atTime(time);
         return isDate(scheduledDateTime);
     }
 
-    public boolean everyMonth(int dayOfMonth, String time) {
-        return everyMonth(dayOfMonth, parseTime(time));
+    public boolean everyMonthAt(int dayOfMonth, String time) {
+        return everyMonthAt(dayOfMonth, parseTime(time));
     }
 
-    public boolean everyYear() {
-        return everyYear(Month.JANUARY, 1, LocalTime.MIDNIGHT);
+    public boolean everyYearStart() {
+        return everyYearAt(Month.JANUARY, 1, LocalTime.MIDNIGHT);
     }
 
-    public boolean everyYear(Month month, int dayOfMonth, LocalTime time) {
+    public boolean everyYearAt(Month month, int dayOfMonth, LocalTime time) {
         LocalDate targetDay = LocalDate.now().withMonth(month.getValue()).withDayOfMonth(dayOfMonth);
         LocalDateTime scheduledDateTime = targetDay.atTime(time);
         return isDate(scheduledDateTime);
     }
 
-    public boolean everyYear(String month, int dayOfMonth, String time) {
-        return everyYear(parseMonth(month), dayOfMonth, parseTime(time));
+    public boolean everyYearAt(String month, int dayOfMonth, String time) {
+        return everyYearAt(parseMonth(month), dayOfMonth, parseTime(time));
     }
 
     private LocalTime parseTime(String time) {
