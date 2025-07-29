@@ -1,9 +1,9 @@
 group: Condition
-name: condition_not_running
+name: condition_none_running
 content: |
-  conditions.notRunning()
+  conditions.noneRunning()
 documentation: |
-  Execute the script only if it is not already running.
+  Execute the script only if none of the scripts are running.
   
-  Ensures that the same script is not executed in parallel (but other scripts may be).
-  This condition guarantees that on cluster nodes only one instance of this script is running at a time.
+  Ensures that the script is not executed in parallel (including other scripts).
+  This condition guarantees that on cluster nodes only one instance of any script is running at a time.

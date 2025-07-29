@@ -61,24 +61,30 @@ public class Conditions {
         return executionHistory.findAll(query);
     }
 
-    public boolean idle() {
-        return noneRunning();
-    }
-
     public boolean idleSelf() {
-        return notRunning();
+        if (executionContext.getExecutor().isLocking() && lockedSelf()) {
+            return false;
+        }
+        return !queuedSelfExecutions().findAny().isPresent();
     }
 
-    public boolean notRunning() {
-        if (executionContext.getExecutor().isLocking()) {
-            return unlockedSelf();
+    public boolean notRunningSelf() {
+        if (executionContext.getExecutor().isLocking() && lockedSelf()) {
+            return false;
         }
         return noneRunning(queuedSelfExecutions());
     }
 
-    public boolean noneRunning() {
-        if (executionContext.getExecutor().isLocking()) {
-            return unlockedAll();
+    public boolean idle() {
+        if (executionContext.getExecutor().isLocking() && lockedAny()) {
+            return false;
+        }
+        return !queuedExecutions().findAny().isPresent();
+    }
+
+    public boolean notRunning() {
+        if (executionContext.getExecutor().isLocking() && lockedAny()) {
+            return false;
         }
         return noneRunning(queuedExecutions());
     }
@@ -504,6 +510,10 @@ public class Conditions {
         return !lockedSelf();
     }
 
+    public boolean unlockedAll() {
+        return !lockedAny();
+    }
+
     public boolean lockedSelf() {
         return locked(executionContext.getExecutable().getId());
     }
@@ -517,9 +527,9 @@ public class Conditions {
         return executionContext.getCodeContext().getLocker().isLocked(name);
     }
 
-    public boolean unlockedAll() {
+    public boolean lockedAny() {
         requireLocking();
-        return !executionContext.getCodeContext().getLocker().anyLocked();
+        return executionContext.getCodeContext().getLocker().anyLocked();
     }
 
     private void requireLocking() {

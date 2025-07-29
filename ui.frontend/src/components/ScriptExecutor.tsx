@@ -21,6 +21,7 @@ import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
+import UserInfo from "./UserInfo";
 
 const ScriptExecutor = () => {
   const prefix = isProduction() ? '' : 'http://localhost:4502';
@@ -159,18 +160,10 @@ const ScriptExecutor = () => {
           {executions.map((execution, index) => (
             <Row key={execution.id}>
               <Cell>{index + 1}</Cell>
-              <Cell>
-                <ExecutableIdValue id={execution.executableId} />
-              </Cell>
-              <Cell>
-                <Text>{execution.userId}</Text>
-              </Cell>
-              <Cell>
-                <DateExplained value={execution.startDate} />
-              </Cell>
-              <Cell>
-                <ExecutionStatusBadge value={execution.status} />
-              </Cell>
+              <Cell><ExecutableIdValue id={execution.executableId} /></Cell>
+              <Cell><UserInfo id={execution.userId} /></Cell>
+              <Cell><DateExplained value={execution.startDate} /></Cell>
+              <Cell><ExecutionStatusBadge value={execution.status} /></Cell>
             </Row>
           ))}
         </TableBody>
