@@ -635,7 +635,7 @@ public class Conditions {
         if (count < 1) {
             throw new IllegalArgumentException("Retry count must be greater than zero!");
         }
-        if (!idleSelf()) {
+        if (!notQueuedSelf()) {
             return false;
         }
         Execution passedExecution = passedExecution();

@@ -10,7 +10,7 @@ documentation: |
   For example:
   ```groovy
   boolean canRun() {
-    return conditions.idleSelf() && (conditions.contentChanged() || conditions.retryIfInstanceChanged())
+    return conditions.notQueuedSelf() && (conditions.contentChanged() || conditions.retryIfInstanceChanged())
   }
   
   void doRun() {
