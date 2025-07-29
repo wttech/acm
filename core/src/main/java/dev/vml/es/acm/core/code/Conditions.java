@@ -69,13 +69,6 @@ public class Conditions {
         return notQueuedSelf();
     }
 
-    public boolean notQueuedSelf() {
-        if (executionContext.getExecutor().isLocking() && lockedSelf()) {
-            return false;
-        }
-        return noneRunning(queuedSelfExecutions());
-    }
-
     public boolean notQueued() {
         if (executionContext.getExecutor().isLocking() && lockedAny()) {
             return false;
@@ -83,11 +76,25 @@ public class Conditions {
         return !queuedExecutions().findAny().isPresent();
     }
 
+    public boolean notQueuedSelf() {
+        if (executionContext.getExecutor().isLocking() && lockedSelf()) {
+            return false;
+        }
+        return !queuedSelfExecutions().findAny().isPresent();
+    }
+
     public boolean notRunning() {
         if (executionContext.getExecutor().isLocking() && lockedAny()) {
             return false;
         }
         return noneRunning(queuedExecutions());
+    }
+
+    public boolean notRunningSelf() {
+        if (executionContext.getExecutor().isLocking() && lockedAny()) {
+            return false;
+        }
+        return noneRunning(queuedSelfExecutions());
     }
 
     private boolean noneRunning(Stream<Execution> queuedExecutions) {

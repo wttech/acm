@@ -1,5 +1,5 @@
 boolean canRun() {
-    return conditions.idleSelf() && conditions.everyDayAt("07:45")
+    return conditions.notQueuedSelf() && conditions.everyDayAt("07:45")
 }
 
 void doRun() {
