@@ -40,6 +40,9 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
     @Reference
     private ExecutionQueue executionQueue;
 
+    @Reference
+    private Executor executor;
+
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
@@ -50,15 +53,26 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            ExecutionContextOptions contextOptions = new ExecutionContextOptions(
-                    ExecutionMode.RUN, request.getResourceResolver().getUserID());
             Code code = input.getCode();
-            Execution execution = executionQueue.submit(contextOptions, code).orElse(null);
-            if (execution == null) {
-                respondJson(response, error("Code execution cannot be queued!"));
+
+            try (ExecutionContext context =
+                         executor.createContext(ExecutionId.generate(), ExecutionMode.CHECK, input.getCode(), request.getResourceResolver())) {
+                Execution checkExecution = executor.execute(context);
+                if (checkExecution.getStatus() == ExecutionStatus.SKIPPED) {
+                    QueueOutput output = new QueueOutput(Collections.singletonList(checkExecution));
+                    respondJson(response, ok(String.format("Code from '%s' skipped execution", code.getId()), output));
+                    return;
+                }
+            } catch (Exception e) {
+                LOG.error("Code execution cannot be checked!", e);
+                respondJson(response, badRequest(String.format("Code execution cannot be checked! %s", e.getMessage()).trim()));
                 return;
             }
 
+            ExecutionContextOptions contextOptions = new ExecutionContextOptions(
+                    ExecutionMode.RUN, request.getResourceResolver().getUserID());
+
+            Execution execution = executionQueue.submit(contextOptions, code);
             QueueOutput output = new QueueOutput(Collections.singletonList(execution));
             respondJson(
                     response,

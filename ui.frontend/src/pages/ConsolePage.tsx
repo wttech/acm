@@ -24,6 +24,8 @@ const ConsolePage = () => {
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
   const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
   const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
+
+  // TODO do not poll if execution is initially SKIPPED or FAILED etc
   const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id || null, appState.value.spaSettings.executionPollInterval);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
 

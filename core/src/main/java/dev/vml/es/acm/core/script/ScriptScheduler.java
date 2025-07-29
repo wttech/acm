@@ -1,10 +1,7 @@
 package dev.vml.es.acm.core.script;
 
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.code.ExecutionContextOptions;
-import dev.vml.es.acm.core.code.ExecutionMode;
-import dev.vml.es.acm.core.code.ExecutionQueue;
-import dev.vml.es.acm.core.code.Executor;
+import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.util.ResourceUtils;
@@ -114,8 +111,8 @@ public class ScriptScheduler implements Runnable {
             scriptRepository.clean();
 
             scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
-                if (checkScript(script, contextOptions)) {
-                    queueScript(script, contextOptions);
+                if (checkScript(script, resourceResolver)) {
+                    submitScript(script, contextOptions);
                 }
             });
 
@@ -125,22 +122,25 @@ public class ScriptScheduler implements Runnable {
         }
     }
 
-    private boolean checkScript(Script script, ExecutionContextOptions contextOptions) {
-        try {
-            return executor.check(script, contextOptions);
+    private boolean checkScript(Script script, ResourceResolver resourceResolver) {
+        try (ExecutionContext context =
+                     executor.createContext(ExecutionId.generate(), ExecutionMode.CHECK, script, resourceResolver)) {
+            Execution checkExecution = executor.execute(context);
+            return checkExecution.getStatus() != ExecutionStatus.SKIPPED;
         } catch (Exception e) {
-            LOG.error("Failed to check if script '{}' could be queued!", script.getId(), e);
+            LOG.error("Failed to check script '{}' while scheduling to execution queue!", script.getId(), e);
             return false;
         }
     }
 
-    private void queueScript(Script script, ExecutionContextOptions contextOptions) {
+    private void submitScript(Script script, ExecutionContextOptions contextOptions) {
         try {
             queue.submit(contextOptions, script);
         } catch (Exception e) {
             LOG.error("Failed while submitting script '{}' to execution queue!", script.getId(), e);
         }
     }
+
 
     public long getIntervalMillis() {
         return this.intervalMillis;

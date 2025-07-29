@@ -67,7 +67,7 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    public Optional<Execution> submit(ExecutionContextOptions contextOptions, Executable executable)
+    public Execution submit(ExecutionContextOptions contextOptions, Executable executable)
             throws AcmException {
         Map<String, Object> jobProps = new HashMap<>();
         jobProps.putAll(ExecutionContextOptions.toJobProps(contextOptions));
@@ -76,9 +76,9 @@ public class ExecutionQueue implements JobExecutor {
 
         Job job = jobManager.addJob(TOPIC, jobProps);
         if (job == null) {
-            return Optional.empty();
+            throw new AcmException(String.format("Execution of executable '%s' cannot be queued because manager refused to add a job!", executable.getId()));
         }
-        return Optional.of(new QueuedExecution(executor, job));
+        return new QueuedExecution(executor, job);
     }
 
     public Stream<Execution> findAll() {
