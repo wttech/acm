@@ -1,6 +1,6 @@
 import { ToastQueue } from '@react-spectrum/toast';
-import { useState } from 'react';
-import { useInterval } from 'react-use';
+import { useEffect, useState} from 'react';
+import { useInterval} from 'react-use';
 import { apiRequest } from '../utils/api';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
 import { intervalToTimeout, ToastTimeoutQuick } from '../utils/spectrum';
@@ -50,6 +50,13 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
     }
   };
 
+  // TODO do I need it?
+  useEffect(() => {
+    if (!executionId) {
+      setExecuting(false)
+    }
+  }, [executionId])
+
   useInterval(
     () => {
       if (executing && executionId) {
@@ -58,6 +65,8 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
     },
     executing && executionId ? appState.value.spaSettings.executionPollInterval : null,
   );
+
+
 
   return { execution, setExecution, executing, setExecuting, loading };
 };
