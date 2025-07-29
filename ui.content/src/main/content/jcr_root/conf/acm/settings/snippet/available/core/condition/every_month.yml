@@ -8,9 +8,9 @@ documentation: |
   Optionally, you can specify a specific day of the month and/or a time of day when the script should run. If no day is specified, it defaults to the first day of the month. If no time is specified, it defaults to midnight (00:00).
   
   For example:
-
   ```groovy
-  conditions.everyMonth()
-  conditions.everyMonth(15)
-  conditions.everyMonth(1, "2:00")
+  conditions.everyMonthInRange()
+  conditions.everyMonthStart()
+  conditions.everyMonthAt(15)
+  conditions.everyMonthAt(3, "02:00")
   ```

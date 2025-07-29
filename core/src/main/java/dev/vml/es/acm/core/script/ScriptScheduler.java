@@ -12,6 +12,8 @@ import dev.vml.es.acm.core.util.quartz.CronExpression;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.commons.scheduler.Scheduler;
@@ -103,8 +105,8 @@ public class ScriptScheduler implements Runnable {
             return;
         }
 
-        ExecutionContextOptions contextOptions =
-                new ExecutionContextOptions(ExecutionMode.RUN, config.userImpersonationId());
+        String userId = StringUtils.defaultIfBlank(config.userImpersonationId(), ResourceUtils.Subservice.CONTENT.userId);
+        ExecutionContextOptions contextOptions = new ExecutionContextOptions(ExecutionMode.RUN, userId);
         try (ResourceResolver resourceResolver =
                 ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId())) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);

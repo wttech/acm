@@ -10,7 +10,7 @@ import Code from '@spectrum-icons/workflow/Code';
 import Help from '@spectrum-icons/workflow/Help';
 import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appState } from '../hooks/app.ts';
 import { apiRequest } from '../utils/api.ts';
@@ -21,6 +21,7 @@ import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
+import UserInfo from "./UserInfo";
 
 const ScriptExecutor = () => {
   const prefix = isProduction() ? '' : 'http://localhost:4502';
@@ -159,18 +160,10 @@ const ScriptExecutor = () => {
           {executions.map((execution, index) => (
             <Row key={execution.id}>
               <Cell>{index + 1}</Cell>
-              <Cell>
-                <ExecutableIdValue id={execution.executableId} />
-              </Cell>
-              <Cell>
-                <Text>{execution.userId}</Text>
-              </Cell>
-              <Cell>
-                <DateExplained value={execution.startDate} />
-              </Cell>
-              <Cell>
-                <ExecutionStatusBadge value={execution.status} />
-              </Cell>
+              <Cell><ExecutableIdValue id={execution.executableId} /></Cell>
+              <Cell><UserInfo id={execution.userId} /></Cell>
+              <Cell><DateExplained value={execution.startDate} /></Cell>
+              <Cell><ExecutionStatusBadge value={execution.status} /></Cell>
             </Row>
           ))}
         </TableBody>

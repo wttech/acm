@@ -1,0 +1,9 @@
+group: Condition
+name: condition_not_running_self
+content: |
+  conditions.notRunningSelf()
+documentation: |
+  Execute the script only if it is not already running.
+  
+  Ensures that the same script is not executed in parallel (but other scripts may be).
+  This condition guarantees that on cluster nodes only one instance of this script is running at a time.

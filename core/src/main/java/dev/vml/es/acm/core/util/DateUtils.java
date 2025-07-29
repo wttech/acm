@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public final class DateUtils {
@@ -119,11 +118,6 @@ public final class DateUtils {
                     return calendar;
                 })
                 .orElse(null);
-    }
-
-    public static boolean isInRange(LocalDateTime from, LocalDateTime now, long offsetMillis) {
-        LocalDateTime to = from.plus(offsetMillis, ChronoUnit.MILLIS);
-        return !now.isBefore(from) && !now.isAfter(to);
     }
 
     public static LocalDateTime toLocalDateTime(Date date) {

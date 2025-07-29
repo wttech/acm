@@ -9,6 +9,7 @@ documentation: |
   
   For example:
   ```groovy
-  conditions.everyHour()
-  conditions.everyHour(30)
+  conditions.everyHourInRange()
+  conditions.everyHourStart()
+  conditions.everyHourAt(30)
   ```

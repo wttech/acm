@@ -46,7 +46,7 @@ public final class ResourceUtils {
         Map<String, Object> params = new HashMap<>();
         params.put(ResourceResolverFactory.SUBSERVICE, subservice.id());
 
-        boolean impersonation = StringUtils.isNotBlank(userImpersonationId);
+        boolean impersonation = StringUtils.isNotBlank(userImpersonationId) && !StringUtils.equals(subservice.userId, userImpersonationId);
         if (!impersonation) {
             return resourceResolverFactory.getServiceResourceResolver(params);
         }

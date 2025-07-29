@@ -3,4 +3,4 @@ name: condition_idle_self
 content: |
   conditions.idleSelf()
 documentation: |
-  Alias for `conditions.notRunning()`.
+  Similar to `conditions.notRunningSelf()` but also checks if the script is not even queued for execution.
