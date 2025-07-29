@@ -1,13 +1,14 @@
 import { ToastQueue } from '@react-spectrum/toast';
-import { useEffect, useState} from 'react';
-import { useInterval} from 'react-use';
+import { useState } from 'react';
+import { useInterval } from 'react-use';
 import { apiRequest } from '../utils/api';
 import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
 import { intervalToTimeout, ToastTimeoutQuick } from '../utils/spectrum';
-import { appState } from './app';
+import { useAppState } from './app';
 import { useFormatter } from './formatter';
 
 export const useExecutionPolling = (executionId: string | undefined | null, pollInterval: number) => {
+  const appState = useAppState();
   const [execution, setExecution] = useState<Execution | null>(null);
   const [executing, setExecuting] = useState<boolean>(!!executionId);
   const [loading, setLoading] = useState<boolean>(true);
@@ -50,12 +51,13 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
     }
   };
 
-  useInterval(() => {
+  useInterval(
+    () => {
       if (executing && executionId) {
         pollExecutionState(executionId);
       }
     },
-    executing && executionId ? appState.value.spaSettings.executionPollInterval : null,
+    executing && executionId ? appState.spaSettings.executionPollInterval : null,
   );
 
   return { execution, setExecution, executing, setExecuting, loading };

@@ -5,10 +5,13 @@ import Close from '@spectrum-icons/workflow/Close';
 import Help from '@spectrum-icons/workflow/Help';
 import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
-import { appState, healthIssues } from '../hooks/app.ts';
+import { useAppState } from '../hooks/app.ts';
 import { HealthIssueSeverity, instancePrefix, InstanceType } from '../utils/api.types';
 
 const HealthChecker = () => {
+  const appState = useAppState();
+  const healthIssues = appState.healthStatus.issues;
+
   const getSeverityVariant = (severity: HealthIssueSeverity): 'negative' | 'yellow' | 'neutral' => {
     switch (severity) {
       case HealthIssueSeverity.CRITICAL:
@@ -34,7 +37,7 @@ const HealthChecker = () => {
           <Flex flex="1" alignItems="center">
             <Button
               variant="negative"
-              isDisabled={appState.value.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
+              isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
               onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.instance.HealthChecker`, '_blank')}
             >
               <Settings />
@@ -42,7 +45,7 @@ const HealthChecker = () => {
             </Button>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight variant={healthIssues.value.length === 0 ? 'positive' : 'negative'}>{healthIssues.value.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.value.length} issue(s)</>}</StatusLight>
+            <StatusLight variant={healthIssues.length === 0 ? 'positive' : 'negative'}>{healthIssues.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}</StatusLight>
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
             <DialogTrigger>
@@ -85,7 +88,7 @@ const HealthChecker = () => {
           <Column>Message</Column>
         </TableHeader>
         <TableBody>
-          {(healthIssues.value || []).map((issue, index) => (
+          {(healthIssues || []).map((issue, index) => (
             <Row key={index}>
               <Cell>{index + 1}</Cell>
               <Cell>

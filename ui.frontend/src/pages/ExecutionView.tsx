@@ -16,7 +16,7 @@ import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
-import { appState } from '../hooks/app.ts';
+import { useAppState } from '../hooks/app.ts';
 import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
@@ -25,10 +25,11 @@ import { Objects } from '../utils/objects';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
 const ExecutionView = () => {
+  const appState = useAppState();
   const { executionId } = useParams<{ executionId: string }>();
   const formatter = useFormatter();
   const [autoscrollOutput, setAutoscrollOutput] = useState<boolean>(true);
-  const { execution, setExecution, loading } = useExecutionPolling(executionId, appState.value.spaSettings.executionPollInterval);
+  const { execution, setExecution, loading } = useExecutionPolling(executionId, appState.spaSettings.executionPollInterval);
   const [selectedTab, handleTabChange] = useNavigationTab('details');
   const navigate = useNavigate();
 

@@ -3,7 +3,7 @@ import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Settings from '@spectrum-icons/workflow/Settings';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { appState } from '../hooks/app.ts';
+import { useAppState } from '../hooks/app.ts';
 import { toastRequest } from '../utils/api';
 import { InstanceType, ScriptOutput, ScriptType, instancePrefix } from '../utils/api.types';
 import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
@@ -14,6 +14,7 @@ type ScriptListSimpleProps = {
 };
 
 const ScriptListSimple: React.FC<ScriptListSimpleProps> = ({ type }) => {
+  const appState = useAppState();
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);
   const scriptCount = scripts?.list?.length ?? 0;
   const [loading, setLoading] = useState<boolean>(true);
@@ -60,7 +61,7 @@ const ScriptListSimple: React.FC<ScriptListSimpleProps> = ({ type }) => {
               {type === ScriptType.MOCK ? (
                 <Button
                   variant="negative"
-                  isDisabled={appState.value.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
+                  isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
                   onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.mock.MockHttpFilter`, '_blank')}
                 >
                   <Settings />
@@ -71,8 +72,8 @@ const ScriptListSimple: React.FC<ScriptListSimpleProps> = ({ type }) => {
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
             {type === ScriptType.MOCK ? (
-              <StatusLight variant={appState.value.mockStatus.enabled ? (scriptCount > 0 ? 'positive' : 'neutral') : 'negative'}>
-                {appState.value.mockStatus.enabled ? scriptCount > 0 ? <Text>Installed ({scriptCount})</Text> : <Text>Not installed</Text> : <Text>Disabled</Text>}
+              <StatusLight variant={appState.mockStatus.enabled ? (scriptCount > 0 ? 'positive' : 'neutral') : 'negative'}>
+                {appState.mockStatus.enabled ? scriptCount > 0 ? <Text>Installed ({scriptCount})</Text> : <Text>Not installed</Text> : <Text>Disabled</Text>}
               </StatusLight>
             ) : null}
             {type === ScriptType.EXTENSION ? <StatusLight variant={scriptCount > 0 ? 'positive' : 'negative'}>{scriptCount > 0 ? <Text>Installed ({scriptCount})</Text> : <Text>Not installed</Text>}</StatusLight> : null}

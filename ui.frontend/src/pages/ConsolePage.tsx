@@ -11,7 +11,7 @@ import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
-import { appState } from '../hooks/app';
+import { useAppState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
 import { apiRequest, toastRequest } from '../utils/api';
@@ -20,12 +20,13 @@ import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { StorageKeys } from '../utils/storage';
 
 const ConsolePage = () => {
+  const appState = useAppState();
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
   const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
   const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
 
-  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id, appState.value.spaSettings.executionPollInterval);
+  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id, appState.spaSettings.executionPollInterval);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
 
   useEffect(() => {
@@ -36,21 +37,21 @@ const ConsolePage = () => {
         operation: 'Loading console default script',
         positive: false,
       })
-          .then((response) => {
-            const scriptOutput = response.data.data;
-            const scriptDefault = scriptOutput.list?.[0];
-            if (scriptDefault) {
-              setCode(scriptDefault.content);
-            } else {
-              const errorMessage = `Loading console default script failed! Not found at path '${ConsoleDefaultScriptPath}'`;
-              console.warn(errorMessage);
-              ToastQueue.negative(errorMessage);
-              setCode(ConsoleDefaultScriptContent);
-            }
-          })
-          .catch((error) => {
-            console.error('Loading console default script failed!', error);
-          });
+        .then((response) => {
+          const scriptOutput = response.data.data;
+          const scriptDefault = scriptOutput.list?.[0];
+          if (scriptDefault) {
+            setCode(scriptDefault.content);
+          } else {
+            const errorMessage = `Loading console default script failed! Not found at path '${ConsoleDefaultScriptPath}'`;
+            console.warn(errorMessage);
+            ToastQueue.negative(errorMessage);
+            setCode(ConsoleDefaultScriptContent);
+          }
+        })
+        .catch((error) => {
+          console.error('Loading console default script failed!', error);
+        });
     }
   }, [code]);
 
@@ -102,62 +103,62 @@ const ConsolePage = () => {
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
 
   return (
-      <Flex direction="column" flex="1" gap="size-200">
-        <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as 'code' | 'output')}>
-          <TabList>
-            <Item key="code" aria-label="Code">
-              <FileCode />
-              <Text>Code</Text>
-            </Item>
-            <Item key="output" aria-label="Execution">
-              <Print />
-              <Text>Output</Text>
-            </Item>
-          </TabList>
-          <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-            <Item key="code" aria-label="Code">
-              <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
-                <Flex direction="row" justifyContent="space-between" alignItems="center">
-                  <Flex flex="1" alignItems="center">
-                    <ButtonGroup>
-                      <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={!!syntaxError || !!compileError} />
-                    </ButtonGroup>
-                  </Flex>
-                  <Flex flex="1" justifyContent="center" alignItems="center">
-                    <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />
-                  </Flex>
-                  <Flex flex="1" justifyContent="end" alignItems="center">
-                    <KeyboardShortcutsButton />
-                  </Flex>
+    <Flex direction="column" flex="1" gap="size-200">
+      <Tabs flex="1" aria-label="Code execution" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(key as 'code' | 'output')}>
+        <TabList>
+          <Item key="code" aria-label="Code">
+            <FileCode />
+            <Text>Code</Text>
+          </Item>
+          <Item key="output" aria-label="Execution">
+            <Print />
+            <Text>Output</Text>
+          </Item>
+        </TabList>
+        <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
+          <Item key="code" aria-label="Code">
+            <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
+              <Flex direction="row" justifyContent="space-between" alignItems="center">
+                <Flex flex="1" alignItems="center">
+                  <ButtonGroup>
+                    <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={!!syntaxError || !!compileError} />
+                  </ButtonGroup>
                 </Flex>
-                <CodeEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
-              </Flex>
-            </Item>
-            <Item key="output" aria-label="Output">
-              <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
-                <Flex direction="row" justifyContent="space-between" alignItems="center">
-                  <Flex flex="1" alignItems="center">
-                    <ButtonGroup>
-                      <ExecutionAbortButton execution={execution} onComplete={setExecution} />
-                      <ExecutionCopyOutputButton output={executionOutput} />
-                    </ButtonGroup>
-                  </Flex>
-                  <Flex flex="1" justifyContent="center" alignItems="center">
-                    <ExecutionProgressBar execution={execution} active={executing} />
-                  </Flex>
-                  <Flex flex="1" justifyContent="end" alignItems="center">
-                    <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
-                      <Text>Autoscroll</Text>
-                    </Switch>
-                    <ConsoleHelpButton />
-                  </Flex>
+                <Flex flex="1" justifyContent="center" alignItems="center">
+                  <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />
                 </Flex>
-                <CodeEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
+                <Flex flex="1" justifyContent="end" alignItems="center">
+                  <KeyboardShortcutsButton />
+                </Flex>
               </Flex>
-            </Item>
-          </TabPanels>
-        </Tabs>
-      </Flex>
+              <CodeEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
+            </Flex>
+          </Item>
+          <Item key="output" aria-label="Output">
+            <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
+              <Flex direction="row" justifyContent="space-between" alignItems="center">
+                <Flex flex="1" alignItems="center">
+                  <ButtonGroup>
+                    <ExecutionAbortButton execution={execution} onComplete={setExecution} />
+                    <ExecutionCopyOutputButton output={executionOutput} />
+                  </ButtonGroup>
+                </Flex>
+                <Flex flex="1" justifyContent="center" alignItems="center">
+                  <ExecutionProgressBar execution={execution} active={executing} />
+                </Flex>
+                <Flex flex="1" justifyContent="end" alignItems="center">
+                  <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
+                    <Text>Autoscroll</Text>
+                  </Switch>
+                  <ConsoleHelpButton />
+                </Flex>
+              </Flex>
+              <CodeEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
+            </Flex>
+          </Item>
+        </TabPanels>
+      </Tabs>
+    </Flex>
   );
 };
 

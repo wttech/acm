@@ -10,9 +10,9 @@ import Code from '@spectrum-icons/workflow/Code';
 import Help from '@spectrum-icons/workflow/Help';
 import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { appState } from '../hooks/app.ts';
+import { useAppState } from '../hooks/app.ts';
 import { apiRequest } from '../utils/api.ts';
 import { ExecutionOutput, ExecutionSummary, InstanceType } from '../utils/api.types.ts';
 import { isProduction } from '../utils/node';
@@ -21,9 +21,10 @@ import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
-import UserInfo from "./UserInfo";
+import UserInfo from './UserInfo';
 
 const ScriptExecutor = () => {
+  const appState = useAppState();
   const prefix = isProduction() ? '' : 'http://localhost:4502';
   const navigate = useNavigate();
 
@@ -40,7 +41,7 @@ const ScriptExecutor = () => {
           operation: 'Fetch queued executions',
           url: '/apps/acm/api/execution.json?queued=true&format=summary',
           method: 'get',
-          timeout: intervalToTimeout(appState.value.spaSettings.appStateInterval),
+          timeout: intervalToTimeout(appState.spaSettings.appStateInterval),
           quiet: true,
         });
         setExecutions(response.data.data.list);
@@ -51,9 +52,9 @@ const ScriptExecutor = () => {
       }
     };
     fetchExecutions();
-    const intervalId = setInterval(fetchExecutions, appState.value.spaSettings.appStateInterval);
+    const intervalId = setInterval(fetchExecutions, appState.spaSettings.appStateInterval);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [appState.spaSettings.appStateInterval]);
 
   console.log('executions', executions);
 
@@ -81,7 +82,7 @@ const ScriptExecutor = () => {
             <ButtonGroup>
               <ExecutionsAbortButton selectedKeys={selectedIds(selectedKeys)} />
               <MenuTrigger>
-                <Button variant="negative" isDisabled={appState.value.instanceSettings.type === InstanceType.CLOUD_CONTAINER}>
+                <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}>
                   <Settings />
                   <Text>Configure</Text>
                 </Button>
@@ -160,10 +161,18 @@ const ScriptExecutor = () => {
           {executions.map((execution, index) => (
             <Row key={execution.id}>
               <Cell>{index + 1}</Cell>
-              <Cell><ExecutableIdValue id={execution.executableId} /></Cell>
-              <Cell><UserInfo id={execution.userId} /></Cell>
-              <Cell><DateExplained value={execution.startDate} /></Cell>
-              <Cell><ExecutionStatusBadge value={execution.status} /></Cell>
+              <Cell>
+                <ExecutableIdValue id={execution.executableId} />
+              </Cell>
+              <Cell>
+                <UserInfo id={execution.userId} />
+              </Cell>
+              <Cell>
+                <DateExplained value={execution.startDate} />
+              </Cell>
+              <Cell>
+                <ExecutionStatusBadge value={execution.status} />
+              </Cell>
             </Row>
           ))}
         </TableBody>

@@ -4,7 +4,7 @@ import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { appState } from '../hooks/app';
+import { useAppState } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
 import { InstanceRole, isExecutionNegative, ScriptOutput, ScriptType } from '../utils/api.types';
@@ -21,6 +21,7 @@ type ScriptListRichProps = {
 };
 
 const ScriptListRich: React.FC<ScriptListRichProps> = ({ type }) => {
+  const appState = useAppState();
   const navigate = useNavigate();
   const formatter = useFormatter();
 
@@ -77,14 +78,14 @@ const ScriptListRich: React.FC<ScriptListRichProps> = ({ type }) => {
               {type === ScriptType.ENABLED || type === ScriptType.DISABLED ? (
                 <>
                   <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-                  {appState.value.instanceSettings.role == InstanceRole.AUTHOR && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
+                  {appState.instanceSettings.role == InstanceRole.AUTHOR && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
                 </>
               ) : null}
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight variant={appState.value.healthStatus.healthy ? 'positive' : 'negative'}>
-              {appState.value.healthStatus.healthy ? (
+            <StatusLight variant={appState.healthStatus.healthy ? 'positive' : 'negative'}>
+              {appState.healthStatus.healthy ? (
                 <Text>Executor active</Text>
               ) : (
                 <>
@@ -118,14 +119,14 @@ const ScriptListRich: React.FC<ScriptListRichProps> = ({ type }) => {
             <Text>Average Duration</Text>
             <ContextualHelp variant="info">
               <Heading>Explanation</Heading>
-              <Content>Duration is calculated based on the last {appState.value.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
+              <Content>Duration is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
             </ContextualHelp>
           </Column>
           <Column width="2fr" align="end">
             <Text>Success Rate</Text>
             <ContextualHelp variant="info">
               <Heading>Explanation</Heading>
-              <Content>Success rate is calculated based on the last {appState.value.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
+              <Content>Success rate is calculated based on the last {appState.spaSettings.scriptStatsLimit} completed executions (only succeeded or failed).</Content>
             </ContextualHelp>
           </Column>
         </TableHeader>
