@@ -87,7 +87,7 @@ const ExecutionView = () => {
               <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
                   <LabeledValue label="ID" value={execution.id} flex="1" />
-                  <LabeledValue label="User" value={execution.userId} flex="1" />
+                  <LabeledValue label="User" value={execution.userId ?? '—'} flex="1" />
                   <Flex justifyContent="end">
                     <Field label="Status" flex="1">
                       <div>

@@ -10,7 +10,7 @@ import Code from '@spectrum-icons/workflow/Code';
 import Help from '@spectrum-icons/workflow/Help';
 import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appState } from '../hooks/app.ts';
 import { apiRequest } from '../utils/api.ts';
@@ -163,7 +163,7 @@ const ScriptExecutor = () => {
                 <ExecutableIdValue id={execution.executableId} />
               </Cell>
               <Cell>
-                <Text>{execution.userId}</Text>
+                <Text>{execution.userId ?? <>&mdash;</>}</Text>
               </Cell>
               <Cell>
                 <DateExplained value={execution.startDate} />

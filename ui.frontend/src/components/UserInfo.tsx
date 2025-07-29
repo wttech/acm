@@ -4,7 +4,7 @@ import { UserIdServicePrefix } from '../utils/api.types';
 import { Strings } from '../utils/strings';
 
 type UserInfoProps = {
-  id: string;
+  id: string | null;
 };
 
 const extractFullNameFromEmail = (email: string): string | null => {
@@ -25,6 +25,10 @@ const extractUserFromEmail = (email: string): string | null => {
 };
 
 const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
+  if (!id) {
+    return <>&mdash;</>
+  }
+
   // ACM service IDs like 'acm-content-service'
   if (id.startsWith(UserIdServicePrefix)) {
     return (
