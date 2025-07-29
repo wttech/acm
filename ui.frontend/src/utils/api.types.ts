@@ -196,7 +196,7 @@ export function isKeyValueListArgument(arg: Argument<ArgumentValue>): arg is Key
 
 export type Execution = {
   id: string;
-  userId: string | null;
+  userId: string;
   executable: Executable;
   status: ExecutionStatus;
   startDate: string;
@@ -210,7 +210,7 @@ export const UserIdServicePrefix = 'acm-';
 
 export type ExecutionSummary = {
   id: string;
-  userId: string | null;
+  userId: string;
   executableId: string;
   status: ExecutionStatus;
   startDate: string;

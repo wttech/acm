@@ -163,7 +163,7 @@ const ScriptExecutor = () => {
                 <ExecutableIdValue id={execution.executableId} />
               </Cell>
               <Cell>
-                <Text>{execution.userId ?? <>&mdash;</>}</Text>
+                <Text>{execution.userId}</Text>
               </Cell>
               <Cell>
                 <DateExplained value={execution.startDate} />
