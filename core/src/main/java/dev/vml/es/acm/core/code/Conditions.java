@@ -7,6 +7,7 @@ import dev.vml.es.acm.core.script.ScriptScheduler;
 import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.util.DateUtils;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
@@ -127,8 +128,10 @@ public class Conditions {
     }
 
     public boolean isDate(LocalDateTime localDateTime) {
-        long intervalMillis = getScriptScheduler().getIntervalMillis();
-        return DateUtils.isInRange(localDateTime, LocalDateTime.now(), intervalMillis);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime from = localDateTime;
+        LocalDateTime to = from.plus(getScriptScheduler().getIntervalMillis(), ChronoUnit.MILLIS);
+        return !now.isBefore(from) && !now.isAfter(to);
     }
 
     private ScriptScheduler getScriptScheduler() {

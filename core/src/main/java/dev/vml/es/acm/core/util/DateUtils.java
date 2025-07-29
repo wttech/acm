@@ -121,11 +121,6 @@ public final class DateUtils {
                 .orElse(null);
     }
 
-    public static boolean isInRange(LocalDateTime from, LocalDateTime now, long offsetMillis) {
-        LocalDateTime to = from.plus(offsetMillis, ChronoUnit.MILLIS);
-        return !now.isBefore(from) && !now.isAfter(to);
-    }
-
     public static LocalDateTime toLocalDateTime(Date date) {
         return Optional.ofNullable(date)
                 .map(d -> d.toInstant().atZone(ZONE_ID).toLocalDateTime())
