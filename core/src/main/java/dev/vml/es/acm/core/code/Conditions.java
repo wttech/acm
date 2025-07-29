@@ -7,8 +7,10 @@ import dev.vml.es.acm.core.script.ScriptScheduler;
 import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.util.DateUtils;
 import java.time.*;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -279,6 +281,175 @@ public class Conditions {
 
     private DayOfWeek parseDayOfWeek(String dayOfWeek) {
         return DayOfWeek.valueOf(dayOfWeek.trim().toUpperCase(Locale.ENGLISH));
+    }
+
+    public boolean everyMinuteInRange() {
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = now.withSecond(0).withNano(0);
+        LocalTime endTime = now.withSecond(59).withNano(999999999);
+        checkStartAndEndTime(startTime, endTime);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+    }
+
+    public boolean everyMinuteInRange(int startSecond, int endSecond) {
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = now.withSecond(startSecond).withNano(0);
+        LocalTime endTime = now.withSecond(endSecond).withNano(999999999);
+        checkStartAndEndTime(startTime, endTime);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+    }
+
+    public boolean everyHourInRange() {
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = now.withMinute(0).withSecond(0).withNano(0);
+        LocalTime endTime = now.withMinute(59).withSecond(59).withNano(999999999);
+        checkStartAndEndTime(startTime, endTime);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+    }
+
+    public boolean everyHourInRange(int startMinute, int endMinute) {
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = now.withMinute(startMinute).withSecond(0).withNano(0);
+        LocalTime endTime = now.withMinute(endMinute).withSecond(59).withNano(999999999);
+        checkStartAndEndTime(startTime, endTime);
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+    }
+
+    public boolean everyDayInRange() {
+        return everyDayInRange(dayStartTime(), dayEndTime());
+    }
+
+    public boolean everyDayInRange(LocalTime startTime, LocalTime endTime) {
+        checkStartAndEndTime(startTime, endTime);
+        LocalTime now = LocalTime.now();
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        return !executedInTimeRange(LocalDate.now(), startTime, endTime);
+    }
+
+    public boolean everyDayInRange(String startTime, String endTime) {
+        return everyDayInRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    }
+
+    public boolean everyWeekInRange() {
+        return everyWeekInRange(dayStartTime(), dayEndTime());
+    }
+
+    public boolean everyWeekInRange(LocalTime startTime, LocalTime endTime) {
+        checkStartAndEndTime(startTime, endTime);
+        LocalTime now = LocalTime.now();
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.with(DayOfWeek.MONDAY);
+        LocalDate endOfWeek = today.with(DayOfWeek.SUNDAY);
+        return !executedInTimeRange(startOfWeek, startTime, endOfWeek, endTime);
+    }
+
+    public boolean everyWeekInRange(String startTime, String endTime) {
+        return everyWeekInRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    }
+
+    public boolean everyMonthInRange() {
+        return everyMonthInRange(dayStartTime(), dayEndTime());
+    }
+
+    public boolean everyMonthInRange(LocalTime startTime, LocalTime endTime) {
+        checkStartAndEndTime(startTime, endTime);
+        LocalTime now = LocalTime.now();
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate startOfMonth = today.withDayOfMonth(1);
+        LocalDate endOfMonth = today.withDayOfMonth(today.lengthOfMonth());
+        return !executedInTimeRange(startOfMonth, startTime, endOfMonth, endTime);
+    }
+
+    public boolean everyMonthInRange(String startTime, String endTime) {
+        return everyMonthInRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    }
+
+    public boolean everyYearInRange() {
+        return everyYearInRange(dayStartTime(), dayEndTime());
+    }
+
+    public boolean everyYearInRange(LocalTime startTime, LocalTime endTime) {
+        checkStartAndEndTime(startTime, endTime);
+        LocalTime now = LocalTime.now();
+        if (now.isBefore(startTime) || now.isAfter(endTime)) {
+            return false;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate startOfYear = today.withDayOfYear(1);
+        LocalDate endOfYear = today.withDayOfYear(today.lengthOfYear());
+        return !executedInTimeRange(startOfYear, startTime, endOfYear, endTime);
+    }
+
+    public boolean everyYearInRange(String startTime, String endTime) {
+        return everyYearInRange(LocalTime.parse(startTime), LocalTime.parse(endTime));
+    }
+
+    public boolean executedInTimeRange(LocalDate date, LocalTime startTime, LocalTime endTime) {
+        return executedInTimeRange(date, startTime, date, endTime);
+    }
+
+    public boolean executedInTimeRange(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
+        ExecutionQuery query = new ExecutionQuery();
+        query.setExecutableId(executionContext.getExecutable().getId());
+        query.setStartDate(Date.from(
+                startDate.atTime(startTime).atZone(ZoneId.systemDefault()).toInstant()));
+        query.setEndDate(
+                Date.from(endDate.atTime(endTime).atZone(ZoneId.systemDefault()).toInstant()));
+        Optional<Execution> executionInTimeRange =
+                executionHistory.findAll(query).findAny();
+        return executionInTimeRange.isPresent();
+    }
+
+    public boolean executedInTimeRange(String startDateTime, String endDateTime) {
+        return executedInTimeRange(LocalDateTime.parse(startDateTime), LocalDateTime.parse(endDateTime));
+    }
+
+    public boolean executedInTimeRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return passedExecutionsInTimeRange(startDateTime, endDateTime).findAny().isPresent();
+    }
+
+    public Stream<Execution> passedExecutionsInTimeRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        checkStartAndEndDateTime(startDateTime, endDateTime);
+        ExecutionQuery query = new ExecutionQuery();
+        query.setExecutableId(executionContext.getExecutable().getId());
+        query.setStartDate(
+                Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant()));
+        query.setEndDate(Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant()));
+        return executionHistory.findAll(query);
+    }
+
+    private void checkStartAndEndTime(LocalTime start, LocalTime end) {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException(
+                    String.format("Start time '%s' must be before end time '%s'!", start, end));
+        }
+    }
+
+    private void checkStartAndEndDateTime(LocalDateTime start, LocalDateTime end) {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException(
+                    String.format("Start date-time '%s' must be before end date-time '%s'!", start, end));
+        }
     }
 
     // Duration-based since the last execution
