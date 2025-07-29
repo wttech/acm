@@ -50,23 +50,13 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
     }
   };
 
-  // TODO do I need it?
-  useEffect(() => {
-    if (!executionId) {
-      setExecuting(false)
-    }
-  }, [executionId])
-
-  useInterval(
-    () => {
+  useInterval(() => {
       if (executing && executionId) {
         pollExecutionState(executionId);
       }
     },
     executing && executionId ? appState.value.spaSettings.executionPollInterval : null,
   );
-
-
 
   return { execution, setExecution, executing, setExecuting, loading };
 };

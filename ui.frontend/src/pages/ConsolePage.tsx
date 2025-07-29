@@ -25,15 +25,8 @@ const ConsolePage = () => {
   const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
   const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
 
-  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(isExecutionPending(queuedExecution?.status) ? queuedExecution?.id : null, appState.value.spaSettings.executionPollInterval);
+  const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id, appState.value.spaSettings.executionPollInterval);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
-
-  // TODO works but I don't like it
-  useEffect(() => {
-    if (queuedExecution && !isExecutionPending(queuedExecution.status)) {
-      setExecuting(false);
-    }
-  }, [queuedExecution, setExecuting]);
 
   useEffect(() => {
     if (code === undefined) {
@@ -64,6 +57,12 @@ const ConsolePage = () => {
   useEffect(() => {
     setExecution(parseExecution);
   }, [parseExecution, setExecution]);
+
+  useEffect(() => {
+    if (!isExecutionPending(queuedExecution?.status)) {
+      setExecuting(false);
+    }
+  }, [queuedExecution, setExecuting]);
 
   const onDescribeFailed = (description: Description) => {
     console.error('Code description failed:', description);
