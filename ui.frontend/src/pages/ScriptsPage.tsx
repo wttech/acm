@@ -1,11 +1,11 @@
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
 import Beaker from '@spectrum-icons/workflow/Beaker';
-import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
+import Launch from '@spectrum-icons/workflow/Launch';
 import Extension from '@spectrum-icons/workflow/Extension';
-import FlashOn from '@spectrum-icons/workflow/FlashOn';
+import Calendar from '@spectrum-icons/workflow/Calendar';
 import Hand from '@spectrum-icons/workflow/Hand';
-import ScriptDisabledList from '../components/ScriptDisabledList';
-import ScriptEnabledList from '../components/ScriptEnabledList';
+import ScriptBootList from '../components/ScriptBootList.tsx';
+import ScriptScheduleList from '../components/ScriptScheduleList.tsx';
 import ScriptExtensionList from '../components/ScriptExtensionList';
 import ScriptManualList from '../components/ScriptManualList';
 import ScriptMockList from '../components/ScriptMockList';
@@ -25,13 +25,13 @@ const ScriptsPage = () => {
             <Hand />
             <Text>Manual</Text>
           </Item>
-          <Item aria-label="Automatic scripts" key="enabled">
-            <FlashOn />
-            <Text>Automatic</Text>
+          <Item aria-label="Boot scripts" key="boot">
+            <Launch />
+            <Text>Boot</Text>
           </Item>
-          <Item aria-label="Disabled scripts" key="disabled">
-            <CloseCircle />
-            <Text>Disabled</Text>
+          <Item aria-label="Schedule scripts" key="schedule">
+            <Calendar/>
+            <Text>Schedule</Text>
           </Item>
           {appState.mockStatus.enabled ? (
             <Item aria-label="Mock scripts" key="mock">
@@ -45,14 +45,14 @@ const ScriptsPage = () => {
           </Item>
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
-          <Item key="manual" aria-label="Manual">
+          <Item key="manual" aria-label="Manual Script List">
             <ScriptManualList />
           </Item>
-          <Item key="enabled" aria-label="Enabled">
-            <ScriptEnabledList />
+          <Item key="boot" aria-label="Boot Script List">
+            <ScriptBootList />
           </Item>
-          <Item key="disabled" aria-label="Disabled">
-            <ScriptDisabledList />
+          <Item key="schedule" aria-label="Schedule Script List">
+            <ScriptScheduleList />
           </Item>
           {appState.mockStatus.enabled ? (
             <Item key="mock" aria-label="Mock">

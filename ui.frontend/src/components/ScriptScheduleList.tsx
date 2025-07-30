@@ -16,13 +16,14 @@ import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
 
-const ScriptDisabledList: React.FC = () => {
-  const type = ScriptType.DISABLED;
+const ScriptScheduleList: React.FC = () => {
+  const type = ScriptType.SCHEDULE;
   const appState = useAppState();
   const navigate = useNavigate();
   const formatter = useFormatter();
 
   const { scripts, loading, loadScripts } = useScripts(type);
+
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
   const selectedIds = (selectedKeys: Selection): string[] => {
     if (selectedKeys === 'all') {
@@ -133,4 +134,4 @@ const ScriptDisabledList: React.FC = () => {
   );
 };
 
-export default ScriptDisabledList;
+export default ScriptScheduleList;

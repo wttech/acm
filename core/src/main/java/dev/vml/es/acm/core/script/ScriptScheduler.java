@@ -9,7 +9,6 @@ import dev.vml.es.acm.core.util.quartz.CronExpression;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -42,9 +41,8 @@ public class ScriptScheduler implements Runnable {
         @AttributeDefinition(
                 name = "Scheduler Expression",
                 description =
-                        "How often the scripts should be executed. Default is every 30 seconds (0/30 * * * * ?). Quartz cron expression format.",
-                defaultValue = "0/30 * * * * ?")
-        String scheduler_expression() default "0/30 * * * * ?";
+                        "How often the scripts should be executed. Default is every minute (0 * * * * ?). Quartz cron expression format.")
+        String scheduler_expression() default "0 * * * * ?";
 
         @AttributeDefinition(
                 name = "User Impersonation ID",
@@ -102,15 +100,14 @@ public class ScriptScheduler implements Runnable {
             return;
         }
 
-        String userId = StringUtils.defaultIfBlank(config.userImpersonationId(), ResourceUtils.Subservice.CONTENT.userId);
+        String userId =
+                StringUtils.defaultIfBlank(config.userImpersonationId(), ResourceUtils.Subservice.CONTENT.userId);
         ExecutionContextOptions contextOptions = new ExecutionContextOptions(ExecutionMode.RUN, userId);
         try (ResourceResolver resourceResolver =
                 ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId())) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
 
-            scriptRepository.clean();
-
-            scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
+            scriptRepository.findAll(ScriptType.SCHEDULE).forEach(script -> {
                 if (checkScript(script, resourceResolver)) {
                     submitScript(script, contextOptions);
                 }
@@ -124,7 +121,7 @@ public class ScriptScheduler implements Runnable {
 
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
         try (ExecutionContext context =
-                     executor.createContext(ExecutionId.generate(), ExecutionMode.CHECK, script, resourceResolver)) {
+                executor.createContext(ExecutionId.generate(), ExecutionMode.CHECK, script, resourceResolver)) {
             Execution execution = executor.execute(context);
             LOG.debug("Script checked '{}'", execution);
             return execution.getStatus() != ExecutionStatus.SKIPPED;

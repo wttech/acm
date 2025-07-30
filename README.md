@@ -191,8 +191,8 @@ The ACM Console is interactive and offers the following features:
 Content scripts in ACM are Groovy scripts that can be used to automate various tasks in AEM. 
 These scripts can be placed in specific locations within the AEM repository to control their execution behavior.
 
-- `/conf/acm/settings/script/auto/enabled/{project}`: Automatically executed scripts that are enabled and awaiting execution if `canRun` conditions are met.
-- `/conf/acm/settings/script/auto/disabled/{project}`: Automatically executed scripts that are disabled, serving as a safety guard to quickly disable scripts under unexpected circumstances.
+- `/conf/acm/settings/script/boot/{project}`: Automatically executed scripts on instance boot, usually run once after deployment. Specific conditions could be narrowed by 'canRun()' method.
+- `/conf/acm/settings/script/schedule/{project}`: Automatically executed scripts on schedule every minute. Specific conditions could be narrowed by 'canRun()' method.
 - `/conf/acm/settings/script/manual/{project}`: Manually executed scripts, run under specific circumstances by platform administrators.
 
 #### Minimal example
@@ -235,7 +235,7 @@ void doRun() {
 ```
 
 The `describeRun()` method is used to define the arguments that can be passed to the script.
-The `args` service is used to define the arguments that can be passed to the script.
+The `arguments` service is used to define the arguments that can be passed to the script.
 When the script is executed, the arguments are passed to the `doRun()` method.
 
 There are many built-in argument types to use handling different types of data like string, boolean, number, date, file, etc. Just check `arguments` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Arguments.java) for more details.

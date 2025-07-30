@@ -610,7 +610,7 @@ public class Conditions {
     }
 
     public boolean isAutomaticScript() {
-        return StringUtils.startsWith(executableId(), ScriptType.ENABLED.root() + "/");
+        return StringUtils.startsWith(executableId(), ScriptType.SCHEDULE.root() + "/");
     }
 
     public boolean isManualScript() {

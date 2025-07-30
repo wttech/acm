@@ -16,14 +16,13 @@ import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
 
-const ScriptEnabledList: React.FC = () => {
-  const type = ScriptType.ENABLED;
+const ScriptBootList: React.FC = () => {
+  const type = ScriptType.BOOT;
   const appState = useAppState();
   const navigate = useNavigate();
   const formatter = useFormatter();
 
   const { scripts, loading, loadScripts } = useScripts(type);
-
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
   const selectedIds = (selectedKeys: Selection): string[] => {
     if (selectedKeys === 'all') {
@@ -134,4 +133,4 @@ const ScriptEnabledList: React.FC = () => {
   );
 };
 
-export default ScriptEnabledList;
+export default ScriptBootList;
