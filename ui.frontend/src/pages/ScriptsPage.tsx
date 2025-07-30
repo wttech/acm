@@ -5,11 +5,12 @@ import Extension from '@spectrum-icons/workflow/Extension';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import Hand from '@spectrum-icons/workflow/Hand';
 import ScriptListRich from '../components/ScriptListRich.tsx';
-import ScriptListSimple from '../components/ScriptListSimple.tsx';
 import { useAppState } from '../hooks/app.ts';
 import { useNavigationTab } from '../hooks/navigation';
 import { ScriptType } from '../utils/api.types';
 import styles from './ScriptsPage.module.css';
+import ScriptMockList from "../components/ScriptMockList.tsx";
+import ScriptExtensionList from "../components/ScriptExtensionList.tsx";
 
 const ScriptsPage = () => {
   const appState = useAppState();
@@ -54,11 +55,11 @@ const ScriptsPage = () => {
           </Item>
           {appState.mockStatus.enabled ? (
             <Item key="mock" aria-label="Mock">
-              <ScriptListSimple type={ScriptType.MOCK} />
+              <ScriptMockList/>
             </Item>
           ) : null}
           <Item key="extension" aria-label="Extension">
-            <ScriptListSimple type={ScriptType.EXTENSION} />
+            <ScriptExtensionList/>
           </Item>
         </TabPanels>
       </Tabs>
