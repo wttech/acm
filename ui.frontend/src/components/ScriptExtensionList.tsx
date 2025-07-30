@@ -1,34 +1,16 @@
 import { Cell, Column, Content, Flex, IllustratedMessage, ProgressBar, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
-import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toastRequest } from '../utils/api';
-import { ScriptOutput, ScriptType } from '../utils/api.types';
+import { ScriptType } from '../utils/api.types';
 import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
+import { useScripts } from '../hooks/script';
+import React from "react";
 
 const ScriptExtensionList: React.FC = () => {
   const type = ScriptType.EXTENSION;
-  const [scripts, setScripts] = useState<ScriptOutput | null>(null);
+  const {scripts, loading } = useScripts(type);
   const scriptCount = scripts?.list?.length ?? 0;
-  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
-
-  const loadScripts = useCallback(() => {
-    setLoading(true);
-    toastRequest<ScriptOutput>({
-      method: 'GET',
-      url: `/apps/acm/api/script.json?type=${type}`,
-      operation: `Script extensions loading (${type.toString().toLowerCase()})`,
-      positive: false,
-    })
-      .then((data) => setScripts(data.data.data))
-      .catch((error) => console.error(`Script extensions loading (${type}) error:`, error))
-      .finally(() => setLoading(false));
-  }, [type]);
-
-  useEffect(() => {
-    loadScripts();
-  }, [type, loadScripts]);
 
   const renderEmptyState = () => (
     <IllustratedMessage>

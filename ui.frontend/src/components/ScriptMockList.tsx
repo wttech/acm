@@ -1,37 +1,19 @@
 import { Button, ButtonGroup, Cell, Column, Content, Flex, IllustratedMessage, ProgressBar, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Settings from '@spectrum-icons/workflow/Settings';
-import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppState } from '../hooks/app.ts';
-import { toastRequest } from '../utils/api';
-import { InstanceType, ScriptOutput, ScriptType, instancePrefix } from '../utils/api.types';
+import { useAppState } from '../hooks/app';
+import { useScripts } from '../hooks/script';
+import { InstanceType, ScriptType, instancePrefix } from '../utils/api.types';
 import ScriptsMockHelpButton from './ScriptsMockHelpButton.tsx';
+import React from "react";
 
 const ScriptMockList: React.FC = () => {
   const type = ScriptType.MOCK;
-  const appState = useAppState();
-  const [scripts, setScripts] = useState<ScriptOutput | null>(null);
+  const {scripts, loading} = useScripts(type);
   const scriptCount = scripts?.list?.length ?? 0;
-  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
-
-  const loadScripts = useCallback(() => {
-    setLoading(true);
-    toastRequest<ScriptOutput>({
-      method: 'GET',
-      url: `/apps/acm/api/script.json?type=${type}`,
-      operation: `Script mocks loading`,
-      positive: false,
-    })
-      .then((data) => setScripts(data.data.data))
-      .catch((error) => console.error(`Script mocks loading (${type}) error:`, error))
-      .finally(() => setLoading(false));
-  }, [type]);
-
-  useEffect(() => {
-    loadScripts();
-  }, [type, loadScripts]);
+  const appState = useAppState();
 
   const renderEmptyState = () => (
     <IllustratedMessage>
