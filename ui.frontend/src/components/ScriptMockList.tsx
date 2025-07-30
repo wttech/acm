@@ -1,16 +1,16 @@
 import { Button, ButtonGroup, Cell, Column, Content, Flex, IllustratedMessage, ProgressBar, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Settings from '@spectrum-icons/workflow/Settings';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 import { useScripts } from '../hooks/script';
 import { InstanceType, ScriptType, instancePrefix } from '../utils/api.types';
 import ScriptsMockHelpButton from './ScriptsMockHelpButton.tsx';
-import React from "react";
 
 const ScriptMockList: React.FC = () => {
   const type = ScriptType.MOCK;
-  const {scripts, loading} = useScripts(type);
+  const { scripts, loading } = useScripts(type);
   const scriptCount = scripts?.list?.length ?? 0;
   const navigate = useNavigate();
   const appState = useAppState();

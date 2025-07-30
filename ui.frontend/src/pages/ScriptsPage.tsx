@@ -4,14 +4,14 @@ import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import Extension from '@spectrum-icons/workflow/Extension';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import Hand from '@spectrum-icons/workflow/Hand';
-import ScriptListRich from '../components/ScriptListRich';
+import ScriptDisabledList from '../components/ScriptDisabledList';
+import ScriptEnabledList from '../components/ScriptEnabledList';
+import ScriptExtensionList from '../components/ScriptExtensionList';
+import ScriptManualList from '../components/ScriptManualList';
+import ScriptMockList from '../components/ScriptMockList';
 import { useAppState } from '../hooks/app.ts';
 import { useNavigationTab } from '../hooks/navigation';
-import { ScriptType } from '../utils/api.types';
 import styles from './ScriptsPage.module.css';
-import ScriptMockList from "../components/ScriptMockList";
-import ScriptExtensionList from "../components/ScriptExtensionList";
-import ScriptManualList from "../components/ScriptManualList";
 
 const ScriptsPage = () => {
   const appState = useAppState();
@@ -46,21 +46,21 @@ const ScriptsPage = () => {
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="manual" aria-label="Manual">
-            <ScriptManualList/>
+            <ScriptManualList />
           </Item>
           <Item key="enabled" aria-label="Enabled">
-            <ScriptListRich type={ScriptType.ENABLED} />
+            <ScriptEnabledList />
           </Item>
           <Item key="disabled" aria-label="Disabled">
-            <ScriptListRich type={ScriptType.DISABLED} />
+            <ScriptDisabledList />
           </Item>
           {appState.mockStatus.enabled ? (
             <Item key="mock" aria-label="Mock">
-              <ScriptMockList/>
+              <ScriptMockList />
             </Item>
           ) : null}
           <Item key="extension" aria-label="Extension">
-            <ScriptExtensionList/>
+            <ScriptExtensionList />
           </Item>
         </TabPanels>
       </Tabs>

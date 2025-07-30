@@ -1,14 +1,14 @@
 import { Cell, Column, Content, Flex, IllustratedMessage, ProgressBar, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useScripts } from '../hooks/script';
 import { ScriptType } from '../utils/api.types';
 import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
-import { useScripts } from '../hooks/script';
-import React from "react";
 
 const ScriptExtensionList: React.FC = () => {
   const type = ScriptType.EXTENSION;
-  const {scripts, loading } = useScripts(type);
+  const { scripts, loading } = useScripts(type);
   const scriptCount = scripts?.list?.length ?? 0;
   const navigate = useNavigate();
 
