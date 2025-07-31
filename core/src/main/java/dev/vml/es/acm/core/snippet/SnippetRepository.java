@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class SnippetRepository {
 
@@ -47,6 +48,6 @@ public class SnippetRepository {
     }
 
     private Resource getOrCreateRoot() throws AcmException {
-        return ResourceUtils.makeFolders(resourceResolver, ROOT);
+        return ResourceUtils.makeFolders(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER);
     }
 }

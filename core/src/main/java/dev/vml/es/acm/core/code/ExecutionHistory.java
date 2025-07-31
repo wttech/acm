@@ -10,11 +10,10 @@ import java.util.*;
 import java.util.stream.Stream;
 import javax.jcr.query.Query;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceUtil;
-import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ExecutionHistory {
 
@@ -36,12 +35,7 @@ public class ExecutionHistory {
 
         try {
             String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");
-            Resource dir = ResourceUtil.getOrCreateResource(
-                    resourceResolver,
-                    dirPath,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    true);
+            Resource dir = ResourceUtils.makeFolders(resourceResolver, dirPath, JcrConstants.NT_FOLDER);
             String entryName = StringUtils.substringAfterLast(execution.getId(), "/");
             resourceResolver.create(dir, entryName, props);
             resourceResolver.commit();
@@ -73,7 +67,7 @@ public class ExecutionHistory {
     }
 
     private Resource getOrCreateRoot() throws AcmException {
-        return ResourceUtils.makeFolders(resourceResolver, ROOT);
+        return ResourceUtils.makeFolders(resourceResolver, ROOT, JcrConstants.NT_FOLDER);
     }
 
     public boolean contains(String id) {
