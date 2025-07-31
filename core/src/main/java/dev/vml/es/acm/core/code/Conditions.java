@@ -61,26 +61,8 @@ public class Conditions {
         return executionHistory.findAll(query);
     }
 
-    public boolean idle() {
-        return notQueued();
-    }
-
-    public boolean idleSelf() {
-        return notQueuedSelf();
-    }
-
-    public boolean notQueued() {
-        if (executionContext.getExecutor().isLocking() && lockedAny()) {
-            return false;
-        }
-        return !queuedExecutions().findAny().isPresent();
-    }
-
-    public boolean notQueuedSelf() {
-        if (executionContext.getExecutor().isLocking() && lockedSelf()) {
-            return false;
-        }
-        return !queuedSelfExecutions().findAny().isPresent();
+    public boolean notSucceeded() {
+        return false; // TODO implement this
     }
 
     public boolean notRunning() {
@@ -635,7 +617,7 @@ public class Conditions {
         if (count < 1) {
             throw new IllegalArgumentException("Retry count must be greater than zero!");
         }
-        if (!notQueuedSelf()) {
+        if (!notRunningSelf()) {
             return false;
         }
         Execution passedExecution = passedExecution();

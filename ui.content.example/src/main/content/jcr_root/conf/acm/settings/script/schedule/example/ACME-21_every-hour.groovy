@@ -1,5 +1,5 @@
 boolean canRun() {
-    return conditions.notQueuedSelf() && conditions.everyHourAt(43)
+    return conditions.everyHourAt(43)
 }
 
 void doRun() {
