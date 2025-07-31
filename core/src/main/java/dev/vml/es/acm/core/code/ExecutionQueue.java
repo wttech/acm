@@ -67,7 +67,7 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    public Execution submit(ExecutionContextOptions contextOptions, Executable executable) throws AcmException {
+    public Execution submit(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         Map<String, Object> jobProps = new HashMap<>();
         jobProps.putAll(ExecutionContextOptions.toJobProps(contextOptions));
         jobProps.putAll(Code.toJobProps(executable));

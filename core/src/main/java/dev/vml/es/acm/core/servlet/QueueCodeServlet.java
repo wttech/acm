@@ -75,7 +75,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             ExecutionContextOptions contextOptions = new ExecutionContextOptions(
                     ExecutionMode.RUN, request.getResourceResolver().getUserID());
 
-            Execution execution = executionQueue.submit(contextOptions, code);
+            Execution execution = executionQueue.submit(code, contextOptions);
             QueueOutput output = new QueueOutput(Collections.singletonList(execution));
             respondJson(
                     response,

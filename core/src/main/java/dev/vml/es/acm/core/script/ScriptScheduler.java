@@ -8,6 +8,7 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import dev.vml.es.acm.core.util.quartz.CronExpression;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -69,6 +70,8 @@ public class ScriptScheduler implements Runnable {
 
     private final AtomicLong runCount = new AtomicLong(0);
 
+    private final AtomicBoolean boot = new AtomicBoolean(true);
+
     @Activate
     @Modified
     protected void activate(Config config) {
@@ -105,18 +108,24 @@ public class ScriptScheduler implements Runnable {
         ExecutionContextOptions contextOptions = new ExecutionContextOptions(ExecutionMode.RUN, userId);
         try (ResourceResolver resourceResolver =
                 ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId())) {
-            ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-
-            scriptRepository.findAll(ScriptType.SCHEDULE).forEach(script -> {
-                if (checkScript(script, resourceResolver)) {
-                    submitScript(script, contextOptions);
-                }
-            });
-
+            if (boot.compareAndSet(true, false)) {
+                submitScripts(ScriptType.BOOT, resourceResolver, contextOptions);
+            } else {
+                submitScripts(ScriptType.SCHEDULE, resourceResolver, contextOptions);
+            }
             runCount.incrementAndGet();
         } catch (Exception e) {
             LOG.error("Cannot access repository while scheduling enabled scripts to execution queue!", e);
         }
+    }
+
+    private void submitScripts(ScriptType type, ResourceResolver resourceResolver, ExecutionContextOptions contextOptions) {
+        ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
+        scriptRepository.findAll(type).forEach(script -> {
+            if (checkScript(script, resourceResolver)) {
+                submitScript(script, contextOptions);
+            }
+        });
     }
 
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
@@ -133,7 +142,7 @@ public class ScriptScheduler implements Runnable {
 
     private void submitScript(Script script, ExecutionContextOptions contextOptions) {
         try {
-            queue.submit(contextOptions, script);
+            queue.submit(script, contextOptions);
         } catch (Exception e) {
             LOG.error("Cannot submit script '{}' to execution queue!", script.getId(), e);
         }
