@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
         property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
 public class ExecutionQueue implements JobExecutor {
 
+    public static final String NAME = "AEM Content Manager Execution Queue";
+
     public static final String TOPIC = "dev/vml/es/acm/ExecutionQueue";
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
@@ -193,5 +195,15 @@ public class ExecutionQueue implements JobExecutor {
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         }
+    }
+
+    // TODO introduce a button using it
+    public void reset() {
+        if (jobAsyncExecutor != null && !jobAsyncExecutor.isShutdown()) {
+            jobAsyncExecutor.shutdownNow();
+        }
+        jobAsyncExecutor = Executors.newCachedThreadPool();
+        findJobs().forEach(job -> jobManager.removeJobById(job.getId()));
+        jobManager.getQueue(NAME).removeAll();
     }
 }

@@ -8,8 +8,12 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import dev.vml.es.acm.core.util.quartz.CronExpression;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -102,16 +106,24 @@ public class ScriptScheduler implements Runnable {
             LOG.warn("Script scheduler is paused due to health status: {}", healthStatus);
             return;
         }
+        List<Execution> bootScripts = findQueuedBootScripts().collect(Collectors.toList());
+        if (!bootScripts.isEmpty()) {
+            LOG.info("Script scheduler is paused due to queued boot scripts ({}): {}", bootScripts.size(), StringUtils.join(bootScripts, ", "));
+            return;
+        }
+        queueScripts();
+    }
 
+    private void queueScripts() {
         String userId =
                 StringUtils.defaultIfBlank(config.userImpersonationId(), ResourceUtils.Subservice.CONTENT.userId);
         ExecutionContextOptions contextOptions = new ExecutionContextOptions(ExecutionMode.RUN, userId);
         try (ResourceResolver resourceResolver =
                 ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId())) {
             if (boot.compareAndSet(true, false)) {
-                submitScripts(ScriptType.BOOT, resourceResolver, contextOptions);
+                queueScripts(ScriptType.BOOT, resourceResolver, contextOptions);
             } else {
-                submitScripts(ScriptType.SCHEDULE, resourceResolver, contextOptions);
+                queueScripts(ScriptType.SCHEDULE, resourceResolver, contextOptions);
             }
             runCount.incrementAndGet();
         } catch (Exception e) {
@@ -119,11 +131,11 @@ public class ScriptScheduler implements Runnable {
         }
     }
 
-    private void submitScripts(ScriptType type, ResourceResolver resourceResolver, ExecutionContextOptions contextOptions) {
+    private void queueScripts(ScriptType type, ResourceResolver resourceResolver, ExecutionContextOptions contextOptions) {
         ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
         scriptRepository.findAll(type).forEach(script -> {
             if (checkScript(script, resourceResolver)) {
-                submitScript(script, contextOptions);
+                queueScript(script, contextOptions);
             }
         });
     }
@@ -140,12 +152,19 @@ public class ScriptScheduler implements Runnable {
         }
     }
 
-    private void submitScript(Script script, ExecutionContextOptions contextOptions) {
+    private void queueScript(Script script, ExecutionContextOptions contextOptions) {
         try {
             queue.submit(script, contextOptions);
         } catch (Exception e) {
             LOG.error("Cannot submit script '{}' to execution queue!", script.getId(), e);
         }
+    }
+
+    private Stream<Execution> findQueuedBootScripts() {
+        return queue.findAll().filter(execution -> {
+            ScriptType type = ScriptType.byPath(execution.getExecutable().getId()).orElse(null);
+            return ScriptType.BOOT.equals(type);
+        });
     }
 
     public long getIntervalMillis() {
