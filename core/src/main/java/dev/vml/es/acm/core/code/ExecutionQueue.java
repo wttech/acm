@@ -70,7 +70,7 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     // TODO do prechecks before adding to queue
-    // [1] check if not queued already, [2] check if canRun
+    // [1] check if not queued already, [2] check if canRun, [3] check if not locked
     public Execution submit(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         Map<String, Object> jobProps = new HashMap<>();
         jobProps.putAll(ExecutionContextOptions.toJobProps(contextOptions));
