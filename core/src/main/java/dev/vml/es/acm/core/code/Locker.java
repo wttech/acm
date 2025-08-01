@@ -51,9 +51,9 @@ public class Locker {
             if (name.contains("/")) {
                 String dirPath = StringUtils.substringBeforeLast(name, "/");
                 nodeName = StringUtils.substringAfterLast(name, "/");
-                dirResource = ResourceUtils.makeFolders(resolver, ROOT + "/" + dirPath);
+                dirResource = ResourceUtils.makeFolders(resolver, ROOT + "/" + dirPath, JcrConstants.NT_FOLDER);
             } else {
-                dirResource = ResourceUtils.makeFolders(resolver, ROOT);
+                dirResource = ResourceUtils.makeFolders(resolver, ROOT, JcrConstants.NT_FOLDER);
                 nodeName = name;
             }
             Map<String, Object> props = new HashMap<>();

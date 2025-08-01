@@ -16,7 +16,7 @@ content: |
   }
     
   boolean canRun() {
-    return conditions.notQueuedSelf()
+    return conditions.always()
   }
     
   void doRun() {

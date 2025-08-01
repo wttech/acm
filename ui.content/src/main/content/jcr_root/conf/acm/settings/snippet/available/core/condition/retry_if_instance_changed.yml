@@ -5,12 +5,10 @@ content: |
 documentation: |
   Execute the script only if the previous execution failed and the instance has changed due to a deployment, such as an instance restart or an OSGi bundle change.
   
-  This condition combined with `contentChanged()` is especially useful for content upgrade scripts.
-  
   For example:
   ```groovy
   boolean canRun() {
-    return conditions.notQueuedSelf() && (conditions.contentChanged() || conditions.retryIfInstanceChanged())
+    return conditions.retryIfInstanceChanged()
   }
   
   void doRun() {

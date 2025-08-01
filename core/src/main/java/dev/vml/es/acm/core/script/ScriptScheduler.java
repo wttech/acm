@@ -8,7 +8,11 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import dev.vml.es.acm.core.util.quartz.CronExpression;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -42,9 +46,8 @@ public class ScriptScheduler implements Runnable {
         @AttributeDefinition(
                 name = "Scheduler Expression",
                 description =
-                        "How often the scripts should be executed. Default is every 30 seconds (0/30 * * * * ?). Quartz cron expression format.",
-                defaultValue = "0/30 * * * * ?")
-        String scheduler_expression() default "0/30 * * * * ?";
+                        "How often the scripts should be executed. Default is every minute (0 * * * * ?). Quartz cron expression format.")
+        String scheduler_expression() default "0 * * * * ?";
 
         @AttributeDefinition(
                 name = "User Impersonation ID",
@@ -70,6 +73,8 @@ public class ScriptScheduler implements Runnable {
     private long intervalMillis;
 
     private final AtomicLong runCount = new AtomicLong(0);
+
+    private final AtomicBoolean boot = new AtomicBoolean(true);
 
     @Activate
     @Modified
@@ -101,30 +106,43 @@ public class ScriptScheduler implements Runnable {
             LOG.warn("Script scheduler is paused due to health status: {}", healthStatus);
             return;
         }
+        List<Execution> bootScripts = findQueuedBootScripts().collect(Collectors.toList());
+        if (!bootScripts.isEmpty()) {
+            LOG.info("Script scheduler is paused due to queued boot scripts ({}): {}", bootScripts.size(), StringUtils.join(bootScripts, ", "));
+            return;
+        }
+        queueScripts();
+    }
 
-        String userId = StringUtils.defaultIfBlank(config.userImpersonationId(), ResourceUtils.Subservice.CONTENT.userId);
+    private void queueScripts() {
+        String userId =
+                StringUtils.defaultIfBlank(config.userImpersonationId(), ResourceUtils.Subservice.CONTENT.userId);
         ExecutionContextOptions contextOptions = new ExecutionContextOptions(ExecutionMode.RUN, userId);
         try (ResourceResolver resourceResolver =
                 ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId())) {
-            ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-
-            scriptRepository.clean();
-
-            scriptRepository.findAll(ScriptType.ENABLED).forEach(script -> {
-                if (checkScript(script, resourceResolver)) {
-                    submitScript(script, contextOptions);
-                }
-            });
-
+            if (boot.compareAndSet(true, false)) {
+                queueScripts(ScriptType.BOOT, resourceResolver, contextOptions);
+            } else {
+                queueScripts(ScriptType.SCHEDULE, resourceResolver, contextOptions);
+            }
             runCount.incrementAndGet();
         } catch (Exception e) {
             LOG.error("Cannot access repository while scheduling enabled scripts to execution queue!", e);
         }
     }
 
+    private void queueScripts(ScriptType type, ResourceResolver resourceResolver, ExecutionContextOptions contextOptions) {
+        ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
+        scriptRepository.findAll(type).forEach(script -> {
+            if (checkScript(script, resourceResolver)) {
+                queueScript(script, contextOptions);
+            }
+        });
+    }
+
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
         try (ExecutionContext context =
-                     executor.createContext(ExecutionId.generate(), ExecutionMode.CHECK, script, resourceResolver)) {
+                executor.createContext(ExecutionId.generate(), ExecutionMode.CHECK, script, resourceResolver)) {
             Execution execution = executor.execute(context);
             LOG.debug("Script checked '{}'", execution);
             return execution.getStatus() != ExecutionStatus.SKIPPED;
@@ -134,12 +152,19 @@ public class ScriptScheduler implements Runnable {
         }
     }
 
-    private void submitScript(Script script, ExecutionContextOptions contextOptions) {
+    private void queueScript(Script script, ExecutionContextOptions contextOptions) {
         try {
-            queue.submit(contextOptions, script);
+            queue.submit(script, contextOptions);
         } catch (Exception e) {
             LOG.error("Cannot submit script '{}' to execution queue!", script.getId(), e);
         }
+    }
+
+    private Stream<Execution> findQueuedBootScripts() {
+        return queue.findAll().filter(execution -> {
+            ScriptType type = ScriptType.byPath(execution.getExecutable().getId()).orElse(null);
+            return ScriptType.BOOT.equals(type);
+        });
     }
 
     public long getIntervalMillis() {

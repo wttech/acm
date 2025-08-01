@@ -6,6 +6,7 @@ export type Executable = {
   arguments: ArgumentValues;
 };
 
+// TODO /conf/acm/settings/script => /apps/acm/script
 export const ScriptRootPath = '/conf/acm/settings/script';
 export const ConsoleDefaultScriptPath = `${ScriptRootPath}/template/core/console.groovy`;
 export const ConsoleDefaultScriptContent = `
@@ -287,9 +288,9 @@ export type Snippet = {
 };
 
 export enum ScriptType {
+  BOOT = 'BOOT',
+  SCHEDULE = 'SCHEDULE',
   MANUAL = 'MANUAL',
-  ENABLED = 'ENABLED',
-  DISABLED = 'DISABLED',
   EXTENSION = 'EXTENSION',
   MOCK = 'MOCK',
 }

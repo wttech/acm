@@ -1,6 +1,8 @@
 package dev.vml.es.acm.core.util;
 
 import dev.vml.es.acm.core.AcmException;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -8,7 +10,6 @@ import javax.jcr.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.api.resource.LoginException;
-import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public final class ResourceUtils {
 
@@ -46,7 +47,8 @@ public final class ResourceUtils {
         Map<String, Object> params = new HashMap<>();
         params.put(ResourceResolverFactory.SUBSERVICE, subservice.id());
 
-        boolean impersonation = StringUtils.isNotBlank(userImpersonationId) && !StringUtils.equals(subservice.userId, userImpersonationId);
+        boolean impersonation = StringUtils.isNotBlank(userImpersonationId)
+                && !StringUtils.equals(subservice.userId, userImpersonationId);
         if (!impersonation) {
             return resourceResolverFactory.getServiceResourceResolver(params);
         }
@@ -104,13 +106,13 @@ public final class ResourceUtils {
         }
     }
 
-    public static Resource makeFolders(ResourceResolver resourceResolver, String path) throws AcmException {
+    public static Resource makeFolders(ResourceResolver resourceResolver, String path, String resourceType) throws AcmException {
         try {
             return ResourceUtil.getOrCreateResource(
                     resourceResolver,
                     path,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    JcrResourceConstants.NT_SLING_FOLDER,
+                    Collections.emptyMap(),
+                    resourceType,
                     true);
         } catch (Exception e) {
             throw new AcmException(String.format("Folders cannot be created for path '%s'", path), e);

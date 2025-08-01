@@ -1,6 +1,0 @@
-group: Condition
-name: condition_not_queued
-content: |
-  conditions.notQueued()
-documentation: |
-  Similar to `conditions.notRunning()` but also checks if none of the scripts are queued for execution.

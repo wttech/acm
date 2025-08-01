@@ -1,5 +1,5 @@
 boolean canRun() {
-    return conditions.notQueuedSelf() && conditions.everyMonthAt(21, "07:49")
+    return conditions.everyMonthAt(21, "07:49")
 }
 
 void doRun() {

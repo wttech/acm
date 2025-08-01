@@ -39,13 +39,8 @@ public class ScriptStats implements Serializable {
 
         ExecutionHistory history = new ExecutionHistory(resourceResolver);
         ExecutionQuery query = new ExecutionQuery();
+        query.setExecutableId(path);
         query.setStatuses(ExecutionStatus.completed());
-
-        if (scriptType == ScriptType.MANUAL || scriptType == ScriptType.ENABLED) {
-            query.setExecutableId(path);
-        } else if (scriptType == ScriptType.DISABLED) {
-            query.setExecutableId(ScriptType.ENABLED.enforcePath(path));
-        }
 
         List<ExecutionSummary> executions =
                 history.findAllSummaries(query).limit(limit).collect(Collectors.toList());

@@ -2,7 +2,7 @@ group: General
 name: general_demo_processing
 content: |
   boolean canRun() {
-    return conditions.notQueuedSelf()
+    return conditions.always()
   }
     
   void doRun() {

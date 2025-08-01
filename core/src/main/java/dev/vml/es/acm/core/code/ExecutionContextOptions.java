@@ -7,7 +7,7 @@ import java.util.Map;
 import org.apache.sling.event.jobs.Job;
 
 /**
- * Determines creation of execution context in asynchronous job.
+ * Determines creation of execution context in an asynchronous job.
  */
 public class ExecutionContextOptions implements Serializable {
 

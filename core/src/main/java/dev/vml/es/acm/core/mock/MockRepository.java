@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class MockRepository {
 
@@ -29,7 +30,7 @@ public class MockRepository {
     }
 
     public Resource getOrCreateRoot() throws AcmException {
-        return ResourceUtils.makeFolders(resolver, ScriptType.MOCK.root());
+        return ResourceUtils.makeFolders(resolver, ScriptType.MOCK.root(), JcrResourceConstants.NT_SLING_FOLDER);
     }
 
     public boolean checkResource(Resource resource) {

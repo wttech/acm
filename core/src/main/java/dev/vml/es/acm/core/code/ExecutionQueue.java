@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
         property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
 public class ExecutionQueue implements JobExecutor {
 
+    public static final String NAME = "AEM Content Manager Execution Queue";
+
     public static final String TOPIC = "dev/vml/es/acm/ExecutionQueue";
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
@@ -67,8 +69,9 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    public Execution submit(ExecutionContextOptions contextOptions, Executable executable)
-            throws AcmException {
+    // TODO do prechecks before adding to queue
+    // [1] check if not queued already, [2] check if canRun, [3] check if not locked
+    public Execution submit(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         Map<String, Object> jobProps = new HashMap<>();
         jobProps.putAll(ExecutionContextOptions.toJobProps(contextOptions));
         jobProps.putAll(Code.toJobProps(executable));
@@ -76,7 +79,9 @@ public class ExecutionQueue implements JobExecutor {
 
         Job job = jobManager.addJob(TOPIC, jobProps);
         if (job == null) {
-            throw new AcmException(String.format("Execution of executable '%s' cannot be queued because manager refused to add a job!", executable.getId()));
+            throw new AcmException(String.format(
+                    "Execution of executable '%s' cannot be queued because manager refused to add a job!",
+                    executable.getId()));
         }
         return new QueuedExecution(executor, job);
     }
@@ -192,5 +197,15 @@ public class ExecutionQueue implements JobExecutor {
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         }
+    }
+
+    // TODO introduce a button using it
+    public void reset() {
+        if (jobAsyncExecutor != null && !jobAsyncExecutor.isShutdown()) {
+            jobAsyncExecutor.shutdownNow();
+        }
+        jobAsyncExecutor = Executors.newCachedThreadPool();
+        findJobs().forEach(job -> jobManager.removeJobById(job.getId()));
+        jobManager.getQueue(NAME).removeAll();
     }
 }
