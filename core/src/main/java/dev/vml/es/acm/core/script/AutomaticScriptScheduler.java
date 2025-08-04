@@ -1,5 +1,7 @@
 package dev.vml.es.acm.core.script;
 
+import dev.vml.es.acm.core.code.ExecutionContextOptions;
+import dev.vml.es.acm.core.code.ExecutionMode;
 import dev.vml.es.acm.core.code.ExecutionQueue;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
@@ -15,7 +17,6 @@ import org.apache.sling.api.resource.observation.ResourceChangeListener;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.ScheduleOptions;
 import org.apache.sling.commons.scheduler.Scheduler;
-import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -41,6 +42,8 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptScheduler.class);
 
+    private static final String BOOT_JOB_NAME = "boot";
+
     private final Map<String, ScriptSchedule> schedules = new ConcurrentHashMap<>();
 
     @Reference
@@ -60,8 +63,8 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     protected void activate() {
         try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-            scriptRepository.findAll(ScriptType.SCHEDULE).forEach(script -> schedule(script.getPath(), resourceResolver));
-            scheduler.schedule(bootJob(), configureSchedule("boot", scheduler.NOW()));
+            scriptRepository.findAll(ScriptType.SCHEDULE).forEach(script -> scheduleScript(script.getPath(), resourceResolver));
+            scheduler.schedule(bootJob(), configureSchedule(BOOT_JOB_NAME, scheduler.NOW()));
         } catch (LoginException e) {
             LOG.error("Cannot access repository while starting automatic script scheduler!", e);
         }
@@ -76,28 +79,38 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     @Override
-    public void onChange(@NotNull List<ResourceChange> changes) {
+    public void onChange(List<ResourceChange> changes) {
         if (changes.isEmpty()) {
             return;
         }
         try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+            boolean reboot = false;
             for (ResourceChange change : changes) {
                 String scriptPath = change.getPath();
-                unschedule(scriptPath);
+
+                unscheduleScript(scriptPath);
+
                 switch (change.getType()) {
                     case ADDED:
                     case CHANGED:
-                        schedule(scriptPath, resourceResolver);
-                        // TODO is non-cron schedule is here then do another boot schedule?
+                        scheduleScript(scriptPath, resourceResolver);
+                        reboot = true;
                         break;
                 }
+            }
+            if (reboot) {
+                LOG.info("Boot scripts changed, reboot required");
+                scheduler.unschedule(BOOT_JOB_NAME);
+                scheduler.schedule(bootJob(), configureSchedule(BOOT_JOB_NAME, scheduler.NOW()));
+            } else {
+                LOG.info("Boot scripts not changed, reboot skipped");
             }
         } catch (LoginException e) {
             LOG.error("Cannot access repository while processing automatic script changes!", e);
         }
     }
 
-    private void unschedule(String scriptPath) {
+    private void unscheduleScript(String scriptPath) {
         ScriptSchedule schedule = schedules.get(scriptPath);
         if (schedule == null) {
             return;
@@ -112,14 +125,14 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
-    private void schedule(String scriptPath, ResourceResolver resourceResolver) {
+    private void scheduleScript(String scriptPath, ResourceResolver resourceResolver) {
         ScriptSchedule schedule = determineSchedule(scriptPath, resourceResolver);
         if (schedule instanceof BootSchedule) {
             schedules.put(scriptPath, schedule);
         } else if (schedule instanceof CronSchedule) {
             CronSchedule cron = (CronSchedule) schedule;
             if (StringUtils.isNotBlank(cron.getExpression())) {
-                scheduler.schedule(cronJob(), configureSchedule(scriptPath, scheduler.EXPR(cron.getExpression())));
+                scheduler.schedule(cronJob(scriptPath), configureSchedule(scriptPath, scheduler.EXPR(cron.getExpression())));
                 schedules.put(scriptPath, schedule);
             } else {
                 LOG.error("Schedule '{}' for script '{}' has no cron expression defined!", schedule.getId(), scriptPath);
@@ -141,27 +154,65 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 if (healthStatus.isHealthy()) {
                     break;
                 } else {
-                    LOG.warn("Boot script scheduler is paused due to health status: {}", healthStatus);
+                    LOG.warn("Boot scripts paused due to health status: {}", healthStatus);
                     try {
                         Thread.sleep(1000); // wait before retrying
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        LOG.error("Boot script scheduler interrupted!", e);
+                        LOG.error("Boot scripts queueing interrupted!", e);
                     }
                 }
             }
-            LOG.info("Boot script scheduler is starting...");
-            for (Map.Entry<String, ScriptSchedule> entry : schedules.entrySet()) { // TODO do not boot twice same scripts
-                if (entry.getValue() instanceof BootSchedule) {
-                    // TODO executionQueue.submit()
+            try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+                ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
+                for (Map.Entry<String, ScriptSchedule> e : schedules.entrySet()) {
+                    if (e.getValue() instanceof BootSchedule) {
+                        String scriptPath = e.getKey();
+                        BootSchedule boot = (BootSchedule) e.getValue();
+                        Script script = scriptRepository.read(scriptPath).orElse(null);
+                        if (script == null) {
+                            LOG.error("Boot script '{}' cannot be read while queueing!", scriptPath);
+                        } else if (!boot.getDone().get()) {
+                            if (!checkScript(script)) {
+                                LOG.info("Boot script '{}' is not ready for queueing!", scriptPath);
+                            } else {
+                                queueScript(script);
+                                boot.getDone().set(true);
+                            }
+                        }
+                    }
                 }
+            } catch (LoginException e) {
+                LOG.error("Cannot access repository while boot scripts queueing!", e);
             }
         };
     }
 
-    private Job cronJob() {
+    private boolean checkScript(Script script) {
+        return false;
+    }
+
+    private void queueScript(Script script) {
+        executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, null));
+    }
+
+    private Job cronJob(String scriptPath) {
         return context -> {
-            // TODO ...
+            try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+                ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
+                Script script = scriptRepository.read(scriptPath).orElse(null);
+                if (script == null) {
+                    LOG.warn("Script '{}' not found in repository, not queueing!", scriptPath);
+                } else {
+                    if (checkScript(script)) {
+                        queueScript(script);
+                    } else {
+                        LOG.debug("Script '{}' is not ready for execution, not queueing!", scriptPath);
+                    }
+                }
+            } catch (LoginException e) {
+                LOG.error("Cannot access repository while queueing cron script execution '{}'!", scriptPath, e);
+            }
         };
     }
 }
