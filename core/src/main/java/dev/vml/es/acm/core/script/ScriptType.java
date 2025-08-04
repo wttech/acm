@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 public enum ScriptType {
     MANUAL(ScriptRepository.ROOT + "/manual"),
     SCHEDULE(ScriptRepository.ROOT + "/schedule"),
-    BOOT(ScriptRepository.ROOT + "/boot"),
+    BOOT(ScriptRepository.ROOT + "/boot"), // TODO 'automatic
     MOCK(ScriptRepository.ROOT + "/mock"),
     EXTENSION(ScriptRepository.ROOT + "/extension"),
     TEMPLATE(ScriptRepository.ROOT + "/template");
