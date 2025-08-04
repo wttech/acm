@@ -9,9 +9,12 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
+import org.apache.sling.commons.scheduler.ScheduleOptions;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.jetbrains.annotations.NotNull;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +45,32 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     @Reference
     private Scheduler scheduler;
 
+    @Activate
+    @Modified
+    protected void activate() {
+        try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+            ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
+            scriptRepository.findAll(ScriptType.SCHEDULE).forEach(script -> schedule(script.getPath(), resourceResolver));
+            ScheduleOptions options = configureSchedule("boot", scheduler.NOW());
+            scheduler.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    // TODO ... loop over all schedules that schedule is 'boot'
+                }
+            }, options);
+        } catch (LoginException e) {
+            LOG.error("Cannot access repository while starting automatic script scheduler!", e);
+        }
+    }
+
+    private ScheduleOptions configureSchedule(String name, ScheduleOptions options) {
+        options.name(name);
+        options.onLeaderOnly(true);
+        options.canRunConcurrently(false);
+        options.onSingleInstanceOnly(true);
+        return options;
+    }
+
     @Override
     public void onChange(@NotNull List<ResourceChange> changes) {
         if (changes.isEmpty()) {
@@ -55,6 +84,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                     case ADDED:
                     case CHANGED:
                         schedule(scriptPath, resourceResolver);
+                        // TODO is non-cron schedule is here then do another boot schedule?
                         break;
                 }
             }
@@ -65,8 +95,16 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private void unschedule(String scriptPath) {
         ScriptSchedule schedule = schedules.get(scriptPath);
-        if (schedule != null) {
+        if (schedule == null) {
+            return;
+        }
+        if (schedule instanceof BootSchedule) {
+            schedules.remove(scriptPath);
+        } else if (schedule instanceof CronSchedule) {
             scheduler.unschedule(scriptPath);
+            schedules.remove(scriptPath);
+        } else {
+            throw new IllegalStateException(String.format("Schedule '%s' for script '%s' is not supported!", schedule.getId(), scriptPath));
         }
     }
 
@@ -77,13 +115,20 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         } else if (schedule instanceof CronSchedule) {
             CronSchedule cron = (CronSchedule) schedule;
             if (StringUtils.isNotBlank(cron.getExpression())) {
-                scheduler.schedule(scriptPath, scheduler.EXPR(cron.getExpression()));
+                ScheduleOptions options = configureSchedule(scriptPath, scheduler.EXPR(cron.getExpression()));
+                configureSchedule(scriptPath, options);
+                scheduler.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        // TODO add script to the queue
+                    }
+                }, options);
                 schedules.put(scriptPath, schedule);
             } else {
-                LOG.error("No cron expression provided for script: {}", scriptPath);
+                LOG.error("Schedule '{}' for script '{}' has no cron expression defined!", schedule.getId(), scriptPath);
             }
         } else {
-            LOG.error("Unsupported schedule type for script: {}", scriptPath);
+            throw new IllegalStateException(String.format("Schedule '%s' for script '%s' is not supported!", schedule.getId(), scriptPath));
         }
     }
 
