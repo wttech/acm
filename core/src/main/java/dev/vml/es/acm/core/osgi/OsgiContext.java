@@ -2,7 +2,6 @@ package dev.vml.es.acm.core.osgi;
 
 import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.code.ExecutionQueue;
-import dev.vml.es.acm.core.script.ScriptScheduler;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -53,10 +52,6 @@ public class OsgiContext {
 
     public InstanceInfo getInstanceInfo() {
         return getService(InstanceInfo.class);
-    }
-
-    public ScriptScheduler getScriptScheduler() {
-        return getService(ScriptScheduler.class);
     }
 
     public ExecutionQueue getExecutionQueue() {

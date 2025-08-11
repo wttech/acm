@@ -185,7 +185,7 @@ public class Executor {
             return new ScheduleResult(execution.end(ExecutionStatus.SUCCEEDED), schedule);
         } catch (Throwable e) {
             execution.error(e);
-            return new ScheduleResult(execution.end(ExecutionStatus.FAILED), new BootSchedule());
+            return new ScheduleResult(execution.end(ExecutionStatus.FAILED), null);
         }
     }
 

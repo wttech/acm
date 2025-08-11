@@ -28,8 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static dev.vml.es.acm.core.util.ServletResult.ok;
-
 @Component(
         service = ResourceChangeListener.class,
         immediate = true,
@@ -78,8 +76,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
             Repo repo = new Repo(resourceResolver);
             this.instanceReady = repo.isCompositeNodeStore();
         } catch (LoginException e) {
-            LOG.error("Cannot access repository while processing automatic script changes!", e);
-            this.instanceReady = false;
+            LOG.error("Cannot access repository while checking instance readiness!", e);
         }
     }
 
@@ -171,7 +168,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                         scheduleScript(script, (CronSchedule) schedule);
                     }
                 } else {
-                    LOG.error("Automatic script schedule cannot be determined! {}", scheduleResult.getExecution());
+                    LOG.error("Automatic script schedule cannot be determined: {}", scheduleResult.getExecution());
                 }
             });
         } catch (LoginException e) {
@@ -179,7 +176,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
-    // TODO what if script changed and was booted
+    // TODO what if script changed and was booted, use checksum?
     private void bootScript(Script script) {
         AtomicBoolean booted = this.booted.computeIfAbsent(script.getId(), s -> new AtomicBoolean(false));
         if (!booted.get()) {
@@ -201,6 +198,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
+    // TODO check repo locks, check queue, check condition
     private boolean checkScript(Script script) {
         return false;
     }

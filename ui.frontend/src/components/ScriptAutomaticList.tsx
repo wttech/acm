@@ -1,18 +1,15 @@
 import { Button, ButtonGroup, Cell, Column, Content, ContextualHelp, Flex, Heading, IllustratedMessage, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
-import { Key, Selection } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
 import { useScripts } from '../hooks/script';
-import { InstanceRole, isExecutionNegative, ScriptType } from '../utils/api.types';
+import { isExecutionNegative, ScriptType } from '../utils/api.types';
 import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
-import ScriptSynchronizeButton from './ScriptSynchronizeButton';
-import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
 
@@ -22,15 +19,7 @@ const ScriptAutomaticList: React.FC = () => {
   const navigate = useNavigate();
   const formatter = useFormatter();
 
-  const { scripts, loading, loadScripts } = useScripts(type);
-  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
-  const selectedIds = (selectedKeys: Selection): string[] => {
-    if (selectedKeys === 'all') {
-      return scripts?.list.map((script) => script.id) || [];
-    } else {
-      return Array.from(selectedKeys as Set<Key>).map((key) => key.toString());
-    }
-  };
+  const { scripts, loading } = useScripts(type);
 
   const renderEmptyState = () => (
     <IllustratedMessage>
@@ -53,8 +42,8 @@ const ScriptAutomaticList: React.FC = () => {
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
-              <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-              {appState.instanceSettings.role == InstanceRole.AUTHOR && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
+              &nbsp;
+              {/* TODO toggle scheduler button */}
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
@@ -68,9 +57,7 @@ const ScriptAutomaticList: React.FC = () => {
       <TableView
         flex="1"
         aria-label={`Script list (${type})`}
-        selectionMode={'multiple'}
-        selectedKeys={selectedKeys}
-        onSelectionChange={setSelectedKeys}
+        selectionMode={'none'}
         renderEmptyState={renderEmptyState}
         onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
       >
