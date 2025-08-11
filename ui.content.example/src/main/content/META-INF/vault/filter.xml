@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
     <filter root="/conf/acm/settings/script/manual/example"/>
-    <filter root="/conf/acm/settings/script/boot/example"/>
-    <filter root="/conf/acm/settings/script/schedule/example"/>
+    <filter root="/conf/acm/settings/script/automatic/example"/>
     <filter root="/conf/acm/settings/script/extension/example"/>
     <filter root="/conf/acm/settings/script/mock/example"/>
 </workspaceFilter>

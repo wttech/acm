@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.script.ContentScript;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.util.ResourceUtils;
@@ -172,6 +173,19 @@ public class Executor {
         } catch (Throwable e) {
             execution.error(e);
             return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
+        }
+    }
+
+    public ScheduleResult schedule(ExecutionContext context) {
+        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
+        try {
+            ContentScript contentScript = new ContentScript(context);
+            execution.start();
+            Schedule schedule = contentScript.schedule();
+            return new ScheduleResult(execution.end(ExecutionStatus.SUCCEEDED), schedule);
+        } catch (Throwable e) {
+            execution.error(e);
+            return new ScheduleResult(execution.end(ExecutionStatus.FAILED), new BootSchedule());
         }
     }
 

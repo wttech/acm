@@ -6,7 +6,7 @@ import { toastRequest } from '../utils/api';
 import { ScriptType } from '../utils/api.types';
 
 type ScriptToggleButtonProps = {
-  type: ScriptType.SCHEDULE | ScriptType.BOOT;
+  type: ScriptType.SCHEDULE | ScriptType.AUTOMATIC;
   selectedKeys: string[];
   onToggle: () => void;
 };

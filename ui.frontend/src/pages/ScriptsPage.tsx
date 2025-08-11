@@ -2,10 +2,8 @@ import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectru
 import Beaker from '@spectrum-icons/workflow/Beaker';
 import Launch from '@spectrum-icons/workflow/Launch';
 import Extension from '@spectrum-icons/workflow/Extension';
-import Calendar from '@spectrum-icons/workflow/Calendar';
 import Hand from '@spectrum-icons/workflow/Hand';
-import ScriptBootList from '../components/ScriptBootList.tsx';
-import ScriptScheduleList from '../components/ScriptScheduleList.tsx';
+import ScriptAutomaticList from '../components/ScriptAutomaticList';
 import ScriptExtensionList from '../components/ScriptExtensionList';
 import ScriptManualList from '../components/ScriptManualList';
 import ScriptMockList from '../components/ScriptMockList';
@@ -25,13 +23,9 @@ const ScriptsPage = () => {
             <Hand />
             <Text>Manual</Text>
           </Item>
-          <Item aria-label="Boot scripts" key="boot">
+          <Item aria-label="Automatic scripts" key="automatic">
             <Launch />
-            <Text>Boot</Text>
-          </Item>
-          <Item aria-label="Schedule scripts" key="schedule">
-            <Calendar/>
-            <Text>Schedule</Text>
+            <Text>Automatic</Text>
           </Item>
           {appState.mockStatus.enabled ? (
             <Item aria-label="Mock scripts" key="mock">
@@ -48,11 +42,8 @@ const ScriptsPage = () => {
           <Item key="manual" aria-label="Manual Script List">
             <ScriptManualList />
           </Item>
-          <Item key="boot" aria-label="Boot Script List">
-            <ScriptBootList />
-          </Item>
-          <Item key="schedule" aria-label="Schedule Script List">
-            <ScriptScheduleList />
+          <Item key="automatic" aria-label="Automatic Script List">
+            <ScriptAutomaticList />
           </Item>
           {appState.mockStatus.enabled ? (
             <Item key="mock" aria-label="Mock">

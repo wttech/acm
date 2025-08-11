@@ -16,8 +16,8 @@ import ScriptToggleButton from './ScriptToggleButton';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
 
-const ScriptBootList: React.FC = () => {
-  const type = ScriptType.BOOT;
+const ScriptAutomaticList: React.FC = () => {
+  const type = ScriptType.AUTOMATIC;
   const appState = useAppState();
   const navigate = useNavigate();
   const formatter = useFormatter();
@@ -133,4 +133,4 @@ const ScriptBootList: React.FC = () => {
   );
 };
 
-export default ScriptBootList;
+export default ScriptAutomaticList;

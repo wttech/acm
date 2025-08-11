@@ -15,8 +15,8 @@ public final class ExecutableUtils {
         if (Executable.ID_CONSOLE.equals(id)) {
             return "Console";
         }
-        if (StringUtils.startsWith(id, ScriptType.SCHEDULE.root() + "/")) {
-            return String.format("Automatic Script '%s'", StringUtils.removeStart(id, ScriptType.SCHEDULE.root() + "/"));
+        if (StringUtils.startsWith(id, ScriptType.AUTOMATIC.root() + "/")) {
+            return String.format("Automatic Script '%s'", StringUtils.removeStart(id, ScriptType.AUTOMATIC.root() + "/"));
         }
         if (StringUtils.startsWith(id, ScriptType.MANUAL.root() + "/")) {
             return String.format("Manual Script '%s'", StringUtils.removeStart(id, ScriptType.MANUAL.root() + "/"));

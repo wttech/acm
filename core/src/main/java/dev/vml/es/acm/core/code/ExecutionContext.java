@@ -25,6 +25,8 @@ public class ExecutionContext implements AutoCloseable {
 
     private final Arguments arguments;
 
+    private final Schedules schedules;
+
     private final Conditions conditions;
 
     public ExecutionContext(
@@ -36,8 +38,9 @@ public class ExecutionContext implements AutoCloseable {
         this.codeContext = codeContext;
         this.output = mode == ExecutionMode.RUN ? new CodeOutputFile(id) : new CodeOutputString();
         this.printStream = new CodePrintStream(output.write(), String.format("%s|%s", executable.getId(), id));
-        this.arguments = new Arguments();
+        this.schedules = new Schedules();
         this.conditions = new Conditions(this);
+        this.arguments = new Arguments();
 
         customizeBinding();
     }
@@ -98,6 +101,10 @@ public class ExecutionContext implements AutoCloseable {
         return arguments;
     }
 
+    public Schedules getSchedules() {
+        return schedules;
+    }
+
     public Conditions getConditions() {
         return conditions;
     }
@@ -105,6 +112,7 @@ public class ExecutionContext implements AutoCloseable {
     private void customizeBinding() {
         Binding binding = getCodeContext().getBinding();
 
+        binding.setVariable("schedules", schedules);
         binding.setVariable("arguments", arguments);
         binding.setVariable("conditions", conditions);
         binding.setVariable("out", getOut());

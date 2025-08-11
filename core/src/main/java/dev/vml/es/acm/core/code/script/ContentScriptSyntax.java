@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.code.script;
 
 import static dev.vml.es.acm.core.code.script.ScriptUtils.*;
 
+import dev.vml.es.acm.core.code.Schedule;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilePhase;
@@ -37,6 +38,7 @@ public class ContentScriptSyntax extends AbstractASTTransformation {
     }
 
     enum Method {
+        SCHEDULE("scheduleRun", Schedule.class.getName(), false),
         DESCRIBE("describeRun", "void", false),
         RUN("doRun", "void", true),
         CHECK("canRun", "boolean", true);

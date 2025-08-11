@@ -1,13 +1,11 @@
 package dev.vml.es.acm.core.script;
 
-import dev.vml.es.acm.core.code.ExecutionContextOptions;
-import dev.vml.es.acm.core.code.ExecutionMode;
-import dev.vml.es.acm.core.code.ExecutionQueue;
+import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.repo.Repo;
-import dev.vml.es.acm.core.script.schedule.BootSchedule;
-import dev.vml.es.acm.core.script.schedule.CronSchedule;
+import dev.vml.es.acm.core.code.schedule.BootSchedule;
+import dev.vml.es.acm.core.code.schedule.CronSchedule;
 import dev.vml.es.acm.core.util.ResourceUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
@@ -29,6 +27,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static dev.vml.es.acm.core.util.ServletResult.ok;
 
 @Component(
         service = ResourceChangeListener.class,
@@ -54,6 +54,9 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
+
+    @Reference
+    private Executor executor;
 
     @Reference
     private Scheduler scheduler;
@@ -111,8 +114,11 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         return options;
     }
 
-    private ScriptSchedule determineSchedule(String scriptPath, ResourceResolver resourceResolver) {
-        return new BootSchedule(); // TODO call script's scheduleRun() method
+    private ScheduleResult determineSchedule(Script script, ResourceResolver resourceResolver) {
+        try (ExecutionContext context = executor.createContext(
+                ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
+            return executor.schedule(context);
+        }
     }
 
     private Job bootJob() {
@@ -155,16 +161,21 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     private void bootOrScheduleScripts() {
         try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-            scriptRepository.findAll(ScriptType.BOOT).forEach(script -> {
-                ScriptSchedule schedule = determineSchedule(script.getPath(), resourceResolver);
-                if (schedule instanceof BootSchedule) {
-                    bootScript(script);
-                } else if (schedule instanceof CronSchedule) {
-                    scheduleScript(script, (CronSchedule) schedule);
+            scriptRepository.findAll(ScriptType.AUTOMATIC).forEach(script -> {
+                ScheduleResult scheduleResult = determineSchedule(script, resourceResolver);
+                if (scheduleResult.getExecution().getStatus() == ExecutionStatus.SUCCEEDED) {
+                    Schedule schedule = scheduleResult.getSchedule();
+                    if (schedule instanceof BootSchedule) {
+                        bootScript(script);
+                    } else if (schedule instanceof CronSchedule) {
+                        scheduleScript(script, (CronSchedule) schedule);
+                    }
+                } else {
+                    LOG.error("Automatic script schedule cannot be determined! {}", scheduleResult.getExecution());
                 }
             });
         } catch (LoginException e) {
-            LOG.error("Cannot access repository while automatic scripts booting!", e);
+            LOG.error("Cannot access repository while determining automatic script schedules!", e);
         }
     }
 

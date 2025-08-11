@@ -6,8 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum ScriptType {
     MANUAL(ScriptRepository.ROOT + "/manual"),
-    SCHEDULE(ScriptRepository.ROOT + "/schedule"),
-    BOOT(ScriptRepository.ROOT + "/boot"), // TODO 'automatic
+    AUTOMATIC(ScriptRepository.ROOT + "/automatic"),
     MOCK(ScriptRepository.ROOT + "/mock"),
     EXTENSION(ScriptRepository.ROOT + "/extension"),
     TEMPLATE(ScriptRepository.ROOT + "/template");
@@ -31,7 +30,7 @@ public enum ScriptType {
     }
 
     public boolean statsSupported() {
-        return this == MANUAL || this == SCHEDULE || this == BOOT;
+        return this == MANUAL || this == AUTOMATIC;
     }
 
     public String root() {

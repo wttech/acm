@@ -288,8 +288,7 @@ export type Snippet = {
 };
 
 export enum ScriptType {
-  BOOT = 'BOOT',
-  SCHEDULE = 'SCHEDULE',
+  AUTOMATIC = 'AUTOMATIC',
   MANUAL = 'MANUAL',
   EXTENSION = 'EXTENSION',
   MOCK = 'MOCK',
