@@ -14,7 +14,7 @@ import org.apache.sling.discovery.DiscoveryService;
 import org.apache.sling.discovery.InstanceDescription;
 import org.apache.sling.discovery.TopologyView;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.event.Event;
@@ -55,12 +55,12 @@ public class HealthChecker implements EventHandler {
 
     @Activate
     @Modified
-    protected void activate(BundleContext context, Config config) {
+    protected void activate(Config config) {
         this.config = config;
         this.eventCollector = new OsgiEventCollector(config.eventQueueSize());
 
         unregisterEventHandler();
-        registerEventHandler(context, config);
+        registerEventHandler(config);
     }
 
     @Deactivate
@@ -89,6 +89,7 @@ public class HealthChecker implements EventHandler {
         return result;
     }
 
+    // TODO not configurable
     private void checkCluster(HealthStatus result) {
         if (!config.clusterChecking() || !instanceInfo.isCluster()) {
             return;
@@ -195,10 +196,12 @@ public class HealthChecker implements EventHandler {
                 .anyMatch(etu -> FilenameUtils.wildcardMatch(event.getTopic(), etu));
     }
 
-    private void registerEventHandler(BundleContext context, Config config) {
+    private void registerEventHandler(Config config) {
         Hashtable<String, Object> properties = new Hashtable<>();
         properties.put(EventConstants.EVENT_TOPIC, config.eventTopicsUnstable());
-        eventHandlerRegistration = context.registerService(EventHandler.class, this, properties);
+        eventHandlerRegistration = FrameworkUtil.getBundle(getClass())
+                .getBundleContext()
+                .registerService(EventHandler.class, this, properties);
     }
 
     private void unregisterEventHandler() {
