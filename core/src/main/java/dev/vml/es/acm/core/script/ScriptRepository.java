@@ -13,7 +13,6 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ScriptRepository {
 
-    // TODO /conf/acm/settings/script => /apps/acm/script
     public static final String ROOT = AcmConstants.SETTINGS_ROOT + "/script";
 
     private final ResourceResolver resourceResolver;
