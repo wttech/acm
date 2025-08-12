@@ -1,5 +1,5 @@
 def scheduleRun() {
-    return schedules.cron("0 0 * ? * * *")
+    return schedules.cron("0 5 * ? * * *") // every hour at minute 5
 }
 
 boolean canRun() {

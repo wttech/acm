@@ -90,6 +90,13 @@ public class ExecutionQueue implements JobExecutor {
         return findJobs().map(job -> new QueuedExecution(executor, job));
     }
 
+    public Optional<Execution> findByExecutableId(String executableId) {
+        if (StringUtils.isBlank(executableId)) {
+            return Optional.empty();
+        }
+        return findAll().filter(e -> StringUtils.equals(e.getExecutable().getId(), executableId)).findFirst();
+    }
+
     public Stream<ExecutionSummary> findAllSummaries() {
         return findJobs().map(job -> new QueuedExecutionSummary(executor, job));
     }

@@ -1,5 +1,5 @@
-boolean canRun() {
-    return conditions.notRunning() && conditions.everyDayStart()
+def scheduleRun() {
+    return schedules.cron("0 10 * ? * * *") // every hour at minute 10
 }
 
 void doRun() {

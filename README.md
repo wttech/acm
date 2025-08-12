@@ -300,10 +300,6 @@ void describeRun() {
     arguments.bool("clean") { value = true; switcher(); description = "Finally delete all created resources" }
 }
 
-boolean canRun() {
-    return conditions.notRunningSelf()
-}
-
 void doRun() {
     repo.dryRun(arguments.value("dryRun")) {
         log.info "Creating a folder structure in the temporary directory of the repository."

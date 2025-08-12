@@ -14,12 +14,11 @@ import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
 
 const ScriptAutomaticList: React.FC = () => {
-  const type = ScriptType.AUTOMATIC;
   const appState = useAppState();
   const navigate = useNavigate();
   const formatter = useFormatter();
 
-  const { scripts, loading } = useScripts(type);
+  const { scripts, loading } = useScripts(ScriptType.AUTOMATIC);
 
   const renderEmptyState = () => (
     <IllustratedMessage>
@@ -56,7 +55,7 @@ const ScriptAutomaticList: React.FC = () => {
       </View>
       <TableView
         flex="1"
-        aria-label={`Script list (${type})`}
+        aria-label={`Script list (${ScriptType.AUTOMATIC.toLowerCase()})`}
         selectionMode={'none'}
         renderEmptyState={renderEmptyState}
         onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}

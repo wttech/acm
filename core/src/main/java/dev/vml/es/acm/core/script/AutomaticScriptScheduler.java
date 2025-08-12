@@ -42,9 +42,13 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptScheduler.class);
 
+    private static final long INSTANCE_HEALTHY_INTERVAL = 1000;
+
+    private static final long INSTANCE_HEALTHY_RETRIES = 60 * 30; // 30 minutes
+
     private static final String BOOT_JOB_NAME = "boot";
 
-    private boolean instanceReady = false;
+    private Boolean instanceReady;
 
     private final Map<String, AtomicBoolean> booted = new ConcurrentHashMap<>();
 
@@ -67,25 +71,16 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     @Activate
     protected void activate() {
-        checkInstanceReady();
-        bootWhenInstanceUp();
-    }
-
-    private void checkInstanceReady() {
-        try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
-            Repo repo = new Repo(resourceResolver);
-            this.instanceReady = repo.isCompositeNodeStore();
-        } catch (LoginException e) {
-            LOG.error("Cannot access repository while checking instance readiness!", e);
+        if (checkInstanceReady()) {
+            bootWhenInstanceUp();
         }
     }
 
     @Override
     public void onChange(List<ResourceChange> changes) {
-        if (!instanceReady || changes.isEmpty()) {
-            return;
+        if (!changes.isEmpty() && checkInstanceReady()) {
+            bootWhenScriptsChanged();
         }
-        bootWhenScriptsChanged();
     }
 
     private void bootWhenInstanceUp() {
@@ -121,27 +116,47 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     private Job bootJob() {
         return context -> {
             unscheduleScripts();
-            awaitInstanceHealthy();
-            bootOrScheduleScripts();
+            if (awaitInstanceHealthy()) {
+                bootOrScheduleScripts();
+            }
         };
     }
 
-    private void awaitInstanceHealthy() {
+    private boolean checkInstanceReady() {
+        if (instanceReady == null) {
+            try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+                Repo repo = new Repo(resourceResolver);
+                instanceReady = repo.isCompositeNodeStore();
+            } catch (LoginException e) {
+                LOG.error("Cannot access repository while checking instance readiness!", e);
+            }
+        }
+        return instanceReady;
+    }
+
+    private boolean awaitInstanceHealthy() {
         HealthStatus healthStatus = null;
+        long retries = 0;
         while (healthStatus == null || !healthStatus.isHealthy()) {
+            if (retries >= INSTANCE_HEALTHY_RETRIES) {
+                LOG.error("Automatic scripts booting failed after {} retries due to health status: {}", INSTANCE_HEALTHY_RETRIES, healthStatus);
+                return false;
+            }
             healthStatus = healthChecker.checkStatus();
             if (healthStatus.isHealthy()) {
                 break;
             } else {
                 LOG.warn("Automatic scripts booting paused due to health status: {}", healthStatus);
                 try {
-                    Thread.sleep(1000); // wait before retrying
+                    Thread.sleep(INSTANCE_HEALTHY_INTERVAL); // wait before retrying
+                    retries++;
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     LOG.error("Automatic scripts booting interrupted!", e);
                 }
             }
         }
+        return true;
     }
 
     private void unscheduleScripts() {
@@ -163,7 +178,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 if (scheduleResult.getExecution().getStatus() == ExecutionStatus.SUCCEEDED) {
                     Schedule schedule = scheduleResult.getSchedule();
                     if (schedule instanceof BootSchedule) {
-                        bootScript(script);
+                        bootScript(script, resourceResolver);
                     } else if (schedule instanceof CronSchedule) {
                         scheduleScript(script, (CronSchedule) schedule);
                     }
@@ -177,14 +192,14 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     // TODO what if script changed and was booted, use checksum?
-    private void bootScript(Script script) {
+    private void bootScript(Script script, ResourceResolver resourceResolver) {
         AtomicBoolean booted = this.booted.computeIfAbsent(script.getId(), s -> new AtomicBoolean(false));
         if (!booted.get()) {
-            if (!checkScript(script)) {
-                LOG.info("Boot script '{}' is not ready for queueing!", script.getPath());
-            } else {
+            if (checkScript(script, resourceResolver)) {
                 queueScript(script);
                 booted.set(true);
+            } else {
+                LOG.info("Boot script '{}' is not ready for queueing!", script.getPath());
             }
         }
     }
@@ -198,9 +213,25 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
-    // TODO check repo locks, check queue, check condition
-    private boolean checkScript(Script script) {
-        return false;
+    private boolean checkScript(Script script, ResourceResolver resourceResolver) {
+        try (ExecutionContext context = executor.createContext(
+                ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
+            if (executor.isLocked(context)) {
+                LOG.debug("Script '{}' is already locked!", script.getPath());
+                return false;
+            }
+            Execution executionPending = executionQueue.findByExecutableId(context.getExecutable().getId()).orElse(null);
+            if (executionPending != null) {
+                LOG.debug("Script '{}' is already queued: {}", script.getPath(), executionPending);
+                return false;
+            }
+            Execution executionChecking = executor.check(context);
+            if (executionChecking.getStatus() != ExecutionStatus.SUCCEEDED) {
+                LOG.debug("Script '{}' cannot run: {}", script.getPath(), executionChecking);
+                return false;
+            }
+            return true;
+        }
     }
 
     private void queueScript(Script script) {
@@ -215,7 +246,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 if (script == null) {
                     LOG.error("Cron schedule script '{}' not found in repository!", scriptPath);
                 } else {
-                    if (checkScript(script)) {
+                    if (checkScript(script, resourceResolver)) {
                         queueScript(script);
                     } else {
                         LOG.warn("Cron schedule script '{}' is not ready for queueing!", scriptPath);

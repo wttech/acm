@@ -1,5 +1,9 @@
+def scheduleRun() {
+    return schedules.cron("0 48 7 ? * MON *") // at 07:48 every Monday
+}
+
 boolean canRun() {
-    return conditions.everyWeekAt("Monday", "07:48")
+    return conditions.always()
 }
 
 void doRun() {

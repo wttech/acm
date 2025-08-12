@@ -20,6 +20,8 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 @Designate(ocd = Executor.Config.class)
 public class Executor {
 
+    public static final String LOCK_NAME = "executor";
+
     @ObjectClassDefinition(name = "AEM Content Manager - Code Executor")
     public @interface Config {
 
@@ -31,12 +33,6 @@ public class Executor {
                 description =
                         "Enables debug mode for troubleshooting. Changed behaviors include: start saving skipped executions in history.")
         boolean debug() default false;
-
-        @AttributeDefinition(
-                name = "Locking",
-                description =
-                        "Prevents concurrent execution of the same executable. Especially useful for scripts running on clustered author instances on AEMaaCS. Use together with idle and not running conditions in the script.")
-        boolean locking() default true;
 
         @AttributeDefinition(
                 name = "Log Printing Enabled",
@@ -127,10 +123,12 @@ public class Executor {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
+            if (context.getCodeContext().getLocker().isLocked(executableLockName(context))) {
+                return execution.end(ExecutionStatus.SKIPPED);
+            }
+
             try {
-                if (config.locking()) {
-                    context.getCodeContext().getLocker().lock(executableLockName(context));
-                }
+                context.getCodeContext().getLocker().lock(executableLockName(context));
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
@@ -139,9 +137,7 @@ public class Executor {
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                if (config.locking()) {
-                    context.getCodeContext().getLocker().unlock(executableLockName(context));
-                }
+                context.getCodeContext().getLocker().unlock(executableLockName(context));
             }
         } catch (Throwable e) {
             execution.error(e);
@@ -155,7 +151,7 @@ public class Executor {
     }
 
     private String executableLockName(ExecutionContext context) {
-        return context.getExecutable().getId();
+        return String.format("%s/%s", context.getExecutable().getId(), LOCK_NAME);
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {
@@ -173,6 +169,24 @@ public class Executor {
         } catch (Throwable e) {
             execution.error(e);
             return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
+        }
+    }
+
+    public Execution check(ExecutionContext context) throws AcmException {
+        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
+
+        try {
+            ContentScript contentScript = new ContentScript(context);
+            execution.start();
+            boolean canRun = contentScript.canRun();
+            if (canRun) {
+                return execution.end(ExecutionStatus.SUCCEEDED);
+            } else  {
+                return execution.end(ExecutionStatus.SKIPPED);
+            }
+        } catch (Throwable e) {
+            execution.error(e);
+            return execution.end(ExecutionStatus.FAILED);
         }
     }
 
@@ -197,7 +211,7 @@ public class Executor {
         return config.history();
     }
 
-    public boolean isLocking() {
-        return config.locking();
+    public boolean isLocked(ExecutionContext context) {
+        return context.getCodeContext().getLocker().isLocked(executableLockName(context));
     }
 }
