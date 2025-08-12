@@ -25,6 +25,7 @@ import org.apache.sling.commons.scheduler.ScheduleOptions;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,11 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         if (checkInstanceReady()) {
             bootWhenInstanceUp();
         }
+    }
+
+    @Deactivate
+    protected void deactivate() {
+        unscheduleScripts();
     }
 
     @Override
@@ -170,6 +176,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     private void unscheduleScripts() {
+        scheduler.unschedule(BOOT_JOB_NAME);
         for (String scriptPath : scheduled) {
             try {
                 scheduler.unschedule(scriptPath);

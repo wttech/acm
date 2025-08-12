@@ -82,6 +82,7 @@ public class RepoResource {
         return get().isPresent();
     }
 
+    // TODO does not work
     public RepoResource ensureFolder() {
         return ensure(JcrConstants.NT_FOLDER);
     }

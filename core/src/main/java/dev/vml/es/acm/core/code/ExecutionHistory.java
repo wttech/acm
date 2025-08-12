@@ -14,6 +14,7 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ExecutionHistory {
 
@@ -29,13 +30,14 @@ public class ExecutionHistory {
         return Stream.empty();
     }
 
+    // TODO do not save 'sling:resourceType' = 'sling:Folder' here (avoid corrupting indexes when many data is saved)
     public void save(ExecutionContext context, ImmediateExecution execution) throws AcmException {
         Resource root = getOrCreateRoot();
         Map<String, Object> props = HistoricalExecution.toMap(context, execution);
 
         try {
             String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");
-            Resource dir = ResourceUtils.makeFolders(resourceResolver, dirPath, JcrConstants.NT_FOLDER);
+            Resource dir = ResourceUtils.makeFolders(resourceResolver, dirPath, JcrResourceConstants.NT_SLING_FOLDER);
             String entryName = StringUtils.substringAfterLast(execution.getId(), "/");
             resourceResolver.create(dir, entryName, props);
             resourceResolver.commit();

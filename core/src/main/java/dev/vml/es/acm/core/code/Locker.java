@@ -38,6 +38,7 @@ public class Locker {
         return isLock(lock);
     }
 
+    // TODO do not save 'sling:resourceType'
     public void lock(String lockName) {
         String name = normalizeName(lockName);
         Resource lock = getLock(name);
@@ -51,9 +52,9 @@ public class Locker {
             if (name.contains("/")) {
                 String dirPath = StringUtils.substringBeforeLast(name, "/");
                 nodeName = StringUtils.substringAfterLast(name, "/");
-                dirResource = ResourceUtils.makeFolders(resolver, ROOT + "/" + dirPath, JcrConstants.NT_FOLDER);
+                dirResource = ResourceUtils.makeFolders(resolver, ROOT + "/" + dirPath, JcrConstants.NT_UNSTRUCTURED);
             } else {
-                dirResource = ResourceUtils.makeFolders(resolver, ROOT, JcrConstants.NT_FOLDER);
+                dirResource = ResourceUtils.makeFolders(resolver, ROOT, JcrConstants.NT_UNSTRUCTURED);
                 nodeName = name;
             }
             Map<String, Object> props = new HashMap<>();

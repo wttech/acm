@@ -106,6 +106,7 @@ public final class ResourceUtils {
     }
 
     // TODO Value for key sling:resourceType can't be put into node: nt:folder
+    // TODO this method adds extra 'sling:resourceType' property, which is not needed for folders
     public static Resource makeFolders(ResourceResolver resourceResolver, String path, String resourceType)
             throws AcmException {
         try {
