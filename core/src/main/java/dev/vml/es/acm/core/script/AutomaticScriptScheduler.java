@@ -44,8 +44,10 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptScheduler.class);
 
+    // TODO make configurable
     private static final long INSTANCE_HEALTHY_INTERVAL = 1000;
 
+    // TODO make configurable
     private static final long INSTANCE_HEALTHY_RETRIES = 60 * 30; // 30 minutes
 
     private static final String BOOT_JOB_NAME = "boot";
@@ -216,8 +218,9 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
             if (checkScript(script, resourceResolver)) {
                 queueScript(script);
                 booted.put(script.getId(), checksum);
+                LOG.info("Boot script '{}' queued", script.getId());
             } else {
-                LOG.info("Boot script '{}' is not ready for queueing!", script.getPath());
+                LOG.info("Boot script '{}' not ready for queueing!", script.getId());
             }
         }
     }
@@ -228,8 +231,9 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                     cronJob(script.getPath()),
                     configureScheduleOptions(script.getPath(), scheduler.EXPR(schedule.getExpression())));
             scheduled.add(script.getPath());
+            LOG.info("Cron schedule script '{}' scheduled with expression '{}'", script.getId(), schedule.getExpression());
         } else {
-            LOG.error("Cron schedule for script '{}' has no cron expression defined!", script.getPath());
+            LOG.error("Cron schedule script '{}' not scheduled as no expression defined!", script.getId());
         }
     }
 
@@ -237,19 +241,19 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         try (ExecutionContext context =
                 executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
             if (executor.isLocked(context)) {
-                LOG.info("Script '{}' is already locked!", script.getPath());
+                LOG.info("Script '{}' already locked!", script.getPath());
                 return false;
             }
             Execution executionQueued = executionQueue
                     .findByExecutableId(context.getExecutable().getId())
                     .orElse(null);
             if (executionQueued != null) {
-                LOG.info("Script '{}' is already queued: {}", script.getPath(), executionQueued);
+                LOG.info("Script '{}' already queued: {}", script.getPath(), executionQueued);
                 return false;
             }
             Execution executionChecking = executor.check(context);
             if (executionChecking.getStatus() != ExecutionStatus.SUCCEEDED) {
-                LOG.info("Script '{}' cannot run: {}", script.getPath(), executionChecking);
+                LOG.info("Script '{}' cannot be run: {}", script.getPath(), executionChecking);
                 return false;
             }
             return true;
@@ -271,7 +275,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                     if (checkScript(script, resourceResolver)) {
                         queueScript(script);
                     } else {
-                        LOG.warn("Cron schedule script '{}' is not ready for queueing!", scriptPath);
+                        LOG.info("Cron schedule script '{}' not ready for queueing!", scriptPath);
                     }
                 }
             } catch (LoginException e) {
