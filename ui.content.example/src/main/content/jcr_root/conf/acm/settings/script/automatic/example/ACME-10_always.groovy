@@ -1,7 +1,3 @@
-def scheduleRun() {
-    return schedules.boot()
-}
-
 boolean canRun() {
     return conditions.always()
 }
