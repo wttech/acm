@@ -8,12 +8,13 @@ import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
+import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.ResourceUtils;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -51,7 +52,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private Boolean instanceReady;
 
-    private final Map<String, AtomicBoolean> booted = new ConcurrentHashMap<>();
+    private final Map<String, String> booted = new ConcurrentHashMap<>();
 
     private final List<String> scheduled = new CopyOnWriteArrayList<>();
 
@@ -208,13 +209,13 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
-    // TODO should we reboot changed scripts or not ; store checksum instead of boolean?
     private void bootScript(Script script, ResourceResolver resourceResolver) {
-        AtomicBoolean booted = this.booted.computeIfAbsent(script.getId(), s -> new AtomicBoolean(false));
-        if (!booted.get()) {
+        String checksum = ChecksumUtils.calculate(script.getContent());
+        String previousChecksum = booted.get(script.getId());
+        if (previousChecksum == null || StringUtils.equals(previousChecksum, checksum)) {
             if (checkScript(script, resourceResolver)) {
                 queueScript(script);
-                booted.set(true);
+                booted.put(script.getId(), checksum);
             } else {
                 LOG.info("Boot script '{}' is not ready for queueing!", script.getPath());
             }
