@@ -7,7 +7,6 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;

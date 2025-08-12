@@ -1,12 +1,19 @@
 package dev.vml.es.acm.core.script;
 
 import dev.vml.es.acm.core.code.*;
-import dev.vml.es.acm.core.instance.HealthChecker;
-import dev.vml.es.acm.core.instance.HealthStatus;
-import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.schedule.CronSchedule;
+import dev.vml.es.acm.core.instance.HealthChecker;
+import dev.vml.es.acm.core.instance.HealthStatus;
+import dev.vml.es.acm.core.osgi.InstanceInfo;
+import dev.vml.es.acm.core.osgi.InstanceType;
+import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ResourceUtils;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -22,22 +29,15 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 @Component(
         service = ResourceChangeListener.class,
         immediate = true,
         property = {
-                ResourceChangeListener.PATHS + "=glob:"+ScriptRepository.ROOT+"/automatic/**/*.groovy",
-                ResourceChangeListener.CHANGES + "=ADDED",
-                ResourceChangeListener.CHANGES + "=CHANGED",
-                ResourceChangeListener.CHANGES + "=REMOVED"
-        }
-)
+            ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
+            ResourceChangeListener.CHANGES + "=ADDED",
+            ResourceChangeListener.CHANGES + "=CHANGED",
+            ResourceChangeListener.CHANGES + "=REMOVED"
+        })
 public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptScheduler.class);
@@ -56,6 +56,9 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
+
+    @Reference
+    private InstanceInfo instanceInfo;
 
     @Reference
     private Executor executor;
@@ -107,8 +110,8 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     private ScheduleResult determineSchedule(Script script, ResourceResolver resourceResolver) {
-        try (ExecutionContext context = executor.createContext(
-                ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
+        try (ExecutionContext context =
+                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
             return executor.schedule(context);
         }
     }
@@ -124,11 +127,15 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private boolean checkInstanceReady() {
         if (instanceReady == null) {
-            try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
-                Repo repo = new Repo(resourceResolver);
-                instanceReady = repo.isCompositeNodeStore();
-            } catch (LoginException e) {
-                LOG.error("Cannot access repository while checking instance readiness!", e);
+            if (InstanceType.CLOUD_CONTAINER.equals(instanceInfo.getType())) {
+                try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+                    Repo repo = new Repo(resourceResolver);
+                    instanceReady = repo.isCompositeNodeStore();
+                } catch (LoginException e) {
+                    LOG.error("Cannot access repository while checking instance readiness!", e);
+                }
+            } else {
+                instanceReady = true;
             }
         }
         return instanceReady;
@@ -139,7 +146,10 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         long retries = 0;
         while (healthStatus == null || !healthStatus.isHealthy()) {
             if (retries >= INSTANCE_HEALTHY_RETRIES) {
-                LOG.error("Automatic scripts booting failed after {} retries due to health status: {}", INSTANCE_HEALTHY_RETRIES, healthStatus);
+                LOG.error(
+                        "Automatic scripts booting failed after {} retries due to health status: {}",
+                        INSTANCE_HEALTHY_RETRIES,
+                        healthStatus);
                 return false;
             }
             healthStatus = healthChecker.checkStatus();
@@ -206,7 +216,9 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private void scheduleScript(Script script, CronSchedule schedule) {
         if (StringUtils.isNotBlank(schedule.getExpression())) {
-            scheduler.schedule(cronJob(script.getPath()), configureScheduleOptions(script.getPath(), scheduler.EXPR(schedule.getExpression())));
+            scheduler.schedule(
+                    cronJob(script.getPath()),
+                    configureScheduleOptions(script.getPath(), scheduler.EXPR(schedule.getExpression())));
             scheduled.add(script.getPath());
         } else {
             LOG.error("Cron schedule for script '{}' has no cron expression defined!", script.getPath());
@@ -214,13 +226,15 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
-        try (ExecutionContext context = executor.createContext(
-                ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
+        try (ExecutionContext context =
+                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
             if (executor.isLocked(context)) {
                 LOG.debug("Script '{}' is already locked!", script.getPath());
                 return false;
             }
-            Execution executionPending = executionQueue.findByExecutableId(context.getExecutable().getId()).orElse(null);
+            Execution executionPending = executionQueue
+                    .findByExecutableId(context.getExecutable().getId())
+                    .orElse(null);
             if (executionPending != null) {
                 LOG.debug("Script '{}' is already queued: {}", script.getPath(), executionPending);
                 return false;

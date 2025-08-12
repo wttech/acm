@@ -94,7 +94,9 @@ public class ExecutionQueue implements JobExecutor {
         if (StringUtils.isBlank(executableId)) {
             return Optional.empty();
         }
-        return findAll().filter(e -> StringUtils.equals(e.getExecutable().getId(), executableId)).findFirst();
+        return findAll()
+                .filter(e -> StringUtils.equals(e.getExecutable().getId(), executableId))
+                .findFirst();
     }
 
     public Stream<ExecutionSummary> findAllSummaries() {

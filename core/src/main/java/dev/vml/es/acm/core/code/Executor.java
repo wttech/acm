@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.script.ContentScript;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.util.ResourceUtils;
@@ -181,7 +180,7 @@ public class Executor {
             boolean canRun = contentScript.canRun();
             if (canRun) {
                 return execution.end(ExecutionStatus.SUCCEEDED);
-            } else  {
+            } else {
                 return execution.end(ExecutionStatus.SKIPPED);
             }
         } catch (Throwable e) {

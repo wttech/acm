@@ -7,7 +7,7 @@ public class CronSchedule implements Schedule {
     private final String expression;
 
     public CronSchedule(String expression) {
-       this.expression = expression;
+        this.expression = expression;
     }
 
     @Override

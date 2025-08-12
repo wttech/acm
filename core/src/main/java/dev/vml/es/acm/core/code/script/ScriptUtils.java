@@ -13,6 +13,8 @@ import org.codehaus.groovy.transform.ASTTransformation;
 
 public final class ScriptUtils {
 
+    private static final String DEF_TYPE = "java.lang.Object";
+
     private ScriptUtils() {
         // intentionally empty
     }
@@ -35,9 +37,11 @@ public final class ScriptUtils {
 
     public static boolean isMethodValid(ClassNode mainClass, String methodName, String returnType, int paramCount) {
         for (MethodNode method : mainClass.getMethods()) {
-            if (methodName.equals(method.getName())
-                    && returnType.equals(method.getReturnType().getName())
-                    && method.getParameters().length == paramCount) {
+            String actualReturnType = method.getReturnType().getName();
+            if (DEF_TYPE.equals(actualReturnType)
+                    || methodName.equals(method.getName())
+                            && returnType.equals(actualReturnType)
+                            && method.getParameters().length == paramCount) {
                 return true;
             }
         }

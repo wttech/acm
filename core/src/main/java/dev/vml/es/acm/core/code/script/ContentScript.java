@@ -33,7 +33,11 @@ public class ContentScript {
         } catch (MissingMethodException e) {
             return new BootSchedule(); // intentional default schedule
         } catch (Throwable e) {
-            throw new AcmException(String.format("Executable '%s' schedule method error!", executionContext.getExecutable().getId()), e);
+            throw new AcmException(
+                    String.format(
+                            "Executable '%s' schedule method error!",
+                            executionContext.getExecutable().getId()),
+                    e);
         }
     }
 
@@ -43,7 +47,11 @@ public class ContentScript {
         } catch (MissingMethodException e) {
             // ignore as the method is optional
         } catch (Throwable e) {
-            throw new AcmException(String.format("Executable '%s' describe method error!", executionContext.getExecutable().getId()), e);
+            throw new AcmException(
+                    String.format(
+                            "Executable '%s' describe method error!",
+                            executionContext.getExecutable().getId()),
+                    e);
         }
     }
 

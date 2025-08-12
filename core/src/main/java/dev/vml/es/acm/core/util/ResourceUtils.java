@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.util;
 
 import dev.vml.es.acm.core.AcmException;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -106,14 +105,11 @@ public final class ResourceUtils {
         }
     }
 
-    public static Resource makeFolders(ResourceResolver resourceResolver, String path, String resourceType) throws AcmException {
+    // TODO Value for key sling:resourceType can't be put into node: nt:folder
+    public static Resource makeFolders(ResourceResolver resourceResolver, String path, String resourceType)
+            throws AcmException {
         try {
-            return ResourceUtil.getOrCreateResource(
-                    resourceResolver,
-                    path,
-                    Collections.emptyMap(),
-                    resourceType,
-                    true);
+            return ResourceUtil.getOrCreateResource(resourceResolver, path, Collections.emptyMap(), resourceType, true);
         } catch (Exception e) {
             throw new AcmException(String.format("Folders cannot be created for path '%s'", path), e);
         }

@@ -98,7 +98,8 @@ public class RepoResource {
         Resource resource = resolve();
         if (resource == null) {
             try {
-                ResourceUtil.getOrCreateResource(repo.getResourceResolver(), path, Collections.emptyMap(), resourceType, repo.isAutoCommit());
+                ResourceUtil.getOrCreateResource(
+                        repo.getResourceResolver(), path, Collections.emptyMap(), resourceType, repo.isAutoCommit());
             } catch (PersistenceException e) {
                 throw new RepoException(
                         String.format("Cannot ensure resource '%s' at path '%s'!", resourceType, path), e);
