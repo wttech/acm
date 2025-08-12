@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.util;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,8 +14,8 @@ import org.apache.sling.api.resource.LoginException;
 public final class ResourceUtils {
 
     public enum Subservice {
-        CONTENT("acm-content-service"),
-        MOCK("acm-mock-service");
+        CONTENT(AcmConstants.CODE + "-content-service"),
+        MOCK(AcmConstants.CODE + "-mock-service");
 
         public final String userId;
 

@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.script;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.schedule.CronSchedule;
@@ -24,10 +25,10 @@ import org.apache.sling.api.resource.observation.ResourceChangeListener;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.ScheduleOptions;
 import org.apache.sling.commons.scheduler.Scheduler;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.*;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,17 +41,31 @@ import org.slf4j.LoggerFactory;
             ResourceChangeListener.CHANGES + "=CHANGED",
             ResourceChangeListener.CHANGES + "=REMOVED"
         })
+@Designate(ocd = AutomaticScriptScheduler.Config.class)
 public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptScheduler.class);
 
-    // TODO make configurable
-    private static final long INSTANCE_HEALTHY_INTERVAL = 1000;
+    private static final String BOOT_JOB_NAME = AcmConstants.CODE + "-boot";
 
-    // TODO make configurable
-    private static final long INSTANCE_HEALTHY_RETRIES = 60 * 30; // 30 minutes
+    @ObjectClassDefinition(
+            name = "AEM Content Manager - Automatic Script Scheduler",
+            description = "Schedules automatic scripts on instance up and script changes"
+    )
+    public @interface Config {
 
-    private static final String BOOT_JOB_NAME = "boot";
+        @AttributeDefinition(name = "Health Check Interval",
+                description = "Interval in milliseconds to retry health check if instance is not healthy")
+        long healthRetryInterval() default 1000 * 10; // 10 seconds
+
+        @AttributeDefinition(name = "Health Check Max Count - Boot Schedule",
+                description = "Maximum number of retries to check if instance is healthy")
+        long healthRetryMaxCountBoot() default 90; // 90 times * 10 seconds = 15 minutes
+
+        @AttributeDefinition(name = "Health Check Max Count - Cron Schedule",
+                description = "Maximum number of retries to check if instance is healthy")
+        long healthRetryMaxCountCron() default 3; // 3 times * 10 seconds = 30 seconds
+    }
 
     private Boolean instanceReady;
 
@@ -76,16 +91,28 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     @Reference
     private ExecutionQueue executionQueue;
 
+    private Config config;
+
     @Activate
-    protected void activate() {
+    protected void activate(Config config) {
+        this.config = config;
+
         if (checkInstanceReady()) {
             bootWhenInstanceUp();
         }
     }
 
+    @Modified
+    protected void modify(Config config) {
+        this.config = config;
+    }
+
     @Deactivate
     protected void deactivate() {
+        unscheduleBoot();
         unscheduleScripts();
+        booted.clear();
+        instanceReady = null;
     }
 
     @Override
@@ -97,16 +124,21 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private void bootWhenInstanceUp() {
         LOG.info("Automatic scripts booting on instance up");
+        unscheduleBoot();
         scheduleBoot();
     }
 
     private void bootWhenScriptsChanged() {
         LOG.info("Automatic scripts booting on script changes");
+        unscheduleBoot();
         scheduleBoot();
     }
 
-    private void scheduleBoot() {
+    private void unscheduleBoot() {
         scheduler.unschedule(BOOT_JOB_NAME);
+    }
+
+    private void scheduleBoot() {
         scheduler.schedule(bootJob(), configureScheduleOptions(BOOT_JOB_NAME, scheduler.NOW()));
     }
 
@@ -128,8 +160,8 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     private Job bootJob() {
         return context -> {
             unscheduleScripts();
-            if (awaitInstanceHealthy()) {
-                bootOrScheduleScripts();
+            if (awaitInstanceHealthy("Automatic scripts queueing and scheduling", config.healthRetryMaxCountBoot(), config.healthRetryInterval())) {
+                queueAndScheduleScripts();
             }
         };
     }
@@ -150,36 +182,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         return instanceReady;
     }
 
-    private boolean awaitInstanceHealthy() {
-        HealthStatus healthStatus = null;
-        long retries = 0;
-        while (healthStatus == null || !healthStatus.isHealthy()) {
-            if (retries >= INSTANCE_HEALTHY_RETRIES) {
-                LOG.error(
-                        "Automatic scripts booting failed after {} retries due to health status: {}",
-                        INSTANCE_HEALTHY_RETRIES,
-                        healthStatus);
-                return false;
-            }
-            healthStatus = healthChecker.checkStatus();
-            if (healthStatus.isHealthy()) {
-                break;
-            } else {
-                LOG.warn("Automatic scripts booting paused due to health status: {}", healthStatus);
-                try {
-                    Thread.sleep(INSTANCE_HEALTHY_INTERVAL); // wait before retrying
-                    retries++;
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    LOG.error("Automatic scripts booting interrupted!", e);
-                }
-            }
-        }
-        return true;
-    }
-
     private void unscheduleScripts() {
-        scheduler.unschedule(BOOT_JOB_NAME);
         for (String scriptPath : scheduled) {
             try {
                 scheduler.unschedule(scriptPath);
@@ -190,7 +193,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         scheduled.clear();
     }
 
-    private void bootOrScheduleScripts() {
+    private void queueAndScheduleScripts() {
         try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
             scriptRepository.findAll(ScriptType.AUTOMATIC).forEach(script -> {
@@ -198,9 +201,9 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 if (scheduleResult.getExecution().getStatus() == ExecutionStatus.SUCCEEDED) {
                     Schedule schedule = scheduleResult.getSchedule();
                     if (schedule instanceof BootSchedule) {
-                        bootScript(script, resourceResolver);
+                        queueBootScript(script, resourceResolver);
                     } else if (schedule instanceof CronSchedule) {
-                        scheduleScript(script, (CronSchedule) schedule);
+                        scheduleCronScript(script, (CronSchedule) schedule);
                     }
                 } else {
                     LOG.error("Automatic script schedule cannot be determined: {}", scheduleResult.getExecution());
@@ -211,7 +214,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
-    private void bootScript(Script script, ResourceResolver resourceResolver) {
+    private void queueBootScript(Script script, ResourceResolver resourceResolver) {
         String checksum = ChecksumUtils.calculate(script.getContent());
         String previousChecksum = booted.get(script.getId());
         if (previousChecksum == null || !StringUtils.equals(previousChecksum, checksum)) {
@@ -225,7 +228,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
-    private void scheduleScript(Script script, CronSchedule schedule) {
+    private void scheduleCronScript(Script script, CronSchedule schedule) {
         if (StringUtils.isNotBlank(schedule.getExpression())) {
             scheduler.schedule(
                     cronJob(script.getPath()),
@@ -235,6 +238,30 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         } else {
             LOG.error("Cron schedule script '{}' not scheduled as no expression defined!", script.getId());
         }
+    }
+
+    private Job cronJob(String scriptPath) {
+        return context -> {
+            if (!awaitInstanceHealthy(String.format("Cron script queueing '%s'", scriptPath), config.healthRetryMaxCountCron(), config.healthRetryInterval())) {
+                return;
+            }
+
+            try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+                ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
+                Script script = scriptRepository.read(scriptPath).orElse(null);
+                if (script == null) {
+                    LOG.error("Cron schedule script '{}' not found in repository!", scriptPath);
+                } else {
+                    if (checkScript(script, resourceResolver)) {
+                        queueScript(script);
+                    } else {
+                        LOG.info("Cron schedule script '{}' not ready for queueing!", scriptPath);
+                    }
+                }
+            } catch (LoginException e) {
+                LOG.error("Cannot access repository while queueing cron schedule script '{}'!", scriptPath, e);
+            }
+        };
     }
 
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
@@ -264,26 +291,32 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, null));
     }
 
-    private Job cronJob(String scriptPath) {
-        return context -> {
-            // TODO should it wait for healthy instance?
-            // awaitInstanceHealthy();
-
-            try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
-                ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-                Script script = scriptRepository.read(scriptPath).orElse(null);
-                if (script == null) {
-                    LOG.error("Cron schedule script '{}' not found in repository!", scriptPath);
-                } else {
-                    if (checkScript(script, resourceResolver)) {
-                        queueScript(script);
-                    } else {
-                        LOG.info("Cron schedule script '{}' not ready for queueing!", scriptPath);
-                    }
-                }
-            } catch (LoginException e) {
-                LOG.error("Cannot access repository while queueing cron schedule script '{}'!", scriptPath, e);
+    private boolean awaitInstanceHealthy(String operation, long retryMaxCount, long retryInterval) {
+        HealthStatus healthStatus = null;
+        long retryCount = 0;
+        while (healthStatus == null || !healthStatus.isHealthy()) {
+            if (retryCount >= retryMaxCount) {
+                LOG.error(
+                        "{} failed after {} retries due to health status: {}",
+                        operation,
+                        retryMaxCount,
+                        healthStatus);
+                return false;
             }
-        };
+            healthStatus = healthChecker.checkStatus();
+            if (healthStatus.isHealthy()) {
+                break;
+            } else {
+                LOG.warn("{} paused due to health status: {}", operation, healthStatus);
+                try {
+                    Thread.sleep(retryInterval); // wait before retrying
+                    retryCount++;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    LOG.error("{} interrupted!", operation, e);
+                }
+            }
+        }
+        return true;
     }
 }

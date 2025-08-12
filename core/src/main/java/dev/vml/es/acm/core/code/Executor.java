@@ -97,16 +97,12 @@ public class Executor {
     }
 
     private ImmediateExecution executeImmediately(ExecutionContext context) {
-        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
-        Locker locker = context.getCodeContext().getLocker();
-        String lockName = executableLockName(context);
+        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context).start();
 
         try {
             statuses.put(context.getId(), ExecutionStatus.PARSING);
 
             ContentScript contentScript = new ContentScript(context);
-
-            execution.start();
 
             if (context.getMode() == ExecutionMode.PARSE) {
                 return execution.end(ExecutionStatus.SUCCEEDED);
@@ -124,7 +120,8 @@ public class Executor {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            // TODO should we wait here for healthy instance
+            Locker locker = context.getCodeContext().getLocker();
+            String lockName = executableLockName(context);
 
             if (locker.isLocked(lockName)) {
                 return execution.end(ExecutionStatus.SKIPPED);
@@ -162,10 +159,9 @@ public class Executor {
     }
 
     public Description describe(ExecutionContext context) {
-        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
+        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context).start();
         try {
             ContentScript contentScript = new ContentScript(context);
-            execution.start();
             contentScript.describe();
 
             return new Description(execution.end(ExecutionStatus.SUCCEEDED), context.getArguments());
@@ -176,11 +172,10 @@ public class Executor {
     }
 
     public Execution check(ExecutionContext context) throws AcmException {
-        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
+        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context).start();
 
         try {
             ContentScript contentScript = new ContentScript(context);
-            execution.start();
             boolean canRun = contentScript.canRun();
             if (canRun) {
                 return execution.end(ExecutionStatus.SUCCEEDED);
@@ -194,10 +189,9 @@ public class Executor {
     }
 
     public ScheduleResult schedule(ExecutionContext context) {
-        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
+        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context).start();
         try {
             ContentScript contentScript = new ContentScript(context);
-            execution.start();
             Schedule schedule = contentScript.schedule();
             return new ScheduleResult(execution.end(ExecutionStatus.SUCCEEDED), schedule);
         } catch (Throwable e) {
