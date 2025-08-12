@@ -208,6 +208,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
+    // TODO should we reboot changed scripts or not ; store checksum instead of boolean?
     private void bootScript(Script script, ResourceResolver resourceResolver) {
         AtomicBoolean booted = this.booted.computeIfAbsent(script.getId(), s -> new AtomicBoolean(false));
         if (!booted.get()) {
