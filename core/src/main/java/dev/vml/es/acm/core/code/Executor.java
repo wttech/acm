@@ -124,6 +124,8 @@ public class Executor {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
+            // TODO should we wait here for healthy instance
+
             if (locker.isLocked(lockName)) {
                 return execution.end(ExecutionStatus.SKIPPED);
             }
