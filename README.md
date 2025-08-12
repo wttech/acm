@@ -249,8 +249,12 @@ Be inspired by reviewing examples like [page thumbnail script](https://github.co
 The following example demonstrates how to create a user and a group, assign permissions, and add members to the group using the [ACL service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/acl/Acl.java) (`acl`).
 
 ```groovy
+def scheduleRun() {
+    return schedules.cron("0 10 * ? * * *") // every hour at minute 10
+}
+
 boolean canRun() {
-    return conditions.everyHour()
+    return conditions.always()
 }
 
 void doRun() {
