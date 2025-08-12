@@ -212,7 +212,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     private void bootScript(Script script, ResourceResolver resourceResolver) {
         String checksum = ChecksumUtils.calculate(script.getContent());
         String previousChecksum = booted.get(script.getId());
-        if (previousChecksum == null || StringUtils.equals(previousChecksum, checksum)) {
+        if (previousChecksum == null || !StringUtils.equals(previousChecksum, checksum)) {
             if (checkScript(script, resourceResolver)) {
                 queueScript(script);
                 booted.put(script.getId(), checksum);
