@@ -266,6 +266,9 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private Job cronJob(String scriptPath) {
         return context -> {
+            // TODO should it wait for healthy instance?
+            // awaitInstanceHealthy();
+
             try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
                 ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
                 Script script = scriptRepository.read(scriptPath).orElse(null);
