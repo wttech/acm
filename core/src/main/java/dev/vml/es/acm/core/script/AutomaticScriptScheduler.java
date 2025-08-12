@@ -208,7 +208,6 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
-    // TODO what if script changed and was booted, use checksum?
     private void bootScript(Script script, ResourceResolver resourceResolver) {
         AtomicBoolean booted = this.booted.computeIfAbsent(script.getId(), s -> new AtomicBoolean(false));
         if (!booted.get()) {
@@ -236,19 +235,19 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         try (ExecutionContext context =
                 executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
             if (executor.isLocked(context)) {
-                LOG.debug("Script '{}' is already locked!", script.getPath());
+                LOG.info("Script '{}' is already locked!", script.getPath());
                 return false;
             }
-            Execution executionPending = executionQueue
+            Execution executionQueued = executionQueue
                     .findByExecutableId(context.getExecutable().getId())
                     .orElse(null);
-            if (executionPending != null) {
-                LOG.debug("Script '{}' is already queued: {}", script.getPath(), executionPending);
+            if (executionQueued != null) {
+                LOG.info("Script '{}' is already queued: {}", script.getPath(), executionQueued);
                 return false;
             }
             Execution executionChecking = executor.check(context);
             if (executionChecking.getStatus() != ExecutionStatus.SUCCEEDED) {
-                LOG.debug("Script '{}' cannot run: {}", script.getPath(), executionChecking);
+                LOG.info("Script '{}' cannot run: {}", script.getPath(), executionChecking);
                 return false;
             }
             return true;
