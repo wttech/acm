@@ -98,6 +98,8 @@ public class Executor {
 
     private ImmediateExecution executeImmediately(ExecutionContext context) {
         ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context);
+        Locker locker = context.getCodeContext().getLocker();
+        String lockName = executableLockName(context);
 
         try {
             statuses.put(context.getId(), ExecutionStatus.PARSING);
@@ -122,12 +124,12 @@ public class Executor {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            if (context.getCodeContext().getLocker().isLocked(executableLockName(context))) {
+            if (locker.isLocked(lockName)) {
                 return execution.end(ExecutionStatus.SKIPPED);
             }
 
             try {
-                context.getCodeContext().getLocker().lock(executableLockName(context));
+                locker.lock(lockName);
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
@@ -136,7 +138,7 @@ public class Executor {
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                context.getCodeContext().getLocker().unlock(executableLockName(context));
+                locker.unlock(lockName);
             }
         } catch (Throwable e) {
             execution.error(e);
