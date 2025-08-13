@@ -67,7 +67,7 @@ public class Script implements Executable, Comparable<Script> {
     }
 
     public ScriptType getType() {
-        return ScriptType.byPath(getPath()).orElse(ScriptType.AUTOMATIC);
+        return ScriptType.byPath(getPath()).orElse(ScriptType.MANUAL);
     }
 
     public InputStream readContent() throws ScriptException {

@@ -45,7 +45,7 @@ const ScriptAutomaticList: React.FC = () => {
               <Button
                   variant="negative"
                   isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
-                  onPress={() => window.open(`${instancePrefix}/system/console/configMgr/\tdev.vml.es.acm.core.script.AutomaticScriptScheduler`, '_blank')}
+                  onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.script.AutomaticScriptScheduler`, '_blank')}
               >
                 <Settings />
                 <Text>Configure</Text>
