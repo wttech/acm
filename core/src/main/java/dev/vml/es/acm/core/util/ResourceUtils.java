@@ -2,7 +2,6 @@ package dev.vml.es.acm.core.util;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
-
 import java.util.*;
 import javax.jcr.*;
 import org.apache.commons.lang3.StringUtils;
@@ -109,7 +108,13 @@ public final class ResourceUtils {
      * Creates a resource and its parents at the specified path if it does not exist.
      * Differs to {@link ResourceUtil#getOrCreateResource} in that it does not force putting 'sling:resourceType' property.
      */
-    public static Resource ensure(ResourceResolver resourceResolver, String path, Map<String, Object> props, String primaryType, String parentPrimaryType) throws AcmException {
+    public static Resource ensure(
+            ResourceResolver resourceResolver,
+            String path,
+            Map<String, Object> props,
+            String primaryType,
+            String parentPrimaryType)
+            throws AcmException {
         try {
             Resource resource = resourceResolver.getResource(path);
             if (resource != null) {
@@ -118,24 +123,32 @@ public final class ResourceUtils {
 
             String[] segments = StringUtils.strip(path, "/").split("/");
             StringBuilder currentPath = new StringBuilder();
-            Resource parent = Objects.requireNonNull(resourceResolver.getResource("/"));
+            Resource parent = null;
+            int startIdx = 0;
 
+            // Find the deepest existing parent
             for (int i = 0; i < segments.length; i++) {
                 currentPath.append("/").append(segments[i]);
-                Resource child = resourceResolver.getResource(currentPath.toString());
-                if (child == null) {
-                    Map<String, Object> allProps = new HashMap<>();
-                    if (i == segments.length - 1) {
-                        allProps.put(JcrConstants.JCR_PRIMARYTYPE, primaryType);
-                        if (props != null) {
-                            allProps.putAll(props);
-                        }
-                    } else {
-                        allProps.put(JcrConstants.JCR_PRIMARYTYPE, parentPrimaryType);
-                    }
-                    child = resourceResolver.create(parent, segments[i], allProps);
+                Resource existing = resourceResolver.getResource(currentPath.toString());
+                if (existing == null) {
+                    break;
                 }
-                parent = child;
+                parent = existing;
+                startIdx = i + 1;
+            }
+
+            // Create missing nodes from the deepest existing parent
+            for (int i = startIdx; i < segments.length; i++) {
+                Map<String, Object> allProps = new HashMap<>();
+                if (i == segments.length - 1) {
+                    allProps.put(JcrConstants.JCR_PRIMARYTYPE, primaryType);
+                    if (props != null) {
+                        allProps.putAll(props);
+                    }
+                } else {
+                    allProps.put(JcrConstants.JCR_PRIMARYTYPE, parentPrimaryType);
+                }
+                parent = resourceResolver.create(parent, segments[i], allProps);
             }
             return parent;
         } catch (PersistenceException e) {
@@ -143,7 +156,8 @@ public final class ResourceUtils {
         }
     }
 
-    public static Resource ensure(ResourceResolver resourceResolver, String path, String primaryType) throws AcmException {
+    public static Resource ensure(ResourceResolver resourceResolver, String path, String primaryType)
+            throws AcmException {
         return ensure(resourceResolver, path, Collections.emptyMap(), primaryType, primaryType);
     }
 

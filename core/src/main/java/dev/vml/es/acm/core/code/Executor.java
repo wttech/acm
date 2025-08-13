@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.script.ContentScript;
 import dev.vml.es.acm.core.osgi.OsgiContext;
@@ -7,6 +8,7 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -19,7 +21,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 @Designate(ocd = Executor.Config.class)
 public class Executor {
 
-    public static final String LOCK_NAME = "executor";
+    public static final String LOCK_DIR = "executor";
 
     @ObjectClassDefinition(name = "AEM Content Manager - Code Executor")
     public @interface Config {
@@ -151,7 +153,9 @@ public class Executor {
     }
 
     private String executableLockName(ExecutionContext context) {
-        return String.format("%s/%s", context.getExecutable().getId(), LOCK_NAME);
+        return String.format(
+                "%s/%s",
+                LOCK_DIR, StringUtils.removeStart(context.getExecutable().getId(), AcmConstants.SETTINGS_ROOT + "/"));
     }
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {

@@ -7,7 +7,6 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -54,6 +53,5 @@ public class ScriptRepository {
         } catch (PersistenceException e) {
             throw new AcmException(String.format("Cannot create script root '%s'!", type.root()), e);
         }
-
     }
 }

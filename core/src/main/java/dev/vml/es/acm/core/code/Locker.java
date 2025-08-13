@@ -52,7 +52,8 @@ public class Locker {
             if (name.contains("/")) {
                 String dirPath = StringUtils.substringBeforeLast(name, "/");
                 nodeName = StringUtils.substringAfterLast(name, "/");
-                dirResource = ResourceUtils.ensure(resolver, ROOT + "/" + dirPath, JcrResourceConstants.NT_SLING_FOLDER);
+                dirResource =
+                        ResourceUtils.ensure(resolver, ROOT + "/" + dirPath, JcrResourceConstants.NT_SLING_FOLDER);
             } else {
                 dirResource = ResourceUtils.ensure(resolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER);
                 nodeName = name;

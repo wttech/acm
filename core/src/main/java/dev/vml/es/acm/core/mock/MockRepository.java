@@ -57,7 +57,8 @@ public class MockRepository {
 
     public Resource getOrCreateRoot() throws AcmException {
         try {
-            Resource root = ResourceUtils.ensure(resolver, ScriptType.MOCK.root(), JcrResourceConstants.NT_SLING_FOLDER);
+            Resource root =
+                    ResourceUtils.ensure(resolver, ScriptType.MOCK.root(), JcrResourceConstants.NT_SLING_FOLDER);
             resolver.commit();
             return root;
         } catch (PersistenceException e) {

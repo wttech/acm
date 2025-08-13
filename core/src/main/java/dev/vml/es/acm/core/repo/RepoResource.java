@@ -100,7 +100,8 @@ public class RepoResource {
             try {
                 ResourceUtils.ensure(repo.getResourceResolver(), path, primaryType);
             } catch (Exception e) {
-                throw new RepoException(String.format("Cannot ensure resource '%s' at path '%s'!", primaryType, path), e);
+                throw new RepoException(
+                        String.format("Cannot ensure resource '%s' at path '%s'!", primaryType, path), e);
             }
             repo.commit(String.format("ensuring resource '%s' at path %s", primaryType, path));
             LOG.info("Ensured resource '{}' at path '{}'", primaryType, path);

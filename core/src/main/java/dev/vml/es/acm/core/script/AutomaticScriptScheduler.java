@@ -12,7 +12,6 @@ import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.ResourceUtils;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,8 +50,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     @ObjectClassDefinition(
             name = "AEM Content Manager - Automatic Script Scheduler",
-            description = "Schedules automatic scripts on instance up and script changes"
-    )
+            description = "Schedules automatic scripts on instance up and script changes")
     public @interface Config {
 
         @AttributeDefinition(
@@ -61,12 +59,15 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                         "Controls who accesses the repository when scripts are automatically executed. If blank, the service user 'acm-content-service' is used.")
         String userImpersonationId();
 
-        @AttributeDefinition(name = "Health Check Interval",
+        @AttributeDefinition(
+                name = "Health Check Interval",
                 description = "Interval in milliseconds to retry health check if instance is not healthy")
         long healthRetryInterval() default 1000 * 10; // 10 seconds
 
-        @AttributeDefinition(name = "Health Check Max Count - Boot",
-                description = "Maximum number of retries after booting instance or installing package with automatic scripts")
+        @AttributeDefinition(
+                name = "Health Check Max Count - Boot",
+                description =
+                        "Maximum number of retries after booting instance or installing package with automatic scripts")
         long healthRetryMaxCountBoot() default 90; // 90 times * 10 seconds = 15 minutes
     }
 
@@ -163,7 +164,10 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     private Job bootJob() {
         return context -> {
             unscheduleScripts();
-            if (awaitInstanceHealthy("Automatic scripts queueing and scheduling", config.healthRetryMaxCountBoot(), config.healthRetryInterval())) {
+            if (awaitInstanceHealthy(
+                    "Automatic scripts queueing and scheduling",
+                    config.healthRetryMaxCountBoot(),
+                    config.healthRetryInterval())) {
                 queueAndScheduleScripts();
             }
         };
@@ -210,7 +214,10 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                     } else if (schedule instanceof NoneSchedule) {
                         LOG.info("Automatic script '{}' skipped due to schedule 'none'", script.getId());
                     } else {
-                        LOG.info("Automatic script '{}' skipped due to schedule '{}' (unsupported)", script.getId(), schedule.getId());
+                        LOG.info(
+                                "Automatic script '{}' skipped due to schedule '{}' (unsupported)",
+                                script.getId(),
+                                schedule.getId());
                     }
                 } else {
                     LOG.error("Automatic script schedule cannot be determined: {}", scheduleResult.getExecution());
@@ -241,7 +248,10 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                     cronJob(script.getPath()),
                     configureScheduleOptions(script.getPath(), scheduler.EXPR(schedule.getExpression())));
             scheduled.add(script.getPath());
-            LOG.info("Cron schedule script '{}' scheduled with expression '{}'", script.getId(), schedule.getExpression());
+            LOG.info(
+                    "Cron schedule script '{}' scheduled with expression '{}'",
+                    script.getId(),
+                    schedule.getExpression());
         } else {
             LOG.error("Cron schedule script '{}' not scheduled as no expression defined!", script.getId());
         }
@@ -291,7 +301,8 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     private void queueScript(Script script) {
-        String userId = StringUtils.defaultIfBlank(config.userImpersonationId(), ResourceUtils.Subservice.CONTENT.userId);
+        String userId =
+                StringUtils.defaultIfBlank(config.userImpersonationId(), ResourceUtils.Subservice.CONTENT.userId);
         executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, userId));
     }
 
