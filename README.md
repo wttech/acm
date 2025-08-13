@@ -191,9 +191,8 @@ The ACM Console is interactive and offers the following features:
 Content scripts in ACM are Groovy scripts that can be used to automate various tasks in AEM. 
 These scripts can be placed in specific locations within the AEM repository to control their execution behavior.
 
-- `/conf/acm/settings/script/boot/{project}`: Automatically executed scripts on instance boot, usually run once after deployment. Specific conditions could be narrowed by 'canRun()' method.
-- `/conf/acm/settings/script/schedule/{project}`: Automatically executed scripts on schedule every minute. Specific conditions could be narrowed by 'canRun()' method.
-- `/conf/acm/settings/script/manual/{project}`: Manually executed scripts, run under specific circumstances by platform administrators.
+- `/conf/acm/settings/script/automatic/{project}`: Automatically executed scripts on instance boot (usually run once after deployment) or on scheduled intervals defined by `scheduleRun()` method. Specific conditions could be narrowed by `canRun()` method.
+- `/conf/acm/settings/script/manual/{project}`: Manually executed scripts (usually with arguments), run under specific circumstances by platform administrators.
 
 #### Minimal example
 
@@ -246,7 +245,7 @@ Be inspired by reviewing examples like [page thumbnail script](https://github.co
 
 #### ACL example
 
-The following example demonstrates how to create a user and a group, assign permissions, and add members to the group using the [ACL service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/acl/Acl.java) (`acl`).
+The following example of the automatic script demonstrates how to create a user and a group, assign permissions, and add members to the group using the [ACL service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/acl/Acl.java) (`acl`).
 
 ```groovy
 def scheduleRun() {
