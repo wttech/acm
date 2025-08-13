@@ -1,0 +1,8 @@
+group: Schedule
+name: schedule_none
+content: |
+  schedules.none()
+documentation: |
+  Effectively disables automatic script execution. 
+  
+  Useful to mark a script as archived or disabling it without removing it from the system.

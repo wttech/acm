@@ -58,7 +58,8 @@ public class Conditions {
     }
 
     public boolean notSucceeded() {
-        return false; // TODO implement this
+        Execution passedExecution = passedExecution();
+        return passedExecution == null || passedExecution.getStatus() != ExecutionStatus.SUCCEEDED;
     }
 
     public boolean isChangedExecutableContent(Execution execution) {
