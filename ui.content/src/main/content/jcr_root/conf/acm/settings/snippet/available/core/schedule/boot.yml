@@ -1,0 +1,9 @@
+group: Schedule
+name: schedule_boot
+content: |
+  schedules.boot()
+documentation: |
+  Schedules the script to run at system startup or when a package containing such an automatic script is installed.
+  
+  Each script is executed only once per system startup. 
+  If a script using this schedule is installed after startup, ACM ensures that the same version of each script runs only once during a single instance boot.

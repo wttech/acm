@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class SnippetRepository {
 
@@ -47,6 +49,12 @@ public class SnippetRepository {
     }
 
     private Resource getOrCreateRoot() throws AcmException {
-        return ResourceUtils.makeFolders(resourceResolver, ROOT);
+        try {
+            Resource root = ResourceUtils.ensure(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER);
+            resourceResolver.commit();
+            return root;
+        } catch (PersistenceException e) {
+            throw new AcmException(String.format("Cannot create snippet root '%s'!", ROOT), e);
+        }
     }
 }

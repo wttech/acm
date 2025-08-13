@@ -1,0 +1,31 @@
+group: General
+name: general_script_schedule_run
+content: |
+  def scheduleRun() {
+    // return schedules.xxx()
+  }
+documentation: |
+  Determines the schedule for the script to run. 
+  
+  This method is executed by automatic script executor to schedule script execution on boot or at cron expression.
+  
+  Default schedule (method could be omitted) for instance boot:
+  ```groovy
+    def scheduleRun() {
+        return schedules.boot()
+    }
+  ```
+  
+  Example schedule using [Quartz](https://www.quartz-scheduler.org/documentation) cron expression (e.g. every day at 10:00 AM):
+  ```groovy
+  def scheduleRun() {
+      return schedules.cron("0 0 10 * * ?")
+  }
+  ```
+  
+  Example schedule for a specific date and time (1st July 2024 at 10:00 AM):
+  ```groovy
+  def scheduleRun() {
+      return schedules.cron("0 0 10 1 7 ? 2024") 
+  }
+  ```

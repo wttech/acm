@@ -1,20 +1,19 @@
 package dev.vml.es.acm.core.util;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import javax.jcr.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.api.resource.LoginException;
-import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public final class ResourceUtils {
 
     public enum Subservice {
-        CONTENT("acm-content-service"),
-        MOCK("acm-mock-service");
+        CONTENT(AcmConstants.CODE + "-content-service"),
+        MOCK(AcmConstants.CODE + "-mock-service");
 
         public final String userId;
 
@@ -46,7 +45,8 @@ public final class ResourceUtils {
         Map<String, Object> params = new HashMap<>();
         params.put(ResourceResolverFactory.SUBSERVICE, subservice.id());
 
-        boolean impersonation = StringUtils.isNotBlank(userImpersonationId) && !StringUtils.equals(subservice.userId, userImpersonationId);
+        boolean impersonation = StringUtils.isNotBlank(userImpersonationId)
+                && !StringUtils.equals(subservice.userId, userImpersonationId);
         if (!impersonation) {
             return resourceResolverFactory.getServiceResourceResolver(params);
         }
@@ -104,17 +104,61 @@ public final class ResourceUtils {
         }
     }
 
-    public static Resource makeFolders(ResourceResolver resourceResolver, String path) throws AcmException {
+    /**
+     * Creates a resource and its parents at the specified path if it does not exist.
+     * Differs to {@link ResourceUtil#getOrCreateResource} in that it does not force putting 'sling:resourceType' property.
+     */
+    public static Resource ensure(
+            ResourceResolver resourceResolver,
+            String path,
+            Map<String, Object> props,
+            String primaryType,
+            String parentPrimaryType)
+            throws AcmException {
         try {
-            return ResourceUtil.getOrCreateResource(
-                    resourceResolver,
-                    path,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    JcrResourceConstants.NT_SLING_FOLDER,
-                    true);
-        } catch (Exception e) {
-            throw new AcmException(String.format("Folders cannot be created for path '%s'", path), e);
+            Resource resource = resourceResolver.getResource(path);
+            if (resource != null) {
+                return resource;
+            }
+
+            String[] segments = StringUtils.strip(path, "/").split("/");
+            StringBuilder currentPath = new StringBuilder();
+            Resource parent = null;
+            int startIdx = 0;
+
+            // Find the deepest existing parent
+            for (int i = 0; i < segments.length; i++) {
+                currentPath.append("/").append(segments[i]);
+                Resource existing = resourceResolver.getResource(currentPath.toString());
+                if (existing == null) {
+                    break;
+                }
+                parent = existing;
+                startIdx = i + 1;
+            }
+
+            // Create missing nodes from the deepest existing parent
+            for (int i = startIdx; i < segments.length; i++) {
+                Map<String, Object> allProps = new HashMap<>();
+                if (i == segments.length - 1) {
+                    allProps.put(JcrConstants.JCR_PRIMARYTYPE, primaryType);
+                    if (props != null) {
+                        allProps.putAll(props);
+                    }
+                } else {
+                    allProps.put(JcrConstants.JCR_PRIMARYTYPE, parentPrimaryType);
+                }
+                parent = resourceResolver.create(parent, segments[i], allProps);
+            }
+            return parent;
+        } catch (PersistenceException e) {
+            throw new AcmException(String.format("Cannot create resource '%s'!", path), e);
         }
+    }
+
+    public static Resource ensure(ResourceResolver resourceResolver, String path, String primaryType)
+            throws AcmException {
+        return ensure(resourceResolver, path, Collections.emptyMap(), primaryType, primaryType);
     }
 
     /**

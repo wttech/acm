@@ -1,0 +1,10 @@
+group: Schedule
+name: schedule_cron
+content: |
+  schedules.cron(${1:expression})
+documentation: |
+  Schedules the script to run at specified intervals using a cron expression.
+
+  AEM uses the Quartz scheduler, and so does ACM. Both require a specific syntax for cron expressions.
+  For details, refer to the [Quartz documentation](https://www.quartz-scheduler.org/documentation).
+  To generate valid cron expressions, you can use online tools such as [FreeFormatter](https://www.freeformatter.com/cron-expression-generator-quartz.html).

@@ -287,9 +287,8 @@ export type Snippet = {
 };
 
 export enum ScriptType {
+  AUTOMATIC = 'AUTOMATIC',
   MANUAL = 'MANUAL',
-  ENABLED = 'ENABLED',
-  DISABLED = 'DISABLED',
   EXTENSION = 'EXTENSION',
   MOCK = 'MOCK',
 }

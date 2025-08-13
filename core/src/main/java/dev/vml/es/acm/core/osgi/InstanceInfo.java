@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.settings.SlingSettingsService;
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -22,17 +22,14 @@ public class InstanceInfo {
 
     private Config config;
 
-    private BundleContext bundleContext;
+    @Reference
+    private SlingSettingsService slingSettings;
 
     @Activate
     @Modified
-    protected void activate(Config config, BundleContext bundleContext) {
+    protected void activate(Config config) {
         this.config = config;
-        this.bundleContext = bundleContext;
     }
-
-    @Reference
-    private SlingSettingsService slingSettings;
 
     public boolean isAuthor() {
         return isRunMode(InstanceRole.AUTHOR.name());
@@ -64,7 +61,8 @@ public class InstanceInfo {
         String regex = config.versionCloudSdkRegex();
         Pattern pattern = Pattern.compile(regex);
         for (String prop : config.versionBundleContextProps()) {
-            String value = bundleContext.getProperty(prop);
+            String value =
+                    FrameworkUtil.getBundle(getClass()).getBundleContext().getProperty(prop);
             if (StringUtils.isNotBlank(value)) {
                 Matcher matcher = pattern.matcher(value);
                 if (matcher.matches()) {

@@ -4,6 +4,7 @@ import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ExceptionUtils;
 import java.io.InputStream;
 import java.util.Date;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -109,6 +110,7 @@ public class ImmediateExecution implements Execution {
                 .append("executable", getExecutable())
                 .append("status", getStatus())
                 .append("duration", getDuration())
+                .append("error", StringUtils.abbreviate(error, 200))
                 .toString();
     }
 

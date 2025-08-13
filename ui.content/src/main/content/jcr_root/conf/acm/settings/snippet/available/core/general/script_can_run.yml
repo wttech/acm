@@ -2,9 +2,38 @@ group: General
 name: general_script_can_run
 content: |
   boolean canRun() {
-    // condition
+    // return conditions.xxx()
   }
 documentation: |
-  Checks if the script can be executed.
+  Determines whether the script is eligible for execution.
+  Allows to skip execution (and history entries) based on any conditions, such as the script author, changes in the repository, or previous execution results.
   
-  This method is executed after `describeRun()` and before `doRun()` methods.
+  This method is called after `describeRun()` and before `doRun()`.
+  
+  **For console or manual execution**, typically define as:
+  ```groovy
+  boolean canRun() {
+    return conditions.always()
+  }
+  ```
+  
+  **For automatic execution**, usually define to run only once:
+  ```groovy
+  boolean canRun() {
+      return conditions.once()
+  }
+  ```
+  
+  **Or until the script succeeds**:
+  ```groovy
+  boolean canRun() {
+      return conditions.notSucceeded()
+  }
+  ```
+  
+  All conditions could be combined with logical operators:
+  ```groovy
+  boolean canRun() {
+      return conditions.isInstanceAuthor() && (conditions.changed() || conditions.notSucceeded())
+  }
+  ```

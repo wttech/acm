@@ -17,10 +17,6 @@ documentation: |
   void describeRun() {
     arguments.bool("dryRun") { value = true; switcher(); description = "Do not commit changes to the repository" }
   }
-  
-  boolean canRun() {
-    return conditions.notRunning()
-  }
     
   void doRun() { 
     repo.dryRun(arguments.value("dryRun")) {

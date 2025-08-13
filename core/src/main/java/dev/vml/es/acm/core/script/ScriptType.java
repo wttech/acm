@@ -6,8 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum ScriptType {
     MANUAL(ScriptRepository.ROOT + "/manual"),
-    ENABLED(ScriptRepository.ROOT + "/auto/enabled"),
-    DISABLED(ScriptRepository.ROOT + "/auto/disabled"),
+    AUTOMATIC(ScriptRepository.ROOT + "/automatic"),
     MOCK(ScriptRepository.ROOT + "/mock"),
     EXTENSION(ScriptRepository.ROOT + "/extension"),
     TEMPLATE(ScriptRepository.ROOT + "/template");
@@ -30,16 +29,8 @@ public enum ScriptType {
                 .findFirst();
     }
 
-    public String enforcePath(String path) {
-        String subPath = path;
-        for (ScriptType value : values()) {
-            subPath = StringUtils.removeStart(subPath, value.root() + "/");
-        }
-        return root + "/" + subPath;
-    }
-
     public boolean statsSupported() {
-        return this == MANUAL || this == ENABLED || this == DISABLED;
+        return this == MANUAL || this == AUTOMATIC;
     }
 
     public String root() {

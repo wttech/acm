@@ -1,58 +1,24 @@
-import { Button, ButtonGroup, Cell, Column, Content, ContextualHelp, Flex, Heading, IllustratedMessage, Link, ProgressBar, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
-import { Key, Selection } from '@react-types/shared';
+import { Button, Cell, Column, Content, ContextualHelp, Flex, Heading, IllustratedMessage, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
-import { toastRequest } from '../utils/api';
-import { InstanceRole, isExecutionNegative, ScriptOutput, ScriptType } from '../utils/api.types';
+import { useScripts } from '../hooks/script';
+import { isExecutionNegative, ScriptType } from '../utils/api.types';
 import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
-import ScriptSynchronizeButton from './ScriptSynchronizeButton';
-import ScriptToggleButton from './ScriptToggleButton';
-import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
+import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
-import UserInfo from './UserInfo.tsx';
+import UserInfo from './UserInfo';
 
-type ScriptListRichProps = {
-  type: ScriptType;
-};
-
-const ScriptListRich: React.FC<ScriptListRichProps> = ({ type }) => {
+const ScriptManualList: React.FC = () => {
+  const type = ScriptType.MANUAL;
+  const { scripts, loading } = useScripts(type);
   const appState = useAppState();
   const navigate = useNavigate();
   const formatter = useFormatter();
-
-  const [scripts, setScripts] = useState<ScriptOutput | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
-
-  const loadScripts = useCallback(() => {
-    setLoading(true);
-    toastRequest<ScriptOutput>({
-      method: 'GET',
-      url: `/apps/acm/api/script.json?type=${type}`,
-      operation: `Scripts loading (${type.toString().toLowerCase()})`,
-      positive: false,
-    })
-      .then((data) => setScripts(data.data.data))
-      .catch((error) => console.error(`Scripts loading (${type}) error:`, error))
-      .finally(() => setLoading(false));
-  }, [type]);
-
-  useEffect(() => {
-    loadScripts();
-  }, [type, loadScripts]);
-
-  const selectedIds = (selectedKeys: Selection): string[] => {
-    if (selectedKeys === 'all') {
-      return scripts?.list.map((script) => script.id) || [];
-    } else {
-      return Array.from(selectedKeys as Set<Key>).map((key) => key.toString());
-    }
-  };
 
   const renderEmptyState = () => (
     <IllustratedMessage>
@@ -74,44 +40,17 @@ const ScriptListRich: React.FC<ScriptListRichProps> = ({ type }) => {
       <View>
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
-            <ButtonGroup>
-              {type === ScriptType.ENABLED || type === ScriptType.DISABLED ? (
-                <>
-                  <ScriptToggleButton type={type} selectedKeys={selectedIds(selectedKeys)} onToggle={loadScripts} />
-                  {appState.instanceSettings.role == InstanceRole.AUTHOR && <ScriptSynchronizeButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />}
-                </>
-              ) : null}
-            </ButtonGroup>
+            &nbsp;
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight variant={appState.healthStatus.healthy ? 'positive' : 'negative'}>
-              {appState.healthStatus.healthy ? (
-                <Text>Executor active</Text>
-              ) : (
-                <>
-                  <Text>Executor paused</Text>
-                  <Text>&nbsp;&mdash;&nbsp;</Text>
-                  <Link isQuiet onPress={() => navigate('/maintenance?tab=health-checker')}>
-                    See health issues
-                  </Link>
-                </>
-              )}
-            </StatusLight>
+            <ScriptExecutorStatusLight />
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            {type === ScriptType.MANUAL ? <ScriptsManualHelpButton /> : <ScriptsAutomaticHelpButton />}
+            <ScriptsManualHelpButton />
           </Flex>
         </Flex>
       </View>
-      <TableView
-        flex="1"
-        aria-label={`Script list (${type})`}
-        selectionMode={type === ScriptType.MANUAL ? 'none' : 'multiple'}
-        selectedKeys={selectedKeys}
-        onSelectionChange={setSelectedKeys}
-        renderEmptyState={renderEmptyState}
-        onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
-      >
+      <TableView flex="1" aria-label={`Script list (${type})`} selectionMode={'none'} renderEmptyState={renderEmptyState} onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}>
         <TableHeader>
           <Column width="4fr">Name</Column>
           <Column width="5fr">Last Execution</Column>
@@ -171,4 +110,4 @@ const ScriptListRich: React.FC<ScriptListRichProps> = ({ type }) => {
   );
 };
 
-export default ScriptListRich;
+export default ScriptManualList;

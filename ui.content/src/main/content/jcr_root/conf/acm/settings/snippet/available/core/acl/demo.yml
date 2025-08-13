@@ -4,7 +4,7 @@ documentation: |
   Setup the ACLs for the demo users and groups.
 content: |
   boolean canRun() {
-    return conditions.notQueuedSelf()
+    return conditions.always()
   }
     
   void doRun() {

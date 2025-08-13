@@ -83,6 +83,10 @@ public class RepoResource {
     }
 
     public RepoResource ensureFolder() {
+        return ensure(JcrConstants.NT_FOLDER);
+    }
+
+    public RepoResource ensureRegularFolder() {
         return ensure(JcrResourceConstants.NT_SLING_FOLDER);
     }
 
@@ -90,20 +94,19 @@ public class RepoResource {
         return ensure(JcrResourceConstants.NT_SLING_ORDERED_FOLDER);
     }
 
-    public RepoResource ensure(String resourceType) {
+    public RepoResource ensure(String primaryType) {
         Resource resource = resolve();
         if (resource == null) {
             try {
-                ResourceUtil.getOrCreateResource(
-                        repo.getResourceResolver(), path, resourceType, resourceType, repo.isAutoCommit());
-            } catch (PersistenceException e) {
+                ResourceUtils.ensure(repo.getResourceResolver(), path, primaryType);
+            } catch (Exception e) {
                 throw new RepoException(
-                        String.format("Cannot ensure resource '%s' at path '%s'!", resourceType, path), e);
+                        String.format("Cannot ensure resource '%s' at path '%s'!", primaryType, path), e);
             }
-            repo.commit(String.format("ensuring resource '%s' at path %s", resourceType, path));
-            LOG.info("Ensured resource '{}' at path '{}'", resourceType, path);
+            repo.commit(String.format("ensuring resource '%s' at path %s", primaryType, path));
+            LOG.info("Ensured resource '{}' at path '{}'", primaryType, path);
         } else {
-            LOG.info("Skipped ensuring resource '{}' at path '{}'", resourceType, path);
+            LOG.info("Skipped ensuring resource '{}' at path '{}'", primaryType, path);
         }
         return this;
     }

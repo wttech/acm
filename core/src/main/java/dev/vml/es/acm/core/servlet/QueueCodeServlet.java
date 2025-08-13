@@ -55,8 +55,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
             Code code = input.getCode();
 
-            try (ExecutionContext context =
-                         executor.createContext(ExecutionId.generate(), ExecutionMode.CHECK, input.getCode(), request.getResourceResolver())) {
+            try (ExecutionContext context = executor.createContext(
+                    ExecutionId.generate(), ExecutionMode.CHECK, input.getCode(), request.getResourceResolver())) {
                 Execution checkExecution = executor.execute(context);
                 if (checkExecution.getStatus() == ExecutionStatus.SKIPPED) {
                     QueueOutput output = new QueueOutput(Collections.singletonList(checkExecution));
@@ -65,14 +65,17 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                 }
             } catch (Exception e) {
                 LOG.error("Code execution cannot be checked!", e);
-                respondJson(response, badRequest(String.format("Code execution cannot be checked! %s", e.getMessage()).trim()));
+                respondJson(
+                        response,
+                        badRequest(String.format("Code execution cannot be checked! %s", e.getMessage())
+                                .trim()));
                 return;
             }
 
             ExecutionContextOptions contextOptions = new ExecutionContextOptions(
                     ExecutionMode.RUN, request.getResourceResolver().getUserID());
 
-            Execution execution = executionQueue.submit(contextOptions, code);
+            Execution execution = executionQueue.submit(code, contextOptions);
             QueueOutput output = new QueueOutput(Collections.singletonList(execution));
             respondJson(
                     response,

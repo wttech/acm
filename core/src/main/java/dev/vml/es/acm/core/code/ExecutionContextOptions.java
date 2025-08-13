@@ -4,10 +4,11 @@ import dev.vml.es.acm.core.AcmException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.apache.sling.event.jobs.Job;
 
 /**
- * Determines creation of execution context in asynchronous job.
+ * Determines creation of execution context in an asynchronous job.
  */
 public class ExecutionContextOptions implements Serializable {
 
@@ -17,7 +18,7 @@ public class ExecutionContextOptions implements Serializable {
 
     public ExecutionContextOptions(ExecutionMode executionMode, String userId) {
         this.executionMode = executionMode;
-        this.userId = userId;
+        this.userId = Objects.requireNonNull(userId);
     }
 
     public static Map<String, Object> toJobProps(ExecutionContextOptions options) throws AcmException {

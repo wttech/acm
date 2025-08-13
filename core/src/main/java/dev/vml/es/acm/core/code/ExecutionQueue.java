@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
         property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
 public class ExecutionQueue implements JobExecutor {
 
+    public static final String NAME = "AEM Content Manager Execution Queue";
+
     public static final String TOPIC = "dev/vml/es/acm/ExecutionQueue";
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
@@ -67,8 +69,7 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    public Execution submit(ExecutionContextOptions contextOptions, Executable executable)
-            throws AcmException {
+    public Execution submit(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         Map<String, Object> jobProps = new HashMap<>();
         jobProps.putAll(ExecutionContextOptions.toJobProps(contextOptions));
         jobProps.putAll(Code.toJobProps(executable));
@@ -76,13 +77,24 @@ public class ExecutionQueue implements JobExecutor {
 
         Job job = jobManager.addJob(TOPIC, jobProps);
         if (job == null) {
-            throw new AcmException(String.format("Execution of executable '%s' cannot be queued because manager refused to add a job!", executable.getId()));
+            throw new AcmException(String.format(
+                    "Execution of executable '%s' cannot be queued because manager refused to add a job!",
+                    executable.getId()));
         }
         return new QueuedExecution(executor, job);
     }
 
     public Stream<Execution> findAll() {
         return findJobs().map(job -> new QueuedExecution(executor, job));
+    }
+
+    public Optional<Execution> findByExecutableId(String executableId) {
+        if (StringUtils.isBlank(executableId)) {
+            return Optional.empty();
+        }
+        return findAll()
+                .filter(e -> StringUtils.equals(e.getExecutable().getId(), executableId))
+                .findFirst();
     }
 
     public Stream<ExecutionSummary> findAllSummaries() {
@@ -192,5 +204,15 @@ public class ExecutionQueue implements JobExecutor {
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         }
+    }
+
+    // TODO introduce a button using it
+    public void reset() {
+        if (jobAsyncExecutor != null && !jobAsyncExecutor.isShutdown()) {
+            jobAsyncExecutor.shutdownNow();
+        }
+        jobAsyncExecutor = Executors.newCachedThreadPool();
+        findJobs().forEach(job -> jobManager.removeJobById(job.getId()));
+        jobManager.getQueue(NAME).removeAll();
     }
 }

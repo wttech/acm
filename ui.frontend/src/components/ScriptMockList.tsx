@@ -1,0 +1,75 @@
+import { Button, ButtonGroup, Cell, Column, Content, Flex, IllustratedMessage, ProgressBar, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
+import NotFound from '@spectrum-icons/illustrations/NotFound';
+import Settings from '@spectrum-icons/workflow/Settings';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppState } from '../hooks/app';
+import { useScripts } from '../hooks/script';
+import { InstanceType, ScriptType, instancePrefix } from '../utils/api.types';
+import ScriptsMockHelpButton from './ScriptsMockHelpButton.tsx';
+
+const ScriptMockList: React.FC = () => {
+  const type = ScriptType.MOCK;
+  const { scripts, loading } = useScripts(type);
+  const scriptCount = scripts?.list?.length ?? 0;
+  const navigate = useNavigate();
+  const appState = useAppState();
+
+  const renderEmptyState = () => (
+    <IllustratedMessage>
+      <NotFound />
+      <Content>No scripts found</Content>
+    </IllustratedMessage>
+  );
+
+  if (scripts === null || loading) {
+    return (
+      <Flex flex="1" justifyContent="center" alignItems="center">
+        <ProgressBar label="Loading..." isIndeterminate />
+      </Flex>
+    );
+  }
+
+  return (
+    <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+      <View>
+        <Flex direction="row" justifyContent="space-between" alignItems="center">
+          <Flex flex="1" alignItems="center">
+            <ButtonGroup>
+              <Button
+                variant="negative"
+                isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
+                onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.mock.MockHttpFilter`, '_blank')}
+              >
+                <Settings />
+                <Text>Configure</Text>
+              </Button>
+            </ButtonGroup>
+          </Flex>
+          <Flex flex="1" justifyContent="center" alignItems="center">
+            <StatusLight variant={appState.mockStatus.enabled ? (scriptCount > 0 ? 'positive' : 'neutral') : 'negative'}>
+              {appState.mockStatus.enabled ? scriptCount > 0 ? <Text>Installed ({scriptCount})</Text> : <Text>Not installed</Text> : <Text>Disabled</Text>}
+            </StatusLight>
+          </Flex>
+          <Flex flex="1" justifyContent="end" alignItems="center">
+            <ScriptsMockHelpButton />
+          </Flex>
+        </Flex>
+      </View>
+      <TableView flex="1" aria-label={`Script list (${type})`} renderEmptyState={renderEmptyState} onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}>
+        <TableHeader>
+          <Column>Name</Column>
+        </TableHeader>
+        <TableBody>
+          {(scripts.list || []).map((script) => (
+            <Row key={script.id}>
+              <Cell>{script.name}</Cell>
+            </Row>
+          ))}
+        </TableBody>
+      </TableView>
+    </Flex>
+  );
+};
+
+export default ScriptMockList;

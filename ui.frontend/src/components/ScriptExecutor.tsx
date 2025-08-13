@@ -87,10 +87,6 @@ const ScriptExecutor = () => {
                   <Text>Configure</Text>
                 </Button>
                 <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
-                  <Item key="dev.vml.es.acm.core.script.ScriptScheduler">
-                    <ApplicationDelivery />
-                    <Text>Script Scheduler</Text>
-                  </Item>
                   <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue">
                     <Clock />
                     <Text>Execution Queue</Text>

@@ -17,8 +17,8 @@ const ExecutableIdValue: React.FC<ExecutableIdValueProps> = ({ id }) => {
         <Draft size="XS" /> <Text>Console</Text>
       </>
     );
-  } else if (id.includes('/script/auto/enabled/')) {
-    const scriptPath = id.split('/script/auto/enabled/')[1];
+  } else if (id.includes('/script/automatic/')) {
+    const scriptPath = id.split('/script/automatic/')[1];
     const scriptName = Strings.removeEnd(scriptPath, '.groovy');
     return (
       <>

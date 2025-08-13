@@ -1,5 +1,9 @@
+def scheduleRun() {
+    return schedules.cron("0 10 * ? * * *") // every hour at minute 10
+}
+
 boolean canRun() {
-    return conditions.notRunning() && conditions.everyDayStart()
+    return conditions.always()
 }
 
 void doRun() {
