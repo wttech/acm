@@ -6,12 +6,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
 import { useScripts } from '../hooks/script';
-import { isExecutionNegative, ScriptType } from '../utils/api.types';
+import {instancePrefix, InstanceType, isExecutionNegative, ScriptType} from '../utils/api.types';
 import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
+import Settings from "@spectrum-icons/workflow/Settings";
 
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
@@ -41,8 +42,14 @@ const ScriptAutomaticList: React.FC = () => {
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
-              &nbsp;
-              {/* TODO toggle scheduler button */}
+              <Button
+                  variant="negative"
+                  isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
+                  onPress={() => window.open(`${instancePrefix}/system/console/configMgr/\tdev.vml.es.acm.core.script.AutomaticScriptScheduler`, '_blank')}
+              >
+                <Settings />
+                <Text>Configure</Text>
+              </Button>
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">

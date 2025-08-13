@@ -58,7 +58,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         @AttributeDefinition(
                 name = "User Impersonation ID",
                 description =
-                        "Controls who accesses the repository when scripts are automatically executed. If blank, the service user is used.")
+                        "Controls who accesses the repository when scripts are automatically executed. If blank, the service user 'acm-content-service' is used.")
         String userImpersonationId();
 
         @AttributeDefinition(name = "Health Check Interval",
