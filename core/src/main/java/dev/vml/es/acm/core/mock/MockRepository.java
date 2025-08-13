@@ -29,10 +29,6 @@ public class MockRepository {
         this.resolver = resolver;
     }
 
-    public Resource getOrCreateRoot() throws AcmException {
-        return ResourceUtils.makeFolders(resolver, ScriptType.MOCK.root(), JcrResourceConstants.NT_SLING_FOLDER);
-    }
-
     public boolean checkResource(Resource resource) {
         return resource.getName().endsWith(".groovy") && resource.isResourceType(JcrConstants.NT_FILE);
     }
@@ -57,5 +53,15 @@ public class MockRepository {
 
     public boolean isSpecial(String id) {
         return SPECIAL_PATHS.stream().anyMatch(n -> StringUtils.endsWith(id, "/" + n));
+    }
+
+    public Resource getOrCreateRoot() throws AcmException {
+        try {
+            Resource root = ResourceUtils.ensure(resolver, ScriptType.MOCK.root(), JcrResourceConstants.NT_SLING_FOLDER);
+            resolver.commit();
+            return root;
+        } catch (PersistenceException e) {
+            throw new AcmException(String.format("Cannot create mock root '%s'!", ScriptType.MOCK.root()), e);
+        }
     }
 }

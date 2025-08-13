@@ -7,6 +7,8 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
@@ -45,6 +47,13 @@ public class ScriptRepository {
     }
 
     private Resource getOrCreateRoot(ScriptType type) throws AcmException {
-        return ResourceUtils.makeFolders(resourceResolver, type.root(), JcrResourceConstants.NT_SLING_FOLDER);
+        try {
+            Resource root = ResourceUtils.ensure(resourceResolver, type.root(), JcrResourceConstants.NT_SLING_FOLDER);
+            resourceResolver.commit();
+            return root;
+        } catch (PersistenceException e) {
+            throw new AcmException(String.format("Cannot create script root '%s'!", type.root()), e);
+        }
+
     }
 }

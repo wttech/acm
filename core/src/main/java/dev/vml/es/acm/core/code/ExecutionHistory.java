@@ -30,14 +30,13 @@ public class ExecutionHistory {
         return Stream.empty();
     }
 
-    // TODO do not save 'sling:resourceType' = 'sling:Folder' here (avoid corrupting indexes when many data is saved)
     public void save(ExecutionContext context, ImmediateExecution execution) throws AcmException {
         Resource root = getOrCreateRoot();
         Map<String, Object> props = HistoricalExecution.toMap(context, execution);
 
         try {
             String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");
-            Resource dir = ResourceUtils.makeFolders(resourceResolver, dirPath, JcrResourceConstants.NT_SLING_FOLDER);
+            Resource dir = ResourceUtils.ensure(resourceResolver, dirPath, JcrResourceConstants.NT_SLING_FOLDER);
             String entryName = StringUtils.substringAfterLast(execution.getId(), "/");
             resourceResolver.create(dir, entryName, props);
             resourceResolver.commit();
@@ -69,7 +68,13 @@ public class ExecutionHistory {
     }
 
     private Resource getOrCreateRoot() throws AcmException {
-        return ResourceUtils.makeFolders(resourceResolver, ROOT, JcrConstants.NT_FOLDER);
+        try {
+            Resource root = ResourceUtils.ensure(resourceResolver, ROOT, JcrConstants.NT_FOLDER);
+            resourceResolver.commit();
+            return root;
+        } catch (PersistenceException e) {
+            throw new AcmException(String.format("Cannot create execution history root '%s'!", ROOT), e);
+        }
     }
 
     public boolean contains(String id) {

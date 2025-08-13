@@ -2,12 +2,11 @@ package dev.vml.es.acm.core.util;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 import javax.jcr.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.api.resource.LoginException;
 
@@ -106,15 +105,46 @@ public final class ResourceUtils {
         }
     }
 
-    // TODO Value for key sling:resourceType can't be put into node: nt:folder
-    // TODO this method adds extra 'sling:resourceType' property, which is not needed for folders
-    public static Resource makeFolders(ResourceResolver resourceResolver, String path, String resourceType)
-            throws AcmException {
+    /**
+     * Creates a resource and its parents at the specified path if it does not exist.
+     * Differs to {@link ResourceUtil#getOrCreateResource} in that it does not force putting 'sling:resourceType' property.
+     */
+    public static Resource ensure(ResourceResolver resourceResolver, String path, Map<String, Object> props, String primaryType, String parentPrimaryType) throws AcmException {
         try {
-            return ResourceUtil.getOrCreateResource(resourceResolver, path, Collections.emptyMap(), resourceType, true);
-        } catch (Exception e) {
-            throw new AcmException(String.format("Folders cannot be created for path '%s'", path), e);
+            Resource resource = resourceResolver.getResource(path);
+            if (resource != null) {
+                return resource;
+            }
+
+            String[] segments = StringUtils.strip(path, "/").split("/");
+            StringBuilder currentPath = new StringBuilder();
+            Resource parent = Objects.requireNonNull(resourceResolver.getResource("/"));
+
+            for (int i = 0; i < segments.length; i++) {
+                currentPath.append("/").append(segments[i]);
+                Resource child = resourceResolver.getResource(currentPath.toString());
+                if (child == null) {
+                    Map<String, Object> allProps = new HashMap<>();
+                    if (i == segments.length - 1) {
+                        allProps.put(JcrConstants.JCR_PRIMARYTYPE, primaryType);
+                        if (props != null) {
+                            allProps.putAll(props);
+                        }
+                    } else {
+                        allProps.put(JcrConstants.JCR_PRIMARYTYPE, parentPrimaryType);
+                    }
+                    child = resourceResolver.create(parent, segments[i], allProps);
+                }
+                parent = child;
+            }
+            return parent;
+        } catch (PersistenceException e) {
+            throw new AcmException(String.format("Cannot create resource '%s'!", path), e);
         }
+    }
+
+    public static Resource ensure(ResourceResolver resourceResolver, String path, String primaryType) throws AcmException {
+        return ensure(resourceResolver, path, Collections.emptyMap(), primaryType, primaryType);
     }
 
     /**

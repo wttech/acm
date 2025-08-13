@@ -13,6 +13,7 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,6 @@ public class Locker {
         return isLock(lock);
     }
 
-    // TODO do not save 'sling:resourceType'
     public void lock(String lockName) {
         String name = normalizeName(lockName);
         Resource lock = getLock(name);
@@ -52,9 +52,9 @@ public class Locker {
             if (name.contains("/")) {
                 String dirPath = StringUtils.substringBeforeLast(name, "/");
                 nodeName = StringUtils.substringAfterLast(name, "/");
-                dirResource = ResourceUtils.makeFolders(resolver, ROOT + "/" + dirPath, JcrConstants.NT_UNSTRUCTURED);
+                dirResource = ResourceUtils.ensure(resolver, ROOT + "/" + dirPath, JcrResourceConstants.NT_SLING_FOLDER);
             } else {
-                dirResource = ResourceUtils.makeFolders(resolver, ROOT, JcrConstants.NT_UNSTRUCTURED);
+                dirResource = ResourceUtils.ensure(resolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER);
                 nodeName = name;
             }
             Map<String, Object> props = new HashMap<>();
