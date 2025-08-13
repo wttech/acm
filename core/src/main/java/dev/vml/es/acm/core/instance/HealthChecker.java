@@ -89,9 +89,8 @@ public class HealthChecker implements EventHandler {
         return result;
     }
 
-    // TODO not configurable
     private void checkCluster(HealthStatus result) {
-        if (!config.clusterChecking() || !instanceInfo.isCluster()) {
+        if (!instanceInfo.isCluster()) {
             return;
         }
         if (!isClusterLeader()) {
@@ -216,10 +215,6 @@ public class HealthChecker implements EventHandler {
 
     @ObjectClassDefinition(name = "AEM Content Manager - Health Checker")
     public @interface Config {
-        @AttributeDefinition(
-                name = "Cluster Checking",
-                description = "Check if the instance is an author instance cluster leader. Supported only on AEMaaCS")
-        boolean clusterChecking() default true;
 
         @AttributeDefinition(name = "Bundle Checking")
         boolean bundleChecking() default true;
