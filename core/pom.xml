@@ -313,12 +313,10 @@ DynamicImport-Package: *
         <dependency>
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>4.0.18</version>
         </dependency>
         <dependency>
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-templates</artifactId>
-            <version>4.0.9</version>
         </dependency>
 
         <!-- Testing -->
