@@ -230,7 +230,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 booted.put(script.getId(), checksum);
                 LOG.info("Boot script '{}' queued", script.getId());
             } else {
-                LOG.info("Boot script '{}' not ready for queueing!", script.getId());
+                LOG.info("Boot script '{}' not eligible for queueing!", script.getId());
             }
         }
     }
@@ -258,7 +258,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                     if (checkScript(script, resourceResolver)) {
                         queueScript(script);
                     } else {
-                        LOG.info("Cron schedule script '{}' not ready for queueing!", scriptPath);
+                        LOG.info("Cron schedule script '{}' not eligible for queueing!", scriptPath);
                     }
                 }
             } catch (LoginException e) {
@@ -283,7 +283,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
             }
             Execution executionChecking = executor.check(context);
             if (executionChecking.getStatus() != ExecutionStatus.SUCCEEDED) {
-                LOG.info("Script '{}' cannot be run: {}", script.getPath(), executionChecking);
+                LOG.info("Script '{}' checking not succeeded: {}", script.getPath(), executionChecking);
                 return false;
             }
             return true;
