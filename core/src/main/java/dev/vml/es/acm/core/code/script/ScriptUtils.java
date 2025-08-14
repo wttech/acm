@@ -3,6 +3,7 @@ package dev.vml.es.acm.core.code.script;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -51,7 +52,9 @@ public final class ScriptUtils {
     public static ClassNode requireMainClass(List<ClassNode> classes, String mainClassName) {
         ClassNode mainClass = null;
         for (ClassNode classNode : classes) {
-            if (classNode != null && mainClassName.equals(classNode.getName())) {
+            if (classNode != null
+                    && (StringUtils.equals(classNode.getName(), mainClassName)
+                            || StringUtils.endsWith(classNode.getName(), "." + mainClassName))) {
                 mainClass = classNode;
                 break;
             }
