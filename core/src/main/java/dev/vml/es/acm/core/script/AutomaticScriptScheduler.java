@@ -60,15 +60,21 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         String userImpersonationId();
 
         @AttributeDefinition(
-                name = "Health Check Interval",
+                name = "Health Check Retry Interval",
                 description = "Interval in milliseconds to retry health check if instance is not healthy")
-        long healthRetryInterval() default 1000 * 10; // 10 seconds
+        long healthCheckRetryInterval() default 1000 * 10; // 10 seconds
 
         @AttributeDefinition(
-                name = "Health Check Max Count - Boot",
+                name = "Health Check Retry Count On Boot",
                 description =
-                        "Maximum number of retries after booting instance or installing package with automatic scripts")
-        long healthRetryMaxCountBoot() default 90; // 90 times * 10 seconds = 15 minutes
+                        "Maximum number of retries when checking instance health on boot script execution")
+        long healthCheckRetryCountBoot() default 90; // * 10 seconds = 15 minutes
+
+        @AttributeDefinition(
+                name = "Health Check Retry Count On Cron Schedule",
+                description =
+                        "Maximum number of retries when checking instance health on cron schedule script execution")
+        long healthCheckRetryCountCron() default 5; //  * 10 seconds = 50 seconds
     }
 
     private Boolean instanceReady;
@@ -166,8 +172,8 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
             unscheduleScripts();
             if (awaitInstanceHealthy(
                     "Automatic scripts queueing and scheduling",
-                    config.healthRetryMaxCountBoot(),
-                    config.healthRetryInterval())) {
+                    config.healthCheckRetryCountBoot(),
+                    config.healthCheckRetryInterval())) {
                 queueAndScheduleScripts();
             }
         };
@@ -259,6 +265,13 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private Job cronJob(String scriptPath) {
         return context -> {
+            if (!awaitInstanceHealthy(
+                    String.format("Cron schedule script '%s' queueing", scriptPath),
+                    config.healthCheckRetryCountCron(),
+                    config.healthCheckRetryInterval())) {
+                return;
+            }
+
             try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
                 ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
                 Script script = scriptRepository.read(scriptPath).orElse(null);
@@ -326,7 +339,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         while (healthStatus == null || !healthStatus.isHealthy()) {
             if (retryCount >= retryMaxCount) {
                 LOG.error(
-                        "{} not reached healthy instance state after {} retries: {}",
+                        "{} aborted due to unhealthy instance state after {} retries: {}",
                         operation,
                         retryMaxCount,
                         healthStatus);
