@@ -7,6 +7,7 @@ import dev.vml.es.acm.core.code.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.Servlet;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -36,6 +37,8 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
 
     private static final String FORMAT_PARAM = "format";
 
+    private static final String LIMIT_PARAM = "limit";
+
     private static final String QUEUED_PARAM = "queued";
 
     @Reference
@@ -50,30 +53,38 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
             return;
         }
 
+        Stream<?> executionStream;
         try {
             ExecutionHistory executionHistory = new ExecutionHistory(request.getResourceResolver());
-            List<?> executions;
 
             List<String> ids = stringsParam(request, ID_PARAM);
             if (ids != null) {
                 ExecutionResolver executionResolver = new ExecutionResolver(queue, request.getResourceResolver());
                 if (format == ExecutionFormat.FULL) {
-                    executions = executionResolver.readAll(ids).collect(Collectors.toList());
+                    executionStream = executionResolver.readAll(ids);
                 } else {
-                    executions = executionResolver.readAllSummaries(ids).collect(Collectors.toList());
+                    executionStream = executionResolver.readAllSummaries(ids);
                 }
             } else {
                 ExecutionQuery criteria = ExecutionQuery.from(request);
                 if (format == ExecutionFormat.FULL) {
-                    executions = executionHistory.findAll(criteria).collect(Collectors.toList());
+                    executionStream = executionHistory.findAll(criteria);
                 } else {
                     Boolean queued = boolParam(request, QUEUED_PARAM);
                     if (BooleanUtils.isTrue(queued)) {
-                        executions = queue.findAllSummaries().collect(Collectors.toList());
+                        executionStream = queue.findAllSummaries();
                     } else {
-                        executions = executionHistory.findAllSummaries(criteria).collect(Collectors.toList());
+                        executionStream = executionHistory.findAllSummaries(criteria);
                     }
                 }
+            }
+
+            Integer limit = intParam(request, LIMIT_PARAM);
+            List<?> executions;
+            if (limit != null) {
+                executions = executionStream.limit(limit).collect(Collectors.toList());
+            } else {
+                executions = executionStream.collect(Collectors.toList());
             }
 
             ExecutionOutput output = new ExecutionOutput(executions);

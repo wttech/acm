@@ -33,9 +33,11 @@ const HistoryPage = () => {
   const [searchState, setSearchState] = useSearchParams();
   const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendarDateTime(Dates.daysAgoAtMidnight(7)));
   const [endDate, setEndDate] = useState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.END_DATE)));
-  const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
   const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');
   const [userId, setUserId] = useState<string>(searchState.get(ExecutionQueryParams.USER_ID) || '');
+  const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
+  const limitOptions = [10, 30, 60, 100, 200, 300];
+  const [limit, setLimit] = useState<number>(Number(searchState.get(ExecutionQueryParams.LIMIT)) || 30);
 
   const [durationMinInitial, durationMaxInitial] = (() => {
     const searchParam = searchState.get(ExecutionQueryParams.DURATION);
@@ -55,6 +57,7 @@ const HistoryPage = () => {
         try {
           const params = new URLSearchParams();
           params.append(ExecutionQueryParams.FORMAT, ExecutionFormat.SUMMARY.toLowerCase());
+          params.append(ExecutionQueryParams.LIMIT, String(limit));
           if (executableId) params.append(ExecutionQueryParams.EXECUTABLE_ID, executableId);
           if (userId) params.append(ExecutionQueryParams.USER_ID, userId);
           if (startDate) params.append(ExecutionQueryParams.START_DATE, startDate.toString());
@@ -85,7 +88,7 @@ const HistoryPage = () => {
       fetchExecutions();
     },
     HistoryFilterDelay,
-    [startDate, endDate, status, executableId, userId, durationMin, durationMax],
+    [limit, startDate, endDate, status, executableId, userId, durationMin, durationMax],
   );
 
   const renderEmptyState = () => (
@@ -126,6 +129,11 @@ const HistoryPage = () => {
               <Checkmark size="S" />
               <Text>Succeeded</Text>
             </Item>
+          </Picker>
+          <Picker width="size-1000" label="Limit" selectedKey={String(limit)} onSelectionChange={(key) => setLimit(Number(key))}>
+            {limitOptions.map((value) => (
+                <Item key={String(value)}><Text>{value}</Text></Item>
+            ))}
           </Picker>
         </Flex>
       </View>

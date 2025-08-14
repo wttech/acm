@@ -369,6 +369,7 @@ export enum ExecutionFormat {
 
 export enum ExecutionQueryParams {
   FORMAT = 'format',
+  LIMIT = 'limit',
   START_DATE = 'startDate',
   END_DATE = 'endDate',
   STATUS = 'status',
