@@ -1,9 +1,9 @@
 import { Button, ButtonGroup, Cell, Column, Content, Dialog, DialogTrigger, Divider, Flex, Heading, IllustratedMessage, Item, Menu, MenuTrigger, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import { Key, Selection } from '@react-types/shared';
 import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
-import ApplicationDelivery from '@spectrum-icons/workflow/ApplicationDelivery';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
+import ApplicationDelivery from '@spectrum-icons/workflow/ApplicationDelivery';
 import Clock from '@spectrum-icons/workflow/Clock';
 import Close from '@spectrum-icons/workflow/Close';
 import Code from '@spectrum-icons/workflow/Code';
@@ -14,8 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app.ts';
 import { apiRequest } from '../utils/api.ts';
-import { ExecutionOutput, ExecutionSummary, InstanceType } from '../utils/api.types.ts';
-import { isProduction } from '../utils/node';
+import {ExecutionOutput, ExecutionSummary, instancePrefix, InstanceType} from '../utils/api.types.ts';
 import { intervalToTimeout } from '../utils/spectrum.ts';
 import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
@@ -25,7 +24,6 @@ import UserInfo from './UserInfo';
 
 const ScriptExecutor = () => {
   const appState = useAppState();
-  const prefix = isProduction() ? '' : 'http://localhost:4502';
   const navigate = useNavigate();
 
   const [executions, setExecutions] = useState<ExecutionSummary[]>([]);
@@ -86,14 +84,18 @@ const ScriptExecutor = () => {
                   <Settings />
                   <Text>Configure</Text>
                 </Button>
-                <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
-                  <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue">
-                    <Clock />
-                    <Text>Execution Queue</Text>
-                  </Item>
+                <Menu onAction={(pid) => window.open(`${instancePrefix}/system/console/configMgr/${pid}`, '_blank')}>
                   <Item key="dev.vml.es.acm.core.code.Executor">
                     <Code />
                     <Text>Code Executor</Text>
+                  </Item>
+                  <Item key="dev.vml.es.acm.core.code.ExecutionQueue">
+                    <Clock />
+                    <Text>Execution Queue</Text>
+                  </Item>
+                  <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue">
+                    <ApplicationDelivery />
+                    <Text>Execution Queue &mdash; Sling</Text>
                   </Item>
                 </Menu>
               </MenuTrigger>

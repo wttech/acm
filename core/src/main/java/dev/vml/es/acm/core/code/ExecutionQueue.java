@@ -19,6 +19,7 @@ import org.apache.sling.event.jobs.consumer.JobExecutionResult;
 import org.apache.sling.event.jobs.consumer.JobExecutor;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,9 @@ import org.slf4j.LoggerFactory;
 @Component(
         immediate = true,
         service = {ExecutionQueue.class, JobExecutor.class},
-        property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
+        property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC}
+)
+@Designate(ocd = ExecutionQueue.Config.class)
 public class ExecutionQueue implements JobExecutor {
 
     public static final String NAME = "AEM Content Manager Execution Queue";

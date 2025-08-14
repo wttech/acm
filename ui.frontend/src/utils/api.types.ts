@@ -340,7 +340,7 @@ export enum InstanceType {
   CLOUD_CONTAINER = 'CLOUD_CONTAINER',
 }
 
-export const instancePrefix = isProduction() ? '' : 'http://localhost:4502';
+export const instancePrefix = isProduction() ? '' : 'http://localhost:5502';
 
 export type HealthStatus = {
   healthy: boolean;
