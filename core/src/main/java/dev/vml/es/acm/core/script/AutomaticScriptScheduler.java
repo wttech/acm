@@ -285,10 +285,14 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 return false;
             }
 
-            int queueCurrentSize = executionQueue.getCurrentSize();
-            int queueMaxSize = executionQueue.getMaxSize();
+            long queueCurrentSize = executionQueue.getCurrentSize();
+            long queueMaxSize = executionQueue.getMaxSize();
             if (queueCurrentSize >= queueMaxSize) {
-                LOG.info("Script '{}' not queued because queue is full ({}/{})!", script.getPath(), queueCurrentSize, queueMaxSize);
+                LOG.info(
+                        "Script '{}' not queued because queue is full ({}/{})!",
+                        script.getPath(),
+                        queueCurrentSize,
+                        queueMaxSize);
                 return false;
             }
 

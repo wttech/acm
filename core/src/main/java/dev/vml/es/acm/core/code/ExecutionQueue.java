@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.StreamUtils;
 import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
@@ -14,6 +15,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
+import org.apache.sling.event.jobs.TopicStatistics;
 import org.apache.sling.event.jobs.consumer.JobExecutionContext;
 import org.apache.sling.event.jobs.consumer.JobExecutionResult;
 import org.apache.sling.event.jobs.consumer.JobExecutor;
@@ -27,12 +29,9 @@ import org.slf4j.LoggerFactory;
 @Component(
         immediate = true,
         service = {ExecutionQueue.class, JobExecutor.class},
-        property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC}
-)
+        property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
 @Designate(ocd = ExecutionQueue.Config.class)
 public class ExecutionQueue implements JobExecutor {
-
-    public static final String NAME = "AEM Content Manager Execution Queue";
 
     public static final String TOPIC = "dev/vml/es/acm/ExecutionQueue";
 
@@ -44,7 +43,9 @@ public class ExecutionQueue implements JobExecutor {
         @AttributeDefinition(name = "Max Size", description = "Prevents overloading the system.")
         long maxSize() default 10;
 
-        @AttributeDefinition(name = "Async Poll Interval", description = "Interval in milliseconds to poll for job status.")
+        @AttributeDefinition(
+                name = "Async Poll Interval",
+                description = "Interval in milliseconds to poll for job status.")
         long asyncPollInterval() default 500L;
     }
 
@@ -76,7 +77,7 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public Execution submit(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
-        int currentSize = getCurrentSize();
+        long currentSize = getCurrentSize();
         if (currentSize >= getMaxSize()) {
             throw new AcmException(String.format(
                     "Execution queue is full (%d/%d), cannot submit executable '%s'!",
@@ -119,12 +120,20 @@ public class ExecutionQueue implements JobExecutor {
         return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream();
     }
 
-    public int getCurrentSize() {
-        return (int) findJobs().count();
+    // TODO use statistics to speed it up
+    public long getCurrentSize() {
+        return findJobs().count();
     }
 
-    public int getMaxSize() {
-        return (int) config.maxSize();
+    public TopicStatistics getStatistics() {
+        return StreamUtils.asStream(jobManager.getTopicStatistics().iterator())
+                .filter(ts -> TOPIC.equals(ts.getTopic()))
+                .findFirst()
+                .orElseThrow(() -> new AcmException(String.format("Cannot find topic statistics for topic '%s'!", TOPIC)));
+    }
+
+    public long getMaxSize() {
+        return config.maxSize();
     }
 
     public boolean isFull() {
@@ -231,13 +240,14 @@ public class ExecutionQueue implements JobExecutor {
         }
     }
 
-    // TODO introduce a button using it
     public void reset() {
         if (jobAsyncExecutor != null && !jobAsyncExecutor.isShutdown()) {
             jobAsyncExecutor.shutdownNow();
         }
         jobAsyncExecutor = Executors.newCachedThreadPool();
         findJobs().forEach(job -> jobManager.removeJobById(job.getId()));
-        jobManager.getQueue(NAME).removeAll();
+
+        // TODO maybe someday something like below - does not work due to outdated queues etc.
+        // jobManager.getQueue(NAME).removeAll();
     }
 }

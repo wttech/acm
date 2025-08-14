@@ -1,9 +1,9 @@
 import { Button, ButtonGroup, Cell, Column, Content, Dialog, DialogTrigger, Divider, Flex, Heading, IllustratedMessage, Item, Menu, MenuTrigger, Row, StatusLight, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import { Key, Selection } from '@react-types/shared';
 import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
+import ApplicationDelivery from '@spectrum-icons/workflow/ApplicationDelivery';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
-import ApplicationDelivery from '@spectrum-icons/workflow/ApplicationDelivery';
 import Clock from '@spectrum-icons/workflow/Clock';
 import Close from '@spectrum-icons/workflow/Close';
 import Code from '@spectrum-icons/workflow/Code';
@@ -14,11 +14,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app.ts';
 import { apiRequest } from '../utils/api.ts';
-import {ExecutionOutput, ExecutionSummary, instancePrefix, InstanceType} from '../utils/api.types.ts';
+import { ExecutionOutput, ExecutionSummary, instancePrefix, InstanceType } from '../utils/api.types.ts';
 import { intervalToTimeout } from '../utils/spectrum.ts';
 import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
+import ExecutionsResetButton from './ExecutionsResetButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
 import UserInfo from './UserInfo';
 
@@ -99,6 +100,7 @@ const ScriptExecutor = () => {
                   </Item>
                 </Menu>
               </MenuTrigger>
+              <ExecutionsResetButton />
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
