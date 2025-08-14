@@ -129,7 +129,7 @@ public class ExecutionQueue implements JobExecutor {
         return StreamUtils.asStream(jobManager.getTopicStatistics().iterator())
                 .filter(ts -> TOPIC.equals(ts.getTopic()))
                 .findFirst()
-                .orElseThrow(() -> new AcmException(String.format("Cannot find topic statistics for topic '%s'!", TOPIC)));
+                .orElseThrow(() -> new AcmException(String.format("Cannot find statistics for topic '%s'!", TOPIC)));
     }
 
     public long getMaxSize() {
