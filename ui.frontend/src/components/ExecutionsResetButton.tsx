@@ -1,0 +1,70 @@
+import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Heading, Text } from '@adobe/react-spectrum';
+import Cancel from '@spectrum-icons/workflow/Cancel';
+import Checkmark from '@spectrum-icons/workflow/Checkmark';
+import GearsDelete from '@spectrum-icons/workflow/GearsDelete';
+import React, { useState } from 'react';
+import { toastRequest } from '../utils/api';
+import { QueueOutput } from '../utils/api.types.ts';
+
+type ExecutionsResetButtonProps = {
+  onReset?: () => void;
+};
+
+const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }) => {
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    try {
+      await toastRequest<QueueOutput>({
+        method: 'DELETE',
+        url: `/apps/acm/api/queue-code.json?executionId=all`,
+        operation: 'Reset executions',
+      });
+      if (onReset) onReset();
+    } catch (error) {
+      console.error('Reset executions error:', error);
+    } finally {
+      setIsLoading(false);
+      setResetDialogOpen(false);
+    }
+  };
+
+  const renderResetDialog = () => (
+    <>
+      <Heading>
+        <Text>Confirmation</Text>
+      </Heading>
+      <Divider />
+      <Content>
+        <Text>
+          <p>Are you sure you want to reset executor? This will stop all pending executions and remove all jobs from the Sling queue.</p>
+          <p>This action cannot be undone.</p>
+        </Text>
+      </Content>
+      <ButtonGroup>
+        <Button variant="secondary" onPress={() => setResetDialogOpen(false)} isDisabled={isLoading}>
+          <Cancel />
+          <Text>Cancel</Text>
+        </Button>
+        <Button variant="negative" style="fill" onPress={handleConfirm} isPending={isLoading}>
+          <Checkmark />
+          <Text>Confirm</Text>
+        </Button>
+      </ButtonGroup>
+    </>
+  );
+
+  return (
+    <DialogTrigger isOpen={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+      <Button variant="secondary" style="fill" onPress={() => setResetDialogOpen(true)}>
+        <GearsDelete />
+        <Text>Reset</Text>
+      </Button>
+      <Dialog>{renderResetDialog()}</Dialog>
+    </DialogTrigger>
+  );
+};
+
+export default ExecutionsResetButton;

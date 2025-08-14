@@ -1,18 +1,18 @@
 import { Button, ButtonGroup, Cell, Column, Content, ContextualHelp, Flex, Heading, IllustratedMessage, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
+import Settings from '@spectrum-icons/workflow/Settings';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
 import { useScripts } from '../hooks/script';
-import {instancePrefix, InstanceType, isExecutionNegative, ScriptType} from '../utils/api.types';
+import { instancePrefix, InstanceType, isExecutionNegative, ScriptType } from '../utils/api.types';
 import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
-import Settings from "@spectrum-icons/workflow/Settings";
 
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
@@ -43,9 +43,9 @@ const ScriptAutomaticList: React.FC = () => {
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
               <Button
-                  variant="negative"
-                  isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
-                  onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.script.AutomaticScriptScheduler`, '_blank')}
+                variant="negative"
+                isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
+                onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.script.AutomaticScriptScheduler`, '_blank')}
               >
                 <Settings />
                 <Text>Configure</Text>
@@ -60,13 +60,7 @@ const ScriptAutomaticList: React.FC = () => {
           </Flex>
         </Flex>
       </View>
-      <TableView
-        flex="1"
-        aria-label={`Script list (${ScriptType.AUTOMATIC.toLowerCase()})`}
-        selectionMode={'none'}
-        renderEmptyState={renderEmptyState}
-        onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
-      >
+      <TableView flex="1" aria-label={`Script list (${ScriptType.AUTOMATIC.toLowerCase()})`} selectionMode={'none'} renderEmptyState={renderEmptyState} onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}>
         <TableHeader>
           <Column width="4fr">Name</Column>
           <Column width="5fr">Last Execution</Column>

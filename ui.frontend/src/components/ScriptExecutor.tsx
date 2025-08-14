@@ -14,18 +14,17 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app.ts';
 import { apiRequest } from '../utils/api.ts';
-import { ExecutionOutput, ExecutionSummary, InstanceType } from '../utils/api.types.ts';
-import { isProduction } from '../utils/node';
+import { ExecutionOutput, ExecutionSummary, instancePrefix, InstanceType } from '../utils/api.types.ts';
 import { intervalToTimeout } from '../utils/spectrum.ts';
 import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
+import ExecutionsResetButton from './ExecutionsResetButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
 import UserInfo from './UserInfo';
 
 const ScriptExecutor = () => {
   const appState = useAppState();
-  const prefix = isProduction() ? '' : 'http://localhost:4502';
   const navigate = useNavigate();
 
   const [executions, setExecutions] = useState<ExecutionSummary[]>([]);
@@ -86,17 +85,22 @@ const ScriptExecutor = () => {
                   <Settings />
                   <Text>Configure</Text>
                 </Button>
-                <Menu onAction={(pid) => window.open(`${prefix}/system/console/configMgr/${pid}`, '_blank')}>
-                  <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue">
-                    <Clock />
-                    <Text>Execution Queue</Text>
-                  </Item>
+                <Menu onAction={(pid) => window.open(`${instancePrefix}/system/console/configMgr/${pid}`, '_blank')}>
                   <Item key="dev.vml.es.acm.core.code.Executor">
                     <Code />
                     <Text>Code Executor</Text>
                   </Item>
+                  <Item key="dev.vml.es.acm.core.code.ExecutionQueue">
+                    <Clock />
+                    <Text>Execution Queue</Text>
+                  </Item>
+                  <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue">
+                    <ApplicationDelivery />
+                    <Text>Execution Queue &mdash; Sling</Text>
+                  </Item>
                 </Menu>
               </MenuTrigger>
+              <ExecutionsResetButton />
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">

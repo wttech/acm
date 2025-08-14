@@ -132,7 +132,9 @@ const HistoryPage = () => {
           </Picker>
           <Picker width="size-1000" label="Limit" selectedKey={String(limit)} onSelectionChange={(key) => setLimit(Number(key))}>
             {HistoryLimitOptions.map((value) => (
-                <Item key={String(value)}><Text>{value}</Text></Item>
+              <Item key={String(value)}>
+                <Text>{value}</Text>
+              </Item>
             ))}
           </Picker>
         </Flex>
