@@ -39,6 +39,8 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
 
     private static final String LIMIT_PARAM = "limit";
 
+    private static final String OFFSET_PARAM = "offset";
+
     private static final String QUEUED_PARAM = "queued";
 
     @Reference
@@ -79,13 +81,15 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
                 }
             }
 
-            Integer limit = intParam(request, LIMIT_PARAM);
-            List<?> executions;
-            if (limit != null) {
-                executions = executionStream.limit(limit).collect(Collectors.toList());
-            } else {
-                executions = executionStream.collect(Collectors.toList());
+            Integer offset = intParam(request, OFFSET_PARAM);
+            if (offset != null && offset > 0) {
+                executionStream = executionStream.skip(offset);
             }
+            Integer limit = intParam(request, LIMIT_PARAM);
+            if (limit != null && limit > 0) {
+                executionStream = executionStream.limit(limit);
+            }
+            List<?> executions = executionStream.collect(Collectors.toList());
 
             ExecutionOutput output = new ExecutionOutput(executions);
             respondJson(response, ok("Executions listed successfully", output));

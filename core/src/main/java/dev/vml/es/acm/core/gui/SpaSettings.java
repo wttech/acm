@@ -55,6 +55,6 @@ public class SpaSettings implements Serializable {
                 name = "Script Stats Limit",
                 description =
                         "Limit for the number of historical executions to be considered to calculate the average duration.")
-        long scriptStatsLimit() default 30;
+        long scriptStatsLimit() default 20;
     }
 }

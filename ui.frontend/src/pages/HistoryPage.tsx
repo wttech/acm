@@ -24,6 +24,7 @@ import { Dates } from '../utils/dates';
 import { Urls } from '../utils/url';
 
 const HistoryFilterDelay = 1500;
+const HistoryLimitOptions = [10, 20, 30, 50, 100, 200, 500];
 
 const HistoryPage = () => {
   const navigate = useNavigate();
@@ -31,13 +32,12 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [searchState, setSearchState] = useSearchParams();
-  const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.START_DATE)) ?? Dates.toCalendarDateTime(Dates.daysAgoAtMidnight(7)));
+  const [startDate, setStartDate] = useState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.START_DATE)));
   const [endDate, setEndDate] = useState<DateValue | null>(Dates.toCalendarDateTimeOrNull(searchState.get(ExecutionQueryParams.END_DATE)));
   const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');
   const [userId, setUserId] = useState<string>(searchState.get(ExecutionQueryParams.USER_ID) || '');
   const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
-  const limitOptions = [10, 30, 60, 100, 200, 300];
-  const [limit, setLimit] = useState<number>(Number(searchState.get(ExecutionQueryParams.LIMIT)) || 30);
+  const [limit, setLimit] = useState<number>(Number(searchState.get(ExecutionQueryParams.LIMIT)) || HistoryLimitOptions[0]);
 
   const [durationMinInitial, durationMaxInitial] = (() => {
     const searchParam = searchState.get(ExecutionQueryParams.DURATION);
@@ -131,7 +131,7 @@ const HistoryPage = () => {
             </Item>
           </Picker>
           <Picker width="size-1000" label="Limit" selectedKey={String(limit)} onSelectionChange={(key) => setLimit(Number(key))}>
-            {limitOptions.map((value) => (
+            {HistoryLimitOptions.map((value) => (
                 <Item key={String(value)}><Text>{value}</Text></Item>
             ))}
           </Picker>
