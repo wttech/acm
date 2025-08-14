@@ -28,10 +28,6 @@ export function isExecutableScript(id: string): boolean {
   return id.startsWith(ScriptRootPath);
 }
 
-export function isExecutableExplicit(id: string): boolean {
-  return isExecutableConsole(id) || isExecutableScript(id);
-}
-
 export type Description = {
   execution: Execution;
   arguments: {

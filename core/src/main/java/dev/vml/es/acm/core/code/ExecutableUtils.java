@@ -3,6 +3,7 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.script.ScriptRepository;
 import dev.vml.es.acm.core.script.ScriptType;
+import dev.vml.es.acm.core.util.ResourceUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public final class ExecutableUtils {
@@ -26,5 +27,15 @@ public final class ExecutableUtils {
             return String.format("Script '%s'", StringUtils.removeStart(id, ScriptRepository.ROOT + "/"));
         }
         return String.format("Executable '%s'", StringUtils.removeStart(id, AcmConstants.SETTINGS_ROOT + "/"));
+    }
+
+    public static boolean isIdExplicit(String id) {
+        return Executable.ID_CONSOLE.equals(id) || StringUtils.startsWith(id, ScriptRepository.ROOT + "/");
+    }
+
+    public static boolean isUserExplicit(String userId) {
+        return ResourceUtils.Subservice.CONTENT.userId.equals(userId)
+                || StringUtils.equals(userId, "admin")
+                || StringUtils.containsAny(userId, "@.-");
     }
 }

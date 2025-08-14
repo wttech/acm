@@ -19,7 +19,7 @@ import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import UserInfo from '../components/UserInfo';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
-import { ExecutionFormat, ExecutionOutput, ExecutionQueryParams, ExecutionStatus, ExecutionSummary, isExecutableExplicit } from '../utils/api.types';
+import { ExecutionFormat, ExecutionOutput, ExecutionQueryParams, ExecutionStatus, ExecutionSummary } from '../utils/api.types';
 import { Dates } from '../utils/dates';
 import { Urls } from '../utils/url';
 
@@ -66,18 +66,7 @@ const HistoryPage = () => {
 
           const response = await toastRequest<ExecutionOutput<ExecutionSummary>>({
             method: 'GET',
-            url: Urls.compose(
-              '/apps/acm/api/execution.json',
-              (() => {
-                const result = new URLSearchParams(params);
-                const wildcard = '@W@';
-                result.delete(ExecutionQueryParams.EXECUTABLE_ID);
-                result.append(ExecutionQueryParams.EXECUTABLE_ID, isExecutableExplicit(executableId) ? executableId : `${wildcard}${executableId}${wildcard}`);
-                result.delete(ExecutionQueryParams.USER_ID);
-                result.append(ExecutionQueryParams.USER_ID, `${wildcard}${userId}${wildcard}`);
-                return result;
-              })(),
-            ),
+            url: Urls.compose('/apps/acm/api/execution.json', params),
             operation: `Executions loading`,
             positive: false,
           });

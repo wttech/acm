@@ -11,8 +11,6 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ExecutionQuery {
 
-    private static final String WILDCARD = "@W@";
-
     private String path = ExecutionHistory.ROOT;
 
     private String executableId;
@@ -26,13 +24,6 @@ public class ExecutionQuery {
     private List<ExecutionStatus> statuses = new LinkedList<>();
 
     private Range<Integer> duration;
-
-    // TODO do more escaping e.g. for JCR illegal characters
-    // TODO beware that e.g. Text.escapeIllegalJcrChars is too aggressive for paths
-    public static String escape(String param) {
-        String escaped = StringUtils.replace(param, "%", "%%");
-        return StringUtils.replace(escaped, WILDCARD, "%");
-    }
 
     public static ExecutionQuery from(SlingHttpServletRequest request) {
         ExecutionQuery result = new ExecutionQuery();
@@ -114,20 +105,20 @@ public class ExecutionQuery {
         filters.add(String.format(
                 "s.[%s] = '%s'", JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, HistoricalExecution.RESOURCE_TYPE));
         if (path != null) {
-            filters.add(String.format("ISDESCENDANTNODE(s, '%s')", escape(path)));
+            filters.add(String.format("ISDESCENDANTNODE(s, '%s')", path));
         }
         if (executableId != null) {
-            if (StringUtils.contains(executableId, WILDCARD)) {
-                filters.add(String.format("s.[executableId] LIKE '%s'", escape(executableId)));
+            if (ExecutableUtils.isIdExplicit(executableId)) {
+                filters.add(String.format("s.[executableId] = '%s'", executableId));
             } else {
-                filters.add(String.format("s.[executableId] = '%s'", escape(executableId)));
+                filters.add(String.format("s.[executableId] LIKE '%%%s%%'", executableId));
             }
         }
         if (userId != null) {
-            if (StringUtils.contains(userId, WILDCARD)) {
-                filters.add(String.format("s.[userId] LIKE '%s'", escape(userId)));
+            if (ExecutableUtils.isUserExplicit(userId)) {
+                filters.add(String.format("s.[userId] = '%s'", userId));
             } else {
-                filters.add(String.format("s.[userId] = '%s'", escape(userId)));
+                filters.add(String.format("s.[userId] LIKE '%%%s%%'", userId));
             }
         }
         if (CollectionUtils.isNotEmpty(statuses)) {
