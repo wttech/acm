@@ -38,7 +38,10 @@ public class ExecutionQueue implements JobExecutor {
     @ObjectClassDefinition(name = "AEM Content Manager - Execution Queue")
     public @interface Config {
 
-        @AttributeDefinition(name = "Async Poll Interval")
+        @AttributeDefinition(name = "Max Size", description = "Prevents overloading the system.")
+        long maxSize() default 10;
+
+        @AttributeDefinition(name = "Async Poll Interval", description = "Interval in milliseconds to poll for job status.")
         long asyncPollInterval() default 500L;
     }
 
@@ -70,6 +73,13 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public Execution submit(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
+        int currentSize = getCurrentSize();
+        if (currentSize >= getMaxSize()) {
+            throw new AcmException(String.format(
+                    "Execution queue is full (%d/%d), cannot submit executable '%s'!",
+                    currentSize, config.maxSize(), executable.getId()));
+        }
+
         Map<String, Object> jobProps = new HashMap<>();
         jobProps.putAll(ExecutionContextOptions.toJobProps(contextOptions));
         jobProps.putAll(Code.toJobProps(executable));
@@ -104,6 +114,18 @@ public class ExecutionQueue implements JobExecutor {
     @SuppressWarnings("unchecked")
     private Stream<Job> findJobs() {
         return jobManager.findJobs(JobManager.QueryType.ALL, TOPIC, -1, Collections.emptyMap()).stream();
+    }
+
+    public int getCurrentSize() {
+        return (int) findJobs().count();
+    }
+
+    public int getMaxSize() {
+        return (int) config.maxSize();
+    }
+
+    public boolean isFull() {
+        return getCurrentSize() >= getMaxSize();
     }
 
     public Stream<Execution> readAll(Collection<String> executionIds) throws AcmException {

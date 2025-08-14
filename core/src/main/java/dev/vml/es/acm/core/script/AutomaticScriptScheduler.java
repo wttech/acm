@@ -284,18 +284,28 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 LOG.info("Script '{}' already locked!", script.getPath());
                 return false;
             }
-            Execution executionQueued = executionQueue
+
+            int queueCurrentSize = executionQueue.getCurrentSize();
+            int queueMaxSize = executionQueue.getMaxSize();
+            if (queueCurrentSize >= queueMaxSize) {
+                LOG.info("Script '{}' not queued because queue is full ({}/{})!", script.getPath(), queueCurrentSize, queueMaxSize);
+                return false;
+            }
+
+            Execution queued = executionQueue
                     .findByExecutableId(context.getExecutable().getId())
                     .orElse(null);
-            if (executionQueued != null) {
-                LOG.info("Script '{}' already queued: {}", script.getPath(), executionQueued);
+            if (queued != null) {
+                LOG.info("Script '{}' already queued: {}", script.getPath(), queued);
                 return false;
             }
-            Execution executionChecking = executor.check(context);
-            if (executionChecking.getStatus() != ExecutionStatus.SUCCEEDED) {
-                LOG.info("Script '{}' checking not succeeded: {}", script.getPath(), executionChecking);
+
+            Execution checking = executor.check(context);
+            if (checking.getStatus() != ExecutionStatus.SUCCEEDED) {
+                LOG.info("Script '{}' checking not succeeded: {}", script.getPath(), checking);
                 return false;
             }
+
             return true;
         }
     }
