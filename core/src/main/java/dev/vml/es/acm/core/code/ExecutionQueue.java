@@ -77,7 +77,7 @@ public class ExecutionQueue implements JobExecutor {
         if (currentSize >= getMaxSize()) {
             throw new AcmException(String.format(
                     "Execution queue is full (%d/%d), cannot submit executable '%s'!",
-                    currentSize, config.maxSize(), executable.getId()));
+                    currentSize, getMaxSize(), executable.getId()));
         }
 
         Map<String, Object> jobProps = new HashMap<>();
