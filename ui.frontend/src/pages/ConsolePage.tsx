@@ -23,7 +23,7 @@ const ConsolePage = () => {
   const appState = useAppState();
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
-  const [compiling, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
+  const [compiling, pendingCompile, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
   const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
 
   const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id, appState.spaSettings.executionPollInterval);
@@ -121,7 +121,7 @@ const ConsolePage = () => {
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
-                    <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={!!syntaxError || !!compileError} />
+                    <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={pendingCompile || !!syntaxError || !!compileError} />
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">

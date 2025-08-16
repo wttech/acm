@@ -74,7 +74,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 name = "Health Check Retry Count On Cron Schedule",
                 description =
                         "Maximum number of retries when checking instance health on cron schedule script execution")
-        long healthCheckRetryCountCron() default 6; // * 10 seconds = 1 minute
+        long healthCheckRetryCountCron() default 3; // * 10 seconds = 30 seconds
     }
 
     private Boolean instanceReady;

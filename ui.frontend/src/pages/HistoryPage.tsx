@@ -24,7 +24,8 @@ import { Dates } from '../utils/dates';
 import { Urls } from '../utils/url';
 
 const HistoryFilterDelay = 1500;
-const HistoryLimitOptions = [10, 20, 30, 50, 100, 200, 500];
+const HistoryLimitOptions = [10, 20, 30, 50, 100, 200, 400, 800];
+const HistoryLimitDefault = HistoryLimitOptions[2];
 
 const HistoryPage = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const HistoryPage = () => {
   const [executableId, setExecutableId] = useState<string>(searchState.get(ExecutionQueryParams.EXECUTABLE_ID) || '');
   const [userId, setUserId] = useState<string>(searchState.get(ExecutionQueryParams.USER_ID) || '');
   const [status, setStatus] = useState<string | null>(searchState.get(ExecutionQueryParams.STATUS) || 'all');
-  const [limit, setLimit] = useState<number>(Number(searchState.get(ExecutionQueryParams.LIMIT)) || HistoryLimitOptions[0]);
+  const [limit, setLimit] = useState<number>(Number(searchState.get(ExecutionQueryParams.LIMIT)) || HistoryLimitDefault);
 
   const [durationMinInitial, durationMaxInitial] = (() => {
     const searchParam = searchState.get(ExecutionQueryParams.DURATION);

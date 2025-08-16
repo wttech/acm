@@ -96,7 +96,7 @@ const ScriptExecutor = () => {
                   </Item>
                   <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue">
                     <ApplicationDelivery />
-                    <Text>Execution Queue &mdash; Sling</Text>
+                    <Text>Sling Queue</Text>
                   </Item>
                 </Menu>
               </MenuTrigger>

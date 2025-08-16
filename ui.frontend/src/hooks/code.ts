@@ -13,9 +13,14 @@ export type SyntaxError = {
 
 export const useCompilation = (code: string | undefined, onCodeChange: (code: string) => void) => {
   const [compiling, setCompiling] = useState<boolean>(false);
+  const [pendingCompile, setPendingCompile] = useState<boolean>(false);
   const [syntaxError, setSyntaxError] = useState<SyntaxError | undefined>(undefined);
   const [compileError, setCompileError] = useState<string | undefined>(undefined);
   const [execution, setExecution] = useState<Execution | null>(null);
+
+  useEffect(() => {
+    setPendingCompile(true);
+  }, [code]);
 
   const compileCode = useCallback(async () => {
     setCompiling(true);
@@ -55,6 +60,7 @@ export const useCompilation = (code: string | undefined, onCodeChange: (code: st
       console.warn('Code parsing error!');
     } finally {
       setCompiling(false);
+      setPendingCompile(false);
     }
   }, [code]);
 
@@ -70,5 +76,5 @@ export const useCompilation = (code: string | undefined, onCodeChange: (code: st
     };
   }, [cancelCompilation, code]);
 
-  return [compiling, syntaxError, compileError, execution] as const;
+  return [compiling, pendingCompile, syntaxError, compileError, execution] as const;
 };
