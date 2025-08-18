@@ -39,7 +39,7 @@ const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }
       <Divider />
       <Content>
         <Text>
-          <p>Are you sure you want to reset executor? This will stop all pending executions and remove all jobs from the Sling queue.</p>
+          <p>Are you sure you want to reset the executor? This action will <strong>affect all instances</strong>, immediately stop any ongoing executions, and clear all jobs from the Sling queue.<br /></p>
           <p>This action cannot be undone.</p>
         </Text>
       </Content>
