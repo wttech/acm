@@ -34,7 +34,11 @@ public class EventDispatcher implements EventListener {
 
     @Override
     public void onEvent(Event event) {
-        switch (EventType.valueOf(event.getName())) {
+        EventType eventType = EventType.of(event.getName()).orElse(null);
+        if (eventType == null) {
+            return;
+        }
+        switch (eventType) {
             case EXECUTION_QUEUE_RESET:
                 executionQueue.reset();
                 break;
