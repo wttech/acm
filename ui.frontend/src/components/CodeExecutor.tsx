@@ -23,7 +23,7 @@ import ExecutionsResetButton from './ExecutionsResetButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
 import UserInfo from './UserInfo';
 
-const ScriptExecutor = () => {
+const CodeExecutor = () => {
   const appState = useAppState();
   const navigate = useNavigate();
 
@@ -181,4 +181,4 @@ const ScriptExecutor = () => {
   );
 };
 
-export default ScriptExecutor;
+export default CodeExecutor;
