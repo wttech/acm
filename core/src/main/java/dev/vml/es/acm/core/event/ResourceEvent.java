@@ -2,16 +2,15 @@ package dev.vml.es.acm.core.event;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.repo.RepoResource;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ResourceEvent implements Event {
 

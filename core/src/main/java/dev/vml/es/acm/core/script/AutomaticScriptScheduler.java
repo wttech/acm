@@ -66,8 +66,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
         @AttributeDefinition(
                 name = "Health Check Retry Count On Boot",
-                description =
-                        "Maximum number of retries when checking instance health on boot script execution")
+                description = "Maximum number of retries when checking instance health on boot script execution")
         long healthCheckRetryCountBoot() default 90; // * 10 seconds = 15 minutes
 
         @AttributeDefinition(

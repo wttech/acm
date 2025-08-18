@@ -5,6 +5,10 @@ import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ResourceUtils;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import javax.jcr.Session;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -19,18 +23,13 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jcr.Session;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-
 @Component(
         service = {EventManager.class, ResourceChangeListener.class},
         immediate = true,
         property = {
-                ResourceChangeListener.PATHS + "=glob:" + ResourceEvent.ROOT + "/**/*",
-                ResourceChangeListener.CHANGES + "=ADDED",
-                ResourceChangeListener.CHANGES + "=CHANGED",
+            ResourceChangeListener.PATHS + "=glob:" + ResourceEvent.ROOT + "/**/*",
+            ResourceChangeListener.CHANGES + "=ADDED",
+            ResourceChangeListener.CHANGES + "=CHANGED",
         })
 public class ResourceEventManager implements EventManager, ResourceChangeListener {
 
@@ -42,7 +41,10 @@ public class ResourceEventManager implements EventManager, ResourceChangeListene
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
 
-    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC, service = EventListener.class)
+    @Reference(
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            service = EventListener.class)
     private final Collection<EventListener> listeners = new CopyOnWriteArrayList<>();
 
     @Override
@@ -50,7 +52,8 @@ public class ResourceEventManager implements EventManager, ResourceChangeListene
         try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
             LOG.debug("Triggering event: {}", name);
             ResourceEvent event = ResourceEvent.create(name, resourceResolver);
-            replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.ACTIVATE, event.getPath());
+            replicator.replicate(
+                    resourceResolver.adaptTo(Session.class), ReplicationActionType.ACTIVATE, event.getPath());
             LOG.debug("Triggered event: {}", event);
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository while triggering event '%s'!", name), e);
@@ -77,7 +80,10 @@ public class ResourceEventManager implements EventManager, ResourceChangeListene
                     try {
                         listener.onEvent(event);
                     } catch (Exception e) {
-                        LOG.error("Event listener '{}' cannot handle event properly!", listener.getClass().getName(), e);
+                        LOG.error(
+                                "Event listener '{}' cannot handle event properly!",
+                                listener.getClass().getName(),
+                                e);
                     }
                 });
                 LOG.debug("Dispatched event to listeners ({}): {}", listeners.size(), event);

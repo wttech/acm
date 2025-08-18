@@ -134,8 +134,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            List<Execution> executions =
-                    executionQueue.readAll(executionIds).collect(Collectors.toList());
+            List<Execution> executions = executionQueue.readAll(executionIds).collect(Collectors.toList());
             if (executions.isEmpty()) {
                 respondJson(
                         response,

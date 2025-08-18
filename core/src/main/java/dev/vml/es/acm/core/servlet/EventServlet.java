@@ -1,7 +1,12 @@
 package dev.vml.es.acm.core.servlet;
 
+import static dev.vml.es.acm.core.util.ServletResult.*;
+import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
+
 import dev.vml.es.acm.core.event.EventDispatcher;
 import dev.vml.es.acm.core.event.EventType;
+import java.io.IOException;
+import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -10,12 +15,6 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.Servlet;
-import java.io.IOException;
-
-import static dev.vml.es.acm.core.util.ServletResult.*;
-import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 
 @Component(
         service = {Servlet.class},
@@ -49,7 +48,10 @@ public class EventServlet extends SlingAllMethodsServlet {
             respondJson(response, ok(String.format("Event '%s' dispatched!", name)));
         } catch (Exception e) {
             LOG.error("Event '{}' cannot be dispatched!", name, e);
-            respondJson(response, badRequest(String.format("Event '%s' cannot be dispatched! %s", name, e.getMessage()).trim()));
+            respondJson(
+                    response,
+                    badRequest(String.format("Event '%s' cannot be dispatched! %s", name, e.getMessage())
+                            .trim()));
         }
     }
 }

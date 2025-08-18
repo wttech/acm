@@ -13,8 +13,7 @@ import org.slf4j.LoggerFactory;
 
 @Component(
         service = {EventDispatcher.class},
-        immediate = true
-)
+        immediate = true)
 public class EventDispatcher implements EventListener {
 
     private final Logger LOG = LoggerFactory.getLogger(EventDispatcher.class);
