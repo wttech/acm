@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-        service = {EventDispatcher.class},
+        service = {EventDispatcher.class, EventListener.class},
         immediate = true)
 public class EventDispatcher implements EventListener {
 

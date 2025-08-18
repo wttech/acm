@@ -32,7 +32,7 @@ public class ResourceEvent implements Event {
         Map<String, Object> properties = new HashMap<>();
         properties.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED);
         properties.put(TRIGGERED_AT_PROP, Calendar.getInstance());
-        result.parent().ensureFolder();
+        result.parent().ensureRegularFolder();
         result.save(properties);
         return new ResourceEvent(result.require());
     }
