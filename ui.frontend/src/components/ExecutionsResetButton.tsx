@@ -18,8 +18,8 @@ const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }
     setIsLoading(true);
     try {
       await toastRequest<QueueOutput>({
-        method: 'DELETE',
-        url: `/apps/acm/api/queue-code.json?executionId=all`,
+        method: 'POST',
+        url: `/apps/acm/api/event.json?name=execution_queue_reset`,
         operation: 'Reset executions',
       });
       if (onReset) onReset();

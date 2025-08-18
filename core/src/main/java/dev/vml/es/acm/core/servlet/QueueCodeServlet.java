@@ -4,6 +4,7 @@ import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.*;
 
 import dev.vml.es.acm.core.code.*;
+import dev.vml.es.acm.core.event.EventDispatcher;
 import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
 import java.util.Collections;
@@ -35,12 +36,13 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
     public static final String EXECUTION_ID_PARAM = "executionId";
 
-    public static final String EXECUTION_ID_ALL = "all";
-
     private static final Logger LOG = LoggerFactory.getLogger(QueueCodeServlet.class);
 
     @Reference
     private ExecutionQueue executionQueue;
+
+    @Reference
+    private EventDispatcher eventDispatcher;
 
     @Reference
     private Executor executor;
@@ -131,42 +133,27 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             return;
         }
 
-        if (executionIds.size() == 1 && StringUtils.equalsIgnoreCase(executionIds.get(0), EXECUTION_ID_ALL)) {
-            try {
-                executionQueue.reset();
-                QueueOutput output = new QueueOutput(Collections.emptyList());
-                respondJson(response, ok("Code execution reset successfully", output));
-            } catch (Exception e) {
-                LOG.error("Code execution cannot be reset!", e);
+        try {
+            List<Execution> executions =
+                    executionQueue.readAll(executionIds).collect(Collectors.toList());
+            if (executions.isEmpty()) {
                 respondJson(
                         response,
-                        error(String.format("Code execution cannot be reset! %s", e.getMessage())
-                                .trim()));
+                        notFound(String.format(
+                                "Code execution with ID '%s' not found!", StringUtils.join(executionIds, ","))));
                 return;
             }
-        } else {
-            try {
-                List<Execution> executions =
-                        executionQueue.readAll(executionIds).collect(Collectors.toList());
-                if (executions.isEmpty()) {
-                    respondJson(
-                            response,
-                            notFound(String.format(
-                                    "Code execution with ID '%s' not found!", StringUtils.join(executionIds, ","))));
-                    return;
-                }
 
-                executions.forEach(e -> executionQueue.stop(e.getId()));
+            executions.forEach(e -> executionQueue.stop(e.getId()));
 
-                QueueOutput output = new QueueOutput(executions);
-                respondJson(response, ok("Code execution stopped successfully", output));
-            } catch (Exception e) {
-                LOG.error("Code execution cannot be stopped!", e);
-                respondJson(
-                        response,
-                        error(String.format("Code execution cannot be stopped! %s", e.getMessage())
-                                .trim()));
-            }
+            QueueOutput output = new QueueOutput(executions);
+            respondJson(response, ok("Code execution stopped successfully", output));
+        } catch (Exception e) {
+            LOG.error("Code execution cannot be stopped!", e);
+            respondJson(
+                    response,
+                    error(String.format("Code execution cannot be stopped! %s", e.getMessage())
+                            .trim()));
         }
     }
 }
