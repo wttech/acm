@@ -132,7 +132,7 @@ Adjust file 'all/pom.xml':
 
 3. Consider refining the ACL settings
 
-   The default settings are defined in the [repo init OSGi config](https://github.com/wttech/acm/blob/main/ui.config/src/main/content/jcr_root/apps/acm-config/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~acm.config), which effectively restrict access to the tool and script execution to administrators only—a recommended practice for production environments.
+   The default settings are defined in the [repo init OSGi config](https://github.com/wttech/acm/blob/main/ui.config/src/main/content/jcr_root/apps/acm-config/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~acmcore.config), which effectively restrict access to the tool and script execution to administrators only—a recommended practice for production environments.
    If you require further customization, you can create your own repo init OSGi config to override or extend the default configuration.
 
 ## Compatibility
