@@ -2,17 +2,18 @@ import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Heading, 
 import Alert from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
-import GearsDelete from '@spectrum-icons/workflow/GearsDelete';
+import DataRemove from '@spectrum-icons/workflow/DataRemove';
+import Flashlight from '@spectrum-icons/workflow/Flashlight';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
 import { QueueOutput } from '../utils/api.types.ts';
 
-type ExecutionsResetButtonProps = {
-  onReset?: () => void;
+type ExecutionHistoryClearButtonProps = {
+  onClear?: () => void;
 };
 
-const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }) => {
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+const ExecutionHistoryClearButton: React.FC<ExecutionHistoryClearButtonProps> = ({ onClear }) => {
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -20,19 +21,19 @@ const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }
     try {
       await toastRequest<QueueOutput>({
         method: 'POST',
-        url: `/apps/acm/api/event.json?name=execution_queue_reset`,
-        operation: 'Reset executions',
+        url: `/apps/acm/api/event.json?name=history_clear`,
+        operation: 'Clear execution history',
       });
-      if (onReset) onReset();
+      if (onClear) onClear();
     } catch (error) {
-      console.error('Reset executions error:', error);
+      console.error('Clear execution history error:', error);
     } finally {
       setIsLoading(false);
-      setResetDialogOpen(false);
+      setDialogOpen(false);
     }
   };
 
-  const renderResetDialog = () => (
+  const renderDialog = () => (
     <>
       <Heading>
         <Text>Confirmation</Text>
@@ -41,8 +42,10 @@ const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }
       <Content>
         <Text>
           <p>
-            Are you sure you want to reset the executor? This action will <strong>affect all instances</strong>, immediately stop any ongoing executions, and clear all jobs from the Sling queue.
-            <br />
+            Are you sure you want to clear the execution history? This will remove all past executions <b>for all instances</b>.<br />
+          </p>
+          <p>
+            <Flashlight size="XS" /> Do not clear execution history <b>too often</b> &mdash; it may be unexpectedly useful for auditing or troubleshooting in the future.
           </p>
           <p>
             <Alert size="XS" /> This action cannot be undone.
@@ -50,7 +53,7 @@ const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }
         </Text>
       </Content>
       <ButtonGroup>
-        <Button variant="secondary" onPress={() => setResetDialogOpen(false)} isDisabled={isLoading}>
+        <Button variant="secondary" onPress={() => setDialogOpen(false)} isDisabled={isLoading}>
           <Cancel />
           <Text>Cancel</Text>
         </Button>
@@ -63,14 +66,14 @@ const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }
   );
 
   return (
-    <DialogTrigger isOpen={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-      <Button variant="secondary" style="fill" onPress={() => setResetDialogOpen(true)}>
-        <GearsDelete />
-        <Text>Reset</Text>
+    <DialogTrigger isOpen={dialogOpen} onOpenChange={setDialogOpen}>
+      <Button variant="negative" onPress={() => setDialogOpen(true)}>
+        <DataRemove />
+        <Text>Clear</Text>
       </Button>
-      <Dialog>{renderResetDialog()}</Dialog>
+      <Dialog>{renderDialog()}</Dialog>
     </DialogTrigger>
   );
 };
 
-export default ExecutionsResetButton;
+export default ExecutionHistoryClearButton;

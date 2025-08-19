@@ -120,4 +120,18 @@ public class ExecutionHistory {
     private Stream<Resource> executeSql(String sql) {
         return StreamUtils.asStream(resourceResolver.findResources(sql, Query.JCR_SQL2));
     }
+
+    public boolean clear() {
+        try {
+            Resource root = resourceResolver.getResource(ROOT);
+            if (root != null) {
+                resourceResolver.delete(root);
+                resourceResolver.commit();
+                return true;
+            }
+            return false;
+        } catch (PersistenceException e) {
+            throw new AcmException(String.format("Cannot clear execution history at root '%s'!", ROOT), e);
+        }
+    }
 }
