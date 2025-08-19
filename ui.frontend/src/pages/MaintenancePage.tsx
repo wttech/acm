@@ -2,13 +2,13 @@ import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectru
 import Code from '@spectrum-icons/workflow/Code';
 import Heart from '@spectrum-icons/workflow/Heart';
 import History from '@spectrum-icons/workflow/History';
-import HealthChecker from '../components/HealthChecker';
-import ExecutionHistory from '../components/ExecutionHistory';
 import CodeExecutor from '../components/CodeExecutor';
+import ExecutionHistory from '../components/ExecutionHistory';
+import HealthChecker from '../components/HealthChecker';
 import { useNavigationTab } from '../hooks/navigation';
 
 const MaintenancePage = () => {
-  const [selectedTab, setSelectedTab] = useNavigationTab('script-executor');
+  const [selectedTab, setSelectedTab] = useNavigationTab('code-executor');
 
   return (
     <Flex direction="column" flex="1" gap="size-400">
@@ -23,7 +23,7 @@ const MaintenancePage = () => {
             <Text>Health Checker</Text>
           </Item>
           <Item key="execution-history" aria-label="Execution History">
-            <History/>
+            <History />
             <Text>Execution History</Text>
           </Item>
         </TabList>

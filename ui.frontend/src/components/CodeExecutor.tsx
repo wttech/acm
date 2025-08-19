@@ -114,7 +114,7 @@ const CodeExecutor = () => {
               </Button>
               {(close) => (
                 <Dialog>
-                  <Heading>Script Executor</Heading>
+                  <Heading>Execution History</Heading>
                   <Divider />
                   <Content>
                     <p>

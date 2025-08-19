@@ -45,7 +45,7 @@ public class EventServlet extends SlingAllMethodsServlet {
 
         try {
             dispatcher.dispatch(event);
-            respondJson(response, ok(String.format("Event '%s' dispatched!", name)));
+            respondJson(response, ok(String.format("Event '%s' dispatched successfully!", name)));
         } catch (Exception e) {
             LOG.error("Event '{}' cannot be dispatched!", name, e);
             respondJson(
