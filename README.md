@@ -346,7 +346,7 @@ Complete output as well as argument values are also included to achieve full tra
 
 ### Extension scripts
 
-To add own code binding or hook into execution process, you can create your own extension Groovy scripts and place them at path like `/conf/acm/settings/extension/acme/main.groovy`.
+To add own code binding or hook into execution process, you can create your own extension Groovy scripts and place them at path like `/conf/acm/settings/script/extension/acme/main.groovy`.
 
 #### Example extension script
 
