@@ -400,7 +400,7 @@ documentation: |
 ### Mocks
 
 ACM has incorporated the [AEM Stubs tool](https://github.com/wttech/aem-stubs), which allows you to create mock HTTP responses for testing purposes also via Groovy Scripts.
-This feature is disabled by default, but you can enable it in the [OSGi configuration](http://localhost:4502/system/console/configMgr/com.vml.es.aem.acm.core.mock.MockHttpFilter).
+This feature is disabled by default, but you can enable it in the [OSGi configuration](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/mock/MockHttpFilter.java).
 
 <img src="docs/screenshot-scripts-mock-tab.png" width="720" alt="ACM Mocks - List">
 <img src="docs/screenshot-scripts-mock-code.png" width="720" alt="ACM Mocks - Code">
