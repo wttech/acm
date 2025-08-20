@@ -65,6 +65,11 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
     }
   };
 
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSave();
+  };
+
   return (
     <>
       <Button onPress={handleOpen} {...buttonProps}>
@@ -77,7 +82,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
             <Heading>Save Script</Heading>
             <Divider />
             <Content>
-              <Form validationBehavior="native">
+              <Form validationBehavior="native" onSubmit={handleFormSubmit}>
                 <RadioGroup label="Type" isRequired value={scriptType} onChange={(value) => setScriptType(value as ScriptType)} orientation="horizontal">
                   <Radio value={ScriptType.MANUAL}>
                     <Hand size="XS" />
@@ -106,7 +111,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
                 <Close size="XS" />
                 <Text>Cancel</Text>
               </Button>
-              <Button variant="cta" onPress={handleSave} isPending={saving} isDisabled={!scriptNameValid || saving}>
+              <Button variant="cta" type="submit" isPending={saving} isDisabled={!scriptNameValid || saving} onPress={() => handleSave()}>
                 <Checkmark size="XS" />
                 <Text>Save</Text>
               </Button>
