@@ -14,9 +14,9 @@ import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
 import { Key, Selection } from '@react-types/shared';
-import ScriptsDeleteButton from "./ScriptsDeleteButton.tsx";
+import ScriptsDeleteButton from "./ScriptsDeleteButton";
+import ScriptsSyncButton from "./ScriptsSyncButton";
 
-// TODO implement sync all
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
   const navigate = useNavigate();
@@ -55,6 +55,7 @@ const ScriptAutomaticList: React.FC = () => {
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
               <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={loadScripts} />
+              <ScriptsSyncButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
               <Button
                 variant="negative"
                 isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}

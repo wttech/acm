@@ -9,6 +9,7 @@ type ScriptsDeleteButtonProps = {
     onDelete: () => void;
 };
 
+// TODO support 'all' selection
 const ScriptsDeleteButton: React.FC<ScriptsDeleteButtonProps> = ({ selectedKeys, onDelete }) => {
     const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
