@@ -75,4 +75,8 @@ public class ScriptRepository {
         resource.saveFile(ScriptUtils.MIME_TYPE, data);
         return read(id).orElseThrow(() -> new AcmException(String.format("Cannot read script '%s' after saving!", id)));
     }
+
+    public void delete(String id) {
+        // TODO implement this
+    }
 }

@@ -14,6 +14,7 @@ import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
 
+// TODO recover selectable scripts, implement delete, sync all
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
   const navigate = useNavigate();

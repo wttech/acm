@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
             ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ScriptServlet.RT,
             ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
             ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+            ServletResolverConstants.SLING_SERVLET_METHODS + "=DELETE",
             ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
         })
 public class ScriptServlet extends SlingAllMethodsServlet {
@@ -90,6 +91,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
         }
     }
 
+    // TODO introduce 'action' param to handle 'sync all' outside of regular post used for saving scripts
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
@@ -110,5 +112,11 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             LOG.error("Script cannot be saved!", e);
             respondJson(response, error("Script cannot be saved! " + e.getMessage()));
         }
+    }
+
+    @Override
+    protected void doDelete(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        // TODO implement this
+        respondJson(response, error("Script deletion is not implemented yet!"));
     }
 }
