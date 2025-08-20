@@ -19,6 +19,7 @@ function detectScriptType(code: string): ScriptType {
   return automaticPattern.test(code) ? ScriptType.AUTOMATIC : ScriptType.MANUAL;
 }
 
+// TODO add warning that automatic script could be immediately executed on author after saving; and on publishes after clicking synchronize (checkbox in dialog)
 const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [scriptType, setScriptType] = useState<ScriptType>(detectScriptType(code));
