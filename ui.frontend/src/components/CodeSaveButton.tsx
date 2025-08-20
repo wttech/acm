@@ -28,7 +28,10 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
   const scriptNameValid = Strings.checkFilePath(scriptName);
   const scriptId = ScriptRoots[scriptType] + '/' + (Strings.removeEnd(scriptName.trim(), '.groovy') || '{name}') + '.groovy';
 
-  const handleOpen = () => setDialogOpen(true);
+  const handleOpen = () => {
+    setScriptType(detectScriptType(code));
+    setDialogOpen(true);
+  };
 
   const handleClose = () => {
     setDialogOpen(false);
@@ -101,7 +104,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
                   isRequired
                   marginTop="size-200"
                   validationState={scriptName && !scriptNameValid ? 'invalid' : undefined}
-                  errorMessage={scriptName && !scriptNameValid ? 'Invalid file path' : undefined}
+                  errorMessage={scriptName && !scriptNameValid ? 'Invalid' : undefined}
                 />
                 <TextField label="ID" width="100%" value={scriptId} isDisabled marginTop="size-200" />
               </Form>
