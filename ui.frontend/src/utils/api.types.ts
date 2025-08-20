@@ -7,11 +7,11 @@ export type Executable = {
 };
 
 export const ScriptRoot = '/conf/acm/settings/script';
-export const ScriptRootManual = '/conf/acm/settings/script/manual';
-export const ScriptRootAutomatic = '/conf/acm/settings/script/automatic';
 export const ScriptRoots: Record<ScriptType, string> = {
-  manual: ScriptRootManual,
-  automatic: ScriptRootAutomatic,
+  MANUAL: '/conf/acm/settings/script/manual',
+  AUTOMATIC: '/conf/acm/settings/script/automatic',
+  EXTENSION: '/conf/acm/settings/script/extension',
+  MOCK: '/conf/acm/settings/script/mock',
 };
 
 export const ConsoleDefaultScriptPath = `${ScriptRoot}/template/core/console.groovy`;

@@ -8,3 +8,20 @@ documentation: |
   AEM uses the Quartz scheduler, and so does ACM. Both require a specific syntax for cron expressions.
   For details, refer to the [Quartz documentation](https://www.quartz-scheduler.org/documentation).
   To generate valid cron expressions, you can use online tools such as [FreeFormatter](https://www.freeformatter.com/cron-expression-generator-quartz.html).
+  
+  Some examples:
+  
+  Every 10 minutes:
+  ```groovy
+  schedules.cron("0 0/10 * * * ?")
+  ```
+  
+  Every day at 10:00 AM:
+  ```groovy
+  schedules.cron("0 0 10 * * ?")
+  ```
+  
+  At a specific date and time (1st July 2024 at 10:00 AM):
+  ```groovy
+  schedules.cron("0 0 10 1 7 ? 2024")
+  ```

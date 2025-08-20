@@ -7,24 +7,29 @@ import Hand from '@spectrum-icons/workflow/Hand';
 import Launch from '@spectrum-icons/workflow/Launch';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
-import { ScriptRoots } from '../utils/api.types';
+import { ScriptRoots, ScriptType } from '../utils/api.types';
 import { Strings } from '../utils/strings';
-
-type ScriptType = 'manual' | 'automatic';
 
 interface CodeSaveButtonProps extends React.ComponentProps<typeof Button> {
   code: string;
 }
 
+function detectScriptType(code: string): ScriptType {
+  const automaticPattern = /(def|Schedule)\s+scheduleRun\s*(\(\s*\))?\s*\{/;
+  return automaticPattern.test(code) ? ScriptType.AUTOMATIC : ScriptType.MANUAL;
+}
+
 const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [scriptType, setScriptType] = useState<ScriptType>('manual');
+  const [scriptType, setScriptType] = useState<ScriptType>(detectScriptType(code));
   const [scriptName, setScriptName] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const id = ScriptRoots[scriptType] + '/' + (Strings.removeEnd(scriptName.trim(), '.groovy') || '{name}') + '.groovy';
+  const scriptNameValid = Strings.checkFileName(scriptName);
+  const scriptId = ScriptRoots[scriptType] + '/' + (Strings.removeEnd(scriptName.trim(), '.groovy') || '{name}') + '.groovy';
 
   const handleOpen = () => setDialogOpen(true);
+
   const handleClose = () => {
     setDialogOpen(false);
     setScriptName('');
@@ -36,6 +41,10 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
       ToastQueue.negative('Script name is required');
       return;
     }
+    if (!scriptNameValid) {
+      ToastQueue.negative('Invalid script name');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -45,9 +54,9 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
         method: 'POST',
         data: {
           code: {
-            id: id,
+            id: scriptId,
             content: code,
-          }
+          },
         },
       });
       handleClose();
@@ -70,17 +79,26 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
             <Content>
               <Form validationBehavior="native">
                 <RadioGroup label="Type" isRequired value={scriptType} onChange={(value) => setScriptType(value as ScriptType)} orientation="horizontal">
-                  <Radio value="manual">
+                  <Radio value={ScriptType.MANUAL}>
                     <Hand size="XS" />
                     <Text marginStart="size-50">Manual</Text>
                   </Radio>
-                  <Radio value="automatic">
+                  <Radio value={ScriptType.AUTOMATIC}>
                     <Launch size="XS" />
                     <Text marginStart="size-50">Automatic</Text>
                   </Radio>
                 </RadioGroup>
-                <TextField label="Name" width="100%" value={scriptName} onChange={setScriptName} isRequired marginTop="size-200" />
-                <TextField label="ID" width="100%" value={id} isDisabled marginTop="size-200" />
+                <TextField
+                  label="Name"
+                  width="100%"
+                  value={scriptName}
+                  onChange={setScriptName}
+                  isRequired
+                  marginTop="size-200"
+                  validationState={scriptName && !scriptNameValid ? 'invalid' : undefined}
+                  errorMessage={scriptName && !scriptNameValid ? 'Invalid filename' : undefined}
+                />
+                <TextField label="ID" width="100%" value={scriptId} isDisabled marginTop="size-200" />
               </Form>
             </Content>
             <ButtonGroup>
@@ -88,7 +106,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
                 <Close size="XS" />
                 <Text>Cancel</Text>
               </Button>
-              <Button variant="cta" onPress={handleSave} isPending={saving}>
+              <Button variant="cta" onPress={handleSave} isPending={saving} isDisabled={!scriptNameValid || saving}>
                 <Checkmark size="XS" />
                 <Text>Save</Text>
               </Button>
