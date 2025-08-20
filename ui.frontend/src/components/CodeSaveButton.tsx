@@ -104,7 +104,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
                   isRequired
                   marginTop="size-200"
                   validationState={scriptName && !scriptNameValid ? 'invalid' : undefined}
-                  errorMessage={scriptName && !scriptNameValid ? 'Invalid' : undefined}
+                  errorMessage={scriptName && !scriptNameValid ? 'Invalid format' : undefined}
                 />
                 <TextField label="ID" width="100%" value={scriptId} isDisabled marginTop="size-200" />
               </Form>
