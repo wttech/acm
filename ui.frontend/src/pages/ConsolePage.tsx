@@ -5,6 +5,7 @@ import Print from '@spectrum-icons/workflow/Print';
 import { useEffect, useState } from 'react';
 import CodeEditor from '../components/CodeEditor.tsx';
 import CodeExecuteButton from '../components/CodeExecuteButton';
+import CodeSaveButton from '../components/CodeSaveButton';
 import CompilationStatus from '../components/CompilationStatus';
 import ConsoleHelpButton from '../components/ConsoleHelpButton';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
@@ -122,6 +123,7 @@ const ConsolePage = () => {
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
                     <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={pendingCompile || !!syntaxError || !!compileError} />
+                    <CodeSaveButton code={code || ''} variant="secondary" isDisabled={pendingCompile || !!syntaxError || !!compileError} />
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">
