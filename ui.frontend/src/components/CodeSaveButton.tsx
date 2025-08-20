@@ -111,7 +111,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
                 <Close size="XS" />
                 <Text>Cancel</Text>
               </Button>
-              <Button variant="cta" type="submit" isPending={saving} isDisabled={!scriptNameValid || saving} onPress={() => handleSave()}>
+              <Button variant="cta" type="submit" isPending={saving} isDisabled={!scriptNameValid || saving}>
                 <Checkmark size="XS" />
                 <Text>Save</Text>
               </Button>
