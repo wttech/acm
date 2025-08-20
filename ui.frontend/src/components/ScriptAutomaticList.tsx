@@ -2,7 +2,7 @@ import { Button, ButtonGroup, Cell, Column, Content, ContextualHelp, Flex, Headi
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
 import Settings from '@spectrum-icons/workflow/Settings';
-import React from 'react';
+import React, { useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
@@ -13,14 +13,25 @@ import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import UserInfo from './UserInfo';
+import { Key, Selection } from '@react-types/shared';
+import ScriptsDeleteButton from "./ScriptsDeleteButton.tsx";
 
-// TODO recover selectable scripts, implement delete, sync all
+// TODO implement sync all
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
   const navigate = useNavigate();
   const formatter = useFormatter();
 
-  const { scripts, loading } = useScripts(ScriptType.AUTOMATIC);
+  const { scripts, loading, loadScripts } = useScripts(ScriptType.AUTOMATIC);
+
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
+  const selectedIds = (selectedKeys: Selection): string[] => {
+    if (selectedKeys === 'all') {
+      return scripts?.list.map((script) => script.id) || [];
+    } else {
+      return Array.from(selectedKeys as Set<Key>).map((key) => key.toString());
+    }
+  };
 
   const renderEmptyState = () => (
     <IllustratedMessage>
@@ -43,6 +54,7 @@ const ScriptAutomaticList: React.FC = () => {
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
+              <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={loadScripts} />
               <Button
                 variant="negative"
                 isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
@@ -61,7 +73,15 @@ const ScriptAutomaticList: React.FC = () => {
           </Flex>
         </Flex>
       </View>
-      <TableView flex="1" aria-label={`Script list (${ScriptType.AUTOMATIC.toLowerCase()})`} selectionMode={'none'} renderEmptyState={renderEmptyState} onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}>
+      <TableView
+          flex="1"
+          aria-label={`Script list (${ScriptType.AUTOMATIC.toLowerCase()})`}
+          selectionMode={'multiple'}
+          selectedKeys={selectedKeys}
+          onSelectionChange={setSelectedKeys}
+          renderEmptyState={renderEmptyState}
+          onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
+      >
         <TableHeader>
           <Column width="4fr">Name</Column>
           <Column width="5fr">Last Execution</Column>

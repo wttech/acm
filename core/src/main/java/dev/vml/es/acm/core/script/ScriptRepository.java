@@ -10,6 +10,8 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -74,6 +76,13 @@ public class ScriptRepository {
         resource.parent().ensureRegularFolder();
         resource.saveFile(ScriptUtils.MIME_TYPE, data);
         return read(id).orElseThrow(() -> new AcmException(String.format("Cannot read script '%s' after saving!", id)));
+    }
+
+    public void deleteAll(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return;
+        }
+        ids.forEach(this::delete);
     }
 
     public void delete(String id) {

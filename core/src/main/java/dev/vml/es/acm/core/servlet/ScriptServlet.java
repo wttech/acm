@@ -3,18 +3,23 @@ package dev.vml.es.acm.core.servlet;
 import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.*;
 
+import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.code.Code;
 import dev.vml.es.acm.core.gui.SpaSettings;
+import dev.vml.es.acm.core.replication.Activator;
 import dev.vml.es.acm.core.script.Script;
 import dev.vml.es.acm.core.script.ScriptRepository;
 import dev.vml.es.acm.core.script.ScriptStats;
 import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.servlet.Servlet;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -30,7 +35,6 @@ import org.slf4j.LoggerFactory;
             ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + ScriptServlet.RT,
             ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
             ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
-            ServletResolverConstants.SLING_SERVLET_METHODS + "=DELETE",
             ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json",
         })
 public class ScriptServlet extends SlingAllMethodsServlet {
@@ -43,7 +47,22 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     private static final String TYPE_PARAM = "type";
 
+    private static final String ACTION_PARAM = "action";
+
     private static final String STATS_LIMIT_PARAM = "statsLimit";
+
+    private enum Action {
+        SAVE,
+        DELETE,
+        SYNC_ALL;
+
+        public static Optional<Action> of(String name) {
+            return Arrays.stream(Action.values()).filter(a -> a.name().equalsIgnoreCase(name)).findFirst();
+        }
+    }
+
+    @Reference
+    private Replicator replicator;
 
     @Reference
     private SpaSettings spaSettings;
@@ -91,32 +110,59 @@ public class ScriptServlet extends SlingAllMethodsServlet {
         }
     }
 
-    // TODO introduce 'action' param to handle 'sync all' outside of regular post used for saving scripts
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        try {
-            ScriptInput input = JsonUtils.read(request.getInputStream(), ScriptInput.class);
-            if (input == null) {
-                respondJson(response, badRequest("Script input is not specified!"));
-                return;
-            }
-
-            Code code = input.getCode();
-
-            ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
-            Script script = repository.save(code);
-
-            ScriptOutput output = new ScriptOutput(script);
-            respondJson(response, ok("Script saved successfully", output));
-        } catch (Exception e) {
-            LOG.error("Script cannot be saved!", e);
-            respondJson(response, error("Script cannot be saved! " + e.getMessage()));
+        Optional<Action> action = Action.of(stringParam(request, ACTION_PARAM));
+        if (!action.isPresent()) {
+            respondJson(response, error("Invalid action parameter! Must be either 'enable', 'disable' or 'sync_all'"));
+            return;
         }
-    }
 
-    @Override
-    protected void doDelete(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        // TODO implement this
-        respondJson(response, error("Script deletion is not implemented yet!"));
+        ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
+        Activator activator = new Activator(request.getResourceResolver(), replicator);
+
+        switch (action.get()) {
+            case SAVE:
+                try {
+                    ScriptInput input = JsonUtils.read(request.getInputStream(), ScriptInput.class);
+                    if (input == null) {
+                        respondJson(response, badRequest("Script input is not specified!"));
+                        return;
+                    }
+
+                    Code code = input.getCode();
+                    Script script = repository.save(code);
+
+                    ScriptOutput output = new ScriptOutput(script);
+                    respondJson(response, ok("Script saved successfully", output));
+                } catch (Exception e) {
+                    LOG.error("Script cannot be saved!", e);
+                    respondJson(response, error("Script cannot be saved! " + e.getMessage()));
+                }
+            break;
+            case DELETE:
+                try {
+                    List<String> ids = stringsParam(request, ID_PARAM);
+                    if (CollectionUtils.isEmpty(ids)) {
+                        respondJson(response, error("Script 'id' parameter is not specified!"));
+                        return;
+                    }
+                    repository.deleteAll(ids);
+                } catch (Exception e) {
+                    LOG.error("Script(s) cannot be deleted!", e);
+                    respondJson(response, error("Script(s) cannot be deleted! " + e.getMessage()));
+                }
+                break;
+            case SYNC_ALL:
+                try {
+                    activator.reactivateTree(ScriptRepository.ROOT);
+                } catch (Exception e) {
+                    LOG.error("Script(s) cannot be synchronized!", e);
+                    respondJson(response, error("Script(s) cannot be synchronized! " + e.getMessage()));
+                }
+                break;
+            default:
+                break;
+        }
     }
 }
