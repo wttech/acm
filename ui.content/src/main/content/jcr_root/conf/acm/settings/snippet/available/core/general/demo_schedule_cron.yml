@@ -10,7 +10,7 @@ content: |
   }
     
   void doRun() {
-    println "Hello! I am running every minute."
+    println "Hello! I am running every 5 minutes."
   }
 documentation: |
   A skeleton for an automatic script that runs every 5 minutes using a cron expression.
