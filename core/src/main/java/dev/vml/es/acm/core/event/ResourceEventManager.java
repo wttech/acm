@@ -48,10 +48,10 @@ public class ResourceEventManager implements EventManager, ResourceChangeListene
     private final Collection<EventListener> listeners = new CopyOnWriteArrayList<>();
 
     @Override
-    public void triggerEvent(String name) {
+    public void triggerEvent(String name, Map<String, Object> properties) {
         try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
             LOG.debug("Triggering event: {}", name);
-            ResourceEvent event = ResourceEvent.create(name, resourceResolver);
+            ResourceEvent event = ResourceEvent.create(name, properties, resourceResolver);
             replicator.replicate(
                     resourceResolver.adaptTo(Session.class), ReplicationActionType.ACTIVATE, event.getPath());
             LOG.debug("Triggered event: {}", event);

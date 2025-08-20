@@ -3,6 +3,7 @@ package dev.vml.es.acm.core.event;
 import dev.vml.es.acm.core.code.ExecutionHistory;
 import dev.vml.es.acm.core.code.ExecutionQueue;
 import dev.vml.es.acm.core.util.ResourceUtils;
+import java.util.Collections;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -28,7 +29,7 @@ public class EventDispatcher implements EventListener {
     private ResourceResolverFactory resourceResolverFactory;
 
     public void dispatch(EventType eventType) {
-        eventManager.triggerEvent(eventType.name());
+        eventManager.triggerEvent(eventType.name().toLowerCase(), Collections.emptyMap());
     }
 
     @Override
