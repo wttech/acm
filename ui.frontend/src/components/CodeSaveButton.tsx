@@ -38,11 +38,11 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
 
   const handleSave = async () => {
     if (!scriptName.trim()) {
-      ToastQueue.negative('Script name is required');
+      ToastQueue.negative('Script name is required!');
       return;
     }
     if (!scriptNameValid) {
-      ToastQueue.negative('Invalid script name');
+      ToastQueue.negative('Script name is invalid!');
       return;
     }
 
