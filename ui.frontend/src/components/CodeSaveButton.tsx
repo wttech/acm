@@ -8,6 +8,7 @@ import Launch from '@spectrum-icons/workflow/Launch';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
 import { ScriptRoots } from '../utils/api.types';
+import { Strings } from '../utils/strings';
 
 type ScriptType = 'manual' | 'automatic';
 
@@ -21,7 +22,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
   const [scriptName, setScriptName] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const id = ScriptRoots[scriptType] + '/' + (scriptName.trim() || '<name>');
+  const id = ScriptRoots[scriptType] + '/' + (Strings.removeEnd(scriptName.trim(), '.groovy') || '{name}') + '.groovy';
 
   const handleOpen = () => setDialogOpen(true);
   const handleClose = () => {
@@ -35,19 +36,24 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
       ToastQueue.negative('Script name is required');
       return;
     }
+
     setSaving(true);
-    const path = ScriptRoots[scriptType] + scriptName.trim();
-    await toastRequest({
-      operation: 'Save script',
-      url: '/apps/acm/api/script.json',
-      method: 'POST',
-      data: {
-        id: path,
-        content: code,
-      },
-    });
-    ToastQueue.positive('Script saved successfully');
-    handleClose();
+    try {
+      await toastRequest({
+        operation: 'Save script',
+        url: '/apps/acm/api/script.json',
+        method: 'POST',
+        data: {
+          code: {
+            id: id,
+            content: code,
+          }
+        },
+      });
+      handleClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
