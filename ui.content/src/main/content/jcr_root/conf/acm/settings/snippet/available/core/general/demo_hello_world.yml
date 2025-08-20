@@ -9,4 +9,4 @@ content: |
     println "Hello World!"
   }
 documentation: |
-  Default script - a skeleton for own scripts.
+  A skeleton for a minimal script.
