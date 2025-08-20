@@ -62,7 +62,6 @@ public class ScriptRepository {
         return save(code.getId(), code.getContent());
     }
 
-    // TODO do not use repo resource to skip logging
     public Script save(String id, Object data) throws AcmException {
         if (!ScriptType.byPath(id).isPresent()) {
             throw new AcmException(String.format("Cannot save script '%s' at unsupported path!", id));
