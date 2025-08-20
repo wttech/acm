@@ -48,9 +48,15 @@ export class Strings {
     return text.split(search).join(replacement);
   }
 
-  // starts with a letter, allows letters, numbers, underscores, hyphens, no spaces
   static checkFileName(name: string): boolean {
+    if (!name || name.trim() !== name) return false;
     const FILENAME_REGEX = /^[a-zA-Z][\w-]*$/;
-    return FILENAME_REGEX.test(name.trim());
+    return FILENAME_REGEX.test(name);
+  }
+
+  static checkFilePath(path: string): boolean {
+    if (!path || path.trim() !== path) return false;
+    const FILEPATH_REGEX = /^([a-zA-Z][\w-]*\/)*[a-zA-Z][\w-]*$/;
+    return FILEPATH_REGEX.test(path);
   }
 }
