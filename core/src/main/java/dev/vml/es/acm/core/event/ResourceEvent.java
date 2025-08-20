@@ -27,6 +27,7 @@ public class ResourceEvent implements Event {
         this.triggeredAt = resource.getValueMap().get(TRIGGERED_AT_PROP, Calendar.class);
     }
 
+    // TODO do not use repo resource to skip logging
     public static ResourceEvent create(String name, ResourceResolver resolver) {
         RepoResource result = RepoResource.of(resolver, String.format("%s/%s", ROOT, name));
         Map<String, Object> properties = new HashMap<>();

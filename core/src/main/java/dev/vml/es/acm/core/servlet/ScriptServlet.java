@@ -1,14 +1,15 @@
 package dev.vml.es.acm.core.servlet;
 
-import static dev.vml.es.acm.core.util.ServletResult.error;
-import static dev.vml.es.acm.core.util.ServletResult.ok;
+import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.*;
 
+import dev.vml.es.acm.core.code.Code;
 import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.script.Script;
 import dev.vml.es.acm.core.script.ScriptRepository;
 import dev.vml.es.acm.core.script.ScriptStats;
 import dev.vml.es.acm.core.script.ScriptType;
+import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -78,7 +79,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     .map(path -> ScriptStats.forCompletedByPath(request.getResourceResolver(), path, statsLimit))
                     .collect(Collectors.toList());
 
-            ScriptOutput output = new ScriptOutput(scripts, stats);
+            ScriptListOutput output = new ScriptListOutput(scripts, stats);
             respondJson(response, ok("Scripts listed successfully", output));
         } catch (Exception e) {
             LOG.error("Scripts cannot be read!", e);
@@ -86,6 +87,28 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     response,
                     error(String.format("Scripts cannot be read! %s", e.getMessage())
                             .trim()));
+        }
+    }
+
+    @Override
+    protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        try {
+            ScriptInput input = JsonUtils.read(request.getInputStream(), ScriptInput.class);
+            if (input == null) {
+                respondJson(response, badRequest("Script input is not specified!"));
+                return;
+            }
+
+            Code code = input.getCode();
+
+            ScriptRepository repository = new ScriptRepository(request.getResourceResolver());
+            Script script = repository.save(code);
+
+            ScriptOutput output = new ScriptOutput(script);
+            respondJson(response, ok("Script saved successfully", output));
+        } catch (Exception e) {
+            LOG.error("Script cannot be saved!", e);
+            respondJson(response, error("Script cannot be saved! " + e.getMessage()));
         }
     }
 }

@@ -50,7 +50,6 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
-
             QueueCodeInput input = JsonUtils.read(request.getInputStream(), QueueCodeInput.class);
             if (input == null) {
                 respondJson(response, badRequest("Code input is not specified!"));

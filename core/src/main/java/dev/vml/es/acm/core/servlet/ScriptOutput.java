@@ -1,26 +1,17 @@
 package dev.vml.es.acm.core.servlet;
 
 import dev.vml.es.acm.core.script.Script;
-import dev.vml.es.acm.core.script.ScriptStats;
 import java.io.Serializable;
-import java.util.List;
 
 public class ScriptOutput implements Serializable {
 
-    private final List<Script> list;
+    private final Script script;
 
-    private final List<ScriptStats> stats;
-
-    public ScriptOutput(List<Script> scripts, List<ScriptStats> stats) {
-        this.list = scripts;
-        this.stats = stats;
+    public ScriptOutput(Script script) {
+        this.script = script;
     }
 
-    public List<Script> getList() {
-        return list;
-    }
-
-    public List<ScriptStats> getStats() {
-        return stats;
+    public Script getScript() {
+        return script;
     }
 }
