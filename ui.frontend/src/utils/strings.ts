@@ -50,13 +50,13 @@ export class Strings {
 
   static checkFileName(name: string): boolean {
     if (!name || name.trim() !== name) return false;
-    const FILENAME_REGEX = /^[a-zA-Z][\w-]*$/;
+    const FILENAME_REGEX = /^[a-zA-Z][\w-]*(\.[a-zA-Z0-9]+)?$/;
     return FILENAME_REGEX.test(name);
   }
 
   static checkFilePath(path: string): boolean {
     if (!path || path.trim() !== path) return false;
-    const FILEPATH_REGEX = /^([a-zA-Z][\w-]*\/)*[a-zA-Z][\w-]*$/;
+    const FILEPATH_REGEX = /^([a-zA-Z][\w-]*\/)*[a-zA-Z][\w-]*(\.[a-zA-Z0-9]+)?$/;
     return FILEPATH_REGEX.test(path);
   }
 }
