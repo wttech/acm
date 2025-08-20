@@ -14,5 +14,6 @@ content: |
     println "Hello ${arguments.value('name')} ${arguments.value('surname')}!"
   }
 documentation: |
-  Parametrized script - a skeleton for a script with arguments.<br>
+  A skeleton for a manual script with arguments.
+  
   The script will print a greeting message with the provided name and surname.

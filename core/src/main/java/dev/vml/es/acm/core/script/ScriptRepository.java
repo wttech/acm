@@ -2,6 +2,9 @@ package dev.vml.es.acm.core.script;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.code.Code;
+import dev.vml.es.acm.core.code.script.ScriptUtils;
+import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
 import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.List;
@@ -53,5 +56,23 @@ public class ScriptRepository {
         } catch (PersistenceException e) {
             throw new AcmException(String.format("Cannot create script root '%s'!", type.root()), e);
         }
+    }
+
+    public Script save(Code code) {
+        return save(code.getId(), code.getContent());
+    }
+
+    public Script save(String id, Object data) throws AcmException {
+        if (!ScriptType.byPath(id).isPresent()) {
+            throw new AcmException(String.format("Cannot save script '%s' at unsupported path!", id));
+        }
+
+        if (read(id).isPresent()) {
+            throw new AcmException(String.format("Cannot save script '%s' as it already exists!", id));
+        }
+        RepoResource resource = RepoResource.of(resourceResolver, id);
+        resource.parent().ensureRegularFolder();
+        resource.saveFile(ScriptUtils.MIME_TYPE, data);
+        return read(id).orElseThrow(() -> new AcmException(String.format("Cannot read script '%s' after saving!", id)));
     }
 }

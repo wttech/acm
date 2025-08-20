@@ -18,4 +18,4 @@ content: |
     println "Processing done"
   }
 documentation: |
-  Simulate a long running process.
+  A skeleton for a script that simulates a processing task.

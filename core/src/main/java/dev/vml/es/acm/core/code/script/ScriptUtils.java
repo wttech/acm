@@ -14,6 +14,8 @@ import org.codehaus.groovy.transform.ASTTransformation;
 
 public final class ScriptUtils {
 
+    public static final String MIME_TYPE = "text/x-groovy";
+
     private static final String DEF_TYPE = "java.lang.Object";
 
     private ScriptUtils() {

@@ -1,0 +1,18 @@
+group: General
+name: general_demo_schedule_cron
+content: |
+  def scheduleRun() {
+      return schedules.cron("0 0/5 * * * ?")
+  }
+  
+  boolean canRun() {
+    return conditions.always()
+  }
+    
+  void doRun() {
+    println "Hello! I am running every 5 minutes."
+  }
+documentation: |
+  A skeleton for an automatic script that runs every 5 minutes using a cron expression.
+  
+  The script will only print a message indicating that it is running.
