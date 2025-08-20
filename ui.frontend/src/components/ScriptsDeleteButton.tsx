@@ -15,22 +15,21 @@ const ScriptsDeleteButton: React.FC<ScriptsDeleteButtonProps> = ({ selectedKeys,
 
     const handleConfirm = async () => {
         setIsLoading(true);
-        const action = 'delete';
         const ids = Array.from(selectedKeys);
 
         const params = new URLSearchParams();
-        params.append('action', action);
+        params.append('action', 'delete');
         ids.forEach((id) => params.append('id', id));
 
         try {
             await toastRequest({
                 method: 'POST',
                 url: `/apps/acm/api/script.json?${params.toString()}`,
-                operation: `${action} scripts`,
+                operation: `Delete scripts`,
             });
             onDelete();
         } catch (error) {
-            console.error(`${action} scripts error:`, error);
+            console.error(`Delete scripts error:`, error);
         } finally {
             setIsLoading(false);
             setToggleDialogOpen(false);

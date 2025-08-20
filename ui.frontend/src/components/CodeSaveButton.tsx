@@ -54,7 +54,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
     try {
       await toastRequest({
         operation: 'Save script',
-        url: '/apps/acm/api/script.json',
+        url: '/apps/acm/api/script.json?action=save',
         method: 'POST',
         data: {
           code: {
