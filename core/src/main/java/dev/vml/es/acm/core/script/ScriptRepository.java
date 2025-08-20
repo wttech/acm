@@ -66,7 +66,7 @@ public class ScriptRepository {
         if (!ScriptType.byPath(id).isPresent()) {
             throw new AcmException(String.format("Cannot save script '%s' at unsupported path!", id));
         }
-        ;
+
         if (read(id).isPresent()) {
             throw new AcmException(String.format("Cannot save script '%s' as it already exists!", id));
         }
