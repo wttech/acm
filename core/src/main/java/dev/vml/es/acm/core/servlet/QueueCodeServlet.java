@@ -4,7 +4,6 @@ import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.*;
 
 import dev.vml.es.acm.core.code.*;
-import dev.vml.es.acm.core.event.EventDispatcher;
 import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
 import java.util.Collections;
@@ -40,9 +39,6 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
 
     @Reference
     private ExecutionQueue executionQueue;
-
-    @Reference
-    private EventDispatcher eventDispatcher;
 
     @Reference
     private Executor executor;
