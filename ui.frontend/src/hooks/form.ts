@@ -42,7 +42,7 @@ function isValueAvailable(value: ArgumentValue): boolean {
 
 function validateCustom(arg: Argument<ArgumentValue>, value: ArgumentValue, allValues: Record<string, ArgumentValue>): ValidationResult {
   try {
-    // eslint-disable-next-line no-eval
+     
     const validator = eval(arg.validator!);
     const errorMessage = validator(value, allValues);
     return errorMessage || true;
