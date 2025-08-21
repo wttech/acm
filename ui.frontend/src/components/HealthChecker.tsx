@@ -143,9 +143,7 @@ const HealthChecker = () => {
           <Column width="2fr">Severity</Column>
           <Column width="3fr">Category</Column>
           <Column width="8fr">Issue</Column>
-          <Column width="2fr">
-            Details
-          </Column>
+          <Column width="2fr">Details</Column>
         </TableHeader>
         <TableBody>
           {(healthIssues || []).map((issue, index) => (

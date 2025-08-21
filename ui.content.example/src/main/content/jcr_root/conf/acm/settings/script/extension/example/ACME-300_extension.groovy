@@ -1,8 +1,6 @@
 import dev.vml.es.acm.core.code.ExecutionContext
 import dev.vml.es.acm.core.code.Execution
 
-import a.b.c.d.NonExistingClass
-
 void prepareRun(ExecutionContext context) {
     context.variable("acme", new AcmeFacade())
 }
