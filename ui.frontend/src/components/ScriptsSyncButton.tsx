@@ -49,7 +49,7 @@ const ScriptsSyncButton: React.FC<ScriptSynchronizeButtonProps> = ({ selectedKey
             <Info size="XS" /> Synchronizing <strong>all scripts</strong> will ensure consistency between the author and publish instances.
           </p>
           <p>
-            <Alert size="XS" /> Are you sure want to continue? Some scripts may be immediately executed on publish instances after synchronization, depending on their configuration.
+            <Alert size="XS" /> Are you sure you want to continue? Some scripts may be immediately executed on publish instances after synchronization, depending on their configuration.
           </p>
         </Content>
         <ButtonGroup>
