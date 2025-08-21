@@ -42,7 +42,6 @@ function isValueAvailable(value: ArgumentValue): boolean {
 
 function validateCustom(arg: Argument<ArgumentValue>, value: ArgumentValue, allValues: Record<string, ArgumentValue>): ValidationResult {
   try {
-     
     const validator = eval(arg.validator!);
     const errorMessage = validator(value, allValues);
     return errorMessage || true;
