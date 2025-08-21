@@ -20,7 +20,7 @@ content: |
     def johnDoe = acl.getUser { id = "john.doe" }
     johnDoe?.with {
       purge()
-      allow("/content", ["jcr:read"])
+      allow { path = "/content"; permissions = ["jcr:read"] }
     }
     
     acl.createGroup { id = "test.group" }.with {
@@ -31,3 +31,4 @@ content: |
     
     log.info "ACL setup done"
   }
+}
