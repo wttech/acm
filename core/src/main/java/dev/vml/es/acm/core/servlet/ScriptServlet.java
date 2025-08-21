@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.servlet.Servlet;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -54,10 +53,12 @@ public class ScriptServlet extends SlingAllMethodsServlet {
     private enum Action {
         SAVE,
         DELETE,
-        SYNC_ALL;
+        SYNC;
 
         public static Optional<Action> of(String name) {
-            return Arrays.stream(Action.values()).filter(a -> a.name().equalsIgnoreCase(name)).findFirst();
+            return Arrays.stream(Action.values())
+                    .filter(a -> a.name().equalsIgnoreCase(name))
+                    .findFirst();
         }
     }
 
@@ -139,7 +140,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     LOG.error("Script cannot be saved!", e);
                     respondJson(response, error("Script cannot be saved! " + e.getMessage()));
                 }
-            break;
+                break;
             case DELETE:
                 try {
                     List<String> ids = stringsParam(request, ID_PARAM);
@@ -153,7 +154,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     respondJson(response, error("Script(s) cannot be deleted! " + e.getMessage()));
                 }
                 break;
-            case SYNC_ALL:
+            case SYNC:
                 try {
                     activator.reactivateTree(ScriptRepository.ROOT);
                 } catch (Exception e) {

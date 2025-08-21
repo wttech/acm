@@ -10,7 +10,6 @@ import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -86,6 +85,13 @@ public class ScriptRepository {
     }
 
     public void delete(String id) {
-        // TODO implement this
+        if (!ScriptType.byPath(id).isPresent()) {
+            throw new AcmException(String.format("Cannot delete script '%s' at unsupported path!", id));
+        }
+        RepoResource resource = RepoResource.of(resourceResolver, id);
+        if (!resource.exists()) {
+            throw new AcmException(String.format("Cannot delete script '%s' as it does not exist!", id));
+        }
+        resource.delete();
     }
 }

@@ -1,8 +1,9 @@
 import { Button, ButtonGroup, Cell, Column, Content, ContextualHelp, Flex, Heading, IllustratedMessage, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
+import { Key, Selection } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
 import Settings from '@spectrum-icons/workflow/Settings';
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
@@ -12,10 +13,9 @@ import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
+import ScriptsDeleteButton from './ScriptsDeleteButton';
+import ScriptsSyncButton from './ScriptsSyncButton';
 import UserInfo from './UserInfo';
-import { Key, Selection } from '@react-types/shared';
-import ScriptsDeleteButton from "./ScriptsDeleteButton";
-import ScriptsSyncButton from "./ScriptsSyncButton";
 
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
@@ -75,13 +75,13 @@ const ScriptAutomaticList: React.FC = () => {
         </Flex>
       </View>
       <TableView
-          flex="1"
-          aria-label={`Script list (${ScriptType.AUTOMATIC.toLowerCase()})`}
-          selectionMode={'multiple'}
-          selectedKeys={selectedKeys}
-          onSelectionChange={setSelectedKeys}
-          renderEmptyState={renderEmptyState}
-          onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
+        flex="1"
+        aria-label={`Script list (${ScriptType.AUTOMATIC.toLowerCase()})`}
+        selectionMode={'multiple'}
+        selectedKeys={selectedKeys}
+        onSelectionChange={setSelectedKeys}
+        renderEmptyState={renderEmptyState}
+        onAction={(key) => navigate(`/scripts/view/${encodeURIComponent(key)}`)}
       >
         <TableHeader>
           <Column width="4fr">Name</Column>
