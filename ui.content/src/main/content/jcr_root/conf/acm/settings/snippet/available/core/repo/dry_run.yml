@@ -20,7 +20,7 @@ documentation: |
     
   void doRun() { 
     repo.dryRun(arguments.value("dryRun")) {
-      repo.get("/content/acme").ensureFolder()
+      repo.get("/content/acme").ensureRegularFolder()
     }
   }
   ```

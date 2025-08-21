@@ -22,7 +22,7 @@ content: |
   void doRun() {
     repo.dryRun(arguments.value("dryRun")) {
       log.info "Creating a folder structure in the temporary directory of the repository."
-      def dataFolder = repo.get("/tmp/acm/demo/data").ensureFolder()
+      def dataFolder = repo.get("/tmp/acm/demo/data").ensureRegularFolder()
       for (int i = 0; i < 5; i++) {
         def child = dataFolder.child("child-\${i+1}").save(["foo": "bar"])
         child.updateProperty("foo") { v -> v.toUpperCase() }
@@ -34,7 +34,7 @@ content: |
       dataFolder.copy(dataBackupFolder, true)
     
       log.info "Creating a post in the temporary directory of the repository."
-      def postFolder = repo.get("/tmp/acm/demo/posts").ensureFolder()
+      def postFolder = repo.get("/tmp/acm/demo/posts").ensureRegularFolder()
       def post = postFolder.child("hello-world.yml").saveFile("application/x-yaml") { output ->
         formatter.yml.write(output, [
             title: "Hello World",

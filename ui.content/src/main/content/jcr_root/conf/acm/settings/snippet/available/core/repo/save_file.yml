@@ -11,7 +11,7 @@ documentation: |
   For example:
   ```groovy
   def post = repo.get("/content/dam/acme/en/posts/hello-world.json")
-  post.parent().ensureFolder()
+  post.parent().ensureRegularFolder()
   post.saveFile("application/json", """
   {
     "title": "Hello World",
