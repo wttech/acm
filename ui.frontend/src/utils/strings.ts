@@ -1,4 +1,7 @@
 export class Strings {
+  static notBlank(text: string | null | undefined): boolean {
+    return !!text && text.trim() !== '';
+  }
   static capitalize(text: string): string {
     if (!text) {
       return text;
