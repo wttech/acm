@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.instance;
 
+import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.osgi.*;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ResourceUtils;
@@ -37,6 +38,9 @@ public class HealthChecker implements EventHandler {
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
+
+    @Reference
+    private Executor executor;
 
     @Reference
     private InstanceInfo instanceInfo;
@@ -85,6 +89,7 @@ public class HealthChecker implements EventHandler {
         checkBundles(result);
         checkEvents(result);
         checkComponents(result);
+        checkExecution(result, resourceResolver);
         result.healthy = CollectionUtils.isEmpty(result.issues);
         return result;
     }
@@ -211,6 +216,22 @@ public class HealthChecker implements EventHandler {
 
     private void checkComponents(HealthStatus result) {
         // TODO ...
+    }
+
+    private void checkExecution(HealthStatus result, ResourceResolver resourceResolver) {
+        try (ExecutionContext context = executor.createContext(
+                ExecutionId.generate(), ExecutionMode.RUN, Code.consoleMinimal(), resourceResolver)) {
+            context.setHistory(false);
+            Execution execution = executor.execute(context);
+            if (execution.getStatus() != ExecutionStatus.SUCCEEDED) {
+                result.issues.add(new HealthIssue(
+                        HealthIssueSeverity.CRITICAL,
+                        String.format("Execution does not work: %s", execution.getError())));
+            }
+        } catch (Exception e) {
+            result.issues.add(new HealthIssue(
+                    HealthIssueSeverity.CRITICAL, String.format("Execution does not work: %s", e.getMessage())));
+        }
     }
 
     @ObjectClassDefinition(name = "AEM Content Manager - Health Checker")
