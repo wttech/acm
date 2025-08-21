@@ -70,7 +70,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
           },
         },
       });
-      if (data.sync) {
+      if (scriptType === ScriptType.AUTOMATIC && data.sync) {
         await toastRequest({
           method: 'POST',
           url: `/apps/acm/api/script.json?action=sync`,
@@ -129,7 +129,7 @@ const CodeSaveButton: React.FC<CodeSaveButtonProps> = ({ code, ...buttonProps })
                           name="sync"
                           control={control}
                           render={({ field: { value, onChange, onBlur, name, ref } }) => (
-                              <Checkbox isSelected={value} onChange={onChange} onBlur={onBlur} name={name} ref={ref} marginTop="size-200" isDisabled={scriptType === ScriptType.MANUAL}>
+                              <Checkbox isHidden={scriptType === ScriptType.MANUAL} isSelected={value} onChange={onChange} onBlur={onBlur} name={name} ref={ref} marginTop="size-200">
                                 <UploadToCloud size="XS" />
                                 <Text marginStart="size-50">Synchronize</Text>
                               </Checkbox>
