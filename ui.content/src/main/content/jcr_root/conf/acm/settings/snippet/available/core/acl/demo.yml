@@ -8,9 +8,7 @@ content: |
   }
     
   void doRun() {
-    out.fromAclLogs()
-  
-    println "ACL setup started"
+    log.info "ACL setup started"
     
     def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
     acmeService.with {
@@ -31,5 +29,5 @@ content: |
       addMember(johnDoe)
     }
     
-    println "ACL setup done"
+    log.info "ACL setup done"
   }

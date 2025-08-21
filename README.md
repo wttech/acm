@@ -257,8 +257,6 @@ boolean canRun() {
 }
 
 void doRun() {
-    out.fromAclLogs()
-
     log.info "ACL setup started"
 
     def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
