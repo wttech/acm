@@ -1,14 +1,17 @@
 package dev.vml.es.acm.core.instance;
 
 import dev.vml.es.acm.core.code.*;
+import dev.vml.es.acm.core.code.script.ExtensionScriptSyntax;
 import dev.vml.es.acm.core.osgi.*;
 import dev.vml.es.acm.core.repo.Repo;
+import dev.vml.es.acm.core.util.ExceptionUtils;
 import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.discovery.DiscoveryService;
@@ -99,7 +102,8 @@ public class HealthChecker implements EventHandler {
             return;
         }
         if (!isClusterLeader()) {
-            result.issues.add(new HealthIssue(HealthIssueSeverity.CRITICAL, "Instance is not a cluster leader"));
+            result.issues.add(new HealthIssue(
+                    HealthIssueSeverity.CRITICAL, HealthIssueCategory.INSTANCE, "Not a cluster leader", null));
         }
     }
 
@@ -120,12 +124,16 @@ public class HealthChecker implements EventHandler {
         if (state.isActive()) {
             result.issues.add(new HealthIssue(
                     HealthIssueSeverity.CRITICAL,
-                    String.format("Sling Installer is active (%d)", state.getActiveResourceCount())));
+                    HealthIssueCategory.INSTALLER,
+                    String.format("Active resource count: %d", state.getActiveResourceCount()),
+                    null));
         }
         if (state.isPaused()) {
             result.issues.add(new HealthIssue(
                     HealthIssueSeverity.CRITICAL,
-                    String.format("Sling Installer is paused (%d)", state.getPauseCount())));
+                    HealthIssueCategory.INSTALLER,
+                    String.format("Pause count: %d", state.getPauseCount()),
+                    null));
         }
     }
 
@@ -135,14 +143,20 @@ public class HealthChecker implements EventHandler {
         }
         Repo repo = new Repo(resourceResolver);
         if ((instanceInfo.getType() == InstanceType.CLOUD_CONTAINER) && !repo.isCompositeNodeStore()) {
-            result.issues.add(
-                    new HealthIssue(HealthIssueSeverity.CRITICAL, "Repository is not yet using composite node store"));
+            result.issues.add(new HealthIssue(
+                    HealthIssueSeverity.CRITICAL,
+                    HealthIssueCategory.REPOSITORY,
+                    "Composite node store not available",
+                    null));
         }
         if (ArrayUtils.isNotEmpty(config.repositoryPathsExisted())) {
             Arrays.stream(config.repositoryPathsExisted()).forEach(path -> {
                 if (!repo.get(path).exists()) {
                     result.issues.add(new HealthIssue(
-                            HealthIssueSeverity.CRITICAL, String.format("Repository path '%s' does not exist", path)));
+                            HealthIssueSeverity.CRITICAL,
+                            HealthIssueCategory.REPOSITORY,
+                            String.format("Path does not exist: '%s'", path),
+                            null));
                 }
             });
         }
@@ -157,13 +171,17 @@ public class HealthChecker implements EventHandler {
                 if (!osgiScanner.isBundleResolved(bundle)) {
                     result.issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL,
-                            String.format("Bundle fragment '%s' is not resolved", bundle.getSymbolicName())));
+                            HealthIssueCategory.OSGI,
+                            String.format("Bundle fragment not resolved: '%s'", bundle.getSymbolicName()),
+                            null));
                 }
             } else {
                 if (!osgiScanner.isBundleActive(bundle)) {
                     result.issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL,
-                            String.format("Bundle '%s' is not active", bundle.getSymbolicName())));
+                            HealthIssueCategory.OSGI,
+                            String.format("Bundle not active: '%s'", bundle.getSymbolicName()),
+                            null));
                 }
             }
         });
@@ -191,7 +209,10 @@ public class HealthChecker implements EventHandler {
             Map<String, Long> eventCounts =
                     recentEvents.stream().collect(Collectors.groupingBy(OsgiEvent::getTopic, Collectors.counting()));
             eventCounts.forEach((topic, count) -> result.issues.add(new HealthIssue(
-                    HealthIssueSeverity.CRITICAL, String.format("Event '%s' occurred (%d)", topic, count))));
+                    HealthIssueSeverity.CRITICAL,
+                    HealthIssueCategory.OSGI,
+                    String.format("Event occurred (%d): %s", count, topic),
+                    null)));
         }
     }
 
@@ -226,11 +247,19 @@ public class HealthChecker implements EventHandler {
             if (execution.getStatus() != ExecutionStatus.SUCCEEDED) {
                 result.issues.add(new HealthIssue(
                         HealthIssueSeverity.CRITICAL,
-                        String.format("Code executor does not work: %s", execution.getError())));
+                        HealthIssueCategory.CODE_EXECUTOR,
+                        String.format(
+                                "Execution not succeeded: %s",
+                                execution.getStatus().name().toLowerCase()),
+                        execution.getError()));
             }
         } catch (Exception e) {
-            result.issues.add(new HealthIssue(
-                    HealthIssueSeverity.CRITICAL, String.format("Code executor does not work: %s", e.getMessage())));
+            String error = ExceptionUtils.toString(e);
+            String issue = StringUtils.contains(error, ExtensionScriptSyntax.MAIN_CLASS + ":")
+                    ? "Extension script error"
+                    : "Execution context error";
+            result.issues.add(
+                    new HealthIssue(HealthIssueSeverity.CRITICAL, HealthIssueCategory.CODE_EXECUTOR, issue, error));
         }
     }
 

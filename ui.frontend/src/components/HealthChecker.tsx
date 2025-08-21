@@ -3,10 +3,12 @@ import NoSearchResults from '@spectrum-icons/illustrations/NoSearchResults';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Close from '@spectrum-icons/workflow/Close';
 import Help from '@spectrum-icons/workflow/Help';
+import Magnify from '@spectrum-icons/workflow/Magnify';
 import Replay from '@spectrum-icons/workflow/Replay';
 import Settings from '@spectrum-icons/workflow/Settings';
 import { useAppState } from '../hooks/app.ts';
 import { HealthIssueSeverity, instancePrefix, InstanceType } from '../utils/api.types';
+import CodeEditor from './CodeEditor';
 
 const HealthChecker = () => {
   const appState = useAppState();
@@ -83,9 +85,11 @@ const HealthChecker = () => {
 
       <TableView flex="1" aria-label="Health Issues" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
         <TableHeader>
-          <Column width="5%">#</Column>
-          <Column>Severity</Column>
-          <Column>Message</Column>
+          <Column width="1fr">#</Column>
+          <Column width="1fr">Severity</Column>
+          <Column width="3fr">Category</Column>
+          <Column width="5fr">Issue</Column>
+          <Column width="5fr">Details</Column>
         </TableHeader>
         <TableBody>
           {(healthIssues || []).map((issue, index) => (
@@ -94,7 +98,37 @@ const HealthChecker = () => {
               <Cell>
                 <Badge variant={getSeverityVariant(issue.severity)}>{issue.severity}</Badge>
               </Cell>
-              <Cell>{issue.message}</Cell>
+              <Cell>
+                <Text>{issue.category}</Text>
+              </Cell>
+              <Cell>
+                <Text>{issue.issue}</Text>
+              </Cell>
+              <Cell>
+                <DialogTrigger>
+                  <Button variant="secondary">
+                    <Magnify />
+                    <Text>View</Text>
+                  </Button>
+                  {(close) => (
+                    <Dialog width="75vw">
+                      <Heading>Issue Details</Heading>
+                      <Divider />
+                      <Content>
+                        <View height="size-4600">
+                          <CodeEditor id={`health-issue-${index}`} language="text" readOnly value={issue.details || 'No additional details available.'} />
+                        </View>
+                      </Content>
+                      <ButtonGroup>
+                        <Button variant="secondary" onPress={close}>
+                          <Close size="XS" />
+                          <Text>Close</Text>
+                        </Button>
+                      </ButtonGroup>
+                    </Dialog>
+                  )}
+                </DialogTrigger>
+              </Cell>
             </Row>
           ))}
         </TableBody>
