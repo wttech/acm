@@ -89,7 +89,7 @@ public class HealthChecker implements EventHandler {
         checkBundles(result);
         checkEvents(result);
         checkComponents(result);
-        checkExecution(result, resourceResolver);
+        checkCodeExecutor(result, resourceResolver);
         result.healthy = CollectionUtils.isEmpty(result.issues);
         return result;
     }
@@ -218,7 +218,7 @@ public class HealthChecker implements EventHandler {
         // TODO ...
     }
 
-    private void checkExecution(HealthStatus result, ResourceResolver resourceResolver) {
+    private void checkCodeExecutor(HealthStatus result, ResourceResolver resourceResolver) {
         try (ExecutionContext context = executor.createContext(
                 ExecutionId.generate(), ExecutionMode.RUN, Code.consoleMinimal(), resourceResolver)) {
             context.setHistory(false);
@@ -226,11 +226,11 @@ public class HealthChecker implements EventHandler {
             if (execution.getStatus() != ExecutionStatus.SUCCEEDED) {
                 result.issues.add(new HealthIssue(
                         HealthIssueSeverity.CRITICAL,
-                        String.format("Execution does not work: %s", execution.getError())));
+                        String.format("Code executor does not work: %s", execution.getError())));
             }
         } catch (Exception e) {
             result.issues.add(new HealthIssue(
-                    HealthIssueSeverity.CRITICAL, String.format("Execution does not work: %s", e.getMessage())));
+                    HealthIssueSeverity.CRITICAL, String.format("Code executor does not work: %s", e.getMessage())));
         }
     }
 
