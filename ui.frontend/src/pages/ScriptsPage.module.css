@@ -1,10 +1,10 @@
-/* Adds vertical line between 'disabled' and 'mock' tab headers */
-.scriptTabs div[role='tab']:nth-child(3) {
+/* Adds vertical line between 'automatic' and 'mock' or 'extension' tab headers */
+.scriptTabs div[role='tab']:nth-child(2) {
   position: relative;
   margin-right: var(--spectrum-global-dimension-size-300);
 }
 
-.scriptTabs div[role='tab']:nth-child(3)::after {
+.scriptTabs div[role='tab']:nth-child(2)::after {
   content: '';
   position: absolute;
   right: calc(var(--spectrum-global-dimension-size-300) * -1);
