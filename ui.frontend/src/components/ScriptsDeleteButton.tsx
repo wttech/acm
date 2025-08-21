@@ -49,7 +49,7 @@ const ScriptsDeleteButton: React.FC<ScriptsDeleteButtonProps> = ({ selectedKeys,
         </Heading>
         <Divider />
         <Content>
-          <p>Are you sure want to delete script(s)? This action cannot be undone.</p>
+          <p>Are you sure you want to delete script(s)? This action cannot be undone.</p>
         </Content>
         <ButtonGroup>
           <Button variant="secondary" onPress={() => setToggleDialogOpen(false)} isDisabled={isLoading}>
