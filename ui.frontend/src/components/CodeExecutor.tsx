@@ -55,8 +55,6 @@ const CodeExecutor = () => {
     return () => clearInterval(intervalId);
   }, [appState.spaSettings.appStateInterval]);
 
-  console.log('executions', executions);
-
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set<Key>());
   const selectedIds = (selectedKeys: Selection): string[] => {
     if (selectedKeys === 'all') {

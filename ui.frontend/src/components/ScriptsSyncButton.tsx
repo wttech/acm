@@ -1,6 +1,8 @@
 import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Heading, Text } from '@adobe/react-spectrum';
+import Alert from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
+import Info from '@spectrum-icons/workflow/Info';
 import UploadToCloud from '@spectrum-icons/workflow/UploadToCloud';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
@@ -10,7 +12,7 @@ type ScriptSynchronizeButtonProps = {
   onSync: () => void;
 };
 
-const ScriptSynchronizeButton: React.FC<ScriptSynchronizeButtonProps> = ({ selectedKeys, onSync }) => {
+const ScriptsSyncButton: React.FC<ScriptSynchronizeButtonProps> = ({ selectedKeys, onSync }) => {
   const [syncDialogOpen, setSyncDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,7 +21,7 @@ const ScriptSynchronizeButton: React.FC<ScriptSynchronizeButtonProps> = ({ selec
     try {
       await toastRequest({
         method: 'POST',
-        url: `/apps/acm/api/script.json?action=sync_all`,
+        url: `/apps/acm/api/script.json?action=sync`,
         operation: `Synchronize scripts`,
       });
       onSync();
@@ -44,10 +46,10 @@ const ScriptSynchronizeButton: React.FC<ScriptSynchronizeButtonProps> = ({ selec
         <Divider />
         <Content>
           <p>
-            This action will synchronize <strong>all scripts</strong> between the author and publish instances. This ensures consistency across the whole environment.
+            <Info size="XS" /> Synchronizing <strong>all scripts</strong> will ensure consistency between the author and publish instances.
           </p>
           <p>
-            Notice that <strong>both enabled and disabled</strong> scripts will be synchronized.
+            <Alert size="XS" /> Are you sure you want to continue? Some scripts may be immediately executed on publish instances after synchronization, depending on their configuration.
           </p>
         </Content>
         <ButtonGroup>
@@ -65,4 +67,4 @@ const ScriptSynchronizeButton: React.FC<ScriptSynchronizeButtonProps> = ({ selec
   );
 };
 
-export default ScriptSynchronizeButton;
+export default ScriptsSyncButton;
