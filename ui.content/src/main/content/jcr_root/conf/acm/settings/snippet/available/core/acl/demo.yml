@@ -31,4 +31,3 @@ content: |
     
     log.info "ACL setup done"
   }
-}
