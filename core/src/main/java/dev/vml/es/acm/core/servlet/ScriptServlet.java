@@ -156,7 +156,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                 break;
             case SYNC:
                 try {
-                    activator.reactivateTree(ScriptRepository.ROOT);
+                    activator.reactivateTree(ScriptType.AUTOMATIC.root());
                 } catch (Exception e) {
                     LOG.error("Script(s) cannot be synchronized!", e);
                     respondJson(response, error("Script(s) cannot be synchronized! " + e.getMessage()));
