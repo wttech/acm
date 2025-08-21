@@ -12,6 +12,7 @@ import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
+import ScriptExecutorStatusLight from '../components/ScriptExecutorStatusLight.tsx';
 import { useAppState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
@@ -22,6 +23,8 @@ import { StorageKeys } from '../utils/storage';
 
 const ConsolePage = () => {
   const appState = useAppState();
+  const pausedExecution = !appState.healthStatus.healthy;
+
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
   const [compiling, pendingCompile, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
@@ -102,6 +105,7 @@ const ConsolePage = () => {
   };
 
   const executionOutput = ((execution?.output ?? '') + '\n' + (execution?.error ?? '')).trim();
+  const executableNotReady = pausedExecution || pendingCompile || !!syntaxError || !!compileError;
 
   return (
     <Flex direction="column" flex="1" gap="size-200">
@@ -122,12 +126,12 @@ const ConsolePage = () => {
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
-                    <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={pendingCompile || !!syntaxError || !!compileError} />
-                    <CodeSaveButton code={code || ''} variant="secondary" isDisabled={pendingCompile || !!syntaxError || !!compileError} />
+                    <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={executableNotReady} />
+                    <CodeSaveButton code={code || ''} variant="secondary" isDisabled={executableNotReady} />
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">
-                  <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />
+                  {pausedExecution ? <ScriptExecutorStatusLight /> : <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />}
                 </Flex>
                 <Flex flex="1" justifyContent="end" alignItems="center">
                   <KeyboardShortcutsButton />

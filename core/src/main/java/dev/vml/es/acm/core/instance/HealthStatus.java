@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.instance;
 
+import dev.vml.es.acm.core.util.ExceptionUtils;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,8 +16,8 @@ public class HealthStatus implements Serializable {
     public static HealthStatus exception(Exception e) {
         HealthStatus result = new HealthStatus();
         result.healthy = false;
-        result.issues.add(
-                new HealthIssue(HealthIssueSeverity.CRITICAL, String.format("Internal error : %s", e.getMessage())));
+        result.issues.add(new HealthIssue(
+                HealthIssueSeverity.CRITICAL, HealthIssueCategory.OTHER, "Internal error", ExceptionUtils.toString(e)));
         return result;
     }
 
