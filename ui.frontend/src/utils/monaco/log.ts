@@ -1,4 +1,5 @@
 import { Monaco } from '@monaco-editor/react';
+import { DEFAULT_THEME_ID } from './theme.ts';
 
 export const LOG_LANGUAGE_ID = 'acmLog';
 export const LOG_THEME_ID = 'acmLog';
@@ -11,7 +12,6 @@ export function registerLogLanguage(instance: Monaco) {
 
   instance.languages.register({ id: LOG_LANGUAGE_ID });
 
-  // Monarch syntax (simple line-level classification based on leading [LEVEL])
   instance.languages.setMonarchTokensProvider(LOG_LANGUAGE_ID, {
     tokenizer: {
       root: [
@@ -20,26 +20,19 @@ export function registerLogLanguage(instance: Monaco) {
         [/^\[INFO].*$/, 'log-info'],
         [/^\[DEBUG].*$/, 'log-debug'],
         [/^\[TRACE].*$/, 'log-trace'],
-        // Optional timestamp + level: 2024-05-05 12:34:56,789 [INFO] ...
-        [/^(?:\d{4}-\d{2}-\d{2}.*?\s)?\[ERROR].*$/, 'log-error'],
-        [/^(?:\d{4}-\d{2}-\d{2}.*?\s)?\[WARN].*$/, 'log-warn'],
-        [/^(?:\d{4}-\d{2}-\d{2}.*?\s)?\[INFO].*$/, 'log-info'],
-        [/^(?:\d{4}-\d{2}-\d{2}.*?\s)?\[DEBUG].*$/, 'log-debug'],
-        [/^(?:\d{4}-\d{2}-\d{2}.*?\s)?\[TRACE].*$/, 'log-trace'],
       ],
     },
   });
 
-  // Theme (inherit dark base; adjust colors as needed)
   instance.editor.defineTheme(LOG_THEME_ID, {
-    base: 'vs-dark',
+    base: DEFAULT_THEME_ID,
     inherit: true,
     rules: [
-      { token: 'log-error', foreground: 'ff6b68', fontStyle: 'bold' },
-      { token: 'log-warn', foreground: 'ffd866' },
-      { token: 'log-info', foreground: 'd4d4d4' },
-      { token: 'log-debug', foreground: 'b0b0b0', fontStyle: 'italic' },
-      { token: 'log-trace', foreground: '888888', fontStyle: 'italic' },
+      { token: 'log-error', foreground: 'f14c4c', fontStyle: 'bold' },
+      { token: 'log-warn', foreground: 'e5c07b' },
+      { token: 'log-info', foreground: 'ffffff' },
+      { token: 'log-debug', foreground: '8b949e' },
+      { token: 'log-trace', foreground: '6a6a6a' },
     ],
     colors: {},
   });

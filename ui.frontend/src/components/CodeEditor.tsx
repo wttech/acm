@@ -9,6 +9,7 @@ import { debounce } from '../utils/debounce';
 import { modelStorage } from '../utils/modelStorage';
 import { GROOVY_LANGUAGE_ID, registerGroovyLanguage } from '../utils/monaco/groovy';
 import { LOG_LANGUAGE_ID, LOG_THEME_ID, registerLogLanguage } from '../utils/monaco/log';
+import { DEFAULT_THEME_ID } from '../utils/monaco/theme.ts';
 
 type CodeEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & {
   id: string;
@@ -63,7 +64,7 @@ const CodeEditor = <C extends ColorVersion>({ containerProps, syntaxError, onCha
     const mountedEditor = monacoRef.editor.create(containerRef.current, {
       model: textModel,
       scrollBeyondLastLine: false,
-      theme: language === LOG_LANGUAGE_ID ? LOG_THEME_ID : 'vs-dark',
+      theme: language === LOG_LANGUAGE_ID ? LOG_THEME_ID : DEFAULT_THEME_ID,
       value: initialValue ?? value,
       fixedOverflowWidgets: true,
       ...props,
