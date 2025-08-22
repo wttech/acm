@@ -1,9 +1,9 @@
 import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
-import { LANGUAGE_ID } from '../../groovy.ts';
+import { GROOVY_LANGUAGE_ID } from '../../groovy.ts';
 
 export function replaceWithShortClass(instance: Monaco) {
-  instance.languages.registerCodeActionProvider(LANGUAGE_ID, {
+  instance.languages.registerCodeActionProvider(GROOVY_LANGUAGE_ID, {
     provideCodeActions: (model: monaco.editor.ITextModel, range: monaco.Range) => {
       const codeActions = [] as monaco.languages.CodeAction[];
 

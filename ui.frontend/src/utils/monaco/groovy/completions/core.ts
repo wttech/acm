@@ -1,7 +1,7 @@
 import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import { MarkdownString } from 'monaco-editor/esm/vs/base/common/htmlContent';
-import { LANGUAGE_ID } from '../../groovy.ts';
+import { GROOVY_LANGUAGE_ID } from '../../groovy.ts';
 
 export function registerCoreCompletions(instance: Monaco) {
   registerScriptCompletions(instance);
@@ -11,7 +11,7 @@ export function registerCoreCompletions(instance: Monaco) {
  * Completions for class 'groovy.lang.Script' which is the base class for all Groovy scripts.
  */
 export function registerScriptCompletions(instance: Monaco) {
-  instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+  instance.languages.registerCompletionItemProvider(GROOVY_LANGUAGE_ID, {
     provideCompletionItems: (model: monaco.editor.ITextModel, position: monaco.Position) => {
       const modelPosition = model.getWordUntilPosition(position);
       const range = new monaco.Range(position.lineNumber, modelPosition.startColumn, position.lineNumber, modelPosition.endColumn);

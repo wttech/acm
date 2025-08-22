@@ -7,7 +7,9 @@ import { useEffect, useRef, useState } from 'react';
 import { SyntaxError } from '../hooks/code';
 import { debounce } from '../utils/debounce';
 import { modelStorage } from '../utils/modelStorage';
-import { registerGroovyLanguage } from '../utils/monaco/groovy';
+import { GROOVY_LANGUAGE_ID, registerGroovyLanguage } from '../utils/monaco/groovy';
+import { LOG_LANGUAGE_ID, LOG_THEME_ID, registerLogLanguage } from '../utils/monaco/log';
+import { DEFAULT_THEME_ID } from '../utils/monaco/theme';
 
 type CodeEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & {
   id: string;
@@ -45,8 +47,10 @@ const CodeEditor = <C extends ColorVersion>({ containerProps, syntaxError, onCha
       return;
     }
 
-    if (language === 'groovy') {
+    if (language === GROOVY_LANGUAGE_ID) {
       registerGroovyLanguage(monacoRef);
+    } else if (language === LOG_LANGUAGE_ID) {
+      registerLogLanguage(monacoRef);
     }
 
     const storedModel = modelStorage.getModel(id);
@@ -59,7 +63,7 @@ const CodeEditor = <C extends ColorVersion>({ containerProps, syntaxError, onCha
     const mountedEditor = monacoRef.editor.create(containerRef.current, {
       model: textModel,
       scrollBeyondLastLine: false,
-      theme: 'vs-dark',
+      theme: language === LOG_LANGUAGE_ID ? LOG_THEME_ID : DEFAULT_THEME_ID,
       value: initialValue ?? value,
       fixedOverflowWidgets: true,
       automaticLayout: true,

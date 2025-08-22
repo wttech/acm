@@ -18,6 +18,8 @@ import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
 import { apiRequest, toastRequest } from '../utils/api';
 import { ArgumentValues, ConsoleDefaultScriptContent, ConsoleDefaultScriptPath, Description, ExecutableIdConsole, Execution, isExecutionPending, QueueOutput, ScriptOutput } from '../utils/api.types.ts';
+import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
+import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { StorageKeys } from '../utils/storage';
 
@@ -137,7 +139,7 @@ const ConsolePage = () => {
                   <KeyboardShortcutsButton />
                 </Flex>
               </Flex>
-              <CodeEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language="groovy" />
+              <CodeEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language={GROOVY_LANGUAGE_ID} />
             </Flex>
           </Item>
           <Item key="output" aria-label="Output">
@@ -159,7 +161,7 @@ const ConsolePage = () => {
                   <ConsoleHelpButton />
                 </Flex>
               </Flex>
-              <CodeEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} />
+              <CodeEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} language={LOG_LANGUAGE_ID} />
             </Flex>
           </Item>
         </TabPanels>

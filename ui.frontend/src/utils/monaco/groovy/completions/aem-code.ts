@@ -5,7 +5,7 @@ import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 import { apiRequest } from '../../../api.ts';
 import { AssistCodeOutput, Suggestion, SuggestionKind } from '../../../api.types.ts';
 import { Strings } from '../../../strings.ts';
-import { LANGUAGE_ID } from '../../groovy.ts';
+import { GROOVY_LANGUAGE_ID } from '../../groovy.ts';
 
 export function registerAemCodeCompletions(instance: Monaco) {
   registerWordCompletion(instance);
@@ -13,7 +13,7 @@ export function registerAemCodeCompletions(instance: Monaco) {
 }
 
 function registerWordCompletion(instance: Monaco) {
-  instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+  instance.languages.registerCompletionItemProvider(GROOVY_LANGUAGE_ID, {
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {
       // Do not suggest paths as done separately
       const path = extractPath(model.getLineContent(position.lineNumber), position);
@@ -58,7 +58,7 @@ function registerWordCompletion(instance: Monaco) {
 }
 
 function registerResourceCompletion(instance: Monaco) {
-  instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+  instance.languages.registerCompletionItemProvider(GROOVY_LANGUAGE_ID, {
     triggerCharacters: ['/'],
 
     provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position): Promise<monaco.languages.CompletionList> => {

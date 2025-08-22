@@ -18,9 +18,7 @@ public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {
     public static final String[] NAMES = {NAME_ACL, NAME_REPO};
 
     private final LoggerContext loggerContext;
-
     private final Set<String> loggerNames;
-
     private final PrintStream printStream;
 
     public CodeLoggerPrinter(LoggerContext loggerContext, OutputStream outputStream) {
@@ -65,7 +63,8 @@ public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {
         String loggerName = event.getLoggerName();
         for (String loggerPrefix : loggerNames) {
             if (StringUtils.startsWith(loggerName, loggerPrefix)) {
-                printStream.println(event.getFormattedMessage());
+                String level = event.getLevel().toString();
+                printStream.println('[' + level + "] " + event.getFormattedMessage());
                 break;
             }
         }

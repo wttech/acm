@@ -21,6 +21,8 @@ import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
 import { isExecutableScript, isExecutionPending } from '../utils/api.types';
+import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
+import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
 import { Objects } from '../utils/objects';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
@@ -142,7 +144,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <CodeEditor id="execution-view" value={execution.executable.content} language="groovy" readOnly />
+              <CodeEditor id="execution-view" value={execution.executable.content} language={GROOVY_LANGUAGE_ID} readOnly />
             </Flex>
           </Item>
           <Item key="output" aria-label="Output">
@@ -169,7 +171,7 @@ const ExecutionView = () => {
                   </Switch>
                 </Flex>
               </Flex>
-              <CodeEditor id="execution-output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} />
+              <CodeEditor id="execution-output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} language={LOG_LANGUAGE_ID} />
             </Flex>
           </Item>
         </TabPanels>
