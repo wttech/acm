@@ -1,5 +1,5 @@
 import { Monaco } from '@monaco-editor/react';
-import { DEFAULT_THEME_ID } from './theme.ts';
+import { DEFAULT_THEME_ID } from './theme';
 
 export const LOG_LANGUAGE_ID = 'acmLog';
 export const LOG_THEME_ID = 'acmLog';
