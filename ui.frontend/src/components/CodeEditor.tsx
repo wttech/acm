@@ -28,14 +28,13 @@ const CodeEditor = <C extends ColorVersion>({ containerProps, syntaxError, onCha
   const debouncedViewStateUpdate = debounce((mountedEditor: editor.IStandaloneCodeEditor) => {
     modelStorage.updateViewState(id, mountedEditor.saveViewState());
   }, SaveViewStateDebounce);
+
   useEffect(() => {
     if (value) {
       const storedModel = modelStorage.getModel(id);
       storedModel?.textModel.setValue(value);
-
       if (scrollToBottomOnUpdate) {
         const lines = storedModel?.textModel.getLineCount() ?? 1;
-
         storedModel?.editor.revealLine(lines);
       }
     }
@@ -63,6 +62,7 @@ const CodeEditor = <C extends ColorVersion>({ containerProps, syntaxError, onCha
       theme: 'vs-dark',
       value: initialValue ?? value,
       fixedOverflowWidgets: true,
+      automaticLayout: true,
       ...props,
     });
 
@@ -109,7 +109,6 @@ const CodeEditor = <C extends ColorVersion>({ containerProps, syntaxError, onCha
 
   useEffect(() => {
     const textModel = modelStorage.getModel(id)?.textModel;
-
     if (monacoRef?.editor && textModel) {
       monacoRef?.editor.setModelMarkers(
         textModel,
