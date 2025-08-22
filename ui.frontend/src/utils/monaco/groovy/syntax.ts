@@ -1,6 +1,6 @@
 import { Monaco } from '@monaco-editor/react';
 import { language as javaLanguage, conf as javaLanguageConfiguration } from 'monaco-editor/esm/vs/basic-languages/java/java.js';
-import { LANGUAGE_ID } from '../groovy.ts';
+import { GROOVY_LANGUAGE_ID } from '../groovy.ts';
 
 export function registerSyntax(instance: Monaco) {
   // Check if conf and language are not null or undefined
@@ -104,7 +104,7 @@ export function registerSyntax(instance: Monaco) {
   };
 
   // Register the Groovy language using the modified configuration and tokenizer
-  instance.languages.register({ id: LANGUAGE_ID });
-  instance.languages.setMonarchTokensProvider(LANGUAGE_ID, groovyLanguage);
-  instance.languages.setLanguageConfiguration(LANGUAGE_ID, groovyLanguageConfiguration);
+  instance.languages.register({ id: GROOVY_LANGUAGE_ID });
+  instance.languages.setMonarchTokensProvider(GROOVY_LANGUAGE_ID, groovyLanguage);
+  instance.languages.setLanguageConfiguration(GROOVY_LANGUAGE_ID, groovyLanguageConfiguration);
 }

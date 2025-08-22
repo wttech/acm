@@ -1,9 +1,9 @@
 import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
-import { LANGUAGE_ID } from '../../groovy.ts';
+import { GROOVY_LANGUAGE_ID } from '../../groovy.ts';
 
 export function registerSelfCodeCompletions(instance: Monaco) {
-  instance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+  instance.languages.registerCompletionItemProvider(GROOVY_LANGUAGE_ID, {
     provideCompletionItems: (model: monaco.editor.ITextModel, position: monaco.Position) => {
       const textUntilPosition = model.getValueInRange({
         startLineNumber: 1,
