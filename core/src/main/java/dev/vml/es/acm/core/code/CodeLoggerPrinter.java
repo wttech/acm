@@ -63,7 +63,8 @@ public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {
         String loggerName = event.getLoggerName();
         for (String loggerPrefix : loggerNames) {
             if (StringUtils.startsWith(loggerName, loggerPrefix)) {
-                printStream.println('[' + StringUtils.defaultString(event.getLevel() != null ? event.getLevel().toString() : null, "INFO") + "] " + event.getFormattedMessage());
+                String level = event.getLevel().toString();
+                printStream.println('[' + level + "] " + event.getFormattedMessage());
                 break;
             }
         }
