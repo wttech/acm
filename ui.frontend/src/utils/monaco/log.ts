@@ -30,7 +30,7 @@ export function registerLogLanguage(instance: Monaco) {
     rules: [
       { token: 'log-error', foreground: 'f14c4c', fontStyle: 'bold' },
       { token: 'log-warn', foreground: 'e5c07b' },
-      { token: 'log-info', foreground: 'ffffff' },
+      { token: 'log-info', foreground: 'ededed' },
       { token: 'log-debug', foreground: '8b949e' },
       { token: 'log-trace', foreground: '6a6a6a' },
     ],
