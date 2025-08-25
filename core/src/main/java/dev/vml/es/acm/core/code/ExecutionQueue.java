@@ -1,7 +1,7 @@
 package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.util.*;
 import java.util.concurrent.CancellationException;
@@ -228,7 +228,7 @@ public class ExecutionQueue implements JobExecutor {
     private Execution executeAsync(ExecutionContextOptions contextOptions, QueuedExecution execution)
             throws AcmException {
         try (ResourceResolver resolver =
-                        ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
+                        ResolverUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
                 ExecutionContext context = executor.createContext(
                         execution.getJob().getId(),
                         contextOptions.getExecutionMode(),

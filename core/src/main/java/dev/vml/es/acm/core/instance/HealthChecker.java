@@ -5,7 +5,7 @@ import dev.vml.es.acm.core.code.script.ExtensionScriptSyntax;
 import dev.vml.es.acm.core.osgi.*;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ExceptionUtils;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
@@ -76,7 +76,7 @@ public class HealthChecker implements EventHandler {
     }
 
     public HealthStatus checkStatus() {
-        try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+        try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
             return checkStatus(resourceResolver);
         } catch (Exception e) {
             LOG.error("Health checker failed", e);

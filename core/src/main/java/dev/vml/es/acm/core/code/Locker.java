@@ -2,8 +2,8 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
-
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +13,6 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,9 +52,9 @@ public class Locker {
             if (name.contains("/")) {
                 String dirPath = StringUtils.substringBeforeLast(name, "/");
                 nodeName = StringUtils.substringAfterLast(name, "/");
-                dirResource = ensureDir(ROOT + "/" + dirPath);
+                dirResource = getOrCreateDir(ROOT + "/" + dirPath);
             } else {
-                dirResource = ensureDir(ROOT);
+                dirResource = getOrCreateDir(ROOT);
                 nodeName = name;
             }
             Map<String, Object> props = new HashMap<>();
@@ -69,8 +68,8 @@ public class Locker {
         }
     }
 
-    private Resource ensureDir(String path) throws PersistenceException {
-        return ResourceUtil.getOrCreateResource(resolver, path, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
+    private Resource getOrCreateDir(String path) throws PersistenceException {
+        return RepoUtils.ensure(resolver, path, JcrResourceConstants.NT_SLING_FOLDER, true);
     }
 
     public void unlock(String lockName) {

@@ -2,7 +2,7 @@ package dev.vml.es.acm.core.event;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.repo.RepoUtils;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class ResourceEvent implements Event {
 
     public static ResourceEvent create(String name, Map<String, Object> props, ResourceResolver resolver) {
         try {
-            Resource root = ResourceUtils.ensure(resolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER);
+            Resource root = RepoUtils.ensure(resolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, true);
             Resource result = root.getChild(name);
 
             Map<String, Object> updatedProps = new HashMap<>();

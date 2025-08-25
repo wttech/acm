@@ -4,7 +4,7 @@ import dev.vml.es.acm.core.code.CodeContext;
 import dev.vml.es.acm.core.code.script.MockScript;
 import dev.vml.es.acm.core.code.script.MockScriptType;
 import dev.vml.es.acm.core.osgi.OsgiContext;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import java.io.IOException;
 import java.util.Iterator;
 import javax.servlet.*;
@@ -61,7 +61,7 @@ public class MockHttpFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
-        try (ResourceResolver resolver = ResourceUtils.mockResolver(resolverFactory)) {
+        try (ResourceResolver resolver = ResolverUtils.mockResolver(resolverFactory)) {
             CodeContext codeContext = new CodeContext(osgiContext, resolver);
             MockRepository repository = new MockRepository(resolver);
 

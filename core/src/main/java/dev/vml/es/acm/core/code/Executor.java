@@ -4,7 +4,7 @@ import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.script.ContentScript;
 import dev.vml.es.acm.core.osgi.OsgiContext;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -74,7 +74,7 @@ public class Executor {
 
     public Execution execute(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         try (ResourceResolver resourceResolver =
-                        ResourceUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
+                        ResolverUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
                 ExecutionContext executionContext = createContext(
                         ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resourceResolver)) {
             return execute(executionContext);

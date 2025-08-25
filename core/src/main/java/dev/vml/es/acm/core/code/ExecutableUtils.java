@@ -3,7 +3,7 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.script.ScriptRepository;
 import dev.vml.es.acm.core.script.ScriptType;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public final class ExecutableUtils {
@@ -34,7 +34,7 @@ public final class ExecutableUtils {
     }
 
     public static boolean isUserExplicit(String userId) {
-        return ResourceUtils.Subservice.CONTENT.userId.equals(userId)
+        return ResolverUtils.Subservice.CONTENT.userId.equals(userId)
                 || StringUtils.equals(userId, "admin")
                 || StringUtils.containsAny(userId, "@.-");
     }

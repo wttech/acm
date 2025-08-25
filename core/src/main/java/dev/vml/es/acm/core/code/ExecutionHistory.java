@@ -2,7 +2,7 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.io.Closeable;
 import java.io.IOException;
@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ExecutionHistory {
@@ -36,7 +35,7 @@ public class ExecutionHistory {
 
         try {
             String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");
-            Resource dir = ResourceUtils.ensure(resourceResolver, dirPath, JcrResourceConstants.NT_SLING_FOLDER);
+            Resource dir = RepoUtils.ensure(resourceResolver, dirPath, JcrResourceConstants.NT_SLING_FOLDER, true);
             String entryName = StringUtils.substringAfterLast(execution.getId(), "/");
             resourceResolver.create(dir, entryName, props);
             resourceResolver.commit();
@@ -68,11 +67,7 @@ public class ExecutionHistory {
     }
 
     private Resource getOrCreateRoot() throws AcmException {
-        try {
-            return ResourceUtil.getOrCreateResource(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
-        } catch (PersistenceException e) {
-            throw new AcmException(String.format("Cannot create execution history root '%s'!", ROOT), e);
-        }
+        return RepoUtils.ensure(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, true);
     }
 
     public boolean contains(String id) {
