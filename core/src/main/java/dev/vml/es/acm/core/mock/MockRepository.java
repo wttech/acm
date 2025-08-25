@@ -1,9 +1,9 @@
 package dev.vml.es.acm.core.mock;
 
-import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.repo.RepoException;
+import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
-import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -55,14 +55,7 @@ public class MockRepository {
         return SPECIAL_PATHS.stream().anyMatch(n -> StringUtils.endsWith(id, "/" + n));
     }
 
-    public Resource getOrCreateRoot() throws AcmException {
-        try {
-            Resource root =
-                    ResourceUtils.ensure(resolver, ScriptType.MOCK.root(), JcrResourceConstants.NT_SLING_FOLDER);
-            resolver.commit();
-            return root;
-        } catch (PersistenceException e) {
-            throw new AcmException(String.format("Cannot create mock root '%s'!", ScriptType.MOCK.root()), e);
-        }
+    public Resource getOrCreateRoot() throws RepoException {
+        return RepoUtils.ensure(resolver, ScriptType.MOCK.root(), JcrResourceConstants.NT_SLING_FOLDER, true);
     }
 }

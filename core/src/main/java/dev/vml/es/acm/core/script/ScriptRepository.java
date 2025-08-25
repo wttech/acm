@@ -4,14 +4,14 @@ import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.Code;
 import dev.vml.es.acm.core.code.script.ScriptUtils;
+import dev.vml.es.acm.core.repo.RepoException;
 import dev.vml.es.acm.core.repo.RepoResource;
+import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
-import dev.vml.es.acm.core.util.ResourceUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
@@ -49,14 +49,8 @@ public class ScriptRepository {
                 .map(Optional::get);
     }
 
-    private Resource getOrCreateRoot(ScriptType type) throws AcmException {
-        try {
-            Resource root = ResourceUtils.ensure(resourceResolver, type.root(), JcrResourceConstants.NT_SLING_FOLDER);
-            resourceResolver.commit();
-            return root;
-        } catch (PersistenceException e) {
-            throw new AcmException(String.format("Cannot create script root '%s'!", type.root()), e);
-        }
+    private Resource getOrCreateRoot(ScriptType type) throws RepoException {
+        return RepoUtils.ensure(resourceResolver, type.root(), JcrResourceConstants.NT_SLING_FOLDER, true);
     }
 
     public Script save(Code code) {

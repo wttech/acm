@@ -3,12 +3,11 @@ package dev.vml.es.acm.core.snippet;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.repo.RepoResource;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.repo.RepoUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
@@ -49,12 +48,6 @@ public class SnippetRepository {
     }
 
     private Resource getOrCreateRoot() throws AcmException {
-        try {
-            Resource root = ResourceUtils.ensure(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER);
-            resourceResolver.commit();
-            return root;
-        } catch (PersistenceException e) {
-            throw new AcmException(String.format("Cannot create snippet root '%s'!", ROOT), e);
-        }
+        return RepoUtils.ensure(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, true);
     }
 }

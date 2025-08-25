@@ -100,7 +100,7 @@ public class RepoResource {
         Resource resource = resolve();
         if (resource == null) {
             try {
-                ResourceUtils.ensure(repo.getResourceResolver(), path, primaryType);
+                RepoUtils.ensure(repo.getResourceResolver(), path, primaryType, repo.isAutoCommit());
             } catch (Exception e) {
                 throw new RepoException(
                         String.format("Cannot ensure resource '%s' at path '%s'!", primaryType, path), e);
@@ -273,7 +273,7 @@ public class RepoResource {
             }
         }
 
-        ResourceUtils.copy(repo.getResourceResolver(), sourceResource.getPath(), target.getPath());
+        RepoUtils.copy(repo.getResourceResolver(), sourceResource.getPath(), target.getPath());
         repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
         LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
         return target;

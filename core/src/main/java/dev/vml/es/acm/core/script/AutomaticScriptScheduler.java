@@ -11,7 +11,7 @@ import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -181,7 +181,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     private boolean checkInstanceReady() {
         if (instanceReady == null) {
             if (InstanceType.CLOUD_CONTAINER.equals(instanceInfo.getType())) {
-                try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+                try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
                     Repo repo = new Repo(resourceResolver);
                     instanceReady = repo.isCompositeNodeStore();
                 } catch (LoginException e) {
@@ -206,7 +206,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     private void queueAndScheduleScripts() {
-        try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+        try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
             ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
             scriptRepository.findAll(ScriptType.AUTOMATIC).forEach(script -> {
                 ScheduleResult scheduleResult = determineSchedule(script, resourceResolver);
@@ -271,7 +271,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 return;
             }
 
-            try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+            try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
                 ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
                 Script script = scriptRepository.read(scriptPath).orElse(null);
                 if (script == null) {
@@ -328,7 +328,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private void queueScript(Script script) {
         String userId =
-                StringUtils.defaultIfBlank(config.userImpersonationId(), ResourceUtils.Subservice.CONTENT.userId);
+                StringUtils.defaultIfBlank(config.userImpersonationId(), ResolverUtils.Subservice.CONTENT.userId);
         executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, userId));
     }
 

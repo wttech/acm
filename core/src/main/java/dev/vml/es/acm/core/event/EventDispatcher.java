@@ -2,7 +2,7 @@ package dev.vml.es.acm.core.event;
 
 import dev.vml.es.acm.core.code.ExecutionHistory;
 import dev.vml.es.acm.core.code.ExecutionQueue;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.Collections;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -52,7 +52,7 @@ public class EventDispatcher implements EventListener {
     }
 
     private void doHistoryClear() {
-        try (ResourceResolver resolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+        try (ResourceResolver resolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
             ExecutionHistory executionHistory = new ExecutionHistory(resolver);
             executionHistory.clear();
         } catch (LoginException e) {

@@ -3,7 +3,7 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.JsonUtils;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import java.io.InputStream;
 import java.util.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -70,7 +70,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             props.put("id", execution.getId());
             props.put(
                     "userId",
-                    ResourceUtils.serviceOrImpersonatedUserId(
+                    ResolverUtils.serviceOrImpersonatedUserId(
                             context.getCodeContext().getResourceResolver()));
             props.put("status", execution.getStatus().name());
             props.put("startDate", DateUtils.toCalendar(execution.getStartDate()));

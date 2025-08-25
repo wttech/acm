@@ -4,7 +4,7 @@ import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.util.ResourceUtils;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
@@ -49,7 +49,7 @@ public class ResourceEventManager implements EventManager, ResourceChangeListene
 
     @Override
     public void triggerEvent(String name, Map<String, Object> properties) {
-        try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+        try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
             LOG.debug("Triggering event: {}", name);
             ResourceEvent event = ResourceEvent.create(name, properties, resourceResolver);
             replicator.replicate(
@@ -67,7 +67,7 @@ public class ResourceEventManager implements EventManager, ResourceChangeListene
         if (CollectionUtils.isEmpty(changes) || listeners.isEmpty()) {
             return;
         }
-        try (ResourceResolver resourceResolver = ResourceUtils.contentResolver(resourceResolverFactory, null)) {
+        try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
             Collection<Event> events = changes.stream()
                     .map(c -> resourceResolver.getResource(c.getPath()))
                     .filter(Objects::nonNull)
