@@ -1,6 +1,5 @@
 package dev.vml.es.acm.core.repo;
 
-import dev.vml.es.acm.core.util.StringUtil;
 import dev.vml.es.acm.core.util.TypeValueMap;
 import java.io.Serializable;
 import java.util.Map;
@@ -25,7 +24,7 @@ public class RepoResourceState implements Serializable {
     public RepoResourceState(String path, boolean exists, Map<String, Object> properties) {
         this.path = path;
         this.exists = exists;
-        this.properties = new TypeValueMap(properties);
+        this.properties = TypeValueMap.detached(properties);
     }
 
     public String getPath() {
@@ -66,7 +65,7 @@ public class RepoResourceState implements Serializable {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("path", path)
                 .append("exists", exists)
-                .append("properties", StringUtil.toString(properties))
+                .append("properties", TypeValueMap.detached(properties).stringify())
                 .toString();
     }
 }

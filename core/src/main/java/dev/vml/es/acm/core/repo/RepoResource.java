@@ -9,6 +9,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.jcr.Node;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -143,12 +145,12 @@ public class RepoResource {
         return this;
     }
 
-    public ValueMap properties() {
-        return new TypeValueMap(require().getValueMap());
+    public RepoValueMap properties() {
+        return new RepoValueMap(this, require().getValueMap());
     }
 
-    private ValueMap propertiesOrEmpty() {
-        return new TypeValueMap(get().map(Resource::getValueMap).orElse(ValueMap.EMPTY));
+    private RepoValueMap propertiesOrEmpty() {
+        return new RepoValueMap(this, get().map(Resource::getValueMap).orElse(ValueMap.EMPTY));
     }
 
     public <V> V property(String key, Class<V> clazz) {
@@ -630,8 +632,53 @@ public class RepoResource {
         return isType(JcrConstants.NT_FILE);
     }
 
+    public String type() {
+        return require().getResourceType();
+    }
+
     public boolean isType(String resourceType) {
         return require().isResourceType(resourceType);
+    }
+
+    public Node resolveNode() {
+        return node().orElse(null);
+    }
+
+    public Node requireNode() {
+        return node().orElseThrow(
+                        () -> new RepoException(String.format("Resource at path '%s' is not a JCR node!", path)));
+    }
+
+    public boolean isNode() {
+        return node().isPresent();
+    }
+
+    private Optional<Node> node() {
+        return get().map(r -> r.adaptTo(Node.class));
+    }
+
+    public long propertyLength(String property) {
+        Node node = requireNode();
+        try {
+            if (!node.hasProperty(property)) {
+                throw new RepoException(String.format(
+                        "Cannot determine length of property '%s'. Not found at path '%s'!", property, path));
+            }
+            Property p = node.getProperty(property);
+            if (p.isMultiple()) {
+                long total = 0L;
+                for (long partial : p.getLengths()) {
+                    if (partial > 0) {
+                        total += partial;
+                    }
+                }
+                return total;
+            }
+            return p.getLength();
+        } catch (RepositoryException e) {
+            throw new RepoException(
+                    String.format("Cannot determine length of property '%s' at path '%s'!", property, path), e);
+        }
     }
 
     @Override
@@ -652,7 +699,7 @@ public class RepoResource {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("path", path)
                 .append("exists", exists())
-                .append("properties", StringUtil.toString(propertiesOrEmpty()))
+                .append("properties", propertiesOrEmpty().stringify())
                 .toString();
     }
 }
