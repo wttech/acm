@@ -18,16 +18,15 @@ public class RepoValueMap extends TypeValueMap {
     }
 
     public Map<String, String> stringify() {
-        Map<String, String> out = new LinkedHashMap<>();
-        ValueMap vm = resource.properties();
-        for (String key : vm.keySet()) {
+        Map<String, String> result = new LinkedHashMap<>();
+        for (String key : keySet()) {
             if (JcrConstants.JCR_DATA.equals(key)) {
-                out.put(key, toStringJcrData());
+                result.put(key, toStringJcrData());
             } else {
-                out.put(key, toStringDefault(key));
+                result.put(key, toStringDefault(key));
             }
         }
-        return out;
+        return result;
     }
 
     private String toStringDefault(String key) {
