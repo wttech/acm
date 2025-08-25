@@ -146,6 +146,10 @@ public class RepoResource {
     }
 
     public RepoValueMap properties() {
+        return new RepoValueMap(this, require().getValueMap());
+    }
+
+    private RepoValueMap propertiesOrEmpty() {
         return new RepoValueMap(this, get().map(Resource::getValueMap).orElse(ValueMap.EMPTY));
     }
 
@@ -695,7 +699,7 @@ public class RepoResource {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("path", path)
                 .append("exists", exists())
-                .append("properties", properties().stringify())
+                .append("properties", propertiesOrEmpty().stringify())
                 .toString();
     }
 }
