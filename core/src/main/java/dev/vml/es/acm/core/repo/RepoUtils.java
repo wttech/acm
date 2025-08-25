@@ -16,7 +16,7 @@ public final class RepoUtils {
      * Resolver is not doing it in-place, but JCR workspace is.
      */
     public static void move(ResourceResolver resolver, String sourcePath, String targetPath)
-            throws PersistenceException {
+            throws RepoException {
         Workspace workspace = Optional.ofNullable(resolver)
                 .map(r -> r.adaptTo(Session.class))
                 .map(Session::getWorkspace)
@@ -122,7 +122,7 @@ public final class RepoUtils {
                     retry--;
                 }
                 if (rsrc == null) {
-                    throw new PersistenceException(String.format("Cannot to create resource at path '%s'!", path));
+                    throw new PersistenceException(String.format("Cannot create resource at path '%s'!", path));
                 }
             } catch (PersistenceException pe) {
                 // this could be thrown because someone else tried to create this node concurrently
