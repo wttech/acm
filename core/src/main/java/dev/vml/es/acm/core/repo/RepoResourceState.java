@@ -65,7 +65,7 @@ public class RepoResourceState implements Serializable {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("path", path)
                 .append("exists", exists)
-                .append("properties", TypeValueMap.toString(properties, null))
+                .append("properties", TypeValueMap.detached(properties).stringify())
                 .toString();
     }
 }

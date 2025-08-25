@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.*;
-import javax.jcr.Node;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
-import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 
 /**
@@ -24,20 +22,16 @@ public class TypeValueMap extends ValueMapDecorator {
         super(base);
     }
 
-    public static TypeValueMap detached(Map<String, Object> base) {
-        return new TypeValueMap(detach(base));
-    }
-
     /**
      * Detach a map possibly containing session-backed data.
      * Materializes InputStream to byte[] and defensively copy mutable arrays.
      */
-    public static Map<String, Object> detach(Map<String, Object> source) {
+    public static TypeValueMap detached(Map<String, Object> source) {
         if (source == null || source.isEmpty()) {
-            return Collections.emptyMap();
+            return new TypeValueMap(Collections.emptyMap());
         }
         Map<String, Object> copy = new LinkedHashMap<>(source.size());
-        for (Map.Entry<String, Object> e : source.entrySet()) {
+        for (Entry<String, Object> e : source.entrySet()) {
             Object v = e.getValue();
             Object detached = v;
             if (v instanceof InputStream) {
@@ -59,43 +53,35 @@ public class TypeValueMap extends ValueMapDecorator {
         return new TypeValueMap(Collections.unmodifiableMap(copy));
     }
 
-    public static Map<String, String> toString(ValueMap vm, Node node) {
+    public Map<String, String> stringify() {
         Map<String, String> out = new LinkedHashMap<>();
-        for (String key : vm.keySet()) {
+        for (String key : keySet()) {
             if (JcrConstants.JCR_DATA.equals(key)) {
-                out.put(key, toStringJcrData(vm, node));
+                out.put(key, toStringJcrData());
             } else {
-                out.put(key, toStringDefault(vm, key));
+                out.put(key, toStringDefault(key));
             }
         }
         return out;
     }
 
-    private static String toStringDefault(ValueMap vm, String key) {
-        return StringUtils.abbreviate(vm.get(key, String.class), ABBREVIATE_LENGTH);
+    private String toStringDefault(String key) {
+        return StringUtils.abbreviate(get(key, String.class), ABBREVIATE_LENGTH);
     }
 
-    private static String toStringJcrData(ValueMap vm, Node node) {
-        Object v = vm.get(JcrConstants.JCR_DATA);
-        if (node != null) {
-            try {
-                long size = node.getProperty(JcrConstants.JCR_DATA).getLength();
-                return JcrConstants.JCR_DATA + "[size=" + FileUtils.byteCountToDisplaySize(size) + "]";
-            } catch (Exception ex) {
-                // ignore
-            }
-        }
+    private String toStringJcrData() {
+        Object v = get(JcrConstants.JCR_DATA);
         if (v instanceof byte[]) {
-            return JcrConstants.JCR_DATA + "[size=" + FileUtils.byteCountToDisplaySize(((byte[]) v).length) + "]";
+            return "{size=" + FileUtils.byteCountToDisplaySize(((byte[]) v).length) + "}";
         } else if (v instanceof InputStream) {
             try {
                 int size = ((InputStream) v).available();
-                return JcrConstants.JCR_DATA + "[size=" + FileUtils.byteCountToDisplaySize(size) + "]";
+                return "{size=" + FileUtils.byteCountToDisplaySize(size) + "}";
             } catch (IOException ex) {
-                return JcrConstants.JCR_DATA + "[size=error]";
+                return "{size=error}";
             }
         }
-        return JcrConstants.JCR_DATA + "[size=unknown]";
+        return "{size=unknown}";
     }
 
     @Override
