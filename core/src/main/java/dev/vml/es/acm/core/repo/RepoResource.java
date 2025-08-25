@@ -630,6 +630,10 @@ public class RepoResource {
         return isType(JcrConstants.NT_FILE);
     }
 
+    public String type() {
+        return require().getResourceType();
+    }
+
     public boolean isType(String resourceType) {
         return require().isResourceType(resourceType);
     }
@@ -652,7 +656,7 @@ public class RepoResource {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("path", path)
                 .append("exists", exists())
-                .append("properties", StringUtil.toString(propertiesOrEmpty()))
+                .append("properties", TypeValueMap.toString(propertiesOrEmpty()))
                 .toString();
     }
 }
