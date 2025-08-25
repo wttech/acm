@@ -15,8 +15,7 @@ public final class RepoUtils {
      * Move in-place resource from source path to a target path.
      * Resolver is not doing it in-place, but JCR workspace is.
      */
-    public static void move(ResourceResolver resolver, String sourcePath, String targetPath)
-            throws RepoException {
+    public static void move(ResourceResolver resolver, String sourcePath, String targetPath) throws RepoException {
         Workspace workspace = Optional.ofNullable(resolver)
                 .map(r -> r.adaptTo(Session.class))
                 .map(Session::getWorkspace)
