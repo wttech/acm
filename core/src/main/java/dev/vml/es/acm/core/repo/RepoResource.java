@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -638,6 +639,23 @@ public class RepoResource {
         return require().isResourceType(resourceType);
     }
 
+    public Node resolveNode() {
+        return node().orElse(null);
+    }
+
+    public Node requireNode() {
+        return node().orElseThrow(
+                        () -> new RepoException(String.format("Resource at path '%s' is not a JCR node!", path)));
+    }
+
+    public boolean isNode() {
+        return node().isPresent();
+    }
+
+    private Optional<Node> node() {
+        return get().map(r -> r.adaptTo(Node.class));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -656,7 +674,7 @@ public class RepoResource {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("path", path)
                 .append("exists", exists())
-                .append("properties", TypeValueMap.toString(propertiesOrEmpty()))
+                .append("properties", TypeValueMap.toString(propertiesOrEmpty(), resolveNode()))
                 .toString();
     }
 }

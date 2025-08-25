@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.*;
+import javax.jcr.Node;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.CountingInputStream;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.ValueMap;
@@ -60,11 +59,11 @@ public class TypeValueMap extends ValueMapDecorator {
         return new TypeValueMap(Collections.unmodifiableMap(copy));
     }
 
-    public static Map<String, String> toString(ValueMap vm) {
+    public static Map<String, String> toString(ValueMap vm, Node node) {
         Map<String, String> out = new LinkedHashMap<>();
         for (String key : vm.keySet()) {
             if (JcrConstants.JCR_DATA.equals(key)) {
-                out.put(key, toStringJcrData(vm));
+                out.put(key, toStringJcrData(vm, node));
             } else {
                 out.put(key, toStringDefault(vm, key));
             }
@@ -76,14 +75,21 @@ public class TypeValueMap extends ValueMapDecorator {
         return StringUtils.abbreviate(vm.get(key, String.class), ABBREVIATE_LENGTH);
     }
 
-    private static String toStringJcrData(ValueMap vm) {
+    private static String toStringJcrData(ValueMap vm, Node node) {
         Object v = vm.get(JcrConstants.JCR_DATA);
+        if (node != null) {
+            try {
+                long size = node.getProperty(JcrConstants.JCR_DATA).getLength();
+                return JcrConstants.JCR_DATA + "[size=" + FileUtils.byteCountToDisplaySize(size) + "]";
+            } catch (Exception ex) {
+                // ignore
+            }
+        }
         if (v instanceof byte[]) {
             return JcrConstants.JCR_DATA + "[size=" + FileUtils.byteCountToDisplaySize(((byte[]) v).length) + "]";
         } else if (v instanceof InputStream) {
-            try (CountingInputStream cin = new CountingInputStream((InputStream) v)) {
-                IOUtils.copyLarge(cin, NullOutputStream.NULL_OUTPUT_STREAM);
-                long size = cin.getByteCount();
+            try {
+                int size = ((InputStream) v).available();
                 return JcrConstants.JCR_DATA + "[size=" + FileUtils.byteCountToDisplaySize(size) + "]";
             } catch (IOException ex) {
                 return JcrConstants.JCR_DATA + "[size=error]";
