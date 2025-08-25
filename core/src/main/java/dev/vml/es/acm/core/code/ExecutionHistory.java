@@ -10,10 +10,10 @@ import java.util.*;
 import java.util.stream.Stream;
 import javax.jcr.query.Query;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ExecutionHistory {
@@ -69,9 +69,7 @@ public class ExecutionHistory {
 
     private Resource getOrCreateRoot() throws AcmException {
         try {
-            Resource root = ResourceUtils.ensure(resourceResolver, ROOT, JcrConstants.NT_FOLDER);
-            resourceResolver.commit();
-            return root;
+            return ResourceUtil.getOrCreateResource(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
         } catch (PersistenceException e) {
             throw new AcmException(String.format("Cannot create execution history root '%s'!", ROOT), e);
         }

@@ -13,6 +13,7 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,9 +54,9 @@ public class Locker {
                 String dirPath = StringUtils.substringBeforeLast(name, "/");
                 nodeName = StringUtils.substringAfterLast(name, "/");
                 dirResource =
-                        ResourceUtils.ensure(resolver, ROOT + "/" + dirPath, JcrResourceConstants.NT_SLING_FOLDER);
+                        ResourceUtil.getOrCreateResource(resolver, ROOT + "/" + dirPath, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
             } else {
-                dirResource = ResourceUtils.ensure(resolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER);
+                dirResource = ResourceUtil.getOrCreateResource(resolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
                 nodeName = name;
             }
             Map<String, Object> props = new HashMap<>();
