@@ -3,7 +3,7 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
-import dev.vml.es.acm.core.util.ResourceUtils;
+
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,10 +53,9 @@ public class Locker {
             if (name.contains("/")) {
                 String dirPath = StringUtils.substringBeforeLast(name, "/");
                 nodeName = StringUtils.substringAfterLast(name, "/");
-                dirResource =
-                        ResourceUtil.getOrCreateResource(resolver, ROOT + "/" + dirPath, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
+                dirResource = ensureDir(ROOT + "/" + dirPath);
             } else {
-                dirResource = ResourceUtil.getOrCreateResource(resolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
+                dirResource = ensureDir(ROOT);
                 nodeName = name;
             }
             Map<String, Object> props = new HashMap<>();
@@ -68,6 +67,10 @@ public class Locker {
         } catch (PersistenceException e) {
             throw new AcmException(String.format("Cannot create lock '%s'!", name), e);
         }
+    }
+
+    private Resource ensureDir(String path) throws PersistenceException {
+        return ResourceUtil.getOrCreateResource(resolver, path, JcrResourceConstants.NT_SLING_FOLDER, JcrResourceConstants.NT_SLING_FOLDER, true);
     }
 
     public void unlock(String lockName) {
