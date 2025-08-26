@@ -35,6 +35,10 @@ const ScriptAutomaticList: React.FC = () => {
       return Array.from(selectedKeys as Set<Key>).map((key) => key.toString());
     }
   };
+  const handleLoadScripts = () => {
+    loadScripts();
+    setSelectedKeys(new Set<Key>());
+  };
 
   const renderEmptyState = () => (
     <IllustratedMessage>
@@ -58,8 +62,8 @@ const ScriptAutomaticList: React.FC = () => {
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
               <Toggle when={managementEnabled}>
-                <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={loadScripts} />
-                <ScriptsSyncButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
+                <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={handleLoadScripts} />
+                <ScriptsSyncButton selectedKeys={selectedIds(selectedKeys)} onSync={handleLoadScripts} />
               </Toggle>
               <Button
                 variant="negative"
