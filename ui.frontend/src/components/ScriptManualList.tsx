@@ -32,6 +32,10 @@ const ScriptManualList: React.FC = () => {
       return Array.from(selectedKeys as Set<Key>).map((key) => key.toString());
     }
   };
+  const handleLoadScripts = () => {
+    loadScripts();
+    setSelectedKeys(new Set<Key>());
+  };
 
   const renderEmptyState = () => (
     <IllustratedMessage>
@@ -55,7 +59,7 @@ const ScriptManualList: React.FC = () => {
           <Flex flex="1" alignItems="center">
             <Toggle when={managementEnabled}>
               <ButtonGroup>
-                <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={loadScripts} />
+                <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={handleLoadScripts} />
               </ButtonGroup>
             </Toggle>
           </Flex>
