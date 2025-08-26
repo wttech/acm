@@ -15,10 +15,13 @@ import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import ScriptsDeleteButton from './ScriptsDeleteButton';
 import ScriptsSyncButton from './ScriptsSyncButton';
+import Toggle from './Toggle';
 import UserInfo from './UserInfo';
 
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
+  const managementEnabled = appState.spaSettings.scriptManagementEnabled;
+
   const navigate = useNavigate();
   const formatter = useFormatter();
 
@@ -54,8 +57,10 @@ const ScriptAutomaticList: React.FC = () => {
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
-              <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={loadScripts} />
-              <ScriptsSyncButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
+              <Toggle when={managementEnabled}>
+                <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={loadScripts} />
+                <ScriptsSyncButton selectedKeys={selectedIds(selectedKeys)} onSync={loadScripts} />
+              </Toggle>
               <Button
                 variant="negative"
                 isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
@@ -77,7 +82,7 @@ const ScriptAutomaticList: React.FC = () => {
       <TableView
         flex="1"
         aria-label={`Script list (${ScriptType.AUTOMATIC.toLowerCase()})`}
-        selectionMode={'multiple'}
+        selectionMode={managementEnabled ? 'multiple' : 'none'}
         selectedKeys={selectedKeys}
         onSelectionChange={setSelectedKeys}
         renderEmptyState={renderEmptyState}

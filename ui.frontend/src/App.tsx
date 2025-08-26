@@ -18,13 +18,14 @@ function App() {
       appStateInterval: 3000,
       executionPollInterval: 1400,
       scriptStatsLimit: 20,
+      scriptManagementEnabled: false,
     },
     healthStatus: {
       healthy: true,
       issues: [],
     },
     mockStatus: {
-      enabled: true,
+      enabled: false,
     },
     instanceSettings: {
       id: 'default',

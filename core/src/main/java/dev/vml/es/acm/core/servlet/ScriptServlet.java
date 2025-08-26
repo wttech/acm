@@ -113,6 +113,11 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        if (!spaSettings.isScriptManagementEnabled()) {
+            respondJson(response, error("Script management is disabled!"));
+            return;
+        }
+
         Optional<Action> action = Action.of(stringParam(request, ACTION_PARAM));
         if (!action.isPresent()) {
             respondJson(response, error("Invalid action parameter! Must be either 'save', 'delete' or 'sync'"));

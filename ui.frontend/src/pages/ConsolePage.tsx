@@ -3,7 +3,7 @@ import { ToastQueue } from '@react-spectrum/toast';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Print from '@spectrum-icons/workflow/Print';
 import { useEffect, useState } from 'react';
-import CodeEditor from '../components/CodeEditor.tsx';
+import CodeEditor from '../components/CodeEditor';
 import CodeExecuteButton from '../components/CodeExecuteButton';
 import CodeSaveButton from '../components/CodeSaveButton';
 import CompilationStatus from '../components/CompilationStatus';
@@ -12,7 +12,8 @@ import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
-import ScriptExecutorStatusLight from '../components/ScriptExecutorStatusLight.tsx';
+import ScriptExecutorStatusLight from '../components/ScriptExecutorStatusLight';
+import Toggle from '../components/Toggle';
 import { useAppState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
@@ -129,7 +130,9 @@ const ConsolePage = () => {
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
                     <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={executableNotReady} />
-                    <CodeSaveButton code={code || ''} variant="secondary" isDisabled={executableNotReady} />
+                    <Toggle when={appState.spaSettings.scriptManagementEnabled}>
+                      <CodeSaveButton code={code || ''} variant="secondary" isDisabled={executableNotReady} />
+                    </Toggle>
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">

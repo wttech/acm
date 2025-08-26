@@ -327,6 +327,7 @@ export type SpaSettings = {
   appStateInterval: number;
   executionPollInterval: number;
   scriptStatsLimit: number;
+  scriptManagementEnabled: boolean;
 };
 
 export type InstanceSettings = {
