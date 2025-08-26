@@ -1,4 +1,5 @@
 import { Button, ButtonGroup, Cell, Column, Content, ContextualHelp, Flex, Heading, IllustratedMessage, ProgressBar, Row, TableBody, TableHeader, TableView, Text, View } from '@adobe/react-spectrum';
+import { Key, Selection } from '@react-types/shared';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
 import React, { useState } from 'react';
@@ -12,14 +13,14 @@ import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsDeleteButton from './ScriptsDeleteButton';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
+import { Toggle } from './Toggle';
 import UserInfo from './UserInfo';
-
-import { Key, Selection } from '@react-types/shared';
 
 const ScriptManualList: React.FC = () => {
   const type = ScriptType.MANUAL;
   const { scripts, loading, loadScripts } = useScripts(type);
   const appState = useAppState();
+  const managementEnabled = appState.spaSettings.scriptManagementEnabled;
   const navigate = useNavigate();
   const formatter = useFormatter();
 
@@ -52,9 +53,11 @@ const ScriptManualList: React.FC = () => {
       <View>
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
-            <ButtonGroup>
-              <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={loadScripts} />
-            </ButtonGroup>
+            <Toggle when={managementEnabled}>
+              <ButtonGroup>
+                <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={loadScripts} />
+              </ButtonGroup>
+            </Toggle>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
             <ScriptExecutorStatusLight />
@@ -67,7 +70,7 @@ const ScriptManualList: React.FC = () => {
       <TableView
         flex="1"
         aria-label={`Script list (${type})`}
-        selectionMode={'multiple'}
+        selectionMode={managementEnabled ? 'multiple' : 'none'}
         selectedKeys={selectedKeys}
         onSelectionChange={setSelectedKeys}
         renderEmptyState={renderEmptyState}
