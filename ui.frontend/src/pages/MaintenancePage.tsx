@@ -4,7 +4,7 @@ import Code from '@spectrum-icons/workflow/Code';
 import Heart from '@spectrum-icons/workflow/Heart';
 import CodeExecutor from '../components/CodeExecutor';
 import HealthChecker from '../components/HealthChecker';
-import Misc from '../components/Misc.tsx';
+import Misc from '../components/Misc';
 import { useNavigationTab } from '../hooks/navigation';
 
 const MaintenancePage = () => {
