@@ -1,10 +1,10 @@
 import { Flex, Item, TabList, TabPanels, Tabs, Text } from '@adobe/react-spectrum';
+import ApplicationDelivery from '@spectrum-icons/workflow/ApplicationDelivery';
 import Code from '@spectrum-icons/workflow/Code';
 import Heart from '@spectrum-icons/workflow/Heart';
-import History from '@spectrum-icons/workflow/History';
 import CodeExecutor from '../components/CodeExecutor';
-import ExecutionHistory from '../components/ExecutionHistory';
 import HealthChecker from '../components/HealthChecker';
+import Misc from '../components/Misc';
 import { useNavigationTab } from '../hooks/navigation';
 
 const MaintenancePage = () => {
@@ -22,9 +22,9 @@ const MaintenancePage = () => {
             <Heart />
             <Text>Health Checker</Text>
           </Item>
-          <Item key="execution-history" aria-label="Execution History">
-            <History />
-            <Text>Execution History</Text>
+          <Item key="misc" aria-label="Miscellaneous">
+            <ApplicationDelivery />
+            <Text>Miscellaneous</Text>
           </Item>
         </TabList>
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
@@ -34,8 +34,8 @@ const MaintenancePage = () => {
           <Item key="health-checker" aria-label="Health Checker">
             <HealthChecker />
           </Item>
-          <Item key="execution-history" aria-label="Execution History">
-            <ExecutionHistory />
+          <Item key="misc" aria-label="Miscellaneous">
+            <Misc />
           </Item>
         </TabPanels>
       </Tabs>

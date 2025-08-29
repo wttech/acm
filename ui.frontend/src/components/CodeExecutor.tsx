@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app.ts';
 import { apiRequest } from '../utils/api.ts';
-import { ExecutionOutput, ExecutionSummary, instancePrefix, InstanceType } from '../utils/api.types.ts';
+import { ExecutionOutput, ExecutionSummary, InstanceOsgiServicePid, instancePrefix, InstanceType } from '../utils/api.types.ts';
 import { intervalToTimeout } from '../utils/spectrum.ts';
 import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
@@ -84,15 +84,15 @@ const CodeExecutor = () => {
                   <Text>Configure</Text>
                 </Button>
                 <Menu onAction={(pid) => window.open(`${instancePrefix}/system/console/configMgr/${pid}`, '_blank')}>
-                  <Item key="dev.vml.es.acm.core.code.Executor">
+                  <Item key={InstanceOsgiServicePid.CODE_EXECUTOR}>
                     <Code />
                     <Text>Code Executor</Text>
                   </Item>
-                  <Item key="dev.vml.es.acm.core.code.ExecutionQueue">
+                  <Item key={InstanceOsgiServicePid.CODE_EXECUTION_QUEUE}>
                     <Clock />
                     <Text>Execution Queue</Text>
                   </Item>
-                  <Item key="org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue">
+                  <Item key={InstanceOsgiServicePid.SLING_QUEUE}>
                     <ApplicationDelivery />
                     <Text>Sling Queue</Text>
                   </Item>
