@@ -1,9 +1,10 @@
 package dev.vml.es.acm.core.notification.slack;
 
 import dev.vml.es.acm.core.notification.Notifier;
+import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
 
-public class Slack implements Notifier<SlackMessage> {
+public class Slack implements Notifier<SlackPayload> {
 
     private final String id;
 
@@ -28,7 +29,16 @@ public class Slack implements Notifier<SlackMessage> {
     }
 
     @Override
-    public void sendMessage(SlackMessage message) {
+    public void sendPayload(SlackPayload payload) {
+        try {
+            sendPayload(JsonUtils.writeToString(payload));
+        } catch (IOException e) {
+            throw new SlackException(String.format("Cannot serialize Slack payload for notifier '%s'!", id), e);
+        }
+    }
+
+    @Override
+    public void sendPayload(String payloadJson) {
         // TODO ...
     }
 
