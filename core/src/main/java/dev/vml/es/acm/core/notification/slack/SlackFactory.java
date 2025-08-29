@@ -17,7 +17,7 @@ public class SlackFactory extends NotifierFactory<Slack> {
     @Activate
     @Modified
     public void activate(Map<String, Object> props, Config config) {
-        addFactored(props, () -> new Slack(config.id(), config.webhookUrl(), config.enabled()));
+        addFactored(props, () -> new Slack(config.id(), config.webhookUrl(), config.enabled(), config.timeoutMillis()));
     }
 
     @Deactivate
@@ -28,13 +28,16 @@ public class SlackFactory extends NotifierFactory<Slack> {
     @ObjectClassDefinition(name = "AEM Content Manager - Slack Factory")
     public @interface Config {
 
-        @AttributeDefinition(name = "ID", description = "Unique identifier for this configuration")
+        @AttributeDefinition(name = "ID", description = "Unique configuration identifier")
         String id() default ID_DEFAULT;
+
+        @AttributeDefinition(name = "Enabled")
+        boolean enabled() default true;
 
         @AttributeDefinition(name = "Webhook URL", description = "Determines target Slack channel and authentication")
         String webhookUrl();
 
-        @AttributeDefinition(name = "Enabled")
-        boolean enabled() default true;
+        @AttributeDefinition(name = "Timeout Millis", description = "HTTP connection and read timeout in milliseconds")
+        int timeoutMillis() default 5000;
     }
 }

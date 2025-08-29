@@ -236,6 +236,11 @@ DynamicImport-Package: *
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.4</version>
+        </dependency>
+        <dependency>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
             <version>3.2.8</version>
             <groupId>org.apache.jackrabbit.vault</groupId>
