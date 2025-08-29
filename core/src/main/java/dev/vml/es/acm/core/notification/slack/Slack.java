@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.notification.slack;
 
 import dev.vml.es.acm.core.notification.Notifier;
+import java.io.IOException;
 
 public class Slack implements Notifier<SlackMessage> {
 
@@ -28,6 +29,11 @@ public class Slack implements Notifier<SlackMessage> {
 
     @Override
     public void sendMessage(SlackMessage message) {
+        // TODO ...
+    }
+
+    @Override
+    public void close() throws IOException {
         // TODO ...
     }
 }

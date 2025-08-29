@@ -1,11 +1,7 @@
 package dev.vml.es.acm.core.notification.slack;
 
-import java.util.Collection;
-import java.util.Collections;
+import dev.vml.es.acm.core.notification.NotifierFactory;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.lang3.StringUtils;
-import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -14,42 +10,19 @@ import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-@Component(service = SlackFactory.class)
-@Designate(ocd = SlackFactory.class, factory = true)
-public class SlackFactory {
-
-    public static final String ID_DEFAULT = "default";
-
-    private static final String PID_DEFAULT = "default";
-
-    private final Map<String, Slack> factored = new ConcurrentHashMap<>();
+@Component(service = SlackFactory.class, immediate = true)
+@Designate(ocd = SlackFactory.Config.class, factory = true)
+public class SlackFactory extends NotifierFactory<Slack> {
 
     @Activate
     @Modified
     public void activate(Map<String, Object> props, Config config) {
-        factored.put(getConfigPid(props), new Slack(config.id(), config.webhookUrl(), config.enabled()));
+        addFactored(props, () -> new Slack(config.id(), config.webhookUrl(), config.enabled()));
     }
 
     @Deactivate
     public void deactivate(Map<String, Object> props) {
-        factored.remove(getConfigPid(props));
-    }
-
-    private String getConfigPid(Map<String, Object> props) {
-        String pid = (String) props.getOrDefault(Constants.SERVICE_PID, PID_DEFAULT);
-        return StringUtils.substringAfter(pid, "~");
-    }
-
-    public Collection<Slack> getFactored() {
-        return Collections.unmodifiableCollection(factored.values());
-    }
-
-    public Slack getById(String id) {
-        return factored.values().stream()
-                .filter(s -> s.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new SlackException(
-                        String.format("Cannot find Slack with id '%s'! Ensure that it is configured properly.", id)));
+        removeFactored(props);
     }
 
     @ObjectClassDefinition(name = "AEM Content Manager - Slack Factory")

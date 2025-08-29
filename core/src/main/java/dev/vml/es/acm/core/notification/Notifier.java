@@ -1,10 +1,12 @@
 package dev.vml.es.acm.core.notification;
 
-public interface Notifier<M> {
+import java.io.Closeable;
+
+public interface Notifier<M> extends Closeable {
 
     String getId();
 
-    void sendMessage(M message);
-
     boolean isEnabled();
+
+    void sendMessage(M message);
 }
