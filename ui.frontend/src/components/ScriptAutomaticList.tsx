@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
 import { useScripts } from '../hooks/script';
-import { instancePrefix, InstanceType, isExecutionNegative, ScriptType } from '../utils/api.types';
+import { instanceOsgiServiceConfigUrl, InstanceOsgiServicePid, InstanceType, isExecutionNegative, ScriptType } from '../utils/api.types';
 import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
@@ -65,11 +65,7 @@ const ScriptAutomaticList: React.FC = () => {
                 <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={handleLoadScripts} />
                 <ScriptsSyncButton selectedKeys={selectedIds(selectedKeys)} onSync={handleLoadScripts} />
               </Toggle>
-              <Button
-                variant="negative"
-                isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
-                onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.script.AutomaticScriptScheduler`, '_blank')}
-              >
+              <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.AUTOMATIC_SCRIPT_SCHEDULER), '_blank')}>
                 <Settings />
                 <Text>Configure</Text>
               </Button>

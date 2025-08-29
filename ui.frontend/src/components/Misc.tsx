@@ -2,14 +2,14 @@ import { Button, Cell, Column, Flex, Row, TableBody, TableHeader, TableView, Tex
 import Settings from '@spectrum-icons/workflow/Settings';
 
 import Beaker from '@spectrum-icons/workflow/Beaker';
+import FileCode from '@spectrum-icons/workflow/FileCode';
 import Filter from '@spectrum-icons/workflow/Filter';
 import History from '@spectrum-icons/workflow/History';
 import Info from '@spectrum-icons/workflow/Info';
 import WebPage from '@spectrum-icons/workflow/WebPage';
-import Data from '@spectrum-icons/workflow/Data';
 
 import { useAppState } from '../hooks/app';
-import {instancePrefix, InstanceType} from '../utils/api.types';
+import { instanceOsgiServiceConfigUrl, InstanceOsgiServicePid, InstanceType } from '../utils/api.types';
 import ExecutionHistoryClearButton from './ExecutionHistoryClearButton';
 
 const Misc = () => {
@@ -43,7 +43,7 @@ const Misc = () => {
               </Flex>
             </Cell>
             <Cell>
-              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.gui.SpaSettings`, '_blank', 'noopener')}>
+              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.SPA_SETTINGS), '_blank', 'noopener')}>
                 <Settings />
                 <Text>Configure</Text>
               </Button>
@@ -52,12 +52,12 @@ const Misc = () => {
           <Row key="code-repository">
             <Cell>
               <Flex gap="size-100">
-                <Data size="S" />
+                <FileCode size="S" />
                 <Text>Code Repository</Text>
               </Flex>
             </Cell>
             <Cell>
-              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.code.CodeRepository`, '_blank', 'noopener')}>
+              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.CODE_REPOSITORY), '_blank', 'noopener')}>
                 <Settings />
                 <Text>Configure</Text>
               </Button>
@@ -71,7 +71,7 @@ const Misc = () => {
               </Flex>
             </Cell>
             <Cell>
-              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.assist.Assistancer`, '_blank', 'noopener')}>
+              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.CODE_ASSISTANCER), '_blank', 'noopener')}>
                 <Settings />
                 <Text>Configure</Text>
               </Button>
@@ -85,7 +85,7 @@ const Misc = () => {
               </Flex>
             </Cell>
             <Cell>
-              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(`${instancePrefix}/system/console/configMgr/com.vml.es.aem.acm.core.mock.MockHttpFilter`, '_blank', 'noopener')}>
+              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.MOCK_HTTP_FILTER), '_blank', 'noopener')}>
                 <Settings />
                 <Text>Configure</Text>
               </Button>
@@ -99,7 +99,7 @@ const Misc = () => {
               </Flex>
             </Cell>
             <Cell>
-              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.osgi.InstanceInfo`, '_blank', 'noopener')}>
+              <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.INSTANCE_INFO), '_blank', 'noopener')}>
                 <Settings />
                 <Text>Configure</Text>
               </Button>

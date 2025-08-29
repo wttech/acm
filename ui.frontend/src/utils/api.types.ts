@@ -350,6 +350,24 @@ export enum InstanceType {
 
 export const instancePrefix = isProduction() ? '' : 'http://localhost:5502';
 
+export enum InstanceOsgiServicePid {
+  AUTOMATIC_SCRIPT_SCHEDULER = 'dev.vml.es.acm.core.script.AutomaticScriptScheduler',
+
+  CODE_EXECUTOR = 'dev.vml.es.acm.core.code.Executor',
+  CODE_EXECUTION_QUEUE = 'dev.vml.es.acm.core.code.ExecutionQueue',
+  SLING_QUEUE = 'org.apache.sling.event.jobs.QueueConfiguration~acmexecutionqueue',
+
+  SPA_SETTINGS = 'dev.vml.es.acm.core.gui.SpaSettings',
+  CODE_REPOSITORY = 'dev.vml.es.acm.core.code.CodeRepository',
+  CODE_ASSISTANCER = 'dev.vml.es.acm.core.assist.Assistancer',
+  MOCK_HTTP_FILTER = 'dev.vml.es.acm.core.mock.MockHttpFilter',
+  INSTANCE_INFO = 'dev.vml.es.acm.core.osgi.InstanceInfo',
+}
+
+export function instanceOsgiServiceConfigUrl(pid: InstanceOsgiServicePid): string {
+  return `${instancePrefix}/system/console/configMgr/${pid}`;
+}
+
 export type HealthStatus = {
   healthy: boolean;
   issues: HealthIssue[];
