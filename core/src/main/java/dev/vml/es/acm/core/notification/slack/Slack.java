@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.notification.slack;
 
 import dev.vml.es.acm.core.notification.Notifier;
 import dev.vml.es.acm.core.util.JsonUtils;
+import java.io.IOException;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -13,8 +14,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class Slack implements Notifier<SlackPayload> {
 
@@ -35,8 +34,12 @@ public class Slack implements Notifier<SlackPayload> {
         this.webhookUrl = webhookUrl;
         this.enabled = enabled;
         this.httpRequestConfig = RequestConfig.custom()
-                .setConnectTimeout(timeoutMillis).setConnectionRequestTimeout(timeoutMillis).setSocketTimeout(timeoutMillis).build();
-        this.httpClient = HttpClients.custom().setDefaultRequestConfig(httpRequestConfig).build();
+                .setConnectTimeout(timeoutMillis)
+                .setConnectionRequestTimeout(timeoutMillis)
+                .setSocketTimeout(timeoutMillis)
+                .build();
+        this.httpClient =
+                HttpClients.custom().setDefaultRequestConfig(httpRequestConfig).build();
     }
 
     @Override
