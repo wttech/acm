@@ -6,7 +6,7 @@ import FileCode from '@spectrum-icons/workflow/FileCode';
 import Filter from '@spectrum-icons/workflow/Filter';
 import History from '@spectrum-icons/workflow/History';
 import Info from '@spectrum-icons/workflow/Info';
-import WebPage from '@spectrum-icons/workflow/WebPage';
+import AppRefresh from '@spectrum-icons/workflow/AppRefresh';
 
 import { useAppState } from '../hooks/app';
 import { instanceOsgiServiceConfigUrl, InstanceOsgiServicePid, InstanceType } from '../utils/api.types';
@@ -38,7 +38,7 @@ const Misc = () => {
           <Row key="spa-settings">
             <Cell>
               <Flex gap="size-100">
-                <WebPage size="S" />
+                <AppRefresh size="S" />
                 <Text>Spa Settings</Text>
               </Flex>
             </Cell>
