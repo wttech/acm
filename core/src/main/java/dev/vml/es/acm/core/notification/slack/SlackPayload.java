@@ -2,8 +2,10 @@ package dev.vml.es.acm.core.notification.slack;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.apache.commons.lang3.StringUtils;
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Minimal JSON-level Slack Incoming Webhook payload.
@@ -42,7 +44,7 @@ public final class SlackPayload implements Serializable {
         private final List<Block> blocks = new ArrayList<>();
 
         public Builder text(String text) {
-            this.text = text;
+            this.text = StringUtils.defaultString(text);
             return this;
         }
 
@@ -68,7 +70,8 @@ public final class SlackPayload implements Serializable {
         }
 
         public Builder fieldsMarkdown(String... mdFields) {
-            return add(Block.fieldsSectionMarkdown(Arrays.asList(mdFields)));
+            List<String> safeFields = Arrays.stream(mdFields).map(StringUtils::defaultString).collect(Collectors.toList());
+            return add(Block.fieldsSectionMarkdown(safeFields));
         }
 
         public SlackPayload build() {
@@ -145,14 +148,14 @@ public final class SlackPayload implements Serializable {
     private static Map<String, Object> markdown(String text) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("type", "mrkdwn");
-        m.put("text", text);
+        m.put("text", StringUtils.defaultString(text));
         return m;
     }
 
     private static Map<String, Object> plainText(String text, boolean emoji) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("type", "plain_text");
-        m.put("text", text);
+        m.put("text", StringUtils.defaultString(text));
         m.put("emoji", emoji);
         return m;
     }
