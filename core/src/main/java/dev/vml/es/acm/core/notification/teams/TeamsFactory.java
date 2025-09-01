@@ -17,7 +17,7 @@ public class TeamsFactory extends NotifierFactory<Teams> {
     @Activate
     @Modified
     public void factory(Map<String, Object> props, Config config) {
-        addFactored(props, () -> new Teams(config.id(), config.webhookUrl(), config.enabled()));
+        addFactored(props, () -> new Teams(config.id(), config.webhookUrl(), config.enabled(), config.timeoutMillis()));
     }
 
     @Deactivate
@@ -36,5 +36,8 @@ public class TeamsFactory extends NotifierFactory<Teams> {
 
         @AttributeDefinition(name = "Enabled")
         boolean enabled() default true;
+
+        @AttributeDefinition(name = "Timeout Millis", description = "HTTP connection and read timeout in milliseconds")
+        int timeoutMillis() default 5000;
     }
 }
