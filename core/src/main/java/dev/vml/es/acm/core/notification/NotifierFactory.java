@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
@@ -12,7 +13,7 @@ import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class NotifierFactory<N extends Notifier<?>> {
+    public abstract class NotifierFactory<N extends Notifier<?>> {
 
     public static final String ID_DEFAULT = "default";
 
@@ -52,11 +53,18 @@ public abstract class NotifierFactory<N extends Notifier<?>> {
         return Collections.unmodifiableCollection(factored.values());
     }
 
-    public N getById(String id) {
+    public Optional<N> findById(String id) {
         return factored.values().stream()
                 .filter(s -> s.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new TeamsException(String.format(
+                .findFirst();
+    }
+
+    public Optional<N> findDefault() {
+        return findById(ID_DEFAULT);
+    }
+
+    public N getById(String id) {
+        return findById(id).orElseThrow(() -> new TeamsException(String.format(
                         "Cannot find notifier with id '%s'! Ensure that it is configured properly.", id)));
     }
 

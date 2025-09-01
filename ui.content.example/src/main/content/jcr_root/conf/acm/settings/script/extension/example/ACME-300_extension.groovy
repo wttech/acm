@@ -1,65 +1,66 @@
 import dev.vml.es.acm.core.code.ExecutionContext
 import dev.vml.es.acm.core.code.Execution
+import dev.vml.es.acm.core.notification.slack.SlackFactory
+import dev.vml.es.acm.core.notification.slack.SlackPayload
+import dev.vml.es.acm.core.notification.teams.TeamsFactory
+import dev.vml.es.acm.core.notification.teams.TeamsPayload
+import java.text.SimpleDateFormat
 
 void prepareRun(ExecutionContext context) {
     context.variable("acme", new AcmeFacade())
 }
 
 void completeRun(Execution execution) {
-    if (execution.status.name() == 'FAILED') {
-        log.error "Something nasty happened with '${execution.executable.id}'!"
-        // TODO send notification on Slack, MS Teams, etc using HTTP client / WebAPI
-
-        /*
-        // Basic notification
-        SlackPayload basicPayload = SlackPayload.builder()
-            .text("Server maintenance completed successfully")
-            .header("System Alert")
-            .sectionPlain("All systems are operational")
-            .build();
-
-        // Rich notification with blocks
-        SlackPayload richPayload = SlackPayload.builder()
-            .text("Critical Alert") // Fallback text for notifications
-            .header("🚨 Critical Database Alert")
-            .sectionMarkdown("*Database connection failure* detected on production server")
-            .divider()
-            .fieldsMarkdown(
-                "*Status:* Critical",
-                "*Server:* db-prod-01",
-                "*Time:* 2024-09-01 10:54:00", 
-                "*Affected Users:* 1,247"
-            )
-            .divider()
-            .sectionMarkdown("*Next Steps:* Check database logs and restart if necessary")
-            .build();
-
-        // Basic notification
-        TeamsPayload basicPayload = TeamsPayload.builder()
-            .title("System Alert")
-            .text("Server maintenance completed successfully")
-            .build();
-
-        // Rich notification with facts and actions
-        TeamsPayload richPayload = TeamsPayload.builder()
-            .title("🚨 Critical Alert")
-            .textBlock("Database connection failure detected on production server")
-            .facts(
-                "Status", "Critical",
-                "Server", "db-prod-01", 
-                "Time", "2024-09-01 10:54:00",
-                "Affected Users", "1,247"
-            )
-            .textBlock("**Next Steps:** Check database logs and restart if necessary")
-            .openUrlAction("View Dashboard", "https://monitoring.example.com/db-prod-01")
-            .openUrlAction("View Logs", "https://logs.example.com/db-prod-01")
-            .build();
-        */
+    if (conditions.isAutomaticScript()) {
+        acme.sendNotifications(execution)
     }
 }
 
 class AcmeFacade {
-    def now() {
-        return new Date()
+
+    void sendNotifications(Execution execution) {
+        try {
+            def timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+            def status = execution.status.name()
+            def scriptId = execution.executable.id
+            def statusIcon = status == 'SUCCESS' ? '✅' : (status == 'FAILED' ? '❌' : '⚠️')
+            def environment = System.getProperty('sling.run.modes', 'unknown') // TODO fixme
+        
+            def slack = osgi.getService(SlackFactory.class).findDefault().orElse(null)
+            if (slack && slack.enabled) {
+                def slackPayload = SlackPayload.builder()
+                    .text("ACM Script Execution ${status}")
+                    .header("${statusIcon} ACM Automatic Script Execution")
+                    .sectionMarkdown("*Script:* `${scriptId}`")
+                    .divider()
+                    .fieldsMarkdown(
+                        "*Status:* ${status}",
+                        "*Execution Time:* ${timestamp}",
+                        "*Duration:* ${execution.duration ?: 'N/A'}ms",
+                        "*Environment:* ${environment}"
+                    )
+                    .build()
+                slack.sendPayload(slackPayload)
+                log.info "Sent Slack notification for script '${scriptId}' with status ${status}"
+            }
+            def teams = osgi.getService(TeamsFactory.class).findDefault().orElse(null)
+            if (teams && teams.enabled) {
+                def teamsPayload = TeamsPayload.builder()
+                    .title("${statusIcon} ACM Automatic Script Execution")
+                    .textBlock("Script **${scriptId}** executed automatically")
+                    .facts(
+                        "Status", status,
+                        "Execution Time", timestamp,
+                        "Duration", "${execution.duration ?: 'N/A'}ms",
+                        "Environment", environment
+                    )
+                    .build()
+                teams.sendPayload(teamsPayload)
+                log.info "Sent Teams notification for script '${scriptId}' with status ${status}"
+            }
+        } catch (Exception e) {
+            log.error "Cannot send notifications for script '${scriptId}': ${e.message}", e
+        }
     }
+
 }
