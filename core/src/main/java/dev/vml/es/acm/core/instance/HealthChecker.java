@@ -167,6 +167,7 @@ public class HealthChecker implements EventHandler {
     private boolean isBundleIgnored(Bundle bundle) {
         return ArrayUtils.isNotEmpty(config.bundleSymbolicNamesIgnored())
                 && Arrays.stream(config.bundleSymbolicNamesIgnored())
+                        .map(String::trim)
                         .anyMatch(sn -> FilenameUtils.wildcardMatch(bundle.getSymbolicName(), sn));
     }
 
