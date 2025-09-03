@@ -4,7 +4,7 @@ import dev.vml.es.acm.core.acl.Acl;
 import dev.vml.es.acm.core.code.script.ExtensionScript;
 import dev.vml.es.acm.core.format.Formatter;
 import dev.vml.es.acm.core.mock.MockContext;
-import dev.vml.es.acm.core.notification.NotifierManager;
+import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.replication.Activator;
 import dev.vml.es.acm.core.repo.Repo;
@@ -40,7 +40,7 @@ public class CodeContext {
 
     private final Formatter formatter;
 
-    private final NotifierManager notifier;
+    private final NotificationManager notifier;
 
     public CodeContext(OsgiContext osgiContext, ResourceResolver resourceResolver) {
         this.osgiContext = osgiContext;
@@ -52,7 +52,7 @@ public class CodeContext {
         this.acl = new Acl(resourceResolver);
         this.activator = new Activator(resourceResolver, osgiContext);
         this.formatter = new Formatter();
-        this.notifier = osgiContext.getService(NotifierManager.class);
+        this.notifier = osgiContext.getService(NotificationManager.class);
         this.binding = createBinding();
 
         this.extensionScripts = findExtensionScripts();
@@ -143,7 +143,7 @@ public class CodeContext {
         return formatter;
     }
 
-    public NotifierManager getNotifier() {
+    public NotificationManager getNotifier() {
         return notifier;
     }
 }

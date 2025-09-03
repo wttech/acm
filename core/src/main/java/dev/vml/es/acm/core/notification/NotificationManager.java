@@ -18,9 +18,8 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 
-// TODO add configurable auto-notifications tied with executor
-@Component(service = NotifierManager.class, immediate = true)
-public class NotifierManager {
+@Component(service = NotificationManager.class, immediate = true)
+public class NotificationManager {
 
     @Reference(
             cardinality = ReferenceCardinality.MULTIPLE,
@@ -50,7 +49,7 @@ public class NotifierManager {
 
     public void sendMessage(String title, String text, Map<String, Object> fields) {
         if (!hasAnyDefaultNotifier()) {
-            throw new NotifierException(
+            throw new NotificationException(
                     String.format("Notifier '%s' (Slack or Teams) is not configured!", NotifierFactory.ID_DEFAULT));
         }
         findSlackDefault()
@@ -81,7 +80,7 @@ public class NotifierManager {
 
     public void sendTeamsMessage(String title, String text, Map<String, Object> fields) {
         Teams teamsDefault = findTeamsDefault()
-                .orElseThrow(() -> new NotifierException(
+                .orElseThrow(() -> new NotificationException(
                         String.format("Teams notifier '%s' is not configured!", NotifierFactory.ID_DEFAULT)));
         teamsDefault.sendPayload(buildTeamsMessage(title, text, fields).build());
     }
@@ -96,7 +95,7 @@ public class NotifierManager {
 
     public Teams getTeamsById(String id) {
         return findTeamsById(id)
-                .orElseThrow(() -> new NotifierException(String.format("Teams notifier '%s' not found!", id)));
+                .orElseThrow(() -> new NotificationException(String.format("Teams notifier '%s' not found!", id)));
     }
 
     public Optional<Teams> findTeamsDefault() {
@@ -107,7 +106,7 @@ public class NotifierManager {
 
     public Teams getTeamsDefault() {
         return findTeamsDefault()
-                .orElseThrow(() -> new NotifierException(
+                .orElseThrow(() -> new NotificationException(
                         String.format("Teams notifier '%s' is not configured!", NotifierFactory.ID_DEFAULT)));
     }
 
@@ -145,7 +144,7 @@ public class NotifierManager {
 
     public void sendSlackMessage(String title, String text, Map<String, Object> fields) {
         Slack slackDefault = findSlackDefault()
-                .orElseThrow(() -> new NotifierException(
+                .orElseThrow(() -> new NotificationException(
                         String.format("Slack notifier '%s' is not configured!", NotifierFactory.ID_DEFAULT)));
         slackDefault.sendPayload(buildSlackMessage(title, text, fields).build());
     }
@@ -160,7 +159,7 @@ public class NotifierManager {
 
     public Slack getSlackById(String id) {
         return findSlackById(id)
-                .orElseThrow(() -> new NotifierException(String.format("Slack notifier with ID '%s' not found!", id)));
+                .orElseThrow(() -> new NotificationException(String.format("Slack notifier with ID '%s' not found!", id)));
     }
 
     public Optional<Slack> findSlackDefault() {
@@ -170,7 +169,7 @@ public class NotifierManager {
     }
 
     public Slack getSlackDefault() {
-        return findSlackDefault().orElseThrow(() -> new NotifierException("Slack default notifier is not configured!"));
+        return findSlackDefault().orElseThrow(() -> new NotificationException("Slack default notifier is not configured!"));
     }
 
     public SlackPayload.Builder buildSlackMessage(String title, String text, Map<String, Object> fields) {

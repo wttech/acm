@@ -4,7 +4,7 @@ import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.script.ContentScript;
 import dev.vml.es.acm.core.instance.InstanceSettings;
-import dev.vml.es.acm.core.notification.NotifierManager;
+import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.util.ResolverUtils;
@@ -70,7 +70,7 @@ public class Executor {
     private OsgiContext osgiContext;
 
     @Reference
-    private NotifierManager notifierManager;
+    private NotificationManager notifierManager;
 
     private Config config;
 
