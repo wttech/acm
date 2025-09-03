@@ -197,21 +197,16 @@ public class Executor {
 
         InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
         InstanceSettings instanceSettings = new InstanceSettings(instanceInfo);
-
-        String executableName = StringUtils.removeStart(executableId, AcmConstants.SETTINGS_ROOT + "/");
-        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-        String statusName = execution.getStatus().name().toLowerCase();
         String statusIcon = execution.getStatus() == ExecutionStatus.SUCCEEDED
                 ? "✅"
                 : (execution.getStatus() == ExecutionStatus.FAILED ? "❌" : "⚠️");
         String instanceRoleName = instanceSettings.getRole().name().toLowerCase();
-
-        String title = statusIcon + " AEM Content Manager";
-        String text = String.format("Execution of '%s' completed with status '%s'", executableName, statusName);
+        String title = statusIcon + " " + AcmConstants.NAME;
+        String text = String.format("Execution completed: %s", executableId);
 
         Map<String, Object> fields = new LinkedHashMap<>();
-        fields.put("Status", statusName);
-        fields.put("Execution Time", timestamp);
+        fields.put("Status", execution.getStatus().name().toLowerCase());
+        fields.put("Time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         fields.put("Duration", execution.getDuration() + "ms");
         fields.put("Instance", instanceSettings.getId() + " (" + instanceRoleName + ")");
 
