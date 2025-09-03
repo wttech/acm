@@ -4,6 +4,7 @@ import dev.vml.es.acm.core.acl.Acl;
 import dev.vml.es.acm.core.code.script.ExtensionScript;
 import dev.vml.es.acm.core.format.Formatter;
 import dev.vml.es.acm.core.mock.MockContext;
+import dev.vml.es.acm.core.notification.NotifierManager;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.replication.Activator;
 import dev.vml.es.acm.core.repo.Repo;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CodeContext {
@@ -28,11 +30,31 @@ public class CodeContext {
 
     private final Locker locker;
 
+    private final Logger log;
+
+    private final Repo repo;
+
+    private final Acl acl;
+
+    private final Activator activator;
+
+    private final Formatter formatter;
+
+    private final NotifierManager notifier;
+
     public CodeContext(OsgiContext osgiContext, ResourceResolver resourceResolver) {
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
+        
+        this.log = LoggerFactory.getLogger(getClass());
         this.locker = new Locker(resourceResolver);
+        this.repo = new Repo(resourceResolver);
+        this.acl = new Acl(resourceResolver);
+        this.activator = new Activator(resourceResolver, osgiContext);
+        this.formatter = new Formatter();
+        this.notifier = osgiContext.getService(NotifierManager.class);
         this.binding = createBinding();
+
         this.extensionScripts = findExtensionScripts();
     }
 
@@ -46,14 +68,15 @@ public class CodeContext {
     public Binding createBinding() {
         Binding result = new Binding();
 
-        result.setVariable("log", LoggerFactory.getLogger(getClass()));
+        result.setVariable("log", log);
         result.setVariable("resourceResolver", resourceResolver);
         result.setVariable("locker", locker);
         result.setVariable("osgi", osgiContext);
-        result.setVariable("repo", new Repo(resourceResolver));
-        result.setVariable("acl", new Acl(resourceResolver));
-        result.setVariable("formatter", new Formatter());
-        result.setVariable("activator", new Activator(resourceResolver, osgiContext.getReplicator()));
+        result.setVariable("repo", repo);
+        result.setVariable("acl", acl);
+        result.setVariable("formatter", formatter);
+        result.setVariable("activator", activator);
+        result.setVariable("notifier", notifier);
 
         return result;
     }
@@ -98,5 +121,29 @@ public class CodeContext {
 
     public Locker getLocker() {
         return locker;
+    }
+
+    public Repo getRepo() {
+        return repo;
+    }
+
+    public Acl getAcl() {
+        return acl;
+    }
+
+    public Logger getLog() {
+        return log;
+    }
+
+    public Activator getActivator() {
+        return activator;
+    }
+
+    public Formatter getFormatter() {
+        return formatter;
+    }
+
+    public NotifierManager getNotifier() {
+        return notifier;
     }
 }

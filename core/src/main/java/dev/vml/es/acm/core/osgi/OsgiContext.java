@@ -1,6 +1,5 @@
 package dev.vml.es.acm.core.osgi;
 
-import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.code.ExecutionQueue;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,10 +39,6 @@ public class OsgiContext {
 
     public <T> T getService(Class<T> clazz) {
         return findService(clazz).orElseThrow(() -> new IllegalStateException("Service not found: " + clazz.getName()));
-    }
-
-    public Replicator getReplicator() {
-        return getService(Replicator.class);
     }
 
     public OsgiScanner getOsgiScanner() {

@@ -4,6 +4,7 @@ import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -20,6 +21,10 @@ public class Activator {
     private final Session session;
 
     private final com.day.cq.replication.Replicator replicator;
+
+    public Activator(ResourceResolver resolver, OsgiContext osgiContext) {
+        this(resolver, osgiContext.getService(Replicator.class));
+    }
 
     public Activator(ResourceResolver resolver, Replicator replicator) {
         this.resolver = resolver;

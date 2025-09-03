@@ -1,19 +1,15 @@
 package dev.vml.es.acm.core.notification;
 
-import dev.vml.es.acm.core.notification.teams.TeamsException;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-    public abstract class NotifierFactory<N extends Notifier<?>> {
+public abstract class NotifierFactory<N extends Notifier<?>> {
 
     public static final String ID_DEFAULT = "default";
 
@@ -21,26 +17,28 @@ import org.slf4j.LoggerFactory;
 
     private static final String PID_DEFAULT = "default";
 
-    private final Map<String, N> factored = new ConcurrentHashMap<>();
+    private String configPid;
+    
+    private N notifier;
 
-    protected void addFactored(Map<String, Object> props, Supplier<N> supplier) {
-        String pid = getConfigPid(props);
+    protected void create(Map<String, Object> props, Supplier<N> supplier) {
+        this.configPid = getConfigPid(props);
         try {
-            factored.put(pid, supplier.get());
+            this.notifier = supplier.get();
         } catch (Exception e) {
-            LOG.error("Cannot create notifier for PID '{}'!", pid, e);
+            LOG.error("Cannot create notifier for PID '{}'!", configPid, e);
         }
     }
 
-    protected void removeFactored(Map<String, Object> props) {
-        String pid = getConfigPid(props);
-        N removed = factored.remove(pid);
-        if (removed != null) {
+    protected void destroy(Map<String, Object> props) {
+        if (this.notifier != null) {
             try {
-                removed.close();
+                this.notifier.close();
             } catch (IOException e) {
-                LOG.error("Cannot clean up notifier for PID '{}'!", pid, e);
+                LOG.error("Cannot clean up notifier for PID '{}'!", configPid, e);
             }
+            this.notifier = null;
+            this.configPid = null;
         }
     }
 
@@ -49,26 +47,7 @@ import org.slf4j.LoggerFactory;
         return StringUtils.substringAfter(pid, "~");
     }
 
-    public Collection<N> getFactored() {
-        return Collections.unmodifiableCollection(factored.values());
-    }
-
-    public Optional<N> findById(String id) {
-        return factored.values().stream()
-                .filter(s -> s.getId().equals(id))
-                .findFirst();
-    }
-
-    public Optional<N> findDefault() {
-        return findById(ID_DEFAULT);
-    }
-
-    public N getById(String id) {
-        return findById(id).orElseThrow(() -> new TeamsException(String.format(
-                        "Cannot find notifier with id '%s'! Ensure that it is configured properly.", id)));
-    }
-
-    public N getDefault() {
-        return getById(ID_DEFAULT);
+    public N getNotifier() {
+        return Optional.ofNullable(notifier).orElseThrow(() -> new NotifierException("Notifier not created properly!"));
     }
 }

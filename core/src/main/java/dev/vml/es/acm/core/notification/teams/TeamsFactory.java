@@ -1,12 +1,14 @@
 package dev.vml.es.acm.core.notification.teams;
 
 import dev.vml.es.acm.core.notification.NotifierFactory;
+
 import java.util.Map;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
@@ -17,12 +19,12 @@ public class TeamsFactory extends NotifierFactory<Teams> {
     @Activate
     @Modified
     public void factory(Map<String, Object> props, Config config) {
-        addFactored(props, () -> new Teams(config.id(), config.webhookUrl(), config.enabled(), config.timeoutMillis()));
+        create(props, () -> new Teams(config.id(), config.webhookUrl(), config.enabled(), config.timeoutMillis()));
     }
 
     @Deactivate
     public void destroy(Map<String, Object> props) {
-        removeFactored(props);
+        destroy(props);
     }
 
     @ObjectClassDefinition(name = "AEM Content Manager - Teams Factory")
@@ -31,7 +33,7 @@ public class TeamsFactory extends NotifierFactory<Teams> {
         @AttributeDefinition(name = "ID", description = "Unique identifier for this configuration")
         String id() default NotifierFactory.ID_DEFAULT;
 
-        @AttributeDefinition(name = "Webhook URL", description = "Determines target Teams channel and authentication")
+        @AttributeDefinition(name = "Webhook URL", type = AttributeType.PASSWORD, description = "Determines target Teams channel and authentication")
         String webhookUrl();
 
         @AttributeDefinition(name = "Enabled")
