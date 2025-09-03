@@ -94,7 +94,7 @@ public class InstanceInfo {
         return slingSettings.getRunModes();
     }
 
-    public InstanceSettings getInstanceSettings() {
+    public InstanceSettings getSettings() {
         return new InstanceSettings(this);
     }
 

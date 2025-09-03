@@ -29,15 +29,15 @@ void sendNotifications(Execution execution) {
         def status = execution.status.name()
         def scriptId = execution.executable.id
         def statusIcon = status == 'SUCCESS' ? '✅' : (status == 'FAILED' ? '❌' : '⚠️')
-        def environment = "${System.getProperty('sling.run.modes', 'unknown') ?: "<unknown>"}" // TODO fixme
+        def instanceSettings = conditions.instanceInfo().settings
     
         def title = "${statusIcon} ACM Automatic Script Execution"
         def text = "Script '${scriptId}' executed automatically with status '${status}'"
         def fields = [
             "Status": status,
             "Execution Time": timestamp,
-            "Duration": "${execution.duration ?: 'N/A'}ms",
-            "Environment": environment
+            "Duration": "${execution.duration ?: 'N/A'}ms".toString(),
+            "Instance": "${instanceSettings.id} (${instanceSettings.role})".toString(),
         ]
         
         notifier.sendMessage(title, text, fields)

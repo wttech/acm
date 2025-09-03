@@ -175,35 +175,35 @@ public class Conditions {
     }
 
     public boolean isInstanceRunMode(String runMode) {
-        return getInstanceInfo().isRunMode(runMode);
-    }
-
-    private InstanceInfo getInstanceInfo() {
-        return executionContext.getCodeContext().getOsgiContext().getInstanceInfo();
+        return instanceInfo().isRunMode(runMode);
     }
 
     public boolean isInstanceAuthor() {
-        return getInstanceInfo().isAuthor();
+        return instanceInfo().isAuthor();
     }
 
     public boolean isInstancePublish() {
-        return getInstanceInfo().isPublish();
+        return instanceInfo().isPublish();
     }
 
     public boolean isInstanceOnPrem() {
-        return getInstanceInfo().getType() == InstanceType.ON_PREM;
+        return instanceInfo().getType() == InstanceType.ON_PREM;
     }
 
     public boolean isInstanceCloud() {
-        return getInstanceInfo().getType().isCloud();
+        return instanceInfo().getType().isCloud();
     }
 
     public boolean isInstanceCloudContainer() {
-        return getInstanceInfo().getType() == InstanceType.CLOUD_CONTAINER;
+        return instanceInfo().getType() == InstanceType.CLOUD_CONTAINER;
     }
 
     public boolean isInstanceCloudSdk() {
-        return getInstanceInfo().getType() == InstanceType.CLOUD_SDK;
+        return instanceInfo().getType() == InstanceType.CLOUD_SDK;
+    }
+
+    public InstanceInfo instanceInfo() {
+        return executionContext.getCodeContext().getOsgiContext().getInstanceInfo();
     }
 
     // Executable-based

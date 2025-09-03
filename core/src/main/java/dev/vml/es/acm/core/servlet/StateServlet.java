@@ -61,7 +61,7 @@ public class StateServlet extends SlingAllMethodsServlet {
             MockStatus mockStatus = mockHttpFilter.checkStatus();
             List<ExecutionSummary> queuedExecutions =
                     executionQueue.findAllSummaries().collect(Collectors.toList());
-            State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getInstanceSettings());
+            State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getSettings());
 
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {
