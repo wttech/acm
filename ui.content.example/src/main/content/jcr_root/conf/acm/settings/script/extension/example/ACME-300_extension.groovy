@@ -1,9 +1,6 @@
 import dev.vml.es.acm.core.code.ExecutionContext
 import dev.vml.es.acm.core.code.Execution
-import dev.vml.es.acm.core.notification.slack.SlackFactory
-import dev.vml.es.acm.core.notification.slack.SlackPayload
-import dev.vml.es.acm.core.notification.teams.TeamsFactory
-import dev.vml.es.acm.core.notification.teams.TeamsPayload
+import dev.vml.es.acm.core.notification.NotifierManager
 import java.text.SimpleDateFormat
 
 void prepareRun(ExecutionContext context) {
@@ -24,45 +21,24 @@ void completeRun(Execution execution) {
 
 void sendNotifications(Execution execution) {
     try {
-        def timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+        def timestamp = acme.now()
         def status = execution.status.name()
         def scriptId = execution.executable.id
         def statusIcon = status == 'SUCCESS' ? '✅' : (status == 'FAILED' ? '❌' : '⚠️')
-        def environment = System.getProperty('sling.run.modes', 'unknown') // TODO fixme
+        def environment = "${System.getProperty('sling.run.modes', 'unknown') ?: "<unknown>"}" // TODO fixme
     
-        def slack = osgi.getService(SlackFactory.class).findDefault().orElse(null)
-        if (slack && slack.enabled) {
-            def slackPayload = SlackPayload.builder()
-                .text("ACM Script Execution ${status}")
-                .header("${statusIcon} ACM Automatic Script Execution")
-                .sectionMarkdown("*Script:* `${scriptId}`")
-                .divider()
-                .fieldsMarkdown(
-                    "*Status:* ${status}",
-                    "*Execution Time:* ${timestamp}",
-                    "*Duration:* ${execution.duration ?: 'N/A'}ms",
-                    "*Environment:* ${environment}"
-                )
-                .build()
-            slack.sendPayload(slackPayload)
-            log.info "Sent Slack notification for script '${scriptId}' with status ${status}"
-        }
-        def teams = osgi.getService(TeamsFactory.class).findDefault().orElse(null)
-        if (teams && teams.enabled) {
-            def teamsPayload = TeamsPayload.builder()
-                .title("${statusIcon} ACM Automatic Script Execution")
-                .textBlock("Script **${scriptId}** executed automatically")
-                .facts(
-                    "Status", status,
-                    "Execution Time", timestamp,
-                    "Duration", "${execution.duration ?: 'N/A'}ms",
-                    "Environment", environment
-                )
-                .build()
-            teams.sendPayload(teamsPayload)
-            log.info "Sent Teams notification for script '${scriptId}' with status ${status}"
-        }
+        def title = "${statusIcon} ACM Automatic Script Execution"
+        def text = "Script '${scriptId}' executed automatically with status '${status}'"
+        def fields = [
+            "Status": status,
+            "Execution Time": timestamp,
+            "Duration": "${execution.duration ?: 'N/A'}ms",
+            "Environment": environment
+        ]
+        
+        notifier.sendMessage(title, text, fields)
+        log.info "Sent notification for script '${scriptId}' with status ${status}"
     } catch (Exception e) {
-        log.error "Cannot send notifications for script '${scriptId}': ${e.message}", e
+        log.error "Cannot send notifications for script '${execution.executable.id}': ${e.message}", e
     }
 }

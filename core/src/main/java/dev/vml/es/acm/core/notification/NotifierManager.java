@@ -168,6 +168,9 @@ public class NotifierManager {
         if (StringUtils.isNotBlank(title)) {
             payload.header(title);
         }
+        if (StringUtils.isNotBlank(title) && StringUtils.isNotBlank(text)) {
+            payload.divider();
+        }
         if (StringUtils.isNotBlank(text)) {
             payload.sectionMarkdown(text);
         }
