@@ -21,4 +21,8 @@ public final class StringUtil {
                 .reduce((a, b) -> a + " " + b)
                 .orElse(text);
     }
+
+    public static String toStringOrEmpty(Object obj) {
+        return obj == null ? "" : String.valueOf(obj);
+    }
 }

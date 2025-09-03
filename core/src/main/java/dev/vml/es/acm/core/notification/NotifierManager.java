@@ -47,7 +47,7 @@ public class NotifierManager {
         sendMessage(title, text, Collections.emptyMap());
     }
 
-    public void sendMessage(String title, String text, Map<String, String> fields) {
+    public void sendMessage(String title, String text, Map<String, Object> fields) {
         if (!hasAnyDefaultNotifier()) {
             throw new NotifierException(
                     String.format("Notifier '%s' (Slack or Teams) is not configured!", NotifierFactory.ID_DEFAULT));
@@ -74,7 +74,7 @@ public class NotifierManager {
         sendMessage(title, text, Collections.emptyMap());
     }
 
-    public void sendTeamsMessage(String title, String text, Map<String, String> fields) {
+    public void sendTeamsMessage(String title, String text, Map<String, Object> fields) {
         Teams teamsDefault = findTeamsDefault()
                 .orElseThrow(() -> new NotifierException(
                         String.format("Teams notifier '%s' is not configured!", NotifierFactory.ID_DEFAULT)));
@@ -106,7 +106,7 @@ public class NotifierManager {
                         String.format("Teams notifier '%s' is not configured!", NotifierFactory.ID_DEFAULT)));
     }
 
-    public TeamsPayload.Builder buildTeamsMessage(String title, String text, Map<String, String> fields) {
+    public TeamsPayload.Builder buildTeamsMessage(String title, String text, Map<String, Object> fields) {
         TeamsPayload.Builder payload = buildTeamsPayload();
         if (StringUtils.isNotBlank(title)) {
             payload.title(title);
@@ -138,7 +138,7 @@ public class NotifierManager {
         sendMessage(title, text, Collections.emptyMap());
     }
 
-    public void sendSlackMessage(String title, String text, Map<String, String> fields) {
+    public void sendSlackMessage(String title, String text, Map<String, Object> fields) {
         Slack slackDefault = findSlackDefault()
                 .orElseThrow(() -> new NotifierException(
                         String.format("Slack notifier '%s' is not configured!", NotifierFactory.ID_DEFAULT)));
@@ -168,7 +168,7 @@ public class NotifierManager {
         return findSlackDefault().orElseThrow(() -> new NotifierException("Slack default notifier is not configured!"));
     }
 
-    public SlackPayload.Builder buildSlackMessage(String title, String text, Map<String, String> fields) {
+    public SlackPayload.Builder buildSlackMessage(String title, String text, Map<String, Object> fields) {
         SlackPayload.Builder payload = buildSlackPayload();
         if (StringUtils.isNotBlank(title)) {
             payload.header(title);

@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import dev.vml.es.acm.core.util.StringUtil;
 
 /**
  * Minimal JSON-level Slack Incoming Webhook payload.
@@ -77,11 +78,11 @@ public final class SlackPayload implements Serializable {
             return fieldsMarkdown((Collection<String>) mdFields);
         }
 
-        public Builder fieldsMarkdown(Map<String, String> fields) {
+        public Builder fieldsMarkdown(Map<String, Object> fields) {
             List<String> fieldTexts = new ArrayList<>();
-            for (Map.Entry<String, String> entry : fields.entrySet()) {
-                String key = StringUtils.defaultString(entry.getKey());
-                String value = StringUtils.defaultString(entry.getValue());
+            for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                String key = StringUtil.toStringOrEmpty(entry.getKey());
+                String value = StringUtil.toStringOrEmpty(entry.getValue());
                 fieldTexts.add("*" + key + "*\n" + value);
             }
             return fieldsMarkdown(fieldTexts);

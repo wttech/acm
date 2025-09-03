@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.*;
 import org.apache.commons.lang3.StringUtils;
+import dev.vml.es.acm.core.util.StringUtil;
 
 /**
  * Microsoft Teams Incoming Webhook payload using modern Adaptive Cards format.
@@ -81,12 +82,12 @@ public final class TeamsPayload implements Serializable {
             return facts((Collection<String>) keyValuePairs);
         }
 
-        public Builder facts(Map<String, String> fields) {
+        public Builder facts(Map<String, Object> fields) {
             if (fields != null && !fields.isEmpty()) {
                 List<String> factPairs = new ArrayList<>();
-                for (Map.Entry<String, String> entry : fields.entrySet()) {
-                    String key = StringUtils.defaultString(entry.getKey());
-                    String value = StringUtils.defaultString(entry.getValue());
+                for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                    String key = StringUtil.toStringOrEmpty(entry.getKey());
+                    String value = StringUtil.toStringOrEmpty(entry.getValue());
                     factPairs.add(key);
                     factPairs.add(value);
                 }
