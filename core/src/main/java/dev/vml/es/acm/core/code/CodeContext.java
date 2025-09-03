@@ -45,7 +45,7 @@ public class CodeContext {
     public CodeContext(OsgiContext osgiContext, ResourceResolver resourceResolver) {
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
-        
+
         this.log = LoggerFactory.getLogger(getClass());
         this.locker = new Locker(resourceResolver);
         this.repo = new Repo(resourceResolver);

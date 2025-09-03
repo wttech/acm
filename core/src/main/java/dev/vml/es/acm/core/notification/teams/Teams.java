@@ -38,7 +38,8 @@ public class Teams implements Notifier<TeamsPayload> {
                 .setConnectionRequestTimeout(timeoutMillis)
                 .setSocketTimeout(timeoutMillis)
                 .build();
-        this.httpClient = HttpClients.custom().setDefaultRequestConfig(httpRequestConfig).build();
+        this.httpClient =
+                HttpClients.custom().setDefaultRequestConfig(httpRequestConfig).build();
     }
 
     @Override

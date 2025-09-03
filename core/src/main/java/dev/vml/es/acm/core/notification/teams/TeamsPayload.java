@@ -2,13 +2,13 @@ package dev.vml.es.acm.core.notification.teams;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.lang3.StringUtils;
 import java.io.Serializable;
 import java.util.*;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Microsoft Teams Incoming Webhook payload using modern Adaptive Cards format.
- * 
+ *
  * @see <a href="https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook">Teams Webhooks</a>
  * @see <a href="https://adaptivecards.io/explorer/">Adaptive Cards Explorer</a>
  */
@@ -79,6 +79,20 @@ public final class TeamsPayload implements Serializable {
 
         public Builder facts(List<String> keyValuePairs) {
             return facts((Collection<String>) keyValuePairs);
+        }
+
+        public Builder facts(Map<String, String> fields) {
+            if (fields != null && !fields.isEmpty()) {
+                List<String> factPairs = new ArrayList<>();
+                for (Map.Entry<String, String> entry : fields.entrySet()) {
+                    String key = StringUtils.defaultString(entry.getKey());
+                    String value = StringUtils.defaultString(entry.getValue());
+                    factPairs.add(key);
+                    factPairs.add(value);
+                }
+                return facts(factPairs);
+            }
+            return this;
         }
 
         public Builder openUrlAction(String title, String url) {

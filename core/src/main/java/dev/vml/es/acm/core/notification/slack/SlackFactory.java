@@ -35,7 +35,10 @@ public class SlackFactory extends NotifierFactory<Slack> {
         @AttributeDefinition(name = "Enabled")
         boolean enabled() default true;
 
-        @AttributeDefinition(name = "Webhook URL", type = AttributeType.PASSWORD, description = "Determines target Slack channel and authentication")
+        @AttributeDefinition(
+                name = "Webhook URL",
+                type = AttributeType.PASSWORD,
+                description = "Determines target Slack channel and authentication")
         String webhookUrl();
 
         @AttributeDefinition(name = "Timeout Millis", description = "HTTP connection and read timeout in milliseconds")

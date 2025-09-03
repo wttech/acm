@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.notification.teams;
 
 import dev.vml.es.acm.core.notification.NotifierFactory;
-
 import java.util.Map;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -33,7 +32,10 @@ public class TeamsFactory extends NotifierFactory<Teams> {
         @AttributeDefinition(name = "ID", description = "Unique identifier for this configuration")
         String id() default NotifierFactory.ID_DEFAULT;
 
-        @AttributeDefinition(name = "Webhook URL", type = AttributeType.PASSWORD, description = "Determines target Teams channel and authentication")
+        @AttributeDefinition(
+                name = "Webhook URL",
+                type = AttributeType.PASSWORD,
+                description = "Determines target Teams channel and authentication")
         String webhookUrl();
 
         @AttributeDefinition(name = "Enabled")

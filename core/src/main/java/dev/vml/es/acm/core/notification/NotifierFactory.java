@@ -18,7 +18,7 @@ public abstract class NotifierFactory<N extends Notifier<?>> {
     private static final String PID_DEFAULT = "default";
 
     private String configPid;
-    
+
     private N notifier;
 
     protected void create(Map<String, Object> props, Supplier<N> supplier) {

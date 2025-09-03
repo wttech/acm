@@ -2,10 +2,10 @@ package dev.vml.es.acm.core.notification.slack;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.apache.commons.lang3.StringUtils;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Minimal JSON-level Slack Incoming Webhook payload.
@@ -73,8 +73,23 @@ public final class SlackPayload implements Serializable {
             return fieldsMarkdown(Arrays.asList(mdFields));
         }
 
+        public Builder fieldsMarkdown(List<String> mdFields) {
+            return fieldsMarkdown((Collection<String>) mdFields);
+        }
+
+        public Builder fieldsMarkdown(Map<String, String> fields) {
+            List<String> fieldTexts = new ArrayList<>();
+            for (Map.Entry<String, String> entry : fields.entrySet()) {
+                String key = StringUtils.defaultString(entry.getKey());
+                String value = StringUtils.defaultString(entry.getValue());
+                fieldTexts.add("*" + key + "*\n" + value);
+            }
+            return fieldsMarkdown(fieldTexts);
+        }
+
         public Builder fieldsMarkdown(Collection<String> mdFields) {
-            List<String> safeFields = mdFields.stream().map(StringUtils::defaultString).collect(Collectors.toList());
+            List<String> safeFields =
+                    mdFields.stream().map(StringUtils::defaultString).collect(Collectors.toList());
             return add(Block.fieldsSectionMarkdown(safeFields));
         }
 
