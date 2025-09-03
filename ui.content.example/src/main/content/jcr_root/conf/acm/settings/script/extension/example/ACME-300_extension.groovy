@@ -20,6 +20,10 @@ void completeRun(Execution execution) {
 }
 
 void sendNotifications(Execution execution) {
+    if (!notifier.isConfigured()) {
+        log.debug "Skipped notifications for script '${execution.executable.id}' - notifier not configured!"
+        return
+    }
     try {
         def timestamp = acme.now()
         def status = execution.status.name()
