@@ -2,10 +2,10 @@ package dev.vml.es.acm.core.notification.teams;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import dev.vml.es.acm.core.util.StringUtil;
 import java.io.Serializable;
 import java.util.*;
 import org.apache.commons.lang3.StringUtils;
-import dev.vml.es.acm.core.util.StringUtil;
 
 /**
  * Microsoft Teams Incoming Webhook payload using modern Adaptive Cards format.

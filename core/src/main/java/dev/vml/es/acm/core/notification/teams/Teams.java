@@ -3,7 +3,6 @@ package dev.vml.es.acm.core.notification.teams;
 import dev.vml.es.acm.core.notification.Notifier;
 import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.config.RequestConfig;
@@ -80,11 +79,12 @@ public class Teams implements Notifier<TeamsPayload> {
         try (CloseableHttpResponse response = httpClient.execute(post)) {
             int status = response.getStatusLine().getStatusCode();
             if (ArrayUtils.contains(STATUS_CODE_ACCEPTED, status)) {
-                LOG.info("Teams notifier '{}' sent payload to webhook with success (status={})", id, status);
+                LOG.debug("Teams notifier '{}' sent payload to webhook with success (status={})", id, status);
             } else {
                 String body = response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : "<empty>";
                 String statusLine = response.getStatusLine().toString();
-                throw new TeamsException(String.format("Teams webhook error for notifier '%s' (%s): %s", id, statusLine, body));
+                throw new TeamsException(
+                        String.format("Teams webhook error for notifier '%s' (%s): %s", id, statusLine, body));
             }
         } catch (Exception e) {
             throw new TeamsException(String.format("Cannot send Teams payload for notifier '%s'!", id), e);

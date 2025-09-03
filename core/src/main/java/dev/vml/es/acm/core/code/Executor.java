@@ -3,11 +3,19 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.script.ContentScript;
+import dev.vml.es.acm.core.instance.InstanceSettings;
+import dev.vml.es.acm.core.notification.NotifierManager;
+import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.util.ResolverUtils;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -45,6 +53,14 @@ public class Executor {
                 name = "Log Printing Names",
                 description = "Additional loggers to print logs from (class names or package names)")
         String[] logPrintingNames() default {CodeLoggerPrinter.NAME_ACL, CodeLoggerPrinter.NAME_REPO};
+
+        @AttributeDefinition(name = "Notification Enabled", description = "Enables notifications for executions.")
+        boolean notificationEnabled() default true;
+
+        @AttributeDefinition(
+                name = "Notification Executable IDs",
+                description = "Allow to control which executables should be notified about. Wildcards are supported.")
+        String[] notificationExecutableIds() default {"/conf/acm/script/automatic/*"};
     }
 
     @Reference
@@ -52,6 +68,9 @@ public class Executor {
 
     @Reference
     private OsgiContext osgiContext;
+
+    @Reference
+    private NotifierManager notifierManager;
 
     private Config config;
 
@@ -88,11 +107,8 @@ public class Executor {
         context.getCodeContext().prepareRun(context);
         ImmediateExecution execution = executeImmediately(context);
         if (context.getMode() == ExecutionMode.RUN) {
-            if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-                ExecutionHistory history =
-                        new ExecutionHistory(context.getCodeContext().getResourceResolver());
-                history.save(context, execution);
-            }
+            handleHistory(context, execution);
+            handleNotifications(context, execution);
             context.getCodeContext().completeRun(execution);
         }
         return execution;
@@ -160,6 +176,46 @@ public class Executor {
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {
         return Optional.ofNullable(statuses.get(executionId));
+    }
+
+    private void handleHistory(ExecutionContext context, ImmediateExecution execution) {
+        if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
+            ExecutionHistory history =
+                    new ExecutionHistory(context.getCodeContext().getResourceResolver());
+            history.save(context, execution);
+        }
+    }
+
+    private void handleNotifications(ExecutionContext context, ImmediateExecution execution) {
+        String executableId = execution.getExecutable().getId();
+        if (!config.notificationEnabled()
+                || !notifierManager.isConfigured()
+                || !Arrays.stream(config.notificationExecutableIds())
+                        .anyMatch(id -> FilenameUtils.wildcardMatch(executableId, id))) {
+            return;
+        }
+
+        InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
+        InstanceSettings instanceSettings = new InstanceSettings(instanceInfo);
+
+        String executableName = StringUtils.removeStart(executableId, AcmConstants.SETTINGS_ROOT + "/");
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String statusName = execution.getStatus().name().toLowerCase();
+        String statusIcon = execution.getStatus() == ExecutionStatus.SUCCEEDED
+                ? "✅"
+                : (execution.getStatus() == ExecutionStatus.FAILED ? "❌" : "⚠️");
+        String instanceRoleName = instanceSettings.getRole().name().toLowerCase();
+
+        String title = statusIcon + " AEM Content Manager";
+        String text = String.format("Execution of '%s' completed with status '%s'", executableName, statusName);
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("Status", statusName);
+        fields.put("Execution Time", timestamp);
+        fields.put("Duration", execution.getDuration() + "ms");
+        fields.put("Instance", instanceSettings.getId() + " (" + instanceRoleName + ")");
+
+        notifierManager.sendMessage(title, text, fields);
     }
 
     public Description describe(ExecutionContext context) {

@@ -53,8 +53,12 @@ public class NotifierManager {
             throw new NotifierException(
                     String.format("Notifier '%s' (Slack or Teams) is not configured!", NotifierFactory.ID_DEFAULT));
         }
-        findSlackDefault().ifPresent(slack ->  slack.sendPayload(buildSlackMessage(title, text, fields).build()));
-        findTeamsDefault().ifPresent(teams ->teams.sendPayload(buildTeamsMessage(title, text, fields).build()));
+        findSlackDefault()
+                .ifPresent(slack ->
+                        slack.sendPayload(buildSlackMessage(title, text, fields).build()));
+        findTeamsDefault()
+                .ifPresent(teams ->
+                        teams.sendPayload(buildTeamsMessage(title, text, fields).build()));
     }
 
     private boolean hasAnyDefaultNotifier() {

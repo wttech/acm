@@ -2,11 +2,11 @@ package dev.vml.es.acm.core.notification.slack;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import dev.vml.es.acm.core.util.StringUtil;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import dev.vml.es.acm.core.util.StringUtil;
 
 /**
  * Minimal JSON-level Slack Incoming Webhook payload.
