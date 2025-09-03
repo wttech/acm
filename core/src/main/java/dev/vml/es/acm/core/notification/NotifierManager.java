@@ -18,6 +18,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 
+// TODO add configurable auto-notifications tied with executor
 @Component(service = NotifierManager.class, immediate = true)
 public class NotifierManager {
 
