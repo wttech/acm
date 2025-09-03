@@ -1,6 +1,9 @@
 package dev.vml.es.acm.core.notification;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
@@ -66,7 +69,7 @@ public class NotifierManager {
 
     public Teams getTeamsDefault() {
         return findTeamsDefault()
-            .orElseThrow(() -> new NotifierException("Teams default notifier or any enabled notifier not available!"));
+            .orElseThrow(() -> new NotifierException("Teams default notifier is not configured!"));
     }
 
     // ===[ Slack ]===
@@ -101,6 +104,62 @@ public class NotifierManager {
     }
 
     public Slack getSlackDefault() {
-        return findSlackDefault().orElseThrow(() -> new NotifierException("Slack default notifier or any enabled notifier not available!"));
+        return findSlackDefault().orElseThrow(() -> new NotifierException("Slack default notifier is not configured!"));
+    }
+
+    // === [ Generic methods ] ===
+
+    public void sendMessage(String title, String text, Map<String, String> fields) {
+        Optional<Slack> slackDefault = findSlackDefault();
+        Optional<Teams> teamsDefault = findTeamsDefault();
+        if (!slackDefault.isPresent() && !teamsDefault.isPresent()) {
+            throw new NotifierException("Notifier (Slack or Teams) is not configured!");
+        }
+        if (slackDefault.isPresent()) {
+            slackDefault.get().sendPayload(buildSlackMessage(title, text, fields));
+        }
+        
+        if (teamsDefault.isPresent()) {
+            teamsDefault.get().sendPayload(buildTeamsMessage(title, text, fields));
+        }
+    }
+
+    private SlackPayload buildSlackMessage(String title, String text, Map<String, String> fields) {
+        SlackPayload.Builder slackBuilder = newSlackPayload();
+        
+        slackBuilder.header(StringUtils.defaultIfBlank(title, "<title>"));
+        slackBuilder.sectionMarkdown(StringUtils.defaultIfBlank(text, "<text>"));
+        
+        if (fields != null && !fields.isEmpty()) {
+            List<String> fieldTexts = new ArrayList<>();
+            for (Map.Entry<String, String> entry : fields.entrySet()) {
+                String key = StringUtils.defaultString(entry.getKey());
+                String value = StringUtils.defaultString(entry.getValue());
+                fieldTexts.add("*" + key + "*\n" + value);
+            }
+            slackBuilder.fieldsMarkdown(fieldTexts.toArray(new String[0]));
+        }
+        
+        return slackBuilder.build();
+    }
+
+    private TeamsPayload buildTeamsMessage(String title, String text, Map<String, String> fields) {
+        TeamsPayload.Builder teamsBuilder = newTeamsPayload();
+        
+        teamsBuilder.title(StringUtils.defaultIfBlank(title, "<title>"));
+        teamsBuilder.text(StringUtils.defaultIfBlank(text, "<text>"));
+        
+        if (fields != null && !fields.isEmpty()) {
+            List<String> factPairs = new ArrayList<>();
+            for (Map.Entry<String, String> entry : fields.entrySet()) {
+                String key = StringUtils.defaultString(entry.getKey());
+                String value = StringUtils.defaultString(entry.getValue());
+                factPairs.add(key);
+                factPairs.add(value);
+            }
+            teamsBuilder.facts(factPairs.toArray(new String[0]));
+        }
+        
+        return teamsBuilder.build();
     }
 }

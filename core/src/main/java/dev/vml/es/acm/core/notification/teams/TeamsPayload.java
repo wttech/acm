@@ -62,14 +62,23 @@ public final class TeamsPayload implements Serializable {
         }
 
         public Builder facts(String... keyValuePairs) {
-            if (keyValuePairs != null && keyValuePairs.length >= 2) {
+            return facts(Arrays.asList(keyValuePairs));
+        }
+
+        public Builder facts(Collection<String> keyValuePairs) {
+            if (keyValuePairs != null && keyValuePairs.size() >= 2) {
+                List<String> list = new ArrayList<>(keyValuePairs);
                 List<Fact> facts = new ArrayList<>();
-                for (int i = 0; i < keyValuePairs.length - 1; i += 2) {
-                    facts.add(Fact.create(keyValuePairs[i], keyValuePairs[i + 1]));
+                for (int i = 0; i < list.size() - 1; i += 2) {
+                    facts.add(Fact.create(list.get(i), list.get(i + 1)));
                 }
                 body.add(FactSet.create(facts));
             }
             return this;
+        }
+
+        public Builder facts(List<String> keyValuePairs) {
+            return facts((Collection<String>) keyValuePairs);
         }
 
         public Builder openUrlAction(String title, String url) {

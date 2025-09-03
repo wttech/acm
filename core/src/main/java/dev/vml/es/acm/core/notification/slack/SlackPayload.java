@@ -70,7 +70,11 @@ public final class SlackPayload implements Serializable {
         }
 
         public Builder fieldsMarkdown(String... mdFields) {
-            List<String> safeFields = Arrays.stream(mdFields).map(StringUtils::defaultString).collect(Collectors.toList());
+            return fieldsMarkdown(Arrays.asList(mdFields));
+        }
+
+        public Builder fieldsMarkdown(Collection<String> mdFields) {
+            List<String> safeFields = mdFields.stream().map(StringUtils::defaultString).collect(Collectors.toList());
             return add(Block.fieldsSectionMarkdown(safeFields));
         }
 
