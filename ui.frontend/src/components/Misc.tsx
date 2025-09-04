@@ -94,12 +94,12 @@ const Misc = () => {
                     <Settings />
                     <Text>Configure</Text>
                   </Button>
-                  <Menu onAction={(pid) => window.open(instanceOsgiServiceConfigUrl(pid as InstanceOsgiServicePid), '_blank', 'noopener')}>
+                  <Menu onAction={(pid: InstanceOsgiServicePid) => window.open(instanceOsgiServiceConfigUrl(pid), '_blank', 'noopener')}>
                     <Item key={InstanceOsgiServicePid.NOTIFICATION_MANAGER}>
                       <Bell />
                       <Text>Manager</Text>
                     </Item>
-                    <Item key={InstanceOsgiServicePid.NOTIFiCATION_SLACK_FACTORY}>
+                    <Item key={InstanceOsgiServicePid.NOTIFICATION_SLACK_FACTORY}>
                       <Chat />
                       <Text>Slack Notifier(s)</Text>
                     </Item>

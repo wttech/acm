@@ -364,7 +364,7 @@ export enum InstanceOsgiServicePid {
   INSTANCE_INFO = 'dev.vml.es.acm.core.osgi.InstanceInfo',
 
   NOTIFICATION_MANAGER = "dev.vml.es.acm.core.notification.NotificationManager",
-  NOTIFiCATION_SLACK_FACTORY = "dev.vml.es.acm.core.notification.slack.SlackFactory",
+  NOTIFICATION_SLACK_FACTORY = "dev.vml.es.acm.core.notification.slack.SlackFactory",
   NOTIFICATION_TEAMS_FACTORY = "dev.vml.es.acm.core.notification.teams.TeamsFactory"
 }
 
