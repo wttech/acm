@@ -73,12 +73,12 @@ public class Executor {
         @AttributeDefinition(
                 name = "Notification Title",
                 description = "Template variables: context, execution, statusIcon, statusHere")
-        String notificationTitle() default "${statusIcon} AEM Content Manager";
+        String notificationTitle() default "${statusIcon} ACM Code Execution";
 
         @AttributeDefinition(
                 name = "Notification Text",
                 description = "Template variables: context, execution, statusIcon, statusHere")
-        String notificationText() default "Execution completed: ${execution.executable.id} ${statusHere}";
+        String notificationText() default "Completed: ${execution.executable.id} ${statusHere}";
     }
 
     @Reference
@@ -208,8 +208,7 @@ public class Executor {
         String executableId = execution.getExecutable().getId();
         if (!config.notificationEnabled()
                 || !notifier.isConfigured()
-                || !Arrays.stream(config.notificationExecutableIds())
-                        .anyMatch(regex -> Pattern.matches(regex, executableId))) {
+                || Arrays.stream(config.notificationExecutableIds()).noneMatch(regex -> Pattern.matches(regex, executableId))) {
             return;
         }
 
