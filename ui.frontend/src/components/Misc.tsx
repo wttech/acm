@@ -90,18 +90,22 @@ const Misc = () => {
             <Cell>
               <ButtonGroup>
                 <MenuTrigger>
-                  <Button variant="secondary" isDisabled={isCloud} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.INSTANCE_INFO), '_blank', 'noopener')}>
+                  <Button variant="secondary" isDisabled={isCloud}>
                     <Settings />
-                  <Text>Configure</Text>
+                    <Text>Configure</Text>
                   </Button>
-                  <Menu onAction={(pid) => window.open(instanceOsgiServiceConfigUrl(pid as InstanceOsgiServicePid), '_blank')}>
-                    <Item key={InstanceOsgiServicePid.NOTIFIER_FACTORY_SLACK}>
-                      <Chat />
-                      <Text>Slack Notifier</Text>
+                  <Menu onAction={(pid) => window.open(instanceOsgiServiceConfigUrl(pid as InstanceOsgiServicePid), '_blank', 'noopener')}>
+                    <Item key={InstanceOsgiServicePid.NOTIFICATION_MANAGER}>
+                      <Bell />
+                      <Text>Manager</Text>
                     </Item>
-                    <Item key={InstanceOsgiServicePid.NOTIFIER_FACTORY_TEAMS}>
+                    <Item key={InstanceOsgiServicePid.NOTIFiCATION_SLACK_FACTORY}>
+                      <Chat />
+                      <Text>Slack Notifier(s)</Text>
+                    </Item>
+                    <Item key={InstanceOsgiServicePid.NOTIFICATION_TEAMS_FACTORY}>
                       <UserGroup />
-                      <Text>Teams Notifier</Text>
+                      <Text>Teams Notifier(s)</Text>
                     </Item>
                   </Menu>
                 </MenuTrigger>

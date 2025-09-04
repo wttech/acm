@@ -17,13 +17,13 @@ public class TeamsFactory extends NotifierFactory<Teams> {
 
     @Activate
     @Modified
-    public void factory(Map<String, Object> props, Config config) {
+    public void activate(Map<String, Object> props, Config config) {
         create(props, () -> new Teams(config.id(), config.webhookUrl(), config.enabled(), config.timeoutMillis()));
     }
 
     @Deactivate
-    public void destroy(Map<String, Object> props) {
-        destroy(props);
+    public void deactivate(Map<String, Object> props) {
+        super.destroy(props);
     }
 
     @ObjectClassDefinition(name = "AEM Content Manager - Teams Factory")
