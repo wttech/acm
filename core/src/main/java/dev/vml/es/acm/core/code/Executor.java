@@ -208,7 +208,8 @@ public class Executor {
         String executableId = execution.getExecutable().getId();
         if (!config.notificationEnabled()
                 || !notifier.isConfigured()
-                || Arrays.stream(config.notificationExecutableIds()).noneMatch(regex -> Pattern.matches(regex, executableId))) {
+                || Arrays.stream(config.notificationExecutableIds())
+                        .noneMatch(regex -> Pattern.matches(regex, executableId))) {
             return;
         }
 
@@ -234,7 +235,11 @@ public class Executor {
         InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
         InstanceSettings instanceSettings = new InstanceSettings(instanceInfo);
         String instanceRoleName = instanceSettings.getRole().name().toLowerCase();
-        fields.put("Instance", instanceSettings.getId() + " (" + instanceRoleName + ")");
+        String instanceId = instanceSettings.getId();
+        String instanceDesc = instanceId.toLowerCase().contains(instanceRoleName)
+                ? instanceId
+                : instanceId + " (" + instanceRoleName + ")";
+        fields.put("Instance", instanceDesc);
 
         int detailsMaxLength = config.notificationDetailsLength();
         String output = StringUtils.defaultIfBlank(execution.getOutput(), "(empty)");
