@@ -66,11 +66,6 @@ public class Executor {
         String[] notificationExecutableIds() default {"/conf/acm/settings/script/automatic/.*"};
 
         @AttributeDefinition(
-                name = "Notification Details Length",
-                description = "Max length of the output and error. Use negative value to skip abbreviation.")
-        int notificationDetailsLength() default 256;
-
-        @AttributeDefinition(
                 name = "Notification Title",
                 description = "Template variables: context, execution, statusIcon, statusHere")
         String notificationTitle() default "${statusIcon} ACM Code Execution";
@@ -79,6 +74,11 @@ public class Executor {
                 name = "Notification Text",
                 description = "Template variables: context, execution, statusIcon, statusHere")
         String notificationText() default "Completed: ${execution.executable.id} ${statusHere}";
+
+        @AttributeDefinition(
+                name = "Notification Details Length",
+                description = "Max length of the output and error. Use negative value to skip abbreviation.")
+        int notificationDetailsLength() default 256;
     }
 
     @Reference
