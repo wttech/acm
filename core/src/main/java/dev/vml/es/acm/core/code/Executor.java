@@ -60,7 +60,7 @@ public class Executor {
         @AttributeDefinition(
                 name = "Notification Executable IDs",
                 description = "Allow to control with regular expressions which executables should be notified about.")
-        String[] notificationExecutableIds() default {"/conf/acm/script/automatic/.*"};
+        String[] notificationExecutableIds() default {"/conf/acm/settings/script/automatic/.*"};
     }
 
     @Reference

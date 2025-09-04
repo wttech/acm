@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.notification;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -9,7 +10,7 @@ import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class NotifierFactory<N extends Notifier<?>> {
+public abstract class NotifierFactory<N extends Notifier<? extends Serializable>> {
 
     public static final String ID_DEFAULT = "default";
 

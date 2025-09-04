@@ -23,7 +23,7 @@ public class TeamsFactory extends NotifierFactory<Teams> {
 
     @Deactivate
     public void deactivate(Map<String, Object> props) {
-        super.destroy(props);
+        destroy(props);
     }
 
     @ObjectClassDefinition(name = "AEM Content Manager - Teams Factory")
