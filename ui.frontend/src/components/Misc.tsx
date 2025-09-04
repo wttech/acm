@@ -1,4 +1,4 @@
-import { Button, Cell, Column, Flex, Row, TableBody, TableHeader, TableView, Text } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Cell, Column, Flex, Item, Menu, MenuTrigger, Row, TableBody, TableHeader, TableView, Text } from '@adobe/react-spectrum';
 import Settings from '@spectrum-icons/workflow/Settings';
 
 import Beaker from '@spectrum-icons/workflow/Beaker';
@@ -6,6 +6,9 @@ import FileCode from '@spectrum-icons/workflow/FileCode';
 import Filter from '@spectrum-icons/workflow/Filter';
 import History from '@spectrum-icons/workflow/History';
 import Info from '@spectrum-icons/workflow/Info';
+import Bell from '@spectrum-icons/workflow/Bell';
+import Chat from '@spectrum-icons/workflow/Chat';
+import UserGroup from '@spectrum-icons/workflow/UserGroup';
 import AppRefresh from '@spectrum-icons/workflow/AppRefresh';
 
 import { useAppState } from '../hooks/app';
@@ -75,6 +78,34 @@ const Misc = () => {
                 <Settings />
                 <Text>Configure</Text>
               </Button>
+            </Cell>
+          </Row>
+          <Row key="notifier">
+            <Cell>
+              <Flex gap="size-100">
+                <Bell size="S" />
+                <Text>Notification</Text>
+              </Flex>
+            </Cell>
+            <Cell>
+              <ButtonGroup>
+                <MenuTrigger>
+                  <Button variant="secondary" isDisabled={isCloud}>
+                    <Settings />
+                    <Text>Configure</Text>
+                  </Button>
+                  <Menu onAction={(pid) => window.open(instanceOsgiServiceConfigUrl(pid as InstanceOsgiServicePid), '_blank', 'noopener')}>
+                    <Item key={InstanceOsgiServicePid.NOTIFICATION_SLACK_FACTORY}>
+                      <Chat />
+                      <Text>Slack Notifier</Text>
+                    </Item>
+                    <Item key={InstanceOsgiServicePid.NOTIFICATION_TEAMS_FACTORY}>
+                      <UserGroup />
+                      <Text>Teams Notifier</Text>
+                    </Item>
+                  </Menu>
+                </MenuTrigger>
+              </ButtonGroup>
             </Cell>
           </Row>
           <Row key="mock-http-filter">

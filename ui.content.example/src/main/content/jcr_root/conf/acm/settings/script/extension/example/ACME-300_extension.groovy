@@ -8,7 +8,7 @@ void prepareRun(ExecutionContext context) {
 void completeRun(Execution execution) {
     if (execution.status.name() == 'FAILED') {
         log.error "Something nasty happened with '${execution.executable.id}'!"
-        // TODO send notification on Slack, MS Teams, etc using HTTP client / WebAPI
+        // TODO send notification using built-in 'notifier' for Slack and MS Teams or use custom HTTP client / WebAPI
     }
 }
 

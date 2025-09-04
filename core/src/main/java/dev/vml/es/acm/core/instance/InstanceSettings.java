@@ -5,6 +5,8 @@ import dev.vml.es.acm.core.osgi.InstanceRole;
 import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.util.DateUtils;
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.util.Set;
 
 public class InstanceSettings implements Serializable {
 
@@ -16,11 +18,14 @@ public class InstanceSettings implements Serializable {
 
     private final InstanceType type;
 
+    private final Set<String> runModes;
+
     public InstanceSettings(InstanceInfo instanceInfo) {
-        this.id = "default"; // TODO - replace with Sling ID
+        this.id = ManagementFactory.getRuntimeMXBean().getName();
         this.timezoneId = DateUtils.TIMEZONE_ID;
         this.role = instanceInfo.getRole();
         this.type = instanceInfo.getType();
+        this.runModes = instanceInfo.getRunModes();
     }
 
     public String getId() {
@@ -37,5 +42,9 @@ public class InstanceSettings implements Serializable {
 
     public InstanceType getType() {
         return type;
+    }
+
+    public Set<String> getRunModes() {
+        return runModes;
     }
 }

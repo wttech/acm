@@ -362,6 +362,9 @@ export enum InstanceOsgiServicePid {
   CODE_ASSISTANCER = 'dev.vml.es.acm.core.assist.Assistancer',
   MOCK_HTTP_FILTER = 'dev.vml.es.acm.core.mock.MockHttpFilter',
   INSTANCE_INFO = 'dev.vml.es.acm.core.osgi.InstanceInfo',
+
+  NOTIFICATION_SLACK_FACTORY = "dev.vml.es.acm.core.notification.slack.SlackFactory",
+  NOTIFICATION_TEAMS_FACTORY = "dev.vml.es.acm.core.notification.teams.TeamsFactory"
 }
 
 export function instanceOsgiServiceConfigUrl(pid: InstanceOsgiServicePid): string {

@@ -3,11 +3,20 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.script.ContentScript;
+import dev.vml.es.acm.core.format.TemplateFormatter;
+import dev.vml.es.acm.core.instance.InstanceSettings;
+import dev.vml.es.acm.core.notification.NotificationManager;
+import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.util.ResolverUtils;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -45,6 +54,31 @@ public class Executor {
                 name = "Log Printing Names",
                 description = "Additional loggers to print logs from (class names or package names)")
         String[] logPrintingNames() default {CodeLoggerPrinter.NAME_ACL, CodeLoggerPrinter.NAME_REPO};
+
+        @AttributeDefinition(
+                name = "Notification Enabled",
+                description = "Enables notifications for completed executions.")
+        boolean notificationEnabled() default true;
+
+        @AttributeDefinition(
+                name = "Notification Executable IDs",
+                description = "Allow to control with regular expressions which executables should be notified about.")
+        String[] notificationExecutableIds() default {"/conf/acm/settings/script/automatic/.*"};
+
+        @AttributeDefinition(
+                name = "Notification Title",
+                description = "Template variables: context, execution, statusIcon, statusHere")
+        String notificationTitle() default "${statusIcon} ACM Code Execution";
+
+        @AttributeDefinition(
+                name = "Notification Text",
+                description = "Template variables: context, execution, statusIcon, statusHere")
+        String notificationText() default "Completed: ${execution.executable.id} ${statusHere}";
+
+        @AttributeDefinition(
+                name = "Notification Details Length",
+                description = "Max length of the output and error. Use negative value to skip abbreviation.")
+        int notificationDetailsLength() default 256;
     }
 
     @Reference
@@ -52,6 +86,9 @@ public class Executor {
 
     @Reference
     private OsgiContext osgiContext;
+
+    @Reference
+    private NotificationManager notifier;
 
     private Config config;
 
@@ -88,11 +125,8 @@ public class Executor {
         context.getCodeContext().prepareRun(context);
         ImmediateExecution execution = executeImmediately(context);
         if (context.getMode() == ExecutionMode.RUN) {
-            if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-                ExecutionHistory history =
-                        new ExecutionHistory(context.getCodeContext().getResourceResolver());
-                history.save(context, execution);
-            }
+            handleHistory(context, execution);
+            handleNotifications(context, execution);
             context.getCodeContext().completeRun(execution);
         }
         return execution;
@@ -160,6 +194,60 @@ public class Executor {
 
     public Optional<ExecutionStatus> checkStatus(String executionId) {
         return Optional.ofNullable(statuses.get(executionId));
+    }
+
+    private void handleHistory(ExecutionContext context, ImmediateExecution execution) {
+        if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
+            ExecutionHistory history =
+                    new ExecutionHistory(context.getCodeContext().getResourceResolver());
+            history.save(context, execution);
+        }
+    }
+
+    private void handleNotifications(ExecutionContext context, ImmediateExecution execution) {
+        String executableId = execution.getExecutable().getId();
+        if (!config.notificationEnabled()
+                || !notifier.isConfigured()
+                || Arrays.stream(config.notificationExecutableIds())
+                        .noneMatch(regex -> Pattern.matches(regex, executableId))) {
+            return;
+        }
+
+        Map<String, Object> templateVars = new LinkedHashMap<>();
+        templateVars.put("context", context);
+        templateVars.put("execution", execution);
+        templateVars.put(
+                "statusIcon",
+                execution.getStatus() == ExecutionStatus.SUCCEEDED
+                        ? "✅"
+                        : (execution.getStatus() == ExecutionStatus.FAILED ? "❌" : "⚠️"));
+        templateVars.put("statusHere", execution.getStatus() == ExecutionStatus.SUCCEEDED ? "" : "@here");
+        TemplateFormatter templateFormatter =
+                context.getCodeContext().getFormatter().getTemplate();
+        String title = StringUtils.trim(templateFormatter.renderString(config.notificationTitle(), templateVars));
+        String text = StringUtils.trim(templateFormatter.renderString(config.notificationText(), templateVars));
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("Status", execution.getStatus().name().toLowerCase());
+        fields.put("Time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        fields.put("Duration", execution.getDuration() + "ms");
+
+        InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
+        InstanceSettings instanceSettings = new InstanceSettings(instanceInfo);
+        String instanceRoleName = instanceSettings.getRole().name().toLowerCase();
+        String instanceId = instanceSettings.getId();
+        String instanceDesc = instanceId.toLowerCase().contains(instanceRoleName)
+                ? instanceId
+                : instanceId + " (" + instanceRoleName + ")";
+        fields.put("Instance", instanceDesc);
+
+        int detailsMaxLength = config.notificationDetailsLength();
+        String output = StringUtils.defaultIfBlank(execution.getOutput(), "(empty)");
+        String error = StringUtils.defaultIfBlank(execution.getError(), "(empty)");
+        fields.put("Output", detailsMaxLength < 0 ? output : StringUtils.abbreviate(output, detailsMaxLength));
+        fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
+
+        notifier.sendMessage(title, text, fields);
     }
 
     public Description describe(ExecutionContext context) {

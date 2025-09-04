@@ -97,7 +97,10 @@ instance:
       skip: false
       pids:
         include: ['dev.vml.es.acm.core.*', 'com.day.crx.packaging.*', 'org.apache.sling.installer.*']
-        exclude: ['org.apache.sling.installer.hc.*', 'org.apache.sling.installer.core.impl.console.*']
+        exclude:
+          - 'org.apache.sling.installer.hc.*'
+          - 'org.apache.sling.installer.core.impl.console.*'
+          - 'dev.vml.es.acm.core.notification.*.*Factory'
         match:
           "disabled": []
           "no config": []
