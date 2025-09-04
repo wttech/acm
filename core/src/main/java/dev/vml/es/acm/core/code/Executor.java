@@ -54,13 +54,21 @@ public class Executor {
                 description = "Additional loggers to print logs from (class names or package names)")
         String[] logPrintingNames() default {CodeLoggerPrinter.NAME_ACL, CodeLoggerPrinter.NAME_REPO};
 
-        @AttributeDefinition(name = "Notification Enabled", description = "Enables notifications for completed executions.")
+        @AttributeDefinition(
+                name = "Notification Enabled",
+                description = "Enables notifications for completed executions.")
         boolean notificationEnabled() default true;
 
         @AttributeDefinition(
                 name = "Notification Executable IDs",
                 description = "Allow to control with regular expressions which executables should be notified about.")
         String[] notificationExecutableIds() default {"/conf/acm/settings/script/automatic/.*"};
+
+        @AttributeDefinition(
+                name = "Notification Details Length",
+                description =
+                        "Max length of the output and error in the notification. Use negative value to skip abbreviation.")
+        int notificationDetailsLength() default 256;
     }
 
     @Reference
@@ -195,12 +203,9 @@ public class Executor {
             return;
         }
 
-        InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
-        InstanceSettings instanceSettings = new InstanceSettings(instanceInfo);
         String statusIcon = execution.getStatus() == ExecutionStatus.SUCCEEDED
                 ? "✅"
                 : (execution.getStatus() == ExecutionStatus.FAILED ? "❌" : "⚠️");
-        String instanceRoleName = instanceSettings.getRole().name().toLowerCase();
         String title = statusIcon + " " + AcmConstants.NAME;
         String text = String.format("Execution completed: %s", executableId);
 
@@ -208,7 +213,17 @@ public class Executor {
         fields.put("Status", execution.getStatus().name().toLowerCase());
         fields.put("Time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         fields.put("Duration", execution.getDuration() + "ms");
+
+        InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
+        InstanceSettings instanceSettings = new InstanceSettings(instanceInfo);
+        String instanceRoleName = instanceSettings.getRole().name().toLowerCase();
         fields.put("Instance", instanceSettings.getId() + " (" + instanceRoleName + ")");
+
+        int detailsMaxLength = config.notificationDetailsLength();
+        String output = StringUtils.defaultIfBlank(execution.getOutput(), "(empty)");
+        String error = StringUtils.defaultIfBlank(execution.getError(), "(empty)");
+        fields.put("Output", detailsMaxLength < 0 ? output : StringUtils.abbreviate(output, detailsMaxLength));
+        fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
 
         notifierManager.sendMessage(title, text, fields);
     }

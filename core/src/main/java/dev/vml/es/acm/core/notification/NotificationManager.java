@@ -169,7 +169,9 @@ public class NotificationManager {
     }
 
     public Slack getSlackDefault() {
-        return findSlackDefault().orElseThrow(() -> new NotificationException(String.format("Slack notifier '%s' not configured!", NotifierFactory.ID_DEFAULT)));
+        return findSlackDefault()
+                .orElseThrow(() -> new NotificationException(
+                        String.format("Slack notifier '%s' not configured!", NotifierFactory.ID_DEFAULT)));
     }
 
     public SlackPayload.Builder buildSlackMessage(String title, String text, Map<String, Object> fields) {

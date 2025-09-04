@@ -49,6 +49,7 @@ public abstract class NotifierFactory<N extends Notifier<? extends Serializable>
     }
 
     public N getNotifier() {
-        return Optional.ofNullable(notifier).orElseThrow(() -> new NotificationException("Notifier not created properly!"));
+        return Optional.ofNullable(notifier)
+                .orElseThrow(() -> new NotificationException("Notifier not created properly!"));
     }
 }
