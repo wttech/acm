@@ -97,11 +97,11 @@ const Misc = () => {
                   <Menu onAction={(pid) => window.open(instanceOsgiServiceConfigUrl(pid as InstanceOsgiServicePid), '_blank', 'noopener')}>
                     <Item key={InstanceOsgiServicePid.NOTIFICATION_SLACK_FACTORY}>
                       <Chat />
-                      <Text>Slack Notifier(s)</Text>
+                      <Text>Slack Notifier</Text>
                     </Item>
                     <Item key={InstanceOsgiServicePid.NOTIFICATION_TEAMS_FACTORY}>
                       <UserGroup />
-                      <Text>Teams Notifier(s)</Text>
+                      <Text>Teams Notifier</Text>
                     </Item>
                   </Menu>
                 </MenuTrigger>
