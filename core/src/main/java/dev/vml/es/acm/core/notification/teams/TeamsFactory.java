@@ -42,6 +42,6 @@ public class TeamsFactory extends NotifierFactory<Teams> {
         boolean enabled() default true;
 
         @AttributeDefinition(name = "Timeout Millis", description = "HTTP connection and read timeout in milliseconds")
-        int timeoutMillis() default 5000;
+        int timeoutMillis() default 10000;
     }
 }

@@ -3,6 +3,7 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.script.ContentScript;
+import dev.vml.es.acm.core.format.TemplateFormatter;
 import dev.vml.es.acm.core.instance.InstanceSettings;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
@@ -66,9 +67,18 @@ public class Executor {
 
         @AttributeDefinition(
                 name = "Notification Details Length",
-                description =
-                        "Max length of the output and error in the notification. Use negative value to skip abbreviation.")
+                description = "Max length of the output and error. Use negative value to skip abbreviation.")
         int notificationDetailsLength() default 256;
+
+        @AttributeDefinition(
+                name = "Notification Title",
+                description = "Template variables: context, execution, statusIcon, statusHere")
+        String notificationTitle() default "${statusIcon} AEM Content Manager";
+
+        @AttributeDefinition(
+                name = "Notification Text",
+                description = "Template variables: context, execution, statusIcon, statusHere")
+        String notificationText() default "Execution completed: ${execution.executable.id} ${statusHere}";
     }
 
     @Reference
@@ -78,7 +88,7 @@ public class Executor {
     private OsgiContext osgiContext;
 
     @Reference
-    private NotificationManager notifierManager;
+    private NotificationManager notifier;
 
     private Config config;
 
@@ -197,17 +207,25 @@ public class Executor {
     private void handleNotifications(ExecutionContext context, ImmediateExecution execution) {
         String executableId = execution.getExecutable().getId();
         if (!config.notificationEnabled()
-                || !notifierManager.isConfigured()
+                || !notifier.isConfigured()
                 || !Arrays.stream(config.notificationExecutableIds())
                         .anyMatch(regex -> Pattern.matches(regex, executableId))) {
             return;
         }
 
-        String statusIcon = execution.getStatus() == ExecutionStatus.SUCCEEDED
-                ? "✅"
-                : (execution.getStatus() == ExecutionStatus.FAILED ? "❌" : "⚠️");
-        String title = statusIcon + " " + AcmConstants.NAME;
-        String text = String.format("Execution completed: %s", executableId);
+        Map<String, Object> templateVars = new LinkedHashMap<>();
+        templateVars.put("context", context);
+        templateVars.put("execution", execution);
+        templateVars.put(
+                "statusIcon",
+                execution.getStatus() == ExecutionStatus.SUCCEEDED
+                        ? "✅"
+                        : (execution.getStatus() == ExecutionStatus.FAILED ? "❌" : "⚠️"));
+        templateVars.put("statusHere", execution.getStatus() == ExecutionStatus.SUCCEEDED ? "" : "@here");
+        TemplateFormatter templateFormatter =
+                context.getCodeContext().getFormatter().getTemplate();
+        String title = StringUtils.trim(templateFormatter.renderString(config.notificationTitle(), templateVars));
+        String text = StringUtils.trim(templateFormatter.renderString(config.notificationText(), templateVars));
 
         Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("Status", execution.getStatus().name().toLowerCase());
@@ -225,7 +243,7 @@ public class Executor {
         fields.put("Output", detailsMaxLength < 0 ? output : StringUtils.abbreviate(output, detailsMaxLength));
         fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
 
-        notifierManager.sendMessage(title, text, fields);
+        notifier.sendMessage(title, text, fields);
     }
 
     public Description describe(ExecutionContext context) {
