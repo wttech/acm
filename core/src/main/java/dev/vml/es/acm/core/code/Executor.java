@@ -15,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.io.FilenameUtils;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -54,13 +54,13 @@ public class Executor {
                 description = "Additional loggers to print logs from (class names or package names)")
         String[] logPrintingNames() default {CodeLoggerPrinter.NAME_ACL, CodeLoggerPrinter.NAME_REPO};
 
-        @AttributeDefinition(name = "Notification Enabled", description = "Enables notifications for executions.")
+        @AttributeDefinition(name = "Notification Enabled", description = "Enables notifications for completed executions.")
         boolean notificationEnabled() default true;
 
         @AttributeDefinition(
                 name = "Notification Executable IDs",
-                description = "Allow to control which executables should be notified about. Wildcards are supported.")
-        String[] notificationExecutableIds() default {"/conf/acm/script/automatic/*"};
+                description = "Allow to control with regular expressions which executables should be notified about.")
+        String[] notificationExecutableIds() default {"/conf/acm/script/automatic/.*"};
     }
 
     @Reference
@@ -191,7 +191,7 @@ public class Executor {
         if (!config.notificationEnabled()
                 || !notifierManager.isConfigured()
                 || !Arrays.stream(config.notificationExecutableIds())
-                        .anyMatch(id -> FilenameUtils.wildcardMatch(executableId, id))) {
+                        .anyMatch(regex -> Pattern.matches(regex, executableId))) {
             return;
         }
 
