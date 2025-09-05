@@ -2,7 +2,12 @@ package dev.vml.es.acm.core.instance;
 
 import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.code.script.ExtensionScriptSyntax;
-import dev.vml.es.acm.core.osgi.*;
+import dev.vml.es.acm.core.osgi.InstanceInfo;
+import dev.vml.es.acm.core.osgi.InstanceType;
+import dev.vml.es.acm.core.osgi.OsgiEvent;
+import dev.vml.es.acm.core.osgi.OsgiEventCollector;
+import dev.vml.es.acm.core.osgi.OsgiScanner;
+import dev.vml.es.acm.core.osgi.OsgiUtils;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ExceptionUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
@@ -187,7 +192,9 @@ public class HealthChecker implements EventHandler {
                     result.issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL,
                             HealthIssueCategory.OSGI,
-                            String.format("Bundle fragment not resolved (state %d): '%s'", bundle.getState(), bundle.getSymbolicName()),
+                            String.format(
+                                    "Bundle fragment not resolved (%s): '%s'",
+                                    OsgiUtils.bundleStateName(bundle.getState()), bundle.getSymbolicName()),
                             null));
                 }
             } else {
@@ -195,7 +202,9 @@ public class HealthChecker implements EventHandler {
                     result.issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL,
                             HealthIssueCategory.OSGI,
-                            String.format("Bundle not active (state %d): '%s'", bundle.getState(), bundle.getSymbolicName()),
+                            String.format(
+                                    "Bundle not active (%s): '%s'",
+                                    OsgiUtils.bundleStateName(bundle.getState()), bundle.getSymbolicName()),
                             null));
                 }
             }
