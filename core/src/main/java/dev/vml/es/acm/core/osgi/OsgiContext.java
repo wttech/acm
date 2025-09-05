@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -12,15 +13,12 @@ import org.osgi.service.component.annotations.Modified;
 @Component(immediate = true, service = OsgiContext.class)
 public class OsgiContext {
 
-    private BundleContext bundleContext;
-
     private LocalDateTime modified;
 
     @Activate
     @Modified
-    protected void activate(BundleContext bundleContext) {
+    protected void activate() {
         this.modified = LocalDateTime.now();
-        this.bundleContext = bundleContext;
     }
 
     public LocalDateTime getModified() {
@@ -28,13 +26,13 @@ public class OsgiContext {
     }
 
     public BundleContext getBundleContext() {
-        return bundleContext;
+        return FrameworkUtil.getBundle(getClass()).getBundleContext();
     }
 
     public <T> Optional<T> findService(Class<T> clazz) {
         return Optional.ofNullable(clazz)
-                .map(c -> bundleContext.getServiceReference(clazz))
-                .map(sf -> bundleContext.getService(sf));
+                .map(c -> getBundleContext().getServiceReference(clazz))
+                .map(sf -> getBundleContext().getService(sf));
     }
 
     public <T> T getService(Class<T> clazz) {

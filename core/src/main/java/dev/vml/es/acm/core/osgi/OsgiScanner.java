@@ -11,8 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,15 +24,12 @@ public class OsgiScanner {
 
     private static final String BUNDLE_WIRING_PACKAGE = "osgi.wiring.package";
 
-    private BundleContext bundleContext;
-
-    @Activate
-    protected void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
+    private BundleContext getBundleContext() {
+        return FrameworkUtil.getBundle(getClass()).getBundleContext();
     }
 
     public Stream<Bundle> scanBundles() {
-        return Arrays.stream(bundleContext.getBundles());
+        return Arrays.stream(getBundleContext().getBundles());
     }
 
     public Stream<ClassInfo> scanExportedClasses() {
@@ -41,7 +38,7 @@ public class OsgiScanner {
 
     public int computeBundlesHashCode() {
         HashCodeBuilder builder = new HashCodeBuilder();
-        Arrays.stream(bundleContext.getBundles())
+        Arrays.stream(getBundleContext().getBundles())
                 .filter(this::isBundleOrFragmentReady)
                 .forEach(bundle -> {
                     builder.append(bundle.getSymbolicName());
@@ -60,7 +57,7 @@ public class OsgiScanner {
     }
 
     public Bundle getSystemBundle() {
-        return bundleContext.getBundle(0);
+        return getBundleContext().getBundle(0);
     }
 
     public Stream<String> getSystemExportedPackages() {
