@@ -24,7 +24,7 @@ public class OsgiScanner {
 
     private static final String BUNDLE_WIRING_PACKAGE = "osgi.wiring.package";
 
-    private BundleContext getBundleContext() {
+    public BundleContext getBundleContext() {
         return FrameworkUtil.getBundle(getClass()).getBundleContext();
     }
 
