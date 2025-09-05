@@ -8,7 +8,7 @@ public final class OsgiUtils {
         // Utility class
     }
 
-    public static String getStateName(int state) {
+    public static String bundleStateName(int state) {
         switch (state) {
             case Bundle.UNINSTALLED:
                 return "uninstalled";
