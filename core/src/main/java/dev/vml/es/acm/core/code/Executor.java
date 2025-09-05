@@ -9,6 +9,7 @@ import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.util.ResolverUtils;
+import dev.vml.es.acm.core.util.StringUtil;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -244,7 +245,7 @@ public class Executor {
         int detailsMaxLength = config.notificationDetailsLength();
         String output = StringUtils.defaultIfBlank(execution.getOutput(), "(empty)");
         String error = StringUtils.defaultIfBlank(execution.getError(), "(empty)");
-        fields.put("Output", detailsMaxLength < 0 ? output : StringUtils.abbreviate(output, detailsMaxLength));
+        fields.put("Output", detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength));
         fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
 
         notifier.sendMessage(title, text, fields);

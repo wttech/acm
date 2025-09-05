@@ -25,4 +25,21 @@ public final class StringUtil {
     public static String toStringOrEmpty(Object obj) {
         return obj == null ? "" : String.valueOf(obj);
     }
+
+    public static String abbreviateStart(String str, int maxLength) {
+        return abbreviateStart(str, maxLength, "...");
+    }
+
+    public static String abbreviateStart(String str, int maxLength, String prefix) {
+        if (str == null || maxLength < 0) {
+            return str;
+        }
+        if (str.length() <= maxLength) {
+            return str;
+        }
+        if (maxLength <= prefix.length()) {
+            return prefix.substring(0, maxLength);
+        }
+        return prefix + StringUtils.right(str, maxLength - prefix.length());
+    }
 }
