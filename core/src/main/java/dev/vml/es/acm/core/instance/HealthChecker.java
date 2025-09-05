@@ -162,17 +162,32 @@ public class HealthChecker implements EventHandler {
         }
     }
 
+    /**
+     * @see <https://github.com/apache/felix-dev/blob/master/framework/src/main/java/org/apache/felix/framework/BundleContextImpl.java> 'checkValidity()' method
+     */
     private void checkBundles(HealthStatus result) {
         if (!config.bundleChecking()) {
             return;
         }
+
+        try {
+            osgiScanner.getBundleContext().getBundle();
+        } catch (Exception e) {
+            result.issues.add(new HealthIssue(
+                    HealthIssueSeverity.CRITICAL,
+                    HealthIssueCategory.OSGI,
+                    "Bundle context not valid",
+                    ExceptionUtils.toString(e)));
+            return;
+        }
+
         osgiScanner.scanBundles().filter(b -> !isBundleIgnored(b)).forEach(bundle -> {
             if (osgiScanner.isFragment(bundle)) {
                 if (!osgiScanner.isBundleResolved(bundle)) {
                     result.issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL,
                             HealthIssueCategory.OSGI,
-                            String.format("Bundle fragment not resolved: '%s'", bundle.getSymbolicName()),
+                            String.format("Bundle fragment not resolved (state %d): '%s'", bundle.getState(), bundle.getSymbolicName()),
                             null));
                 }
             } else {
@@ -180,7 +195,7 @@ public class HealthChecker implements EventHandler {
                     result.issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL,
                             HealthIssueCategory.OSGI,
-                            String.format("Bundle not active: '%s'", bundle.getSymbolicName()),
+                            String.format("Bundle not active (state %d): '%s'", bundle.getState(), bundle.getSymbolicName()),
                             null));
                 }
             }
