@@ -61,7 +61,7 @@ public class CodePrintStream extends PrintStream {
                         LocalDateTime eventTime = LocalDateTime.ofInstant(
                                 Instant.ofEpochMilli(event.getTimeStamp()), ZoneId.systemDefault());
                         String timestamp = eventTime.format(LOGGER_TIMESTAMP_FORMATTER);
-                        println('[' + timestamp + ']' + '[' + level + "] " + event.getFormattedMessage());
+                        println(timestamp + " [" + level + "] " + event.getFormattedMessage());
                     } else {
                         println('[' + level + "] " + event.getFormattedMessage());
                     }

@@ -15,11 +15,11 @@ export function registerLogLanguage(instance: Monaco) {
   instance.languages.setMonarchTokensProvider(LOG_LANGUAGE_ID, {
     tokenizer: {
       root: [
-        [/^(\[\d{2}:\d{2}:\d{2}\.\d{3}\])?\[ERROR\].*$/, 'log-error'],
-        [/^(\[\d{2}:\d{2}:\d{2}\.\d{3}\])?\[WARN\].*$/, 'log-warn'],
-        [/^(\[\d{2}:\d{2}:\d{2}\.\d{3}\])?\[INFO\].*$/, 'log-info'],
-        [/^(\[\d{2}:\d{2}:\d{2}\.\d{3}\])?\[DEBUG\].*$/, 'log-debug'],
-        [/^(\[\d{2}:\d{2}:\d{2}\.\d{3}\])?\[TRACE\].*$/, 'log-trace'],
+        [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[ERROR\].*$/, 'log-error'],
+        [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[WARN\].*$/, 'log-warn'],
+        [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[INFO\].*$/, 'log-info'],
+        [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[DEBUG\].*$/, 'log-debug'],
+        [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[TRACE\].*$/, 'log-trace'],
       ],
     },
   });
