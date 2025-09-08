@@ -57,6 +57,10 @@ public class CodePrintStream extends PrintStream {
         loggerNames.forEach(this::fromLogger);
     }
 
+    public void withTimestamps(boolean timestamps) {
+        loggerPrinter.withTimestamps(timestamps);
+    }
+
     @Override
     public void close() {
         loggerPrinter.disable();

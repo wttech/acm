@@ -57,6 +57,11 @@ public class Executor {
         String[] logPrintingNames() default {CodeLoggerPrinter.NAME_ACL, CodeLoggerPrinter.NAME_REPO};
 
         @AttributeDefinition(
+                name = "Log Printing Timestamps",
+                description = "Prints timestamps in the execution output.")
+        boolean logPrintingTimestamps() default true;
+
+        @AttributeDefinition(
                 name = "Notification Enabled",
                 description = "Enables notifications for completed executions.")
         boolean notificationEnabled() default true;
@@ -170,6 +175,7 @@ public class Executor {
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
                     context.getOut().fromLoggers(config.logPrintingNames());
+                    context.getOut().withTimestamps(config.logPrintingTimestamps());
                 }
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);

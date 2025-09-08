@@ -7,6 +7,8 @@ import ch.qos.logback.core.AppenderBase;
 import dev.vml.es.acm.core.AcmException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -17,14 +19,20 @@ public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {
     public static final String NAME_REPO = "dev.vml.es.acm.core.repo";
     public static final String[] NAMES = {NAME_ACL, NAME_REPO};
 
+    // have to match pattern in 'monaco/log.ts'
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+
     private final LoggerContext loggerContext;
     private final Set<String> loggerNames;
     private final PrintStream printStream;
+
+    private boolean timestamps;
 
     public CodeLoggerPrinter(LoggerContext loggerContext, OutputStream outputStream) {
         this.loggerContext = loggerContext;
         this.loggerNames = new HashSet<>();
         this.printStream = new PrintStream(outputStream);
+        this.timestamps = true;
     }
 
     public void fromLogger(String name) {
@@ -64,9 +72,18 @@ public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {
         for (String loggerPrefix : loggerNames) {
             if (StringUtils.startsWith(loggerName, loggerPrefix)) {
                 String level = event.getLevel().toString();
-                printStream.println('[' + level + "] " + event.getFormattedMessage());
+                if (timestamps) {
+                    String now = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
+                    printStream.println( '[' + now + ']' + '[' + level + "] " + event.getFormattedMessage());
+                } else {
+                    printStream.println('[' + level + "] " + event.getFormattedMessage());
+                }
                 break;
             }
         }
+    }
+
+    public void withTimestamps(boolean timestamps) {
+        this.timestamps = timestamps;
     }
 }
