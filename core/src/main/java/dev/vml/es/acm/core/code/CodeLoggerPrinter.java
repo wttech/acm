@@ -7,7 +7,9 @@ import ch.qos.logback.core.AppenderBase;
 import dev.vml.es.acm.core.AcmException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
@@ -73,8 +75,10 @@ public class CodeLoggerPrinter extends AppenderBase<ILoggingEvent> {
             if (StringUtils.startsWith(loggerName, loggerPrefix)) {
                 String level = event.getLevel().toString();
                 if (timestamps) {
-                    String now = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
-                    printStream.println( '[' + now + ']' + '[' + level + "] " + event.getFormattedMessage());
+                    LocalDateTime eventTime =
+                            LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimeStamp()), ZoneId.systemDefault());
+                    String timestamp = eventTime.format(TIMESTAMP_FORMATTER);
+                    printStream.println('[' + timestamp + ']' + '[' + level + "] " + event.getFormattedMessage());
                 } else {
                     printStream.println('[' + level + "] " + event.getFormattedMessage());
                 }
