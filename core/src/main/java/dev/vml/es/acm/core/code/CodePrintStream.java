@@ -2,9 +2,19 @@ package dev.vml.es.acm.core.code;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.AppenderBase;
+import dev.vml.es.acm.core.AcmException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -13,17 +23,101 @@ import org.slf4j.LoggerFactory;
  */
 public class CodePrintStream extends PrintStream {
 
+    public static final String LOGGER_NAME_ACL = "dev.vml.es.acm.core.acl";
+    public static final String LOGGER_NAME_REPO = "dev.vml.es.acm.core.repo";
+    public static final String[] LOGGER_NAMES = {LOGGER_NAME_ACL, LOGGER_NAME_REPO};
+
+    // have to match pattern in 'monaco/log.ts'
+    private static final DateTimeFormatter LOGGER_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+
     private final Logger logger;
 
-    private final CodeLoggerPrinter loggerPrinter;
+    private final LoggerContext loggerContext;
+
+    private final Set<String> loggerNames;
+
+    private boolean loggerTimestamps;
+
+    private final LogAppender logAppender;
 
     public CodePrintStream(OutputStream output, String id) {
         super(output);
 
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-
-        this.loggerPrinter = new CodeLoggerPrinter(loggerContext, output);
+        this.loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        this.loggerNames = new HashSet<>();
+        this.loggerTimestamps = true;
         this.logger = loggerContext.getLogger(id);
+        this.logAppender = new LogAppender();
+    }
+
+    private class LogAppender extends AppenderBase<ILoggingEvent> {
+        @Override
+        protected void append(ILoggingEvent event) {
+            String loggerName = event.getLoggerName();
+            for (String loggerPrefix : loggerNames) {
+                if (StringUtils.startsWith(loggerName, loggerPrefix)) {
+                    String level = event.getLevel().toString();
+                    if (loggerTimestamps) {
+                        LocalDateTime eventTime = LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(event.getTimeStamp()), ZoneId.systemDefault());
+                        String timestamp = eventTime.format(LOGGER_TIMESTAMP_FORMATTER);
+                        println('[' + timestamp + ']' + '[' + level + "] " + event.getFormattedMessage());
+                    } else {
+                        println('[' + level + "] " + event.getFormattedMessage());
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    public void fromLogger(String loggerName) {
+        if (StringUtils.isBlank(loggerName)) {
+            throw new AcmException("Logger name cannot be blank!");
+        }
+        enableAppender();
+        loggerNames.add(loggerName);
+    }
+
+    @Override
+    public void close() {
+        disableAppender();
+        super.close();
+    }
+
+    private void enableAppender() {
+        if (logAppender.isStarted()) {
+            return;
+        }
+        Logger rootLogger = getRootLogger();
+        rootLogger.addAppender(logAppender);
+        logAppender.setContext(loggerContext);
+        logAppender.start();
+    }
+
+    private void disableAppender() {
+        if (!logAppender.isStarted()) {
+            return;
+        }
+        logAppender.stop();
+        Logger rootLogger = getRootLogger();
+        rootLogger.detachAppender(logAppender);
+    }
+
+    private Logger getRootLogger() {
+        return loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
+    }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public boolean isLoggerTimestamps() {
+        return loggerTimestamps;
+    }
+
+    public void withLoggerTimestamps(boolean flag) {
+        this.loggerTimestamps = flag;
     }
 
     public void fromLogs() {
@@ -40,11 +134,7 @@ public class CodePrintStream extends PrintStream {
     }
 
     public void fromRecommendedLoggers() {
-        fromLoggers(CodeLoggerPrinter.NAMES);
-    }
-
-    public void fromLogger(String loggerName) {
-        loggerPrinter.fromLogger(loggerName);
+        fromLoggers(LOGGER_NAMES);
     }
 
     public void fromLoggers(String... loggerNames) {
@@ -55,19 +145,5 @@ public class CodePrintStream extends PrintStream {
 
     public void fromLoggers(List<String> loggerNames) {
         loggerNames.forEach(this::fromLogger);
-    }
-
-    public void withTimestamps(boolean timestamps) {
-        loggerPrinter.withTimestamps(timestamps);
-    }
-
-    @Override
-    public void close() {
-        loggerPrinter.disable();
-        super.close();
-    }
-
-    protected Logger getLogger() {
-        return logger;
     }
 }
