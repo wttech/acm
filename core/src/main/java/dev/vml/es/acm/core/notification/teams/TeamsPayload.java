@@ -43,17 +43,16 @@ public final class TeamsPayload implements Serializable {
         private final List<Action> actions = new ArrayList<>();
 
         public Builder message(String title, String text, Map<String, Object> fields) {
-            Builder payload = new Builder();
             if (StringUtils.isNotBlank(title)) {
-                payload.title(title);
+                this.title(title);
             }
             if (StringUtils.isNotBlank(text)) {
-                payload.text(text);
+                this.text(text);
             }
             if (fields != null && !fields.isEmpty()) {
-                payload.facts(fields);
+                this.facts(fields);
             }
-            return payload;
+            return this;
         }
 
         public Builder text(String text) {
