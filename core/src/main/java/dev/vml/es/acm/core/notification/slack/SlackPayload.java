@@ -45,20 +45,19 @@ public final class SlackPayload implements Serializable {
         private final List<Block> blocks = new ArrayList<>();
 
         public Builder message(String title, String text, Map<String, Object> fields) {
-            Builder payload = new Builder();
             if (StringUtils.isNotBlank(title)) {
-                payload.header(title);
+                this.header(title);
             }
             if (StringUtils.isNotBlank(title) && StringUtils.isNotBlank(text)) {
-                payload.divider();
+                this.divider();
             }
             if (StringUtils.isNotBlank(text)) {
-                payload.sectionMarkdown(text);
+                this.sectionMarkdown(text);
             }
             if (fields != null && !fields.isEmpty()) {
-                payload.fieldsMarkdown(fields);
+                this.fieldsMarkdown(fields);
             }
-            return payload;
+            return this;
         }
 
         public Builder text(String text) {
