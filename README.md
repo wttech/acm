@@ -423,8 +423,9 @@ id="acm"
 webhookUrl="https://hooks.slack.com/services/XXXXXXXXX/YYYYYYYYYYY/ZZZZZZZZZZZZZZZZZZZZZZZZ"
 timeoutMillis=I"5000"
 ```
+To customize notifications triggered by the [executor service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Executor.java#L32), use its OSGi configuration. This allows you to control which script executions should trigger notifications and which should be excluded, providing fine-grained management over notification behavior.
 
-You can define multiple notifiers with different IDs to target various channels or teams. In your Groovy scripts or project-specific OSGi bundles, use the `notifier` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/notification/NotificationManager.java) to send messages to a specific notifier or the default one:
+The notification service is a general-purpose feature that can be used for any kind of messaging, not just notifications related to ACM code execution. You can also define multiple notifiers with different IDs to target various channels or teams. In your Groovy scripts or project-specific OSGi bundles, use the `notifier` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/notification/NotificationManager.java) to send messages to a specific notifier or the default one:
 
 ```groovy
 notifier.sendMessageTo("acme", "ACME Project Notifications", "An important event occurred.")
