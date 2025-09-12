@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.notification.teams;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.notification.NotifierFactory;
 import java.util.Map;
 import org.osgi.service.component.annotations.Activate;
@@ -29,8 +30,11 @@ public class TeamsFactory extends NotifierFactory<Teams> {
     @ObjectClassDefinition(name = "AEM Content Manager - Teams Factory")
     public @interface Config {
 
-        @AttributeDefinition(name = "ID", description = "Unique identifier for this configuration")
-        String id() default NotifierFactory.ID_DEFAULT;
+        @AttributeDefinition(
+                name = "ID",
+                description = "Unique notifier ID. Typical values: '" + AcmConstants.NOTIFIER_ID + "', '"
+                        + NotifierFactory.ID_DEFAULT + "'.")
+        String id() default AcmConstants.NOTIFIER_ID;
 
         @AttributeDefinition(
                 name = "Webhook URL",

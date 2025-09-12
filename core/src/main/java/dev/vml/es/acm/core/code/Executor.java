@@ -66,6 +66,9 @@ public class Executor {
                 description = "Enables notifications for completed executions.")
         boolean notificationEnabled() default true;
 
+        @AttributeDefinition(name = "Notification Notifier ID")
+        String notificationNotifierId() default AcmConstants.NOTIFIER_ID;
+
         @AttributeDefinition(
                 name = "Notification Executable IDs",
                 description = "Allow to control with regular expressions which executables should be notified about.")
@@ -214,7 +217,7 @@ public class Executor {
     private void handleNotifications(ExecutionContext context, ImmediateExecution execution) {
         String executableId = execution.getExecutable().getId();
         if (!config.notificationEnabled()
-                || !notifier.isConfigured()
+                || !notifier.isConfigured(config.notificationNotifierId())
                 || Arrays.stream(config.notificationExecutableIds())
                         .noneMatch(regex -> Pattern.matches(regex, executableId))) {
             return;
@@ -254,7 +257,7 @@ public class Executor {
         fields.put("Output", detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength));
         fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
 
-        notifier.sendMessage(title, text, fields);
+        notifier.sendMessageTo(config.notificationNotifierId(), title, text, fields);
     }
 
     public Description describe(ExecutionContext context) {
