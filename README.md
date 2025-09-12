@@ -29,30 +29,36 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
 
 ## Table of Contents
 
-- [Key Features](#key-features)
+- [AEM Content Manager (ACM)](#aem-content-manager-acm)
+  - [Table of Contents](#table-of-contents)
+  - [Key Features](#key-features)
     - [All-in-one Solution](#all-in-one-solution)
     - [New Approach](#new-approach)
     - [Content Management](#content-management)
     - [Permissions Management](#permissions-management)
-    - [Data Imports & Exports](#data-imports--exports)
-- [Installation](#installation)
-- [Compatibility](#compatibility)
-- [Documentation](#documentation)
+    - [Data Imports \& Exports](#data-imports--exports)
+  - [Installation](#installation)
+  - [Compatibility](#compatibility)
+  - [Documentation](#documentation)
     - [Usage](#usage)
     - [Console](#console)
-    - [Content Scripts](#content-scripts)
-        - [Minimal Example](#minimal-example)
-        - [Arguments Example](#arguments-example)
-        - [ACL Example](#acl-example)
-        - [Repo Example](#repo-example)
-        - [History](#history)
-    - [Extension Scripts](#extension-scripts)
+    - [Content scripts](#content-scripts)
+      - [Minimal example](#minimal-example)
+      - [Arguments example](#arguments-example)
+      - [ACL example](#acl-example)
+      - [Repo example](#repo-example)
+    - [History](#history)
+    - [Extension scripts](#extension-scripts)
+      - [Example extension script](#example-extension-script)
     - [Snippets](#snippets)
+      - [Example snippet](#example-snippet)
     - [Mocks](#mocks)
-- [Development](#development)
-- [Authors](#authors)
-- [Contributing](#contributing)
-- [License](#license)
+    - [Notifications](#notifications)
+  - [Development](#development)
+  - [Releasing](#releasing)
+  - [Authors](#authors)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ## Key Features
 
@@ -402,6 +408,28 @@ This feature is disabled by default, but you can enable it in the [OSGi configur
 
 <img src="docs/screenshot-scripts-mock-tab.png" width="720" alt="ACM Mocks - List">
 <img src="docs/screenshot-scripts-mock-code.png" width="720" alt="ACM Mocks - Code">
+
+### Notifications
+
+ACM offers a flexible notification service supporting multiple channels, including Slack and Microsoft Teams, with no additional coding required.
+
+To receive notifications about automatic code executions, simply configure a notifier with a unique ID (`acm`) in the OSGi configuration.
+
+For Slack integration, create a file at *ui.config/src/main/content/jcr_root/apps/{project}/osgiconfig/config/dev.vml.es.acm.core.notification.slack.SlackFactory.config* with the following content:
+
+```ini
+enabled=B"true"
+id="acm"
+webhookUrl="https://hooks.slack.com/services/XXXXXXXXX/YYYYYYYYYYY/ZZZZZZZZZZZZZZZZZZZZZZZZ"
+timeoutMillis=I"5000"
+```
+
+You can define multiple notifiers with different IDs to target various channels or teams. In your Groovy scripts or project-specific OSGi bundles, use the `notifier` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/notification/NotificationManager.java) to send messages to a specific notifier or the default one:
+
+```groovy
+notifier.sendMessageTo("acme", "ACME Project Notifications", "An important event occurred.")
+notifier.sendMessage("ACME Project Notifications", "Let's start the day with a coffee!") // uses the 'default' notifier
+```
 
 ## Development
 
