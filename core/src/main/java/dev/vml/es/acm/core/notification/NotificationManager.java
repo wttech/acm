@@ -66,11 +66,12 @@ public class NotificationManager {
         Optional<Teams> teamsOpt = findTeamsById(notifierId);
         if (!slackOpt.isPresent() && !teamsOpt.isPresent()) {
             throw new NotificationException(
-                String.format("Notifier '%s' not configured for Slack or Teams!", notifierId)
-            );
+                    String.format("Notifier '%s' not configured for Slack or Teams!", notifierId));
         }
-        slackOpt.ifPresent(slack -> slack.sendPayload(buildSlackPayload().message(title, text, fields).build()));
-        teamsOpt.ifPresent(teams -> teams.sendPayload(buildTeamsPayload().message(title, text, fields).build()));
+        slackOpt.ifPresent(slack -> slack.sendPayload(
+                buildSlackPayload().message(title, text, fields).build()));
+        teamsOpt.ifPresent(teams -> teams.sendPayload(
+                buildTeamsPayload().message(title, text, fields).build()));
     }
 
     // === Teams ===

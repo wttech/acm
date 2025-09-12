@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.notification.slack;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.notification.NotifierFactory;
 import java.util.Map;
 import org.osgi.service.component.annotations.Activate;
@@ -29,8 +30,11 @@ public class SlackFactory extends NotifierFactory<Slack> {
     @ObjectClassDefinition(name = "AEM Content Manager - Slack Factory")
     public @interface Config {
 
-        @AttributeDefinition(name = "ID", description = "Unique configuration identifier")
-        String id() default ID_DEFAULT;
+        @AttributeDefinition(
+                name = "ID",
+                description = "Unique notifier ID. Typical values: '" + AcmConstants.NOTIFIER_ID + "', '"
+                        + NotifierFactory.ID_DEFAULT + "'.")
+        String id() default AcmConstants.NOTIFIER_ID;
 
         @AttributeDefinition(name = "Enabled")
         boolean enabled() default true;

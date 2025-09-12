@@ -33,8 +33,6 @@ public class Executor {
 
     public static final String LOCK_DIR = "executor";
 
-    public static final String NOTIFIER_ID_DEFAULT = "acm";
-
     @ObjectClassDefinition(name = "AEM Content Manager - Code Executor")
     public @interface Config {
 
@@ -68,9 +66,8 @@ public class Executor {
                 description = "Enables notifications for completed executions.")
         boolean notificationEnabled() default true;
 
-        @AttributeDefinition(
-                name = "Notification Notifier ID")
-        String notificationNotifierId() default NOTIFIER_ID_DEFAULT;
+        @AttributeDefinition(name = "Notification Notifier ID")
+        String notificationNotifierId() default AcmConstants.NOTIFIER_ID;
 
         @AttributeDefinition(
                 name = "Notification Executable IDs",
