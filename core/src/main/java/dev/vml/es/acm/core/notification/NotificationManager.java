@@ -33,35 +33,44 @@ public class NotificationManager {
             service = SlackFactory.class)
     private final Collection<SlackFactory> slackFactories = new CopyOnWriteArrayList<>();
 
-    // === Multi-notifier ===
-
     public boolean isConfigured() {
-        return hasAnyDefaultNotifier();
+        return isConfigured(NotifierFactory.ID_DEFAULT);
     }
 
     public void sendMessage(String text) {
-        sendMessage(null, text, Collections.emptyMap());
+        sendMessageTo(NotifierFactory.ID_DEFAULT, text);
     }
 
     public void sendMessage(String title, String text) {
-        sendMessage(title, text, Collections.emptyMap());
+        sendMessageTo(NotifierFactory.ID_DEFAULT, title, text);
     }
 
     public void sendMessage(String title, String text, Map<String, Object> fields) {
-        if (!hasAnyDefaultNotifier()) {
-            throw new NotificationException(
-                    String.format("Notifier '%s' (Slack or Teams) not configured!", NotifierFactory.ID_DEFAULT));
-        }
-        findSlackDefault()
-                .ifPresent(slack ->
-                        slack.sendPayload(buildSlackMessage(title, text, fields).build()));
-        findTeamsDefault()
-                .ifPresent(teams ->
-                        teams.sendPayload(buildTeamsMessage(title, text, fields).build()));
+        sendMessageTo(NotifierFactory.ID_DEFAULT, title, text, fields);
     }
 
-    private boolean hasAnyDefaultNotifier() {
-        return findSlackDefault().isPresent() || findTeamsDefault().isPresent();
+    public boolean isConfigured(String notifierId) {
+        return findSlackById(notifierId).isPresent() || findSlackById(notifierId).isPresent();
+    }
+
+    public void sendMessageTo(String notifierId, String text) {
+        sendMessageTo(notifierId, null, text, Collections.emptyMap());
+    }
+
+    public void sendMessageTo(String notifierId, String title, String text) {
+        sendMessageTo(notifierId, title, text, Collections.emptyMap());
+    }
+
+    public void sendMessageTo(String notifierId, String title, String text, Map<String, Object> fields) {
+        Optional<Slack> slackOpt = findSlackById(notifierId);
+        Optional<Teams> teamsOpt = findTeamsById(notifierId);
+        if (!slackOpt.isPresent() && !teamsOpt.isPresent()) {
+            throw new NotificationException(
+                String.format("Notifier '%s' not configured for Slack or Teams!", notifierId)
+            );
+        }
+        slackOpt.ifPresent(slack -> slack.sendPayload(buildSlackPayload().message(title, text, fields).build()));
+        teamsOpt.ifPresent(teams -> teams.sendPayload(buildTeamsPayload().message(title, text, fields).build()));
     }
 
     // === Teams ===
@@ -82,7 +91,7 @@ public class NotificationManager {
         Teams teamsDefault = findTeamsDefault()
                 .orElseThrow(() -> new NotificationException(
                         String.format("Teams notifier '%s' not configured!", NotifierFactory.ID_DEFAULT)));
-        teamsDefault.sendPayload(buildTeamsMessage(title, text, fields).build());
+        teamsDefault.sendPayload(buildTeamsPayload().message(title, text, fields).build());
     }
 
     public Stream<Teams> findTeams() {
@@ -110,20 +119,6 @@ public class NotificationManager {
                         String.format("Teams notifier '%s' not configured!", NotifierFactory.ID_DEFAULT)));
     }
 
-    public TeamsPayload.Builder buildTeamsMessage(String title, String text, Map<String, Object> fields) {
-        TeamsPayload.Builder payload = buildTeamsPayload();
-        if (StringUtils.isNotBlank(title)) {
-            payload.title(title);
-        }
-        if (StringUtils.isNotBlank(text)) {
-            payload.text(text);
-        }
-        if (fields != null && !fields.isEmpty()) {
-            payload.facts(fields);
-        }
-        return payload;
-    }
-
     public TeamsPayload.Builder buildTeamsPayload() {
         return new TeamsPayload.Builder();
     }
@@ -146,7 +141,7 @@ public class NotificationManager {
         Slack slackDefault = findSlackDefault()
                 .orElseThrow(() -> new NotificationException(
                         String.format("Slack notifier '%s' not configured!", NotifierFactory.ID_DEFAULT)));
-        slackDefault.sendPayload(buildSlackMessage(title, text, fields).build());
+        slackDefault.sendPayload(buildSlackPayload().message(title, text, fields).build());
     }
 
     public Stream<Slack> findSlack() {
@@ -172,23 +167,6 @@ public class NotificationManager {
         return findSlackDefault()
                 .orElseThrow(() -> new NotificationException(
                         String.format("Slack notifier '%s' not configured!", NotifierFactory.ID_DEFAULT)));
-    }
-
-    public SlackPayload.Builder buildSlackMessage(String title, String text, Map<String, Object> fields) {
-        SlackPayload.Builder payload = buildSlackPayload();
-        if (StringUtils.isNotBlank(title)) {
-            payload.header(title);
-        }
-        if (StringUtils.isNotBlank(title) && StringUtils.isNotBlank(text)) {
-            payload.divider();
-        }
-        if (StringUtils.isNotBlank(text)) {
-            payload.sectionMarkdown(text);
-        }
-        if (fields != null && !fields.isEmpty()) {
-            payload.fieldsMarkdown(fields);
-        }
-        return payload;
     }
 
     public SlackPayload.Builder buildSlackPayload() {

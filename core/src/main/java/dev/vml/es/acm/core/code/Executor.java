@@ -33,6 +33,8 @@ public class Executor {
 
     public static final String LOCK_DIR = "executor";
 
+    public static final String NOTIFIER_ID_DEFAULT = "acm";
+
     @ObjectClassDefinition(name = "AEM Content Manager - Code Executor")
     public @interface Config {
 
@@ -65,6 +67,11 @@ public class Executor {
                 name = "Notification Enabled",
                 description = "Enables notifications for completed executions.")
         boolean notificationEnabled() default true;
+
+        @AttributeDefinition(
+                name = "Notification Notifier ID",
+                description = "ID of the notifier to use for notifications.")
+        String notificationNotifierId() default NOTIFIER_ID_DEFAULT;
 
         @AttributeDefinition(
                 name = "Notification Executable IDs",
@@ -214,7 +221,7 @@ public class Executor {
     private void handleNotifications(ExecutionContext context, ImmediateExecution execution) {
         String executableId = execution.getExecutable().getId();
         if (!config.notificationEnabled()
-                || !notifier.isConfigured()
+                || !notifier.isConfigured(config.notificationNotifierId())
                 || Arrays.stream(config.notificationExecutableIds())
                         .noneMatch(regex -> Pattern.matches(regex, executableId))) {
             return;
@@ -254,7 +261,7 @@ public class Executor {
         fields.put("Output", detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength));
         fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
 
-        notifier.sendMessage(title, text, fields);
+        notifier.sendMessageTo(config.notificationNotifierId(), title, text, fields);
     }
 
     public Description describe(ExecutionContext context) {
