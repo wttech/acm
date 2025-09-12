@@ -69,8 +69,7 @@ public class Executor {
         boolean notificationEnabled() default true;
 
         @AttributeDefinition(
-                name = "Notification Notifier ID",
-                description = "ID of the notifier to use for notifications.")
+                name = "Notification Notifier ID")
         String notificationNotifierId() default NOTIFIER_ID_DEFAULT;
 
         @AttributeDefinition(
