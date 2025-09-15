@@ -257,7 +257,7 @@ public class Executor {
         fields.put(
                 "Output",
                 StringUtil.markdownCode(
-                        detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength, "(...)"),
+                        detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength, "(...) "),
                         "(none)"));
         fields.put(
                 "Error",
