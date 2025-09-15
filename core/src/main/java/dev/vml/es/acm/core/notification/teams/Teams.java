@@ -58,8 +58,8 @@ public class Teams implements Notifier<TeamsPayload> {
     }
 
     @Override
-    public void sendMessage(String title, String message, Map<String, Object> fields) {
-        TeamsPayload payload = TeamsPayload.builder().message(title, message, fields).build();
+    public void sendMessage(String title, String text, Map<String, Object> fields) {
+        TeamsPayload payload = TeamsPayload.builder().message(title, text, fields).build();
         sendPayload(payload);
     }
 

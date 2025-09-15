@@ -58,8 +58,8 @@ public class Slack implements Notifier<SlackPayload> {
     }
 
     @Override
-    public void sendMessage(String title, String message, Map<String, Object> fields) {
-        SlackPayload payload = SlackPayload.builder().message(title, message, fields).build();
+    public void sendMessage(String title, String text, Map<String, Object> fields) {
+        SlackPayload payload = SlackPayload.builder().message(title, text, fields).build();
         sendPayload(payload);
     }
 

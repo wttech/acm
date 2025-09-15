@@ -31,5 +31,5 @@ public interface Notifier<P extends Serializable> extends Closeable {
     /**
      * Send a message to notification service in structured format.
      */
-    void sendMessage(String title, String message, Map<String, Object> fields);
+    void sendMessage(String title, String text, Map<String, Object> fields);
 }
