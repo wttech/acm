@@ -4,7 +4,6 @@ import dev.vml.es.acm.core.notification.Notifier;
 import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
 import java.util.Map;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.config.RequestConfig;
@@ -59,7 +58,8 @@ public class Teams implements Notifier<TeamsPayload> {
 
     @Override
     public void sendMessage(String title, String text, Map<String, Object> fields) {
-        TeamsPayload payload = TeamsPayload.builder().message(title, text, fields).build();
+        TeamsPayload payload =
+                TeamsPayload.builder().message(title, text, fields).build();
         sendPayload(payload);
     }
 

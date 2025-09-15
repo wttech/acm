@@ -62,9 +62,9 @@ public final class StringUtil {
         }
     }
 
-    public static String markdownCode(String code, String defaulString) {
+    public static String markdownCode(String code, String defaultString) {
         if (StringUtils.isBlank(code)) {
-            return defaulString;
+            return defaultString;
         }
         return "```\n" + code.trim() + "\n```";
     }
