@@ -8,9 +8,9 @@ import dev.vml.es.acm.core.instance.InstanceSettings;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
+import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StringUtil;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -65,6 +65,9 @@ public class Executor {
                 name = "Notification Enabled",
                 description = "Enables notifications for completed executions.")
         boolean notificationEnabled() default true;
+
+        @AttributeDefinition(name = "Notification Notifier ID")
+        String notificationNotifierId() default AcmConstants.NOTIFIER_ID;
 
         @AttributeDefinition(
                 name = "Notification Executable IDs",
@@ -214,7 +217,7 @@ public class Executor {
     private void handleNotifications(ExecutionContext context, ImmediateExecution execution) {
         String executableId = execution.getExecutable().getId();
         if (!config.notificationEnabled()
-                || !notifier.isConfigured()
+                || !notifier.isConfigured(config.notificationNotifierId())
                 || Arrays.stream(config.notificationExecutableIds())
                         .noneMatch(regex -> Pattern.matches(regex, executableId))) {
             return;
@@ -236,8 +239,8 @@ public class Executor {
 
         Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("Status", execution.getStatus().name().toLowerCase());
-        fields.put("Time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-        fields.put("Duration", execution.getDuration() + "ms");
+        fields.put("Time", DateUtils.humanFormat().format(new Date()));
+        fields.put("Duration", StringUtil.formatDuration(execution.getDuration()));
 
         InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
         InstanceSettings instanceSettings = new InstanceSettings(instanceInfo);
@@ -249,12 +252,12 @@ public class Executor {
         fields.put("Instance", instanceDesc);
 
         int detailsMaxLength = config.notificationDetailsLength();
-        String output = StringUtils.defaultIfBlank(execution.getOutput(), "(empty)");
-        String error = StringUtils.defaultIfBlank(execution.getError(), "(empty)");
-        fields.put("Output", detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength));
+        String output = StringUtil.markdownCode(execution.getOutput(), "(none)");
+        String error = StringUtil.markdownCode(execution.getError(), "(none)");
+        fields.put("Output", detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength, "[...] "));
         fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
 
-        notifier.sendMessage(title, text, fields);
+        notifier.sendMessageTo(config.notificationNotifierId(), title, text, fields);
     }
 
     public Description describe(ExecutionContext context) {

@@ -39,7 +39,21 @@ public final class TeamsPayload implements Serializable {
     public static final class Builder {
 
         private final List<CardElement> body = new ArrayList<>();
+
         private final List<Action> actions = new ArrayList<>();
+
+        public Builder message(String title, String text, Map<String, Object> fields) {
+            if (StringUtils.isNotBlank(title)) {
+                this.title(title);
+            }
+            if (StringUtils.isNotBlank(text)) {
+                this.text(text);
+            }
+            if (fields != null && !fields.isEmpty()) {
+                this.facts(fields);
+            }
+            return this;
+        }
 
         public Builder text(String text) {
             if (StringUtils.isNotBlank(text)) {

@@ -3,6 +3,8 @@ package dev.vml.es.acm.core.notification.slack;
 import dev.vml.es.acm.core.notification.Notifier;
 import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
+import java.util.Map;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.config.RequestConfig;
@@ -53,6 +55,12 @@ public class Slack implements Notifier<SlackPayload> {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public void sendMessage(String title, String text, Map<String, Object> fields) {
+        SlackPayload payload = SlackPayload.builder().message(title, text, fields).build();
+        sendPayload(payload);
     }
 
     @Override
