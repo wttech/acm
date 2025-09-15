@@ -8,9 +8,9 @@ import dev.vml.es.acm.core.instance.InstanceSettings;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
+import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StringUtil;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -239,7 +239,7 @@ public class Executor {
 
         Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("Status", execution.getStatus().name().toLowerCase());
-        fields.put("Time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        fields.put("Time", DateUtils.humanFormat().format(new Date()));
         fields.put("Duration", StringUtil.formatDuration(execution.getDuration()));
 
         InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
@@ -252,8 +252,8 @@ public class Executor {
         fields.put("Instance", instanceDesc);
 
         int detailsMaxLength = config.notificationDetailsLength();
-        String output = StringUtils.defaultIfBlank(execution.getOutput(), "(none)");
-        String error = StringUtils.defaultIfBlank(execution.getError(), "(none)");
+        String output = StringUtil.markdownCode(execution.getOutput(), "(none)");
+        String error = StringUtil.markdownCode(execution.getError(), "(none)");
         fields.put("Output", detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength, "[...] "));
         fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
 

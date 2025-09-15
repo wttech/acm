@@ -61,4 +61,11 @@ public final class StringUtil {
             return millis + " ms (" + humanReadable + ")";
         }
     }
+
+    public static String markdownCode(String code, String defaulString) {
+        if (StringUtils.isBlank(code)) {
+            return defaulString;
+        }
+        return "```\n" + code.trim() + "\n```";
+    }
 }

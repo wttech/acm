@@ -20,15 +20,19 @@ public final class DateUtils {
     private static final List<String> LOCAL_DATE_TIME_FORMATS = Arrays.asList(
             "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", "yyyy-MM-dd'T'HH:mm:ssXXX");
 
-    private static SimpleDateFormat isoFormat() {
+    public static SimpleDateFormat humanFormat() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    }
+
+    public static SimpleDateFormat isoFormat() {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     }
 
-    private static SimpleDateFormat isoFormatNoMillis() {
+    public static SimpleDateFormat isoFormatNoMillis() {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
     }
 
-    private static SimpleDateFormat isoFormatNoMillisNoTimezone() {
+    public static SimpleDateFormat isoFormatNoMillisNoTimezone() {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     }
 
