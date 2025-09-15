@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
-import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,18 +15,16 @@ public abstract class NotifierFactory<N extends Notifier<? extends Serializable>
 
     private static final Logger LOG = LoggerFactory.getLogger(NotifierFactory.class);
 
-    private static final String PID_DEFAULT = "default";
-
-    private String configPid;
+    private String configId;
 
     private N notifier;
 
     protected void create(Map<String, Object> props, Supplier<N> supplier) {
-        this.configPid = getConfigPid(props);
+        this.configId = getConfigId(props);
         try {
             this.notifier = supplier.get();
         } catch (Exception e) {
-            LOG.error("Cannot create notifier for PID '{}'!", configPid, e);
+            LOG.error("Cannot create notifier for ID '{}'!", configId, e);
         }
     }
 
@@ -36,16 +33,15 @@ public abstract class NotifierFactory<N extends Notifier<? extends Serializable>
             try {
                 this.notifier.close();
             } catch (IOException e) {
-                LOG.error("Cannot clean up notifier for PID '{}'!", configPid, e);
+                LOG.error("Cannot clean up notifier for ID '{}'!", configId, e);
             }
             this.notifier = null;
-            this.configPid = null;
+            this.configId = null;
         }
     }
 
-    private String getConfigPid(Map<String, Object> props) {
-        String pid = (String) props.getOrDefault(Constants.SERVICE_PID, PID_DEFAULT);
-        return StringUtils.substringAfter(pid, "~");
+    private String getConfigId(Map<String, Object> props) {
+        return StringUtils.defaultIfBlank((String) props.get("id"), ID_DEFAULT);
     }
 
     public N getNotifier() {

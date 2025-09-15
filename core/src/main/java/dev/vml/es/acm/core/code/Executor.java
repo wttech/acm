@@ -240,7 +240,7 @@ public class Executor {
         Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("Status", execution.getStatus().name().toLowerCase());
         fields.put("Time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-        fields.put("Duration", execution.getDuration() + "ms");
+        fields.put("Duration", StringUtil.formatDuration(execution.getDuration()));
 
         InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
         InstanceSettings instanceSettings = new InstanceSettings(instanceInfo);
@@ -252,9 +252,9 @@ public class Executor {
         fields.put("Instance", instanceDesc);
 
         int detailsMaxLength = config.notificationDetailsLength();
-        String output = StringUtils.defaultIfBlank(execution.getOutput(), "(empty)");
-        String error = StringUtils.defaultIfBlank(execution.getError(), "(empty)");
-        fields.put("Output", detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength));
+        String output = StringUtils.defaultIfBlank(execution.getOutput(), "(none)");
+        String error = StringUtils.defaultIfBlank(execution.getError(), "(none)");
+        fields.put("Output", detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength, "[...] "));
         fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
 
         notifier.sendMessageTo(config.notificationNotifierId(), title, text, fields);
