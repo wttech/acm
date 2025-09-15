@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.notification;
 
 import java.io.Closeable;
 import java.io.Serializable;
+import java.util.Map;
 
 public interface Notifier<P extends Serializable> extends Closeable {
 
@@ -26,4 +27,9 @@ public interface Notifier<P extends Serializable> extends Closeable {
      * Send a payload to notification service in structured format.
      */
     void sendPayload(P payload);
+
+    /**
+     * Send a message to notification service in structured format.
+     */
+    void sendMessage(String title, String message, Map<String, Object> fields);
 }
