@@ -252,10 +252,17 @@ public class Executor {
         fields.put("Instance", instanceDesc);
 
         int detailsMaxLength = config.notificationDetailsLength();
-        String output = StringUtil.markdownCode(execution.getOutput(), "(none)");
-        String error = StringUtil.markdownCode(execution.getError(), "(none)");
-        fields.put("Output", detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength, "[...] "));
-        fields.put("Error", detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength));
+        String output = StringUtils.trimToNull(execution.getOutput());
+        String error = StringUtils.trimToNull(execution.getError());
+        fields.put(
+                "Output",
+                StringUtil.markdownCode(
+                        detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength, "(...)"),
+                        "(none)"));
+        fields.put(
+                "Error",
+                StringUtil.markdownCode(
+                        detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength), "(none)"));
 
         notifier.sendMessageTo(config.notificationNotifierId(), title, text, fields);
     }
