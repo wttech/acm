@@ -87,7 +87,7 @@ public class Executor {
         @AttributeDefinition(
                 name = "Notification Details Length",
                 description = "Max length of the output and error. Use negative value to skip abbreviation.")
-        int notificationDetailsLength() default 256;
+        int notificationDetailsLength() default 512;
     }
 
     @Reference
@@ -250,19 +250,8 @@ public class Executor {
                 ? instanceId
                 : instanceId + " (" + instanceRoleName + ")";
         fields.put("Instance", instanceDesc);
-
-        int detailsMaxLength = config.notificationDetailsLength();
-        String output = StringUtils.trimToNull(execution.getOutput());
-        String error = StringUtils.trimToNull(execution.getError());
-        fields.put(
-                "Output",
-                StringUtil.markdownCode(
-                        detailsMaxLength < 0 ? output : StringUtil.abbreviateStart(output, detailsMaxLength, "(...) "),
-                        "(none)"));
-        fields.put(
-                "Error",
-                StringUtil.markdownCode(
-                        detailsMaxLength < 0 ? error : StringUtils.abbreviate(error, detailsMaxLength), "(none)"));
+        fields.put("Output", StringUtil.truncateCodeStart(execution.getOutput(), config.notificationDetailsLength()));
+        fields.put("Error", StringUtil.truncateCodeEnd(execution.getError(), config.notificationDetailsLength()));
 
         notifier.sendMessageTo(config.notificationNotifierId(), title, text, fields);
     }
