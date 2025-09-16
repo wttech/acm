@@ -90,24 +90,23 @@ public class HealthChecker implements EventHandler {
     }
 
     private HealthStatus checkStatus(ResourceResolver resourceResolver) {
-        HealthStatus result = new HealthStatus();
-        checkCluster(result);
-        checkRepository(result, resourceResolver);
-        checkInstaller(result, resourceResolver);
-        checkBundles(result);
-        checkEvents(result);
-        checkComponents(result);
-        checkCodeExecutor(result, resourceResolver);
-        result.healthy = CollectionUtils.isEmpty(result.issues);
-        return result;
+        List<HealthIssue> issues = new LinkedList<>();
+        checkCluster(issues);
+        checkRepository(issues, resourceResolver);
+        checkInstaller(issues, resourceResolver);
+        checkBundles(issues);
+        checkEvents(issues);
+        checkComponents(issues);
+        checkCodeExecutor(issues, resourceResolver);
+        return new HealthStatus(issues, CollectionUtils.isEmpty(issues));
     }
 
-    private void checkCluster(HealthStatus result) {
+    private void checkCluster(List<HealthIssue> issues) {
         if (!instanceInfo.isCluster()) {
             return;
         }
         if (!isClusterLeader()) {
-            result.issues.add(new HealthIssue(
+            issues.add(new HealthIssue(
                     HealthIssueSeverity.CRITICAL, HealthIssueCategory.INSTANCE, "Not a cluster leader", null));
         }
     }
@@ -121,20 +120,20 @@ public class HealthChecker implements EventHandler {
     }
 
     // TODO seems to not work on AEMaaCS as there is no Sling Installer JMX MBean
-    private void checkInstaller(HealthStatus result, ResourceResolver resourceResolver) {
+    private void checkInstaller(List<HealthIssue> issues, ResourceResolver resourceResolver) {
         if (!config.installerChecking()) {
             return;
         }
         SlingInstallerState state = slingInstaller.checkState(resourceResolver);
         if (state.isActive()) {
-            result.issues.add(new HealthIssue(
+            issues.add(new HealthIssue(
                     HealthIssueSeverity.CRITICAL,
                     HealthIssueCategory.INSTALLER,
                     String.format("Active resource count: %d", state.getActiveResourceCount()),
                     null));
         }
         if (state.isPaused()) {
-            result.issues.add(new HealthIssue(
+            issues.add(new HealthIssue(
                     HealthIssueSeverity.CRITICAL,
                     HealthIssueCategory.INSTALLER,
                     String.format("Pause count: %d", state.getPauseCount()),
@@ -142,13 +141,13 @@ public class HealthChecker implements EventHandler {
         }
     }
 
-    private void checkRepository(HealthStatus result, ResourceResolver resourceResolver) {
+    private void checkRepository(List<HealthIssue> issues, ResourceResolver resourceResolver) {
         if (!config.repositoryChecking()) {
             return;
         }
         Repo repo = new Repo(resourceResolver);
         if ((instanceInfo.getType() == InstanceType.CLOUD_CONTAINER) && !repo.isCompositeNodeStore()) {
-            result.issues.add(new HealthIssue(
+            issues.add(new HealthIssue(
                     HealthIssueSeverity.CRITICAL,
                     HealthIssueCategory.REPOSITORY,
                     "Composite node store not available",
@@ -157,7 +156,7 @@ public class HealthChecker implements EventHandler {
         if (ArrayUtils.isNotEmpty(config.repositoryPathsExisted())) {
             Arrays.stream(config.repositoryPathsExisted()).forEach(path -> {
                 if (!repo.get(path).exists()) {
-                    result.issues.add(new HealthIssue(
+                    issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL,
                             HealthIssueCategory.REPOSITORY,
                             String.format("Path does not exist: '%s'", path),
@@ -170,7 +169,7 @@ public class HealthChecker implements EventHandler {
     /**
      * @see <https://github.com/apache/felix-dev/blob/master/framework/src/main/java/org/apache/felix/framework/BundleContextImpl.java> 'checkValidity()' method
      */
-    private void checkBundles(HealthStatus result) {
+    private void checkBundles(List<HealthIssue> issues) {
         if (!config.bundleChecking()) {
             return;
         }
@@ -178,7 +177,7 @@ public class HealthChecker implements EventHandler {
         try {
             osgiScanner.getBundleContext().getBundle();
         } catch (Exception e) {
-            result.issues.add(new HealthIssue(
+            issues.add(new HealthIssue(
                     HealthIssueSeverity.CRITICAL,
                     HealthIssueCategory.OSGI,
                     "Bundle context not valid",
@@ -189,7 +188,7 @@ public class HealthChecker implements EventHandler {
         osgiScanner.scanBundles().filter(b -> !isBundleIgnored(b)).forEach(bundle -> {
             if (osgiScanner.isFragment(bundle)) {
                 if (!osgiScanner.isBundleResolved(bundle)) {
-                    result.issues.add(new HealthIssue(
+                    issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL,
                             HealthIssueCategory.OSGI,
                             String.format(
@@ -199,7 +198,7 @@ public class HealthChecker implements EventHandler {
                 }
             } else {
                 if (!osgiScanner.isBundleActive(bundle)) {
-                    result.issues.add(new HealthIssue(
+                    issues.add(new HealthIssue(
                             HealthIssueSeverity.CRITICAL,
                             HealthIssueCategory.OSGI,
                             String.format(
@@ -225,7 +224,7 @@ public class HealthChecker implements EventHandler {
         }
     }
 
-    private void checkEvents(HealthStatus result) {
+    private void checkEvents(List<HealthIssue> issues) {
         if (!config.eventChecking()) {
             return;
         }
@@ -233,7 +232,7 @@ public class HealthChecker implements EventHandler {
         if (!recentEvents.isEmpty()) {
             Map<String, Long> eventCounts =
                     recentEvents.stream().collect(Collectors.groupingBy(OsgiEvent::getTopic, Collectors.counting()));
-            eventCounts.forEach((topic, count) -> result.issues.add(new HealthIssue(
+            eventCounts.forEach((topic, count) -> issues.add(new HealthIssue(
                     HealthIssueSeverity.CRITICAL,
                     HealthIssueCategory.OSGI,
                     String.format("Event occurred (%d): %s", count, topic),
@@ -260,17 +259,17 @@ public class HealthChecker implements EventHandler {
         }
     }
 
-    private void checkComponents(HealthStatus result) {
+    private void checkComponents(List<HealthIssue> issues) {
         // TODO ...
     }
 
-    private void checkCodeExecutor(HealthStatus result, ResourceResolver resourceResolver) {
+    private void checkCodeExecutor(List<HealthIssue> issues, ResourceResolver resourceResolver) {
         try (ExecutionContext context = executor.createContext(
                 ExecutionId.generate(), ExecutionMode.RUN, Code.consoleMinimal(), resourceResolver)) {
             context.setHistory(false);
             Execution execution = executor.execute(context);
             if (execution.getStatus() != ExecutionStatus.SUCCEEDED) {
-                result.issues.add(new HealthIssue(
+                issues.add(new HealthIssue(
                         HealthIssueSeverity.CRITICAL,
                         HealthIssueCategory.CODE_EXECUTOR,
                         String.format(
@@ -283,7 +282,7 @@ public class HealthChecker implements EventHandler {
             String issue = StringUtils.contains(error, ExtensionScriptSyntax.MAIN_CLASS + ":")
                     ? "Extension script error"
                     : "Execution context error";
-            result.issues.add(
+            issues.add(
                     new HealthIssue(HealthIssueSeverity.CRITICAL, HealthIssueCategory.CODE_EXECUTOR, issue, error));
         }
     }

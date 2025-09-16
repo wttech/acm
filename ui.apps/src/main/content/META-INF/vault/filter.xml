@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
-    <filter root="/oak:index/acmExecutionHistory-custom-1"/>
+    <filter root="/oak:index/acm.executionHistory-custom-1"/>
     <filter root="/apps/acm"/>
     <filter root="/apps/cq" mode="update"/>
 </workspaceFilter>

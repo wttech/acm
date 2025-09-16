@@ -335,7 +335,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     private boolean awaitInstanceHealthy(String operation, long retryMaxCount, long retryInterval) {
         HealthStatus healthStatus = null;
         long retryCount = 0;
-        while (healthStatus == null || !healthStatus.isHealthy()) {
+        while (healthStatus == null || !healthStatus.getHealthy()) {
             if (retryCount >= retryMaxCount) {
                 LOG.error(
                         "{} aborted due to unhealthy instance state after {} retries: {}",
@@ -345,7 +345,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                 return false;
             }
             healthStatus = healthChecker.checkStatus();
-            if (healthStatus.isHealthy()) {
+            if (healthStatus.getHealthy()) {
                 break;
             } else {
                 LOG.warn("{} paused due to unhealthy instance state: {}", operation, healthStatus);

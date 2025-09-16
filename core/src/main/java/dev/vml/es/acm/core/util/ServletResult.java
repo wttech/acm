@@ -4,12 +4,13 @@ import java.io.Serializable;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 
-public class ServletResult<D extends Serializable> implements Serializable {
+public class ServletResult<D> implements Serializable {
 
     private final int status;
 
     private final String message;
 
+    @SuppressWarnings("java:S1948")
     private final D data;
 
     public ServletResult(int status, String message, D data) {
