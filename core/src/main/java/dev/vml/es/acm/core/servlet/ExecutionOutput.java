@@ -5,7 +5,8 @@ import java.util.List;
 
 public class ExecutionOutput implements Serializable {
 
-    public List<?> list;
+    @SuppressWarnings("java:S1948")
+    private List<?> list;
 
     public ExecutionOutput(List<?> executions) {
         this.list = executions;

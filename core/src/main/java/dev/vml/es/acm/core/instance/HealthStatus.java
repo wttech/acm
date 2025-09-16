@@ -9,9 +9,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class HealthStatus implements Serializable {
 
-    boolean healthy;
+    private boolean healthy;
 
-    List<HealthIssue> issues = new LinkedList<>();
+    private List<HealthIssue> issues = new LinkedList<>();
 
     public static HealthStatus exception(Exception e) {
         HealthStatus result = new HealthStatus();

@@ -33,7 +33,7 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(DescribeCodeServlet.class);
 
     @Reference
-    private Executor executor;
+    private transient Executor executor;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

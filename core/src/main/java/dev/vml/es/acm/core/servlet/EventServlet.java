@@ -32,7 +32,7 @@ public class EventServlet extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(EventServlet.class);
 
     @Reference
-    private EventDispatcher dispatcher;
+    private transient EventDispatcher dispatcher;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

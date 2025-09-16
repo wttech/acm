@@ -330,7 +330,7 @@ public final class TeamsPayload implements Serializable {
         }
     }
 
-    public interface CardElement {
+    public interface CardElement extends Serializable {
         // marker interface for card elements
     }
 }

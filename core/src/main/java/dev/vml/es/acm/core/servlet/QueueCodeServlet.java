@@ -38,10 +38,10 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(QueueCodeServlet.class);
 
     @Reference
-    private ExecutionQueue executionQueue;
+    private transient ExecutionQueue executionQueue;
 
     @Reference
-    private Executor executor;
+    private transient Executor executor;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

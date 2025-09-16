@@ -11,10 +11,10 @@ import org.apache.sling.event.jobs.Job;
 public class QueuedExecution implements Execution {
 
     @JsonIgnore
-    private final Executor executor;
+    private transient final Executor executor;
 
     @JsonIgnore
-    private final Job job;
+    private transient final Job job;
 
     public QueuedExecution(Executor executor, Job job) {
         this.executor = executor;

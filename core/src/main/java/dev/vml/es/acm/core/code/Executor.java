@@ -29,6 +29,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @Component(immediate = true, service = Executor.class)
 @Designate(ocd = Executor.Config.class)
+@SuppressWarnings("java:S1181")
 public class Executor {
 
     public static final String LOCK_DIR = "executor";

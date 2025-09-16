@@ -44,7 +44,7 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
     private static final String QUEUED_PARAM = "queued";
 
     @Reference
-    private ExecutionQueue queue;
+    private transient ExecutionQueue queue;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

@@ -7,8 +7,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class Range<T extends Comparable<T>> implements Serializable {
 
+    @SuppressWarnings("java:S1948")
     private final T start;
 
+    @SuppressWarnings("java:S1948")
     private final T end;
 
     public Range(T start, T end) {

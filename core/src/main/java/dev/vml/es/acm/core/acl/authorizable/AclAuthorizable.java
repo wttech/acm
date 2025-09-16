@@ -230,6 +230,7 @@ public class AclAuthorizable {
         return id;
     }
 
+    @SuppressWarnings("CQRules:CQBP-71")
     private boolean isAppsOrLibsPath(String path) {
         return StringUtils.startsWithAny(path, "/apps", "/libs");
     }

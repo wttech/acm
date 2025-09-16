@@ -6,8 +6,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class KeyValue<K extends Comparable<K>, V extends Comparable<V>> implements Serializable {
 
+    @SuppressWarnings("java:S1948")
     private K key;
 
+    @SuppressWarnings("java:S1948")
     private V value;
 
     public KeyValue(K key, V value) {

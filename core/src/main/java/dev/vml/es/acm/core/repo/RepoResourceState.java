@@ -19,6 +19,7 @@ public class RepoResourceState implements Serializable {
 
     private final boolean exists;
 
+    @SuppressWarnings("java:S1948")
     private final ValueMap properties;
 
     public RepoResourceState(String path, boolean exists, Map<String, Object> properties) {

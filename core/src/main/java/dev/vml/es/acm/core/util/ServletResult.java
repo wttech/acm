@@ -4,7 +4,7 @@ import java.io.Serializable;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 
-public class ServletResult<D> implements Serializable {
+public class ServletResult<D extends Serializable> implements Serializable {
 
     private final int status;
 

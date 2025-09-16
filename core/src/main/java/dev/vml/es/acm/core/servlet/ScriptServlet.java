@@ -63,10 +63,10 @@ public class ScriptServlet extends SlingAllMethodsServlet {
     }
 
     @Reference
-    private Replicator replicator;
+    private transient Replicator replicator;
 
     @Reference
-    private SpaSettings spaSettings;
+    private transient SpaSettings spaSettings;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
