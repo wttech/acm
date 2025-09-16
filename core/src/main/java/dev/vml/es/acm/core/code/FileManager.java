@@ -21,21 +21,9 @@ public class FileManager {
     }
 
     public File get(String path) {
-        try {
-            File rootDir = root();
-            String rootCanonical = rootDir.getCanonicalPath();
-
-            File targetFile = new File(path);
-            String targetCanonical = targetFile.getCanonicalPath();
-
-            if (!targetCanonical.startsWith(rootCanonical + File.separator) && !targetCanonical.equals(rootCanonical)) {
-                throw new AcmException(
-                        String.format("File path must be within the root directory '%s'!", rootCanonical));
-            }
-            return targetFile;
-        } catch (IOException e) {
-            throw new AcmException(String.format("File path resolution error '%s'!", path), e);
-        }
+        File targetFile = new File(path);
+        validatePath(targetFile);
+        return targetFile;
     }
 
     public File save(InputStream stream, String fileName) {
@@ -47,6 +35,7 @@ public class FileManager {
                 throw new AcmException("File directory cannot be created: " + dir.getAbsolutePath());
             }
             File file = new File(dir, fileName);
+            validatePath(file);
             if (file.exists()) {
                 throw new AcmException("File already exists: " + file.getAbsolutePath());
             }
@@ -75,5 +64,19 @@ public class FileManager {
             return Collections.emptyList();
         }
         return paths.stream().map(this::delete).collect(Collectors.toList());
+    }
+
+    private void validatePath(File targetFile) {
+        try {
+            File rootDir = root();
+            String rootCanonical = rootDir.getCanonicalPath();
+            String targetCanonical = targetFile.getCanonicalPath();
+            if (!targetCanonical.startsWith(rootCanonical + File.separator) && !targetCanonical.equals(rootCanonical)) {
+                throw new AcmException(
+                        String.format("File path '%s' must be within the root directory '%s'!", targetFile.getPath(), rootCanonical));
+            }
+        } catch (IOException e) {
+            throw new AcmException(String.format("File path resolution error '%s'!", targetFile.getPath()), e);
+        }
     }
 }
