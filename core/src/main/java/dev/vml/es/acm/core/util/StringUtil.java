@@ -33,9 +33,10 @@ public final class StringUtil {
         if (code == null || code.trim().isEmpty()) {
             return emptyMessage;
         }
+        String humanSize = FileUtils.byteCountToDisplaySize(code.length());
         String text = StringUtils.trimToEmpty(code);
         if (maxLength < 0 || text.length() <= maxLength) {
-            return "```\n" + text + "\n```";
+            return String.format("%s\n```\n%s\n```", humanSize, text);
         }
         int skippedChars = text.length() - maxLength;
         String remaining;
@@ -50,15 +51,14 @@ public final class StringUtil {
             String skippedPart = text.substring(maxLength);
             skippedLines = skippedPart.isEmpty() ? 0 : skippedPart.split("\r?\n").length;
         }
-        String humanSize = FileUtils.byteCountToDisplaySize(code.length());
         String lineWord = skippedLines == 1 ? "line" : "lines";
         String msg;
         if (skippedLines > 0) {
-            msg = String.format("(%s, %d %s skipped)", humanSize, skippedLines, lineWord);
+            msg = String.format("%s, %d %s skipped", humanSize, skippedLines, lineWord);
         } else {
-            msg = String.format("(%s)", humanSize);
+            msg = humanSize;
         }
-        return msg + "\n```\n" + remaining + "\n```";
+        return String.format("%s\n```\n%s\n```", msg, remaining);
     }
 
     public static String truncateCodeStart(String code, int maxLength) {
