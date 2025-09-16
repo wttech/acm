@@ -7,10 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.component.annotations.Component;
 
 @Component(immediate = true, service = FileManager.class)
@@ -39,7 +39,7 @@ public class FileManager {
     public File save(InputStream stream, String fileName) {
         try {
             String datePath = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
-            String randomDir = System.currentTimeMillis() + "-" + (int) (Math.random() * 10000);
+            String randomDir = UUID.randomUUID().toString();
             File dir = new File(root(), datePath + "/" + randomDir);
             if (!dir.exists() && !dir.mkdirs()) {
                 throw new AcmException("File directory cannot be created: " + dir.getAbsolutePath());
