@@ -2,10 +2,45 @@
 
 set -e
 
-# Configuration
+# ===[ Configuration ]===
 
 ACM_VERSION=${ACM_VERSION:-"0.9.46"}
 PROJECT_NAME="acme"
+
+print_step() {
+  echo
+  echo "==================================================================="
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+  echo "==================================================================="
+  echo
+}
+
+package_append_to_all() {
+  local groupId="$1"
+  local artifactId="$2"
+  local version="$3"
+  local type="$4"
+  local dep_marker_id="package-${artifactId}-dependency"
+  local emb_marker_id="package-${artifactId}-embedded"
+  local dep_block="    <dependency>
+      <groupId>${groupId}</groupId>
+      <artifactId>${artifactId}</artifactId>
+      <version>${version}</version>
+      <type>${type}</type>
+    </dependency>"
+  local emb_block="      <embedded>
+        <groupId>${groupId}</groupId>
+        <artifactId>${artifactId}</artifactId>
+        <type>${type}</type>
+        <target>/apps/${PROJECT_NAME}-packages/application/install</target>
+      </embedded>"
+  local all_pom="all/pom.xml"
+
+  echo "Appending package '$groupId:$artifactId:$version' to '$all_pom'"
+
+  xml_append_block_if_missing "$all_pom" "$dep_marker_id" "<dependencies>" "$dep_block"
+  xml_append_block_if_missing "$all_pom" "$emb_marker_id" "<embeddeds>" "$emb_block"
+}
 
 xml_append_block_if_missing() {
   local file="$1"
@@ -26,15 +61,9 @@ xml_append_block_if_missing() {
   fi
 }
 
-print_step() {
-  echo
-  echo "==================================================================="
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
-  echo "==================================================================="
-  echo
-}
+# ===[ Main script ]===
 
-print_step "Project setup started, cleaning up previous project (if any)"
+print_step "Project '$PROJECT_NAME' setup started, cleaning up previous project (if any)"
 rm -vfr "$PROJECT_NAME"
 
 print_step "Generating AEM project '$PROJECT_NAME' using archetype"
@@ -55,28 +84,14 @@ git commit -m "Initial commit"
 
 print_step "Setting up AEM Compose"
 curl https://raw.githubusercontent.com/wttech/aemc/main/project-install.sh | sh
+sh aemw project scaffold
 git add -A
 git commit -m "AEM Compose setup"
 
-print_step "Adding ACM dependency and embedded to 'all/pom.xml'"
+print_step "Setting up ACM in the project"
 
-ALL_POM="all/pom.xml"
+package_append_to_all "dev.vml.es" "acm.all" "$ACM_VERSION" "zip"
+package_append_to_all "dev.vml.es" "acm.content.example" "$ACM_VERSION" "zip"
 
-ACM_DEPENDENCY="    <dependency>
-      <groupId>dev.vml.es</groupId>
-      <artifactId>acm.all</artifactId>
-      <version>$ACM_VERSION</version>
-      <type>zip</type>
-    </dependency>"
+print_step "Project '$PROJECT_NAME' setup completed"
 
-ACM_EMBEDDED="      <embedded>
-        <groupId>dev.vml.es</groupId>
-        <artifactId>acm.all</artifactId>
-        <type>zip</type>
-        <target>/apps/acme-packages/application/install</target>
-      </embedded>"
-
-xml_append_block_if_missing "$ALL_POM" "acm-all-dependency" "<dependencies>" "$ACM_DEPENDENCY"
-xml_append_block_if_missing "$ALL_POM" "acm-all-embedded" "<embeddeds>" "$ACM_EMBEDDED"
-
-print_step "Project setup completed"
