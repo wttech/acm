@@ -91,7 +91,7 @@ git commit -m "AEM Compose setup"
 print_step "Setting up ACM in the project"
 
 package_append_to_all "dev.vml.es" "acm.all" "$ACM_VERSION" "zip"
-package_append_to_all "dev.vml.es" "acm.content.example" "$ACM_VERSION" "zip"
+package_append_to_all "dev.vml.es" "acm.ui.content.example" "$ACM_VERSION" "zip"
 
 git add -A
 git commit -m "ACM packages added to all/pom.xml"
