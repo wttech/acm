@@ -21,11 +21,19 @@ public class FileManager {
     }
 
     public File get(String path) {
-        if (!StringUtils.startsWith(path, root().getAbsolutePath())) {
-            throw new AcmException(
-                    String.format("File path must start with the root directory '%s'!", root().getAbsolutePath()));
+        try {
+            File rootDir = root();
+            File targetFile = new File(path);
+            String canonicalRoot = rootDir.getCanonicalPath();
+            String canonicalTarget = targetFile.getCanonicalPath();
+            if (!canonicalTarget.startsWith(canonicalRoot + File.separator)) {
+                throw new AcmException(
+                        String.format("File path must be within the root directory '%s'!", canonicalRoot));
+            }
+            return targetFile;
+        } catch (IOException e) {
+            throw new AcmException("Error resolving file path: " + path, e);
         }
-        return new File(path);
     }
 
     public File save(InputStream stream, String fileName) {
