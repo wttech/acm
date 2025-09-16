@@ -23,12 +23,14 @@ public class FileManager {
     public File get(String path) {
         try {
             File rootDir = root();
+            String rootCanonical = rootDir.getCanonicalPath();
+
             File targetFile = new File(path);
-            String canonicalRoot = rootDir.getCanonicalPath();
-            String canonicalTarget = targetFile.getCanonicalPath();
-            if (!canonicalTarget.startsWith(canonicalRoot + File.separator)) {
+            String targetCanonical = targetFile.getCanonicalPath();
+
+            if (!targetCanonical.startsWith(rootCanonical + File.separator) && !targetCanonical.equals(rootCanonical)) {
                 throw new AcmException(
-                        String.format("File path must be within the root directory '%s'!", canonicalRoot));
+                        String.format("File path must be within the root directory '%s'!", rootCanonical));
             }
             return targetFile;
         } catch (IOException e) {

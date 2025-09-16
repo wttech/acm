@@ -20,8 +20,13 @@ public class HealthStatus implements Serializable {
     }
 
     public static HealthStatus exception(Exception e) {
-        return new HealthStatus(Collections.singletonList(new HealthIssue(
-                HealthIssueSeverity.CRITICAL, HealthIssueCategory.OTHER, "Internal error", ExceptionUtils.toString(e))), false);
+        return new HealthStatus(
+                Collections.singletonList(new HealthIssue(
+                        HealthIssueSeverity.CRITICAL,
+                        HealthIssueCategory.OTHER,
+                        "Internal error",
+                        ExceptionUtils.toString(e))),
+                false);
     }
 
     public List<HealthIssue> getIssues() {

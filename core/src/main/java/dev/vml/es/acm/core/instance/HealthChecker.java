@@ -282,8 +282,7 @@ public class HealthChecker implements EventHandler {
             String issue = StringUtils.contains(error, ExtensionScriptSyntax.MAIN_CLASS + ":")
                     ? "Extension script error"
                     : "Execution context error";
-            issues.add(
-                    new HealthIssue(HealthIssueSeverity.CRITICAL, HealthIssueCategory.CODE_EXECUTOR, issue, error));
+            issues.add(new HealthIssue(HealthIssueSeverity.CRITICAL, HealthIssueCategory.CODE_EXECUTOR, issue, error));
         }
     }
 

@@ -3,8 +3,8 @@ package dev.vml.es.acm.core.assist;
 import org.apache.sling.api.resource.Resource;
 
 public class ResourceSuggestion implements Suggestion {
-    
-    private transient final Resource resource;
+
+    private final transient Resource resource;
 
     public ResourceSuggestion(Resource resource) {
         this.resource = resource;
