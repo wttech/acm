@@ -32,7 +32,7 @@ public class FileManager {
             }
             return targetFile;
         } catch (IOException e) {
-            throw new AcmException("Error resolving file path: " + path, e);
+            throw new AcmException(String.format("File path resolution error '%s'!", path), e);
         }
     }
 
