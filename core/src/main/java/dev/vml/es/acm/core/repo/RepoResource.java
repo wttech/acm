@@ -584,26 +584,15 @@ public class RepoResource {
         contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
         contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
         contentValues.put(JcrConstants.JCR_MIMETYPE, mimeType);
-        try {
-            final PipedInputStream pis = new PipedInputStream();
-            final PipedOutputStream pos = new PipedOutputStream(pis);
-            Executors.newSingleThreadExecutor().submit(() -> {
-                try {
-                    dataWriter.accept(pos);
-                } catch (Exception e) {
-                    throw new RepoException(String.format("Cannot write data to file at path '%s'!", path), e);
-                } finally {
-                    try {
-                        pos.close();
-                    } catch (IOException e) {
-                        LOG.warn("Cannot close output stream for file at path '{}'", path, e);
-                    }
-                }
-            });
-            contentValues.put(JcrConstants.JCR_DATA, pis);
-        } catch (IOException e) {
-            throw new RepoException(String.format("Cannot save file at path '%s'!", path), e);
-        }
+        final PipedInputStream pis = new PipedInputStream();
+        Executors.newSingleThreadExecutor().submit(() -> {
+            try (PipedOutputStream pos = new PipedOutputStream(pis)) {
+                dataWriter.accept(pos);
+            } catch (Exception e) {
+                throw new RepoException(String.format("Cannot write data to file at path '%s'!", path), e);
+            }
+        });
+        contentValues.put(JcrConstants.JCR_DATA, pis);
     }
 
     public InputStream readFileAsStream() {
