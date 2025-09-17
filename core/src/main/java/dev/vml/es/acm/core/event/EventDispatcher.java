@@ -3,6 +3,7 @@ package dev.vml.es.acm.core.event;
 import dev.vml.es.acm.core.code.ExecutionHistory;
 import dev.vml.es.acm.core.code.ExecutionQueue;
 import dev.vml.es.acm.core.code.Executor;
+import dev.vml.es.acm.core.script.AutomaticScriptScheduler;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.Collections;
 import org.apache.sling.api.resource.LoginException;
@@ -30,6 +31,9 @@ public class EventDispatcher implements EventListener {
     private Executor executor;
 
     @Reference
+    private AutomaticScriptScheduler scriptScheduler;
+
+    @Reference
     private ResourceResolverFactory resourceResolverFactory;
 
     public void dispatch(EventType eventType) {
@@ -49,6 +53,9 @@ public class EventDispatcher implements EventListener {
                 break;
             case HISTORY_CLEAR:
                 doHistoryClear();
+                break;
+            case SCRIPT_SCHEDULER_BOOT:
+                scriptScheduler.bootOnDemand();
                 break;
             default:
                 // not handled

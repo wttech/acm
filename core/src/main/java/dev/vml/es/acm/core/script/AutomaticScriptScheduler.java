@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-        service = ResourceChangeListener.class,
+        service = {ResourceChangeListener.class, AutomaticScriptScheduler.class},
         immediate = true,
         property = {
             ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
@@ -53,12 +53,6 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
             name = "AEM Content Manager - Automatic Script Scheduler",
             description = "Schedules automatic scripts on instance up and script changes")
     public @interface Config {
-
-        @AttributeDefinition(
-            name = "Boot Delay",
-            description = "Time in milliseconds to delay the boot job execution"
-        )
-        long bootDelay() default 1000 * 10; // 10 seconds
 
         @AttributeDefinition(
                 name = "User Impersonation ID",
@@ -138,6 +132,14 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
+    public void bootOnDemand() {
+        LOG.info("Automatic scripts booting on demand - job scheduling");
+        unscheduleBoot();
+        scheduleBoot();
+        LOG.info("Automatic scripts booting on demand - job scheduled");
+    }
+
+    // TODO on AEMaaCS scheduler refuses to schedule job during activate
     private void bootWhenInstanceUp() {
         LOG.info("Automatic scripts booting on instance up - job scheduling");
         unscheduleBoot();
@@ -157,8 +159,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     private void scheduleBoot() {
-        Date bootDate = new Date(System.currentTimeMillis() + config.bootDelay());
-        scheduler.schedule(bootJob(), configureScheduleOptions(BOOT_JOB_NAME, scheduler.AT(bootDate)));
+        scheduler.schedule(bootJob(), configureScheduleOptions(BOOT_JOB_NAME, scheduler.NOW()));
     }
 
     private ScheduleOptions configureScheduleOptions(String name, ScheduleOptions options) {
