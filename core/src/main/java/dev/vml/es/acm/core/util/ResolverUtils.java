@@ -39,6 +39,7 @@ public final class ResolverUtils {
         return serviceResolver(resourceResolverFactory, Subservice.MOCK, null);
     }
 
+    @SuppressWarnings("AEM Rules:AEM-11")
     private static ResourceResolver serviceResolver(
             ResourceResolverFactory resourceResolverFactory, Subservice subservice, String userImpersonationId)
             throws LoginException {

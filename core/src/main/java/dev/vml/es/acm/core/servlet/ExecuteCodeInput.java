@@ -12,6 +12,7 @@ public class ExecuteCodeInput implements Serializable {
 
     private Code code;
 
+    @SuppressWarnings("java:S1948")
     private Map<String, Object> arguments;
 
     public ExecuteCodeInput() {

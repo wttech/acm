@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class SnippetSuggestion implements Suggestion {
 
-    private final Snippet snippet;
+    private final transient Snippet snippet;
 
     public SnippetSuggestion(Snippet snippet) {
         this.snippet = snippet;

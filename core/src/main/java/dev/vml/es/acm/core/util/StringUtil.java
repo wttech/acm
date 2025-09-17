@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.util;
 
 import java.util.Arrays;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,8 +27,7 @@ public final class StringUtil {
         return obj == null ? "" : String.valueOf(obj);
     }
 
-    private static String truncateCode(
-            String code, int maxLength, boolean skipStart, String emptyMessage) {
+    private static String truncateCode(String code, int maxLength, boolean skipStart, String emptyMessage) {
         if (code == null || code.trim().isEmpty()) {
             return emptyMessage;
         }
@@ -41,7 +39,7 @@ public final class StringUtil {
         int skippedChars = text.length() - maxLength;
         String remaining;
         int skippedLines;
-        
+
         if (skipStart) {
             remaining = text.substring(skippedChars);
             String skippedPart = text.substring(0, skippedChars);
@@ -76,12 +74,9 @@ public final class StringUtil {
         long secs = seconds % 60;
 
         StringBuilder sb = new StringBuilder();
-        if (hours > 0)
-            sb.append(hours).append(" hour").append(hours > 1 ? "s " : " ");
-        if (minutes > 0)
-            sb.append(minutes).append(" minute").append(minutes > 1 ? "s " : " ");
-        if (secs > 0)
-            sb.append(secs).append(" second").append(secs != 1 ? "s" : "");
+        if (hours > 0) sb.append(hours).append(" hour").append(hours > 1 ? "s " : " ");
+        if (minutes > 0) sb.append(minutes).append(" minute").append(minutes > 1 ? "s " : " ");
+        if (secs > 0) sb.append(secs).append(" second").append(secs != 1 ? "s" : "");
 
         String humanReadable = sb.toString().trim();
         if (humanReadable.isEmpty()) {

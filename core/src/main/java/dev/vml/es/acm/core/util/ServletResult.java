@@ -10,6 +10,7 @@ public class ServletResult<D> implements Serializable {
 
     private final String message;
 
+    @SuppressWarnings("java:S1948")
     private final D data;
 
     public ServletResult(int status, String message, D data) {

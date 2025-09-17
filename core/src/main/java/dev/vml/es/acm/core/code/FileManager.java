@@ -7,10 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.component.annotations.Component;
 
 @Component(immediate = true, service = FileManager.class)
@@ -21,22 +21,21 @@ public class FileManager {
     }
 
     public File get(String path) {
-        if (!StringUtils.startsWith(path, root().getAbsolutePath())) {
-            throw new AcmException(
-                    String.format("File path must start with the root directory '%s'!", root().getAbsolutePath()));
-        }
-        return new File(path);
+        File targetFile = new File(path);
+        validatePath(targetFile);
+        return targetFile;
     }
 
     public File save(InputStream stream, String fileName) {
         try {
             String datePath = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
-            String randomDir = System.currentTimeMillis() + "-" + (int) (Math.random() * 10000);
+            String randomDir = UUID.randomUUID().toString();
             File dir = new File(root(), datePath + "/" + randomDir);
             if (!dir.exists() && !dir.mkdirs()) {
                 throw new AcmException("File directory cannot be created: " + dir.getAbsolutePath());
             }
             File file = new File(dir, fileName);
+            validatePath(file);
             if (file.exists()) {
                 throw new AcmException("File already exists: " + file.getAbsolutePath());
             }
@@ -65,5 +64,19 @@ public class FileManager {
             return Collections.emptyList();
         }
         return paths.stream().map(this::delete).collect(Collectors.toList());
+    }
+
+    private void validatePath(File targetFile) {
+        try {
+            File rootDir = root();
+            String rootCanonical = rootDir.getCanonicalPath();
+            String targetCanonical = targetFile.getCanonicalPath();
+            if (!targetCanonical.startsWith(rootCanonical + File.separator) && !targetCanonical.equals(rootCanonical)) {
+                throw new AcmException(
+                        String.format("File path '%s' must be within the root directory '%s'!", targetFile.getPath(), rootCanonical));
+            }
+        } catch (IOException e) {
+            throw new AcmException(String.format("File path resolution error '%s'!", targetFile.getPath()), e);
+        }
     }
 }

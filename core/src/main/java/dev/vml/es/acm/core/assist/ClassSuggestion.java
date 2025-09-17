@@ -8,9 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ClassSuggestion implements Suggestion {
 
-    private final ClassInfo classInfo;
+    private final transient ClassInfo classInfo;
 
-    private final CodeRepository codeRepository;
+    private final transient CodeRepository codeRepository;
 
     public ClassSuggestion(ClassInfo classInfo, CodeRepository codeRepository) {
         this.classInfo = classInfo;

@@ -38,7 +38,7 @@ public class FileServlet extends SlingAllMethodsServlet {
     private static final String PATH_PARAM = "path";
 
     @Reference
-    private FileManager manager;
+    private transient FileManager manager;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

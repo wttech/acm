@@ -38,7 +38,7 @@ public class AssistCodeServlet extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(AssistCodeServlet.class);
 
     @Reference
-    private Assistancer assistancer;
+    private transient Assistancer assistancer;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

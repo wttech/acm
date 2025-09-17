@@ -5,7 +5,6 @@ import static dev.vml.es.acm.core.util.ServletResult.ok;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 
 import dev.vml.es.acm.core.code.ExecutionQueue;
-import dev.vml.es.acm.core.code.ExecutionSummary;
 import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
@@ -14,8 +13,6 @@ import dev.vml.es.acm.core.mock.MockStatus;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.state.State;
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -40,27 +37,25 @@ public class StateServlet extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(StateServlet.class);
 
     @Reference
-    private ExecutionQueue executionQueue;
+    private transient ExecutionQueue executionQueue;
 
     @Reference
-    private InstanceInfo instanceInfo;
+    private transient InstanceInfo instanceInfo;
 
     @Reference
-    private HealthChecker healthChecker;
+    private transient HealthChecker healthChecker;
 
     @Reference
-    private MockHttpFilter mockHttpFilter;
+    private transient MockHttpFilter mockHttpFilter;
 
     @Reference
-    private SpaSettings spaSettings;
+    private transient SpaSettings spaSettings;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
             MockStatus mockStatus = mockHttpFilter.checkStatus();
-            List<ExecutionSummary> queuedExecutions =
-                    executionQueue.findAllSummaries().collect(Collectors.toList());
             State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getSettings());
 
             respondJson(response, ok("State read successfully", state));

@@ -56,7 +56,7 @@ public class ScriptStats implements Serializable {
         });
 
         return new ScriptStats(
-                path, statusCount, lastExecution.get(), length == 0 ? 0 : averageDuration.get() / length);
+                path, statusCount, lastExecution.get(), length == 0 ? 0 : (averageDuration.get() / length));
     }
 
     public String getPath() {

@@ -35,7 +35,7 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
     private static final String PATH_PARAM = "path";
 
     @Reference
-    private Executor executor;
+    private transient Executor executor;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

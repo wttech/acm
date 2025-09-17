@@ -8,8 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 
 public class VariableSuggestion implements Suggestion {
 
-    private final Variable variable;
-    private final CodeRepository codeRepository;
+    private final transient Variable variable;
+
+    private final transient CodeRepository codeRepository;
 
     public VariableSuggestion(Variable variable, CodeRepository codeRepository) {
         this.variable = variable;

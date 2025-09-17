@@ -44,7 +44,7 @@ public final class ScriptUtils {
             if (DEF_TYPE.equals(actualReturnType)
                     || methodName.equals(method.getName())
                             && returnType.equals(actualReturnType)
-                            && method.getParameters().length == paramCount) {
+                            && (method.getParameters().length == paramCount)) {
                 return true;
             }
         }

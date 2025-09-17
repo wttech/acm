@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
         service = {ExecutionQueue.class, JobExecutor.class},
         property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
 @Designate(ocd = ExecutionQueue.Config.class)
+@SuppressWarnings("java:S1181")
 public class ExecutionQueue implements JobExecutor {
 
     public static final String TOPIC = "dev/vml/es/acm/ExecutionQueue";
@@ -241,7 +242,7 @@ public class ExecutionQueue implements JobExecutor {
     }
 
     public void reset() {
-        if (jobAsyncExecutor != null && !jobAsyncExecutor.isShutdown()) {
+        if ((jobAsyncExecutor != null) && !jobAsyncExecutor.isShutdown()) {
             jobAsyncExecutor.shutdownNow();
         }
         jobAsyncExecutor = Executors.newCachedThreadPool();

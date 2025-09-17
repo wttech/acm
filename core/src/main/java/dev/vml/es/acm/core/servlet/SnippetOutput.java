@@ -6,7 +6,7 @@ import java.util.List;
 
 public class SnippetOutput implements Serializable {
 
-    public List<Snippet> list;
+    private List<Snippet> list;
 
     public SnippetOutput(List<Snippet> snippets) {
         this.list = snippets;

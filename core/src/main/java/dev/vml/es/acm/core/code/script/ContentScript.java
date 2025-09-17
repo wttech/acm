@@ -8,6 +8,7 @@ import groovy.lang.GroovyShell;
 import groovy.lang.MissingMethodException;
 import groovy.lang.Script;
 
+@SuppressWarnings("java:S1181")
 public class ContentScript {
 
     private final ExecutionContext executionContext;

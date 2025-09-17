@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.instance;
 
 import dev.vml.es.acm.core.util.ExceptionUtils;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -9,23 +10,30 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class HealthStatus implements Serializable {
 
-    boolean healthy;
+    private boolean healthy;
 
-    List<HealthIssue> issues = new LinkedList<>();
+    private List<HealthIssue> issues = new LinkedList<>();
+
+    public HealthStatus(List<HealthIssue> issues, boolean healthy) {
+        this.issues = new LinkedList<>(issues);
+        this.healthy = healthy;
+    }
 
     public static HealthStatus exception(Exception e) {
-        HealthStatus result = new HealthStatus();
-        result.healthy = false;
-        result.issues.add(new HealthIssue(
-                HealthIssueSeverity.CRITICAL, HealthIssueCategory.OTHER, "Internal error", ExceptionUtils.toString(e)));
-        return result;
+        return new HealthStatus(
+                Collections.singletonList(new HealthIssue(
+                        HealthIssueSeverity.CRITICAL,
+                        HealthIssueCategory.OTHER,
+                        "Internal error",
+                        ExceptionUtils.toString(e))),
+                false);
     }
 
     public List<HealthIssue> getIssues() {
         return issues;
     }
 
-    public boolean isHealthy() {
+    public boolean getHealthy() {
         return healthy;
     }
 

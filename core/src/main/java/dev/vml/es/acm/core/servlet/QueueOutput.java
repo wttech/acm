@@ -6,7 +6,7 @@ import java.util.List;
 
 public class QueueOutput implements Serializable {
 
-    public List<Execution> executions;
+    private List<Execution> executions;
 
     public QueueOutput(List<Execution> executions) {
         this.executions = executions;
