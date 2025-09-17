@@ -5,6 +5,9 @@ import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.schedule.CronSchedule;
 import dev.vml.es.acm.core.code.schedule.NoneSchedule;
+import dev.vml.es.acm.core.event.Event;
+import dev.vml.es.acm.core.event.EventListener;
+import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
@@ -12,7 +15,6 @@ import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-        service = ResourceChangeListener.class,
+        service = {ResourceChangeListener.class, EventListener.class},
         immediate = true,
         property = {
             ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
@@ -43,7 +45,7 @@ import org.slf4j.LoggerFactory;
             ResourceChangeListener.CHANGES + "=REMOVED"
         })
 @Designate(ocd = AutomaticScriptScheduler.Config.class)
-public class AutomaticScriptScheduler implements ResourceChangeListener {
+public class AutomaticScriptScheduler implements ResourceChangeListener, EventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptScheduler.class);
 
@@ -53,12 +55,6 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
             name = "AEM Content Manager - Automatic Script Scheduler",
             description = "Schedules automatic scripts on instance up and script changes")
     public @interface Config {
-
-        @AttributeDefinition(
-            name = "Boot Delay",
-            description = "Time in milliseconds to delay the boot job execution"
-        )
-        long bootDelay() default 1000 * 10; // 10 seconds
 
         @AttributeDefinition(
                 name = "User Impersonation ID",
@@ -138,6 +134,22 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
         }
     }
 
+    @Override
+    public void onEvent(Event event) {
+        EventType eventType = EventType.of(event.getName()).orElse(null);
+        if (eventType == EventType.SCRIPT_SCHEDULER_BOOT) {
+            bootOnDemand();
+        }
+    }
+
+    public void bootOnDemand() {
+        LOG.info("Automatic scripts booting on demand - job scheduling");
+        unscheduleBoot();
+        scheduleBoot();
+        LOG.info("Automatic scripts booting on demand - job scheduled");
+    }
+
+    // TODO on AEMaaCS scheduler refuses to schedule job during activate
     private void bootWhenInstanceUp() {
         LOG.info("Automatic scripts booting on instance up - job scheduling");
         unscheduleBoot();
@@ -157,8 +169,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     private void scheduleBoot() {
-        Date bootDate = new Date(System.currentTimeMillis() + config.bootDelay());
-        scheduler.schedule(bootJob(), configureScheduleOptions(BOOT_JOB_NAME, scheduler.AT(bootDate)));
+        scheduler.schedule(bootJob(), configureScheduleOptions(BOOT_JOB_NAME, scheduler.NOW()));
     }
 
     private ScheduleOptions configureScheduleOptions(String name, ScheduleOptions options) {

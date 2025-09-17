@@ -3,6 +3,9 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.script.ContentScript;
+import dev.vml.es.acm.core.event.Event;
+import dev.vml.es.acm.core.event.EventListener;
+import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.format.TemplateFormatter;
 import dev.vml.es.acm.core.instance.InstanceSettings;
 import dev.vml.es.acm.core.notification.NotificationManager;
@@ -29,10 +32,12 @@ import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-@Component(immediate = true, service = Executor.class)
+@Component(
+        immediate = true,
+        service = {Executor.class, EventListener.class})
 @Designate(ocd = Executor.Config.class)
 @SuppressWarnings("java:S1181")
-public class Executor {
+public class Executor implements EventListener {
 
     public static final String LOCK_DIR = "executor";
 
@@ -110,6 +115,14 @@ public class Executor {
     @Modified
     protected void activate(Config config) {
         this.config = config;
+    }
+
+    @Override
+    public void onEvent(Event event) {
+        EventType eventType = EventType.of(event.getName()).orElse(null);
+        if (eventType == EventType.EXECUTOR_RESET) {
+            reset();
+        }
     }
 
     public ExecutionContext createContext(

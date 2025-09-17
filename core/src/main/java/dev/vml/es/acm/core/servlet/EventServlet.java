@@ -3,9 +3,10 @@ package dev.vml.es.acm.core.servlet;
 import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 
-import dev.vml.es.acm.core.event.EventDispatcher;
+import dev.vml.es.acm.core.event.EventManager;
 import dev.vml.es.acm.core.event.EventType;
 import java.io.IOException;
+import java.util.Collections;
 import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -32,7 +33,7 @@ public class EventServlet extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(EventServlet.class);
 
     @Reference
-    private transient EventDispatcher dispatcher;
+    private transient EventManager eventManager;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
@@ -44,7 +45,7 @@ public class EventServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            dispatcher.dispatch(event);
+            eventManager.triggerEvent(event.name().toLowerCase(), Collections.emptyMap());
             respondJson(response, ok(String.format("Event '%s' dispatched successfully!", name)));
         } catch (Exception e) {
             LOG.error("Event '{}' cannot be dispatched!", name, e);

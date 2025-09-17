@@ -20,8 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.discovery.DiscoveryService;
-import org.apache.sling.discovery.InstanceDescription;
-import org.apache.sling.discovery.TopologyView;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
@@ -91,7 +89,6 @@ public class HealthChecker implements EventHandler {
 
     private HealthStatus checkStatus(ResourceResolver resourceResolver) {
         List<HealthIssue> issues = new LinkedList<>();
-        checkCluster(issues);
         checkRepository(issues, resourceResolver);
         checkInstaller(issues, resourceResolver);
         checkBundles(issues);
@@ -99,24 +96,6 @@ public class HealthChecker implements EventHandler {
         checkComponents(issues);
         checkCodeExecutor(issues, resourceResolver);
         return new HealthStatus(issues, CollectionUtils.isEmpty(issues));
-    }
-
-    private void checkCluster(List<HealthIssue> issues) {
-        if (!instanceInfo.isCluster()) {
-            return;
-        }
-        if (!isClusterLeader()) {
-            issues.add(new HealthIssue(
-                    HealthIssueSeverity.CRITICAL, HealthIssueCategory.INSTANCE, "Not a cluster leader", null));
-        }
-    }
-
-    private boolean isClusterLeader() {
-        return Optional.ofNullable(discoveryService)
-                .map(DiscoveryService::getTopology)
-                .map(TopologyView::getLocalInstance)
-                .map(InstanceDescription::isLeader)
-                .orElse(false);
     }
 
     // TODO seems to not work on AEMaaCS as there is no Sling Installer JMX MBean

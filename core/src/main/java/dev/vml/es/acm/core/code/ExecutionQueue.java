@@ -1,6 +1,9 @@
 package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.event.Event;
+import dev.vml.es.acm.core.event.EventListener;
+import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.util.*;
@@ -28,11 +31,11 @@ import org.slf4j.LoggerFactory;
 
 @Component(
         immediate = true,
-        service = {ExecutionQueue.class, JobExecutor.class},
+        service = {ExecutionQueue.class, JobExecutor.class, EventListener.class},
         property = {JobExecutor.PROPERTY_TOPICS + "=" + ExecutionQueue.TOPIC})
 @Designate(ocd = ExecutionQueue.Config.class)
 @SuppressWarnings("java:S1181")
-public class ExecutionQueue implements JobExecutor {
+public class ExecutionQueue implements JobExecutor, EventListener {
 
     public static final String TOPIC = "dev/vml/es/acm/ExecutionQueue";
 
@@ -74,6 +77,14 @@ public class ExecutionQueue implements JobExecutor {
     protected void deactivate() {
         if (jobAsyncExecutor != null) {
             jobAsyncExecutor.shutdown();
+        }
+    }
+
+    @Override
+    public void onEvent(Event event) {
+        EventType eventType = EventType.of(event.getName()).orElse(null);
+        if (eventType == EventType.EXECUTOR_RESET) {
+            reset();
         }
     }
 

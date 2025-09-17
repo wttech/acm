@@ -5,7 +5,8 @@ import java.util.Optional;
 
 public enum EventType {
     EXECUTOR_RESET,
-    HISTORY_CLEAR;
+    HISTORY_CLEAR,
+    SCRIPT_SCHEDULER_BOOT;
 
     public static Optional<EventType> of(String name) {
         return Arrays.stream(values())
