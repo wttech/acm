@@ -174,7 +174,6 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
 
     private ScheduleOptions configureScheduleOptions(String name, ScheduleOptions options) {
         options.name(name);
-        options.onLeaderOnly(true);
         options.canRunConcurrently(false);
         options.onSingleInstanceOnly(true);
         return options;
