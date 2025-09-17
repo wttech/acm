@@ -33,15 +33,15 @@ public final class StringUtil {
         }
         String humanSize = FileUtils.byteCountToDisplaySize(code.length());
         String text = StringUtils.trimToEmpty(code);
-        
+
         int totalLines = text.isEmpty() ? 0 : text.split("\r?\n").length;
         String lineWord = totalLines == 1 ? "line" : "lines";
-        
+
         if (maxLength < 0 || text.length() <= maxLength) {
             String msg = String.format("%s, %d %s", humanSize, totalLines, lineWord);
             return String.format("%s\n```\n%s\n```", msg, text);
         }
-        
+
         String remaining;
         String rangeInfo;
         if (skipStart) {
@@ -52,7 +52,7 @@ public final class StringUtil {
             remaining = text.substring(0, maxLength);
             rangeInfo = String.format("first %d chars", maxLength);
         }
-        
+
         String msg = String.format("%s, %d %s (%s)", humanSize, totalLines, lineWord, rangeInfo);
         return String.format("%s\n```\n%s\n```", msg, remaining);
     }

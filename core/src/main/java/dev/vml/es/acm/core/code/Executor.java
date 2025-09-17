@@ -208,10 +208,7 @@ public class Executor {
 
     private void handleHistory(ExecutionContext context, ImmediateExecution execution) {
         if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-            useHistory(resolverFactory, h -> {
-                h.save(context, execution);
-                return null;
-            });
+            useHistory(resolverFactory, h -> h.save(context, execution));
         }
     }
 
@@ -316,17 +313,14 @@ public class Executor {
     }
 
     private <T> T queryLocker(ResourceResolverFactory resolverFactory, Function<Locker, T> consumer) {
-        return ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.apply(new Locker(r)));
+        return ResolverUtils.queryContentResolver(resolverFactory, null, r -> consumer.apply(new Locker(r)));
     }
 
     private void useLocker(ResourceResolverFactory resolverFactory, Consumer<Locker> consumer) {
-        ResolverUtils.useContentResolver(resolverFactory, null, r -> {
-            consumer.accept(new Locker(r));
-            return null;
-        });
+        ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.accept(new Locker(r)));
     }
 
-    private <T> T useHistory(ResourceResolverFactory resolverFactory, Function<ExecutionHistory, T> consumer) {
-        return ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.apply(new ExecutionHistory(r)));
+    private void useHistory(ResourceResolverFactory resolverFactory, Consumer<ExecutionHistory> consumer) {
+        ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.accept(new ExecutionHistory(r)));
     }
 }
