@@ -312,10 +312,10 @@ public class Executor {
     }
 
     private <T> T useLocker(ResourceResolverFactory resolverFactory, Function<Locker, T> consumer) {
-        return ResolverUtils.useContentResolver(resolverFactory, r -> consumer.apply(new Locker(r)));
+        return ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.apply(new Locker(r)));
     }
 
     private <T> T useHistory(ResourceResolverFactory resolverFactory, Function<ExecutionHistory, T> consumer) {
-        return ResolverUtils.useContentResolver(resolverFactory, r -> consumer.apply(new ExecutionHistory(r)));
+        return ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.apply(new ExecutionHistory(r)));
     }  
 }

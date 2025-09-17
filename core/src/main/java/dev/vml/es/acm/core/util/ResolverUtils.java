@@ -37,6 +37,14 @@ public final class ResolverUtils {
         return serviceResolver(resourceResolverFactory, Subservice.CONTENT, userImpersonationId);
     }
 
+    public static <T> T useContentResolver(ResourceResolverFactory resolverFactory, String userImpersonationId, Function<ResourceResolver, T> consumer) {
+        try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resolverFactory, userImpersonationId)) {
+            return consumer.apply(resourceResolver);
+        } catch (LoginException e) {
+            throw new RepoException("Cannot access repository while using content resolver!", e);
+        }
+    }
+
     public static ResourceResolver mockResolver(ResourceResolverFactory resourceResolverFactory) throws LoginException {
         return serviceResolver(resourceResolverFactory, Subservice.MOCK, null);
     }
@@ -80,13 +88,5 @@ public final class ResolverUtils {
             throw new RepoException("Cannot determine service/impersonated user ID from resource resolver!");
         }
         return session.getUserID();
-    }
-
-    public static <T> T useContentResolver(ResourceResolverFactory resolverFactory, Function<ResourceResolver, T> consumer) {
-        try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resolverFactory, null)) {
-            return consumer.apply(resourceResolver);
-        } catch (LoginException e) {
-            throw new RepoException("Cannot access repository while using content resolver!", e);
-        }
     }
 }
