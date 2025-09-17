@@ -12,6 +12,7 @@ import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +53,12 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
             name = "AEM Content Manager - Automatic Script Scheduler",
             description = "Schedules automatic scripts on instance up and script changes")
     public @interface Config {
+
+        @AttributeDefinition(
+            name = "Boot Delay",
+            description = "Time in milliseconds to delay the boot job execution"
+        )
+        long bootDelay() default 1000 * 10; // 10 seconds
 
         @AttributeDefinition(
                 name = "User Impersonation ID",
@@ -150,7 +157,8 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     private void scheduleBoot() {
-        scheduler.schedule(bootJob(), configureScheduleOptions(BOOT_JOB_NAME, scheduler.NOW()));
+        Date bootDate = new Date(System.currentTimeMillis() + config.bootDelay());
+        scheduler.schedule(bootJob(), configureScheduleOptions(BOOT_JOB_NAME, scheduler.AT(bootDate)));
     }
 
     private ScheduleOptions configureScheduleOptions(String name, ScheduleOptions options) {
