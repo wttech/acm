@@ -5,6 +5,9 @@ import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.schedule.CronSchedule;
 import dev.vml.es.acm.core.code.schedule.NoneSchedule;
+import dev.vml.es.acm.core.event.Event;
+import dev.vml.es.acm.core.event.EventListener;
+import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
@@ -12,7 +15,6 @@ import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-        service = {ResourceChangeListener.class, AutomaticScriptScheduler.class},
+        service = {ResourceChangeListener.class, EventListener.class},
         immediate = true,
         property = {
             ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
@@ -43,7 +45,7 @@ import org.slf4j.LoggerFactory;
             ResourceChangeListener.CHANGES + "=REMOVED"
         })
 @Designate(ocd = AutomaticScriptScheduler.Config.class)
-public class AutomaticScriptScheduler implements ResourceChangeListener {
+public class AutomaticScriptScheduler implements ResourceChangeListener, EventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptScheduler.class);
 
@@ -129,6 +131,14 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     public void onChange(List<ResourceChange> changes) {
         if (!changes.isEmpty() && checkInstanceReady()) {
             bootWhenScriptsChanged();
+        }
+    }
+
+    @Override
+    public void onEvent(Event event) {
+        EventType eventType = EventType.of(event.getName()).orElse(null);
+        if (eventType == EventType.SCRIPT_SCHEDULER_BOOT) {
+            bootOnDemand();
         }
     }
 
