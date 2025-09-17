@@ -2,21 +2,18 @@
 
 This test project is used for testing ACM in the AEM as a Cloud Service environment.
 
-## Setup
+1. Configure AEM Cloud Manager Repository in *.env* file in the root of the repository:
+    ```env
+    ACM_CM_URL=https://<username>:<password>@git.cloudmanager.adobe.com/<program-name>/<repository-name>/
+    ```
+    Replace `<username>`, `<password>`, `<program-name>`, and `<repository-name>` with your actual Cloud Manager credentials and repository details.
 
-1. Run script which will create fresh AEM project generated from AEM Project archetype:
+
+2. Run script by task from the root of the repository:
 
     ```bash
-    sh setup.sh
+    sh taskw release:test:project
     ```
-
-2. Configure AEM Cloud Manager Repository to point to this project repository.
-
-    ```bash
-    git remote add adobe "https://john-doe-acme-com:password@git.cloudmanager.adobe.com/program-name/repository-name/"
-    git push adobe main -f
-    ```
-
 
 3. Setup Pipeline in Adobe Cloud Manager UI and select repository created in the previous step.
 4. Run the pipeline to build and deploy the project to AEM as a Cloud Service environment.
