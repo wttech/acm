@@ -6,7 +6,7 @@ import DataRemove from '@spectrum-icons/workflow/DataRemove';
 import Flashlight from '@spectrum-icons/workflow/Flashlight';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
-import { QueueOutput } from '../utils/api.types.ts';
+import { EventType, QueueOutput } from '../utils/api.types.ts';
 
 type ExecutionHistoryClearButtonProps = {
   onClear?: () => void;
@@ -21,7 +21,7 @@ const ExecutionHistoryClearButton: React.FC<ExecutionHistoryClearButtonProps> = 
     try {
       await toastRequest<QueueOutput>({
         method: 'POST',
-        url: `/apps/acm/api/event.json?name=history_clear`,
+        url: `/apps/acm/api/event.json?name=${EventType.HISTORY_CLEAR}`,
         operation: 'Clear execution history',
       });
       if (onClear) onClear();

@@ -88,6 +88,20 @@ public class Locker {
         }
     }
 
+    public void unlockAll() {
+        Resource root = resolver.getResource(ROOT);
+        if (root == null) {
+            return;
+        }
+        try {
+            resolver.delete(root);
+            resolver.commit();
+            LOG.debug("Deleted all locks");
+        } catch (PersistenceException e) {
+            throw new AcmException("Cannot delete all locks!", e);
+        }
+    }
+
     private Resource getLock(String lockName) {
         String name = normalizeName(lockName);
         if (StringUtils.isBlank(name)) {

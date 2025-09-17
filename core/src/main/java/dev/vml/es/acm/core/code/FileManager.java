@@ -72,8 +72,8 @@ public class FileManager {
             String rootCanonical = rootDir.getCanonicalPath();
             String targetCanonical = targetFile.getCanonicalPath();
             if (!targetCanonical.startsWith(rootCanonical + File.separator) && !targetCanonical.equals(rootCanonical)) {
-                throw new AcmException(
-                        String.format("File path '%s' must be within the root directory '%s'!", targetFile.getPath(), rootCanonical));
+                throw new AcmException(String.format(
+                        "File path '%s' must be within the root directory '%s'!", targetFile.getPath(), rootCanonical));
             }
         } catch (IOException e) {
             throw new AcmException(String.format("File path resolution error '%s'!", targetFile.getPath()), e);

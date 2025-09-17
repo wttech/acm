@@ -122,7 +122,8 @@ public class Executor {
 
     public Execution execute(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         try (ResourceResolver resolver = ResolverUtils.contentResolver(resolverFactory, contextOptions.getUserId());
-                ExecutionContext executionContext = createContext(ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resolver)) {
+                ExecutionContext executionContext = createContext(
+                        ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resolver)) {
             return execute(executionContext);
         } catch (LoginException e) {
             throw new AcmException(
@@ -171,7 +172,10 @@ public class Executor {
             }
 
             try {
-                useLocker(resolverFactory, l -> { l.lock(lockName); return null; });
+                useLocker(resolverFactory, l -> {
+                    l.lock(lockName);
+                    return null;
+                });
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
@@ -181,7 +185,10 @@ public class Executor {
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                useLocker(resolverFactory, l -> { l.unlock(lockName); return null; });
+                useLocker(resolverFactory, l -> {
+                    l.unlock(lockName);
+                    return null;
+                });
             }
         } catch (Throwable e) {
             execution.error(e);
@@ -192,7 +199,7 @@ public class Executor {
         } finally {
             statuses.remove(context.getId());
         }
-    } 
+    }
 
     private String executableLockName(ExecutionContext context) {
         return String.format(
@@ -206,7 +213,10 @@ public class Executor {
 
     private void handleHistory(ExecutionContext context, ImmediateExecution execution) {
         if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-            useHistory(resolverFactory, h -> { h.save(context, execution); return null; });
+            useHistory(resolverFactory, h -> {
+                h.save(context, execution);
+                return null;
+            });
         }
     }
 
@@ -312,5 +322,12 @@ public class Executor {
 
     private <T> T useHistory(ResourceResolverFactory resolverFactory, Function<ExecutionHistory, T> consumer) {
         return ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.apply(new ExecutionHistory(r)));
-    }  
+    }
+
+    public void reset() {
+        useLocker(resolverFactory, l -> {
+            l.unlockAll();
+            return null;
+        });
+    }
 }

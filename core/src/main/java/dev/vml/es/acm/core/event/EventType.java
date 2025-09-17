@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum EventType {
-    EXECUTION_QUEUE_RESET,
+    EXECUTOR_RESET,
     HISTORY_CLEAR;
 
     public static Optional<EventType> of(String name) {

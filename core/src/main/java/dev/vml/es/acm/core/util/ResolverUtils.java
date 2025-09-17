@@ -5,7 +5,6 @@ import dev.vml.es.acm.core.repo.RepoException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 import javax.jcr.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.*;
@@ -37,7 +36,10 @@ public final class ResolverUtils {
         return serviceResolver(resourceResolverFactory, Subservice.CONTENT, userImpersonationId);
     }
 
-    public static <T> T useContentResolver(ResourceResolverFactory resolverFactory, String userImpersonationId, Function<ResourceResolver, T> consumer) {
+    public static <T> T useContentResolver(
+            ResourceResolverFactory resolverFactory,
+            String userImpersonationId,
+            Function<ResourceResolver, T> consumer) {
         try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resolverFactory, userImpersonationId)) {
             return consumer.apply(resourceResolver);
         } catch (LoginException e) {

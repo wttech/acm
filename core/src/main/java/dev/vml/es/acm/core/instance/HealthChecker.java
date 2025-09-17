@@ -268,6 +268,9 @@ public class HealthChecker implements EventHandler {
                 ExecutionId.generate(), ExecutionMode.RUN, Code.consoleMinimal(), resourceResolver)) {
             context.setHistory(false);
             Execution execution = executor.execute(context);
+            if (execution.getStatus() == ExecutionStatus.SKIPPED) {
+                return; // ignore due to locks, queue not empty, etc.
+            }
             if (execution.getStatus() != ExecutionStatus.SUCCEEDED) {
                 issues.add(new HealthIssue(
                         HealthIssueSeverity.CRITICAL,

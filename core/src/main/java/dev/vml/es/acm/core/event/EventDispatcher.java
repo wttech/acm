@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.event;
 
 import dev.vml.es.acm.core.code.ExecutionHistory;
 import dev.vml.es.acm.core.code.ExecutionQueue;
+import dev.vml.es.acm.core.code.Executor;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.Collections;
 import org.apache.sling.api.resource.LoginException;
@@ -26,6 +27,9 @@ public class EventDispatcher implements EventListener {
     private ExecutionQueue executionQueue;
 
     @Reference
+    private Executor executor;
+
+    @Reference
     private ResourceResolverFactory resourceResolverFactory;
 
     public void dispatch(EventType eventType) {
@@ -39,8 +43,9 @@ public class EventDispatcher implements EventListener {
             return;
         }
         switch (eventType) {
-            case EXECUTION_QUEUE_RESET:
+            case EXECUTOR_RESET:
                 executionQueue.reset();
+                executor.reset();
                 break;
             case HISTORY_CLEAR:
                 doHistoryClear();
