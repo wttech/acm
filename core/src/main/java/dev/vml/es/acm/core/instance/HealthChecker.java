@@ -269,7 +269,7 @@ public class HealthChecker implements EventHandler {
             context.setHistory(false);
             Execution execution = executor.execute(context);
             if (execution.getStatus() == ExecutionStatus.SKIPPED) {
-                return; // ignore due to locks, queue not empty, etc.
+                return; // do not check when locked
             }
             if (execution.getStatus() != ExecutionStatus.SUCCEEDED) {
                 issues.add(new HealthIssue(
