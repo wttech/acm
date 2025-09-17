@@ -4,7 +4,15 @@ set -e
 
 # ===[ Configuration ]===
 
-ACM_VERSION=${ACM_VERSION:-"0.9.46"}
+if [ -z "${ACM_VERSION}" ]; then
+  VERSION_TAG=$(cd ../../ && git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+  ACM_VERSION="${VERSION_TAG#v}"
+  export ACM_VERSION
+  echo "Auto-detected ACM_VERSION: ${ACM_VERSION}"
+else
+  echo "Using specified ACM_VERSION: ${ACM_VERSION}"
+fi
+
 PROJECT_NAME="acme"
 
 print_step() {
@@ -13,6 +21,18 @@ print_step() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
   echo "==================================================================="
   echo
+}
+
+print_error() {
+  echo
+  echo "ERROR: $1" >&2
+  if [ $# -gt 1 ]; then
+    echo "$2" >&2
+    if [ $# -gt 2 ]; then
+      echo "$3" >&2
+    fi
+  fi
+  echo >&2
 }
 
 package_append_to_all() {
@@ -95,6 +115,12 @@ package_append_to_all "dev.vml.es" "acm.ui.content.example" "$ACM_VERSION" "zip"
 
 git add -A
 git commit -m "ACM packages added to all/pom.xml"
+
+if [ -n "${AEM_CM_URL}" ]; then
+  print_step "Pushing to Adobe Cloud Manager"
+  git remote add adobe "${AEM_CM_URL}"
+  git push adobe main -f
+fi
 
 print_step "Project '$PROJECT_NAME' setup completed"
 

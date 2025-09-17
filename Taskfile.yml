@@ -318,3 +318,8 @@ tasks:
         echo "Pushing release tag '$VERSION_TAG'"
         git tag "$VERSION_TAG"
         git push origin "$VERSION_TAG" || echo "Tag already exists or cannot push"
+
+  release:test:project:
+    dir: test/project
+    cmd: |
+      sh setup.sh
