@@ -5,7 +5,7 @@ import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import GearsDelete from '@spectrum-icons/workflow/GearsDelete';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
-import { QueueOutput } from '../utils/api.types.ts';
+import { EventType, QueueOutput } from '../utils/api.types.ts';
 
 type ExecutionsResetButtonProps = {
   onReset?: () => void;
@@ -20,7 +20,7 @@ const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }
     try {
       await toastRequest<QueueOutput>({
         method: 'POST',
-        url: `/apps/acm/api/event.json?name=execution_queue_reset`,
+        url: `/apps/acm/api/event.json?name=${EventType.EXECUTOR_RESET}`,
         operation: 'Reset executions',
       });
       if (onReset) onReset();
@@ -41,7 +41,7 @@ const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }
       <Content>
         <Text>
           <p>
-            Are you sure you want to reset the executor? This action will <strong>affect all instances</strong>, immediately stop any ongoing executions, and clear all jobs from the Sling queue.
+            Are you sure you want to reset the executor? This action will <strong>affect all instances</strong>, immediately stop any ongoing executions, clear all jobs from the Sling queue, and clear repository locks.
             <br />
           </p>
           <p>

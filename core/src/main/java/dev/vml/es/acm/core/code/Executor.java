@@ -17,6 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
@@ -92,7 +94,7 @@ public class Executor {
     }
 
     @Reference
-    private ResourceResolverFactory resourceResolverFactory;
+    private ResourceResolverFactory resolverFactory;
 
     @Reference
     private OsgiContext osgiContext;
@@ -120,10 +122,9 @@ public class Executor {
     }
 
     public Execution execute(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
-        try (ResourceResolver resourceResolver =
-                        ResolverUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
+        try (ResourceResolver resolver = ResolverUtils.contentResolver(resolverFactory, contextOptions.getUserId());
                 ExecutionContext executionContext = createContext(
-                        ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resourceResolver)) {
+                        ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resolver)) {
             return execute(executionContext);
         } catch (LoginException e) {
             throw new AcmException(
@@ -166,15 +167,13 @@ public class Executor {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            Locker locker = context.getCodeContext().getLocker();
             String lockName = executableLockName(context);
-
-            if (locker.isLocked(lockName)) {
+            if (queryLocker(resolverFactory, l -> l.isLocked(lockName))) {
                 return execution.end(ExecutionStatus.SKIPPED);
             }
 
             try {
-                locker.lock(lockName);
+                useLocker(resolverFactory, l -> l.lock(lockName));
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
@@ -184,7 +183,7 @@ public class Executor {
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                locker.unlock(lockName);
+                useLocker(resolverFactory, l -> l.unlock(lockName));
             }
         } catch (Throwable e) {
             execution.error(e);
@@ -209,9 +208,7 @@ public class Executor {
 
     private void handleHistory(ExecutionContext context, ImmediateExecution execution) {
         if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-            ExecutionHistory history =
-                    new ExecutionHistory(context.getCodeContext().getResourceResolver());
-            history.save(context, execution);
+            useHistory(resolverFactory, h -> h.save(context, execution));
         }
     }
 
@@ -299,6 +296,10 @@ public class Executor {
         }
     }
 
+    public void reset() {
+        useLocker(resolverFactory, l -> l.unlockAll());
+    }
+
     public boolean isDebug() {
         return config.debug();
     }
@@ -309,5 +310,17 @@ public class Executor {
 
     public boolean isLocked(ExecutionContext context) {
         return context.getCodeContext().getLocker().isLocked(executableLockName(context));
+    }
+
+    private <T> T queryLocker(ResourceResolverFactory resolverFactory, Function<Locker, T> consumer) {
+        return ResolverUtils.queryContentResolver(resolverFactory, null, r -> consumer.apply(new Locker(r)));
+    }
+
+    private void useLocker(ResourceResolverFactory resolverFactory, Consumer<Locker> consumer) {
+        ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.accept(new Locker(r)));
+    }
+
+    private void useHistory(ResourceResolverFactory resolverFactory, Consumer<ExecutionHistory> consumer) {
+        ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.accept(new ExecutionHistory(r)));
     }
 }

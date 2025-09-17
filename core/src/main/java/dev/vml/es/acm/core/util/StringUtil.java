@@ -33,29 +33,27 @@ public final class StringUtil {
         }
         String humanSize = FileUtils.byteCountToDisplaySize(code.length());
         String text = StringUtils.trimToEmpty(code);
-        if (maxLength < 0 || text.length() <= maxLength) {
-            return String.format("%s\n```\n%s\n```", humanSize, text);
-        }
-        int skippedChars = text.length() - maxLength;
-        String remaining;
-        int skippedLines;
 
+        int totalLines = text.isEmpty() ? 0 : text.split("\r?\n").length;
+        String lineWord = totalLines == 1 ? "line" : "lines";
+
+        if (maxLength < 0 || text.length() <= maxLength) {
+            String msg = String.format("%s, %d %s", humanSize, totalLines, lineWord);
+            return String.format("%s\n```\n%s\n```", msg, text);
+        }
+
+        String remaining;
+        String rangeInfo;
         if (skipStart) {
+            int skippedChars = text.length() - maxLength;
             remaining = text.substring(skippedChars);
-            String skippedPart = text.substring(0, skippedChars);
-            skippedLines = skippedPart.isEmpty() ? 0 : skippedPart.split("\r?\n").length;
+            rangeInfo = String.format("last %d chars", maxLength);
         } else {
             remaining = text.substring(0, maxLength);
-            String skippedPart = text.substring(maxLength);
-            skippedLines = skippedPart.isEmpty() ? 0 : skippedPart.split("\r?\n").length;
+            rangeInfo = String.format("first %d chars", maxLength);
         }
-        String lineWord = skippedLines == 1 ? "line" : "lines";
-        String msg;
-        if (skippedLines > 0) {
-            msg = String.format("%s, %d %s skipped", humanSize, skippedLines, lineWord);
-        } else {
-            msg = humanSize;
-        }
+
+        String msg = String.format("%s, %d %s (%s)", humanSize, totalLines, lineWord, rangeInfo);
         return String.format("%s\n```\n%s\n```", msg, remaining);
     }
 

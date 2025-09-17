@@ -4,6 +4,8 @@ import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.repo.RepoException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import javax.jcr.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.*;
@@ -33,6 +35,25 @@ public final class ResolverUtils {
     public static ResourceResolver contentResolver(
             ResourceResolverFactory resourceResolverFactory, String userImpersonationId) throws LoginException {
         return serviceResolver(resourceResolverFactory, Subservice.CONTENT, userImpersonationId);
+    }
+
+    public static <T> T queryContentResolver(
+            ResourceResolverFactory resolverFactory,
+            String userImpersonationId,
+            Function<ResourceResolver, T> consumer) {
+        try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resolverFactory, userImpersonationId)) {
+            return consumer.apply(resourceResolver);
+        } catch (LoginException e) {
+            throw new RepoException("Cannot access repository while using content resolver!", e);
+        }
+    }
+
+    public static void useContentResolver(
+            ResourceResolverFactory resolverFactory, String userImpersonationId, Consumer<ResourceResolver> consumer) {
+        queryContentResolver(resolverFactory, userImpersonationId, r -> {
+            consumer.accept(r);
+            return null;
+        });
     }
 
     public static ResourceResolver mockResolver(ResourceResolverFactory resourceResolverFactory) throws LoginException {

@@ -35,7 +35,8 @@ print_error() {
   echo >&2
 }
 
-package_append_to_all() {
+# https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/implementing/developing/aem-project-content-package-structure
+add_vendor_package() {
   local groupId="$1"
   local artifactId="$2"
   local version="$3"
@@ -52,7 +53,7 @@ package_append_to_all() {
         <groupId>${groupId}</groupId>
         <artifactId>${artifactId}</artifactId>
         <type>${type}</type>
-        <target>/apps/${PROJECT_NAME}-packages/application/install</target>
+        <target>/apps/vendor-packages/container/install</target>
       </embedded>"
   local all_pom="all/pom.xml"
 
@@ -110,8 +111,8 @@ git commit -m "AEM Compose setup"
 
 print_step "Setting up ACM in the project"
 
-package_append_to_all "dev.vml.es" "acm.all" "$ACM_VERSION" "zip"
-package_append_to_all "dev.vml.es" "acm.ui.content.example" "$ACM_VERSION" "zip"
+add_vendor_package "dev.vml.es" "acm.all" "$ACM_VERSION" "zip"
+add_vendor_package "dev.vml.es" "acm.ui.content.example" "$ACM_VERSION" "zip"
 
 git add -A
 git commit -m "ACM packages added to all/pom.xml"

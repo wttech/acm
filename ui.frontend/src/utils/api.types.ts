@@ -436,3 +436,8 @@ export enum JCR_CONSTANTS {
 export type FileOutput = {
   files: string[];
 };
+
+export enum EventType {
+  EXECUTOR_RESET = 'executor_reset',
+  HISTORY_CLEAR = 'history_clear',
+}
