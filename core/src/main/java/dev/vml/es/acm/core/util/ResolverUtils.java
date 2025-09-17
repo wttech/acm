@@ -4,6 +4,8 @@ import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.repo.RepoException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+
 import javax.jcr.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.*;
@@ -78,5 +80,13 @@ public final class ResolverUtils {
             throw new RepoException("Cannot determine service/impersonated user ID from resource resolver!");
         }
         return session.getUserID();
+    }
+
+    public static <T> T useContentResolver(ResourceResolverFactory resolverFactory, Function<ResourceResolver, T> consumer) {
+        try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resolverFactory, null)) {
+            return consumer.apply(resourceResolver);
+        } catch (LoginException e) {
+            throw new RepoException("Cannot access repository while using content resolver!", e);
+        }
     }
 }

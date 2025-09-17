@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
@@ -166,15 +167,13 @@ public class Executor {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            Locker locker = context.getCodeContext().getLocker();
             String lockName = executableLockName(context);
-
-            if (locker.isLocked(lockName)) {
+            if (useLocker(resourceResolverFactory, l -> l.isLocked(lockName))) {
                 return execution.end(ExecutionStatus.SKIPPED);
             }
 
             try {
-                locker.lock(lockName);
+                useLocker(resourceResolverFactory, l -> { l.lock(lockName); return null; });
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
@@ -184,7 +183,7 @@ public class Executor {
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                locker.unlock(lockName);
+                useLocker(resourceResolverFactory, l -> { l.unlock(lockName); return null; });
             }
         } catch (Throwable e) {
             execution.error(e);
@@ -195,7 +194,7 @@ public class Executor {
         } finally {
             statuses.remove(context.getId());
         }
-    }
+    } 
 
     private String executableLockName(ExecutionContext context) {
         return String.format(
@@ -209,9 +208,10 @@ public class Executor {
 
     private void handleHistory(ExecutionContext context, ImmediateExecution execution) {
         if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-            ExecutionHistory history =
-                    new ExecutionHistory(context.getCodeContext().getResourceResolver());
-            history.save(context, execution);
+            useHistory(resourceResolverFactory, history -> {
+                history.save(context, execution);
+                return null;
+            });
         }
     }
 
@@ -310,4 +310,12 @@ public class Executor {
     public boolean isLocked(ExecutionContext context) {
         return context.getCodeContext().getLocker().isLocked(executableLockName(context));
     }
+
+    private <T> T useLocker(ResourceResolverFactory resolverFactory, Function<Locker, T> consumer) {
+        return ResolverUtils.useContentResolver(resolverFactory, r -> consumer.apply(new Locker(r)));
+    }
+
+    private <T> T useHistory(ResourceResolverFactory resolverFactory, Function<ExecutionHistory, T> consumer) {
+        return ResolverUtils.useContentResolver(resolverFactory, r -> consumer.apply(new ExecutionHistory(r)));
+    }  
 }
