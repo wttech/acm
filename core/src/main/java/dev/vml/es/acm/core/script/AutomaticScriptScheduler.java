@@ -132,15 +132,17 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
     }
 
     private void bootWhenInstanceUp() {
-        LOG.info("Automatic scripts booting on instance up");
+        LOG.info("Automatic scripts booting on instance up - job scheduling");
         unscheduleBoot();
         scheduleBoot();
+        LOG.info("Automatic scripts booting on instance up - job scheduled");
     }
 
     private void bootWhenScriptsChanged() {
-        LOG.info("Automatic scripts booting on script changes");
+        LOG.info("Automatic scripts booting on script changes - job scheduling");
         unscheduleBoot();
         scheduleBoot();
+        LOG.info("Automatic scripts booting on script changes - job scheduled");
     }
 
     private void unscheduleBoot() {
@@ -168,6 +170,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private Job bootJob() {
         return context -> {
+            LOG.info("Automatic scripts booting - job started");
             unscheduleScripts();
             if (awaitInstanceHealthy(
                     "Automatic scripts queueing and scheduling",
@@ -175,6 +178,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
                     config.healthCheckRetryInterval())) {
                 queueAndScheduleScripts();
             }
+            LOG.info("Automatic scripts booting - job finished");
         };
     }
 
@@ -264,28 +268,28 @@ public class AutomaticScriptScheduler implements ResourceChangeListener {
 
     private Job cronJob(String scriptPath) {
         return context -> {
-            if (!awaitInstanceHealthy(
+            LOG.info("Cron schedule script '{}' - job started", scriptPath);
+            if (awaitInstanceHealthy(
                     String.format("Cron schedule script '%s' queueing", scriptPath),
                     config.healthCheckRetryCountCron(),
                     config.healthCheckRetryInterval())) {
-                return;
-            }
-
-            try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
-                ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-                Script script = scriptRepository.read(scriptPath).orElse(null);
-                if (script == null) {
-                    LOG.error("Cron schedule script '{}' not found in repository!", scriptPath);
-                } else {
-                    if (checkScript(script, resourceResolver)) {
-                        queueScript(script);
+                try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
+                    ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
+                    Script script = scriptRepository.read(scriptPath).orElse(null);
+                    if (script == null) {
+                        LOG.error("Cron schedule script '{}' not found in repository!", scriptPath);
                     } else {
-                        LOG.info("Cron schedule script '{}' not eligible for queueing!", scriptPath);
+                        if (checkScript(script, resourceResolver)) {
+                            queueScript(script);
+                        } else {
+                            LOG.info("Cron schedule script '{}' not eligible for queueing!", scriptPath);
+                        }
                     }
+                } catch (LoginException e) {
+                    LOG.error("Cannot access repository while queueing cron schedule script '{}'!", scriptPath, e);
                 }
-            } catch (LoginException e) {
-                LOG.error("Cannot access repository while queueing cron schedule script '{}'!", scriptPath, e);
             }
+            LOG.info("Cron schedule script '{}' - job finished", scriptPath);
         };
     }
 

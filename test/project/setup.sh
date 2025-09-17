@@ -59,24 +59,25 @@ add_vendor_package() {
 
   echo "Appending package '$groupId:$artifactId:$version' to '$all_pom'"
 
-  xml_append_block_if_missing "$all_pom" "$dep_marker_id" "<dependencies>" "$dep_block"
-  xml_append_block_if_missing "$all_pom" "$emb_marker_id" "<embeddeds>" "$emb_block"
+  xml_append_block_if_missing "$all_pom" "$dep_marker_id" "</dependencies>" "$dep_block"
+  xml_append_block_if_missing "$all_pom" "$emb_marker_id" "</embeddeds>" "$emb_block"
 }
 
 xml_append_block_if_missing() {
   local file="$1"
   local marker_id="$2"
-  local insert_after="$3"
+  local insert_before="$3"
   local block="$4"
   local marker="<!-- $marker_id -->"
   local found=0
 
   if ! grep -q "$marker" "$file"; then
     while IFS= read -r line; do
-      echo "$line"
-      if [[ $found -eq 0 && "$line" == *"$insert_after"* ]]; then
-        printf "%s\n%s\n" "$marker" "$block"
+      if [[ $found -eq 0 && "$line" == *"$insert_before"* ]]; then
+        printf "%s\n%s\n%s\n" "$marker" "$block" "$line"
         found=1
+      else
+        echo "$line"
       fi
     done < "$file" > "$file.tmp" && mv "$file.tmp" "$file"
   fi
