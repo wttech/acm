@@ -4,7 +4,7 @@ This test project is used for testing ACM in the AEM as a Cloud Service environm
 
 1. Configure AEM Cloud Manager Repository in *.env* file in the root of the repository:
     ```env
-    ACM_CM_URL=https://<username>:<password>@git.cloudmanager.adobe.com/<program-name>/<repository-name>/
+    AEM_CM_URL=https://<username>:<password>@git.cloudmanager.adobe.com/<program-name>/<repository-name>/
     ```
     Replace `<username>`, `<password>`, `<program-name>`, and `<repository-name>` with your actual Cloud Manager credentials and repository details.
 
