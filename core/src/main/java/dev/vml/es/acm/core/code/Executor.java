@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
@@ -167,15 +168,12 @@ public class Executor {
             }
 
             String lockName = executableLockName(context);
-            if (useLocker(resolverFactory, l -> l.isLocked(lockName))) {
+            if (queryLocker(resolverFactory, l -> l.isLocked(lockName))) {
                 return execution.end(ExecutionStatus.SKIPPED);
             }
 
             try {
-                useLocker(resolverFactory, l -> {
-                    l.lock(lockName);
-                    return null;
-                });
+                useLocker(resolverFactory, l -> l.lock(lockName));
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
@@ -185,10 +183,7 @@ public class Executor {
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                useLocker(resolverFactory, l -> {
-                    l.unlock(lockName);
-                    return null;
-                });
+                useLocker(resolverFactory, l -> l.unlock(lockName));
             }
         } catch (Throwable e) {
             execution.error(e);
@@ -304,6 +299,10 @@ public class Executor {
         }
     }
 
+    public void reset() {
+        useLocker(resolverFactory, l -> l.unlockAll());
+    }
+
     public boolean isDebug() {
         return config.debug();
     }
@@ -316,18 +315,18 @@ public class Executor {
         return context.getCodeContext().getLocker().isLocked(executableLockName(context));
     }
 
-    private <T> T useLocker(ResourceResolverFactory resolverFactory, Function<Locker, T> consumer) {
+    private <T> T queryLocker(ResourceResolverFactory resolverFactory, Function<Locker, T> consumer) {
         return ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.apply(new Locker(r)));
+    }
+
+    private void useLocker(ResourceResolverFactory resolverFactory, Consumer<Locker> consumer) {
+        ResolverUtils.useContentResolver(resolverFactory, null, r -> {
+            consumer.accept(new Locker(r));
+            return null;
+        });
     }
 
     private <T> T useHistory(ResourceResolverFactory resolverFactory, Function<ExecutionHistory, T> consumer) {
         return ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.apply(new ExecutionHistory(r)));
-    }
-
-    public void reset() {
-        useLocker(resolverFactory, l -> {
-            l.unlockAll();
-            return null;
-        });
     }
 }
