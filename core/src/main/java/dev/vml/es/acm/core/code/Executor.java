@@ -93,7 +93,7 @@ public class Executor {
     }
 
     @Reference
-    private ResourceResolverFactory resourceResolverFactory;
+    private ResourceResolverFactory resolverFactory;
 
     @Reference
     private OsgiContext osgiContext;
@@ -121,10 +121,8 @@ public class Executor {
     }
 
     public Execution execute(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
-        try (ResourceResolver resourceResolver =
-                        ResolverUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
-                ExecutionContext executionContext = createContext(
-                        ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resourceResolver)) {
+        try (ResourceResolver resolver = ResolverUtils.contentResolver(resolverFactory, contextOptions.getUserId());
+                ExecutionContext executionContext = createContext(ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resolver)) {
             return execute(executionContext);
         } catch (LoginException e) {
             throw new AcmException(
@@ -168,12 +166,12 @@ public class Executor {
             }
 
             String lockName = executableLockName(context);
-            if (useLocker(resourceResolverFactory, l -> l.isLocked(lockName))) {
+            if (useLocker(resolverFactory, l -> l.isLocked(lockName))) {
                 return execution.end(ExecutionStatus.SKIPPED);
             }
 
             try {
-                useLocker(resourceResolverFactory, l -> { l.lock(lockName); return null; });
+                useLocker(resolverFactory, l -> { l.lock(lockName); return null; });
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
@@ -183,7 +181,7 @@ public class Executor {
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                useLocker(resourceResolverFactory, l -> { l.unlock(lockName); return null; });
+                useLocker(resolverFactory, l -> { l.unlock(lockName); return null; });
             }
         } catch (Throwable e) {
             execution.error(e);
@@ -208,10 +206,7 @@ public class Executor {
 
     private void handleHistory(ExecutionContext context, ImmediateExecution execution) {
         if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-            useHistory(resourceResolverFactory, history -> {
-                history.save(context, execution);
-                return null;
-            });
+            useHistory(resolverFactory, h -> { h.save(context, execution); return null; });
         }
     }
 
