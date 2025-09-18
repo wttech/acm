@@ -19,7 +19,8 @@ import { intervalToTimeout } from '../utils/spectrum.ts';
 import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
-import ExecutionsResetButton from './ExecutionsResetButton';
+import ExecutorResetButton from './ExecutorResetButton';
+import ExecutorBootButton from './ExecutorBootButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
 import UserInfo from './UserInfo';
 
@@ -98,7 +99,8 @@ const CodeExecutor = () => {
                   </Item>
                 </Menu>
               </MenuTrigger>
-              <ExecutionsResetButton />
+              <ExecutorResetButton />
+              <ExecutorBootButton />
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">

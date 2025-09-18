@@ -4,14 +4,14 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import GearsDelete from '@spectrum-icons/workflow/GearsDelete';
 import React, { useState } from 'react';
-import { toastRequest } from '../utils/api';
+import { toastRequest } from '../utils/api.ts';
 import { EventType, QueueOutput } from '../utils/api.types.ts';
 
 type ExecutionsResetButtonProps = {
   onReset?: () => void;
 };
 
-const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }) => {
+const ExecutorResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }) => {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -73,4 +73,4 @@ const ExecutionsResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }
   );
 };
 
-export default ExecutionsResetButton;
+export default ExecutorResetButton;

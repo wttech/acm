@@ -440,4 +440,5 @@ export type FileOutput = {
 export enum EventType {
   EXECUTOR_RESET = 'executor_reset',
   HISTORY_CLEAR = 'history_clear',
+  SCRIPT_SCHEDULER_BOOT = 'script_scheduler_boot',
 }

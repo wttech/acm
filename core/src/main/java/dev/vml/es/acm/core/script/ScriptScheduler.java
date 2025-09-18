@@ -163,19 +163,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     @Override
     public void onEvent(Event event) {
         EventType eventType = EventType.of(event.getName()).orElse(null);
-        if (eventType == null) {
-            return;
-        }
-        switch (eventType) {
-            case SCRIPT_SCHEDULER_BOOT:
-                bootOnDemand();
-                break;
-            case EXECUTOR_RESET:
-                reset();
-                break;
-            default:
-                // ignore else
-                break;
+        if (eventType == EventType.SCRIPT_SCHEDULER_BOOT) {
+            bootOnDemand();
         }
     }
 
@@ -436,14 +425,5 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
             LOG.info("{} reached healthy instance state: {}", operation, healthStatus);
         }
         return true;
-    }
-
-    public void reset() {
-        findJobs().forEach(job -> jobManager.removeJobById(job.getId()));
-    }
-
-    @SuppressWarnings("unchecked")
-    private Stream<Job> findJobs() {
-        return jobManager.findJobs(JobManager.QueryType.ALL, JOB_TOPIC, -1, Collections.emptyMap()).stream();
     }
 }
