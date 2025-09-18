@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -161,8 +163,19 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     @Override
     public void onEvent(Event event) {
         EventType eventType = EventType.of(event.getName()).orElse(null);
-        if (eventType == EventType.SCRIPT_SCHEDULER_BOOT) {
-            bootOnDemand();
+        if (eventType == null) {
+            return;
+        }
+        switch (eventType) {
+            case SCRIPT_SCHEDULER_BOOT:
+                bootOnDemand();
+                break;
+            case EXECUTOR_RESET:
+                reset();
+                break;
+            default:
+                // ignore else
+                break;
         }
     }
 
@@ -423,5 +436,14 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
             LOG.info("{} reached healthy instance state: {}", operation, healthStatus);
         }
         return true;
+    }
+
+    public void reset() {
+        findJobs().forEach(job -> jobManager.removeJobById(job.getId()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Stream<Job> findJobs() {
+        return jobManager.findJobs(JobManager.QueryType.ALL, JOB_TOPIC, -1, Collections.emptyMap()).stream();
     }
 }
