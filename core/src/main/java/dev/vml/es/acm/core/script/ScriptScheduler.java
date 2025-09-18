@@ -109,11 +109,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private Boolean instanceReady;
 
-    private final Map<String, String> booted = new ConcurrentHashMap<>();
-
-    private final Map<String, ScheduledJobInfo> scriptSchedules = new ConcurrentHashMap<>();
-
-    private ScheduledJobInfo bootSchedule;
+    private final Map<String, String> bootedScripts = new ConcurrentHashMap<>();
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
@@ -153,7 +149,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     protected void deactivate() {
         unscheduleBoot();
         unscheduleScripts();
-        booted.clear();
+        bootedScripts.clear();
         instanceReady = null;
     }
 
@@ -193,9 +189,11 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         LOG.info("Automatic scripts booting on script changes - job scheduled");
     }
 
+    @SuppressWarnings("unchecked")
     private void unscheduleBoot() {
-        if (bootSchedule != null) {
-            bootSchedule.unschedule();
+        Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(JOB_TOPIC, -1, Collections.singletonMap(JOB_PROP_TYPE, JobType.BOOT.name()));
+        for (ScheduledJobInfo jobInfo : jobInfos) {
+            jobInfo.unschedule();
         }
     }
 
@@ -204,7 +202,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         jobBuilder.properties(Collections.singletonMap(JOB_PROP_TYPE, JobType.BOOT.name()));
         JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
         scheduleBuilder.at(new Date(System.currentTimeMillis() + config.bootDelay()));
-        this.bootSchedule = scheduleBuilder.add();
+        scheduleBuilder.add();
     }
 
     @Override
@@ -258,18 +256,12 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         return instanceReady;
     }
 
+    @SuppressWarnings("unchecked")
     private void unscheduleScripts() {
-        for (Map.Entry<String, ScheduledJobInfo> entry : scriptSchedules.entrySet()) {
-            String scriptPath = entry.getKey();
-            ScheduledJobInfo scheduledJobInfo = entry.getValue();
-            try {
-                scheduledJobInfo.unschedule();
-                LOG.debug("Cron schedule script '{}' unscheduled", scriptPath);
-            } catch (Exception e) {
-                LOG.error("Cron schedule script '{}' cannot be unscheduled!", scriptPath, e);
-            }
+        Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(JOB_TOPIC, -1, Collections.singletonMap(JOB_PROP_TYPE, JobType.CRON.name()));
+        for (ScheduledJobInfo jobInfo : jobInfos) {
+            jobInfo.unschedule();
         }
-        scriptSchedules.clear();
     }
 
     private void queueAndScheduleScripts() {
@@ -302,11 +294,11 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private void queueBootScript(Script script, ResourceResolver resourceResolver) {
         String checksum = ChecksumUtils.calculate(script.getContent());
-        String previousChecksum = booted.get(script.getId());
+        String previousChecksum = bootedScripts.get(script.getId());
         if (previousChecksum == null || !StringUtils.equals(previousChecksum, checksum)) {
             if (checkScript(script, resourceResolver)) {
                 queueScript(script);
-                booted.put(script.getId(), checksum);
+                bootedScripts.put(script.getId(), checksum);
                 LOG.info("Boot script '{}' queued", script.getId());
             } else {
                 LOG.info("Boot script '{}' not eligible for queueing!", script.getId());
@@ -323,8 +315,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
             jobBuilder.properties(properties);
             JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
             scheduleBuilder.cron(schedule.getExpression());
-            ScheduledJobInfo scheduledJobInfo = scheduleBuilder.add();
-            scriptSchedules.put(script.getPath(), scheduledJobInfo);
+            scheduleBuilder.add();
             LOG.info(
                     "Cron schedule script '{}' scheduled with expression '{}'",
                     script.getId(),
