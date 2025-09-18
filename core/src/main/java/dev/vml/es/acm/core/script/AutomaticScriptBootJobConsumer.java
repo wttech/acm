@@ -6,11 +6,11 @@ import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.schedule.CronSchedule;
 import dev.vml.es.acm.core.code.schedule.NoneSchedule;
 import dev.vml.es.acm.core.instance.HealthChecker;
-import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,10 +20,14 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.Job;
+import org.apache.sling.event.jobs.JobBuilder;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.event.jobs.ScheduledJobInfo;
 import org.apache.sling.event.jobs.consumer.JobConsumer;
 import org.osgi.service.component.annotations.*;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +37,30 @@ import org.slf4j.LoggerFactory;
         property = {
             JobConsumer.PROPERTY_TOPICS + "=" + AcmConstants.CODE + "/boot"
         })
+@Designate(ocd = AutomaticScriptBootJobConsumer.Config.class)
 public class AutomaticScriptBootJobConsumer implements JobConsumer {
+
+    @ObjectClassDefinition(
+            name = "AEM Content Manager - Automatic Script Boot Job Consumer",
+            description = "Consumes boot script execution jobs")
+    public @interface Config {
+
+        @AttributeDefinition(
+                name = "User Impersonation ID",
+                description =
+                        "Controls who accesses the repository when scripts are automatically executed. If blank, the service user 'acm-content-service' is used.")
+        String userImpersonationId() default "";
+
+        @AttributeDefinition(
+                name = "Health Check Retry Interval",
+                description = "Interval in milliseconds to retry health check if instance is not healthy")
+        long healthCheckRetryInterval() default 1000 * 10; // 10 seconds
+
+        @AttributeDefinition(
+                name = "Health Check Retry Count On Boot",
+                description = "Maximum number of retries when checking instance health on boot script execution")
+        long healthCheckRetryCountBoot() default 90; // * 10 seconds = 15 minutes
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptBootJobConsumer.class);
 
@@ -58,21 +85,23 @@ public class AutomaticScriptBootJobConsumer implements JobConsumer {
     private final Map<String, String> booted = new ConcurrentHashMap<>();
     private final List<String> scheduled = new CopyOnWriteArrayList<>();
 
+    private Config config;
+
+    @Activate
+    protected void activate(Config config) {
+        this.config = config;
+    }
+
     @Override
     public JobResult process(Job job) {
         LOG.info("Automatic scripts booting - job started");
         unscheduleScripts();
         
-        Long healthCheckRetryCountBoot = job.getProperty("healthCheckRetryCountBoot", Long.class);
-        Long healthCheckRetryInterval = job.getProperty("healthCheckRetryInterval", Long.class);
-        
-        if (healthCheckRetryCountBoot == null) healthCheckRetryCountBoot = 90L;
-        if (healthCheckRetryInterval == null) healthCheckRetryInterval = 10000L;
-        
-        if (awaitInstanceHealthy(
+        if (ScriptJobUtils.awaitInstanceHealthy(
+                healthChecker,
                 "Automatic scripts queueing and scheduling",
-                healthCheckRetryCountBoot,
-                healthCheckRetryInterval)) {
+                config.healthCheckRetryCountBoot(),
+                config.healthCheckRetryInterval())) {
             queueAndScheduleScripts(job);
         }
         LOG.info("Automatic scripts booting - job finished");
@@ -82,7 +111,7 @@ public class AutomaticScriptBootJobConsumer implements JobConsumer {
     private void unscheduleScripts() {
         for (String scriptPath : scheduled) {
             try {
-                java.util.Collection<ScheduledJobInfo> scheduledJobs = jobManager.getScheduledJobs(AcmConstants.CODE + "/cron", 0, (Map<String, Object>[]) null);
+                Collection<ScheduledJobInfo> scheduledJobs = jobManager.getScheduledJobs(AcmConstants.CODE + "/cron", 0, (Map<String, Object>[]) null);
                 for (ScheduledJobInfo scheduledJobInfo : scheduledJobs) {
                     if (scriptPath.equals(scheduledJobInfo.getJobTopic())) {
                         scheduledJobInfo.unschedule();
@@ -134,8 +163,8 @@ public class AutomaticScriptBootJobConsumer implements JobConsumer {
         String checksum = ChecksumUtils.calculate(script.getContent());
         String previousChecksum = booted.get(script.getId());
         if (previousChecksum == null || !StringUtils.equals(previousChecksum, checksum)) {
-            if (checkScript(script, resourceResolver)) {
-                queueScript(script, job);
+            if (ScriptJobUtils.checkScript(script, resourceResolver, executor, executionQueue)) {
+                ScriptJobUtils.queueScript(script, config.userImpersonationId(), executionQueue);
                 booted.put(script.getId(), checksum);
                 LOG.info("Boot script '{}' queued", script.getId());
             } else {
@@ -146,14 +175,9 @@ public class AutomaticScriptBootJobConsumer implements JobConsumer {
 
     private void scheduleCronScript(Script script, CronSchedule schedule) {
         if (StringUtils.isNotBlank(schedule.getExpression())) {
-            org.apache.sling.event.jobs.JobBuilder jobBuilder = jobManager.createJob(AcmConstants.CODE + "/cron");
-            jobBuilder.properties(Map.of(
-                "scriptPath", script.getPath(),
-                "healthCheckRetryCountCron", 3L,
-                "healthCheckRetryInterval", 10000L,
-                "userImpersonationId", ""
-            ));
-            org.apache.sling.event.jobs.JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
+            JobBuilder jobBuilder = jobManager.createJob(AcmConstants.CODE + "/cron");
+            jobBuilder.properties(Map.of("scriptPath", script.getPath()));
+            JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
             scheduleBuilder.cron(schedule.getExpression());
             scheduleBuilder.add();
             scheduled.add(script.getPath());
@@ -164,82 +188,5 @@ public class AutomaticScriptBootJobConsumer implements JobConsumer {
         } else {
             LOG.error("Cron schedule script '{}' not scheduled as no expression defined!", script.getId());
         }
-    }
-
-    private boolean checkScript(Script script, ResourceResolver resourceResolver) {
-        try (ExecutionContext context =
-                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
-            if (executor.isLocked(context)) {
-                LOG.info("Script '{}' already locked!", script.getPath());
-                return false;
-            }
-
-            long queueCurrentSize = executionQueue.getCurrentSize();
-            long queueMaxSize = executionQueue.getMaxSize();
-            if (queueCurrentSize >= queueMaxSize) {
-                LOG.info(
-                        "Script '{}' not queued because queue is full ({}/{})!",
-                        script.getPath(),
-                        queueCurrentSize,
-                        queueMaxSize);
-                return false;
-            }
-
-            Execution queued = executionQueue
-                    .findByExecutableId(context.getExecutable().getId())
-                    .orElse(null);
-            if (queued != null) {
-                LOG.info("Script '{}' already queued: {}", script.getPath(), queued);
-                return false;
-            }
-
-            Execution checking = executor.check(context);
-            if (checking.getStatus() != ExecutionStatus.SUCCEEDED) {
-                LOG.info("Script '{}' checking not succeeded: {}", script.getPath(), checking);
-                return false;
-            }
-
-            return true;
-        }
-    }
-
-    private void queueScript(Script script, Job job) {
-        String userImpersonationId = job.getProperty("userImpersonationId", String.class);
-        String userId = StringUtils.defaultIfBlank(userImpersonationId, ResolverUtils.Subservice.CONTENT.userId);
-        executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, userId));
-    }
-
-    private boolean awaitInstanceHealthy(String operation, long retryMaxCount, long retryInterval) {
-        HealthStatus healthStatus = null;
-        long retryCount = 0;
-        while (healthStatus == null || !healthStatus.getHealthy()) {
-            if (retryCount >= retryMaxCount) {
-                LOG.error(
-                        "{} aborted due to unhealthy instance state after {} retries: {}",
-                        operation,
-                        retryMaxCount,
-                        healthStatus);
-                return false;
-            }
-            healthStatus = healthChecker.checkStatus();
-            if (healthStatus.getHealthy()) {
-                break;
-            } else {
-                LOG.warn("{} paused due to unhealthy instance state: {}", operation, healthStatus);
-                try {
-                    Thread.sleep(retryInterval); // wait before retrying
-                    retryCount++;
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    LOG.error("{} interrupted!", operation, e);
-                }
-            }
-        }
-        if (retryCount > 0) {
-            LOG.info("{} reached healthy instance state after {} retries: {}", operation, retryCount, healthStatus);
-        } else {
-            LOG.info("{} reached healthy instance state: {}", operation, healthStatus);
-        }
-        return true;
     }
 }

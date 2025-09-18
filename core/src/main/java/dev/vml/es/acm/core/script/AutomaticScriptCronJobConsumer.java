@@ -3,7 +3,6 @@ package dev.vml.es.acm.core.script;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.instance.HealthChecker;
-import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.util.ResolverUtils;
 
 import org.apache.sling.api.resource.LoginException;
@@ -12,6 +11,9 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.consumer.JobConsumer;
 import org.osgi.service.component.annotations.*;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +23,31 @@ import org.slf4j.LoggerFactory;
         property = {
             JobConsumer.PROPERTY_TOPICS + "=" + AcmConstants.CODE + "/cron"
         })
+@Designate(ocd = AutomaticScriptCronJobConsumer.Config.class)
 public class AutomaticScriptCronJobConsumer implements JobConsumer {
+
+    @ObjectClassDefinition(
+            name = "AEM Content Manager - Automatic Script Cron Job Consumer",
+            description = "Consumes cron scheduled script execution jobs")
+    public @interface Config {
+
+        @AttributeDefinition(
+                name = "User Impersonation ID",
+                description =
+                        "Controls who accesses the repository when scripts are automatically executed. If blank, the service user 'acm-content-service' is used.")
+        String userImpersonationId() default "";
+
+        @AttributeDefinition(
+                name = "Health Check Retry Interval",
+                description = "Interval in milliseconds to retry health check if instance is not healthy")
+        long healthCheckRetryInterval() default 1000 * 10; // 10 seconds
+
+        @AttributeDefinition(
+                name = "Health Check Retry Count On Cron Schedule",
+                description =
+                        "Maximum number of retries when checking instance health on cron schedule script execution")
+        long healthCheckRetryCountCron() default 3; // * 10 seconds = 30 seconds
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptCronJobConsumer.class);
 
@@ -37,30 +63,31 @@ public class AutomaticScriptCronJobConsumer implements JobConsumer {
     @Reference
     private ExecutionQueue executionQueue;
 
+    private Config config;
+
+    @Activate
+    protected void activate(Config config) {
+        this.config = config;
+    }
+
     @Override
     public JobResult process(Job job) {
         String scriptPath = job.getProperty("scriptPath", String.class);
         LOG.info("Cron schedule script '{}' - job started", scriptPath);
         
-        Long healthCheckRetryCountCron = job.getProperty("healthCheckRetryCountCron", Long.class);
-        Long healthCheckRetryInterval = job.getProperty("healthCheckRetryInterval", Long.class);
-        String userImpersonationId = job.getProperty("userImpersonationId", String.class);
-        
-        if (healthCheckRetryCountCron == null) healthCheckRetryCountCron = 3L;
-        if (healthCheckRetryInterval == null) healthCheckRetryInterval = 10000L;
-        
-        if (awaitInstanceHealthy(
+        if (ScriptJobUtils.awaitInstanceHealthy(
+                healthChecker,
                 String.format("Cron schedule script '%s' queueing", scriptPath),
-                healthCheckRetryCountCron,
-                healthCheckRetryInterval)) {
+                config.healthCheckRetryCountCron(),
+                config.healthCheckRetryInterval())) {
             try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
                 ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
                 Script script = scriptRepository.read(scriptPath).orElse(null);
                 if (script == null) {
                     LOG.error("Cron schedule script '{}' not found in repository!", scriptPath);
                 } else {
-                    if (checkScript(script, resourceResolver)) {
-                        queueScript(script, userImpersonationId);
+                    if (ScriptJobUtils.checkScript(script, resourceResolver, executor, executionQueue)) {
+                        ScriptJobUtils.queueScript(script, config.userImpersonationId(), executionQueue);
                     } else {
                         LOG.info("Cron schedule script '{}' not eligible for queueing!", scriptPath);
                     }
@@ -71,81 +98,5 @@ public class AutomaticScriptCronJobConsumer implements JobConsumer {
         }
         LOG.info("Cron schedule script '{}' - job finished", scriptPath);
         return JobResult.OK;
-    }
-
-    private boolean checkScript(Script script, ResourceResolver resourceResolver) {
-        try (ExecutionContext context =
-                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
-            if (executor.isLocked(context)) {
-                LOG.info("Script '{}' already locked!", script.getPath());
-                return false;
-            }
-
-            long queueCurrentSize = executionQueue.getCurrentSize();
-            long queueMaxSize = executionQueue.getMaxSize();
-            if (queueCurrentSize >= queueMaxSize) {
-                LOG.info(
-                        "Script '{}' not queued because queue is full ({}/{})!",
-                        script.getPath(),
-                        queueCurrentSize,
-                        queueMaxSize);
-                return false;
-            }
-
-            Execution queued = executionQueue
-                    .findByExecutableId(context.getExecutable().getId())
-                    .orElse(null);
-            if (queued != null) {
-                LOG.info("Script '{}' already queued: {}", script.getPath(), queued);
-                return false;
-            }
-
-            Execution checking = executor.check(context);
-            if (checking.getStatus() != ExecutionStatus.SUCCEEDED) {
-                LOG.info("Script '{}' checking not succeeded: {}", script.getPath(), checking);
-                return false;
-            }
-
-            return true;
-        }
-    }
-
-    private void queueScript(Script script, String userImpersonationId) {
-        String userId = org.apache.commons.lang3.StringUtils.defaultIfBlank(userImpersonationId, ResolverUtils.Subservice.CONTENT.userId);
-        executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, userId));
-    }
-
-    private boolean awaitInstanceHealthy(String operation, long retryMaxCount, long retryInterval) {
-        HealthStatus healthStatus = null;
-        long retryCount = 0;
-        while (healthStatus == null || !healthStatus.getHealthy()) {
-            if (retryCount >= retryMaxCount) {
-                LOG.error(
-                        "{} aborted due to unhealthy instance state after {} retries: {}",
-                        operation,
-                        retryMaxCount,
-                        healthStatus);
-                return false;
-            }
-            healthStatus = healthChecker.checkStatus();
-            if (healthStatus.getHealthy()) {
-                break;
-            } else {
-                LOG.warn("{} paused due to unhealthy instance state: {}", operation, healthStatus);
-                try {
-                    Thread.sleep(retryInterval); // wait before retrying
-                    retryCount++;
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    LOG.error("{} interrupted!", operation, e);
-                }
-            }
-        }
-        if (retryCount > 0) {
-            LOG.info("{} reached healthy instance state after {} retries: {}", operation, retryCount, healthStatus);
-        } else {
-            LOG.info("{} reached healthy instance state: {}", operation, healthStatus);
-        }
-        return true;
     }
 }

@@ -9,6 +9,7 @@ import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ResolverUtils;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
+import org.apache.sling.event.jobs.JobBuilder;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.event.jobs.ScheduledJobInfo;
 import org.osgi.service.component.annotations.*;
@@ -84,22 +86,11 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
     @Reference
     private JobManager jobManager;
 
-    private Config config;
-
     @Activate
-    protected void activate(Config config) {
-        this.config = config;
-
-        new Date(System.currentTimeMillis() + 1000);
-
+    protected void activate() {
         if (checkInstanceReady()) {
             bootWhenInstanceUp();
         }
-    }
-
-    @Modified
-    protected void modify(Config config) {
-        this.config = config;
     }
 
     @Deactivate
@@ -147,20 +138,15 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
     }
 
     private void unscheduleBoot() {
-        java.util.Collection<ScheduledJobInfo> scheduledJobs = jobManager.getScheduledJobs(BOOT_JOB_TOPIC, 0, (Map<String, Object>[]) null);
+        Collection<ScheduledJobInfo> scheduledJobs = jobManager.getScheduledJobs(BOOT_JOB_TOPIC, 0, (Map<String, Object>[]) null);
         for (ScheduledJobInfo scheduledJobInfo : scheduledJobs) {
             scheduledJobInfo.unschedule();
         }
     }
 
     private void scheduleBoot() {
-        org.apache.sling.event.jobs.JobBuilder jobBuilder = jobManager.createJob(BOOT_JOB_TOPIC);
-        jobBuilder.properties(Map.of(
-            "healthCheckRetryCountBoot", config.healthCheckRetryCountBoot(),
-            "healthCheckRetryInterval", config.healthCheckRetryInterval(),
-            "userImpersonationId", config.userImpersonationId()
-        ));
-        org.apache.sling.event.jobs.JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
+        JobBuilder jobBuilder = jobManager.createJob(BOOT_JOB_TOPIC);
+        JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
         scheduleBuilder.at(new Date(System.currentTimeMillis() + 1000));
         scheduleBuilder.add();
     }
