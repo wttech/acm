@@ -1,6 +1,5 @@
 package dev.vml.es.acm.core.script;
 
-import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.schedule.CronSchedule;
@@ -15,19 +14,27 @@ import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
-import org.apache.sling.commons.scheduler.Job;
-import org.apache.sling.commons.scheduler.ScheduleOptions;
-import org.apache.sling.commons.scheduler.Scheduler;
+import org.apache.sling.event.jobs.Job;
+import org.apache.sling.event.jobs.JobBuilder;
+import org.apache.sling.event.jobs.JobManager;
+import org.apache.sling.event.jobs.ScheduledJobInfo;
+import org.apache.sling.event.jobs.consumer.JobConsumer;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
@@ -36,25 +43,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-        service = {ResourceChangeListener.class, EventListener.class},
+        service = {ResourceChangeListener.class, EventListener.class, JobConsumer.class},
         immediate = true,
         property = {
             ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
             ResourceChangeListener.CHANGES + "=ADDED",
             ResourceChangeListener.CHANGES + "=CHANGED",
-            ResourceChangeListener.CHANGES + "=REMOVED"
+            ResourceChangeListener.CHANGES + "=REMOVED",
+            JobConsumer.PROPERTY_TOPICS + "=" + ScriptScheduler.JOB_TOPIC
         })
-@Designate(ocd = AutomaticScriptScheduler.Config.class)
-public class AutomaticScriptScheduler implements ResourceChangeListener, EventListener {
+@Designate(ocd = ScriptScheduler.Config.class)
+public class ScriptScheduler implements ResourceChangeListener, EventListener, JobConsumer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AutomaticScriptScheduler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptScheduler.class);
 
-    private static final String BOOT_JOB_NAME = AcmConstants.CODE + "-boot";
+    public static final String JOB_TOPIC = "dev/vml/es/acm/ScriptScheduler";
+
+    public static final String JOB_PROP_TYPE = "type";
+
+    public static final String JOB_PROP_SCRIPT_PATH = "scriptPath";
+
+    public enum JobType {
+        BOOT,
+        CRON;
+
+        public static JobType of(String value) {
+            return Arrays.stream(values())
+                    .filter(v -> StringUtils.equalsIgnoreCase(v.name(), value))
+                    .findFirst()
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Script scheduler job type is unsupported: " + value));
+        }
+    }
 
     @ObjectClassDefinition(
-            name = "AEM Content Manager - Automatic Script Scheduler",
+            name = "AEM Content Manager - Script Scheduler",
             description = "Schedules automatic scripts on instance up and script changes")
     public @interface Config {
+
+        @AttributeDefinition(name = "Boot Delay", description = "Time in milliseconds to wait before booting scripts")
+        long bootDelay() default 1000 * 10; // 10 seconds
 
         @AttributeDefinition(
                 name = "User Impersonation ID",
@@ -81,9 +109,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
 
     private Boolean instanceReady;
 
-    private final Map<String, String> booted = new ConcurrentHashMap<>();
-
-    private final List<String> scheduled = new CopyOnWriteArrayList<>();
+    private final Map<String, String> bootedScripts = new ConcurrentHashMap<>();
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
@@ -95,7 +121,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
     private Executor executor;
 
     @Reference
-    private Scheduler scheduler;
+    private JobManager jobManager;
 
     @Reference
     private HealthChecker healthChecker;
@@ -123,7 +149,7 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
     protected void deactivate() {
         unscheduleBoot();
         unscheduleScripts();
-        booted.clear();
+        bootedScripts.clear();
         instanceReady = null;
     }
 
@@ -137,8 +163,19 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
     @Override
     public void onEvent(Event event) {
         EventType eventType = EventType.of(event.getName()).orElse(null);
-        if (eventType == EventType.SCRIPT_SCHEDULER_BOOT) {
-            bootOnDemand();
+        if (eventType == null) {
+            return;
+        }
+        switch (eventType) {
+            case SCRIPT_SCHEDULER_BOOT:
+                bootOnDemand();
+                break;
+            case EXECUTOR_RESET:
+                reset();
+                break;
+            default:
+                // ignore else
+                break;
         }
     }
 
@@ -149,7 +186,6 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
         LOG.info("Automatic scripts booting on demand - job scheduled");
     }
 
-    // TODO on AEMaaCS scheduler refuses to schedule job during activate
     private void bootWhenInstanceUp() {
         LOG.info("Automatic scripts booting on instance up - job scheduling");
         unscheduleBoot();
@@ -164,19 +200,35 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
         LOG.info("Automatic scripts booting on script changes - job scheduled");
     }
 
+    @SuppressWarnings("unchecked")
     private void unscheduleBoot() {
-        scheduler.unschedule(BOOT_JOB_NAME);
+        Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(
+                JOB_TOPIC, -1, Collections.singletonMap(JOB_PROP_TYPE, JobType.BOOT.name()));
+        for (ScheduledJobInfo jobInfo : jobInfos) {
+            jobInfo.unschedule();
+        }
     }
 
     private void scheduleBoot() {
-        scheduler.schedule(bootJob(), configureScheduleOptions(BOOT_JOB_NAME, scheduler.NOW()));
+        JobBuilder jobBuilder = jobManager.createJob(JOB_TOPIC);
+        jobBuilder.properties(Collections.singletonMap(JOB_PROP_TYPE, JobType.BOOT.name()));
+        JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
+        scheduleBuilder.at(new Date(System.currentTimeMillis() + config.bootDelay()));
+        scheduleBuilder.add();
     }
 
-    private ScheduleOptions configureScheduleOptions(String name, ScheduleOptions options) {
-        options.name(name);
-        options.canRunConcurrently(false);
-        options.onSingleInstanceOnly(true);
-        return options;
+    @Override
+    public JobResult process(Job job) {
+        switch (JobType.of(job.getProperty(JOB_PROP_TYPE, String.class))) {
+            case BOOT:
+                bootJob();
+                break;
+            case CRON:
+                String scriptPath = job.getProperty(JOB_PROP_SCRIPT_PATH, String.class);
+                cronJob(scriptPath);
+                break;
+        }
+        return JobResult.OK;
     }
 
     private ScheduleResult determineSchedule(Script script, ResourceResolver resourceResolver) {
@@ -186,18 +238,16 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
         }
     }
 
-    private Job bootJob() {
-        return context -> {
-            LOG.info("Automatic scripts booting - job started");
-            unscheduleScripts();
-            if (awaitInstanceHealthy(
-                    "Automatic scripts queueing and scheduling",
-                    config.healthCheckRetryCountBoot(),
-                    config.healthCheckRetryInterval())) {
-                queueAndScheduleScripts();
-            }
-            LOG.info("Automatic scripts booting - job finished");
-        };
+    private void bootJob() {
+        LOG.info("Automatic scripts booting - job started");
+        unscheduleScripts();
+        if (awaitInstanceHealthy(
+                "Automatic scripts queueing and scheduling",
+                config.healthCheckRetryCountBoot(),
+                config.healthCheckRetryInterval())) {
+            queueAndScheduleScripts();
+        }
+        LOG.info("Automatic scripts booting - job finished");
     }
 
     private boolean checkInstanceReady() {
@@ -216,15 +266,13 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
         return instanceReady;
     }
 
+    @SuppressWarnings("unchecked")
     private void unscheduleScripts() {
-        for (String scriptPath : scheduled) {
-            try {
-                scheduler.unschedule(scriptPath);
-            } catch (Exception e) {
-                LOG.error("Cron schedule script '{}' cannot be unscheduled!", scriptPath, e);
-            }
+        Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(
+                JOB_TOPIC, -1, Collections.singletonMap(JOB_PROP_TYPE, JobType.CRON.name()));
+        for (ScheduledJobInfo jobInfo : jobInfos) {
+            jobInfo.unschedule();
         }
-        scheduled.clear();
     }
 
     private void queueAndScheduleScripts() {
@@ -257,11 +305,11 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
 
     private void queueBootScript(Script script, ResourceResolver resourceResolver) {
         String checksum = ChecksumUtils.calculate(script.getContent());
-        String previousChecksum = booted.get(script.getId());
+        String previousChecksum = bootedScripts.get(script.getId());
         if (previousChecksum == null || !StringUtils.equals(previousChecksum, checksum)) {
             if (checkScript(script, resourceResolver)) {
                 queueScript(script);
-                booted.put(script.getId(), checksum);
+                bootedScripts.put(script.getId(), checksum);
                 LOG.info("Boot script '{}' queued", script.getId());
             } else {
                 LOG.info("Boot script '{}' not eligible for queueing!", script.getId());
@@ -271,10 +319,14 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
 
     private void scheduleCronScript(Script script, CronSchedule schedule) {
         if (StringUtils.isNotBlank(schedule.getExpression())) {
-            scheduler.schedule(
-                    cronJob(script.getPath()),
-                    configureScheduleOptions(script.getPath(), scheduler.EXPR(schedule.getExpression())));
-            scheduled.add(script.getPath());
+            JobBuilder jobBuilder = jobManager.createJob(JOB_TOPIC);
+            Map<String, Object> properties = new HashMap<>();
+            properties.put(JOB_PROP_TYPE, JobType.CRON.name());
+            properties.put(JOB_PROP_SCRIPT_PATH, script.getPath());
+            jobBuilder.properties(properties);
+            JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
+            scheduleBuilder.cron(schedule.getExpression());
+            scheduleBuilder.add();
             LOG.info(
                     "Cron schedule script '{}' scheduled with expression '{}'",
                     script.getId(),
@@ -284,31 +336,29 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
         }
     }
 
-    private Job cronJob(String scriptPath) {
-        return context -> {
-            LOG.info("Cron schedule script '{}' - job started", scriptPath);
-            if (awaitInstanceHealthy(
-                    String.format("Cron schedule script '%s' queueing", scriptPath),
-                    config.healthCheckRetryCountCron(),
-                    config.healthCheckRetryInterval())) {
-                try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
-                    ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
-                    Script script = scriptRepository.read(scriptPath).orElse(null);
-                    if (script == null) {
-                        LOG.error("Cron schedule script '{}' not found in repository!", scriptPath);
+    private void cronJob(String scriptPath) {
+        LOG.info("Cron schedule script '{}' - job started", scriptPath);
+        if (awaitInstanceHealthy(
+                String.format("Cron schedule script '%s' queueing", scriptPath),
+                config.healthCheckRetryCountCron(),
+                config.healthCheckRetryInterval())) {
+            try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
+                ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
+                Script script = scriptRepository.read(scriptPath).orElse(null);
+                if (script == null) {
+                    LOG.error("Cron schedule script '{}' not found in repository!", scriptPath);
+                } else {
+                    if (checkScript(script, resourceResolver)) {
+                        queueScript(script);
                     } else {
-                        if (checkScript(script, resourceResolver)) {
-                            queueScript(script);
-                        } else {
-                            LOG.info("Cron schedule script '{}' not eligible for queueing!", scriptPath);
-                        }
+                        LOG.info("Cron schedule script '{}' not eligible for queueing!", scriptPath);
                     }
-                } catch (LoginException e) {
-                    LOG.error("Cannot access repository while queueing cron schedule script '{}'!", scriptPath, e);
                 }
+            } catch (LoginException e) {
+                LOG.error("Cannot access repository while queueing cron schedule script '{}'!", scriptPath, e);
             }
-            LOG.info("Cron schedule script '{}' - job finished", scriptPath);
-        };
+        }
+        LOG.info("Cron schedule script '{}' - job finished", scriptPath);
     }
 
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
@@ -386,5 +436,14 @@ public class AutomaticScriptScheduler implements ResourceChangeListener, EventLi
             LOG.info("{} reached healthy instance state: {}", operation, healthStatus);
         }
         return true;
+    }
+
+    public void reset() {
+        findJobs().forEach(job -> jobManager.removeJobById(job.getId()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Stream<Job> findJobs() {
+        return jobManager.findJobs(JobManager.QueryType.ALL, JOB_TOPIC, -1, Collections.emptyMap()).stream();
     }
 }
