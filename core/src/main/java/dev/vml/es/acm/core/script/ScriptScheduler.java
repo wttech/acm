@@ -1,6 +1,5 @@
 package dev.vml.es.acm.core.script;
 
-import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.code.*;
 import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.schedule.CronSchedule;
@@ -17,7 +16,9 @@ import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +48,7 @@ import org.slf4j.LoggerFactory;
             ResourceChangeListener.CHANGES + "=ADDED",
             ResourceChangeListener.CHANGES + "=CHANGED",
             ResourceChangeListener.CHANGES + "=REMOVED",
-            JobConsumer.PROPERTY_TOPICS + "=" + AcmConstants.CODE + "/script"
+            JobConsumer.PROPERTY_TOPICS + "=" + ScriptScheduler.JOB_TOPIC
         })
 @Designate(ocd = ScriptScheduler.Config.class)
 public class ScriptScheduler implements ResourceChangeListener, EventListener, JobConsumer {
@@ -55,6 +56,10 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     private static final Logger LOG = LoggerFactory.getLogger(ScriptScheduler.class);
 
     public static final String JOB_TOPIC = "dev/vml/es/acm/ScriptScheduler";
+
+    public static final String JOB_PROP_TYPE = "type";
+
+    public static final String JOB_PROP_SCRIPT_PATH = "scriptPath";
 
     public enum JobType {
         BOOT,
@@ -73,6 +78,11 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
             name = "AEM Content Manager - Script Scheduler",
             description = "Schedules automatic scripts on instance up and script changes")
     public @interface Config {
+
+        @AttributeDefinition(
+                name = "Boot Delay",
+                description = "Time in milliseconds to wait before booting scripts")
+        long bootDelay() default 1000 * 10; // 10 seconds
 
         @AttributeDefinition(
                 name = "User Impersonation ID",
@@ -190,29 +200,24 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private void scheduleBoot() {
         JobBuilder jobBuilder = jobManager.createJob(JOB_TOPIC);
-        jobBuilder.properties(Map.of("type", JobType.BOOT.name()));
+        jobBuilder.properties(Collections.singletonMap(JOB_PROP_TYPE, JobType.BOOT.name()));
         JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
-        scheduleBuilder.at(new Date(System.currentTimeMillis() + 1000));
+        scheduleBuilder.at(new Date(System.currentTimeMillis() + config.bootDelay()));
         scheduleBuilder.add();
     }
 
     @Override
     public JobResult process(Job job) {
-        String jobTypeValue = job.getProperty("type", String.class);
-        try {
-            JobType jobType = JobType.of(jobTypeValue);
-            switch (jobType) {
-                case BOOT:
-                    bootJob();
-                    break;
-                case CRON:
-                    String scriptPath = job.getProperty("scriptPath", String.class);
-                    cronJob(scriptPath);
-                    break;
-            }
-        } catch (IllegalArgumentException e) {
-            LOG.error("Unknown job type: {}", jobTypeValue, e);
-            return JobResult.FAILED;
+        String jobTypeValue = job.getProperty(JOB_PROP_TYPE, String.class);
+        JobType jobType = JobType.of(jobTypeValue);
+        switch (jobType) {
+            case BOOT:
+                bootJob();
+                break;
+            case CRON:
+                String scriptPath = job.getProperty(JOB_PROP_SCRIPT_PATH, String.class);
+                cronJob(scriptPath);
+                break;
         }
         return JobResult.OK;
     }
@@ -311,7 +316,10 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     private void scheduleCronScript(Script script, CronSchedule schedule) {
         if (StringUtils.isNotBlank(schedule.getExpression())) {
             JobBuilder jobBuilder = jobManager.createJob(JOB_TOPIC);
-            jobBuilder.properties(Map.of("type", JobType.CRON.name(), "scriptPath", script.getPath()));
+            Map<String, Object> properties = new HashMap<>();
+            properties.put(JOB_PROP_TYPE, JobType.CRON.name());
+            properties.put(JOB_PROP_SCRIPT_PATH, script.getPath());
+            jobBuilder.properties(properties);
             JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
             scheduleBuilder.cron(schedule.getExpression());
             ScheduledJobInfo scheduledJobInfo = scheduleBuilder.add();
