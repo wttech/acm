@@ -208,7 +208,10 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     @Override
     public JobResult process(Job job) {
-        switch (JobType.of(job.getProperty(JOB_PROP_TYPE, String.class))) {
+        String jobType = job.getProperty(JOB_PROP_TYPE, String.class);
+        LOG.info("Automatic scripts scheduling - job processing started (type: {})", jobType);
+
+        switch (JobType.of(jobType)) {
             case BOOT:
                 bootJob();
                 break;
@@ -217,6 +220,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
                 cronJob(scriptPath);
                 break;
         }
+
+        LOG.info("Automatic scripts scheduling - job processing finished (type: {})", jobType);
         return JobResult.OK;
     }
 
