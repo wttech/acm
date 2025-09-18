@@ -14,7 +14,7 @@ import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
-
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -66,11 +66,11 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         CRON;
 
         public static JobType of(String value) {
-            try {
-                return JobType.valueOf(value.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Script scheduler job type is unsupported: " + value, e);
-            }
+            return Arrays.stream(values())
+                    .filter(v -> StringUtils.equalsIgnoreCase(v.name(), value))
+                    .findFirst()
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Script scheduler job type is unsupported: " + value));
         }
     }
 
@@ -79,9 +79,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
             description = "Schedules automatic scripts on instance up and script changes")
     public @interface Config {
 
-        @AttributeDefinition(
-                name = "Boot Delay",
-                description = "Time in milliseconds to wait before booting scripts")
+        @AttributeDefinition(name = "Boot Delay", description = "Time in milliseconds to wait before booting scripts")
         long bootDelay() default 1000 * 10; // 10 seconds
 
         @AttributeDefinition(
@@ -191,7 +189,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     @SuppressWarnings("unchecked")
     private void unscheduleBoot() {
-        Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(JOB_TOPIC, -1, Collections.singletonMap(JOB_PROP_TYPE, JobType.BOOT.name()));
+        Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(
+                JOB_TOPIC, -1, Collections.singletonMap(JOB_PROP_TYPE, JobType.BOOT.name()));
         for (ScheduledJobInfo jobInfo : jobInfos) {
             jobInfo.unschedule();
         }
@@ -207,9 +206,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     @Override
     public JobResult process(Job job) {
-        String jobTypeValue = job.getProperty(JOB_PROP_TYPE, String.class);
-        JobType jobType = JobType.of(jobTypeValue);
-        switch (jobType) {
+        switch (JobType.of(job.getProperty(JOB_PROP_TYPE, String.class))) {
             case BOOT:
                 bootJob();
                 break;
@@ -258,7 +255,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     @SuppressWarnings("unchecked")
     private void unscheduleScripts() {
-        Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(JOB_TOPIC, -1, Collections.singletonMap(JOB_PROP_TYPE, JobType.CRON.name()));
+        Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(
+                JOB_TOPIC, -1, Collections.singletonMap(JOB_PROP_TYPE, JobType.CRON.name()));
         for (ScheduledJobInfo jobInfo : jobInfos) {
             jobInfo.unschedule();
         }
