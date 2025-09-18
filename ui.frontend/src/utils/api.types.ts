@@ -351,7 +351,7 @@ export enum InstanceType {
 export const instancePrefix = isProduction() ? '' : 'http://localhost:5502';
 
 export enum InstanceOsgiServicePid {
-  AUTOMATIC_SCRIPT_SCHEDULER = 'dev.vml.es.acm.core.script.AutomaticScriptScheduler',
+  SCRIPT_SCHEDULER = 'dev.vml.es.acm.core.script.ScriptScheduler',
 
   CODE_EXECUTOR = 'dev.vml.es.acm.core.code.Executor',
   CODE_EXECUTION_QUEUE = 'dev.vml.es.acm.core.code.ExecutionQueue',
