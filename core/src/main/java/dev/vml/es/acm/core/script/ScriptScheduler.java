@@ -111,7 +111,9 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private final Map<String, String> booted = new ConcurrentHashMap<>();
 
-    private final Map<String, ScheduledJobInfo> scheduled = new ConcurrentHashMap<>();
+    private final Map<String, ScheduledJobInfo> scriptSchedules = new ConcurrentHashMap<>();
+
+    private ScheduledJobInfo bootSchedule;
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
@@ -192,9 +194,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     }
 
     private void unscheduleBoot() {
-        Collection<ScheduledJobInfo> scheduledJobs = jobManager.getScheduledJobs(JOB_TOPIC, 0, (Map<String, Object>[]) null);
-        for (ScheduledJobInfo scheduledJobInfo : scheduledJobs) {
-            scheduledJobInfo.unschedule();
+        if (bootSchedule != null) {
+            bootSchedule.unschedule();
         }
     }
 
@@ -203,7 +204,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         jobBuilder.properties(Collections.singletonMap(JOB_PROP_TYPE, JobType.BOOT.name()));
         JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
         scheduleBuilder.at(new Date(System.currentTimeMillis() + config.bootDelay()));
-        scheduleBuilder.add();
+        this.bootSchedule = scheduleBuilder.add();
     }
 
     @Override
@@ -258,7 +259,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     }
 
     private void unscheduleScripts() {
-        for (Map.Entry<String, ScheduledJobInfo> entry : scheduled.entrySet()) {
+        for (Map.Entry<String, ScheduledJobInfo> entry : scriptSchedules.entrySet()) {
             String scriptPath = entry.getKey();
             ScheduledJobInfo scheduledJobInfo = entry.getValue();
             try {
@@ -268,7 +269,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
                 LOG.error("Cron schedule script '{}' cannot be unscheduled!", scriptPath, e);
             }
         }
-        scheduled.clear();
+        scriptSchedules.clear();
     }
 
     private void queueAndScheduleScripts() {
@@ -323,7 +324,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
             JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
             scheduleBuilder.cron(schedule.getExpression());
             ScheduledJobInfo scheduledJobInfo = scheduleBuilder.add();
-            scheduled.put(script.getPath(), scheduledJobInfo);
+            scriptSchedules.put(script.getPath(), scheduledJobInfo);
             LOG.info(
                     "Cron schedule script '{}' scheduled with expression '{}'",
                     script.getId(),
