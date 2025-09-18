@@ -13,6 +13,7 @@ import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
+import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,9 +22,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -315,14 +315,22 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
             jobBuilder.properties(properties);
             JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
             scheduleBuilder.cron(schedule.getExpression());
-            scheduleBuilder.add();
+            ScheduledJobInfo jobInfo = scheduleBuilder.add();
             LOG.info(
-                    "Cron schedule script '{}' scheduled with expression '{}'",
+                    "Cron schedule script '{}' scheduled with expression '{}'. Next execution: {}",
                     script.getId(),
-                    schedule.getExpression());
+                    schedule.getExpression(),
+                    getScheduleNextDate(jobInfo));
         } else {
             LOG.error("Cron schedule script '{}' not scheduled as no expression defined!", script.getId());
         }
+    }
+
+    private String getScheduleNextDate(ScheduledJobInfo jobInfo) {
+        return Optional.ofNullable(jobInfo)
+                .map(i -> i.getNextScheduledExecution())
+                .map(e -> DateUtils.toString(e))
+                .orElse("<none>");
     }
 
     private void cronJob(String scriptPath) {
