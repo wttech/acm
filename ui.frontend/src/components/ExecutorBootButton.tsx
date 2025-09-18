@@ -41,7 +41,7 @@ const ExecutorBootButton: React.FC<ExecutionsBootButtonProps> = ({ onBoot }) => 
       <Content>
         <Text>
             <p>
-            Are you sure you want to force boot the script scheduler? This may be useful if the automatic scheduler has reached a timeout.
+            Are you sure you want to force boot of the script scheduler? This may be useful e.g. when the automatic boot during deployment has reached a timeout.
             <br />
             </p>
           <p>

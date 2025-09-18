@@ -20,7 +20,6 @@ import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
 import ExecutorResetButton from './ExecutorResetButton';
-import ExecutorBootButton from './ExecutorBootButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
 import UserInfo from './UserInfo';
 
@@ -100,7 +99,6 @@ const CodeExecutor = () => {
                 </Menu>
               </MenuTrigger>
               <ExecutorResetButton />
-              <ExecutorBootButton />
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">

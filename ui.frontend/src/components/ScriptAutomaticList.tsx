@@ -13,6 +13,7 @@ import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
+import ExecutorBootButton from './ExecutorBootButton';
 import ScriptsDeleteButton from './ScriptsDeleteButton';
 import ScriptsSyncButton from './ScriptsSyncButton';
 import Toggle from './Toggle';
@@ -69,6 +70,7 @@ const ScriptAutomaticList: React.FC = () => {
                 <Settings />
                 <Text>Configure</Text>
               </Button>
+              <ExecutorBootButton />
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
