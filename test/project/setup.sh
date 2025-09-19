@@ -118,11 +118,33 @@ add_vendor_package "dev.vml.es" "acm.ui.content.example" "$ACM_VERSION" "zip"
 git add -A
 git commit -m "ACM packages added to all/pom.xml"
 
+if [ -n "${ACM_SLACK_WEBHOOK_URL}" ]; then
+  print_step "Configuring Slack notifications"
+  
+  SLACK_CONFIG=$(cat << EOF
+enabled=B"true"
+webhookUrl="${ACM_SLACK_WEBHOOK_URL}"
+timeoutMillis=I"10000"
+id="acm"
+EOF
+)
+  mkdir -p "ui.config/src/main/content/jcr_root/apps/acme/osgiconfig"
+  echo "$SLACK_CONFIG" > ui.config/src/main/content/jcr_root/apps/acme/osgiconfig/config/dev.vml.es.acm.core.notification.slack.SlackFactory.acm.config
+  
+  git add -A
+  git commit -m "Slack notification configuration added"
+
+fi
+
 if [ -n "${AEM_CM_URL}" ]; then
   print_step "Pushing to Adobe Cloud Manager"
   git remote add adobe "${AEM_CM_URL}"
   git push adobe main -f
+
+  echo ""
+  echo "Build should start automatically in Adobe Cloud Manager if pipeline trigger is configured to 'On Git Changes'."
+  echo "If not, now you can start it manually in Adobe Cloud Manager UI."
+  echo ""
 fi
 
 print_step "Project '$PROJECT_NAME' setup completed"
-
