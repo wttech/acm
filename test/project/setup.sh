@@ -129,7 +129,7 @@ id="acm"
 EOF
 )
   mkdir -p "ui.config/src/main/content/jcr_root/apps/acme/osgiconfig"
-  echo "$SLACK_CONFIG" > ui.config/src/main/content/jcr_root/apps/acme/osgiconfig/config/dev.vml.es.acm.core.notification.slack.SlackFactory.acm.config
+  echo "$SLACK_CONFIG" > ui.config/src/main/content/jcr_root/apps/acme/osgiconfig/config/dev.vml.es.acm.core.notification.slack.SlackFactory~acm.config
   
   git add -A
   git commit -m "Slack notification configuration added"
