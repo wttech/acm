@@ -131,4 +131,28 @@ public class Locker {
     public boolean anyLocked() {
         return locks().findAny().isPresent();
     }
+
+    public boolean isLockStale(String lockName, long timeoutMillis) {
+        Calendar lockTime = getLockTime(lockName);
+        if (lockTime == null) {
+            return true; // non-existent as stale
+        }
+        
+        Calendar now = Calendar.getInstance();
+        long diff = (now.getTimeInMillis() - lockTime.getTimeInMillis());
+        
+        boolean isStale = diff > timeoutMillis;
+        if (isStale) {
+            LOG.debug("Lock '{}' is {} millis old, considering it stale (timeout: {} millis)", lockName, diff, timeoutMillis);
+        }
+        return isStale;
+    }
+
+    private Calendar getLockTime(String lockName) {
+        Resource lock = getLock(lockName);
+        if (lock == null) {
+            return null;
+        }
+        return lock.getValueMap().get(LOCKED_PROP, Calendar.class);
+    }
 }
