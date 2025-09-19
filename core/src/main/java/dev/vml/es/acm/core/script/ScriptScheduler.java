@@ -61,6 +61,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     public static final String JOB_TOPIC = "dev/vml/es/acm/ScriptScheduler";
 
+    public static final String DEPLOY_THREAD_NAME = "ScriptScheduler-Deploy";
+
     public static final String JOB_PROP_TYPE = "type";
 
     public static final String JOB_PROP_SCRIPT_PATH = "scriptPath";
@@ -145,7 +147,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         this.config = config;
 
         if (checkInstanceReady()) {
-            deployJobExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, "ScriptScheduler-Deploy"));
+            deployJobExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, DEPLOY_THREAD_NAME));
             deployJobExecutor.execute(this::deployJob);
         }
     }
