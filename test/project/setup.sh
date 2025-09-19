@@ -53,7 +53,7 @@ add_vendor_package() {
         <groupId>${groupId}</groupId>
         <artifactId>${artifactId}</artifactId>
         <type>${type}</type>
-        <target>/apps/${PROJECT_NAME}-vendor-packages/container/install</target>
+        <target>/apps/${PROJECT_NAME}-vendor-packages/application/install</target>
       </embedded>"
   local all_pom="all/pom.xml"
 
