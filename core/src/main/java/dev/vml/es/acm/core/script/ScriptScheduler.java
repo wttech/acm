@@ -145,7 +145,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         this.config = config;
 
         if (checkInstanceReady()) {
-            deployJobExecutor = Executors.newSingleThreadExecutor();
+            deployJobExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, "ScriptScheduler-Deploy"));
             deployJobExecutor.execute(this::deployJob);
         }
     }
