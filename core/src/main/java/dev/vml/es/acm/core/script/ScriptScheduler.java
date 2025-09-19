@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
@@ -137,12 +138,15 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private Config config;
 
+    private ExecutorService deployJobExecutor;
+
     @Activate
     protected void activate(Config config) {
         this.config = config;
 
         if (checkInstanceReady()) {
-            Executors.newSingleThreadExecutor().execute(this::deployJob);
+            deployJobExecutor = Executors.newSingleThreadExecutor();
+            deployJobExecutor.execute(this::deployJob);
         }
     }
 
@@ -153,6 +157,10 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     @Deactivate
     protected void deactivate() {
+        if (deployJobExecutor != null) {
+            deployJobExecutor.shutdownNow();
+            deployJobExecutor = null;
+        }
         unscheduleBoot();
         unscheduleScripts();
         bootedScripts.clear();
