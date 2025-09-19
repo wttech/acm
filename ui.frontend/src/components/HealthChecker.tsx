@@ -91,48 +91,51 @@ const HealthChecker = () => {
       <View>
         <Flex direction="row" justifyContent="space-between" alignItems="center">
           <Flex flex="1" alignItems="center">
-            <Button
-              variant="negative"
-              isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
-              onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.instance.HealthChecker`, '_blank')}
-            >
-              <Settings />
-              <Text>Configure</Text>
-            </Button>
+            &nbsp;
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
             <StatusLight variant={healthIssues.length === 0 ? 'positive' : 'negative'}>{healthIssues.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}</StatusLight>
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            <DialogTrigger>
-              <Button variant="secondary" style="fill">
-                <Help />
-                <Text>Help</Text>
+            <ButtonGroup>
+              <Button
+                variant="negative"
+                isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}
+                onPress={() => window.open(`${instancePrefix}/system/console/configMgr/dev.vml.es.acm.core.instance.HealthChecker`, '_blank')}
+              >
+                <Settings />
+                <Text>Configure</Text>
               </Button>
-              {(close) => (
-                <Dialog>
-                  <Heading>Health Checker</Heading>
-                  <Divider />
-                  <Content>
-                    <p>
-                      <Help size="XS" /> All detected health issues will be comprehensively listed here for your review.
-                    </p>
-                    <p>
-                      <Replay size="XS" /> If needed, configure which OSGi bundles should be ignored when determining the healthy state of the instance.
-                    </p>
-                    <p>
-                      <Checkmark size="XS" /> Additionally, you can configure OSGi event topics to be checked within a recent time window.
-                    </p>
-                  </Content>
-                  <ButtonGroup>
-                    <Button variant="secondary" onPress={close}>
-                      <Close size="XS" />
-                      <Text>Close</Text>
-                    </Button>
-                  </ButtonGroup>
-                </Dialog>
-              )}
-            </DialogTrigger>
+              <DialogTrigger>
+                <Button variant="secondary" style="fill">
+                  <Help />
+                  <Text>Help</Text>
+                </Button>
+                {(close) => (
+                  <Dialog>
+                    <Heading>Health Checker</Heading>
+                    <Divider />
+                    <Content>
+                      <p>
+                        <Help size="XS" /> All detected health issues will be comprehensively listed here for your review.
+                      </p>
+                      <p>
+                        <Replay size="XS" /> If needed, configure which OSGi bundles should be ignored when determining the healthy state of the instance.
+                      </p>
+                      <p>
+                        <Checkmark size="XS" /> Additionally, you can configure OSGi event topics to be checked within a recent time window.
+                      </p>
+                    </Content>
+                    <ButtonGroup>
+                      <Button variant="secondary" onPress={close}>
+                        <Close size="XS" />
+                        <Text>Close</Text>
+                      </Button>
+                    </ButtonGroup>
+                  </Dialog>
+                )}
+              </DialogTrigger>
+            </ButtonGroup>
           </Flex>
         </Flex>
       </View>
