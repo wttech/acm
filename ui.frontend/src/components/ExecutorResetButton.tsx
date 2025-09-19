@@ -64,7 +64,7 @@ const ExecutorResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }) 
 
   return (
     <DialogTrigger isOpen={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-      <Button variant="secondary" style="fill" onPress={() => setResetDialogOpen(true)}>
+      <Button variant="secondary" style="outline" onPress={() => setResetDialogOpen(true)}>
         <GearsDelete />
         <Text>Reset</Text>
       </Button>

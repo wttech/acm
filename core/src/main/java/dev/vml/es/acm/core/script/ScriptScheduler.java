@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -60,8 +58,6 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     private static final Logger LOG = LoggerFactory.getLogger(ScriptScheduler.class);
 
     public static final String JOB_TOPIC = "dev/vml/es/acm/ScriptScheduler";
-
-    public static final String DEPLOY_THREAD_NAME = "ScriptScheduler-Deploy";
 
     public static final String JOB_PROP_TYPE = "type";
 
@@ -140,15 +136,12 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private Config config;
 
-    private ExecutorService deployJobExecutor;
-
     @Activate
     protected void activate(Config config) {
         this.config = config;
 
         if (checkInstanceReady()) {
-            deployJobExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, DEPLOY_THREAD_NAME));
-            deployJobExecutor.execute(this::deployJob);
+            bootWhenInstanceUp();
         }
     }
 
@@ -159,12 +152,10 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     @Deactivate
     protected void deactivate() {
-        if (deployJobExecutor != null) {
-            deployJobExecutor.shutdownNow();
-            deployJobExecutor = null;
+        if (!instanceInfo.isCluster()) {
+            unscheduleBoot();
+            unscheduleScripts();
         }
-        unscheduleBoot();
-        unscheduleScripts();
         bootedScripts.clear();
         instanceReady = null;
     }
@@ -246,16 +237,6 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
                 executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
             return executor.schedule(context);
         }
-    }
-
-    // Sling scheduler does not work during deployment on AEMaaCS, so we need to postpone boot job
-    private void deployJob() {
-        LOG.info("Instance deployment - job started");
-        if (awaitInstanceHealthy(
-                "Instance deployment", config.healthCheckRetryCountDeployment(), config.healthCheckRetryInterval())) {
-            bootWhenInstanceUp();
-        }
-        LOG.info("Instance deployment - job finished");
     }
 
     private void bootJob() {
