@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -46,11 +47,11 @@ import org.slf4j.LoggerFactory;
         service = {ResourceChangeListener.class, EventListener.class, JobConsumer.class},
         immediate = true,
         property = {
-            ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
-            ResourceChangeListener.CHANGES + "=ADDED",
-            ResourceChangeListener.CHANGES + "=CHANGED",
-            ResourceChangeListener.CHANGES + "=REMOVED",
-            JobConsumer.PROPERTY_TOPICS + "=" + ScriptScheduler.JOB_TOPIC
+                ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
+                ResourceChangeListener.CHANGES + "=ADDED",
+                ResourceChangeListener.CHANGES + "=CHANGED",
+                ResourceChangeListener.CHANGES + "=REMOVED",
+                JobConsumer.PROPERTY_TOPICS + "=" + ScriptScheduler.JOB_TOPIC
         })
 @Designate(ocd = ScriptScheduler.Config.class)
 public class ScriptScheduler implements ResourceChangeListener, EventListener, JobConsumer {
@@ -76,34 +77,25 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         }
     }
 
-    @ObjectClassDefinition(
-            name = "AEM Content Manager - Script Scheduler",
-            description = "Schedules automatic scripts on instance up and script changes")
+    @ObjectClassDefinition(name = "AEM Content Manager - Script Scheduler", description = "Schedules automatic scripts on instance up and script changes")
     public @interface Config {
 
         @AttributeDefinition(name = "Boot Delay", description = "Time in milliseconds to wait before booting scripts")
         long bootDelay() default 1000 * 10; // 10 seconds
 
-        @AttributeDefinition(
-                name = "User Impersonation ID",
-                description =
-                        "Controls who accesses the repository when scripts are automatically executed. If blank, the service user 'acm-content-service' is used.")
+        @AttributeDefinition(name = "User Impersonation ID", description = "Controls who accesses the repository when scripts are automatically executed. If blank, the service user 'acm-content-service' is used.")
         String userImpersonationId();
 
-        @AttributeDefinition(
-                name = "Health Check Retry Interval",
-                description = "Interval in milliseconds to retry health check if instance is not healthy")
+        @AttributeDefinition(name = "Health Check Retry Interval", description = "Interval in milliseconds to retry health check if instance is not healthy")
         long healthCheckRetryInterval() default 1000 * 10; // 10 seconds
 
-        @AttributeDefinition(
-                name = "Health Check Retry Count On Boot",
-                description = "Maximum number of retries when checking instance health on boot script execution")
-        long healthCheckRetryCountBoot() default 90; // * 10 seconds = 15 minutes
+        @AttributeDefinition(name = "Health Check Retry Count On Deployment", description = "Maximum number of retries when checking instance health on deployment")
+        long healthCheckRetryCountDeployment() default 90; // * 10 seconds = 15 minutes
 
-        @AttributeDefinition(
-                name = "Health Check Retry Count On Cron Schedule",
-                description =
-                        "Maximum number of retries when checking instance health on cron schedule script execution")
+        @AttributeDefinition(name = "Health Check Retry Count On Boot", description = "Maximum number of retries when checking instance health on boot script execution")
+        long healthCheckRetryCountBoot() default 60; // * 10 seconds = 10 minutes
+
+        @AttributeDefinition(name = "Health Check Retry Count On Cron Schedule", description = "Maximum number of retries when checking instance health on cron schedule script execution")
         long healthCheckRetryCountCron() default 3; // * 10 seconds = 30 seconds
     }
 
@@ -136,7 +128,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         this.config = config;
 
         if (checkInstanceReady()) {
-            bootWhenInstanceUp();
+            Executors.newSingleThreadExecutor().execute(this::deployJob);
         }
     }
 
@@ -226,10 +218,22 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     }
 
     private ScheduleResult determineSchedule(Script script, ResourceResolver resourceResolver) {
-        try (ExecutionContext context =
-                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
+        try (ExecutionContext context = executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script,
+                resourceResolver)) {
             return executor.schedule(context);
         }
+    }
+
+    // Sling scheduler does not work during deployment on AEMaaCS, so we need to postpone boot job
+    private void deployJob() {
+        LOG.info("Instance deployment - job started");
+        if (awaitInstanceHealthy(
+                "Instance deployment",
+                config.healthCheckRetryCountDeployment(),
+                config.healthCheckRetryInterval())) {
+            bootWhenInstanceUp();
+        }
+        LOG.info("Instance deployment - job finished");
     }
 
     private void bootJob() {
@@ -364,8 +368,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     }
 
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
-        try (ExecutionContext context =
-                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
+        try (ExecutionContext context = executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script,
+                resourceResolver)) {
             if (executor.isLocked(context)) {
                 LOG.info("Script '{}' already locked!", script.getPath());
                 return false;
@@ -401,8 +405,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     }
 
     private void queueScript(Script script) {
-        String userId =
-                StringUtils.defaultIfBlank(config.userImpersonationId(), ResolverUtils.Subservice.CONTENT.userId);
+        String userId = StringUtils.defaultIfBlank(config.userImpersonationId(),
+                ResolverUtils.Subservice.CONTENT.userId);
         executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, userId));
     }
 
