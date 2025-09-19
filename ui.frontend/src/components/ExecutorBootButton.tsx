@@ -64,7 +64,7 @@ const ExecutorBootButton: React.FC<ExecutionsBootButtonProps> = ({ onBoot }) => 
 
   return (
     <DialogTrigger isOpen={bootDialogOpen} onOpenChange={setBootDialogOpen}>
-      <Button variant="secondary" style="fill" onPress={() => setBootDialogOpen(true)}>
+      <Button variant="secondary" style="outline" onPress={() => setBootDialogOpen(true)}>
         <Launch />
         <Text>Boot</Text>
       </Button>

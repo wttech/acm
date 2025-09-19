@@ -37,7 +37,7 @@ const ScriptsSyncButton: React.FC<ScriptSynchronizeButtonProps> = ({ selectedKey
     <DialogTrigger isOpen={syncDialogOpen} onOpenChange={setSyncDialogOpen}>
       <Button variant="primary" onPress={() => setSyncDialogOpen(true)} isDisabled={selectedKeys.length > 0}>
         <UploadToCloud />
-        <Text>Sync</Text>
+        <Text>Synchronize</Text>
       </Button>
       <Dialog>
         <Heading>

@@ -78,6 +78,13 @@ const CodeExecutor = () => {
           <Flex flex="1" alignItems="center">
             <ButtonGroup>
               <ExecutionsAbortButton selectedKeys={selectedIds(selectedKeys)} />
+            </ButtonGroup>
+          </Flex>
+          <Flex flex="1" justifyContent="center" alignItems="center">
+            <StatusLight variant={executions.length === 0 ? 'positive' : 'notice'}>{executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}</StatusLight>
+          </Flex>
+          <Flex flex="1" justifyContent="end" alignItems="center">
+            <ButtonGroup>
               <MenuTrigger>
                 <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}>
                   <Settings />
@@ -99,41 +106,36 @@ const CodeExecutor = () => {
                 </Menu>
               </MenuTrigger>
               <ExecutorResetButton />
-            </ButtonGroup>
-          </Flex>
-          <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight variant={executions.length === 0 ? 'positive' : 'notice'}>{executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}</StatusLight>
-          </Flex>
-          <Flex flex="1" justifyContent="end" alignItems="center">
-            <DialogTrigger>
-              <Button variant="secondary" style="fill">
-                <Help />
-                <Text>Help</Text>
-              </Button>
-              {(close) => (
-                <Dialog>
-                  <Heading>Code Executor</Heading>
-                  <Divider />
-                  <Content>
-                    <p>
-                      <Replay size="XS" /> Here you can preview queued and active executions. You can also abort them if they were run in the background by other users or in separate browser tabs/windows.
-                    </p>
-                    <p>
-                      <Checkmark size="XS" /> It allows you to freely hit the &apos;Execute&apos; button in the console, close the browser, and get back to the script output anytime. Once an execution ends, it is saved in history.
-                    </p>
-                    <p>
-                      <Cancel size="XS" /> Remember that aborting executions may leave data in an inconsistent state.
-                    </p>
-                  </Content>
-                  <ButtonGroup>
-                    <Button variant="secondary" onPress={close}>
-                      <Close size="XS" />
-                      <Text>Close</Text>
-                    </Button>
-                  </ButtonGroup>
-                </Dialog>
-              )}
-            </DialogTrigger>
+              <DialogTrigger>
+                <Button variant="secondary" style="fill">
+                  <Help />
+                  <Text>Help</Text>
+                </Button>
+                {(close) => (
+                  <Dialog>
+                    <Heading>Code Executor</Heading>
+                    <Divider />
+                    <Content>
+                      <p>
+                        <Replay size="XS" /> Here you can preview queued and active executions. You can also abort them if they were run in the background by other users or in separate browser tabs/windows.
+                      </p>
+                      <p>
+                        <Checkmark size="XS" /> It allows you to freely hit the &apos;Execute&apos; button in the console, close the browser, and get back to the script output anytime. Once an execution ends, it is saved in history.
+                      </p>
+                      <p>
+                        <Cancel size="XS" /> Remember that aborting executions may leave data in an inconsistent state.
+                      </p>
+                    </Content>
+                    <ButtonGroup>
+                      <Button variant="secondary" onPress={close}>
+                        <Close size="XS" />
+                        <Text>Close</Text>
+                      </Button>
+                    </ButtonGroup>
+                  </Dialog>
+                )}
+                </DialogTrigger>
+              </ButtonGroup>
           </Flex>
         </Flex>
       </View>

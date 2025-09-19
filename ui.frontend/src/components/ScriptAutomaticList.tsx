@@ -66,18 +66,20 @@ const ScriptAutomaticList: React.FC = () => {
                 <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={handleLoadScripts} />
                 <ScriptsSyncButton selectedKeys={selectedIds(selectedKeys)} onSync={handleLoadScripts} />
               </Toggle>
-              <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.SCRIPT_SCHEDULER), '_blank')}>
-                <Settings />
-                <Text>Configure</Text>
-              </Button>
-              <ExecutorBootButton />
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
             <ScriptExecutorStatusLight />
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
-            <ScriptsAutomaticHelpButton />
+            <ButtonGroup>
+              <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.SCRIPT_SCHEDULER), '_blank')}>
+                <Settings />
+                <Text>Configure</Text>
+              </Button>
+              <ExecutorBootButton />
+              <ScriptsAutomaticHelpButton />
+            </ButtonGroup>
           </Flex>
         </Flex>
       </View>
