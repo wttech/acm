@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import javax.jcr.RepositoryException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 
@@ -233,5 +237,25 @@ public class AclAuthorizable {
     @SuppressWarnings("CQRules:CQBP-71")
     private boolean isAppsOrLibsPath(String path) {
         return StringUtils.startsWithAny(path, "/apps", "/libs");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AclAuthorizable that = (AclAuthorizable) o;
+        return new EqualsBuilder().append(id, that.id).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(id).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("id", id)
+                .toString();
     }
 }
