@@ -143,9 +143,15 @@ Adjust file 'all/pom.xml':
 
 ## Compatibility
 
-| AEM Content Manager | AEM        | Java | Groovy |
-|---------------------|------------|------|--------|
-| 1.x                 | 6.x, cloud | 8+   | 4.x    |
+| AEM Content Manager | AEM           | Java      | Groovy  |
+| ------------------- | ------------- | --------- | ------- |
+| 1.0.0+              | 6.5.0+, cloud | 8, 11, 21 | 4.0.22+ |
+
+Such a wide range of compatibility was designed to allow using the tool as a part of the AEM upgrade process, where different AEM and Java versions are involved.
+
+The tool is compatible with almost all AEM versions, starting from on-premise 6.5.0, including the most recent AEMaaCS (AEM as a Cloud Service) version.
+Also has been tested across various Java versions, including 8, 11, and the latest 21.
+Groovy version 4.0.22+ is used, which is compatible with all mentioned Java versions.
 
 Note that AEM Content Manager is using Groovy scripts concept. However, it is **not** using [AEM Groovy Console](https://github.com/icfnext/aem-groovy-console). It is done intentionally, because Groovy Console has close dependencies to concrete AEM version.
 AEM Content Manager tool is implemented in a AEM version agnostic way, to make it more universal and more fault-tolerant when AEM version is changing.
