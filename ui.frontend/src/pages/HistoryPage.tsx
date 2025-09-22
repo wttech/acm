@@ -107,9 +107,9 @@ const HistoryPage = () => {
           <TextField flex="1" icon={<User />} label="User" value={userId} type="search" onChange={setUserId} placeholder="ID" />
           <DatePicker flex="1" label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
           <DatePicker flex="1" label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
-          <NumberField flex="1" label="Min Duration (ms)" value={durationMin} onChange={setDurationMin} />
-          <NumberField flex="1" label="Max Duration (ms)" value={durationMax} onChange={setDurationMax} />
-          <Picker flex="1" label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
+          <NumberField flex="1" maxWidth="size-1600" label="Min Duration (ms)" value={durationMin} onChange={setDurationMin} />
+          <NumberField flex="1" maxWidth="size-1600" label="Max Duration (ms)" value={durationMax} onChange={setDurationMax} />
+          <Picker flex="1" maxWidth="size-2000" label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
             <Item textValue="All" key="all">
               <Star size="S" />
               <Text>All</Text>
@@ -131,7 +131,7 @@ const HistoryPage = () => {
               <Text>Succeeded</Text>
             </Item>
           </Picker>
-          <Picker flex="1" label="Limit" selectedKey={String(limit)} onSelectionChange={(key) => setLimit(Number(key))}>
+          <Picker flex="1" maxWidth="size-1600" label="Limit" selectedKey={String(limit)} onSelectionChange={(key) => setLimit(Number(key))}>
             {HistoryLimitOptions.map((value) => (
               <Item key={String(value)}>
                 <Text>{value}</Text>
