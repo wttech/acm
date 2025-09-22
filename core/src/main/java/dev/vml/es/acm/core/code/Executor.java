@@ -327,7 +327,7 @@ public class Executor implements EventListener {
     }
 
     public boolean isLocked(ExecutionContext context) {
-        return context.getCodeContext().getLocker().isLocked(executableLockName(context));
+        return queryLocker(resolverFactory, l -> l.isLocked(executableLockName(context)));
     }
 
     private <T> T queryLocker(ResourceResolverFactory resolverFactory, Function<Locker, T> consumer) {

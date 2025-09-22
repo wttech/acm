@@ -153,7 +153,7 @@ public class Repo {
         return session;
     }
 
-    public Locker Locker() {
+    public Locker getLocker() {
         return locker;
     }
 }
