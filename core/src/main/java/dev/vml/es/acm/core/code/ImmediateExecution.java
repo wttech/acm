@@ -3,7 +3,9 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ExceptionUtils;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -89,7 +91,12 @@ public class ImmediateExecution implements Execution {
 
     @Override
     public String getOutput() {
-        return codeOutput.readString().orElse(null);
+        codeOutput.flush();
+        try (InputStream stream = codeOutput.read()) {
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override

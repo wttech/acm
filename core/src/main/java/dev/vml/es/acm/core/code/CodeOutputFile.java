@@ -2,13 +2,10 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmException;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class CodeOutputFile implements CodeOutput {
@@ -34,21 +31,6 @@ public class CodeOutputFile implements CodeOutput {
     }
 
     @Override
-    public Optional<String> readString() throws AcmException {
-        Path path = path();
-        if (!path.toFile().exists()) {
-            return Optional.empty();
-        }
-
-        try (InputStream input = read()) {
-            return Optional.ofNullable(IOUtils.toString(input, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new AcmException(
-                    String.format("Output file cannot be read as string for execution ID '%s'", executionId), e);
-        }
-    }
-
-    @Override
     public InputStream read() {
         try {
             InputStream result = Files.newInputStream(path());
@@ -69,6 +51,19 @@ public class CodeOutputFile implements CodeOutput {
         } catch (IOException e) {
             throw new AcmException(
                     String.format("Output file cannot be open for writing for execution ID '%s'", executionId), e);
+        }
+    }
+
+    @Override
+    public void flush() {
+        for (Closeable closeable : closebles) {
+            if (closeable instanceof OutputStream) {
+                try {
+                    ((OutputStream) closeable).flush();
+                } catch (IOException e) {
+                    // ignore flush errors
+                }
+            }
         }
     }
 

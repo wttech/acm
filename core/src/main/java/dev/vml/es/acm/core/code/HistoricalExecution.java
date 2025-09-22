@@ -73,7 +73,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             props.put("endDate", DateUtils.toCalendar(execution.getEndDate()));
             props.put("duration", execution.getDuration());
             props.put("error", execution.getError());
-            props.put("output", execution.readOutput());
+            props.put("output", execution.getOutput());
             props.put("instance", execution.getInstance());
 
             props.put("executableId", execution.getExecutable().getId());
