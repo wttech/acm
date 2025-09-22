@@ -1,15 +1,15 @@
 import { Button, ButtonGroup, Cell, Column, Flex, Item, Menu, MenuTrigger, Row, TableBody, TableHeader, TableView, Text } from '@adobe/react-spectrum';
 import Settings from '@spectrum-icons/workflow/Settings';
 
+import AppRefresh from '@spectrum-icons/workflow/AppRefresh';
 import Beaker from '@spectrum-icons/workflow/Beaker';
+import Bell from '@spectrum-icons/workflow/Bell';
+import Chat from '@spectrum-icons/workflow/Chat';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import Filter from '@spectrum-icons/workflow/Filter';
 import History from '@spectrum-icons/workflow/History';
 import Info from '@spectrum-icons/workflow/Info';
-import Bell from '@spectrum-icons/workflow/Bell';
-import Chat from '@spectrum-icons/workflow/Chat';
 import UserGroup from '@spectrum-icons/workflow/UserGroup';
-import AppRefresh from '@spectrum-icons/workflow/AppRefresh';
 
 import { useAppState } from '../hooks/app';
 import { instanceOsgiServiceConfigUrl, InstanceOsgiServicePid, InstanceType } from '../utils/api.types';

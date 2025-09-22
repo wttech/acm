@@ -40,10 +40,10 @@ const ExecutorBootButton: React.FC<ExecutionsBootButtonProps> = ({ onBoot }) => 
       <Divider />
       <Content>
         <Text>
-            <p>
+          <p>
             Are you sure you want to force boot of the script scheduler? This may be useful e.g. when the automatic boot during deployment has reached a timeout.
             <br />
-            </p>
+          </p>
           <p>
             <Alert size="XS" /> This action will <strong>affect all instances</strong>.
           </p>

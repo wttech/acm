@@ -102,14 +102,14 @@ const HistoryPage = () => {
   return (
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View borderBottomWidth="thick" borderColor="gray-300" paddingBottom="size-200" marginBottom="size-10">
-        <Flex direction="row" gap="size-200" alignItems="center">
+        <Flex direction="row" gap="size-100" alignItems="center">
           <TextField flex="1" icon={<Search />} label="Executable" value={executableId} type="search" onChange={setExecutableId} placeholder="e.g. script name" />
           <TextField flex="1" icon={<User />} label="User" value={userId} type="search" onChange={setUserId} placeholder="ID" />
-          <DatePicker width="size-3000" label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
-          <DatePicker width="size-3000" label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
-          <NumberField width="size-1600" label="Min Duration (ms)" value={durationMin} onChange={setDurationMin} />
-          <NumberField width="size-1600" label="Max Duration (ms)" value={durationMax} onChange={setDurationMax} />
-          <Picker width="size-2000" label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
+          <DatePicker flex="1" label="Start Date" granularity="second" value={startDate} onChange={setStartDate} />
+          <DatePicker flex="1" label="End Date" granularity="second" value={endDate} onChange={setEndDate} />
+          <NumberField flex="1" label="Min Duration (ms)" value={durationMin} onChange={setDurationMin} />
+          <NumberField flex="1" label="Max Duration (ms)" value={durationMax} onChange={setDurationMax} />
+          <Picker flex="1" label="Status" selectedKey={status} onSelectionChange={(key) => setStatus(String(key))}>
             <Item textValue="All" key="all">
               <Star size="S" />
               <Text>All</Text>
@@ -131,7 +131,7 @@ const HistoryPage = () => {
               <Text>Succeeded</Text>
             </Item>
           </Picker>
-          <Picker width="size-1000" label="Limit" selectedKey={String(limit)} onSelectionChange={(key) => setLimit(Number(key))}>
+          <Picker flex="1" label="Limit" selectedKey={String(limit)} onSelectionChange={(key) => setLimit(Number(key))}>
             {HistoryLimitOptions.map((value) => (
               <Item key={String(value)}>
                 <Text>{value}</Text>

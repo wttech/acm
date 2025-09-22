@@ -19,8 +19,8 @@ import { intervalToTimeout } from '../utils/spectrum.ts';
 import DateExplained from './DateExplained';
 import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
-import ExecutorResetButton from './ExecutorResetButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
+import ExecutorResetButton from './ExecutorResetButton';
 import UserInfo from './UserInfo';
 
 const CodeExecutor = () => {
@@ -134,8 +134,8 @@ const CodeExecutor = () => {
                     </ButtonGroup>
                   </Dialog>
                 )}
-                </DialogTrigger>
-              </ButtonGroup>
+              </DialogTrigger>
+            </ButtonGroup>
           </Flex>
         </Flex>
       </View>
