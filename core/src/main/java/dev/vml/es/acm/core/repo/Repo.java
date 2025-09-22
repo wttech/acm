@@ -10,6 +10,7 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.NOPLogger;
 
 public class Repo {
 
@@ -23,10 +24,18 @@ public class Repo {
 
     private boolean autoCommit = true;
 
+    private boolean quiet = false;
+
     public Repo(ResourceResolver resourceResolver) {
         this.resourceResolver = resourceResolver;
         this.session = resourceResolver.adaptTo(Session.class);
         this.locker = new Locker(resourceResolver, this::isAutoCommit);
+    }
+
+    public static Repo quiet(ResourceResolver resourceResolver) {
+        Repo repo = new Repo(resourceResolver);
+        repo.setQuiet(true);
+        return repo;
     }
 
     public RepoResource get(String path) {
@@ -41,12 +50,24 @@ public class Repo {
         this.autoCommit = autoCommit;
     }
 
+    public boolean isQuiet() {
+        return quiet;
+    }
+
+    public void setQuiet(boolean quiet) {
+        this.quiet = quiet;
+    }
+
+    public Logger getLogger() {
+        return quiet ? NOPLogger.NOP_LOGGER : LOG;
+    }
+
     public void autoCommit(boolean enabled) {
         if (this.autoCommit != enabled) {
             if (enabled) {
-                LOG.info("Auto-commit is now enabled. Changes will be committed after each operation.");
+                getLogger().info("Auto-commit is now enabled. Changes will be committed after each operation.");
             } else {
-                LOG.info("Auto-commit is now disabled. Changes will not be committed after each operation.");
+                getLogger().info("Auto-commit is now disabled. Changes will not be committed after each operation.");
             }
             this.autoCommit = enabled;
         }
@@ -54,7 +75,7 @@ public class Repo {
 
     public void commit() {
         try {
-            LOG.debug("Committing manually changes to repository.");
+            getLogger().debug("Committing manually changes to repository.");
             resourceResolver.commit();
         } catch (PersistenceException e) {
             throw new RepoException("Cannot manually commit changes to repository!", e);
@@ -65,9 +86,9 @@ public class Repo {
         try {
             if (autoCommit) {
                 resourceResolver.commit();
-                LOG.debug("Committed changes to repository while {}!", context);
+                getLogger().debug("Committed changes to repository while {}!", context);
             } else {
-                LOG.debug("Skipped committing changes to repository while {}!", context);
+                getLogger().debug("Skipped committing changes to repository while {}!", context);
             }
         } catch (PersistenceException e) {
             throw new RepoException(String.format("Cannot commit changes to repository while %s!", context), e);
@@ -86,13 +107,13 @@ public class Repo {
         boolean autoCommitInitial = this.autoCommit;
         try {
             if (enabled) {
-                LOG.info("Dry run is enabled. Changes will not be committed to the repository.");
+                getLogger().info("Dry run is enabled. Changes will not be committed to the repository.");
                 if (autoCommitInitial) {
                     this.autoCommit = false;
                 }
                 operation.run();
             } else {
-                LOG.info("Dry run is disabled. Changes will be commited to the repository.");
+                getLogger().info("Dry run is disabled. Changes will be commited to the repository.");
                 operation.run();
             }
         } finally {
@@ -101,8 +122,26 @@ public class Repo {
                     this.autoCommit = true;
                 }
                 revert();
-                LOG.info("Dry run completed. Changes reverted.");
+                getLogger().info("Dry run completed. Changes reverted.");
             }
+        }
+    }
+
+    public void quiet(Runnable operation) {
+        quiet(true, operation);
+    }
+
+    public void quiet(boolean enabled, Runnable operation) {
+        boolean quietInitial = this.quiet;
+        try {
+            if (enabled) {
+                this.quiet = true;
+                operation.run();
+            } else {
+                operation.run();
+            }
+        } finally {
+            this.quiet = quietInitial;
         }
     }
 

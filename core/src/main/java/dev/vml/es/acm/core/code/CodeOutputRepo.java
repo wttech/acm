@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import java.io.*;
@@ -55,8 +56,8 @@ public class CodeOutputRepo implements CodeOutput {
     }
 
     private RepoResource getDataResource(ResourceResolver resolver) {
-        String path = String.format("%s/%s/%s/%s", AcmConstants.VAR_ROOT, OUTPUT_DIR_NAME, executionId, DATA_FILE_NAME);
-        return RepoResource.of(resolver, path);
+        return Repo.quiet(resolver)
+                .get(String.format("%s/%s/%s/%s", AcmConstants.VAR_ROOT, OUTPUT_DIR_NAME, executionId, DATA_FILE_NAME));
     }
 
     private void saveToRepo() {
@@ -128,7 +129,20 @@ public class CodeOutputRepo implements CodeOutput {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            saveToRepo();
+        }
+        deleteFromRepo();
+    }
+
+    private void deleteFromRepo() {
+        try {
+            ResolverUtils.useContentResolver(resolverFactory, null, resolver -> {
+                RepoResource outputResource = getDataResource(resolver).parent();
+                if (outputResource.exists()) {
+                    outputResource.delete();
+                }
+            });
+        } catch (Exception e) {
+            LOG.error("Output repo cannot clean up data for execution ID '{}'", executionId, e);
         }
     }
 }
