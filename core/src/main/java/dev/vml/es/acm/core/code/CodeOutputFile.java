@@ -16,7 +16,7 @@ public class CodeOutputFile implements CodeOutput {
 
     private final String executionId;
 
-    private final List<Closeable> closebles = new LinkedList<>();
+    private final List<Closeable> closeables = new LinkedList<>();
 
     public CodeOutputFile(FileManager fileManager, String executionId) {
         this.dir = fileManager.tempDir().toPath().resolve(OUTPUT_DIRNAME).toFile();
@@ -34,7 +34,7 @@ public class CodeOutputFile implements CodeOutput {
     public InputStream read() {
         try {
             InputStream result = Files.newInputStream(path());
-            closebles.add(result);
+            closeables.add(result);
             return result;
         } catch (IOException e) {
             throw new AcmException(
@@ -46,7 +46,7 @@ public class CodeOutputFile implements CodeOutput {
     public OutputStream write() {
         try {
             OutputStream result = Files.newOutputStream(path());
-            closebles.add(result);
+            closeables.add(result);
             return result;
         } catch (IOException e) {
             throw new AcmException(
@@ -56,7 +56,7 @@ public class CodeOutputFile implements CodeOutput {
 
     @Override
     public void flush() {
-        for (Closeable closeable : closebles) {
+        for (Closeable closeable : closeables) {
             if (closeable instanceof OutputStream) {
                 try {
                     ((OutputStream) closeable).flush();
@@ -77,14 +77,14 @@ public class CodeOutputFile implements CodeOutput {
 
     @Override
     public void close() {
-        for (Closeable closeable : closebles) {
+        for (Closeable closeable : closeables) {
             try {
                 closeable.close();
             } catch (Exception e) {
                 // ignore
             }
         }
-        closebles.clear();
+        closeables.clear();
         delete();
     }
 }

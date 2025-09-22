@@ -105,6 +105,7 @@ public class ImmediateExecution implements Execution {
     }
 
     public InputStream readOutput() throws AcmException {
+        codeOutput.flush();
         return codeOutput.read();
     }
 
