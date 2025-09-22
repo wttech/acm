@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.jcr.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.api.resource.LoginException;
@@ -89,15 +88,7 @@ public final class ResolverUtils {
         }
     }
 
-    /**
-     * When a user is impersonated, resolver's user ID remains the same as the one of the service user.
-     * To get the effective user ID, leverage the session user who effectively performs the operations on the repository.
-     */
     public static String serviceOrImpersonatedUserId(ResourceResolver resourceResolver) {
-        Session session = resourceResolver.adaptTo(Session.class);
-        if (session == null) {
-            throw new RepoException("Cannot determine service/impersonated user ID from resource resolver!");
-        }
-        return session.getUserID();
+        return resourceResolver.getUserID(); // assumes preference: impersonated ID, service user ID
     }
 }
