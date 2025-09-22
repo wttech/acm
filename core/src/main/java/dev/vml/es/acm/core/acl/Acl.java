@@ -5,6 +5,7 @@ import dev.vml.es.acm.core.acl.authorizable.AclGroup;
 import dev.vml.es.acm.core.acl.authorizable.AclUser;
 import dev.vml.es.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -637,6 +638,10 @@ public class Acl {
 
     public AclGroup group(Group group) {
         return context.determineGroup(group);
+    }
+
+    public AclAuthorizable authorizable(Authorizable authorizable) {
+        return context.determineAuthorizable(authorizable);
     }
 
     public AclChecker getChecker() {

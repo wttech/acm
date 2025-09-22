@@ -4,8 +4,10 @@ import dev.vml.es.acm.core.acl.AclContext;
 import dev.vml.es.acm.core.acl.AclException;
 import dev.vml.es.acm.core.acl.AclResult;
 import dev.vml.es.acm.core.util.GroovyUtils;
+import dev.vml.es.acm.core.util.StreamUtils;
 import groovy.lang.Closure;
 import java.util.Iterator;
+import java.util.stream.Stream;
 import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
@@ -90,6 +92,18 @@ public class AclGroup extends AclAuthorizable {
             return result;
         } catch (RepositoryException e) {
             throw new AclException(String.format("Failed to remove all members from group '%s'", getId()), e);
+        }
+    }
+
+    public Stream<AclAuthorizable> getMembers() {
+        try {
+            return StreamUtils.asStream(group.getMembers())
+                    .map(member -> {
+                        return context.determineAuthorizable(member);
+                    })
+                    .filter(authorizable -> authorizable != null);
+        } catch (RepositoryException e) {
+            throw new AclException(String.format("Failed to get members of group '%s'", getId()), e);
         }
     }
 

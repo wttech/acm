@@ -50,15 +50,16 @@ public class Locker {
 
     public void lock(String lockName) {
         String name = normalizeName(lockName);
-        Resource lock = getLock(name);
-        if (lock != null) {
-            LOG.warn("Cannot create lock '{}' as it already exists!", name);
-            return;
-        }
 
         PersistenceException exceptionLast = null;
         for (int i = 0; i < RETRY_COUNT; i++) {
             try {
+                Resource lockCurrent = getLock(name);
+                if (lockCurrent != null) {
+                    LOG.warn("Cannot create lock '{}' as it already exists!", name);
+                    return;
+                }
+
                 Resource dirResource;
                 String nodeName;
                 if (name.contains("/")) {
@@ -97,21 +98,16 @@ public class Locker {
 
     public void unlock(String lockName) {
         String name = normalizeName(lockName);
-        Resource lock = getLock(name);
-        if (lock == null) {
-            LOG.warn("Cannot delete lock '{}' as it does not exist!", name);
-            return;
-        }
 
         PersistenceException exceptionLast = null;
         for (int i = 0; i < RETRY_COUNT; i++) {
             try {
-                Resource currentLock = getLock(name);
-                if (currentLock == null) {
-                    LOG.debug("Cannot delete lock '{}' as it no longer exists!", name);
+                Resource lockCurrent = getLock(name);
+                if (lockCurrent == null) {
+                    LOG.warn("Cannot delete lock '{}' as it does not exist!", name);
                     return;
                 }
-                resolver.delete(currentLock);
+                resolver.delete(lockCurrent);
                 resolver.commit();
                 LOG.debug("Deleted lock '{}'", name);
                 return;
