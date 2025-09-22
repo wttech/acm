@@ -113,7 +113,7 @@ public class Repo {
                 }
                 operation.run();
             } else {
-                getLogger().info("Dry run is disabled. Changes will be commited to the repository.");
+                getLogger().info("Dry run is disabled. Changes will be committed to the repository.");
                 operation.run();
             }
         } finally {
