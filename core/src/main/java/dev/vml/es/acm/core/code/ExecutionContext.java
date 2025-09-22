@@ -1,6 +1,8 @@
 package dev.vml.es.acm.core.code;
 
+import dev.vml.es.acm.core.gui.SpaSettings;
 import groovy.lang.Binding;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.slf4j.Logger;
 
 public class ExecutionContext implements AutoCloseable {
@@ -38,15 +40,22 @@ public class ExecutionContext implements AutoCloseable {
         this.executor = executor;
         this.executable = executable;
         this.codeContext = codeContext;
-        this.output = mode == ExecutionMode.RUN
-                ? new CodeOutputFile(codeContext.getFileManager(), id)
-                : new CodeOutputString();
+        this.output = determineOutput(mode, codeContext, id);
         this.printStream = new CodePrintStream(output.write(), String.format("%s|%s", executable.getId(), id));
         this.schedules = new Schedules();
         this.conditions = new Conditions(this);
         this.arguments = new Arguments();
 
         customizeBinding();
+    }
+
+    private CodeOutput determineOutput(ExecutionMode mode, CodeContext codeContext, String id) {
+        return mode == ExecutionMode.RUN
+                ? new CodeOutputRepo(
+                        codeContext.getOsgiContext().getService(ResourceResolverFactory.class),
+                        codeContext.getOsgiContext().getService(SpaSettings.class),
+                        id)
+                : new CodeOutputString();
     }
 
     public String getId() {

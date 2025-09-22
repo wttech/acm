@@ -21,8 +21,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A fluent wrapper for Sling/JCR resources, simplifying common repository operations.
@@ -36,8 +34,6 @@ import org.slf4j.LoggerFactory;
  * within AEM and Sling-based applications.
  */
 public class RepoResource {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RepoResource.class);
 
     private final Repo repo;
 
@@ -106,9 +102,9 @@ public class RepoResource {
                         String.format("Cannot ensure resource '%s' at path '%s'!", primaryType, path), e);
             }
             repo.commit(String.format("ensuring resource '%s' at path %s", primaryType, path));
-            LOG.info("Ensured resource '{}' at path '{}'", primaryType, path);
+            repo.getLogger().info("Ensured resource '{}' at path '{}'", primaryType, path);
         } else {
-            LOG.info("Skipped ensuring resource '{}' at path '{}'", primaryType, path);
+            repo.getLogger().info("Skipped ensuring resource '{}' at path '{}'", primaryType, path);
         }
         return this;
     }
@@ -131,7 +127,7 @@ public class RepoResource {
                 String name = getName();
                 repo.getResourceResolver().create(parent, name, values);
                 repo.commit(String.format("creating resource at path '%s'", path));
-                LOG.info("Created resource at path '{}'", path);
+                repo.getLogger().info("Created resource at path '{}'", path);
                 return this;
             } catch (PersistenceException e) {
                 throw new RepoException(String.format("Cannot save resource at path '%s'!", path), e);
@@ -140,7 +136,7 @@ public class RepoResource {
             ModifiableValueMap valueMap = Objects.requireNonNull(resource.adaptTo(ModifiableValueMap.class));
             valueMap.putAll(values);
             repo.commit(String.format("updating resource at path '%s'", path));
-            LOG.info("Updated resource at path '{}'", path);
+            repo.getLogger().info("Updated resource at path '{}'", path);
         }
         return this;
     }
@@ -186,13 +182,15 @@ public class RepoResource {
                     Map<String, Object> properties = Collections.singletonMap(key, valueUpdated);
                     repo.getResourceResolver().create(parent, name, properties);
                     repo.commit(String.format("creating resource with property '%s' at path '%s'", key, path));
-                    LOG.info(
-                            "Created resource with property '{}' with value '{}' at path '{}'",
-                            key,
-                            valueUpdated,
-                            path);
+                    repo.getLogger()
+                            .info(
+                                    "Created resource with property '{}' with value '{}' at path '{}'",
+                                    key,
+                                    valueUpdated,
+                                    path);
                 } else {
-                    LOG.info("Skipped creating resource at path '{}' as property '{}' would be null", path, key);
+                    repo.getLogger()
+                            .info("Skipped creating resource at path '{}' as property '{}' would be null", path, key);
                 }
                 return this;
             } catch (PersistenceException e) {
@@ -204,30 +202,34 @@ public class RepoResource {
         Object valueExisting = props.get(key);
         Object valueUpdated = valueUpdater.apply(valueExisting);
         if (Objects.equals(valueUpdated, valueExisting)) {
-            LOG.info(
-                    "Skipped saving property '{}' for resource at path '{}' as it already exists with the same value '{}'!",
-                    key,
-                    path,
-                    valueUpdated);
+            repo.getLogger()
+                    .info(
+                            "Skipped saving property '{}' for resource at path '{}' as it already exists with the same value '{}'!",
+                            key,
+                            path,
+                            valueUpdated);
             return this;
         }
 
         if (valueUpdated == null) {
             props.remove(key);
-            LOG.info("Deleted property '{}' with value '{}' for resource at path '{}'", key, valueExisting, path);
+            repo.getLogger()
+                    .info("Deleted property '{}' with value '{}' for resource at path '{}'", key, valueExisting, path);
             repo.commit(String.format("deleting property '%s' at path '%s'", key, path));
         } else if (valueExisting == null) {
             props.put(key, valueUpdated);
-            LOG.info("Created property '{}' with value '{}' for resource at path '{}'", key, valueUpdated, path);
+            repo.getLogger()
+                    .info("Created property '{}' with value '{}' for resource at path '{}'", key, valueUpdated, path);
             repo.commit(String.format("creating property '%s' at path '%s'", key, path));
         } else {
             props.put(key, valueUpdated);
-            LOG.info(
-                    "Updated property '{}' from value '{}' to '{}' for resource at path '{}'",
-                    key,
-                    valueExisting,
-                    valueUpdated,
-                    path);
+            repo.getLogger()
+                    .info(
+                            "Updated property '{}' from value '{}' to '{}' for resource at path '{}'",
+                            key,
+                            valueExisting,
+                            valueUpdated,
+                            path);
             repo.commit(String.format("updating property '%s' at path '%s'", key, path));
         }
         return this;
@@ -239,7 +241,8 @@ public class RepoResource {
 
     public RepoResource saveProperties(Map<String, Object> properties) {
         if (properties == null || properties.isEmpty()) {
-            LOG.info("Skipped saving properties for resource at path '{}' as no properties were provided!", path);
+            repo.getLogger()
+                    .info("Skipped saving properties for resource at path '{}' as no properties were provided!", path);
             return this;
         }
         properties.forEach(this::saveProperty);
@@ -253,7 +256,7 @@ public class RepoResource {
     public boolean delete() {
         Resource resource = resolve();
         if (resource == null) {
-            LOG.info("Skipped deletion as resource does not exist at path '{}'", path);
+            repo.getLogger().info("Skipped deletion as resource does not exist at path '{}'", path);
             return false;
         }
         try {
@@ -261,7 +264,7 @@ public class RepoResource {
         } catch (PersistenceException e) {
             throw new RepoException(String.format("Cannot delete resource at path '%s'!", path), e);
         }
-        LOG.info("Deleted resource at path '{}'", path);
+        repo.getLogger().info("Deleted resource at path '{}'", path);
         repo.commit(String.format("deleting resource at path '%s'", path));
         return true;
     }
@@ -293,14 +296,18 @@ public class RepoResource {
             if (replace) {
                 target.delete();
             } else {
-                LOG.info("Skipped copying resource from '{}' to '{}' as it already exists", path, target.getPath());
+                repo.getLogger()
+                        .info(
+                                "Skipped copying resource from '{}' to '{}' as it already exists",
+                                path,
+                                target.getPath());
                 return target;
             }
         }
 
         RepoUtils.copy(repo.getResourceResolver(), sourceResource.getPath(), target.getPath());
         repo.commit(String.format("copying resource from '%s' to '%s'", path, target.getPath()));
-        LOG.info("Copied resource from '{}' to '{}'", path, target.getPath());
+        repo.getLogger().info("Copied resource from '{}' to '{}'", path, target.getPath());
         return target;
     }
 
@@ -332,7 +339,8 @@ public class RepoResource {
             if (replace) {
                 target.delete();
             } else {
-                LOG.info("Skipped moving resource from '{}' to '{}' as it already exists", path, target.getPath());
+                repo.getLogger()
+                        .info("Skipped moving resource from '{}' to '{}' as it already exists", path, target.getPath());
                 return target;
             }
         }
@@ -340,7 +348,7 @@ public class RepoResource {
         try {
             repo.getSession().move(sourceResource.getPath(), target.getPath());
             repo.commit(String.format("moving resource from '%s' to '%s'", path, target.getPath()));
-            LOG.info("Moved resource from '{}' to '{}'", path, target.getPath());
+            repo.getLogger().info("Moved resource from '{}' to '{}'", path, target.getPath());
         } catch (RepositoryException e) {
             throw new RepoException(
                     String.format("Cannot move resource from '%s' to '%s'!", path, target.getPath()), e);
@@ -386,7 +394,7 @@ public class RepoResource {
 
         try {
             repo.getSession().getWorkspace().move(path, target.getPath());
-            LOG.info("Moved resource in place from '{}' to '{}'", path, target.getPath());
+            repo.getLogger().info("Moved resource in place from '{}' to '{}'", path, target.getPath());
         } catch (RepositoryException e) {
             throw new RepoException(
                     String.format("Cannot move resource in place from '%s' to '%s'!", path, target.getPath()), e);
@@ -567,7 +575,7 @@ public class RepoResource {
                 repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
 
                 repo.commit(String.format("creating file at path '%s'", path));
-                LOG.info("Created file at path '{}'", path);
+                repo.getLogger().info("Created file at path '{}'", path);
             } else {
                 Resource contentResource = mainResource.getChild(JcrConstants.JCR_CONTENT);
                 if (contentResource == null) {
@@ -581,7 +589,7 @@ public class RepoResource {
                 }
 
                 repo.commit(String.format("updating file at path '%s'", path));
-                LOG.info("Updated file at path '{}'", path);
+                repo.getLogger().info("Updated file at path '{}'", path);
             }
         } catch (PersistenceException e) {
             throw new RepoException(String.format("Cannot save file at path '%s'!", path), e);

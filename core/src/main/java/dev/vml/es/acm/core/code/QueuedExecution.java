@@ -18,12 +18,12 @@ public class QueuedExecution implements Execution {
     private final transient Job job;
 
     @JsonIgnore
-    private final transient CodeOutputFile outputFile;
+    private final transient CodeOutput codeOutput;
 
-    public QueuedExecution(Executor executor, Job job, FileManager fileManager) {
+    public QueuedExecution(Executor executor, Job job, CodeOutput codeOutput) {
         this.executor = executor;
         this.job = job;
-        this.outputFile = new CodeOutputFile(fileManager, job.getId());
+        this.codeOutput = codeOutput;
     }
 
     protected Job getJob() {
@@ -62,7 +62,7 @@ public class QueuedExecution implements Execution {
 
     @Override
     public String getOutput() {
-        return outputFile.readString().orElse(null);
+        return codeOutput.readString().orElse(null);
     }
 
     @Override
