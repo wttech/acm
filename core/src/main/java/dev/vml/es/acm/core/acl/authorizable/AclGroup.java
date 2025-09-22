@@ -15,6 +15,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
+import org.apache.jackrabbit.api.security.user.User;
 
 public class AclGroup extends AclAuthorizable {
 
@@ -102,12 +103,32 @@ public class AclGroup extends AclAuthorizable {
     public Stream<AclAuthorizable> getMembers() {
         try {
             return StreamUtils.asStream(group.getMembers())
-                    .map(member -> {
-                        return context.determineAuthorizable(member);
-                    })
-                    .filter(authorizable -> authorizable != null);
+                    .map(m -> context.determineAuthorizable(m))
+                    .filter(a -> a != null);
         } catch (RepositoryException e) {
             throw new AclException(String.format("Failed to get members of group '%s'", getId()), e);
+        }
+    }
+
+    public Stream<AclGroup> getGroups() {
+        try {
+            return StreamUtils.asStream(group.getMembers())
+                    .filter(g -> g.isGroup())
+                    .map(m -> context.determineGroup((Group) m))
+                    .filter(g -> g != null);
+        } catch (RepositoryException e) {
+            throw new AclException(String.format("Failed to get all groups of group '%s'", getId()), e);
+        }
+    }
+
+    public Stream<AclUser> getUsers() {
+        try {
+            return StreamUtils.asStream(group.getMembers())
+                    .filter(g -> !g.isGroup())
+                    .map(m -> context.determineUser((User) m))
+                    .filter(u -> u != null);
+        } catch (RepositoryException e) {
+            throw new AclException(String.format("Failed to get all users of group '%s'", getId()), e);
         }
     }
 
