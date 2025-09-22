@@ -4,6 +4,7 @@ import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.event.Event;
 import dev.vml.es.acm.core.event.EventListener;
 import dev.vml.es.acm.core.event.EventType;
+import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.util.ExceptionUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
@@ -59,6 +60,9 @@ public class ExecutionQueue implements JobExecutor, EventListener {
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
+
+    @Reference
+    private SpaSettings spaSettings;
 
     @Reference
     private Executor executor;
@@ -189,7 +193,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     }
 
     private CodeOutput determineCodeOutput(String executionId) {
-        return new CodeOutputRepo(resourceResolverFactory, executionId);
+        return new CodeOutputRepo(resourceResolverFactory, spaSettings, executionId);
     }
 
     @Override
