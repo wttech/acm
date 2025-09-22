@@ -111,11 +111,11 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                     "Execution of executable '%s' cannot be queued because manager refused to add a job!",
                     executable.getId()));
         }
-        return new QueuedExecution(executor, job, fileManager);
+        return new QueuedExecution(executor, job, determineCodeOutput(job.getId()));
     }
 
     public Stream<Execution> findAll() {
-        return findJobs().map(job -> new QueuedExecution(executor, job, fileManager));
+        return findJobs().map(job -> new QueuedExecution(executor, job, determineCodeOutput(job.getId())));
     }
 
     public Optional<Execution> findByExecutableId(String executableId) {
@@ -173,7 +173,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     }
 
     public Optional<Execution> read(String executionId) throws AcmException {
-        return readJob(executionId).map(job -> new QueuedExecution(executor, job, fileManager));
+        return readJob(executionId).map(job -> new QueuedExecution(executor, job, determineCodeOutput(executionId)));
     }
 
     public Optional<ExecutionSummary> readSummary(String executionId) throws AcmException {
@@ -188,10 +188,14 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         jobManager.stopJobById(executionId);
     }
 
+    private CodeOutput determineCodeOutput(String executionId) {
+        return new CodeOutputRepo(resourceResolverFactory, executionId);
+    }
+
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
         ExecutionContextOptions contextOptions = ExecutionContextOptions.fromJob(job);
-        QueuedExecution queuedExecution = new QueuedExecution(executor, job, fileManager);
+        QueuedExecution queuedExecution = new QueuedExecution(executor, job, new CodeOutputString());
 
         LOG.debug("Execution started '{}'", queuedExecution);
 

@@ -4,6 +4,7 @@ import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.repo.RepoException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
@@ -75,12 +76,14 @@ public final class ResolverUtils {
         try {
             params.put(ResourceResolverFactory.USER_IMPERSONATION, userImpersonationId);
             ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(params);
+            /* TODO on AEMaaCS not always works as expected - to be verified
             String userImpersonationIdEffective = serviceOrImpersonatedUserId(resolver);
             if (!StringUtils.equals(userImpersonationId, userImpersonationIdEffective)) {
                 throw new RepoException(String.format(
                         "Cannot impersonate as user '%s' with service user '%s' (effective user is '%s')!",
                         userImpersonationId, subservice.userId, userImpersonationIdEffective));
             }
+            */
             return resolver;
         } catch (LoginException e) {
             // fix for 'Impersonation not allowed' on 6.5.0 (supported by login admin whitelist)
@@ -88,7 +91,10 @@ public final class ResolverUtils {
         }
     }
 
-    public static String serviceOrImpersonatedUserId(ResourceResolver resourceResolver) {
-        return resourceResolver.getUserID(); // assumes preference: impersonated ID, service user ID
+    public static String serviceOrImpersonatedUserId(ResourceResolver resolver) {
+        return Optional.of(resolver)
+                .map(r -> r.getAttribute(ResourceResolverFactory.USER_IMPERSONATION))
+                .map(Object::toString)
+                .orElseGet(() -> resolver.getUserID());
     }
 }
