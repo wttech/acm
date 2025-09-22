@@ -9,6 +9,8 @@ public class QueuedMessage implements Serializable {
 
     private ExecutionStatus status;
 
+    private String error;
+
     public QueuedMessage() {
         // for deserialization
     }
@@ -17,9 +19,14 @@ public class QueuedMessage implements Serializable {
         return status;
     }
 
-    public static QueuedMessage of(ExecutionStatus status) {
+    public String getError() {
+        return error;
+    }
+
+    public static QueuedMessage of(ExecutionStatus status, String error) {
         QueuedMessage message = new QueuedMessage();
         message.status = status;
+        message.error = error;
         return message;
     }
 

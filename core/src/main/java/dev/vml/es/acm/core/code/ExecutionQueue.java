@@ -4,6 +4,7 @@ import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.event.Event;
 import dev.vml.es.acm.core.event.EventListener;
 import dev.vml.es.acm.core.event.EventType;
+import dev.vml.es.acm.core.util.ExceptionUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.util.*;
@@ -223,8 +224,8 @@ public class ExecutionQueue implements JobExecutor, EventListener {
             if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
                 LOG.debug("Execution skipped '{}'", immediateExecution);
                 return context.result()
-                        .message(QueuedMessage.of(ExecutionStatus.SKIPPED).toJson())
-                        .cancelled();
+                    .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null).toJson())
+                    .cancelled();
             } else {
                 LOG.info("Execution succeeded '{}'", immediateExecution);
                 return context.result().succeeded();
@@ -232,11 +233,13 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         } catch (CancellationException e) {
             LOG.warn("Execution aborted '{}'", queuedExecution);
             return context.result()
-                    .message(QueuedMessage.of(ExecutionStatus.ABORTED).toJson())
-                    .cancelled();
+                .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(e)).toJson())
+                .cancelled();
         } catch (Exception e) {
             LOG.error("Execution failed '{}'", queuedExecution, e);
-            return context.result().failed();
+            return context.result()
+                .message(QueuedMessage.of(ExecutionStatus.FAILED, ExceptionUtils.toString(e)).toJson())
+                .failed();
         }
     }
 
