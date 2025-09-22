@@ -49,7 +49,7 @@ public class CodeOutputRepo implements CodeOutput {
     private void startAsyncSave() {
         if (scheduler == null) {
             scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.scheduleAtFixedRate(
+            scheduler.scheduleWithFixedDelay(
                     this::saveToRepo,
                     0,
                     Math.round(0.8 * spaSettings.getExecutionPollInterval()),
