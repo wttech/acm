@@ -7,12 +7,9 @@ import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -82,27 +79,6 @@ public class CodeOutputRepo implements CodeOutput {
     }
 
     @Override
-    public Optional<String> readString() throws AcmException {
-        try {
-            return ResolverUtils.queryContentResolver(resolverFactory, null, resolver -> {
-                RepoResource resource = getFile(resolver);
-                if (!resource.exists()) {
-                    return Optional.empty();
-                }
-                try (InputStream stream = resource.readFileAsStream()) {
-                    return Optional.of(IOUtils.toString(stream, StandardCharsets.UTF_8));
-                } catch (IOException e) {
-                    throw new AcmException(
-                            String.format("Output repo cannot read as string for execution ID '%s'", executionId), e);
-                }
-            });
-        } catch (Exception e) {
-            throw new AcmException(
-                    String.format("Output repo cannot read as string for execution ID '%s'", executionId), e);
-        }
-    }
-
-    @Override
     public InputStream read() {
         try {
             return ResolverUtils.queryContentResolver(resolverFactory, null, resolver -> {
@@ -122,6 +98,11 @@ public class CodeOutputRepo implements CodeOutput {
     public OutputStream write() {
         startAsyncSave();
         return buffer;
+    }
+
+    @Override
+    public void flush() {
+        saveToRepo();
     }
 
     @Override

@@ -51,7 +51,11 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
             }
 
             try (ExecutionContext context = executor.createContext(
-                    ExecutionId.generate(), ExecutionMode.RUN, script, request.getResourceResolver())) {
+                    ExecutionId.generate(),
+                    request.getResourceResolver().getUserID(),
+                    ExecutionMode.RUN,
+                    script,
+                    request.getResourceResolver())) {
                 Execution execution = executor.execute(context);
 
                 respondJson(response, ok(String.format("Script at path '%s' executed successfully", path), execution));

@@ -3,8 +3,11 @@ package dev.vml.es.acm.core.code;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.NumberUtils;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Optional;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
@@ -62,7 +65,12 @@ public class QueuedExecution implements Execution {
 
     @Override
     public String getOutput() {
-        return codeOutput.readString().orElse(null);
+        codeOutput.flush();
+        try (InputStream stream = codeOutput.read()) {
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override

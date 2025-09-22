@@ -233,8 +233,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     }
 
     private ScheduleResult determineSchedule(Script script, ResourceResolver resourceResolver) {
-        try (ExecutionContext context =
-                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
+        try (ExecutionContext context = executor.createContext(
+                ExecutionId.generate(), resourceResolver.getUserID(), ExecutionMode.PARSE, script, resourceResolver)) {
             return executor.schedule(context);
         }
     }
@@ -371,8 +371,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     }
 
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
-        try (ExecutionContext context =
-                executor.createContext(ExecutionId.generate(), ExecutionMode.PARSE, script, resourceResolver)) {
+        try (ExecutionContext context = executor.createContext(
+                ExecutionId.generate(), resourceResolver.getUserID(), ExecutionMode.PARSE, script, resourceResolver)) {
             if (executor.isLocked(context)) {
                 LOG.info("Script '{}' already locked!", script.getPath());
                 return false;

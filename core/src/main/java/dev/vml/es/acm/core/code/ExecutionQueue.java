@@ -259,6 +259,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                         ResolverUtils.contentResolver(resourceResolverFactory, contextOptions.getUserId());
                 ExecutionContext context = executor.createContext(
                         execution.getJob().getId(),
+                        contextOptions.getUserId(),
                         contextOptions.getExecutionMode(),
                         execution.getExecutable(),
                         resolver)) {

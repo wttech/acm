@@ -244,7 +244,11 @@ public class HealthChecker implements EventHandler {
 
     private void checkCodeExecutor(List<HealthIssue> issues, ResourceResolver resourceResolver) {
         try (ExecutionContext context = executor.createContext(
-                ExecutionId.generate(), ExecutionMode.RUN, Code.consoleMinimal(), resourceResolver)) {
+                ExecutionId.generate(),
+                resourceResolver.getUserID(),
+                ExecutionMode.RUN,
+                Code.consoleMinimal(),
+                resourceResolver)) {
             context.setHistory(false);
             context.setLocking(false);
 

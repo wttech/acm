@@ -127,9 +127,9 @@ public class Executor implements EventListener {
     }
 
     public ExecutionContext createContext(
-            String id, ExecutionMode mode, Executable executable, ResourceResolver resourceResolver) {
+            String id, String userId, ExecutionMode mode, Executable executable, ResourceResolver resourceResolver) {
         CodeContext codeContext = new CodeContext(osgiContext, resourceResolver);
-        ExecutionContext result = new ExecutionContext(id, mode, this, executable, codeContext);
+        ExecutionContext result = new ExecutionContext(id, userId, mode, this, executable, codeContext);
         result.setDebug(config.debug());
         result.setHistory(config.history());
         return result;
@@ -138,7 +138,11 @@ public class Executor implements EventListener {
     public Execution execute(Executable executable, ExecutionContextOptions contextOptions) throws AcmException {
         try (ResourceResolver resolver = ResolverUtils.contentResolver(resolverFactory, contextOptions.getUserId());
                 ExecutionContext executionContext = createContext(
-                        ExecutionId.generate(), contextOptions.getExecutionMode(), executable, resolver)) {
+                        ExecutionId.generate(),
+                        contextOptions.getUserId(),
+                        contextOptions.getExecutionMode(),
+                        executable,
+                        resolver)) {
             return execute(executionContext);
         } catch (LoginException e) {
             throw new AcmException(
