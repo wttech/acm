@@ -7,6 +7,7 @@ import dev.vml.es.acm.core.mock.MockContext;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.replication.Activator;
+import dev.vml.es.acm.core.repo.Locker;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.script.ScriptRepository;
 import dev.vml.es.acm.core.script.ScriptType;
@@ -47,8 +48,8 @@ public class CodeContext {
         this.resourceResolver = resourceResolver;
 
         this.log = LoggerFactory.getLogger(getClass());
-        this.locker = new Locker(resourceResolver);
         this.repo = new Repo(resourceResolver);
+        this.locker = new Locker(resourceResolver, repo::isAutoCommit);
         this.acl = new Acl(resourceResolver);
         this.activator = new Activator(resourceResolver, osgiContext);
         this.formatter = new Formatter();

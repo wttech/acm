@@ -1,12 +1,12 @@
-package dev.vml.es.acm.core.code;
+package dev.vml.es.acm.core.repo;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
@@ -31,8 +31,15 @@ public class Locker {
 
     private final ResourceResolver resolver;
 
+    private final Supplier<Boolean> autoCommit;
+
     public Locker(ResourceResolver resolver) {
+        this(resolver, () -> true);
+    }
+
+    public Locker(ResourceResolver resolver, Supplier<Boolean> autoCommit) {
         this.resolver = resolver;
+        this.autoCommit = autoCommit;
     }
 
     public boolean isLocked(String lockName) {
@@ -70,10 +77,14 @@ public class Locker {
                 LOG.debug("Created lock '{}'", name);
                 return;
             } catch (PersistenceException e) {
-                resolver.revert();
-                resolver.refresh();
-                exceptionLast = e;
-                LOG.debug("Cannot create lock '{}' - attempt {} failed, retrying {}/{}", name, i + 1, RETRY_COUNT, e);
+                if (autoCommit.get()) {
+                    resolver.revert();
+                    resolver.refresh();
+                    exceptionLast = e;
+                    LOG.debug("Cannot create lock '{}' - retrying {}/{}", name, i + 1, RETRY_COUNT, e);
+                } else {
+                    throw new AcmException(String.format("Cannot create lock '%s'!", name), e);
+                }
             }
         }
         throw new AcmException(
@@ -105,10 +116,14 @@ public class Locker {
                 LOG.debug("Deleted lock '{}'", name);
                 return;
             } catch (PersistenceException e) {
-                resolver.revert();
-                resolver.refresh();
-                exceptionLast = e;
-                LOG.debug("Cannot delete lock '{}' - attempt {} failed, retrying {}/{}", name, i + 1, RETRY_COUNT, e);
+                if (autoCommit.get()) {
+                    resolver.revert();
+                    resolver.refresh();
+                    exceptionLast = e;
+                    LOG.debug("Cannot delete lock '{}' - retrying {}/{}", name, i + 1, RETRY_COUNT, e);
+                } else {
+                    throw new AcmException(String.format("Cannot delete lock '%s'!", name), e);
+                }
             }
         }
         throw new AcmException(

@@ -11,6 +11,7 @@ import dev.vml.es.acm.core.instance.InstanceSettings;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
+import dev.vml.es.acm.core.repo.Locker;
 import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StringUtil;
@@ -181,12 +182,14 @@ public class Executor implements EventListener {
             }
 
             String lockName = executableLockName(context);
-            if (queryLocker(resolverFactory, l -> l.isLocked(lockName))) {
+            if (context.isLocking() && queryLocker(resolverFactory, l -> l.isLocked(lockName))) {
                 return execution.end(ExecutionStatus.SKIPPED);
             }
 
             try {
-                useLocker(resolverFactory, l -> l.lock(lockName));
+                if (context.isLocking()) {
+                    useLocker(resolverFactory, l -> l.lock(lockName));
+                }
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
@@ -196,7 +199,9 @@ public class Executor implements EventListener {
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                useLocker(resolverFactory, l -> l.unlock(lockName));
+                if (context.isLocking()) {
+                    useLocker(resolverFactory, l -> l.unlock(lockName));
+                }
             }
         } catch (Throwable e) {
             execution.error(e);
