@@ -121,14 +121,14 @@ public class RepoResource {
     public RepoResource save(Map<String, Object> values) {
         Resource resource = resolve();
         if (resource == null) {
-            String parentPath = StringUtils.substringBeforeLast(path, "/");
-            Resource parent = repo.getResourceResolver().getResource(parentPath);
+            RepoResource parentResource = parent();
+            Resource parent = parentResource.resolve();
             if (parent == null) {
                 throw new RepoException(
-                        String.format("Cannot save resource as parent path '%s' does not exist!", parentPath));
+                        String.format("Cannot save resource as parent path '%s' does not exist!", parentResource.getPath()));
             }
             try {
-                String name = StringUtils.substringAfterLast(path, "/");
+                String name = getName();
                 repo.getResourceResolver().create(parent, name, values);
                 repo.commit(String.format("creating resource at path '%s'", path));
                 LOG.info("Created resource at path '{}'", path);
@@ -172,9 +172,29 @@ public class RepoResource {
     public RepoResource updateProperty(String key, Function<Object, Object> valueUpdater) {
         Resource resource = resolve();
         if (resource == null) {
-            throw new RepoException(
-                    String.format("Cannot save property '%s' as resource at path '%s' does not exist!", key, path));
+            RepoResource parentResource = parent();
+            Resource parent = parentResource.resolve();
+            if (parent == null) {
+                throw new RepoException(
+                        String.format("Cannot save property '%s' as parent path '%s' does not exist!", key, parentResource.getPath()));
+            }
+            try {
+                String name = getName();
+                Object valueUpdated = valueUpdater.apply(null);
+                if (valueUpdated != null) {
+                    Map<String, Object> properties = Collections.singletonMap(key, valueUpdated);
+                    repo.getResourceResolver().create(parent, name, properties);
+                    repo.commit(String.format("creating resource with property '%s' at path '%s'", key, path));
+                    LOG.info("Created resource with property '{}' with value '{}' at path '{}'", key, valueUpdated, path);
+                } else {
+                    LOG.info("Skipped creating resource at path '{}' as property '{}' would be null", path, key);
+                }
+                return this;
+            } catch (PersistenceException e) {
+                throw new RepoException(String.format("Cannot save property '%s' at path '%s'!", key, path), e);
+            }
         }
+        
         ModifiableValueMap props = Objects.requireNonNull(resource.adaptTo(ModifiableValueMap.class));
         Object valueExisting = props.get(key);
         Object valueUpdated = valueUpdater.apply(valueExisting);
