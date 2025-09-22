@@ -1,4 +1,4 @@
-import { Content, ContextualHelp, Heading, Link, Text } from '@adobe/react-spectrum';
+import { Content, ContextualHelp, Flex, Heading, Link, Text } from '@adobe/react-spectrum';
 import React from 'react';
 import { UserIdServicePrefix } from '../utils/api.types';
 import { Strings } from '../utils/strings';
@@ -28,13 +28,13 @@ const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
   // ACM service IDs like 'acm-content-service'
   if (id.startsWith(UserIdServicePrefix)) {
     return (
-      <>
+      <Flex alignItems="center" gap="size-25">
         <Text>acm</Text>
         <ContextualHelp variant="info">
           <Heading>User ID</Heading>
           <Content>{id}</Content>
         </ContextualHelp>
-      </>
+      </Flex>
     );
   }
 
@@ -42,7 +42,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
   const idShort = extractFullNameFromEmail(id) || extractUserFromEmail(id);
   if (idShort) {
     return (
-      <>
+      <Flex alignItems="center" gap="size-25">
         <Text>{idShort}</Text>
         <ContextualHelp variant="info">
           <Heading>E-mail</Heading>
@@ -50,7 +50,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ id }) => {
             <Link href={`mailto:${id}`}>{id}</Link>
           </Content>
         </ContextualHelp>
-      </>
+      </Flex>
     );
   }
 
