@@ -7,6 +7,8 @@ import org.apache.sling.api.resource.*;
 
 public final class RepoUtils {
 
+    private static final int ENSURE_RETRY_COUNT = 5;
+
     private RepoUtils() {
         // intentionally empty
     }
@@ -68,7 +70,7 @@ public final class RepoUtils {
             boolean autoCommit)
             throws RepoException {
         PersistenceException exceptionLast = null;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < ENSURE_RETRY_COUNT; i++) {
             try {
                 return ensureInternal(resolver, path, resourceProperties, intermediateResourceType, autoCommit);
             } catch (PersistenceException pe) {

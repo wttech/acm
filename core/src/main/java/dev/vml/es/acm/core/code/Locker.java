@@ -27,6 +27,8 @@ public class Locker {
 
     private static final String LOCKED_PROP = "locked";
 
+    private static final int RETRY_COUNT = 5;
+
     private final ResourceResolver resolver;
 
     public Locker(ResourceResolver resolver) {
@@ -46,26 +48,36 @@ public class Locker {
             LOG.warn("Cannot create lock '{}' as it already exists!", name);
             return;
         }
-        try {
-            Resource dirResource;
-            String nodeName;
-            if (name.contains("/")) {
-                String dirPath = StringUtils.substringBeforeLast(name, "/");
-                nodeName = StringUtils.substringAfterLast(name, "/");
-                dirResource = getOrCreateDir(ROOT + "/" + dirPath);
-            } else {
-                dirResource = getOrCreateDir(ROOT);
-                nodeName = name;
+
+        PersistenceException exceptionLast = null;
+        for (int i = 0; i < RETRY_COUNT; i++) {
+            try {
+                Resource dirResource;
+                String nodeName;
+                if (name.contains("/")) {
+                    String dirPath = StringUtils.substringBeforeLast(name, "/");
+                    nodeName = StringUtils.substringAfterLast(name, "/");
+                    dirResource = getOrCreateDir(ROOT + "/" + dirPath);
+                } else {
+                    dirResource = getOrCreateDir(ROOT);
+                    nodeName = name;
+                }
+                Map<String, Object> props = new HashMap<>();
+                props.put(JcrConstants.JCR_PRIMARYTYPE, RESOURCE_TYPE);
+                props.put(LOCKED_PROP, Calendar.getInstance());
+                resolver.create(dirResource, nodeName, props);
+                resolver.commit();
+                LOG.debug("Created lock '{}'", name);
+                return;
+            } catch (PersistenceException e) {
+                resolver.revert();
+                resolver.refresh();
+                exceptionLast = e;
+                LOG.debug("Cannot create lock '{}' - attempt {} failed, retrying {}/{}", name, i + 1, RETRY_COUNT, e);
             }
-            Map<String, Object> props = new HashMap<>();
-            props.put(JcrConstants.JCR_PRIMARYTYPE, RESOURCE_TYPE);
-            props.put(LOCKED_PROP, Calendar.getInstance());
-            resolver.create(dirResource, nodeName, props);
-            resolver.commit();
-            LOG.debug("Created lock '{}'", name);
-        } catch (PersistenceException e) {
-            throw new AcmException(String.format("Cannot create lock '%s'!", name), e);
         }
+        throw new AcmException(
+                String.format("Cannot create lock '%s' after %d retries!", name, RETRY_COUNT), exceptionLast);
     }
 
     private Resource getOrCreateDir(String path) throws PersistenceException {
@@ -79,13 +91,28 @@ public class Locker {
             LOG.warn("Cannot delete lock '{}' as it does not exist!", name);
             return;
         }
-        try {
-            resolver.delete(lock);
-            resolver.commit();
-            LOG.debug("Deleted lock '{}'", name);
-        } catch (PersistenceException e) {
-            throw new AcmException(String.format("Cannot delete lock '%s'!", name), e);
+
+        PersistenceException exceptionLast = null;
+        for (int i = 0; i < RETRY_COUNT; i++) {
+            try {
+                Resource currentLock = getLock(name);
+                if (currentLock == null) {
+                    LOG.debug("Cannot delete lock '{}' as it no longer exists!", name);
+                    return;
+                }
+                resolver.delete(currentLock);
+                resolver.commit();
+                LOG.debug("Deleted lock '{}'", name);
+                return;
+            } catch (PersistenceException e) {
+                resolver.revert();
+                resolver.refresh();
+                exceptionLast = e;
+                LOG.debug("Cannot delete lock '{}' - attempt {} failed, retrying {}/{}", name, i + 1, RETRY_COUNT, e);
+            }
         }
+        throw new AcmException(
+                String.format("Cannot delete lock '%s' after %d retries!", name, RETRY_COUNT), exceptionLast);
     }
 
     public void unlockAll() {
