@@ -55,7 +55,11 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             Code code = input.getCode();
 
             try (ExecutionContext context = executor.createContext(
-                    ExecutionId.generate(), ExecutionMode.CHECK, input.getCode(), request.getResourceResolver())) {
+                    ExecutionId.generate(),
+                    request.getResourceResolver().getUserID(),
+                    ExecutionMode.CHECK,
+                    input.getCode(),
+                    request.getResourceResolver())) {
                 Execution checkExecution = executor.execute(context);
                 if (checkExecution.getStatus() == ExecutionStatus.SKIPPED) {
                     QueueOutput output = new QueueOutput(Collections.singletonList(checkExecution));

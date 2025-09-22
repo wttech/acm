@@ -9,6 +9,8 @@ public class ExecutionContext implements AutoCloseable {
 
     private final String id;
 
+    private final String userId;
+
     private final ExecutionMode mode;
 
     private final Executor executor;
@@ -34,8 +36,14 @@ public class ExecutionContext implements AutoCloseable {
     private final Conditions conditions;
 
     public ExecutionContext(
-            String id, ExecutionMode mode, Executor executor, Executable executable, CodeContext codeContext) {
+            String id,
+            String userId,
+            ExecutionMode mode,
+            Executor executor,
+            Executable executable,
+            CodeContext codeContext) {
         this.id = id;
+        this.userId = userId;
         this.mode = mode;
         this.executor = executor;
         this.executable = executable;
@@ -60,6 +68,10 @@ public class ExecutionContext implements AutoCloseable {
 
     public String getId() {
         return id;
+    }
+
+    public String getUserId() {
+        return userId;
     }
 
     public Executor getExecutor() {

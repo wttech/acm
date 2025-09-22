@@ -47,7 +47,11 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
             Code code = input.getCode();
 
             try (ExecutionContext context = executor.createContext(
-                    ExecutionId.generate(), ExecutionMode.PARSE, code, request.getResourceResolver())) {
+                    ExecutionId.generate(),
+                    request.getResourceResolver().getUserID(),
+                    ExecutionMode.PARSE,
+                    code,
+                    request.getResourceResolver())) {
                 Description description = executor.describe(context);
 
                 respondJson(
