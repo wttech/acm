@@ -19,11 +19,14 @@ public class Repo {
 
     private final Session session;
 
+    private final Locker locker;
+
     private boolean autoCommit = true;
 
     public Repo(ResourceResolver resourceResolver) {
         this.resourceResolver = resourceResolver;
         this.session = resourceResolver.adaptTo(Session.class);
+        this.locker = new Locker(resourceResolver, this::isAutoCommit);
     }
 
     public RepoResource get(String path) {
@@ -148,5 +151,9 @@ public class Repo {
 
     public Session getSession() {
         return session;
+    }
+
+    public Locker getLocker() {
+        return locker;
     }
 }

@@ -23,6 +23,8 @@ public class ExecutionContext implements AutoCloseable {
 
     private boolean debug = false;
 
+    private boolean locking = true;
+
     private final Arguments arguments;
 
     private final Schedules schedules;
@@ -95,6 +97,14 @@ public class ExecutionContext implements AutoCloseable {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public boolean isLocking() {
+        return locking;
+    }
+
+    public void setLocking(boolean locking) {
+        this.locking = locking;
     }
 
     public Arguments getArguments() {

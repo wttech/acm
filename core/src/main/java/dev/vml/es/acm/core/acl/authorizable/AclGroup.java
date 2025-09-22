@@ -4,11 +4,18 @@ import dev.vml.es.acm.core.acl.AclContext;
 import dev.vml.es.acm.core.acl.AclException;
 import dev.vml.es.acm.core.acl.AclResult;
 import dev.vml.es.acm.core.util.GroovyUtils;
+import dev.vml.es.acm.core.util.StreamUtils;
 import groovy.lang.Closure;
 import java.util.Iterator;
+import java.util.stream.Stream;
 import javax.jcr.RepositoryException;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
+import org.apache.jackrabbit.api.security.user.User;
 
 public class AclGroup extends AclAuthorizable {
 
@@ -93,6 +100,38 @@ public class AclGroup extends AclAuthorizable {
         }
     }
 
+    public Stream<AclAuthorizable> getMembers() {
+        try {
+            return StreamUtils.asStream(group.getMembers())
+                    .map(context::determineAuthorizable)
+                    .filter(a -> a != null);
+        } catch (RepositoryException e) {
+            throw new AclException(String.format("Failed to get members of group '%s'", getId()), e);
+        }
+    }
+
+    public Stream<AclGroup> getGroups() {
+        try {
+            return StreamUtils.asStream(group.getMembers())
+                    .filter(g -> g.isGroup())
+                    .map(m -> context.determineGroup((Group) m))
+                    .filter(g -> g != null);
+        } catch (RepositoryException e) {
+            throw new AclException(String.format("Failed to get all groups of group '%s'", getId()), e);
+        }
+    }
+
+    public Stream<AclUser> getUsers() {
+        try {
+            return StreamUtils.asStream(group.getMembers())
+                    .filter(g -> !g.isGroup())
+                    .map(m -> context.determineUser((User) m))
+                    .filter(u -> u != null);
+        } catch (RepositoryException e) {
+            throw new AclException(String.format("Failed to get all users of group '%s'", getId()), e);
+        }
+    }
+
     @Override
     public AclResult purge() {
         AclResult result = AclResult.of(removeAllMembers(), removeFromAllGroups(), clear("/"));
@@ -103,5 +142,25 @@ public class AclGroup extends AclAuthorizable {
     @Override
     public Group get() {
         return group;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AclGroup that = (AclGroup) o;
+        return new EqualsBuilder().append(getId(), that.getId()).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(getId()).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("id", getId())
+                .toString();
     }
 }

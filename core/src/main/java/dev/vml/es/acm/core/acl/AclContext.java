@@ -112,6 +112,20 @@ public class AclContext {
         }
     }
 
+    public AclAuthorizable determineAuthorizable(Authorizable authorizable) {
+        try {
+            if (authorizable == null) {
+                return null;
+            } else if (authorizable.isGroup()) {
+                return new AclGroup((Group) authorizable, authorizable.getID(), this);
+            } else {
+                return new AclUser((User) authorizable, authorizable.getID(), this);
+            }
+        } catch (RepositoryException e) {
+            throw new AclException("Failed to get authorizable ID", e);
+        }
+    }
+
     public String determineId(AclAuthorizable authorizable, String id) {
         return Optional.ofNullable(authorizable).map(AclAuthorizable::getId).orElse(id);
     }

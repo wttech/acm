@@ -28,8 +28,6 @@ public class CodeContext {
 
     private final List<ExtensionScript> extensionScripts;
 
-    private final Locker locker;
-
     private final Logger log;
 
     private final Repo repo;
@@ -47,7 +45,6 @@ public class CodeContext {
         this.resourceResolver = resourceResolver;
 
         this.log = LoggerFactory.getLogger(getClass());
-        this.locker = new Locker(resourceResolver);
         this.repo = new Repo(resourceResolver);
         this.acl = new Acl(resourceResolver);
         this.activator = new Activator(resourceResolver, osgiContext);
@@ -70,7 +67,6 @@ public class CodeContext {
 
         result.setVariable("log", log);
         result.setVariable("resourceResolver", resourceResolver);
-        result.setVariable("locker", locker);
         result.setVariable("osgi", osgiContext);
         result.setVariable("repo", repo);
         result.setVariable("acl", acl);
@@ -117,10 +113,6 @@ public class CodeContext {
 
     public OsgiContext getOsgiContext() {
         return osgiContext;
-    }
-
-    public Locker getLocker() {
-        return locker;
     }
 
     public Repo getRepo() {

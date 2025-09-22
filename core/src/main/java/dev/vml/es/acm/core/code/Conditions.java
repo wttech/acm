@@ -139,14 +139,14 @@ public class Conditions {
         }
     }
 
-    // Lock-based
+    // Repository lock-based
 
     public boolean unlocked(String name) {
         return !locked(name);
     }
 
     public boolean locked(String name) {
-        return executionContext.getCodeContext().getLocker().isLocked(name);
+        return executionContext.getCodeContext().getRepo().getLocker().isLocked(name);
     }
 
     // Instance-based
