@@ -10,6 +10,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class ImmediateExecution implements Execution {
 
+    private final CodeOutput codeOutput;
+
     private final Executable executable;
 
     private final String id;
@@ -27,6 +29,7 @@ public class ImmediateExecution implements Execution {
     private final String instance;
 
     public ImmediateExecution(
+            CodeOutput codeOutput,
             Executable executable,
             String id,
             String userId,
@@ -35,6 +38,7 @@ public class ImmediateExecution implements Execution {
             Date endDate,
             String error,
             String instance) {
+        this.codeOutput = codeOutput;
         this.executable = executable;
         this.id = id;
         this.userId = userId;
@@ -85,7 +89,7 @@ public class ImmediateExecution implements Execution {
 
     @Override
     public String getOutput() {
-        return new CodeOutputFile(getId()).readString().orElse(null);
+        return codeOutput.readString().orElse(null);
     }
 
     @Override
@@ -94,7 +98,7 @@ public class ImmediateExecution implements Execution {
     }
 
     public InputStream readOutput() throws AcmException {
-        return new CodeOutputFile(getId()).read();
+        return codeOutput.read();
     }
 
     @Override
@@ -139,6 +143,7 @@ public class ImmediateExecution implements Execution {
         public ImmediateExecution end(ExecutionStatus status) {
             Date endDate = new Date();
             return new ImmediateExecution(
+                    context.getOutput(),
                     context.getExecutable(),
                     context.getId(),
                     context.getCodeContext().getResourceResolver().getUserID(),

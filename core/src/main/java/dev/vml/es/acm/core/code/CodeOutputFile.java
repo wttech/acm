@@ -8,24 +8,25 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class CodeOutputFile implements CodeOutput {
 
-    public static final String TMP_DIR = "acm/output";
+    public static final String OUTPUT_DIRNAME = "output";
+
+    private final File dir;
 
     private final String executionId;
 
     private final List<Closeable> closebles = new LinkedList<>();
 
-    public CodeOutputFile(String executionId) {
+    public CodeOutputFile(FileManager fileManager, String executionId) {
+        this.dir = fileManager.tempDir().toPath().resolve(OUTPUT_DIRNAME).toFile();
         this.executionId = executionId;
     }
 
     public Path path() {
-        File dir = FileUtils.getTempDirectory().toPath().resolve(TMP_DIR).toFile();
         if (!dir.exists()) {
             dir.mkdirs();
         }

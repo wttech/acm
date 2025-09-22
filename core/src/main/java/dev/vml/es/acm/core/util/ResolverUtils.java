@@ -79,8 +79,8 @@ public final class ResolverUtils {
             String userImpersonationIdEffective = serviceOrImpersonatedUserId(resolver);
             if (!StringUtils.equals(userImpersonationId, userImpersonationIdEffective)) {
                 throw new RepoException(String.format(
-                        "Cannot impersonate user '%s' as service user '%s' is used instead!",
-                        serviceOrImpersonatedUserId(resolver), userImpersonationId));
+                        "Cannot impersonate as user '%s' with service user '%s' (effective user is '%s')!",
+                        userImpersonationId, subservice.userId, userImpersonationIdEffective));
             }
             return resolver;
         } catch (LoginException e) {

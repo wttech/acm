@@ -124,8 +124,8 @@ public class RepoResource {
             RepoResource parentResource = parent();
             Resource parent = parentResource.resolve();
             if (parent == null) {
-                throw new RepoException(
-                        String.format("Cannot save resource as parent path '%s' does not exist!", parentResource.getPath()));
+                throw new RepoException(String.format(
+                        "Cannot save resource as parent path '%s' does not exist!", parentResource.getPath()));
             }
             try {
                 String name = getName();
@@ -175,8 +175,9 @@ public class RepoResource {
             RepoResource parentResource = parent();
             Resource parent = parentResource.resolve();
             if (parent == null) {
-                throw new RepoException(
-                        String.format("Cannot save property '%s' as parent path '%s' does not exist!", key, parentResource.getPath()));
+                throw new RepoException(String.format(
+                        "Cannot save property '%s' as parent path '%s' does not exist!",
+                        key, parentResource.getPath()));
             }
             try {
                 String name = getName();
@@ -185,7 +186,11 @@ public class RepoResource {
                     Map<String, Object> properties = Collections.singletonMap(key, valueUpdated);
                     repo.getResourceResolver().create(parent, name, properties);
                     repo.commit(String.format("creating resource with property '%s' at path '%s'", key, path));
-                    LOG.info("Created resource with property '{}' with value '{}' at path '{}'", key, valueUpdated, path);
+                    LOG.info(
+                            "Created resource with property '{}' with value '{}' at path '{}'",
+                            key,
+                            valueUpdated,
+                            path);
                 } else {
                     LOG.info("Skipped creating resource at path '{}' as property '{}' would be null", path, key);
                 }
@@ -194,7 +199,7 @@ public class RepoResource {
                 throw new RepoException(String.format("Cannot save property '%s' at path '%s'!", key, path), e);
             }
         }
-        
+
         ModifiableValueMap props = Objects.requireNonNull(resource.adaptTo(ModifiableValueMap.class));
         Object valueExisting = props.get(key);
         Object valueUpdated = valueUpdater.apply(valueExisting);

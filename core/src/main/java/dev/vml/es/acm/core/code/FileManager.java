@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import java.io.*;
 import java.nio.file.Files;
@@ -11,13 +12,28 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
 @Component(immediate = true, service = FileManager.class)
 public class FileManager {
 
+    private static final String ROOT_DIRNAME = "file";
+
+    private File tempDir;
+
+    @Activate
+    protected void activate() {
+        this.tempDir =
+                FileUtils.getTempDirectory().toPath().resolve(AcmConstants.CODE).toFile();
+    }
+
+    public File tempDir() {
+        return tempDir;
+    }
+
     public File root() {
-        return FileUtils.getTempDirectory().toPath().resolve("acm/file").toFile();
+        return tempDir.toPath().resolve(ROOT_DIRNAME).toFile();
     }
 
     public File get(String path) {
