@@ -102,7 +102,9 @@ public class AclGroup extends AclAuthorizable {
 
     public Stream<AclAuthorizable> getMembers() {
         try {
+            return StreamUtils.asStream(group.getMembers())
                     .map(context::determineAuthorizable)
+                    .filter(a -> a != null);
         } catch (RepositoryException e) {
             throw new AclException(String.format("Failed to get members of group '%s'", getId()), e);
         }

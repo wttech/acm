@@ -74,7 +74,9 @@ public class Locker {
                 props.put(JcrConstants.JCR_PRIMARYTYPE, RESOURCE_TYPE);
                 props.put(LOCKED_PROP, Calendar.getInstance());
                 resolver.create(dirResource, nodeName, props);
-                resolver.commit();
+                if (autoCommit.get()) {
+                    resolver.commit();
+                }
                 LOG.debug("Created lock '{}'", name);
                 return;
             } catch (PersistenceException e) {
@@ -108,7 +110,9 @@ public class Locker {
                     return;
                 }
                 resolver.delete(lockCurrent);
-                resolver.commit();
+                if (autoCommit.get()) {
+                    resolver.commit();
+                }
                 LOG.debug("Deleted lock '{}'", name);
                 return;
             } catch (PersistenceException e) {
@@ -133,7 +137,9 @@ public class Locker {
         }
         try {
             resolver.delete(root);
-            resolver.commit();
+            if (autoCommit.get()) {
+                resolver.commit();
+            }
             LOG.debug("Deleted all locks");
         } catch (PersistenceException e) {
             throw new AcmException("Cannot delete all locks!", e);
