@@ -1,16 +1,13 @@
 package dev.vml.es.acm.core.code;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.vml.es.acm.core.util.DateUtils;
+import dev.vml.es.acm.core.util.NumberUtils;
 import java.util.Date;
 import java.util.Optional;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import dev.vml.es.acm.core.util.DateUtils;
-import dev.vml.es.acm.core.util.NumberUtils;
 
 public class QueuedExecution implements Execution {
 

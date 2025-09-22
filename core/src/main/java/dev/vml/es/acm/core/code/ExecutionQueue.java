@@ -224,8 +224,8 @@ public class ExecutionQueue implements JobExecutor, EventListener {
             if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
                 LOG.debug("Execution skipped '{}'", immediateExecution);
                 return context.result()
-                    .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null).toJson())
-                    .cancelled();
+                        .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null).toJson())
+                        .cancelled();
             } else {
                 LOG.info("Execution succeeded '{}'", immediateExecution);
                 return context.result().succeeded();
@@ -233,13 +233,15 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         } catch (CancellationException e) {
             LOG.warn("Execution aborted '{}'", queuedExecution);
             return context.result()
-                .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(e)).toJson())
-                .cancelled();
+                    .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(e))
+                            .toJson())
+                    .cancelled();
         } catch (Exception e) {
             LOG.error("Execution failed '{}'", queuedExecution, e);
             return context.result()
-                .message(QueuedMessage.of(ExecutionStatus.FAILED, ExceptionUtils.toString(e)).toJson())
-                .failed();
+                    .message(QueuedMessage.of(ExecutionStatus.FAILED, ExceptionUtils.toString(e))
+                            .toJson())
+                    .failed();
         }
     }
 
