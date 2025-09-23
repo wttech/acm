@@ -40,8 +40,6 @@ public class CodeContext {
 
     private final NotificationManager notifier;
 
-    private final FileManager fileManager;
-
     public CodeContext(OsgiContext osgiContext, ResourceResolver resourceResolver) {
         this.osgiContext = osgiContext;
         this.resourceResolver = resourceResolver;
@@ -52,7 +50,6 @@ public class CodeContext {
         this.activator = new Activator(resourceResolver, osgiContext);
         this.formatter = new Formatter();
         this.notifier = osgiContext.getService(NotificationManager.class);
-        this.fileManager = osgiContext.getService(FileManager.class);
         this.binding = createBinding();
 
         this.extensionScripts = findExtensionScripts();
@@ -140,9 +137,5 @@ public class CodeContext {
 
     public NotificationManager getNotifier() {
         return notifier;
-    }
-
-    public FileManager getFileManager() {
-        return fileManager;
     }
 }

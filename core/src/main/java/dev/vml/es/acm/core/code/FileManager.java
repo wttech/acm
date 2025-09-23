@@ -2,97 +2,73 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
-import java.io.*;
-import java.nio.file.Files;
-import java.text.SimpleDateFormat;
+import dev.vml.es.acm.core.repo.Repo;
+import dev.vml.es.acm.core.repo.RepoResource;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.ResourceResolver;
 
-@Component(immediate = true, service = FileManager.class)
 public class FileManager {
 
-    private static final String ROOT_DIRNAME = "file";
+    private Repo repo;
 
-    private File tempDir;
+    private RepoResource root;
 
-    @Activate
-    protected void activate() {
-        this.tempDir =
-                FileUtils.getTempDirectory().toPath().resolve(AcmConstants.CODE).toFile();
+    public FileManager(ResourceResolver resolver) {
+        this.repo = Repo.quiet(resolver);
+        this.root = repo.get(AcmConstants.VAR_ROOT + "/file");
     }
 
-    public File tempDir() {
-        return tempDir;
+    public Optional<String> find(String path) {
+        RepoResource resource = findResource(path);
+        return resource != null ? Optional.of(resource.getPath()) : Optional.empty();
     }
 
-    public File root() {
-        return tempDir.toPath().resolve(ROOT_DIRNAME).toFile();
-    }
-
-    public File get(String path) {
-        File targetFile = new File(path);
-        validatePath(targetFile);
-        return targetFile;
-    }
-
-    public File save(InputStream stream, String fileName) {
-        try {
-            String datePath = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
-            String randomDir = UUID.randomUUID().toString();
-            File dir = new File(root(), datePath + "/" + randomDir);
-            if (!dir.exists() && !dir.mkdirs()) {
-                throw new AcmException("File directory cannot be created: " + dir.getAbsolutePath());
-            }
-            File file = new File(dir, fileName);
-            validatePath(file);
-            if (file.exists()) {
-                throw new AcmException("File already exists: " + file.getAbsolutePath());
-            }
-            try (OutputStream out = Files.newOutputStream(file.toPath())) {
-                IOUtils.copy(stream, out);
-            }
-            return file;
-        } catch (IOException e) {
-            throw new AcmException("File cannot be saved: " + fileName, e);
+    public RepoResource findResource(String path) {
+        RepoResource relative = root.child(path);
+        if (relative.exists()) {
+            return relative;
         }
+        if (StringUtils.startsWith(path, root.getPath() + "/")) {
+            RepoResource absolute = repo.get(path);
+            if (absolute.exists()) {
+                return absolute;
+            }
+        }
+        return null;
     }
 
-    public File delete(String path) {
-        File file = get(path);
-        if (!file.exists()) {
-            throw new AcmException(String.format("File to be deleted does not exist '%s'!", path));
-        }
-        if (!file.delete()) {
-            throw new AcmException(String.format("File cannot be deleted '%s'!", path));
-        }
-        return file;
+    public String save(String fileName, InputStream stream) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        String formattedDate = now.format(formatter);
+        RepoResource fileResource = root.child(
+                String.format("%s/%s/%s", formattedDate, UUID.randomUUID().toString(), fileName));
+        fileResource.parent().ensureRegularFolder();
+        fileResource.saveFile("application/octet-stream", stream); // TODO tika?
+        return fileResource.getPath();
     }
 
-    public List<File> deleteAll(List<String> paths) {
+    public List<String> deleteAll(List<String> paths) {
         if (paths == null || paths.isEmpty()) {
             return Collections.emptyList();
         }
         return paths.stream().map(this::delete).collect(Collectors.toList());
     }
 
-    private void validatePath(File targetFile) {
-        try {
-            File rootDir = root();
-            String rootCanonical = rootDir.getCanonicalPath();
-            String targetCanonical = targetFile.getCanonicalPath();
-            if (!targetCanonical.startsWith(rootCanonical + File.separator) && !targetCanonical.equals(rootCanonical)) {
-                throw new AcmException(String.format(
-                        "File path '%s' must be within the root directory '%s'!", targetFile.getPath(), rootCanonical));
-            }
-        } catch (IOException e) {
-            throw new AcmException(String.format("File path resolution error '%s'!", targetFile.getPath()), e);
+    public String delete(String path) {
+        RepoResource resource = findResource(path);
+        if (resource == null) {
+            throw new AcmException(String.format("File to be deleted does not exist '%s'!", path));
         }
+        resource.delete();
+        return resource.getPath();
     }
 }
