@@ -1,0 +1,15 @@
+group: Input
+name: input_multi_select
+content: |
+  inputs.multiSelect("${1:name}") { label = "${2:Label}"; options = ["${3:Option 1}": "${4:value1}", "${5:Option 2}": "${6:value2}"]; value = ["${4:value}"] }
+documentation: |
+  An input holding multiple values selected from a list of options.
+  By default, the first option is selected.
+  
+  Display mode can be enforced by using `list()` or `checkbox()` methods.
+  
+  For example:
+  ```groovy
+  inputs.multiSelect("foo") { label = "Foo"; options = ["Bar": "bar", "Baz": "baz"]; value = ["bar"] }
+  inputs.multiSelect("foo") { options = ["bar", "baz"]; value = ["bar"] }
+  ```

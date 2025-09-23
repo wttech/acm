@@ -1,0 +1,13 @@
+group: Input
+name: input_integer
+content: |
+  inputs.integerNumber("${1:name}") { label = "${2:Label}"; value = ${3:value} }
+documentation: |
+  An input holding a integer number value.<br>
+  This input can be also displayed as a slider.
+  
+  For example:
+  ```groovy
+  inputs.integerNumber("proportion") { label = "Proportion"; value = 20; min = 10; max = 60; step = 2; slider() }
+  inputs.integerNumber("maxSize") { label = "Max Size"; value = 30 }
+  ```

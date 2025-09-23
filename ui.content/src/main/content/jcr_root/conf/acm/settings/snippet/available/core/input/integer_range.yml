@@ -1,0 +1,11 @@
+group: Input
+name: input_integer_range
+content: |
+  inputs.integerRange("${1:name}") { label = "${2:Label}"; value = ${3:value}; min = ${4:min}; max = ${5:max}; step = ${6:step} }
+documentation: |
+  An input that allows to select a integer range with min and max values.
+
+  For example:
+  ```groovy
+  inputs.integerRange("range") { label = "range"; value = [10, 90]; min = 0; max = 100; step = 5 }
+  ```

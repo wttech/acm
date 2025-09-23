@@ -44,7 +44,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
     - [Console](#console)
     - [Content scripts](#content-scripts)
       - [Minimal example](#minimal-example)
-      - [Arguments example](#arguments-example)
+      - [Inputs example](#inputs-example)
       - [ACL example](#acl-example)
       - [Repo example](#repo-example)
     - [History](#history)
@@ -204,7 +204,7 @@ Content scripts in ACM are Groovy scripts that can be used to automate various t
 These scripts can be placed in specific locations within the AEM repository to control their execution behavior.
 
 - `/conf/acm/settings/script/automatic/{project}`: Automatically executed scripts on instance boot (usually run once after deployment) or on scheduled intervals defined by `scheduleRun()` method. Specific conditions could be narrowed by `canRun()` method.
-- `/conf/acm/settings/script/manual/{project}`: Manually executed scripts (usually with arguments), run under specific circumstances by platform administrators.
+- `/conf/acm/settings/script/manual/{project}`: Manually executed scripts (usually with inputs), run under specific circumstances by platform administrators.
 
 #### Minimal example
 
@@ -226,14 +226,14 @@ The `doRun()` method contains the actual code to be executed.
 Notice that the script on their own decide when to run without a need to specify any additional metadata. In that way the-sky-is-the-limit. You can run the script once, periodically, or at an exact date and time.
 There are many built-in, ready-to-use conditions available in the `conditions` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Conditions.java).
 
-#### Arguments example
+#### Inputs example
 
-Scripts could accept arguments, which are passed to the script when it is executed.
+Scripts could accept inputs, which are passed to the script when it is executed.
 
 ```groovy
 void describeRun() {
-    arguments.string("name") { value = "John" }
-    arguments.string("surname") { value = "Doe" }
+    inputs.string("name") { value = "John" }
+    inputs.string("surname") { value = "Doe" }
 }
 
 boolean canRun() {
@@ -241,15 +241,15 @@ boolean canRun() {
 }
 
 void doRun() {
-    println "Hello ${arguments.value('name')} ${arguments.value('surname')}!"
+    println "Hello ${inputs.value('name')} ${inputs.value('surname')}!"
 }
 ```
 
-The `describeRun()` method is used to define the arguments that can be passed to the script.
-The `arguments` service is used to define the arguments that can be passed to the script.
-When the script is executed, the arguments are passed to the `doRun()` method.
+The `describeRun()` method is used to define the inputs that can be passed to the script.
+The `inputs` service is used to define the inputs that can be passed to the script.
+When the script is executed, the inputs are passed to the `doRun()` method.
 
-There are many built-in argument types to use handling different types of data like string, boolean, number, date, file, etc. Just check `arguments` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Arguments.java) for more details.
+There are many built-in input types to use handling different types of data like string, boolean, number, date, file, etc. Just check `inputs` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Inputs.java) for more details.
 
 <img src="docs/screenshot-content-script-arguments.png" width="720" alt="ACM Console">
 
@@ -309,12 +309,12 @@ The repo service abstracts away the complexity of managing dry-run and auto-comm
 
 ```groovy
 void describeRun() {
-    arguments.bool("dryRun") { value = true; switcher(); description = "Do not commit changes to the repository" }
-    arguments.bool("clean") { value = true; switcher(); description = "Finally delete all created resources" }
+    inputs.bool("dryRun") { value = true; switcher(); description = "Do not commit changes to the repository" }
+    inputs.bool("clean") { value = true; switcher(); description = "Finally delete all created resources" }
 }
 
 void doRun() {
-    repo.dryRun(arguments.value("dryRun")) {
+    repo.dryRun(inputs.value("dryRun")) {
         log.info "Creating a folder structure in the temporary directory of the repository."
         def dataFolder = repo.get("/tmp/acm/demo/data").ensureFolder()
         for (int i = 0; i < 5; i++) {
@@ -334,7 +334,7 @@ void doRun() {
         }
         log.info "Post '${post.path}' has been created at ${post.property("jcr:created", java.time.LocalDateTime)}"
 
-        if (arguments.value("clean")) {
+        if (inputs.value("clean")) {
             dataFolder.delete()
             postFolder.delete()
         }
@@ -348,7 +348,7 @@ void doRun() {
 
 All code executions are logged in the history. You can see the status of each execution, including whether it was successful or failed. The history also provides detailed logs for each execution, including any errors that occurred.
 Original code is stored in the history, so you can always refer back to it if needed.
-Complete output as well as argument values are also included to achieve full traceability.
+Complete output as well as input values are also included to achieve full traceability.
 
 <img src="docs/screenshot-history.png" width="720" alt="ACM History - Executions">
 <img src="docs/screenshot-history-execution-code.png" width="720" alt="ACM History - Execution Code">

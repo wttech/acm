@@ -13,7 +13,7 @@ public class ExecuteCodeInput implements Serializable {
     private Code code;
 
     @SuppressWarnings("java:S1948")
-    private Map<String, Object> arguments;
+    private Map<String, Object> inputs;
 
     public ExecuteCodeInput() {
         // for deserialization
@@ -31,7 +31,7 @@ public class ExecuteCodeInput implements Serializable {
         return code;
     }
 
-    public Map<String, Object> getArguments() {
-        return arguments;
+    public Map<String, Object> getInputs() {
+        return inputs;
     }
 }

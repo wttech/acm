@@ -2,7 +2,7 @@
  * Generate a list of all system classes in the current JVM.
  * This version of the script is designed to be run in the context of AEM running on Java 8.
  *
- * Arguments allow to:
+ * Inputs allow to:
  * - print the list (for debugging purposes),
  * - save it directly in the repository in expected path.
  *
@@ -15,7 +15,7 @@ import java.util.jar.JarFile
 import java.io.File
 
 void describeRun() {
-    arguments.select("mode") { options = ["print", "save"]; value = "print" }
+    inputs.select("mode") { options = ["print", "save"]; value = "print" }
 }
 
 boolean canRun() {
@@ -23,7 +23,7 @@ boolean canRun() {
 }
 
 void doRun() {
-    switch (arguments.value("mode")) {
+    switch (inputs.value("mode")) {
         case "print":
             eachSystemClass { className -> println "${className}" }
             break

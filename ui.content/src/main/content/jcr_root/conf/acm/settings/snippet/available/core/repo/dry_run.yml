@@ -10,16 +10,16 @@ documentation: |
   - normal run (when disabled) - operations are committed to the repository.
   
   When exception is thrown during dry run, the revert operation is performed, so no changes are made to the repository.
-  Useful especially when combined with `arguments.bool("dryRun")` to allow user to choose whether to perform dry run or not.
+  Useful especially when combined with `inputs.bool("dryRun")` to allow user to choose whether to perform dry run or not.
   
   For example:
   ```groovy
   void describeRun() {
-    arguments.bool("dryRun") { value = true; switcher(); description = "Do not commit changes to the repository" }
+    inputs.bool("dryRun") { value = true; switcher(); description = "Do not commit changes to the repository" }
   }
     
   void doRun() { 
-    repo.dryRun(arguments.value("dryRun")) {
+    repo.dryRun(inputs.value("dryRun")) {
       repo.get("/content/acme").ensureRegularFolder()
     }
   }

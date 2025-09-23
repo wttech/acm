@@ -2,10 +2,10 @@ group: General
 name: general_script_describe_run
 content: |
   void describeRun() {
-    // arguments.xxx(name) { ... }
+    // inputs.xxx(name) { ... }
   }
 documentation: |
   Describes the script characteristics like input arguments for manual scripts.
   
-  This method is executed before the script is run and is used to define the script's input arguments.<br>
-  The arguments must be defined using the `arguments.xxx(name) { ... }` methods which could be later on used in the script by calling `arguments.value(name)` method.<br>
+  This method is executed before the script is run and is used to define the script's input inputs.<br>
+  The arguments must be defined using the `inputs.xxx(name) { ... }` methods which could be later on used in the script by calling `inputs.value(name)` method.<br>

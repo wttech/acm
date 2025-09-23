@@ -2,8 +2,8 @@ group: General
 name: general_demo_arguments
 content: |
   void describeRun() {
-    arguments.string("name") { value = "John" }
-    arguments.string("surname") { value = "Doe" }
+    inputs.string("name") { value = "John" }
+    inputs.string("surname") { value = "Doe" }
   }
   
   boolean canRun() {
@@ -11,9 +11,9 @@ content: |
   }
     
   void doRun() {
-    println "Hello ${arguments.value('name')} ${arguments.value('surname')}!"
+    println "Hello ${inputs.value('name')} ${inputs.value('surname')}!"
   }
 documentation: |
-  A skeleton for a manual script with arguments.
+  A skeleton for a manual script with inputs.
   
   The script will print a greeting message with the provided name and surname.
