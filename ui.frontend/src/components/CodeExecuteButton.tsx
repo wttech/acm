@@ -6,16 +6,16 @@ import PlayCircle from '@spectrum-icons/workflow/PlayCircle';
 import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toastRequest } from '../utils/api';
-import { Argument, ArgumentGroupDefault, ArgumentValue, ArgumentValues, Description, ExecutableIdConsole, ExecutionStatus } from '../utils/api.types';
+import { Description, ExecutableIdConsole, ExecutionStatus, Input, InputGroupDefault, InputValue, InputValues } from '../utils/api.types';
 import { Objects } from '../utils/objects';
 import { ToastTimeoutLong } from '../utils/spectrum.ts';
 import { Strings } from '../utils/strings';
-import CodeArgumentInput from './CodeArgumentInput';
+import CodeInput from './CodeInput.tsx';
 
 interface CodeExecuteButtonProps {
   code: string;
   onDescribeFailed: (description: Description) => void;
-  onExecute: (description: Description, args: ArgumentValues) => void;
+  onExecute: (description: Description, args: InputValues) => void;
   isDisabled: boolean;
   isPending: boolean;
 }
@@ -25,7 +25,7 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
   const [dialogOpen, setDialogOpen] = useState(false);
   const [described, setDescribed] = useState(false);
   const [selectedTab, setSelectedTab] = useState(0);
-  const methods = useForm<ArgumentValues>();
+  const methods = useForm<InputValues>();
 
   const { formState } = methods;
 
@@ -50,11 +50,11 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
       if (description.execution.status === ExecutionStatus.SUCCEEDED) {
         setDescription(description);
 
-        const argumentsInitial = description.arguments ? Object.fromEntries(Object.entries(description.arguments).map(([key, arg]) => [key, arg.value])) : {};
-        methods.reset(argumentsInitial);
+        const inputsInitial = description.inputs ? Object.fromEntries(Object.entries(description.inputs).map(([key, arg]) => [key, arg.value])) : {};
+        methods.reset(inputsInitial);
 
-        const argumentsRequired = Objects.isNotEmpty(description.arguments);
-        if (argumentsRequired) {
+        const inputsRequired = Objects.isNotEmpty(description.inputs);
+        if (inputsRequired) {
           setDialogOpen(true);
         } else {
           onExecute(description, {});
@@ -82,16 +82,16 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
     setDescription(null);
   };
 
-  const handleFormSubmit = async (data: ArgumentValues) => {
+  const handleFormSubmit = async (data: InputValues) => {
     handleCloseDialog();
     onExecute(description!, data);
   };
 
-  const descriptionArguments: Argument<ArgumentValue>[] = Object.values(description?.arguments || []);
-  const groups = Array.from(new Set(descriptionArguments.map((arg) => arg.group)));
-  const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== ArgumentGroupDefault);
+  const descriptionInputs: Input<InputValue>[] = Object.values(description?.inputs || []);
+  const groups = Array.from(new Set(descriptionInputs.map((arg) => arg.group)));
+  const shouldRenderTabs = groups.length > 1 || (groups.length === 1 && groups[0] !== InputGroupDefault);
   const validationFailed = Object.keys(formState.errors).length > 0;
-  const groupHasError = (group: string): boolean => descriptionArguments.filter((arg) => arg.group === group).some((arg) => !!formState.errors[arg.name]);
+  const groupHasError = (group: string): boolean => descriptionInputs.filter((arg) => arg.group === group).some((arg) => !!formState.errors[arg.name]);
 
   return (
     <>
@@ -103,13 +103,13 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
         {dialogOpen && (
           <Dialog minWidth="40vw">
             <FormProvider {...methods}>
-              <Heading>Provide Arguments</Heading>
+              <Heading>Provide Inputs</Heading>
               <Divider />
               <Content>
                 <Form onSubmit={methods.handleSubmit(handleFormSubmit)}>
                   {shouldRenderTabs ? (
                     <>
-                      <Tabs aria-label="Argument Groups" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(Number(key))}>
+                      <Tabs aria-label="Input Groups" selectedKey={selectedTab} onSelectionChange={(key) => setSelectedTab(Number(key))}>
                         <TabList>
                           {groups.map((group, idx) => (
                             <Item key={idx} textValue={Strings.capitalize(group)}>
@@ -121,16 +121,16 @@ const CodeExecuteButton: React.FC<CodeExecuteButtonProps> = ({ code, onDescribeF
                       </Tabs>
                       {groups.map((group, idx) => (
                         <View key={group} marginY="size-200" UNSAFE_style={{ display: selectedTab === idx ? 'block' : 'none' }}>
-                          {descriptionArguments
+                          {descriptionInputs
                             .filter((arg) => arg.group === group)
                             .map((arg) => (
-                              <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />
+                              <CodeInput key={arg.name} input={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />
                             ))}
                         </View>
                       ))}
                     </>
                   ) : (
-                    descriptionArguments.map((arg) => <CodeArgumentInput key={arg.name} arg={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />)
+                    descriptionInputs.map((arg) => <CodeInput key={arg.name} input={arg} value={methods.getValues(arg.name)} onChange={(name, value) => methods.setValue(name, value)} />)
                   )}
                 </Form>
               </Content>

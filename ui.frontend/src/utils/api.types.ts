@@ -3,7 +3,7 @@ import { isProduction } from './node.ts';
 export type Executable = {
   id: string;
   content: string;
-  arguments: ArgumentValues;
+  inputs: InputValues;
 };
 
 export const ScriptRoot = '/conf/acm/settings/script';
@@ -37,20 +37,20 @@ export function isExecutableScript(id: string): boolean {
 
 export type Description = {
   execution: Execution;
-  arguments: {
-    [name: string]: Argument<ArgumentValue>;
+  inputs: {
+    [name: string]: Input<InputValue>;
   };
 };
 
-export type ArgumentType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE' | 'PATH' | 'FILE' | 'MULTIFILE' | 'MAP' | 'KEY_VALUE_LIST';
-export type ArgumentValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue | KeyValue | MapValue;
-export type ArgumentValues = Record<string, ArgumentValue>;
+export type InputType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE' | 'PATH' | 'FILE' | 'MULTIFILE' | 'MAP' | 'KEY_VALUE_LIST';
+export type InputValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue | KeyValue | MapValue;
+export type InputValues = Record<string, InputValue>;
 
-export const ArgumentGroupDefault = 'general';
+export const InputGroupDefault = 'general';
 
-export type Argument<T> = {
+export type Input<T> = {
   name: string;
-  type: ArgumentType;
+  type: InputType;
   value: T;
   label: string;
   description?: string;
@@ -59,35 +59,35 @@ export type Argument<T> = {
   validator?: string;
 };
 
-export type MinMaxArgument = Argument<ArgumentValue> & {
+export type MinMaxInput = Input<InputValue> & {
   min: number;
   max: number;
 };
 
-export type BoolArgument = Argument<boolean> & {
+export type BoolInput = Input<boolean> & {
   display: 'SWITCHER' | 'CHECKBOX';
 };
 
-export type DateTimeArgument = Argument<string> & {
+export type DateTimeInput = Input<string> & {
   min: string;
   max: string;
 };
 
-export type TextArgument = Argument<string> & {
+export type TextInput = Input<string> & {
   language?: string;
 };
 
-export type StringArgument = Argument<string> & {
+export type StringInput = Input<string> & {
   display: 'PLAIN' | 'PASSWORD';
 };
 
-export type NumberArgument = Argument<number> &
-  MinMaxArgument & {
+export type NumberInput = Input<number> &
+  MinMaxInput & {
     step: number;
     display: 'INPUT' | 'SLIDER';
   };
 
-export type ColorArgument = Argument<string> & {
+export type ColorInput = Input<string> & {
   format: 'HEX' | 'RGBA' | 'HSL' | 'HSB';
 };
 
@@ -103,98 +103,98 @@ export type KeyValue = {
 
 export type MapValue = Record<string, string>;
 
-export type NumberRangeArgument = Argument<RangeValue> &
-  MinMaxArgument & {
+export type NumberRangeInput = Input<RangeValue> &
+  MinMaxInput & {
     step: number;
   };
 
-export type SelectArgument = Argument<ArgumentValue> & {
-  options: Record<string, ArgumentValue>;
+export type SelectInput = Input<InputValue> & {
+  options: Record<string, InputValue>;
   display: 'AUTO' | 'DROPDOWN' | 'RADIO';
 };
 
-export type MultiSelectArgument = Argument<ArgumentValue> & {
-  options: Record<string, ArgumentValue>;
+export type MultiSelectInput = Input<InputValue> & {
+  options: Record<string, InputValue>;
   display: 'AUTO' | 'CHECKBOX' | 'DROPDOWN';
 };
 
-export type PathArgument = Argument<ArgumentValue> & {
+export type PathInput = Input<InputValue> & {
   rootPath: string;
   rootInclusive: boolean;
 };
 
-export type FileArgument = Argument<ArgumentValue> & {
+export type FileInput = Input<InputValue> & {
   mimeTypes: string[];
 };
 
-export type MultiFileArgument = Argument<ArgumentValue> &
-  MinMaxArgument & {
+export type MultiFileInput = Input<InputValue> &
+  MinMaxInput & {
     mimeTypes: string[];
   };
 
-type KeyValueBaseArgument = {
+type KeyValueBaseInput = {
   keyLabel: string;
   valueLabel: string;
 };
 
-export type MapArgument = Argument<MapValue> & KeyValueBaseArgument & {};
+export type MapInput = Input<MapValue> & KeyValueBaseInput & {};
 
-export type KeyValueListArgument = Argument<KeyValue> & KeyValueBaseArgument & {};
+export type KeyValueListInput = Input<KeyValue> & KeyValueBaseInput & {};
 
-export function isStringArgument(arg: Argument<ArgumentValue>): arg is StringArgument {
-  return arg.type === 'STRING';
+export function isStringInput(input: Input<InputValue>): input is StringInput {
+  return input.type === 'STRING';
 }
 
-export function isBoolArgument(arg: Argument<ArgumentValue>): arg is BoolArgument {
-  return arg.type === 'BOOL';
+export function isBoolInput(input: Input<InputValue>): input is BoolInput {
+  return input.type === 'BOOL';
 }
 
-export function isDateTimeArgument(arg: Argument<ArgumentValue>): arg is DateTimeArgument {
-  return arg.type === 'DATETIME' || arg.type === 'DATE' || arg.type === 'TIME';
+export function isDateTimeInput(input: Input<InputValue>): input is DateTimeInput {
+  return input.type === 'DATETIME' || input.type === 'DATE' || input.type === 'TIME';
 }
 
-export function isTextArgument(arg: Argument<ArgumentValue>): arg is TextArgument {
+export function isTextInput(arg: Input<InputValue>): arg is TextInput {
   return arg.type === 'TEXT';
 }
 
-export function isSelectArgument(arg: Argument<ArgumentValue>): arg is SelectArgument {
-  return arg.type === 'SELECT';
+export function isSelectInput(input: Input<InputValue>): input is SelectInput {
+  return input.type === 'SELECT';
 }
 
-export function isMultiSelectArgument(arg: Argument<ArgumentValue>): arg is MultiSelectArgument {
-  return arg.type === 'MULTISELECT';
+export function isMultiSelectInput(input: Input<InputValue>): input is MultiSelectInput {
+  return input.type === 'MULTISELECT';
 }
 
-export function isNumberArgument(arg: Argument<ArgumentValue>): arg is NumberArgument {
-  return arg.type === 'INTEGER' || arg.type === 'DECIMAL';
+export function isNumberInput(input: Input<InputValue>): input is NumberInput {
+  return input.type === 'INTEGER' || input.type === 'DECIMAL';
 }
 
-export function isColorArgument(arg: Argument<ArgumentValue>): arg is ColorArgument {
-  return arg.type === 'COLOR';
+export function isColorInput(input: Input<InputValue>): input is ColorInput {
+  return input.type === 'COLOR';
 }
 
-export function isRangeArgument(arg: Argument<ArgumentValue>): arg is NumberRangeArgument {
-  return arg.type === 'NUMBER_RANGE';
+export function isRangeInput(input: Input<InputValue>): input is NumberRangeInput {
+  return input.type === 'NUMBER_RANGE';
 }
 
-export function isPathArgument(arg: Argument<ArgumentValue>): arg is PathArgument {
-  return arg.type === 'PATH';
+export function isPathInput(input: Input<InputValue>): input is PathInput {
+  return input.type === 'PATH';
 }
 
-export function isFileArgument(arg: Argument<ArgumentValue>): arg is FileArgument {
-  return arg.type === 'FILE';
+export function isFileInput(input: Input<InputValue>): input is FileInput {
+  return input.type === 'FILE';
 }
 
-export function isMultiFileArgument(arg: Argument<ArgumentValue>): arg is MultiFileArgument {
-  return arg.type === 'MULTIFILE';
+export function isMultiFileInput(input: Input<InputValue>): input is MultiFileInput {
+  return input.type === 'MULTIFILE';
 }
 
-export function isMapArgument(arg: Argument<ArgumentValue>): arg is MapArgument {
-  return arg.type === 'MAP';
+export function isMapInput(input: Input<InputValue>): input is MapInput {
+  return input.type === 'MAP';
 }
 
-export function isKeyValueListArgument(arg: Argument<ArgumentValue>): arg is KeyValueListArgument {
-  return arg.type === 'KEY_VALUE_LIST';
+export function isKeyValueListInput(input: Input<InputValue>): input is KeyValueListInput {
+  return input.type === 'KEY_VALUE_LIST';
 }
 
 export type Execution = {

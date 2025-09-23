@@ -11,7 +11,7 @@ import CodeEditor from '../components/CodeEditor';
 import CodeExecuteButton from '../components/CodeExecuteButton';
 import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation';
 import { toastRequest } from '../utils/api';
-import { ArgumentValues, Description, ExecutionQueryParams, QueueOutput, Script, ScriptOutput, ScriptType } from '../utils/api.types';
+import { Description, ExecutionQueryParams, InputValues, QueueOutput, Script, ScriptOutput, ScriptType } from '../utils/api.types';
 import { Urls } from '../utils/url.ts';
 
 const toastTimeout = 3000;
@@ -88,7 +88,7 @@ const ScriptView = () => {
     });
   };
 
-  const onExecute = async (description: Description, args: ArgumentValues) => {
+  const onExecute = async (description: Description, inputs: InputValues) => {
     setExecuting(true);
     try {
       const response = await toastRequest<QueueOutput>({
@@ -100,7 +100,7 @@ const ScriptView = () => {
           code: {
             id: script.id,
             content: script.content,
-            arguments: args,
+            inputs: inputs,
           },
         },
       });

@@ -57,7 +57,7 @@ public class Script implements Executable, Comparable<Script> {
     }
 
     @Override
-    public InputValues getArguments() {
+    public InputValues getInputs() {
         return new InputValues();
     }
 

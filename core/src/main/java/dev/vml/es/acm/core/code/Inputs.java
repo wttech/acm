@@ -25,17 +25,17 @@ public class Inputs implements Serializable {
     public Input<?> get(String name) {
         Input<?> result = definitions.get(name);
         if (result == null) {
-            throw new IllegalArgumentException(String.format("Argument '%s' is not defined!", name));
+            throw new IllegalArgumentException(String.format("Input '%s' is not defined!", name));
         }
         return result;
     }
 
-    private void add(Input<?> argument) {
-        if (definitions.containsKey(argument.getName())) {
+    private void add(Input<?> input) {
+        if (definitions.containsKey(input.getName())) {
             throw new IllegalArgumentException(
-                    String.format("Argument with name '%s' is already defined!", argument.getName()));
+                    String.format("Input with name '%s' is already defined!", input.getName()));
         }
-        definitions.put(argument.getName(), argument);
+        definitions.put(input.getName(), input);
     }
 
     @JsonAnyGetter
@@ -46,8 +46,8 @@ public class Inputs implements Serializable {
     @JsonIgnore
     public ValueMap getValues() {
         Map<String, Object> props = new HashMap<>();
-        for (Input<?> argument : definitions.values()) {
-            props.put(argument.getName(), argument.getValue());
+        for (Input<?> input : definitions.values()) {
+            props.put(input.getName(), input.getValue());
         }
         return new TypeValueMap(props);
     }
@@ -74,27 +74,27 @@ public class Inputs implements Serializable {
         return getValue(name);
     }
 
-    public void setValues(InputValues arguments) {
-        if (arguments == null) {
-            return; // input arguments may be skipped then default values will be used
+    public void setValues(InputValues inputs) {
+        if (inputs == null) {
+            return; // may be skipped then default values will be used
         }
-        arguments.forEach((name, value) -> {
+        inputs.forEach((name, value) -> {
             Input<?> result = get(name);
             setValue(result, value);
         });
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void setValue(Input<T> argument, Object value) {
-        Class<?> valueType = argument.getValueType();
+    private <T> void setValue(Input<T> input, Object value) {
+        Class<?> valueType = input.getValueType();
         if (valueType == null) {
-            argument.setValue((T) value);
+            input.setValue((T) value);
         } else {
             Optional<?> convertedValue = TypeUtils.convert(value, valueType, true);
             if (convertedValue.isPresent()) {
-                argument.setValue((T) convertedValue.get());
+                input.setValue((T) convertedValue.get());
             } else {
-                argument.setValue((T) value);
+                input.setValue((T) value);
             }
         }
     }

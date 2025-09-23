@@ -5,7 +5,7 @@ import java.util.Date;
 
 /**
  * Lightweight representation of an execution.
- * Skips executable arguments, error and output (heavy data).
+ * Skips executable inputs, outputs, error and output (heavy data).
  */
 public interface ExecutionSummary extends Serializable {
 

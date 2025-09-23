@@ -18,7 +18,7 @@ import { useAppState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
 import { apiRequest, toastRequest } from '../utils/api';
-import { ArgumentValues, ConsoleDefaultScriptContent, ConsoleDefaultScriptPath, Description, ExecutableIdConsole, Execution, isExecutionPending, QueueOutput, ScriptOutput } from '../utils/api.types.ts';
+import { ConsoleDefaultScriptContent, ConsoleDefaultScriptPath, Description, ExecutableIdConsole, Execution, InputValues, isExecutionPending, QueueOutput, ScriptOutput } from '../utils/api.types.ts';
 import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
 import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
@@ -79,7 +79,7 @@ const ConsolePage = () => {
     ToastQueue.negative('Code description failed!', { timeout: ToastTimeoutQuick });
   };
 
-  const onExecute = async (description: Description, args: ArgumentValues) => {
+  const onExecute = async (description: Description, inputs: InputValues) => {
     setExecuting(true);
     setExecution(null);
 
@@ -92,7 +92,7 @@ const ConsolePage = () => {
           code: {
             id: ExecutableIdConsole,
             content: code,
-            arguments: args,
+            inputs: inputs,
           },
         },
       });
