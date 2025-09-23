@@ -1,0 +1,19 @@
+group: General
+name: general_demo_arguments
+content: |
+  void describeRun() {
+    inputs.string("name") { value = "John" }
+    inputs.string("surname") { value = "Doe" }
+  }
+  
+  boolean canRun() {
+    return conditions.always()
+  }
+    
+  void doRun() {
+    println "Hello ${inputs.value('name')} ${inputs.value('surname')}!"
+  }
+documentation: |
+  A skeleton for a manual script with inputs.
+  
+  The script will print a greeting message with the provided name and surname.

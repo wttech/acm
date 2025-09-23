@@ -29,7 +29,7 @@ public class ExecutionContext implements AutoCloseable {
 
     private boolean locking = true;
 
-    private final Arguments arguments;
+    private final Inputs inputs;
 
     private final Schedules schedules;
 
@@ -52,7 +52,7 @@ public class ExecutionContext implements AutoCloseable {
         this.printStream = new CodePrintStream(output.write(), String.format("%s|%s", executable.getId(), id));
         this.schedules = new Schedules();
         this.conditions = new Conditions(this);
-        this.arguments = new Arguments();
+        this.inputs = new Inputs();
 
         customizeBinding();
     }
@@ -130,8 +130,8 @@ public class ExecutionContext implements AutoCloseable {
         this.locking = locking;
     }
 
-    public Arguments getArguments() {
-        return arguments;
+    public Inputs getInputs() {
+        return inputs;
     }
 
     public Schedules getSchedules() {
@@ -146,7 +146,8 @@ public class ExecutionContext implements AutoCloseable {
         Binding binding = getCodeContext().getBinding();
 
         binding.setVariable("schedules", schedules);
-        binding.setVariable("arguments", arguments);
+        binding.setVariable("arguments", inputs); // TODO deprecated
+        binding.setVariable("inputs", inputs);
         binding.setVariable("conditions", conditions);
         binding.setVariable("out", getOut());
         binding.setVariable("log", getLogger());

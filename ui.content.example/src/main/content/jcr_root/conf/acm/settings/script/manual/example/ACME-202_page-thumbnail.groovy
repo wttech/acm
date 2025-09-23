@@ -7,8 +7,8 @@
  */
 
 void describeRun() {
-    arguments.path("pagePath") { rootPathExclusive = '/' }
-    arguments.file("pageThumbnailFile") { mimeTypes = ["image/jpeg"] }
+    inputs.path("pagePath") { rootPathExclusive = '/' }
+    inputs.file("pageThumbnailFile") { mimeTypes = ["image/jpeg"] }
 }
 
 boolean canRun() {
@@ -16,8 +16,8 @@ boolean canRun() {
 }
 
 void doRun() {
-    def page = repo.get(arguments.value("pagePath"))
+    def page = repo.get(inputs.value("pagePath"))
     def pageImage = page.child("jcr:content/image").ensure("nt:unstructured")
     pageImage.child("file/jcr:content/dam:thumbnails").delete()
-    pageImage.child("file").saveFile("image/jpeg", arguments.value("pageThumbnailFile"))
+    pageImage.child("file").saveFile("image/jpeg", inputs.value("pageThumbnailFile"))
 }

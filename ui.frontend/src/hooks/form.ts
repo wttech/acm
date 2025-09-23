@@ -1,14 +1,14 @@
 import { useFormContext } from 'react-hook-form';
-import { Argument, ArgumentValue, isDateTimeArgument, isMultiFileArgument, isNumberArgument, isPathArgument } from '../utils/api.types.ts';
+import { Input, InputValue, isDateTimeInput, isMultiFileInput, isNumberInput, isPathInput } from '../utils/api.types.ts';
 import { Dates } from '../utils/dates';
 
 type ValidationResult = string | true | undefined;
 
-export const useArgumentInput = (arg: Argument<ArgumentValue>) => {
+export const useInput = (arg: Input<InputValue>) => {
   const { control, getValues } = useFormContext();
 
   const controllerRules = {
-    validate: (value: ArgumentValue): ValidationResult => {
+    validate: (value: InputValue): ValidationResult => {
       if (arg.required && isValueEmpty(value)) {
         return 'Value is required';
       }
@@ -24,7 +24,7 @@ export const useArgumentInput = (arg: Argument<ArgumentValue>) => {
   return { control, controllerRules };
 };
 
-function isValueEmpty(value: ArgumentValue): boolean {
+function isValueEmpty(value: InputValue): boolean {
   return (
     value === null ||
     value === undefined ||
@@ -36,23 +36,23 @@ function isValueEmpty(value: ArgumentValue): boolean {
   );
 }
 
-function isValueAvailable(value: ArgumentValue): boolean {
+function isValueAvailable(value: InputValue): boolean {
   return !isValueEmpty(value);
 }
 
-function validateCustom(arg: Argument<ArgumentValue>, value: ArgumentValue, allValues: Record<string, ArgumentValue>): ValidationResult {
+function validateCustom(arg: Input<InputValue>, value: InputValue, allValues: Record<string, InputValue>): ValidationResult {
   try {
     const validator = eval(arg.validator!);
     const errorMessage = validator(value, allValues);
     return errorMessage || true;
   } catch (error) {
-    console.error(`Validator for argument '${arg.name}' failed!`, error);
+    console.error(`Validator for input '${arg.name}' failed!`, error);
     return `Validator failed`;
   }
 }
 
-function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): ValidationResult {
-  if (isMultiFileArgument(arg)) {
+function validateDefault(arg: Input<InputValue>, value: InputValue): ValidationResult {
+  if (isMultiFileInput(arg)) {
     const files = Array.isArray(value) ? value : value ? [value] : [];
     const min = typeof arg.min === 'number' ? arg.min : undefined;
     const max = typeof arg.max === 'number' ? arg.max : undefined;
@@ -67,7 +67,7 @@ function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): Va
       }
       return msg;
     }
-  } else if (isNumberArgument(arg) && typeof value === 'number') {
+  } else if (isNumberInput(arg) && typeof value === 'number') {
     if (arg.min && value < arg.min) {
       return `Value must be greater than or equal to '${arg.min}'`;
     }
@@ -77,7 +77,7 @@ function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): Va
     if (arg.step && (value - (arg.min || 0)) % arg.step !== 0) {
       return `Value must be a multiple of '${arg.step}'`;
     }
-  } else if (isPathArgument(arg) && typeof value === 'string') {
+  } else if (isPathInput(arg) && typeof value === 'string') {
     if (!value.startsWith('/')) {
       return `Path must start with '/'`;
     } else if (value.includes('//')) {
@@ -99,7 +99,7 @@ function validateDefault(arg: Argument<ArgumentValue>, value: ArgumentValue): Va
         }
       }
     }
-  } else if (isDateTimeArgument(arg) && typeof value === 'string') {
+  } else if (isDateTimeInput(arg) && typeof value === 'string') {
     if (arg.type === 'DATE') {
       if (arg.min && Dates.toCalendarDate(value) < Dates.toCalendarDate(arg.min)) {
         return `Value must be greater than or equal to '${arg.min}'`;

@@ -6,18 +6,18 @@ public class Description implements Serializable {
 
     private final Execution execution;
 
-    private final Arguments arguments;
+    private final Inputs inputs;
 
-    public Description(Execution execution, Arguments arguments) {
+    public Description(Execution execution, Inputs inputs) {
         this.execution = execution;
-        this.arguments = arguments;
+        this.inputs = inputs;
     }
 
     public Execution getExecution() {
         return execution;
     }
 
-    public Arguments getArguments() {
-        return arguments;
+    public Inputs getInputs() {
+        return inputs;
     }
 }

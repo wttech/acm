@@ -1,0 +1,12 @@
+group: Input
+name: input_text
+content: |
+  inputs.text("${1:name}") { label = "${2:Label}"; value = "${3:value}"; language = "${4:language}" }
+documentation: |
+  An input holding a complex, multiline string value.<br>
+  Language can be specified to enable syntax highlighting e.g. "json" or "xml".<br>
+  
+  For example:
+  ```groovy
+  inputs.text("foo") { label = "Foo"; value = '{"Bar": "bar"}'; language = "json" }
+  ```

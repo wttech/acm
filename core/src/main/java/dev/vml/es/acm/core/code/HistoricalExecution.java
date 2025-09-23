@@ -55,7 +55,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             this.executable = new Code(
                     props.get("executableId", String.class),
                     props.get("executableContent", String.class),
-                    JsonUtils.read(props.get("executableArguments", InputStream.class), ArgumentValues.class));
+                    JsonUtils.read(props.get("executableInputs", InputStream.class), InputValues.class));
         } catch (Exception e) {
             throw new AcmException(
                     String.format("Cannot read historical execution from resource '%s'!", resource.getPath()), e);
@@ -75,12 +75,12 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             props.put("error", execution.getError());
             props.put("output", execution.readOutput());
             props.put("instance", execution.getInstance());
-            
+
             props.put("executableId", execution.getExecutable().getId());
             props.put("executableContent", execution.getExecutable().getContent());
             props.put(
-                    "executableArguments",
-                    JsonUtils.writeToStream(execution.getExecutable().getArguments()));
+                    "executableInputs",
+                    JsonUtils.writeToStream(execution.getExecutable().getInputs()));
 
             props.entrySet().removeIf(e -> e.getValue() == null);
             props.put(JcrConstants.JCR_PRIMARYTYPE, PRIMARY_TYPE);

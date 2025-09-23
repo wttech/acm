@@ -1,0 +1,13 @@
+group: Input
+name: input_map
+content: |
+  inputs.map("${1:name}") { label = "${2:Label}"; value = ["${3:key}": "${4:value}"] }
+documentation: |
+  An input that allows to input a map of key-value pairs.
+  
+  For non-unique keys use `keyValueList` input instead.
+
+  For example:
+  ```groovy
+  inputs.map("languages") { keyLabel = "ISO Code"; valueLabel = "Name"; value = ["pl-PL": "Polski", "es-ES": "Español"] }
+  ```

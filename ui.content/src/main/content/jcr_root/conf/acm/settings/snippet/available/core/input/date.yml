@@ -1,0 +1,21 @@
+group: Input
+name: input_date
+content: |
+  inputs.date("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
+documentation: |
+  An input that represents a date.
+  
+  Optionally `min` and `max` values can be set to restrict the date range in picker.
+  
+  For example:
+  ```groovy
+  inputs.date("releaseDate") { label = "Release Date"; value = "2023-01-01" }
+  inputs.date("eventStart") { value = [2023, 10, 1] }
+  inputs.date("eventEnd") { value = now(); min = now().minusDays(7); max = now().plusDays(7) }
+  inputs.date("santaDeadline") { value = "2023-12-24"; min = "2023-12-01"; max = "2023-12-25" }
+  ```
+  
+  Usage:
+  ```groovy
+  def releaseDate = inputs.value("releaseDate") // java.time.LocalDate
+  ```

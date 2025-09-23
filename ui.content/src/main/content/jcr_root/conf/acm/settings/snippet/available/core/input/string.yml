@@ -1,0 +1,11 @@
+group: Input
+name: input_string
+content: |
+  inputs.string("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
+documentation: |
+  An input holding a string value.<br>
+  
+  For example:
+  ```groovy
+  inputs.string("foo") { label = "Foo"; value = "bar" }
+  ```

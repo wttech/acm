@@ -1,0 +1,14 @@
+group: Input
+name: input_bool
+content: |
+  inputs.bool("${1:name}") { label = "${2:Label}"; value = ${3:value} }
+documentation: |
+  An input that can be either true or false.<br>
+  Display mode can be adjusted by using `checkbox()` or `toggle()` methods.
+  
+  For example:
+  ```groovy
+  inputs.bool("dryRun") { label = "Dry run"; value = true; toggle() }
+  inputs.bool("force") { label = "Force"; value = false; checkbox() }
+  inputs.bool("enabled") { label = "Enabled"; value = true; checkbox() }
+  ```

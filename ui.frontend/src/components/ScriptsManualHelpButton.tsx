@@ -23,10 +23,10 @@ const ScriptsManualHelpButton: React.FC = () => (
             <Checkmark size="XS" /> Execute scripts on demand to perform planned content updates, data imports, and other tasks. Changes applied on the author instance will likely need to be replicated to the publish instance.
           </p>
           <p>
-            <Help size="XS" /> Scripts can be either argument-less or accept arguments provided through an interactive GUI dialog, allowing users to input necessary parameters before execution.
+            <Help size="XS" /> Scripts can be either input-less or accept inputs provided through an interactive GUI dialog, allowing users to input necessary parameters before execution.
           </p>
           <p>
-            <Code size="XS" /> The <code>describeRun</code> method provides a description of the script's execution, including the arguments it accepts and their validation rules.
+            <Code size="XS" /> The <code>describeRun</code> method provides a description of the script's execution, including the inputs it accepts and their validation rules.
           </p>
           <p>
             <Cancel size="XS" /> Those that cannot be executed are skipped. Skipped executions are recorded in the history only if debug mode is enabled. All other executions are always recorded for auditing purposes.

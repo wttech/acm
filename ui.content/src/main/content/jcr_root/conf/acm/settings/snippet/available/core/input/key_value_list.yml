@@ -1,0 +1,13 @@
+group: Input
+name: input_key_value_list
+content: |
+  inputs.keyValueList("${1:name}") { label = "${2:Label}"; value = [ ["${3:key}", "${4:value}"] ] }
+documentation: |
+  An input that allows to input a list of key-value pairs.
+  
+  For unique keys use `map` input instead.
+
+  For example:
+  ```groovy
+  inputs.keyValueList("queryParams") { keyLabel = "Param"; valueLabel = "Value"; value = [ ["tag": "a"], ["tag": "b"] ] }
+  ```

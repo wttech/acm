@@ -114,16 +114,16 @@ const ExecutionView = () => {
                       <ExecutableIdValue id={execution.executable.id} />
                     </div>
                   </Field>
-                  <Field label="Arguments" flex="1" minWidth="50%">
+                  <Field label="Inputs" flex="1" minWidth="50%">
                     <div>
-                      {Objects.isEmpty(execution.executable.arguments) ? (
+                      {Objects.isEmpty(execution.executable.inputs) ? (
                         <Badge variant="neutral">
                           <InfoOutline />
                           <Text>Not described</Text>
                         </Badge>
                       ) : (
                         <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
-                          <Editor width="100%" language="json" theme="vs-dark" height="200px" options={{ readOnly: true, scrollBeyondLastLine: false }} value={JSON.stringify(execution.executable.arguments, null, 2)} />
+                          <Editor width="100%" language="json" theme="vs-dark" height="200px" options={{ readOnly: true, scrollBeyondLastLine: false }} value={JSON.stringify(execution.executable.inputs, null, 2)} />
                         </View>
                       )}
                     </div>

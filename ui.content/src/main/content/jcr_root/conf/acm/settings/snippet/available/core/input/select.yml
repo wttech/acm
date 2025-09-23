@@ -1,0 +1,15 @@
+group: Input
+name: input_select
+content: |
+  inputs.select("${1:name}") { label = "${2:Label}"; options = ["${3:option1}": "${4:value1}", "${5:option2}": "${6:value2}"]; value = "${4:value}" }
+documentation: |
+  An input holding a single value selected from a list of options.
+  By default, the first option is selected.
+  
+  Display mode can be enforced by using `dropdown()` or `radio()` methods.
+
+  For example:
+  ```groovy
+  inputs.select("foo") { label = "Foo"; options = ["bar": "Bar", "baz": "Baz"]; value = "bar" }
+  inputs.select("foo") { options = ["bar", "baz"]; value = "bar" }
+  ```

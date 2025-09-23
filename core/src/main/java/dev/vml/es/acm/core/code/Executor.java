@@ -176,7 +176,7 @@ public class Executor implements EventListener {
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
 
             contentScript.describe();
-            context.getArguments().setValues(context.getExecutable().getArguments());
+            context.getInputs().setValues(context.getExecutable().getInputs());
 
             boolean canRun = contentScript.canRun();
             if (!canRun) {
@@ -282,10 +282,10 @@ public class Executor implements EventListener {
             ContentScript contentScript = new ContentScript(context);
             contentScript.describe();
 
-            return new Description(execution.end(ExecutionStatus.SUCCEEDED), context.getArguments());
+            return new Description(execution.end(ExecutionStatus.SUCCEEDED), context.getInputs());
         } catch (Throwable e) {
             execution.error(e);
-            return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
+            return new Description(execution.end(ExecutionStatus.FAILED), new Inputs());
         }
     }
 

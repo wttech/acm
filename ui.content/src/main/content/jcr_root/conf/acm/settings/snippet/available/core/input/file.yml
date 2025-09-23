@@ -1,0 +1,19 @@
+group: Input
+name: input_file
+content: |
+  inputs.file("${1:name}") { label = "${2:Label}" }
+documentation: |
+  An input that allows to use uploaded file.
+  
+  Type of files that can be uploaded can be restricted by setting `mimeTypes`.
+  Predefined mime types available: `images()`, `videos()`, `audios()`, `archives()`, `pdfs()`, `zips()`.
+  
+  For example:
+  ```groovy
+  inputs.file("imageFile") { images() }
+  ```
+  
+  Usage:
+  ```groovy
+  def file = inputs.value("imageFile") // java.io.File
+  ```
