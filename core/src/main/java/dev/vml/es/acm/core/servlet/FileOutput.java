@@ -1,18 +1,17 @@
 package dev.vml.es.acm.core.servlet;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
 public class FileOutput implements Serializable {
 
-    private List<File> files;
+    private List<String> files;
 
-    public FileOutput(List<File> files) {
+    public FileOutput(List<String> files) {
         this.files = files;
     }
 
-    public List<File> getFiles() {
+    public List<String> getFiles() {
         return files;
     }
 }

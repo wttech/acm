@@ -67,9 +67,6 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     @Reference
     private Executor executor;
 
-    @Reference
-    private FileManager fileManager;
-
     private ExecutorService jobAsyncExecutor;
 
     private Config config;

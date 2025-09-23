@@ -15,5 +15,6 @@ documentation: |
   
   Usage:
   ```groovy
-  def file = inputs.value("imageFile") // java.io.File
+  def file = repo.get(inputs.value("imageFile"))
+  file.readFileAsStream()
   ```

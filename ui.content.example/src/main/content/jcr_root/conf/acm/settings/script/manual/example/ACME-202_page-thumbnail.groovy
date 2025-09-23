@@ -16,8 +16,13 @@ boolean canRun() {
 }
 
 void doRun() {
+    def pageThumnail = repo.get(inputs.value("pageThumbnailFile"))
     def page = repo.get(inputs.value("pagePath"))
-    def pageImage = page.child("jcr:content/image").ensure("nt:unstructured")
-    pageImage.child("file/jcr:content/dam:thumbnails").delete()
-    pageImage.child("file").saveFile("image/jpeg", inputs.value("pageThumbnailFile"))
+    try {
+        def pageImage = page.child("jcr:content/image").ensure("nt:unstructured")
+        pageImage.child("file/jcr:content/dam:thumbnails").delete()
+        pageImage.child("file").saveFile("image/jpeg", pageThumnail.readFileAsStream())
+    } finally {
+        pageThumnail.delete()
+    }
 }
