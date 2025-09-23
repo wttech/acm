@@ -285,7 +285,7 @@ public class Executor implements EventListener {
             return new Description(execution.end(ExecutionStatus.SUCCEEDED), context.getArguments());
         } catch (Throwable e) {
             execution.error(e);
-            return new Description(execution.end(ExecutionStatus.FAILED), new Arguments());
+            return new Description(execution.end(ExecutionStatus.FAILED), new Inputs());
         }
     }
 

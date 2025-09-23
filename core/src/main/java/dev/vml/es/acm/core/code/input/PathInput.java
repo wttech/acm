@@ -1,16 +1,16 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 
-public class PathArgument extends Argument<String> {
+public class PathInput extends Input<String> {
 
     private String rootPath = "/";
 
     private boolean rootInclusive;
 
-    public PathArgument(String name) {
-        super(name, ArgumentType.PATH, String.class);
+    public PathInput(String name) {
+        super(name, InputType.PATH, String.class);
     }
 
     public String getRootPath() {

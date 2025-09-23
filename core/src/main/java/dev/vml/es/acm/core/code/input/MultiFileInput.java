@@ -1,16 +1,16 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.InputType;
 import java.io.File;
 
-public class MultiFileArgument extends AbstractFileArgument<File[]> {
+public class MultiFileInput extends AbstractFileInput<File[]> {
 
     private Integer min;
 
     private Integer max;
 
-    public MultiFileArgument(String name) {
-        super(name, ArgumentType.MULTIFILE, File[].class);
+    public MultiFileInput(String name) {
+        super(name, InputType.MULTIFILE, File[].class);
     }
 
     public Integer getMin() {

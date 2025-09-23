@@ -1,16 +1,16 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-abstract class AbstractFileArgument<V> extends Argument<V> {
+abstract class AbstractFileInput<V> extends Input<V> {
 
     private List<String> mimeTypes;
 
-    public AbstractFileArgument(String name, ArgumentType type, Class<?> valueType) {
+    public AbstractFileInput(String name, InputType type, Class<?> valueType) {
         super(name, type, valueType);
     }
 

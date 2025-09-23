@@ -1,20 +1,20 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 import dev.vml.es.acm.core.util.DateUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class DateTimeArgument extends Argument<LocalDateTime> {
+public class DateTimeInput extends Input<LocalDateTime> {
 
     private LocalDateTime min;
 
     private LocalDateTime max;
 
-    public DateTimeArgument(String name) {
-        super(name, ArgumentType.DATETIME, LocalDateTime.class);
+    public DateTimeInput(String name) {
+        super(name, InputType.DATETIME, LocalDateTime.class);
     }
 
     public LocalDateTime getMin() {

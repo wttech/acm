@@ -1,16 +1,16 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.InputType;
 import dev.vml.es.acm.core.util.KeyValue;
 import dev.vml.es.acm.core.util.KeyValueList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class KeyValueListArgument extends AbstractKeyValueArgument<KeyValueList<String, String>> {
+public class KeyValueListInput extends AbstractKeyValueInput<KeyValueList<String, String>> {
 
-    public KeyValueListArgument(String name) {
-        super(name, ArgumentType.KEY_VALUE_LIST, null);
+    public KeyValueListInput(String name) {
+        super(name, InputType.KEY_VALUE_LIST, null);
     }
 
     public void setValue(Map<String, String> value) {

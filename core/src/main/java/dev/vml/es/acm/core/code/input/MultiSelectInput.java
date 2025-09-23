@@ -1,21 +1,21 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 import dev.vml.es.acm.core.util.ObjectUtils;
 import dev.vml.es.acm.core.util.StringUtil;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class MultiSelectArgument<V> extends Argument<V> {
+public class MultiSelectInput<V> extends Input<V> {
 
     private Display display = Display.AUTO;
 
     private Map<String, V> options = new LinkedHashMap<>();
 
-    public MultiSelectArgument(String name) {
-        super(name, ArgumentType.MULTISELECT, null);
+    public MultiSelectInput(String name) {
+        super(name, InputType.MULTISELECT, null);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class MultiSelectArgument<V> extends Argument<V> {
                     .filter(r -> r.name().equalsIgnoreCase(name))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Multi-select argument cannot be displayed as '%s'!", name)));
+                            String.format("Multi-select input cannot be displayed as '%s'!", name)));
         }
     }
 }

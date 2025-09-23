@@ -1,10 +1,10 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 import java.util.Arrays;
 
-public class IntegerArgument extends Argument<Integer> {
+public class IntegerInput extends Input<Integer> {
 
     private Integer min;
 
@@ -14,8 +14,8 @@ public class IntegerArgument extends Argument<Integer> {
 
     private Integer step;
 
-    public IntegerArgument(String name) {
-        super(name, ArgumentType.INTEGER, Integer.class);
+    public IntegerInput(String name) {
+        super(name, InputType.INTEGER, Integer.class);
     }
 
     public Integer getMin() {
@@ -64,12 +64,12 @@ public class IntegerArgument extends Argument<Integer> {
         INPUT,
         SLIDER;
 
-        public static IntegerArgument.Display of(String name) {
-            return Arrays.stream(IntegerArgument.Display.values())
+        public static IntegerInput.Display of(String name) {
+            return Arrays.stream(IntegerInput.Display.values())
                     .filter(r -> r.name().equalsIgnoreCase(name))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Decimal argument cannot be displayed as '%s'!", name)));
+                            String.format("Decimal input cannot be displayed as '%s'!", name)));
         }
     }
 }

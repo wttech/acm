@@ -1,15 +1,15 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 import java.util.Arrays;
 
-public class StringArgument extends Argument<String> {
+public class StringInput extends Input<String> {
 
     private Display display = Display.TEXT;
 
-    public StringArgument(String name) {
-        super(name, ArgumentType.STRING, String.class);
+    public StringInput(String name) {
+        super(name, InputType.STRING, String.class);
     }
 
     public Display getDisplay() {
@@ -48,7 +48,7 @@ public class StringArgument extends Argument<String> {
                     .filter(r -> r.name().equalsIgnoreCase(name))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("String argument cannot be displayed as '%s'!", name)));
+                            String.format("String input cannot be displayed as '%s'!", name)));
         }
     }
 }

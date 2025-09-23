@@ -6,9 +6,9 @@ public class Description implements Serializable {
 
     private final Execution execution;
 
-    private final Arguments arguments;
+    private final Inputs arguments;
 
-    public Description(Execution execution, Arguments arguments) {
+    public Description(Execution execution, Inputs arguments) {
         this.execution = execution;
         this.arguments = arguments;
     }
@@ -17,7 +17,7 @@ public class Description implements Serializable {
         return execution;
     }
 
-    public Arguments getArguments() {
+    public Inputs getArguments() {
         return arguments;
     }
 }

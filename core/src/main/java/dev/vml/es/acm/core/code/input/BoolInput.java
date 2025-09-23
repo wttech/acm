@@ -1,15 +1,15 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 import java.util.Arrays;
 
-public class BoolArgument extends Argument<Boolean> {
+public class BoolInput extends Input<Boolean> {
 
     private Display display = Display.SWITCHER;
 
-    public BoolArgument(String name) {
-        super(name, ArgumentType.BOOL, Boolean.class);
+    public BoolInput(String name) {
+        super(name, InputType.BOOL, Boolean.class);
         setRequired(false);
     }
 
@@ -42,7 +42,7 @@ public class BoolArgument extends Argument<Boolean> {
                     .filter(r -> r.name().equalsIgnoreCase(name))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Bool argument cannot be displayed as '%s'!", name)));
+                            String.format("Bool input cannot be displayed as '%s'!", name)));
         }
     }
 }

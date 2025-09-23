@@ -1,6 +1,6 @@
 package dev.vml.es.acm.core.code;
 
-public enum ArgumentType {
+public enum InputType {
     BOOL,
     DATETIME,
     DATE,

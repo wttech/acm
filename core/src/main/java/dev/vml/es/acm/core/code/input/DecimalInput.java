@@ -1,11 +1,11 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-public class DecimalArgument extends Argument<BigDecimal> {
+public class DecimalInput extends Input<BigDecimal> {
 
     private BigDecimal min;
 
@@ -15,8 +15,8 @@ public class DecimalArgument extends Argument<BigDecimal> {
 
     private BigDecimal step;
 
-    public DecimalArgument(String name) {
-        super(name, ArgumentType.DECIMAL, BigDecimal.class);
+    public DecimalInput(String name) {
+        super(name, InputType.DECIMAL, BigDecimal.class);
     }
 
     public BigDecimal getMin() {
@@ -65,12 +65,12 @@ public class DecimalArgument extends Argument<BigDecimal> {
         INPUT,
         SLIDER;
 
-        public static DecimalArgument.Display of(String name) {
-            return Arrays.stream(DecimalArgument.Display.values())
+        public static DecimalInput.Display of(String name) {
+            return Arrays.stream(DecimalInput.Display.values())
                     .filter(r -> r.name().equalsIgnoreCase(name))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Decimal argument cannot be displayed as '%s'!", name)));
+                            String.format("Decimal input cannot be displayed as '%s'!", name)));
         }
     }
 }

@@ -1,19 +1,19 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 import dev.vml.es.acm.core.util.DateUtils;
 import java.time.LocalDate;
 import java.util.List;
 
-public class DateArgument extends Argument<LocalDate> {
+public class DateInput extends Input<LocalDate> {
 
     private LocalDate min;
 
     private LocalDate max;
 
-    public DateArgument(String name) {
-        super(name, ArgumentType.DATE, LocalDate.class);
+    public DateInput(String name) {
+        super(name, InputType.DATE, LocalDate.class);
     }
 
     public LocalDate getMin() {

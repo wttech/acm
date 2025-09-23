@@ -18,13 +18,13 @@ public class Code implements Executable {
 
     private String content;
 
-    private ArgumentValues arguments;
+    private InputValues arguments;
 
     public Code() {
         // for deserialization
     }
 
-    public Code(String id, String content, ArgumentValues arguments) {
+    public Code(String id, String content, InputValues arguments) {
         this.id = id;
         this.content = content;
         this.arguments = arguments;
@@ -46,8 +46,8 @@ public class Code implements Executable {
         try {
             String id = job.getProperty(ExecutionJob.EXECUTABLE_ID_PROP, String.class);
             String content = job.getProperty(ExecutionJob.EXECUTABLE_CONTENT_PROP, String.class);
-            ArgumentValues arguments = JsonUtils.readFromString(
-                    job.getProperty(ExecutionJob.EXECUTABLE_ARGUMENTS_PROP, String.class), ArgumentValues.class);
+            InputValues arguments = JsonUtils.readFromString(
+                    job.getProperty(ExecutionJob.EXECUTABLE_ARGUMENTS_PROP, String.class), InputValues.class);
             return new Code(id, content, arguments);
         } catch (IOException e) {
             throw new AcmException("Cannot deserialize code from JSON!", e);
@@ -77,7 +77,7 @@ public class Code implements Executable {
     }
 
     @Override
-    public ArgumentValues getArguments() {
+    public InputValues getArguments() {
         return arguments;
     }
 

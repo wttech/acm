@@ -11,5 +11,5 @@ public interface Executable extends Serializable {
 
     String getContent() throws AcmException;
 
-    ArgumentValues getArguments();
+    InputValues getArguments();
 }

@@ -1,20 +1,20 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 import dev.vml.es.acm.core.util.Range;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class DecimalRangeArgument extends Argument<Range<BigDecimal>> {
+public class DecimalRangeInput extends Input<Range<BigDecimal>> {
     private BigDecimal min;
 
     private BigDecimal max;
 
     private BigDecimal step;
 
-    public DecimalRangeArgument(String name) {
-        super(name, ArgumentType.NUMBER_RANGE, null);
+    public DecimalRangeInput(String name) {
+        super(name, InputType.NUMBER_RANGE, null);
     }
 
     public void setValue(List<BigDecimal> value) {

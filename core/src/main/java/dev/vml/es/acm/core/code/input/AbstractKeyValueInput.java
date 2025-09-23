@@ -1,15 +1,15 @@
-package dev.vml.es.acm.core.code.arg;
+package dev.vml.es.acm.core.code.input;
 
-import dev.vml.es.acm.core.code.Argument;
-import dev.vml.es.acm.core.code.ArgumentType;
+import dev.vml.es.acm.core.code.Input;
+import dev.vml.es.acm.core.code.InputType;
 
-abstract class AbstractKeyValueArgument<V> extends Argument<V> {
+abstract class AbstractKeyValueInput<V> extends Input<V> {
 
     private String keyLabel;
 
     private String valueLabel;
 
-    public AbstractKeyValueArgument(String name, ArgumentType type, Class<?> valueType) {
+    public AbstractKeyValueInput(String name, InputType type, Class<?> valueType) {
         super(name, type, valueType);
     }
 
