@@ -14,6 +14,7 @@ import CodeEditor from '../components/CodeEditor.tsx';
 import ExecutableIdValue from '../components/ExecutableIdValue';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
+import ExecutionOutputsDownloadButton from '../components/ExecutionOutputsDownloadButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import { useAppState } from '../hooks/app.ts';
@@ -165,6 +166,7 @@ const ExecutionView = () => {
                   <ButtonGroup>
                     <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     <ExecutionCopyOutputButton output={executionOutput} />
+                    <ExecutionOutputsDownloadButton execution={execution} />
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">
