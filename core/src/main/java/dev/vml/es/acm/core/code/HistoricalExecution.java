@@ -38,6 +38,10 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
 
     private final Executable executable;
 
+    private final InputValues inputs;
+
+    private final Outputs outputs;
+
     public HistoricalExecution(Resource resource) {
         try {
             ValueMap props = resource.getValueMap();
@@ -48,14 +52,14 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             this.startDate = DateUtils.toDate(props.get("startDate", Calendar.class));
             this.endDate = DateUtils.toDate(props.get("endDate", Calendar.class));
             this.duration = props.get("duration", Long.class);
-            this.error = props.get("error", String.class);
             this.output = props.get("output", String.class);
+            this.error = props.get("error", String.class);
+            this.inputs = JsonUtils.read(props.get("inputs", InputStream.class), InputValues.class);
+            this.outputs = JsonUtils.read(props.get("outputs", InputStream.class), Outputs.class);
             this.instance = props.get("instance", String.class);
 
-            this.executable = new Code(
-                    props.get("executableId", String.class),
-                    props.get("executableContent", String.class),
-                    JsonUtils.read(props.get("executableInputs", InputStream.class), InputValues.class));
+            this.executable =
+                    new Code(props.get("executableId", String.class), props.get("executableContent", String.class));
         } catch (Exception e) {
             throw new AcmException(
                     String.format("Cannot read historical execution from resource '%s'!", resource.getPath()), e);
@@ -72,15 +76,14 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             props.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
             props.put("endDate", DateUtils.toCalendar(execution.getEndDate()));
             props.put("duration", execution.getDuration());
-            props.put("error", execution.getError());
             props.put("output", execution.readOutput());
+            props.put("error", execution.getError());
+            props.put("inputs", JsonUtils.writeToStream(execution.getInputs()));
+            props.put("outputs", JsonUtils.writeToStream(execution.getOutputs()));
             props.put("instance", execution.getInstance());
 
             props.put("executableId", execution.getExecutable().getId());
             props.put("executableContent", execution.getExecutable().getContent());
-            props.put(
-                    "executableInputs",
-                    JsonUtils.writeToStream(execution.getExecutable().getInputs()));
 
             props.entrySet().removeIf(e -> e.getValue() == null);
             props.put(JcrConstants.JCR_PRIMARYTYPE, PRIMARY_TYPE);
@@ -146,6 +149,16 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
     @Override
     public String getError() {
         return error;
+    }
+
+    @Override
+    public InputValues getInputs() {
+        return inputs;
+    }
+
+    @Override
+    public Outputs getOutputs() {
+        return outputs;
     }
 
     @Override

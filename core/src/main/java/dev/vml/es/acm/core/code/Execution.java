@@ -21,9 +21,13 @@ public interface Execution extends Serializable {
 
     long getDuration();
 
+    String getOutput();
+
     String getError();
 
-    String getOutput();
+    InputValues getInputs();
+
+    Outputs getOutputs();
 
     String getInstance();
 

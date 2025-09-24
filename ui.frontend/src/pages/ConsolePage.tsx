@@ -92,8 +92,8 @@ const ConsolePage = () => {
           code: {
             id: ExecutableIdConsole,
             content: code,
-            inputs: inputs,
           },
+          inputs: inputs,
         },
       });
       const queuedExecution = response.data.data.executions[0]!;

@@ -31,6 +31,10 @@ public class ExecutionContext implements AutoCloseable {
 
     private final Inputs inputs;
 
+    private InputValues inputValues;
+
+    private final Outputs outputs;
+
     private final Schedules schedules;
 
     private final Conditions conditions;
@@ -53,6 +57,7 @@ public class ExecutionContext implements AutoCloseable {
         this.schedules = new Schedules();
         this.conditions = new Conditions(this);
         this.inputs = new Inputs();
+        this.outputs = new Outputs();
 
         customizeBinding();
     }
@@ -134,6 +139,18 @@ public class ExecutionContext implements AutoCloseable {
         return inputs;
     }
 
+    public void setInputs(InputValues values) {
+        this.inputValues = values;
+    }
+
+    void useInputValues() {
+        inputs.setValues(inputValues);
+    }
+
+    public Outputs getOutputs() {
+        return outputs;
+    }
+
     public Schedules getSchedules() {
         return schedules;
     }
@@ -148,6 +165,7 @@ public class ExecutionContext implements AutoCloseable {
         binding.setVariable("schedules", schedules);
         binding.setVariable("arguments", inputs); // TODO deprecated
         binding.setVariable("inputs", inputs);
+        binding.setVariable("outputs", outputs);
         binding.setVariable("conditions", conditions);
         binding.setVariable("out", getOut());
         binding.setVariable("log", getLogger());

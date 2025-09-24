@@ -176,7 +176,7 @@ public class Executor implements EventListener {
             statuses.put(context.getId(), ExecutionStatus.CHECKING);
 
             contentScript.describe();
-            context.getInputs().setValues(context.getExecutable().getInputs());
+            context.useInputValues();
 
             boolean canRun = contentScript.canRun();
             if (!canRun) {

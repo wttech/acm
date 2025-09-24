@@ -2,6 +2,9 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.code.output.HistoryOutput;
+import dev.vml.es.acm.core.repo.Repo;
+import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.io.Closeable;
@@ -19,6 +22,10 @@ public class ExecutionHistory {
 
     public static final String ROOT = AcmConstants.VAR_ROOT + "/execution/history";
 
+    public static final String OUTPUT_CONTAINER_RN = "outputs";
+
+    public static final String OUTPUT_FILE_RN = "file";
+
     private final ResourceResolver resourceResolver;
 
     public ExecutionHistory(ResourceResolver resourceResolver) {
@@ -31,14 +38,20 @@ public class ExecutionHistory {
 
     public void save(ExecutionContext context, ImmediateExecution execution) throws AcmException {
         Resource root = getOrCreateRoot();
+        Resource entry = saveEntry(context, execution, root);
+        saveOutputs(context, execution, entry);
+    }
+
+    private Resource saveEntry(ExecutionContext context, ImmediateExecution execution, Resource root) {
         Map<String, Object> props = HistoricalExecution.toMap(context, execution);
 
         try {
             String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");
             Resource dir = RepoUtils.ensure(resourceResolver, dirPath, JcrResourceConstants.NT_SLING_FOLDER, true);
             String entryName = StringUtils.substringAfterLast(execution.getId(), "/");
-            resourceResolver.create(dir, entryName, props);
+            Resource resource = resourceResolver.create(dir, entryName, props);
             resourceResolver.commit();
+            return resource;
         } catch (PersistenceException e) {
             throw new AcmException(String.format("Failed to save execution '%s'", execution.getId()), e);
         } finally {
@@ -51,6 +64,20 @@ public class ExecutionHistory {
                     }
                 }
             });
+        }
+    }
+
+    private void saveOutputs(ExecutionContext context, ImmediateExecution execution, Resource entry) {
+        for (Output outputDefinition : context.getOutputs().getDefinitions().values()) {
+            if (outputDefinition instanceof HistoryOutput) {
+                HistoryOutput historyDefinition = (HistoryOutput) outputDefinition;
+                RepoResource container = Repo.quiet(entry.getResourceResolver())
+                        .get(entry.getPath())
+                        .child(String.format("%s/%s", OUTPUT_CONTAINER_RN, historyDefinition.getName()))
+                        .save(historyDefinition.toMap());
+                RepoResource file = container.child(OUTPUT_FILE_RN);
+                file.saveFile(outputDefinition.getMimeType(), outputDefinition.getInputStream());
+            }
         }
     }
 

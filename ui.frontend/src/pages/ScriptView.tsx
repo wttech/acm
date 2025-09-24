@@ -100,8 +100,8 @@ const ScriptView = () => {
           code: {
             id: script.id,
             content: script.content,
-            inputs: inputs,
           },
+          inputs: inputs,
         },
       });
       const queuedExecution = response.data.data.executions[0]!;

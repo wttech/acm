@@ -101,4 +101,14 @@ public class QueuedExecution implements Execution {
                 .append("duration", getDuration())
                 .toString();
     }
+
+    @Override
+    public InputValues getInputs() {
+        return InputValues.fromJob(job);
+    }
+
+    @Override
+    public Outputs getOutputs() {
+        return new Outputs(); // not available at the moment
+    }
 }

@@ -1,8 +1,9 @@
 package dev.vml.es.acm.core.servlet;
 
 import dev.vml.es.acm.core.code.Code;
+import dev.vml.es.acm.core.code.InputValues;
+
 import java.io.Serializable;
-import java.util.Map;
 
 public class ExecuteCodeInput implements Serializable {
 
@@ -12,8 +13,7 @@ public class ExecuteCodeInput implements Serializable {
 
     private Code code;
 
-    @SuppressWarnings("java:S1948")
-    private Map<String, Object> inputs;
+    private InputValues inputs;
 
     public ExecuteCodeInput() {
         // for deserialization
@@ -31,7 +31,7 @@ public class ExecuteCodeInput implements Serializable {
         return code;
     }
 
-    public Map<String, Object> getInputs() {
+    public InputValues getInputs() {
         return inputs;
     }
 }
