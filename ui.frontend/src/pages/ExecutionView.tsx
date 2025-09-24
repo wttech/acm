@@ -25,6 +25,7 @@ import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
 import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
 import { Objects } from '../utils/objects';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
+import Toggle from '../components/Toggle.tsx';
 
 const ExecutionView = () => {
   const appState = useAppState();
@@ -87,6 +88,16 @@ const ExecutionView = () => {
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="details" aria-label="Details">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+              <View>
+                <Flex justifyContent="space-between" alignItems="center">
+                  <Toggle when={isExecutableScript(execution.executable.id)}>
+                    <Button variant="secondary" style="fill" onPress={() => navigate(`/scripts/view/${encodeURIComponent(execution?.executable.id)}`)}>
+                      <FileCode />
+                      <Text>View script</Text>
+                    </Button>
+                  </Toggle>
+                </Flex>
+              </View>
               <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
                   <LabeledValue label="ID" value={execution.id} flex="1" />
@@ -154,12 +165,6 @@ const ExecutionView = () => {
                   <ButtonGroup>
                     <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     <ExecutionCopyOutputButton output={executionOutput} />
-                    {isExecutableScript(execution.executable.id) && (
-                      <Button variant="secondary" style="fill" onPress={() => navigate(`/scripts/view/${encodeURIComponent(execution?.executable.id)}`)}>
-                        <FileCode />
-                        <Text>View in scripts</Text>
-                      </Button>
-                    )}
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">

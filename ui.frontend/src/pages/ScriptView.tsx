@@ -147,7 +147,7 @@ const ScriptView = () => {
                         }
                       >
                         <History />
-                        <Text>View in history</Text>
+                        <Text>View history</Text>
                       </Button>
                     )}
                   </ButtonGroup>
