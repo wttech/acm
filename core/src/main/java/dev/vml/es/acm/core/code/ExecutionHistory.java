@@ -1,6 +1,5 @@
 package dev.vml.es.acm.core.code;
 
-import com.day.jcr.vault.util.JcrConstants;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.output.HistoryOutput;
@@ -14,6 +13,7 @@ import java.util.*;
 import java.util.stream.Stream;
 import javax.jcr.query.Query;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -75,7 +75,7 @@ public class ExecutionHistory {
                 RepoResource container = Repo.quiet(entry.getResourceResolver())
                         .get(entry.getPath())
                         .child(String.format("%s/%s", OUTPUT_CONTAINER_RN, historyDefinition.getName()))
-                        .ensure(JcrConstants.NT_UNSTRUCTURED);
+                        .ensure(JcrConstants.NT_UNSTRUCTURED); // TODO fix ClassCastException
                 RepoResource file = container.child(OUTPUT_FILE_RN);
                 file.saveFile(outputDefinition.getMimeType(), outputDefinition.getInputStream());
             }
