@@ -8,12 +8,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-public abstract class Output implements Serializable {
+public class Output implements Serializable {
 
     @JsonIgnore
-    private final transient ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    private transient ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-    private final String name;
+    private String name;
 
     private String label;
 
@@ -22,6 +22,10 @@ public abstract class Output implements Serializable {
     private String downloadName;
 
     private String mimeType = "application/octet-stream";
+
+    public Output() {
+        // for deserialization
+    }
 
     public Output(String name) {
         this.name = name;

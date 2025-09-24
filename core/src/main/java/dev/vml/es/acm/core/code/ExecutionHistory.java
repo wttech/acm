@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import com.day.jcr.vault.util.JcrConstants;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.code.output.HistoryOutput;
@@ -74,7 +75,7 @@ public class ExecutionHistory {
                 RepoResource container = Repo.quiet(entry.getResourceResolver())
                         .get(entry.getPath())
                         .child(String.format("%s/%s", OUTPUT_CONTAINER_RN, historyDefinition.getName()))
-                        .save(historyDefinition.toMap());
+                        .ensure(JcrConstants.NT_UNSTRUCTURED);
                 RepoResource file = container.child(OUTPUT_FILE_RN);
                 file.saveFile(outputDefinition.getMimeType(), outputDefinition.getInputStream());
             }
