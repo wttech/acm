@@ -234,7 +234,12 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private ScheduleResult determineSchedule(Script script, ResourceResolver resourceResolver) {
         try (ExecutionContext context = executor.createContext(
-                ExecutionId.generate(), resourceResolver.getUserID(), ExecutionMode.PARSE, script, resourceResolver)) {
+                ExecutionId.generate(),
+                resourceResolver.getUserID(),
+                ExecutionMode.PARSE,
+                script,
+                new InputValues(),
+                resourceResolver)) {
             return executor.schedule(context);
         }
     }
@@ -372,7 +377,12 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private boolean checkScript(Script script, ResourceResolver resourceResolver) {
         try (ExecutionContext context = executor.createContext(
-                ExecutionId.generate(), resourceResolver.getUserID(), ExecutionMode.PARSE, script, resourceResolver)) {
+                ExecutionId.generate(),
+                resourceResolver.getUserID(),
+                ExecutionMode.PARSE,
+                script,
+                new InputValues(),
+                resourceResolver)) {
             if (executor.isLocked(context)) {
                 LOG.info("Script '{}' already locked!", script.getPath());
                 return false;
@@ -410,7 +420,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     private void queueScript(Script script) {
         String userId =
                 StringUtils.defaultIfBlank(config.userImpersonationId(), ResolverUtils.Subservice.CONTENT.userId);
-        executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, userId));
+        executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, userId, new InputValues()));
     }
 
     private boolean awaitInstanceHealthy(String operation, long retryMaxCount, long retryInterval) {

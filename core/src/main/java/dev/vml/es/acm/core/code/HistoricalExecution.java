@@ -40,7 +40,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
 
     private final InputValues inputs;
 
-    private final Outputs outputs;
+    private final OutputValues outputs;
 
     public HistoricalExecution(Resource resource) {
         try {
@@ -55,7 +55,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             this.output = props.get("output", String.class);
             this.error = props.get("error", String.class);
             this.inputs = JsonUtils.read(props.get("inputs", InputStream.class), InputValues.class);
-            this.outputs = JsonUtils.read(props.get("outputs", InputStream.class), Outputs.class);
+            this.outputs = JsonUtils.read(props.get("outputs", InputStream.class), OutputValues.class);
             this.instance = props.get("instance", String.class);
 
             this.executable =
@@ -157,7 +157,7 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
     }
 
     @Override
-    public Outputs getOutputs() {
+    public OutputValues getOutputs() {
         return outputs;
     }
 

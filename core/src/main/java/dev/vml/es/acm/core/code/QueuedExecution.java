@@ -108,7 +108,7 @@ public class QueuedExecution implements Execution {
     }
 
     @Override
-    public Outputs getOutputs() {
-        return new Outputs(); // not available at the moment
+    public OutputValues getOutputs() {
+        return new OutputValues(); // not available at the moment
     }
 }

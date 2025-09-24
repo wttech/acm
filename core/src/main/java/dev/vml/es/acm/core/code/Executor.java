@@ -127,9 +127,14 @@ public class Executor implements EventListener {
     }
 
     public ExecutionContext createContext(
-            String id, String userId, ExecutionMode mode, Executable executable, ResourceResolver resourceResolver) {
+            String id,
+            String userId,
+            ExecutionMode mode,
+            Executable executable,
+            InputValues inputs,
+            ResourceResolver resourceResolver) {
         CodeContext codeContext = new CodeContext(osgiContext, resourceResolver);
-        ExecutionContext result = new ExecutionContext(id, userId, mode, this, executable, codeContext);
+        ExecutionContext result = new ExecutionContext(id, userId, mode, this, executable, inputs, codeContext);
         result.setDebug(config.debug());
         result.setHistory(config.history());
         return result;
@@ -142,6 +147,7 @@ public class Executor implements EventListener {
                         contextOptions.getUserId(),
                         contextOptions.getExecutionMode(),
                         executable,
+                        contextOptions.getInputs(),
                         resolver)) {
             return execute(executionContext);
         } catch (LoginException e) {

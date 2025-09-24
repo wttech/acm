@@ -154,6 +154,7 @@ public class Assistancer {
                     resolver.getUserID(),
                     ExecutionMode.PARSE,
                     Code.consoleMinimal(),
+                    new InputValues(),
                     resolver)) {
                 context.getCodeContext().prepareRun(context);
                 variablesCache = context.getCodeContext().getBindingVariables();

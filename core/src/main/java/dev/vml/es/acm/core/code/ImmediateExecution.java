@@ -142,7 +142,7 @@ public class ImmediateExecution implements Execution {
     }
 
     @Override
-    public Outputs getOutputs() {
-        return context.getOutputs();
+    public OutputValues getOutputs() {
+        return new OutputValues(context.getOutputs().getDefinitions().values());
     }
 }

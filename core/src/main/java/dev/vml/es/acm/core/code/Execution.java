@@ -27,7 +27,7 @@ public interface Execution extends Serializable {
 
     InputValues getInputs();
 
-    Outputs getOutputs();
+    OutputValues getOutputs();
 
     String getInstance();
 

@@ -45,12 +45,14 @@ public class ExecutionContext implements AutoCloseable {
             ExecutionMode mode,
             Executor executor,
             Executable executable,
+            InputValues inputValues,
             CodeContext codeContext) {
         this.id = id;
         this.userId = userId;
         this.mode = mode;
         this.executor = executor;
         this.executable = executable;
+        this.inputValues = inputValues;
         this.codeContext = codeContext;
         this.output = determineOutput(mode, codeContext, id);
         this.printStream = new CodePrintStream(output.write(), String.format("%s|%s", executable.getId(), id));
@@ -137,10 +139,6 @@ public class ExecutionContext implements AutoCloseable {
 
     public Inputs getInputs() {
         return inputs;
-    }
-
-    public void setInputs(InputValues values) {
-        this.inputValues = values;
     }
 
     void useInputValues() {
