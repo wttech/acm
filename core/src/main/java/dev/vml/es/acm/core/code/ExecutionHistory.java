@@ -23,7 +23,7 @@ public class ExecutionHistory {
 
     public static final String ROOT = AcmConstants.VAR_ROOT + "/execution/history";
 
-    public static final String OUTPUT_CONTAINER_RN = "outputs";
+    public static final String OUTPUT_FILES_CONTAINER_RN = "outputFiles";
 
     public static final String OUTPUT_FILE_RN = "file";
 
@@ -74,7 +74,7 @@ public class ExecutionHistory {
                 HistoryOutput historyDefinition = (HistoryOutput) outputDefinition;
                 RepoResource container = Repo.quiet(entry.getResourceResolver())
                         .get(entry.getPath())
-                        .child(String.format("%s/%s", OUTPUT_CONTAINER_RN, historyDefinition.getName()))
+                        .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, historyDefinition.getName()))
                         .ensure(JcrConstants.NT_UNSTRUCTURED); // TODO fix ClassCastException
                 RepoResource file = container.child(OUTPUT_FILE_RN);
                 file.saveFile(outputDefinition.getMimeType(), outputDefinition.getInputStream());
