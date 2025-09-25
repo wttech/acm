@@ -37,14 +37,14 @@ public class ExecutionHistory {
         return Stream.empty();
     }
 
-    public void save(ExecutionContext context, ImmediateExecution execution) throws AcmException {
+    public void save(ContextualExecution execution) throws AcmException {
         Resource root = getOrCreateRoot();
-        Resource entry = saveEntry(context, execution, root);
-        saveOutputs(context, execution, entry);
+        Resource entry = saveEntry(execution, root);
+        saveOutputs(execution, entry);
     }
 
-    private Resource saveEntry(ExecutionContext context, ImmediateExecution execution, Resource root) {
-        Map<String, Object> props = HistoricalExecution.toMap(context, execution);
+    private Resource saveEntry(ContextualExecution execution, Resource root) {
+        Map<String, Object> props = HistoricalExecution.toMap(execution);
 
         try {
             String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");
@@ -68,8 +68,9 @@ public class ExecutionHistory {
         }
     }
 
-    private void saveOutputs(ExecutionContext context, ImmediateExecution execution, Resource entry) {
-        for (Output definition : context.getOutputs().getDefinitions().values()) {
+    private void saveOutputs(ContextualExecution execution, Resource entry) {
+        for (Output definition :
+                execution.getContext().getOutputs().getDefinitions().values()) {
             RepoResource container = Repo.quiet(entry.getResourceResolver())
                     .get(entry.getPath())
                     .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, definition.getName()))

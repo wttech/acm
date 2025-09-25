@@ -158,17 +158,17 @@ public class Executor implements EventListener {
 
     public Execution execute(ExecutionContext context) throws AcmException {
         context.getCodeContext().prepareRun(context);
-        ImmediateExecution execution = executeImmediately(context);
+        ContextualExecution execution = executeInternal(context);
         if (context.getMode() == ExecutionMode.RUN) {
-            handleHistory(context, execution);
-            handleNotifications(context, execution);
+            handleHistory(execution);
+            handleNotifications(execution);
             context.getCodeContext().completeRun(execution);
         }
         return execution;
     }
 
-    private ImmediateExecution executeImmediately(ExecutionContext context) {
-        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context).start();
+    private ContextualExecution executeInternal(ExecutionContext context) {
+        ContextualExecution.Builder execution = new ContextualExecution.Builder(context).start();
 
         try {
             statuses.put(context.getId(), ExecutionStatus.PARSING);
@@ -234,13 +234,14 @@ public class Executor implements EventListener {
         return Optional.ofNullable(statuses.get(executionId));
     }
 
-    private void handleHistory(ExecutionContext context, ImmediateExecution execution) {
-        if (context.isHistory() && (context.isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
-            useHistory(resolverFactory, h -> h.save(context, execution));
+    private void handleHistory(ContextualExecution execution) {
+        if (execution.getContext().isHistory()
+                && (execution.getContext().isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
+            useHistory(resolverFactory, h -> h.save(execution));
         }
     }
 
-    private void handleNotifications(ExecutionContext context, ImmediateExecution execution) {
+    private void handleNotifications(ContextualExecution execution) {
         String executableId = execution.getExecutable().getId();
         if (!config.notificationEnabled()
                 || !notifier.isConfigured(config.notificationNotifierId())
@@ -250,7 +251,7 @@ public class Executor implements EventListener {
         }
 
         Map<String, Object> templateVars = new LinkedHashMap<>();
-        templateVars.put("context", context);
+        templateVars.put("context", execution.getContext());
         templateVars.put("execution", execution);
         templateVars.put(
                 "statusIcon",
@@ -259,7 +260,7 @@ public class Executor implements EventListener {
                         : (execution.getStatus() == ExecutionStatus.FAILED ? "❌" : "⚠️"));
         templateVars.put("statusHere", execution.getStatus() == ExecutionStatus.SUCCEEDED ? "" : "@here");
         TemplateFormatter templateFormatter =
-                context.getCodeContext().getFormatter().getTemplate();
+                execution.getContext().getCodeContext().getFormatter().getTemplate();
         String title = StringUtils.trim(templateFormatter.renderString(config.notificationTitle(), templateVars));
         String text = StringUtils.trim(templateFormatter.renderString(config.notificationText(), templateVars));
 
@@ -268,7 +269,8 @@ public class Executor implements EventListener {
         fields.put("Time", DateUtils.humanFormat().format(new Date()));
         fields.put("Duration", StringUtil.formatDuration(execution.getDuration()));
 
-        InstanceInfo instanceInfo = context.getCodeContext().getOsgiContext().getInstanceInfo();
+        InstanceInfo instanceInfo =
+                execution.getContext().getCodeContext().getOsgiContext().getInstanceInfo();
         InstanceSettings instanceSettings = new InstanceSettings(instanceInfo);
         String instanceRoleName = instanceSettings.getRole().name().toLowerCase();
         String instanceId = instanceSettings.getId();
@@ -283,7 +285,7 @@ public class Executor implements EventListener {
     }
 
     public Description describe(ExecutionContext context) {
-        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context).start();
+        ContextualExecution.Builder execution = new ContextualExecution.Builder(context).start();
         try {
             ContentScript contentScript = new ContentScript(context);
             contentScript.describe();
@@ -296,7 +298,7 @@ public class Executor implements EventListener {
     }
 
     public Execution check(ExecutionContext context) throws AcmException {
-        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context).start();
+        ContextualExecution.Builder execution = new ContextualExecution.Builder(context).start();
 
         try {
             ContentScript contentScript = new ContentScript(context);
@@ -313,7 +315,7 @@ public class Executor implements EventListener {
     }
 
     public ScheduleResult schedule(ExecutionContext context) {
-        ImmediateExecution.Builder execution = new ImmediateExecution.Builder(context).start();
+        ContextualExecution.Builder execution = new ContextualExecution.Builder(context).start();
         try {
             ContentScript contentScript = new ContentScript(context);
             Schedule schedule = contentScript.schedule();

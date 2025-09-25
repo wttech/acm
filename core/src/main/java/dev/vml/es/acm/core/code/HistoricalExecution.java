@@ -66,12 +66,12 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
         }
     }
 
-    protected static Map<String, Object> toMap(ExecutionContext context, ImmediateExecution execution) {
+    protected static Map<String, Object> toMap(ContextualExecution execution) {
         try {
             Map<String, Object> props = new HashMap<>();
 
             props.put("id", execution.getId());
-            props.put("userId", context.getUserId());
+            props.put("userId", execution.getContext().getUserId());
             props.put("status", execution.getStatus().name());
             props.put("startDate", DateUtils.toCalendar(execution.getStartDate()));
             props.put("endDate", DateUtils.toCalendar(execution.getEndDate()));

@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-public class ImmediateExecution implements Execution {
+public class ContextualExecution implements Execution {
 
     @JsonIgnore
     private final transient ExecutionContext context;
@@ -24,13 +24,18 @@ public class ImmediateExecution implements Execution {
 
     private final String error;
 
-    public ImmediateExecution(
+    public ContextualExecution(
             ExecutionContext context, ExecutionStatus status, Date startDate, Date endDate, String error) {
         this.context = context;
         this.status = status;
         this.startDate = startDate;
         this.endDate = endDate;
         this.error = error;
+    }
+
+    @JsonIgnore
+    public ExecutionContext getContext() {
+        return context;
     }
 
     @Override
@@ -130,9 +135,9 @@ public class ImmediateExecution implements Execution {
             return this;
         }
 
-        public ImmediateExecution end(ExecutionStatus status) {
+        public ContextualExecution end(ExecutionStatus status) {
             Date endDate = new Date();
-            return new ImmediateExecution(context, status, startDate, endDate, error);
+            return new ContextualExecution(context, status, startDate, endDate, error);
         }
     }
 

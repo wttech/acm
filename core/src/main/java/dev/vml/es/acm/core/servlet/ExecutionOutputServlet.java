@@ -101,7 +101,8 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
     }
 
     private void respondConsole(SlingHttpServletResponse response, Execution execution) throws IOException {
-        respondDownload(response, "text/plain", String.format("execution-%s.console.log", executionFileName(execution)));
+        respondDownload(
+                response, "text/plain", String.format("execution-%s.console.log", executionFileName(execution)));
         InputStream consoleStream =
                 new ByteArrayInputStream(execution.getOutput().getBytes());
         IOUtils.copy(consoleStream, response.getOutputStream());
@@ -110,7 +111,8 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
     private void respondArchive(
             SlingHttpServletResponse response, Execution execution, ExecutionHistory executionHistory)
             throws IOException {
-        respondDownload(response, "application/zip", String.format("execution-%s.outputs.zip", executionFileName(execution)));
+        respondDownload(
+                response, "application/zip", String.format("execution-%s.outputs.zip", executionFileName(execution)));
         try (ZipOutputStream zipStream = new ZipOutputStream(response.getOutputStream())) {
             // Console log
             ZipEntry consoleEntry = new ZipEntry("console.log");
