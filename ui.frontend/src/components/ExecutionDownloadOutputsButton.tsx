@@ -64,7 +64,7 @@ const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonPro
       </Button>
       <DialogContainer onDismiss={handleCloseDialog}>
         {dialogOpen && (
-          <Dialog minWidth="40vw">
+          <Dialog minWidth="40vw" maxHeight="70vh">
             <Heading>Download Outputs</Heading>
             <Divider />
             <Content>
