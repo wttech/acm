@@ -1,17 +1,20 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import dev.vml.es.acm.core.AcmException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 
 public class Output implements Serializable {
 
     @JsonIgnore
-    private transient ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    private transient ByteArrayOutputStream dataStorage;
+
+    @JsonIgnore
+    private transient PrintStream printStream;
 
     private String name;
 
@@ -67,29 +70,39 @@ public class Output implements Serializable {
         this.mimeType = mimeType;
     }
 
-    /**
-     * TODO Use something more memory-efficient
-     *
-     * Something like: https://commons.apache.org/proper/commons-io/apidocs/org/apache/commons/io/output/UnsynchronizedByteArrayOutputStream.html
-     * But available since commons-io 2.7 but AEM 6.5.0 uses only 2.6.
-     */
-    protected InputStream getInputStream() {
-        return new ByteArrayInputStream(stream.toByteArray());
-    }
-
-    public OutputStream getStream() {
-        return stream;
-    }
-
-    public void write(String text) {
-        try {
-            stream.write((text).getBytes());
-        } catch (Exception ex) {
-            throw new AcmException(String.format("Cannot write to output '%s'!", name), ex);
+    @JsonIgnore
+    private ByteArrayOutputStream getDataStorage() {
+        if (dataStorage == null) {
+            dataStorage = new ByteArrayOutputStream();
         }
+        return dataStorage;
     }
 
-    public void writeln(String text) {
-        write(text + "\n");
+    /**
+     * Get a raw output stream for binary data and formatters integration (e.g. JSON/YAML writers).
+     */
+    @JsonIgnore
+    public OutputStream getOutputStream() {
+        return getDataStorage();
+    }
+
+    /**
+     * Get the input stream for reading the output data e.g. for saving in the execution history.
+     */
+    @JsonIgnore
+    public InputStream getInputStream() {
+        return new ByteArrayInputStream(getDataStorage().toByteArray());
+    }
+
+    /**
+     * System.out-like print stream for text operations with auto-flush.
+     * Use for println(), printf(), and formatted text output.
+     */
+    @JsonIgnore
+    public PrintStream getOut() {
+        if (printStream == null) {
+            printStream = new PrintStream(getOutputStream(), true);
+        }
+        return printStream;
     }
 }

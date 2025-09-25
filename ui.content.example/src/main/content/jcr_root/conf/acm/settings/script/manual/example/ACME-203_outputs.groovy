@@ -5,7 +5,7 @@ boolean canRun() {
 void doRun() { 
     log.info "Users report generatation started"
 
-    def output = outputs.history("report") {
+    def report = outputs.make("report") {
         label = "Report"
         description = "Users report generated as CSV file"
         downloadName = "report.csv"
@@ -17,7 +17,7 @@ void doRun() {
         [name: "Jack", surname: "Doe", birth: "2000"]
     ] 
     for (def user : users) {
-        output.writeln("${user.name},${user.surname},${user.birth}")
+        report.out.println("${user.name},${user.surname},${user.birth}")
     }
 
     log.info "Users report generatation ended successfully"

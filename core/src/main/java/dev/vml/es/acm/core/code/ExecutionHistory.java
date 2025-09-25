@@ -2,7 +2,6 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.code.output.HistoryOutput;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.repo.RepoUtils;
@@ -70,16 +69,13 @@ public class ExecutionHistory {
     }
 
     private void saveOutputs(ExecutionContext context, ImmediateExecution execution, Resource entry) {
-        for (Output outputDefinition : context.getOutputs().getDefinitions().values()) {
-            if (outputDefinition instanceof HistoryOutput) {
-                HistoryOutput historyDefinition = (HistoryOutput) outputDefinition;
-                RepoResource container = Repo.quiet(entry.getResourceResolver())
-                        .get(entry.getPath())
-                        .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, historyDefinition.getName()))
-                        .ensure(JcrConstants.NT_UNSTRUCTURED); // TODO fix ClassCastException
-                RepoResource file = container.child(OUTPUT_FILE_RN);
-                file.saveFile(outputDefinition.getMimeType(), outputDefinition.getInputStream());
-            }
+        for (Output definition : context.getOutputs().getDefinitions().values()) {
+            RepoResource container = Repo.quiet(entry.getResourceResolver())
+                    .get(entry.getPath())
+                    .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, definition.getName()))
+                    .ensure(JcrConstants.NT_UNSTRUCTURED);
+            RepoResource file = container.child(OUTPUT_FILE_RN);
+            file.saveFile(definition.getMimeType(), definition.getInputStream());
         }
     }
 

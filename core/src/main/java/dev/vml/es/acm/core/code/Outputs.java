@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import dev.vml.es.acm.core.code.output.HistoryOutput;
 import dev.vml.es.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import java.io.Serializable;
@@ -33,12 +32,12 @@ public class Outputs implements Serializable {
         return definitions;
     }
 
-    public HistoryOutput history(String name) {
-        return history(name, null);
+    public Output make(String name) {
+        return make(name, null);
     }
 
-    public HistoryOutput history(String name, Closure<HistoryOutput> options) {
-        HistoryOutput result = new HistoryOutput(name);
+    public Output make(String name, Closure<Output> options) {
+        Output result = new Output(name);
         GroovyUtils.with(result, options);
         add(result);
         return result;
