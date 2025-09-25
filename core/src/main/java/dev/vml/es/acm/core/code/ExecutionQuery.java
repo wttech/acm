@@ -13,6 +13,8 @@ public class ExecutionQuery {
 
     private String path = ExecutionHistory.ROOT;
 
+    private String id;
+
     private String executableId;
 
     private String userId;
@@ -46,6 +48,14 @@ public class ExecutionQuery {
                     String.format("Path must be a descendant of '%s'!", ExecutionHistory.ROOT));
         }
         this.path = path;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getExecutableId() {
@@ -106,6 +116,9 @@ public class ExecutionQuery {
                 "s.[%s] = '%s'", JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, HistoricalExecution.RESOURCE_TYPE));
         if (path != null) {
             filters.add(String.format("ISDESCENDANTNODE(s, '%s')", path));
+        }
+        if (id != null) {
+            filters.add(String.format("s.[id] = '%s'", id));
         }
         if (executableId != null) {
             if (ExecutableUtils.isIdExplicit(executableId)) {

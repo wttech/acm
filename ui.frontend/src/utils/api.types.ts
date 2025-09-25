@@ -3,7 +3,6 @@ import { isProduction } from './node.ts';
 export type Executable = {
   id: string;
   content: string;
-  inputs: InputValues;
 };
 
 export const ScriptRoot = '/conf/acm/settings/script';
@@ -58,6 +57,23 @@ export type Input<T> = {
   group: string;
   validator?: string;
 };
+
+export type Outputs = {
+  [key: string]: Output;
+};
+
+export type Output = {
+  name: string;
+  label: string;
+  description?: string;
+  mimeType: string;
+  downloadName: string;
+};
+
+export const OutputNames = {
+  ARCHIVE: 'acm-archive',
+  CONSOLE: 'acm-console',
+} as const;
 
 export type MinMaxInput = Input<InputValue> & {
   min: number;
@@ -207,6 +223,8 @@ export type Execution = {
   duration: number;
   output: string;
   error: string | null;
+  inputs: InputValues;
+  outputs: Outputs;
 };
 
 export const UserIdServicePrefix = 'acm-';

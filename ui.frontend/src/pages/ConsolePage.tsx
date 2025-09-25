@@ -10,6 +10,7 @@ import CompilationStatus from '../components/CompilationStatus';
 import ConsoleHelpButton from '../components/ConsoleHelpButton';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
+import ExecutionDownloadOutputsButton from '../components/ExecutionDownloadOutputsButton.tsx';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import ScriptExecutorStatusLight from '../components/ScriptExecutorStatusLight';
@@ -30,8 +31,9 @@ const ConsolePage = () => {
 
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
-  const [compiling, pendingCompile, syntaxError, compileError, parseExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
+  const [compiling, pendingCompile, syntaxError, compileError, compileExecution] = useCompilation(code, (newCode) => localStorage.setItem(StorageKeys.EDITOR_CODE, newCode));
   const [queuedExecution, setQueuedExecution] = useState<Execution | null>(null);
+  const [executionType, setExecutionType] = useState<'queued' | 'compile'>('compile');
 
   const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id, appState.spaSettings.executionPollInterval);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
@@ -63,8 +65,9 @@ const ConsolePage = () => {
   }, [code]);
 
   useEffect(() => {
-    setExecution(parseExecution);
-  }, [parseExecution, setExecution]);
+    setExecutionType('compile');
+    setExecution(compileExecution);
+  }, [compileExecution, setExecution]);
 
   useEffect(() => {
     if (!isExecutionPending(queuedExecution?.status)) {
@@ -92,12 +95,13 @@ const ConsolePage = () => {
           code: {
             id: ExecutableIdConsole,
             content: code,
-            inputs: inputs,
           },
+          inputs: inputs,
         },
       });
       const queuedExecution = response.data.data.executions[0]!;
       setQueuedExecution(queuedExecution);
+      setExecutionType('queued');
       setExecution(queuedExecution);
       setSelectedTab('output');
     } catch (error) {
@@ -150,7 +154,12 @@ const ConsolePage = () => {
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
-                    <ExecutionAbortButton execution={execution} onComplete={setExecution} />
+                    <Toggle when={executing}>
+                      <ExecutionAbortButton execution={execution} onComplete={setExecution} />
+                    </Toggle>
+                    <Toggle when={!executing && !!execution}>
+                      <ExecutionDownloadOutputsButton variant="cta" execution={execution!} isDisabled={executionType === 'compile'} />
+                    </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>
                 </Flex>

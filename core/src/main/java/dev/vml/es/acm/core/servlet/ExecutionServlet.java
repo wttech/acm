@@ -63,9 +63,9 @@ public class ExecutionServlet extends SlingAllMethodsServlet {
             if (ids != null) {
                 ExecutionResolver executionResolver = new ExecutionResolver(queue, request.getResourceResolver());
                 if (format == ExecutionFormat.FULL) {
-                    executionStream = executionResolver.readAll(ids);
+                    executionStream = executionResolver.resolveAll(ids);
                 } else {
-                    executionStream = executionResolver.readAllSummaries(ids);
+                    executionStream = executionResolver.resolveAllSummaries(ids);
                 }
             } else {
                 ExecutionQuery criteria = ExecutionQuery.from(request);

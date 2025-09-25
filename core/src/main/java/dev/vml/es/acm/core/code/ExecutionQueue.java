@@ -259,6 +259,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                         contextOptions.getUserId(),
                         contextOptions.getExecutionMode(),
                         execution.getExecutable(),
+                        contextOptions.getInputs(),
                         resolver)) {
             return executor.execute(context);
         } catch (LoginException e) {

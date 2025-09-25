@@ -14,8 +14,10 @@ import CodeEditor from '../components/CodeEditor.tsx';
 import ExecutableIdValue from '../components/ExecutableIdValue';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
+import ExecutionDownloadOutputsButton from '../components/ExecutionDownloadOutputsButton.tsx';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
+import Toggle from '../components/Toggle.tsx';
 import { useAppState } from '../hooks/app.ts';
 import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
@@ -87,6 +89,16 @@ const ExecutionView = () => {
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="details" aria-label="Details">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
+              <View>
+                <Flex justifyContent="space-between" alignItems="center">
+                  <Toggle when={isExecutableScript(execution.executable.id)}>
+                    <Button variant="secondary" style="fill" onPress={() => navigate(`/scripts/view/${encodeURIComponent(execution?.executable.id)}`)}>
+                      <FileCode />
+                      <Text>View script</Text>
+                    </Button>
+                  </Toggle>
+                </Flex>
+              </View>
               <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
                 <Flex direction="row" justifyContent="space-between" gap="size-200">
                   <LabeledValue label="ID" value={execution.id} flex="1" />
@@ -116,14 +128,14 @@ const ExecutionView = () => {
                   </Field>
                   <Field label="Inputs" flex="1" minWidth="50%">
                     <div>
-                      {Objects.isEmpty(execution.executable.inputs) ? (
+                      {Objects.isEmpty(execution.inputs) ? (
                         <Badge variant="neutral">
                           <InfoOutline />
                           <Text>Not described</Text>
                         </Badge>
                       ) : (
                         <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
-                          <Editor width="100%" language="json" theme="vs-dark" height="200px" options={{ readOnly: true, scrollBeyondLastLine: false }} value={JSON.stringify(execution.executable.inputs, null, 2)} />
+                          <Editor width="100%" language="json" theme="vs-dark" height="200px" options={{ readOnly: true, scrollBeyondLastLine: false }} value={JSON.stringify(execution.inputs, null, 2)} />
                         </View>
                       )}
                     </div>
@@ -152,14 +164,13 @@ const ExecutionView = () => {
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
-                    <ExecutionAbortButton execution={execution} onComplete={setExecution} />
+                    <Toggle when={isExecutionPending(execution.status)}>
+                      <ExecutionAbortButton execution={execution} onComplete={setExecution} />
+                    </Toggle>
+                    <Toggle when={!isExecutionPending(execution.status)}>
+                      <ExecutionDownloadOutputsButton variant="cta" execution={execution} />
+                    </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
-                    {isExecutableScript(execution.executable.id) && (
-                      <Button variant="secondary" style="fill" onPress={() => navigate(`/scripts/view/${encodeURIComponent(execution?.executable.id)}`)}>
-                        <FileCode />
-                        <Text>View in scripts</Text>
-                      </Button>
-                    )}
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">

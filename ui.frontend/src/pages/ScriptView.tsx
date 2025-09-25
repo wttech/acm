@@ -100,8 +100,8 @@ const ScriptView = () => {
           code: {
             id: script.id,
             content: script.content,
-            inputs: inputs,
           },
+          inputs: inputs,
         },
       });
       const queuedExecution = response.data.data.executions[0]!;
@@ -147,7 +147,7 @@ const ScriptView = () => {
                         }
                       >
                         <History />
-                        <Text>View in history</Text>
+                        <Text>View history</Text>
                       </Button>
                     )}
                   </ButtonGroup>

@@ -18,10 +18,6 @@ public class Inputs implements Serializable {
 
     private final Map<String, Input<?>> definitions = new LinkedHashMap<>();
 
-    public Inputs() {
-        super();
-    }
-
     public Input<?> get(String name) {
         Input<?> result = definitions.get(name);
         if (result == null) {

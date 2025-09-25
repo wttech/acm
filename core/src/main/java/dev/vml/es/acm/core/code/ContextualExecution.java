@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ExceptionUtils;
 import java.io.InputStream;
@@ -10,15 +11,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-public class ImmediateExecution implements Execution {
+public class ContextualExecution implements Execution {
 
-    private final CodeOutput codeOutput;
-
-    private final Executable executable;
-
-    private final String id;
-
-    private final String userId;
+    @JsonIgnore
+    private final transient ExecutionContext context;
 
     private final ExecutionStatus status;
 
@@ -28,37 +24,28 @@ public class ImmediateExecution implements Execution {
 
     private final String error;
 
-    private final String instance;
-
-    public ImmediateExecution(
-            CodeOutput codeOutput,
-            Executable executable,
-            String id,
-            String userId,
-            ExecutionStatus status,
-            Date startDate,
-            Date endDate,
-            String error,
-            String instance) {
-        this.codeOutput = codeOutput;
-        this.executable = executable;
-        this.id = id;
-        this.userId = userId;
+    public ContextualExecution(
+            ExecutionContext context, ExecutionStatus status, Date startDate, Date endDate, String error) {
+        this.context = context;
         this.status = status;
         this.startDate = startDate;
         this.endDate = endDate;
         this.error = error;
-        this.instance = instance;
+    }
+
+    @JsonIgnore
+    public ExecutionContext getContext() {
+        return context;
     }
 
     @Override
     public String getId() {
-        return id;
+        return context.getId();
     }
 
     @Override
     public String getUserId() {
-        return userId;
+        return context.getUserId();
     }
 
     @Override
@@ -91,8 +78,8 @@ public class ImmediateExecution implements Execution {
 
     @Override
     public String getOutput() {
-        codeOutput.flush();
-        try (InputStream stream = codeOutput.read()) {
+        context.getOutput().flush();
+        try (InputStream stream = context.getOutput().read()) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
         } catch (Exception e) {
             return null;
@@ -101,17 +88,17 @@ public class ImmediateExecution implements Execution {
 
     @Override
     public String getInstance() {
-        return instance;
+        return context.getCodeContext().getOsgiContext().readInstanceState();
     }
 
     public InputStream readOutput() throws AcmException {
-        codeOutput.flush();
-        return codeOutput.read();
+        context.getOutput().flush();
+        return context.getOutput().read();
     }
 
     @Override
     public Executable getExecutable() {
-        return executable;
+        return context.getExecutable();
     }
 
     @Override
@@ -148,18 +135,19 @@ public class ImmediateExecution implements Execution {
             return this;
         }
 
-        public ImmediateExecution end(ExecutionStatus status) {
+        public ContextualExecution end(ExecutionStatus status) {
             Date endDate = new Date();
-            return new ImmediateExecution(
-                    context.getOutput(),
-                    context.getExecutable(),
-                    context.getId(),
-                    context.getCodeContext().getResourceResolver().getUserID(),
-                    status,
-                    startDate,
-                    endDate,
-                    error,
-                    context.getCodeContext().getOsgiContext().readInstanceState());
+            return new ContextualExecution(context, status, startDate, endDate, error);
         }
+    }
+
+    @Override
+    public InputValues getInputs() {
+        return new InputValues(context.getInputs().values());
+    }
+
+    @Override
+    public OutputValues getOutputs() {
+        return new OutputValues(context.getOutputs().getDefinitions().values());
     }
 }

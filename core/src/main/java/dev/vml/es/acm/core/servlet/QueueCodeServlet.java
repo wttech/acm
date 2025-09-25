@@ -59,6 +59,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                     request.getResourceResolver().getUserID(),
                     ExecutionMode.CHECK,
                     input.getCode(),
+                    input.getInputs(),
                     request.getResourceResolver())) {
                 Execution checkExecution = executor.execute(context);
                 if (checkExecution.getStatus() == ExecutionStatus.SKIPPED) {
@@ -76,7 +77,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             }
 
             ExecutionContextOptions contextOptions = new ExecutionContextOptions(
-                    ExecutionMode.RUN, request.getResourceResolver().getUserID());
+                    ExecutionMode.RUN, request.getResourceResolver().getUserID(), input.getInputs());
 
             Execution execution = executionQueue.submit(code, contextOptions);
             QueueOutput output = new QueueOutput(Collections.singletonList(execution));
@@ -103,7 +104,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             } else {
                 ExecutionResolver executionResolver =
                         new ExecutionResolver(executionQueue, request.getResourceResolver());
-                executions = executionResolver.readAll(executionIds).collect(Collectors.toList());
+                executions = executionResolver.resolveAll(executionIds).collect(Collectors.toList());
                 if (executions.isEmpty()) {
                     respondJson(
                             response,

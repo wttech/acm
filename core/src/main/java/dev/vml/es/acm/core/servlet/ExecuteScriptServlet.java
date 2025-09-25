@@ -55,6 +55,7 @@ public class ExecuteScriptServlet extends SlingAllMethodsServlet {
                     request.getResourceResolver().getUserID(),
                     ExecutionMode.RUN,
                     script,
+                    new InputValues(),
                     request.getResourceResolver())) {
                 Execution execution = executor.execute(context);
 

@@ -6,7 +6,7 @@ public final class ExecutionJob {
 
     public static final String EXECUTABLE_CONTENT_PROP = "executableContent";
 
-    public static final String EXECUTABLE_INPUTS_PROP = "executableInputs";
+    public static final String INPUTS_PROP = "inputs";
 
     public static final String USER_ID_PROP = "userId";
 

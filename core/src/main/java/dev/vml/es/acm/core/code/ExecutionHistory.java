@@ -2,14 +2,18 @@ package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.repo.Repo;
+import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Stream;
 import javax.jcr.query.Query;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -18,6 +22,10 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 public class ExecutionHistory {
 
     public static final String ROOT = AcmConstants.VAR_ROOT + "/execution/history";
+
+    public static final String OUTPUT_FILES_CONTAINER_RN = "outputFiles";
+
+    public static final String OUTPUT_FILE_RN = "file";
 
     private final ResourceResolver resourceResolver;
 
@@ -29,16 +37,22 @@ public class ExecutionHistory {
         return Stream.empty();
     }
 
-    public void save(ExecutionContext context, ImmediateExecution execution) throws AcmException {
+    public void save(ContextualExecution execution) throws AcmException {
         Resource root = getOrCreateRoot();
-        Map<String, Object> props = HistoricalExecution.toMap(context, execution);
+        Resource entry = saveEntry(execution, root);
+        saveOutputs(execution, entry);
+    }
+
+    private Resource saveEntry(ContextualExecution execution, Resource root) {
+        Map<String, Object> props = HistoricalExecution.toMap(execution);
 
         try {
             String dirPath = root.getPath() + "/" + StringUtils.substringBeforeLast(execution.getId(), "/");
             Resource dir = RepoUtils.ensure(resourceResolver, dirPath, JcrResourceConstants.NT_SLING_FOLDER, true);
             String entryName = StringUtils.substringAfterLast(execution.getId(), "/");
-            resourceResolver.create(dir, entryName, props);
+            Resource resource = resourceResolver.create(dir, entryName, props);
             resourceResolver.commit();
+            return resource;
         } catch (PersistenceException e) {
             throw new AcmException(String.format("Failed to save execution '%s'", execution.getId()), e);
         } finally {
@@ -52,6 +66,27 @@ public class ExecutionHistory {
                 }
             });
         }
+    }
+
+    private void saveOutputs(ContextualExecution execution, Resource entry) {
+        for (Output definition :
+                execution.getContext().getOutputs().getDefinitions().values()) {
+            RepoResource container = Repo.quiet(entry.getResourceResolver())
+                    .get(entry.getPath())
+                    .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, definition.getName()))
+                    .ensure(JcrConstants.NT_UNSTRUCTURED);
+            RepoResource file = container.child(OUTPUT_FILE_RN);
+            file.saveFile(definition.getMimeType(), definition.getInputStream());
+        }
+    }
+
+    public InputStream readOutputByName(Execution execution, String name) {
+        return Repo.quiet(resourceResolver)
+                .get(ROOT)
+                .child(execution.getId())
+                .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, name))
+                .child(OUTPUT_FILE_RN)
+                .readFileAsStream();
     }
 
     public Optional<Execution> read(String id) {
@@ -80,6 +115,12 @@ public class ExecutionHistory {
                 .map(this::read)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
+    }
+
+    public Optional<Execution> findById(String id) {
+        ExecutionQuery query = new ExecutionQuery();
+        query.setId(id);
+        return findAll(query).findFirst();
     }
 
     public Stream<Execution> findAll() {
