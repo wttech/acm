@@ -59,16 +59,16 @@ export type Input<T> = {
 };
 
 export type Outputs = {
-  [key: string]: Output
-}
+  [key: string]: Output;
+};
 
 export type Output = {
   name: string;
   label: string;
-  description?: string
-  mimeType: string
-  downloadName: string
-}
+  description?: string;
+  mimeType: string;
+  downloadName: string;
+};
 
 export const OutputNames = {
   ARCHIVE: 'acm-archive',

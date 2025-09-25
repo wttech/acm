@@ -10,6 +10,7 @@ import CompilationStatus from '../components/CompilationStatus';
 import ConsoleHelpButton from '../components/ConsoleHelpButton';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
+import ExecutionDownloadOutputsButton from '../components/ExecutionDownloadOutputsButton.tsx';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import ScriptExecutorStatusLight from '../components/ScriptExecutorStatusLight';
@@ -152,6 +153,7 @@ const ConsolePage = () => {
                   <ButtonGroup>
                     <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     <ExecutionCopyOutputButton output={executionOutput} />
+                    {execution && <ExecutionDownloadOutputsButton execution={execution} />}
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">

@@ -5,14 +5,14 @@ import Download from '@spectrum-icons/workflow/Download';
 import FolderArchive from '@spectrum-icons/workflow/FolderArchive';
 import Print from '@spectrum-icons/workflow/Print';
 import React, { useState } from 'react';
-import { Execution, Output, OutputNames as OutputNames } from '../utils/api.types';
+import { Execution, Output, OutputNames } from '../utils/api.types.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
-interface ExecutionOutputsDownloadButtonProps {
+interface ExecutionDownloadOutputsButtonProps {
   execution: Execution;
 }
 
-const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonProps> = ({ execution }) => {
+const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonProps> = ({ execution }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const outputs = execution.outputs || {};
@@ -26,10 +26,9 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
     setDialogOpen(false);
   };
 
-  const downloadFile = (url: string, filename: string) => {
+  const downloadFile = (url: string) => {
     const link = document.createElement('a');
     link.href = url;
-    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -37,21 +36,21 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
 
   const handleDownloadSingle = (output: Output) => {
     const downloadUrl = `/apps/acm/api/execution-output.json?executionId=${encodeURIComponent(execution.id)}&name=${encodeURIComponent(output.name)}`;
-    downloadFile(downloadUrl, output.downloadName || output.name);
+    downloadFile(downloadUrl);
     ToastQueue.info(`Downloading ${output.label || output.name}...`, { timeout: ToastTimeoutQuick });
     handleCloseDialog();
   };
 
   const handleDownloadAll = () => {
     const downloadUrl = `/apps/acm/api/execution-output.json?executionId=${encodeURIComponent(execution.id)}&name=${OutputNames.ARCHIVE}`;
-    downloadFile(downloadUrl, `execution-${execution.id}-complete.zip`);
+    downloadFile(downloadUrl);
     ToastQueue.info('Downloading complete archive...', { timeout: ToastTimeoutQuick });
     handleCloseDialog();
   };
 
   const handleDownloadConsole = () => {
     const downloadUrl = `/apps/acm/api/execution-output.json?executionId=${encodeURIComponent(execution.id)}&name=${OutputNames.CONSOLE}`;
-    downloadFile(downloadUrl, `execution-${execution.id}-console.txt`);
+    downloadFile(downloadUrl);
     ToastQueue.info('Downloading console output...', { timeout: ToastTimeoutQuick });
     handleCloseDialog();
   };
@@ -75,13 +74,11 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
                     <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
                       <Flex direction="column">
                         <Text UNSAFE_style={{ fontWeight: 'bold' }}>Complete Archive</Text>
-                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>
-                          All outputs and console log bundled as ZIP archive
-                        </Text>
+                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>All outputs and console log bundled as ZIP archive</Text>
                       </Flex>
                       <Button variant="accent" onPress={handleDownloadAll}>
                         <FolderArchive />
-                        <Text>Download ZIP</Text>
+                        <Text>Download</Text>
                       </Button>
                     </Flex>
                   </View>
@@ -90,13 +87,11 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
                     <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
                       <Flex direction="column">
                         <Text UNSAFE_style={{ fontWeight: 'bold' }}>Console Output</Text>
-                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>
-                          Execution log and error messages as text file
-                        </Text>
+                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Execution log and error messages as text file</Text>
                       </Flex>
                       <Button variant="secondary" onPress={handleDownloadConsole}>
                         <Print />
-                        <Text>Download TXT</Text>
+                        <Text>Download</Text>
                       </Button>
                     </Flex>
                   </View>
@@ -106,11 +101,7 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
                       <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
                         <Flex direction="column">
                           <Text UNSAFE_style={{ fontWeight: 'bold' }}>{output.label || output.name}</Text>
-                          {output.description && (
-                            <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>
-                              {output.description}
-                            </Text>
-                          )}
+                          {output.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{output.description}</Text>}
                         </Flex>
                         <Button variant="secondary" onPress={() => handleDownloadSingle(output)}>
                           <Download />
@@ -119,12 +110,10 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
                       </Flex>
                     </View>
                   ))}
-                  
+
                   {outputEntries.length === 0 && (
                     <View padding="size-200">
-                      <Text UNSAFE_style={{ fontStyle: 'italic', color: 'var(--spectrum-global-color-gray-600)' }}>
-                        No additional outputs generated by this execution.
-                      </Text>
+                      <Text UNSAFE_style={{ fontStyle: 'italic', color: 'var(--spectrum-global-color-gray-600)' }}>No additional outputs generated by this execution.</Text>
                     </View>
                   )}
                 </Flex>
@@ -143,4 +132,4 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
   );
 };
 
-export default ExecutionOutputsDownloadButton;
+export default ExecutionDownloadOutputsButton;

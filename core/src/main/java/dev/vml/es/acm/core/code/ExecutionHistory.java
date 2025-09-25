@@ -120,7 +120,6 @@ public class ExecutionHistory {
                 .map(Optional::get);
     }
 
-
     public Optional<Execution> findById(String id) {
         ExecutionQuery query = new ExecutionQuery();
         query.setId(id);
