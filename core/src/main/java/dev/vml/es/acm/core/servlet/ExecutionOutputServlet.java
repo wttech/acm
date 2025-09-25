@@ -7,6 +7,8 @@ import dev.vml.es.acm.core.code.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.servlet.Servlet;
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -65,30 +67,14 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
                 // Predefined outputs
                 switch (outputName) {
                     case ARCHIVE:
-                        response.setContentType("application/zip");
-                        response.setHeader(
-                                "Content-Disposition",
-                                String.format(
-                                        "attachment; filename=\"%s\"", String.format("execution-%s.outputs.zip", id)));
-                        InputStream archiveStream = new ByteArrayInputStream(new byte[0]); // TODO fix
-                        IOUtils.copy(archiveStream, response.getOutputStream());
+                        respondArchive(response, execution, executionHistory);
                         break;
                     case CONSOLE:
-                        response.setContentType("text/plain");
-                        response.setHeader(
-                                "Content-Disposition",
-                                String.format(
-                                        "attachment; filename=\"%s\"", String.format("execution-%s.console.log", id)));
-                        InputStream consoleStream = new ByteArrayInputStream(new byte[0]); // TODO fix
-                        IOUtils.copy(consoleStream, response.getOutputStream());
+                        respondConsole(response, execution);
                         break;
-                    default:
-                        respondJson(
-                                response,
-                                error(String.format("Execution output '%s' not found in execution '%s'!", name, id)));
                 }
             } else {
-                // Dynamic outputs
+                // Dynamic output
                 Output output = execution.getOutputs().stream()
                         .filter(o -> o.getName().equals(name))
                         .findFirst()
@@ -99,11 +85,7 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
                             error(String.format("Execution output '%s' not found in execution '%s'!", name, id)));
                     return;
                 }
-                response.setContentType(output.getMimeType());
-                response.setHeader(
-                        "Content-Disposition", String.format("attachment; filename=\"%s\"", output.getDownloadName()));
-                InputStream inputStream = executionHistory.readOutputByName(execution, name);
-                IOUtils.copy(inputStream, response.getOutputStream());
+                respondOutput(response, name, executionHistory, execution, output);
             }
         } catch (Exception e) {
             LOG.error("Execution output '{}' cannot be read for execution '{}'", name, id, e);
@@ -114,5 +96,52 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
                                     name, id, e.getMessage())
                             .trim()));
         }
+    }
+
+    private void respondConsole(SlingHttpServletResponse response, Execution execution) throws IOException {
+        respondDownload(response, "text/plain", String.format("execution-%s.console.log", execution.getId()));
+        InputStream consoleStream =
+                new ByteArrayInputStream(execution.getOutput().getBytes());
+        IOUtils.copy(consoleStream, response.getOutputStream());
+    }
+
+    private void respondArchive(
+            SlingHttpServletResponse response, Execution execution, ExecutionHistory executionHistory)
+            throws IOException {
+        respondDownload(response, "application/zip", String.format("execution-%s.outputs.zip", execution.getId()));
+        try (ZipOutputStream zipStream = new ZipOutputStream(response.getOutputStream())) {
+            // Console log
+            ZipEntry consoleEntry = new ZipEntry("console.log");
+            zipStream.putNextEntry(consoleEntry);
+            zipStream.write(execution.getOutput().getBytes());
+            zipStream.closeEntry();
+
+            // Dynamic outputs
+            for (Output output : execution.getOutputs()) {
+                ZipEntry outputEntry = new ZipEntry(output.getDownloadName());
+                zipStream.putNextEntry(outputEntry);
+                try (InputStream outputStream = executionHistory.readOutputByName(execution, output.getName())) {
+                    IOUtils.copy(outputStream, zipStream);
+                }
+                zipStream.closeEntry();
+            }
+        }
+    }
+
+    private void respondOutput(
+            SlingHttpServletResponse response,
+            String name,
+            ExecutionHistory executionHistory,
+            Execution execution,
+            Output output)
+            throws IOException {
+        respondDownload(response, output.getMimeType(), output.getDownloadName());
+        InputStream inputStream = executionHistory.readOutputByName(execution, name);
+        IOUtils.copy(inputStream, response.getOutputStream());
+    }
+
+    private void respondDownload(SlingHttpServletResponse response, String mimeType, String fileName) {
+        response.setContentType(mimeType);
+        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", fileName));
     }
 }
