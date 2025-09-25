@@ -9,6 +9,7 @@ import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Stream;
 import javax.jcr.query.Query;
@@ -82,6 +83,15 @@ public class ExecutionHistory {
         }
     }
 
+    public InputStream readOutputByName(Execution execution, String name) {
+        return Repo.quiet(resourceResolver)
+                .get(ROOT)
+                .child(execution.getId())
+                .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, name))
+                .child(OUTPUT_FILE_RN)
+                .readFileAsStream();
+    }
+
     public Optional<Execution> read(String id) {
         return readResource(id).map(HistoricalExecution::new);
     }
@@ -108,6 +118,13 @@ public class ExecutionHistory {
                 .map(this::read)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
+    }
+
+
+    public Optional<Execution> findById(String id) {
+        ExecutionQuery query = new ExecutionQuery();
+        query.setId(id);
+        return findAll(query).findFirst();
     }
 
     public Stream<Execution> findAll() {

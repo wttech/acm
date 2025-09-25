@@ -70,6 +70,11 @@ export type Output = {
   downloadName: string
 }
 
+export const OutputNames = {
+  ARCHIVE: 'acm-archive',
+  CONSOLE: 'acm-console',
+} as const;
+
 export type MinMaxInput = Input<InputValue> & {
   min: number;
   max: number;

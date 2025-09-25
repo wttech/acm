@@ -3,8 +3,9 @@ import { ToastQueue } from '@react-spectrum/toast';
 import Close from '@spectrum-icons/workflow/Close';
 import Download from '@spectrum-icons/workflow/Download';
 import FolderArchive from '@spectrum-icons/workflow/FolderArchive';
+import Print from '@spectrum-icons/workflow/Print';
 import React, { useState } from 'react';
-import { Execution, Output } from '../utils/api.types';
+import { Execution, Output, OutputNames as OutputNames } from '../utils/api.types';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
 interface ExecutionOutputsDownloadButtonProps {
@@ -16,13 +17,8 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
 
   const outputs = execution.outputs || {};
   const outputEntries = Object.entries(outputs);
-  const hasOutputs = outputEntries.length > 0;
 
   const handleOpenDialog = () => {
-    if (!hasOutputs) {
-      ToastQueue.negative('No outputs available for download!', { timeout: ToastTimeoutQuick });
-      return;
-    }
     setDialogOpen(true);
   };
 
@@ -30,42 +26,39 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
     setDialogOpen(false);
   };
 
-  const handleDownloadSingle = (output: Output) => {
-    // TODO: Implement single file download
-    // This would typically download the file using the execution ID and output name
-    const downloadUrl = `/apps/acm/api/executions/${encodeURIComponent(execution.id)}/outputs/${encodeURIComponent(output.name)}/download`;
-    
-    // Create a temporary anchor element to trigger download
+  const downloadFile = (url: string, filename: string) => {
     const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = output.downloadName || output.name;
+    link.href = url;
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
 
+  const handleDownloadSingle = (output: Output) => {
+    const downloadUrl = `/apps/acm/api/execution-output.json?executionId=${encodeURIComponent(execution.id)}&name=${encodeURIComponent(output.name)}`;
+    downloadFile(downloadUrl, output.downloadName || output.name);
     ToastQueue.info(`Downloading ${output.label || output.name}...`, { timeout: ToastTimeoutQuick });
     handleCloseDialog();
   };
 
   const handleDownloadAll = () => {
-    // TODO: Implement ZIP download of all outputs
-    const downloadUrl = `/apps/acm/api/executions/${encodeURIComponent(execution.id)}/outputs/download-all`;
-    
-    // Create a temporary anchor element to trigger download
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = `execution-${execution.id}-outputs.zip`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const downloadUrl = `/apps/acm/api/execution-output.json?executionId=${encodeURIComponent(execution.id)}&name=${OutputNames.ARCHIVE}`;
+    downloadFile(downloadUrl, `execution-${execution.id}-complete.zip`);
+    ToastQueue.info('Downloading complete archive...', { timeout: ToastTimeoutQuick });
+    handleCloseDialog();
+  };
 
-    ToastQueue.info('Downloading all outputs as ZIP...', { timeout: ToastTimeoutQuick });
+  const handleDownloadConsole = () => {
+    const downloadUrl = `/apps/acm/api/execution-output.json?executionId=${encodeURIComponent(execution.id)}&name=${OutputNames.CONSOLE}`;
+    downloadFile(downloadUrl, `execution-${execution.id}-console.txt`);
+    ToastQueue.info('Downloading console output...', { timeout: ToastTimeoutQuick });
     handleCloseDialog();
   };
 
   return (
     <>
-      <Button variant="secondary" isDisabled={!hasOutputs} onPress={handleOpenDialog}>
+      <Button variant="secondary" onPress={handleOpenDialog}>
         <Download />
         <Text>Download</Text>
       </Button>
@@ -76,39 +69,65 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
             <Divider />
             <Content>
               <Flex direction="column" gap="size-200">
-                <Text>Select an output to download, or download all outputs as a ZIP archive.</Text>
-                {hasOutputs ? (
-                  <Flex direction="column" gap="size-100">
-                    <View padding="size-100" backgroundColor="gray-100" borderRadius="medium">
-                      <Button variant="accent" onPress={handleDownloadAll} width="100%">
+                <Text>Choose which outputs to download from this execution.</Text>
+                <Flex direction="column" gap="size-100">
+                  <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
+                    <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
+                      <Flex direction="column">
+                        <Text UNSAFE_style={{ fontWeight: 'bold' }}>Complete Package</Text>
+                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>
+                          All outputs and console log bundled as ZIP archive
+                        </Text>
+                      </Flex>
+                      <Button variant="accent" onPress={handleDownloadAll}>
                         <FolderArchive />
-                        <Text>Download All as ZIP</Text>
+                        <Text>Download ZIP</Text>
                       </Button>
-                    </View>
-                    {outputEntries.map(([key, output]) => (
-                      <View key={key} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
-                        <Flex direction="column" gap="size-50">
-                          <Flex direction="column">
-                            <Text UNSAFE_style={{ fontWeight: 'bold' }}>{output.label || output.name}</Text>
-                            {output.description && (
-                              <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>
-                                {output.description}
-                              </Text>
-                            )}
-                          </Flex>
-                          <Button variant="secondary" onPress={() => handleDownloadSingle(output)}>
-                            <Download />
-                            <Text>Download &quot;{output.downloadName || output.name}&quot;</Text>
-                          </Button>
+                    </Flex>
+                  </View>
+                  
+                  <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
+                    <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
+                      <Flex direction="column">
+                        <Text UNSAFE_style={{ fontWeight: 'bold' }}>Console Output</Text>
+                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>
+                          Execution log and error messages as text file
+                        </Text>
+                      </Flex>
+                      <Button variant="secondary" onPress={handleDownloadConsole}>
+                        <Print />
+                        <Text>Download TXT</Text>
+                      </Button>
+                    </Flex>
+                  </View>
+
+                  {outputEntries.map(([key, output]) => (
+                    <View key={key} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
+                      <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
+                        <Flex direction="column">
+                          <Text UNSAFE_style={{ fontWeight: 'bold' }}>{output.label || output.name}</Text>
+                          {output.description && (
+                            <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>
+                              {output.description}
+                            </Text>
+                          )}
                         </Flex>
-                      </View>
-                    ))}
-                  </Flex>
-                ) : (
-                  <Flex justifyContent="center" alignItems="center" minHeight="size-1200">
-                    <Text>No outputs available for download.</Text>
-                  </Flex>
-                )}
+                        <Button variant="secondary" onPress={() => handleDownloadSingle(output)}>
+                          <Download />
+                          <Text>Download</Text>
+                        </Button>
+                      </Flex>
+                    </View>
+                  ))}
+                  
+                  {outputEntries.length === 0 && (
+                    <View padding="size-200">
+                      <Text UNSAFE_style={{ fontStyle: 'italic', color: 'var(--spectrum-global-color-gray-600)' }}>
+                        No additional outputs generated by this execution.
+                      </Text>
+                    </View>
+                  )}
+                </Flex>
               </Flex>
             </Content>
             <ButtonGroup>
