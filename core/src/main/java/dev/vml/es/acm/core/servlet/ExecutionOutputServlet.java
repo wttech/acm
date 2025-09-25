@@ -4,15 +4,13 @@ import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.*;
 
 import dev.vml.es.acm.core.code.*;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.servlet.Servlet;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -63,19 +61,41 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
                 respondJson(response, error(String.format("Execution with id '%s' not found!", id)));
                 return;
             }
-            Output output = execution.getOutputs().stream().filter(o -> o.getName().equals(name)).findFirst().orElse(null);
-            if (output == null) {
-                respondJson(response, error(String.format("Execution output with name '%s' not found in execution '%s'!", name, id)));
-                return;
-            }   
 
-            response.setContentType(output.getMimeType());
-            response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", output.getDownloadName()));
-            InputStream inputStream = executionHistory.readOutputByName(execution, name);
-            IOUtils.copy(inputStream, response.getOutputStream());
+            ExecutionOutput.Name outputName = ExecutionOutput.Name.byId(name).orElse(null);
+            if (outputName != null) {
+                // Predefined outputs
+                switch (outputName) {
+                    case ARCHIVE:
+                        response.setContentType("application/zip");
+                        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", String.format("execution-%s.outputs.zip", id)));
+                        InputStream archiveStream = new ByteArrayInputStream(new byte[0]); // TODO fix
+                        IOUtils.copy(archiveStream, response.getOutputStream());
+                        break;
+                    case CONSOLE:
+                        response.setContentType("text/plain");
+                        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", String.format("execution-%s.console.txt", id)));
+                        InputStream consoleStream = new ByteArrayInputStream(new byte[0]); // TODO fix
+                        IOUtils.copy(consoleStream, response.getOutputStream());
+                        break;
+                    default:
+                        respondJson(response, error(String.format("Execution output '%s' not found in execution '%s'!", name, id)));
+                }
+            } else {
+                // Dynamic outputs
+                Output output = execution.getOutputs().stream().filter(o -> o.getName().equals(name)).findFirst().orElse(null);
+                if (output == null) {
+                    respondJson(response, error(String.format("Execution output '%s' not found in execution '%s'!", name, id)));
+                    return;
+                }   
+                response.setContentType(output.getMimeType());
+                response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", output.getDownloadName()));
+                InputStream inputStream = executionHistory.readOutputByName(execution, name);
+                IOUtils.copy(inputStream, response.getOutputStream());
+            }
         } catch (Exception e) {
-            LOG.error("Execution output cannot be read for execution '{}' and name '{}'", id, name, e);
-            respondJson(response, error(String.format("Execution output cannot be read for execution '%s' and name '%s'! Error: %s", id, name, e.getMessage()).trim()));
+            LOG.error("Execution output '{}' cannot be read for execution '{}'", name, id, e);
+            respondJson(response, error(String.format("Execution output '%s' cannot be read for execution '%s'! Error: %s", name, id, e.getMessage()).trim()));
         }
     }
 }

@@ -74,7 +74,7 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
                   <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
                     <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
                       <Flex direction="column">
-                        <Text UNSAFE_style={{ fontWeight: 'bold' }}>Complete Package</Text>
+                        <Text UNSAFE_style={{ fontWeight: 'bold' }}>Complete Archive</Text>
                         <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>
                           All outputs and console log bundled as ZIP archive
                         </Text>
@@ -85,7 +85,7 @@ const ExecutionOutputsDownloadButton: React.FC<ExecutionOutputsDownloadButtonPro
                       </Button>
                     </Flex>
                   </View>
-                  
+
                   <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
                     <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
                       <Flex direction="column">

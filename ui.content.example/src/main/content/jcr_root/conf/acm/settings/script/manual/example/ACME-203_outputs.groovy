@@ -17,7 +17,7 @@ void doRun() {
         [name: "Jack", surname: "Doe", birth: "2000"]
     ] 
     for (def user : users) {
-        output.writeln("${user.name};${user.surname};${user.birth}")
+        output.writeln("${user.name},${user.surname},${user.birth}")
     }
 
     log.info "Users report generatation ended successfully"
