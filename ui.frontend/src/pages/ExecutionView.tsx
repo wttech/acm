@@ -164,9 +164,13 @@ const ExecutionView = () => {
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
-                    <ExecutionAbortButton execution={execution} onComplete={setExecution} />
+                    <Toggle when={isExecutionPending(execution.status)}>
+                      <ExecutionAbortButton execution={execution} onComplete={setExecution} />
+                    </Toggle>
+                    <Toggle when={!isExecutionPending(execution.status)}>
+                      <ExecutionDownloadOutputsButton execution={execution} />
+                    </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
-                    <ExecutionDownloadOutputsButton execution={execution} />
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">

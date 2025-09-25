@@ -45,12 +45,12 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         String id = stringParam(request, EXECUTION_ID_PARAM);
         if (id == null) {
-            respondJson(response, error(String.format("Execution ID is not specified!", EXECUTION_ID_PARAM)));
+            respondJson(response, badRequest(String.format("Execution ID is not specified!", EXECUTION_ID_PARAM)));
             return;
         }
         String name = stringParam(request, NAME_PARAM);
         if (name == null) {
-            respondJson(response, error(String.format("Output name is not specified!", NAME_PARAM)));
+            respondJson(response, badRequest(String.format("Execution output name is not specified!", NAME_PARAM)));
             return;
         }
 
@@ -58,7 +58,7 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
             ExecutionHistory executionHistory = new ExecutionHistory(request.getResourceResolver());
             Execution execution = executionHistory.findById(id).orElse(null);
             if (execution == null) {
-                respondJson(response, error(String.format("Execution with id '%s' not found!", id)));
+                respondJson(response, notFound(String.format("Execution with id '%s' not found!", id)));
                 return;
             }
 
@@ -82,7 +82,7 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
                 if (output == null) {
                     respondJson(
                             response,
-                            error(String.format("Execution output '%s' not found in execution '%s'!", name, id)));
+                            notFound(String.format("Execution output '%s' not found in execution '%s'!", name, id)));
                     return;
                 }
                 respondOutput(response, name, executionHistory, execution, output);
