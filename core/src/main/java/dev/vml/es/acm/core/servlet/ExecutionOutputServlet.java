@@ -11,6 +11,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.servlet.Servlet;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -100,7 +101,7 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
     }
 
     private void respondConsole(SlingHttpServletResponse response, Execution execution) throws IOException {
-        respondDownload(response, "text/plain", String.format("execution-%s.console.log", execution.getId()));
+        respondDownload(response, "text/plain", String.format("execution-%s.console.log", executionFileName(execution)));
         InputStream consoleStream =
                 new ByteArrayInputStream(execution.getOutput().getBytes());
         IOUtils.copy(consoleStream, response.getOutputStream());
@@ -109,7 +110,7 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
     private void respondArchive(
             SlingHttpServletResponse response, Execution execution, ExecutionHistory executionHistory)
             throws IOException {
-        respondDownload(response, "application/zip", String.format("execution-%s.outputs.zip", execution.getId()));
+        respondDownload(response, "application/zip", String.format("execution-%s.outputs.zip", executionFileName(execution)));
         try (ZipOutputStream zipStream = new ZipOutputStream(response.getOutputStream())) {
             // Console log
             ZipEntry consoleEntry = new ZipEntry("console.log");
@@ -144,5 +145,9 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
     private void respondDownload(SlingHttpServletResponse response, String mimeType, String fileName) {
         response.setContentType(mimeType);
         response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", fileName));
+    }
+
+    private String executionFileName(Execution execution) {
+        return StringUtils.replace(execution.getId(), "/", "-");
     }
 }

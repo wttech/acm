@@ -168,7 +168,7 @@ const ExecutionView = () => {
                       <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     </Toggle>
                     <Toggle when={!isExecutionPending(execution.status)}>
-                      <ExecutionDownloadOutputsButton execution={execution} />
+                      <ExecutionDownloadOutputsButton variant="cta" execution={execution} />
                     </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>

@@ -9,9 +9,9 @@ content: |
     println "Processing..."
     
     println "Updating resources..."
-    def max = 10
+    def max = 20
     for (int i = 0; i < max; i++) {
-      Thread.sleep(500)
+      Thread.sleep(1000)
       println "Updated (\${i + 1}/\${max})"
     }
     

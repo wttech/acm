@@ -9,11 +9,11 @@ import React, { useState } from 'react';
 import { Execution, Output, OutputNames } from '../utils/api.types.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
-interface ExecutionDownloadOutputsButtonProps {
+interface ExecutionDownloadOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {
   execution: Execution;
 }
 
-const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonProps> = ({ execution }) => {
+const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonProps> = ({ execution, ...buttonProps }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const outputs = execution.outputs || {};
@@ -58,7 +58,7 @@ const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonPro
 
   return (
     <>
-      <Button variant="cta" onPress={handleOpenDialog}>
+      <Button {...buttonProps} onPress={handleOpenDialog}>
         <Download />
         <Text>Download</Text>
       </Button>
