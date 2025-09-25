@@ -20,7 +20,7 @@ public class ExecutionResolver {
         this(queue, new ExecutionHistory(resourceResolver));
     }
 
-    public Optional<Execution> read(String id) {
+    public Optional<Execution> resolve(String id) {
         Optional<Execution> execution = history.read(id);
         if (execution.isPresent()) {
             return execution;
@@ -29,7 +29,7 @@ public class ExecutionResolver {
         }
     }
 
-    public Optional<ExecutionSummary> readSummary(String id) {
+    public Optional<ExecutionSummary> resolveSummary(String id) {
         Optional<ExecutionSummary> execution = history.readSummary(id);
         if (execution.isPresent()) {
             return execution;
@@ -38,16 +38,16 @@ public class ExecutionResolver {
         }
     }
 
-    public Stream<Execution> readAll(Collection<String> ids) {
+    public Stream<Execution> resolveAll(Collection<String> ids) {
         return (ids != null ? ids.stream() : Stream.<String>empty())
-                .map(this::read)
+                .map(this::resolve)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }
 
-    public Stream<ExecutionSummary> readAllSummaries(Collection<String> ids) {
+    public Stream<ExecutionSummary> resolveAllSummaries(Collection<String> ids) {
         return (ids != null ? ids.stream() : Stream.<String>empty())
-                .map(this::readSummary)
+                .map(this::resolveSummary)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }

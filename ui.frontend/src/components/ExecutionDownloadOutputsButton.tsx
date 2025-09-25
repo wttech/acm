@@ -87,7 +87,7 @@ const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonPro
                     <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
                       <Flex direction="column">
                         <Text UNSAFE_style={{ fontWeight: 'bold' }}>Console</Text>
-                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Execution log and error messages as text file</Text>
+                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Execution logs and errors as text file</Text>
                       </Flex>
                       <Button variant="primary" onPress={handleDownloadConsole}>
                         <Print />

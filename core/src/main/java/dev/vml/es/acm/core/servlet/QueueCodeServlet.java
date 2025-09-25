@@ -104,7 +104,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             } else {
                 ExecutionResolver executionResolver =
                         new ExecutionResolver(executionQueue, request.getResourceResolver());
-                executions = executionResolver.readAll(executionIds).collect(Collectors.toList());
+                executions = executionResolver.resolveAll(executionIds).collect(Collectors.toList());
                 if (executions.isEmpty()) {
                     respondJson(
                             response,

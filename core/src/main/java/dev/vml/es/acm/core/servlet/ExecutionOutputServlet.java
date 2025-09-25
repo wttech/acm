@@ -55,8 +55,9 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
         }
 
         try {
+            ExecutionResolver executionResolver = new ExecutionResolver(queue, request.getResourceResolver());
             ExecutionHistory executionHistory = new ExecutionHistory(request.getResourceResolver());
-            Execution execution = executionHistory.findById(id).orElse(null);
+            Execution execution = executionResolver.resolve(id).orElse(null);
             if (execution == null) {
                 respondJson(response, notFound(String.format("Execution with id '%s' not found!", id)));
                 return;
