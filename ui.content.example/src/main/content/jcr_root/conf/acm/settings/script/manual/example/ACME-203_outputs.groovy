@@ -3,7 +3,7 @@ boolean canRun() {
 }
 
 void doRun() { 
-    log.info "Users report generatation started"
+    log.info "Users report generation started"
 
     def report = outputs.make("report") {
         label = "Report"
@@ -20,5 +20,5 @@ void doRun() {
         report.out.println("${user.name},${user.surname},${user.birth}")
     }
 
-    log.info "Users report generatation ended successfully"
+    log.info "Users report generation ended successfully"
 }
