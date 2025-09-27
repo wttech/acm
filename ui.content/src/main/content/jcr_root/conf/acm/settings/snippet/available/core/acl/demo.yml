@@ -8,26 +8,19 @@ content: |
   }
     
   void doRun() {
-    log.info "ACL setup started"
-    
-    def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
-    acmeService.with {
-      purge()
-      allow { path = "/content"; permissions = ["jcr:read", "jcr:write"] }
-    }
-    
-    acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
-    def johnDoe = acl.getUser { id = "john.doe" }
-    johnDoe?.with {
+    log.info "ACME ACL setup started"
+
+    def johnDoe = acl.createUser { id = "john.doe"; fullName = "John Doe"; email = "john.doe@acme.com"; password = "ilovekittens" }.tap {
       purge()
       allow { path = "/content"; permissions = ["jcr:read"] }
     }
     
-    acl.createGroup { id = "test.group" }.with {
+    acl.createGroup { id = "acme-authors" }.tap {
+      purge()
       removeAllMembers()
-      addMember(acmeService)
       addMember(johnDoe)
+      allow { path = "/content/acme"; permissions = ["jcr:read", "jcr:write", "crx:replicate"] }
     }
     
-    log.info "ACL setup done"
+    log.info "ACME ACL setup done"
   }
