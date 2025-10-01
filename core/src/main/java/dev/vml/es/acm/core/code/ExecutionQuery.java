@@ -4,7 +4,6 @@ import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.Range;
 import dev.vml.es.acm.core.util.ServletUtils;
 import java.util.*;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
@@ -134,7 +133,7 @@ public class ExecutionQuery {
                 filters.add(String.format("s.[userId] LIKE '%%%s%%'", userId));
             }
         }
-        if (CollectionUtils.isNotEmpty(statuses)) {
+        if (statuses != null && !statuses.isEmpty()) {
             filters.add(statuses.stream()
                     .map(s -> String.format("s.[status] = '%s'", s))
                     .reduce((s1, s2) -> String.format("%s OR %s", s1, s2))

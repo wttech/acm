@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import javax.jcr.Session;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -64,7 +63,7 @@ public class ResourceEventManager implements EventManager, ResourceChangeListene
 
     @Override
     public void onChange(@NotNull List<ResourceChange> changes) {
-        if (CollectionUtils.isEmpty(changes) || listeners.isEmpty()) {
+        if ((changes == null || changes.isEmpty()) || listeners.isEmpty()) {
             return;
         }
         try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {

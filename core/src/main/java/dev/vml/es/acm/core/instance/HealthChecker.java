@@ -13,7 +13,6 @@ import dev.vml.es.acm.core.util.ExceptionUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -95,7 +94,7 @@ public class HealthChecker implements EventHandler {
         checkEvents(issues);
         checkComponents(issues);
         checkCodeExecutor(issues, resourceResolver);
-        return new HealthStatus(issues, CollectionUtils.isEmpty(issues));
+        return new HealthStatus(issues, issues == null || issues.isEmpty());
     }
 
     // TODO seems to not work on AEMaaCS as there is no Sling Installer JMX MBean

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.servlet.Servlet;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -149,7 +148,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
             case DELETE:
                 try {
                     List<String> ids = stringsParam(request, ID_PARAM);
-                    if (CollectionUtils.isEmpty(ids)) {
+                    if (ids == null || ids.isEmpty()) {
                         respondJson(response, error("Script 'id' parameter is not specified!"));
                         return;
                     }

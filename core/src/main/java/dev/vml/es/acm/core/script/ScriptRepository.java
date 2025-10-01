@@ -11,7 +11,6 @@ import dev.vml.es.acm.core.util.ResourceSpliterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
@@ -72,7 +71,7 @@ public class ScriptRepository {
     }
 
     public void deleteAll(List<String> ids) {
-        if (CollectionUtils.isEmpty(ids)) {
+        if (ids == null || ids.isEmpty()) {
             return;
         }
         ids.forEach(this::delete);
