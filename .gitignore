@@ -146,3 +146,6 @@ aem/home/
 .task/
 .env
 .env.*
+
+
+.aio/*
