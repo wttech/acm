@@ -69,14 +69,18 @@ public class ExecutionHistory {
     }
 
     private void saveOutputs(ContextualExecution execution, Resource entry) {
-        for (Output definition :
-                execution.getContext().getOutputs().getDefinitions().values()) {
+        for (Output output : execution.getContext().getOutputs().getDefinitions().values()) {
             RepoResource container = Repo.quiet(entry.getResourceResolver())
                     .get(entry.getPath())
-                    .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, definition.getName()))
+                    .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, output.getName()))
                     .ensure(JcrConstants.NT_UNSTRUCTURED);
             RepoResource file = container.child(OUTPUT_FILE_RN);
-            file.saveFile(definition.getMimeType(), definition.getInputStream());
+            try {
+                output.flush();
+            } catch (IOException e) {
+                throw new AcmException(String.format("Output '%s' cannot be flushed before saving to the execution history!", output.getName()), e);
+            }
+            file.saveFile(output.getMimeType(), output.getInputStream());
         }
     }
 
