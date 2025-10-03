@@ -41,12 +41,22 @@ public class Outputs implements Serializable, Closeable {
         return definitions;
     }
 
-    public Output make(String name) {
-        return make(name, null);
+    @Deprecated
+    public FileOutput make(String name) {
+        return file(name);
     }
 
-    public Output make(String name, Closure<Output> options) {
-        Output result = new Output(name, executionContext);
+    @Deprecated
+    public FileOutput make(String name, Closure<FileOutput> options) {
+        return file(name, options);
+    }
+
+    public FileOutput file(String name) {
+        return file(name, null);
+    }
+
+    public FileOutput file(String name, Closure<FileOutput> options) {
+        FileOutput result = new FileOutput(name, executionContext);
         GroovyUtils.with(result, options);
         add(result);
         return result;
