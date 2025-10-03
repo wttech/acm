@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.repo;
 
 import dev.vml.es.acm.core.util.ResolverUtils;
 import java.io.*;
+import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 
 public class RepoChunks implements Closeable, Flushable {
@@ -189,9 +190,27 @@ public class RepoChunks implements Closeable, Flushable {
                 if (!chunk.exists()) {
                     return false;
                 }
-                currentChunkStream = chunk.readFileAsStream();
+                
+                currentChunkStream = readToMemoryIfNeeded(chunk);
+                
                 return true;
             });
+        }
+
+        /**
+         * If the chunk is not already in memory, read it completely while session is open.
+         */
+        private InputStream readToMemoryIfNeeded(RepoResource chunk) {
+            InputStream sourceStream = chunk.readFileAsStream();
+            if (!(sourceStream instanceof ByteArrayInputStream)) {
+                try (InputStream stream = sourceStream) {
+                    return new ByteArrayInputStream(IOUtils.toByteArray(stream));
+                } catch (IOException e) {
+                    throw new UncheckedIOException(
+                            String.format("Repo chunk '%d' at path '%s' cannot be read into memory!", currentChunkIndex, chunkFolderPath), e);
+                }
+            }
+            return sourceStream;
         }
 
         @Override

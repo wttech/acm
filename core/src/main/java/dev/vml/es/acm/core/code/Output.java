@@ -85,12 +85,13 @@ public class Output implements Serializable, Flushable, AutoCloseable {
             ResourceResolverFactory resolverFactory = executionContext.getCodeContext()
                 .getOsgiContext()
                 .getService(ResourceResolverFactory.class);
-            String chunkPath = String.format(
-                "%s/output/%s", 
+            String chunkFolderPath = String.format(
+                "%s/output/%s/%s", 
                 AcmConstants.VAR_ROOT, 
+                StringUtils.replace(executionContext.getId(), "/", "-"),
                 StringUtils.replace(name, "/", "-")
             );
-            repoChunks = new RepoChunks(resolverFactory, chunkPath);
+            repoChunks = new RepoChunks(resolverFactory, chunkFolderPath);
         }
         return repoChunks;
     }
