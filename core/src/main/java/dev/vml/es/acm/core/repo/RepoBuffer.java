@@ -1,8 +1,10 @@
 package dev.vml.es.acm.core.repo;
 
+import dev.vml.es.acm.core.util.ResolverUtils;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 
 public class RepoBuffer implements Closeable, Flushable {
 
@@ -12,7 +14,9 @@ public class RepoBuffer implements Closeable, Flushable {
 
     private static final long FLUSH_ASYNC_TERMINATION_TIMEOUT_SECONDS = 5;
 
-    private final RepoResource chunkFolder;
+    private final ResourceResolverFactory resolverFactory;
+
+    private final String chunkFolderPath;
 
     private int chunkIndex = 1;
 
@@ -20,8 +24,9 @@ public class RepoBuffer implements Closeable, Flushable {
 
     private ScheduledExecutorService flushAsyncScheduler;
 
-    public RepoBuffer(RepoResource chunkFolder) {
-        this.chunkFolder = chunkFolder;
+    public RepoBuffer(ResourceResolverFactory resolverFactory, String chunkFolderPath) {
+        this.resolverFactory = resolverFactory;
+        this.chunkFolderPath = chunkFolderPath;
     }
 
     public OutputStream getOutputStream() {
@@ -32,16 +37,19 @@ public class RepoBuffer implements Closeable, Flushable {
         if (buffer.size() == 0) {
             return;
         }
-        chunkFolder.ensureRegularFolder();
         String chunkName = CHUNK_BASE_NAME + chunkIndex++;
-        RepoResource chunk = chunkFolder.child(chunkName);
-        chunk.saveFile(CHUNK_MIME_TYPE, new ByteArrayInputStream(buffer.toByteArray()));
+        ResolverUtils.useContentResolver(resolverFactory, null, resolver -> {
+            RepoResource chunkFolder = Repo.quiet(resolver).get(chunkFolderPath);
+            chunkFolder.ensureRegularFolder();
+            RepoResource chunk = chunkFolder.child(chunkName);
+            chunk.saveFile(CHUNK_MIME_TYPE, new ByteArrayInputStream(buffer.toByteArray()));
+        });
         buffer.reset();
     }
 
     public void flushAsync(long intervalMillis) {
         if (flushAsyncScheduler != null) {
-            throw new IllegalStateException(String.format("Repo buffer '%s' async flush already started!", chunkFolder.getPath()));
+            throw new IllegalStateException(String.format("Repo buffer '%s' async flush already started!", chunkFolderPath));
         } else {
             flushAsyncScheduler = Executors.newSingleThreadScheduledExecutor();
             flushAsyncScheduler.scheduleWithFixedDelay(this::flush, intervalMillis, intervalMillis, TimeUnit.MILLISECONDS);
@@ -57,17 +65,29 @@ public class RepoBuffer implements Closeable, Flushable {
                 Thread.currentThread().interrupt();
             }
         }
-        chunkFolder.delete();
+        ResolverUtils.useContentResolver(resolverFactory, null, resolver -> {
+            RepoResource chunkFolder = Repo.quiet(resolver).get(chunkFolderPath);
+            if (chunkFolder.exists()) {
+                chunkFolder.delete();
+            }
+        });
     }
 
     public InputStream getInputStream() {
-        List<InputStream> streams = new ArrayList<>();
-        chunkFolder.children()
-            .filter(c -> c.getName().startsWith(CHUNK_BASE_NAME))
-            .sorted(Comparator.comparing(c -> c.getName()))
-            .forEachOrdered(c -> streams.add(c.readFileAsStream()));
-        return streams.isEmpty()
-            ? new ByteArrayInputStream(new byte[0])
-            : new SequenceInputStream(Collections.enumeration(streams));
+        return ResolverUtils.queryContentResolver(resolverFactory, null, resolver -> {
+            RepoResource chunkFolder = Repo.quiet(resolver).get(chunkFolderPath);
+            if (!chunkFolder.exists()) {
+                return new ByteArrayInputStream(new byte[0]);
+            }
+            
+            List<InputStream> streams = new ArrayList<>();
+            chunkFolder.children()
+                .filter(c -> c.getName().startsWith(CHUNK_BASE_NAME))
+                .sorted(Comparator.comparing(c -> c.getName()))
+                .forEachOrdered(c -> streams.add(c.readFileAsStream()));
+            return streams.isEmpty()
+                ? new ByteArrayInputStream(new byte[0])
+                : new SequenceInputStream(Collections.enumeration(streams));
+        });
     }
 }
