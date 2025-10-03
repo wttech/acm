@@ -155,7 +155,8 @@ public class Assistancer {
                     ExecutionMode.PARSE,
                     Code.consoleMinimal(),
                     new InputValues(),
-                    resolver)) {
+                    resolver,
+                    new CodeOutputMemory())) {
                 context.getCodeContext().prepareRun(context);
                 variablesCache = context.getCodeContext().getBindingVariables();
                 variablesCacheTimestamp = currentTime;

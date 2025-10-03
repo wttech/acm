@@ -29,14 +29,16 @@ public class Base64Formatter {
     }
 
     public void encodeStream(InputStream inputStream, OutputStream outputStream) throws IOException {
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        byte[] encodedBytes = Base64.getEncoder().encode(bytes);
-        outputStream.write(encodedBytes);
+        try (InputStream bufferedInput = IOUtils.buffer(inputStream);
+                OutputStream base64Output = Base64.getEncoder().wrap(outputStream)) {
+            IOUtils.copy(bufferedInput, base64Output);
+        }
     }
 
     public void decodeStream(InputStream inputStream, OutputStream outputStream) throws IOException {
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        byte[] decodedBytes = Base64.getDecoder().decode(bytes);
-        outputStream.write(decodedBytes);
+        try (InputStream bufferedInput = IOUtils.buffer(inputStream);
+                InputStream base64Input = Base64.getDecoder().wrap(bufferedInput)) {
+            IOUtils.copy(base64Input, outputStream);
+        }
     }
 }

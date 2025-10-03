@@ -60,7 +60,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                     ExecutionMode.CHECK,
                     input.getCode(),
                     input.getInputs(),
-                    request.getResourceResolver())) {
+                    request.getResourceResolver(),
+                    new CodeOutputMemory())) {
                 Execution checkExecution = executor.execute(context);
                 if (checkExecution.getStatus() == ExecutionStatus.SKIPPED) {
                     QueueOutput output = new QueueOutput(Collections.singletonList(checkExecution));

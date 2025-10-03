@@ -1,30 +1,21 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
+import java.io.Closeable;
+import java.io.Flushable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 
-public class Output implements Serializable {
-
-    @JsonIgnore
-    private transient ByteArrayOutputStream dataStorage;
-
-    @JsonIgnore
-    private transient PrintStream printStream;
+public abstract class Output implements Serializable, Flushable, Closeable {
 
     private String name;
 
     private String label;
 
     private String description;
-
-    private String downloadName;
-
-    private String mimeType = "application/octet-stream";
 
     public Output() {
         // for deserialization
@@ -54,55 +45,22 @@ public class Output implements Serializable {
         this.description = description;
     }
 
-    public String getDownloadName() {
-        return downloadName;
-    }
-
-    public void setDownloadName(String downloadName) {
-        this.downloadName = downloadName;
-    }
-
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-    }
-
-    @JsonIgnore
-    private ByteArrayOutputStream getDataStorage() {
-        if (dataStorage == null) {
-            dataStorage = new ByteArrayOutputStream();
-        }
-        return dataStorage;
-    }
-
     /**
      * Get a raw output stream for binary data and formatters integration (e.g. JSON/YAML writers).
      */
     @JsonIgnore
-    public OutputStream getOutputStream() {
-        return getDataStorage();
-    }
+    public abstract OutputStream getOutputStream();
 
     /**
      * Get the input stream for reading the output data e.g. for saving in the execution history.
      */
     @JsonIgnore
-    public InputStream getInputStream() {
-        return new ByteArrayInputStream(getDataStorage().toByteArray());
-    }
+    public abstract InputStream getInputStream();
 
     /**
-     * System.out-like print stream for text operations with auto-flush.
+     * System.out-like print stream for text operations.
      * Use for println(), printf(), and formatted text output.
      */
     @JsonIgnore
-    public PrintStream getOut() {
-        if (printStream == null) {
-            printStream = new PrintStream(getOutputStream(), true);
-        }
-        return printStream;
-    }
+    public abstract PrintStream getOut();
 }

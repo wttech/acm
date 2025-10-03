@@ -239,7 +239,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
                 ExecutionMode.PARSE,
                 script,
                 new InputValues(),
-                resourceResolver)) {
+                resourceResolver,
+                new CodeOutputMemory())) {
             return executor.schedule(context);
         }
     }
@@ -382,7 +383,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
                 ExecutionMode.PARSE,
                 script,
                 new InputValues(),
-                resourceResolver)) {
+                resourceResolver,
+                new CodeOutputMemory())) {
             if (executor.isLocked(context)) {
                 LOG.info("Script '{}' already locked!", script.getPath());
                 return false;

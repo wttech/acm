@@ -7,6 +7,7 @@ import dev.vml.es.acm.core.event.Event;
 import dev.vml.es.acm.core.event.EventListener;
 import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.format.TemplateFormatter;
+import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.instance.InstanceSettings;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
@@ -108,6 +109,9 @@ public class Executor implements EventListener {
     @Reference
     private NotificationManager notifier;
 
+    @Reference
+    private SpaSettings spaSettings;
+
     private Config config;
 
     private final Map<String, ExecutionStatus> statuses = new ConcurrentHashMap<>();
@@ -132,9 +136,11 @@ public class Executor implements EventListener {
             ExecutionMode mode,
             Executable executable,
             InputValues inputs,
-            ResourceResolver resourceResolver) {
+            ResourceResolver resourceResolver,
+            CodeOutput codeOutput) {
         CodeContext codeContext = new CodeContext(osgiContext, resourceResolver);
-        ExecutionContext result = new ExecutionContext(id, userId, mode, this, executable, inputs, codeContext);
+        ExecutionContext result =
+                new ExecutionContext(id, userId, mode, this, executable, inputs, codeContext, codeOutput);
         result.setDebug(config.debug());
         result.setHistory(config.history());
         return result;
@@ -148,12 +154,19 @@ public class Executor implements EventListener {
                         contextOptions.getExecutionMode(),
                         executable,
                         contextOptions.getInputs(),
-                        resolver)) {
+                        resolver,
+                        determineOutput(contextOptions.getExecutionMode(), ExecutionId.generate()))) {
             return execute(executionContext);
         } catch (LoginException e) {
             throw new AcmException(
                     String.format("Cannot access repository while executing '%s'!", executable.getId()), e);
         }
+    }
+
+    private CodeOutput determineOutput(ExecutionMode mode, String executionId) {
+        return mode == ExecutionMode.RUN
+                ? new CodeOutputRepo(resolverFactory, spaSettings, executionId)
+                : new CodeOutputMemory();
     }
 
     public Execution execute(ExecutionContext context) throws AcmException {

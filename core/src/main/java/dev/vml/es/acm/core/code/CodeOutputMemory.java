@@ -2,7 +2,7 @@ package dev.vml.es.acm.core.code;
 
 import java.io.*;
 
-public class CodeOutputString implements CodeOutput {
+public class CodeOutputMemory implements CodeOutput {
 
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 

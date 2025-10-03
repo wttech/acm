@@ -16,6 +16,10 @@ public class SpaSettings implements Serializable {
 
     private long executionPollInterval;
 
+    private int executionConsoleOutputChunkSize;
+
+    private int executionFileOutputChunkSize;
+
     private long scriptStatsLimit;
 
     private boolean scriptManagementEnabled;
@@ -25,6 +29,8 @@ public class SpaSettings implements Serializable {
     protected void activate(Config config) {
         this.appStateInterval = config.appStateInterval();
         this.executionPollInterval = config.executionPollInterval();
+        this.executionConsoleOutputChunkSize = config.executionCodeOutputChunkSize();
+        this.executionFileOutputChunkSize = config.executionHistoryOutputChunkSize();
         this.scriptStatsLimit = config.scriptStatsLimit();
         this.scriptManagementEnabled = config.scriptManagementEnabled();
     }
@@ -35,6 +41,14 @@ public class SpaSettings implements Serializable {
 
     public long getExecutionPollInterval() {
         return executionPollInterval;
+    }
+
+    public int getExecutionConsoleOutputChunkSize() {
+        return executionConsoleOutputChunkSize;
+    }
+
+    public int getExecutionFileOutputChunkSize() {
+        return executionFileOutputChunkSize;
     }
 
     public long getScriptStatsLimit() {
@@ -57,6 +71,12 @@ public class SpaSettings implements Serializable {
                 name = "Execution Poll Interval",
                 description = "Interval in milliseconds to poll execution status.")
         long executionPollInterval() default 1400;
+
+        @AttributeDefinition(name = "Execution Code Output Chunk Size", description = "In bytes. Default is 2 MB.")
+        int executionCodeOutputChunkSize() default 2 * 1024 * 1024;
+
+        @AttributeDefinition(name = "Execution History Output Chunk Size", description = "In bytes. Default is 10 MB.")
+        int executionHistoryOutputChunkSize() default 10 * 1024 * 1024;
 
         @AttributeDefinition(
                 name = "Script Stats Limit",
