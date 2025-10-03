@@ -34,6 +34,10 @@ public class Output implements Serializable, Flushable, AutoCloseable {
 
     private String mimeType = "application/octet-stream";
 
+    public Output() {
+        // for deserialization
+    }
+
     public Output(String name, ExecutionContext executionContext) {
         this.name = name;
         this.executionContext = executionContext;
@@ -114,7 +118,7 @@ public class Output implements Serializable, Flushable, AutoCloseable {
     @JsonIgnore
     public PrintStream getOut() {
         if (printStream == null) {
-            printStream = new PrintStream(getOutputStream(), true);
+            printStream = new PrintStream(getOutputStream());
         }
         return printStream;
     }
