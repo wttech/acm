@@ -1,20 +1,28 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import dev.vml.es.acm.core.AcmConstants;
+import dev.vml.es.acm.core.repo.RepoChunks;
+
+import java.io.Flushable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 
-public class Output implements Serializable {
+public class Output implements Serializable, Flushable, AutoCloseable {
 
     @JsonIgnore
-    private transient ByteArrayOutputStream dataStorage;
+    private transient RepoChunks repoChunks;
 
     @JsonIgnore
     private transient PrintStream printStream;
+
+    @JsonIgnore
+    private transient ExecutionContext executionContext;
 
     private String name;
 
@@ -26,12 +34,9 @@ public class Output implements Serializable {
 
     private String mimeType = "application/octet-stream";
 
-    public Output() {
-        // for deserialization
-    }
-
-    public Output(String name) {
+    public Output(String name, ExecutionContext executionContext) {
         this.name = name;
+        this.executionContext = executionContext;
     }
 
     public String getName() {
@@ -71,11 +76,19 @@ public class Output implements Serializable {
     }
 
     @JsonIgnore
-    private ByteArrayOutputStream getDataStorage() {
-        if (dataStorage == null) {
-            dataStorage = new ByteArrayOutputStream();
+    private RepoChunks getRepoChunks() {
+        if (repoChunks == null) {
+            ResourceResolverFactory resolverFactory = executionContext.getCodeContext()
+                .getOsgiContext()
+                .getService(ResourceResolverFactory.class);
+            String chunkPath = String.format(
+                "%s/output/%s", 
+                AcmConstants.VAR_ROOT, 
+                StringUtils.replace(name, "/", "-")
+            );
+            repoChunks = new RepoChunks(resolverFactory, chunkPath);
         }
-        return dataStorage;
+        return repoChunks;
     }
 
     /**
@@ -83,7 +96,7 @@ public class Output implements Serializable {
      */
     @JsonIgnore
     public OutputStream getOutputStream() {
-        return getDataStorage();
+        return getRepoChunks().getOutputStream();
     }
 
     /**
@@ -91,7 +104,7 @@ public class Output implements Serializable {
      */
     @JsonIgnore
     public InputStream getInputStream() {
-        return new ByteArrayInputStream(getDataStorage().toByteArray());
+        return getRepoChunks().getInputStream();
     }
 
     /**
@@ -104,5 +117,20 @@ public class Output implements Serializable {
             printStream = new PrintStream(getOutputStream(), true);
         }
         return printStream;
+    }
+
+    /**
+     * Free the memory, write data to the repository.
+     */
+    public void flush() throws IOException {
+        if (printStream != null) {
+            printStream.flush();
+        }
+        getRepoChunks().flush();
+    }
+
+    @Override
+    public void close() throws IOException {
+        getRepoChunks().close();
     }
 }

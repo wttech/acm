@@ -59,7 +59,7 @@ public class ExecutionContext implements AutoCloseable {
         this.schedules = new Schedules();
         this.conditions = new Conditions(this);
         this.inputs = new Inputs();
-        this.outputs = new Outputs();
+        this.outputs = new Outputs(this);
 
         customizeBinding();
     }
@@ -173,6 +173,7 @@ public class ExecutionContext implements AutoCloseable {
     public void close() {
         printStream.close();
         output.close();
+        outputs.close();
     }
 
     public void variable(String name, Object value) {
