@@ -1,11 +1,21 @@
 package dev.vml.es.acm.core.code;
 
+import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.gui.SpaSettings;
+import dev.vml.es.acm.core.repo.Repo;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import groovy.lang.Binding;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.slf4j.Logger;
 
 public class ExecutionContext implements AutoCloseable {
+
+    public static final String VAR_ROOT = AcmConstants.VAR_ROOT + "/execution/context";
+
+    public static String varPath(String executionId) {
+        return String.format("%s/%s", VAR_ROOT, StringUtils.replace(executionId, "/", "-"));
+    }
 
     private final String id;
 
@@ -65,12 +75,20 @@ public class ExecutionContext implements AutoCloseable {
     }
 
     private CodeOutput determineOutput(ExecutionMode mode, CodeContext codeContext, String id) {
+        ResourceResolverFactory resolverFactory =
+                codeContext.getOsgiContext().getService(ResourceResolverFactory.class);
+        SpaSettings spaSettings = codeContext.getOsgiContext().getService(SpaSettings.class);
         return mode == ExecutionMode.RUN
-                ? new CodeOutputRepo(
-                        codeContext.getOsgiContext().getService(ResourceResolverFactory.class),
-                        codeContext.getOsgiContext().getService(SpaSettings.class),
-                        id)
-                : new CodeOutputString();
+                ? new CodeOutputRepo(resolverFactory, spaSettings, id)
+                : new CodeOutputMemory();
+    }
+
+    private void cleanOutputs() {
+        ResourceResolverFactory resolverFactory =
+                codeContext.getOsgiContext().getService(ResourceResolverFactory.class);
+        ResolverUtils.useContentResolver(resolverFactory, null, resolver -> {
+            Repo.quiet(resolver).get(ExecutionContext.varPath(getId())).delete();
+        });
     }
 
     public String getId() {
@@ -174,6 +192,7 @@ public class ExecutionContext implements AutoCloseable {
         printStream.close();
         output.close();
         outputs.close();
+        cleanOutputs();
     }
 
     public void variable(String name, Object value) {

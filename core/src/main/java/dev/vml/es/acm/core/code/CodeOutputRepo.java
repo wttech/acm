@@ -1,6 +1,5 @@
 package dev.vml.es.acm.core.code;
 
-import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.repo.RepoChunks;
@@ -8,7 +7,6 @@ import java.io.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +14,6 @@ import org.slf4j.LoggerFactory;
 public class CodeOutputRepo implements CodeOutput {
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeOutputRepo.class);
-
-    private static final String OUTPUT_ROOT = "output";
 
     private static final int SCHEDULER_TERMINATION_TIMEOUT_SECONDS = 5;
 
@@ -32,10 +28,8 @@ public class CodeOutputRepo implements CodeOutput {
     public CodeOutputRepo(ResourceResolverFactory resolverFactory, SpaSettings spaSettings, String executionId) {
         this.spaSettings = spaSettings;
         this.executionId = executionId;
-        this.repoChunks = new RepoChunks(
-                resolverFactory,
-                String.format(
-                        "%s/%s/%s", AcmConstants.VAR_ROOT, OUTPUT_ROOT, StringUtils.replace(executionId, "/", "-")));
+        this.repoChunks =
+                new RepoChunks(resolverFactory, String.format("%s/output", ExecutionContext.varPath(executionId)));
     }
 
     @Override

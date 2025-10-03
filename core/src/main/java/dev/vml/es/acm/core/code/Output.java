@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.repo.RepoChunks;
 import java.io.Flushable;
 import java.io.IOException;
@@ -84,10 +83,8 @@ public class Output implements Serializable, Flushable, AutoCloseable {
             ResourceResolverFactory resolverFactory =
                     executionContext.getCodeContext().getOsgiContext().getService(ResourceResolverFactory.class);
             String chunkFolderPath = String.format(
-                    "%s/output/%s/%s",
-                    AcmConstants.VAR_ROOT,
-                    StringUtils.replace(executionContext.getId(), "/", "-"),
-                    StringUtils.replace(name, "/", "-"));
+                    "%s/outputs/%s",
+                    ExecutionContext.varPath(executionContext.getId()), StringUtils.replace(name, "/", "-"));
             repoChunks = new RepoChunks(resolverFactory, chunkFolderPath);
         }
         return repoChunks;

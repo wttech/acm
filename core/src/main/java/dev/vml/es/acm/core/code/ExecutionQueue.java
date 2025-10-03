@@ -196,7 +196,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
         ExecutionContextOptions contextOptions = ExecutionContextOptions.fromJob(job);
-        QueuedExecution queuedExecution = new QueuedExecution(executor, job, new CodeOutputString());
+        QueuedExecution queuedExecution = new QueuedExecution(executor, job, new CodeOutputMemory());
 
         LOG.debug("Execution started '{}'", queuedExecution);
 
