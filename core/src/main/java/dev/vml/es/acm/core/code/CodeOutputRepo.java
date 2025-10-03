@@ -77,10 +77,7 @@ public class CodeOutputRepo implements CodeOutput {
         if (asyncFlushScheduler == null) {
             asyncFlushScheduler = Executors.newSingleThreadScheduledExecutor();
             asyncFlushScheduler.scheduleWithFixedDelay(
-                    this::flush,
-                    0,
-                    Math.round(0.8 * spaSettings.getExecutionPollInterval()),
-                    TimeUnit.MILLISECONDS);
+                    this::flush, 0, Math.round(0.8 * spaSettings.getExecutionPollInterval()), TimeUnit.MILLISECONDS);
         }
     }
 

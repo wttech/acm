@@ -3,7 +3,6 @@ package dev.vml.es.acm.core.code;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.repo.RepoChunks;
-
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,15 +81,13 @@ public class Output implements Serializable, Flushable, AutoCloseable {
     @JsonIgnore
     private RepoChunks getRepoChunks() {
         if (repoChunks == null) {
-            ResourceResolverFactory resolverFactory = executionContext.getCodeContext()
-                .getOsgiContext()
-                .getService(ResourceResolverFactory.class);
+            ResourceResolverFactory resolverFactory =
+                    executionContext.getCodeContext().getOsgiContext().getService(ResourceResolverFactory.class);
             String chunkFolderPath = String.format(
-                "%s/output/%s/%s", 
-                AcmConstants.VAR_ROOT, 
-                StringUtils.replace(executionContext.getId(), "/", "-"),
-                StringUtils.replace(name, "/", "-")
-            );
+                    "%s/output/%s/%s",
+                    AcmConstants.VAR_ROOT,
+                    StringUtils.replace(executionContext.getId(), "/", "-"),
+                    StringUtils.replace(name, "/", "-"));
             repoChunks = new RepoChunks(resolverFactory, chunkFolderPath);
         }
         return repoChunks;

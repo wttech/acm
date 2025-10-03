@@ -3,7 +3,6 @@ package dev.vml.es.acm.core.code;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import dev.vml.es.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
@@ -15,7 +14,7 @@ public class Outputs implements Serializable, Closeable {
 
     private final Map<String, Output> definitions = new LinkedHashMap<>();
 
-    private transient final ExecutionContext executionContext;
+    private final transient ExecutionContext executionContext;
 
     public Outputs(ExecutionContext executionContext) {
         this.executionContext = executionContext;

@@ -190,9 +190,9 @@ public class RepoChunks implements Closeable, Flushable {
                 if (!chunk.exists()) {
                     return false;
                 }
-                
+
                 currentChunkStream = readToMemoryIfNeeded(chunk);
-                
+
                 return true;
             });
         }
@@ -207,7 +207,10 @@ public class RepoChunks implements Closeable, Flushable {
                     return new ByteArrayInputStream(IOUtils.toByteArray(stream));
                 } catch (IOException e) {
                     throw new UncheckedIOException(
-                            String.format("Repo chunk '%d' at path '%s' cannot be read into memory!", currentChunkIndex, chunkFolderPath), e);
+                            String.format(
+                                    "Repo chunk '%d' at path '%s' cannot be read into memory!",
+                                    currentChunkIndex, chunkFolderPath),
+                            e);
                 }
             }
             return sourceStream;
