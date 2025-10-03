@@ -260,11 +260,20 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                         contextOptions.getExecutionMode(),
                         execution.getExecutable(),
                         contextOptions.getInputs(),
-                        resolver)) {
+                        resolver,
+                        determineOutput(
+                                contextOptions.getExecutionMode(),
+                                execution.getJob().getId()))) {
             return executor.execute(context);
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         }
+    }
+
+    private CodeOutput determineOutput(ExecutionMode mode, String executionId) {
+        return mode == ExecutionMode.RUN
+                ? new CodeOutputRepo(resourceResolverFactory, spaSettings, executionId)
+                : new CodeOutputMemory();
     }
 
     public void reset() {

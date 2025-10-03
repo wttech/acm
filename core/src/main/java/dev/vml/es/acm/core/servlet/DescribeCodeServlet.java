@@ -52,7 +52,8 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
                     ExecutionMode.PARSE,
                     code,
                     new InputValues(),
-                    request.getResourceResolver())) {
+                    request.getResourceResolver(),
+                    new CodeOutputMemory())) {
                 Description description = executor.describe(context);
 
                 respondJson(

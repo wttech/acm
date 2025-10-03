@@ -62,7 +62,8 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
                 mode,
                 code,
                 input.getInputs(),
-                request.getResourceResolver())) {
+                request.getResourceResolver(),
+                new CodeOutputMemory())) {
             if (input.getHistory() != null) {
                 context.setHistory(input.getHistory());
             }
