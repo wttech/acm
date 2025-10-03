@@ -28,8 +28,10 @@ public class CodeOutputRepo implements CodeOutput {
     public CodeOutputRepo(ResourceResolverFactory resolverFactory, SpaSettings spaSettings, String executionId) {
         this.spaSettings = spaSettings;
         this.executionId = executionId;
-        this.repoChunks =
-                new RepoChunks(resolverFactory, String.format("%s/output", ExecutionContext.varPath(executionId)));
+        this.repoChunks = new RepoChunks(
+                resolverFactory,
+                String.format("%s/output", ExecutionContext.varPath(executionId)),
+                spaSettings.getExecutionConsoleOutputChunkSize());
     }
 
     @Override

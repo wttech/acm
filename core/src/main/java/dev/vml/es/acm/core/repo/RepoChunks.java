@@ -11,8 +11,6 @@ public class RepoChunks implements Closeable, Flushable {
 
     private static final String CHUNK_MIME_TYPE = "application/octet-stream";
 
-    private static final int CHUNK_SIZE_DEFAULT = 1024 * 1024; // 1MB
-
     private final ResourceResolverFactory resolverFactory;
 
     private final String chunkFolderPath;
@@ -22,10 +20,6 @@ public class RepoChunks implements Closeable, Flushable {
     private ChunkingOutputStream outputStream;
 
     private ChunkedInputStream inputStream;
-
-    public RepoChunks(ResourceResolverFactory resolverFactory, String chunkFolderPath) {
-        this(resolverFactory, chunkFolderPath, CHUNK_SIZE_DEFAULT);
-    }
 
     public RepoChunks(ResourceResolverFactory resolverFactory, String chunkFolderPath, int chunkSize) {
         this.resolverFactory = resolverFactory;
@@ -87,7 +81,7 @@ public class RepoChunks implements Closeable, Flushable {
         @Override
         public void write(int b) throws IOException {
             buffer.write(b);
-            if (buffer.size() >= chunkSize) {
+            if (buffer.size() >= chunkSize) { // TODO chunk on the closest NL if almost full
                 createNewChunk();
             }
         }

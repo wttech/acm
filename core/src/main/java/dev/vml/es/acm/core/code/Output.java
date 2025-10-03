@@ -1,6 +1,8 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.vml.es.acm.core.gui.SpaSettings;
+import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.repo.RepoChunks;
 import java.io.Flushable;
 import java.io.IOException;
@@ -80,12 +82,14 @@ public class Output implements Serializable, Flushable, AutoCloseable {
     @JsonIgnore
     private RepoChunks getRepoChunks() {
         if (repoChunks == null) {
-            ResourceResolverFactory resolverFactory =
-                    executionContext.getCodeContext().getOsgiContext().getService(ResourceResolverFactory.class);
+            OsgiContext osgi = executionContext.getCodeContext().getOsgiContext();
+            SpaSettings spaSettings = osgi.getService(SpaSettings.class);
+            ResourceResolverFactory resolverFactory = osgi.getService(ResourceResolverFactory.class);
             String chunkFolderPath = String.format(
                     "%s/outputs/%s",
                     ExecutionContext.varPath(executionContext.getId()), StringUtils.replace(name, "/", "-"));
-            repoChunks = new RepoChunks(resolverFactory, chunkFolderPath);
+            repoChunks =
+                    new RepoChunks(resolverFactory, chunkFolderPath, spaSettings.getExecutionFileOutputChunkSize());
         }
         return repoChunks;
     }
