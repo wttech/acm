@@ -1,4 +1,4 @@
-package dev.vml.es.acm.core.servlet;
+package dev.vml.es.acm.core.servlet.output;
 
 import dev.vml.es.acm.core.snippet.Snippet;
 import java.io.Serializable;

@@ -1,4 +1,4 @@
-package dev.vml.es.acm.core.servlet;
+package dev.vml.es.acm.core.servlet.input;
 
 import dev.vml.es.acm.core.code.Code;
 import dev.vml.es.acm.core.code.InputValues;

@@ -1,13 +1,13 @@
-package dev.vml.es.acm.core.servlet;
+package dev.vml.es.acm.core.servlet.input;
 
 import dev.vml.es.acm.core.code.Code;
 import java.io.Serializable;
 
-public class ScriptInput implements Serializable {
+public class DescribeCodeInput implements Serializable {
 
     private Code code;
 
-    public ScriptInput() {
+    public DescribeCodeInput() {
         // for deserialization
     }
 

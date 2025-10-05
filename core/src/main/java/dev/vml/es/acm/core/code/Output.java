@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.io.Closeable;
 import java.io.Flushable;
 import java.io.InputStream;

@@ -5,6 +5,7 @@ import static dev.vml.es.acm.core.util.ServletResult.ok;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 import static dev.vml.es.acm.core.util.ServletUtils.stringsParam;
 
+import dev.vml.es.acm.core.servlet.output.SnippetOutput;
 import dev.vml.es.acm.core.snippet.Snippet;
 import dev.vml.es.acm.core.snippet.SnippetRepository;
 import java.io.IOException;

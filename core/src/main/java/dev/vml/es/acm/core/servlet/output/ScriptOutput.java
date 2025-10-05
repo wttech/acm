@@ -1,4 +1,4 @@
-package dev.vml.es.acm.core.servlet;
+package dev.vml.es.acm.core.servlet.output;
 
 import dev.vml.es.acm.core.script.Script;
 import java.io.Serializable;

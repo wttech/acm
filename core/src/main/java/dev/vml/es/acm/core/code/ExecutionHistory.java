@@ -71,22 +71,27 @@ public class ExecutionHistory {
     private void saveOutputs(ContextualExecution execution, Resource entry) {
         for (Output output :
                 execution.getContext().getOutputs().getDefinitions().values()) {
-            RepoResource container = Repo.quiet(entry.getResourceResolver())
-                    .get(entry.getPath())
-                    .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, output.getName()))
-                    .ensure(JcrConstants.NT_UNSTRUCTURED);
-            RepoResource file = container.child(OUTPUT_FILE_RN);
-            try {
-                output.flush();
-            } catch (IOException e) {
-                throw new AcmException(
-                        String.format(
-                                "Output '%s' cannot be flushed before saving to the execution history!",
-                                output.getName()),
-                        e);
+            if (output instanceof FileOutput) {
+                saveFileOutput((FileOutput) output, entry);
             }
-            file.saveFile(output.getMimeType(), output.getInputStream());
         }
+    }
+
+    private void saveFileOutput(FileOutput output, Resource entry) {
+        RepoResource container = Repo.quiet(entry.getResourceResolver())
+                .get(entry.getPath())
+                .child(String.format("%s/%s", OUTPUT_FILES_CONTAINER_RN, output.getName()))
+                .ensure(JcrConstants.NT_UNSTRUCTURED);
+        RepoResource file = container.child(OUTPUT_FILE_RN);
+        try {
+            output.flush();
+        } catch (IOException e) {
+            throw new AcmException(
+                    String.format(
+                            "Output '%s' cannot be flushed before saving to the execution history!", output.getName()),
+                    e);
+        }
+        file.saveFile(output.getMimeType(), output.getInputStream());
     }
 
     public InputStream readOutputByName(Execution execution, String name) {

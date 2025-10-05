@@ -4,12 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.repo.RepoChunks;
-import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 
@@ -61,7 +59,7 @@ public class FileOutput extends Output {
             ResourceResolverFactory resolverFactory = osgi.getService(ResourceResolverFactory.class);
             String chunkFolderPath = String.format(
                     "%s/outputs/%s",
-                    ExecutionContext.varPath(executionContext.getId()), StringUtils.replace(name, "/", "-"));
+                    ExecutionContext.varPath(executionContext.getId()), StringUtils.replace(getName(), "/", "-"));
             repoChunks =
                     new RepoChunks(resolverFactory, chunkFolderPath, spaSettings.getExecutionFileOutputChunkSize());
         }

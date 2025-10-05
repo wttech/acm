@@ -6,6 +6,7 @@ import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 import static dev.vml.es.acm.core.util.ServletUtils.stringsParam;
 
 import dev.vml.es.acm.core.code.FileManager;
+import dev.vml.es.acm.core.servlet.output.FileOutput;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
