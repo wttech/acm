@@ -7,7 +7,8 @@ import Markdown from '../components/Markdown';
 import SnippetCode from '../components/SnippetCode';
 import { useNavigationTab } from '../hooks/navigation';
 import { toastRequest } from '../utils/api';
-import { Snippet, SnippetOutput } from '../utils/api.types';
+import { SnippetOutput } from '../types/main';
+import { Snippet } from '../types/snippet';
 
 const SnippetsPage = () => {
   const [snippets, setSnippets] = useState<SnippetOutput | null>(null);

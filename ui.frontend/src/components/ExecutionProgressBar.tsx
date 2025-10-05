@@ -3,7 +3,11 @@ import React, { useState } from 'react';
 import { useDeepCompareEffect, useInterval } from 'react-use';
 import { useFormatter } from '../hooks/formatter';
 import { apiRequest } from '../utils/api';
-import { Execution, ExecutionStatus, isExecutableScript, isExecutionPending, ScriptOutput, ScriptStats } from '../utils/api.types';
+import { isExecutableScript } from '../types/executable';
+import { isExecutionPending } from '../types/execution';
+import { ExecutionStatus } from '../types/execution';
+import { Execution } from '../types/execution';
+import { ScriptOutput, ScriptStats } from '../types/script';
 import { Strings } from '../utils/strings';
 
 interface ExecutionProgressBarProps {

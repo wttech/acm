@@ -19,7 +19,8 @@ import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import UserInfo from '../components/UserInfo';
 import { useFormatter } from '../hooks/formatter';
 import { toastRequest } from '../utils/api';
-import { ExecutionFormat, ExecutionOutput, ExecutionQueryParams, ExecutionStatus, ExecutionSummary } from '../utils/api.types';
+import { ExecutionFormat, ExecutionOutput, ExecutionQueryParams, ExecutionSummary } from '../types/main';
+import { ExecutionStatus } from '../types/execution';
 import { Dates } from '../utils/dates';
 import { Urls } from '../utils/url';
 

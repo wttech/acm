@@ -6,7 +6,7 @@ import DataRemove from '@spectrum-icons/workflow/DataRemove';
 import Flashlight from '@spectrum-icons/workflow/Flashlight';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
-import { EventType, QueueOutput } from '../utils/api.types.ts';
+import { EventType, QueueOutput } from '../types/main.ts';
 
 type ExecutionHistoryClearButtonProps = {
   onClear?: () => void;

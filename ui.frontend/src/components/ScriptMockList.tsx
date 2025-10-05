@@ -5,7 +5,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 import { useScripts } from '../hooks/script';
-import { InstanceType, ScriptType, instancePrefix } from '../utils/api.types';
+import { InstanceType, instancePrefix } from '../types/aem.ts';
+import { ScriptType } from '../types/script.ts';
 import ScriptsMockHelpButton from './ScriptsMockHelpButton.tsx';
 
 const ScriptMockList: React.FC = () => {

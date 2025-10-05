@@ -5,7 +5,7 @@ import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Launch from '@spectrum-icons/workflow/Launch';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api.ts';
-import { EventType, QueueOutput } from '../utils/api.types.ts';
+import { EventType, QueueOutput } from '../types/main.ts';
 
 type ExecutionsBootButtonProps = {
   onBoot?: () => void;

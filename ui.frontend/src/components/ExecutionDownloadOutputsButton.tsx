@@ -6,7 +6,8 @@ import FolderArchive from '@spectrum-icons/workflow/FolderArchive';
 import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import React, { useState } from 'react';
-import { Execution, Output, OutputNames } from '../utils/api.types.ts';
+import { Execution } from '../types/execution.ts';
+import { Output, OutputNames } from '../types/output.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
 interface ExecutionDownloadOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {

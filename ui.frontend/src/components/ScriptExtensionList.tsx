@@ -3,7 +3,7 @@ import NotFound from '@spectrum-icons/illustrations/NotFound';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScripts } from '../hooks/script';
-import { ScriptType } from '../utils/api.types';
+import { ScriptType } from '../types/script.ts';
 import ScriptsExtensionHelpButton from './ScriptsExtensionHelpButton.tsx';
 
 const ScriptExtensionList: React.FC = () => {

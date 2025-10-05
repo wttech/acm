@@ -6,11 +6,14 @@ import PlayCircle from '@spectrum-icons/workflow/PlayCircle';
 import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toastRequest } from '../utils/api';
-import { Description, ExecutableIdConsole, ExecutionStatus, Input, InputGroupDefault, InputValue, InputValues } from '../utils/api.types';
+import { ExecutableIdConsole } from '../types/executable.ts';
+import { ExecutionStatus } from '../types/execution.ts';
+import { Input, InputGroupDefault, InputValue, InputValues } from '../types/input.ts';
 import { Objects } from '../utils/objects';
 import { ToastTimeoutLong } from '../utils/spectrum.ts';
 import { Strings } from '../utils/strings';
 import CodeInput from './CodeInput.tsx';
+import { Description } from '../types/main.ts';
 
 interface CodeExecuteButtonProps {
   code: string;

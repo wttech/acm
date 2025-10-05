@@ -3,7 +3,7 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api';
-import { QueueOutput } from '../utils/api.types.ts';
+import { QueueOutput } from '../types/main.ts';
 
 type ExecutionsAbortButtonProps = {
   selectedKeys: string[];

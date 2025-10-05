@@ -123,17 +123,27 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
 
             // Dynamic outputs
             for (Output output : execution.getOutputs()) {
-                if (output instanceof FileOutput) {
-                    FileOutput fileOutput = (FileOutput) output;
-                    ZipEntry outputEntry = new ZipEntry(fileOutput.getDownloadName());
-                    zipStream.putNextEntry(outputEntry);
-                    try (InputStream outputStream =
-                            executionHistory.readOutputByName(execution, fileOutput.getName())) {
-                        IOUtils.copy(outputStream, zipStream);
-                    }
-                    zipStream.closeEntry();
-                } else {
-                    // TODO handle text outputs
+                switch (output.getType()) {
+                    case FILE:
+                        FileOutput fileOutput = (FileOutput) output;
+                        ZipEntry outputEntry = new ZipEntry(fileOutput.getDownloadName());
+                        zipStream.putNextEntry(outputEntry);
+                        try (InputStream outputStream =
+                                executionHistory.readOutputByName(execution, fileOutput.getName())) {
+                            IOUtils.copy(outputStream, zipStream);
+                        }
+                        zipStream.closeEntry();
+                        break;
+                    case TEXT:
+                        TextOutput textOutput = (TextOutput) output;
+                        ZipEntry textEntry = new ZipEntry(String.format("%s.md", textOutput.getName()));
+                        zipStream.putNextEntry(textEntry);
+                        zipStream.write(textOutput.getText().getBytes("UTF-8"));
+                        zipStream.closeEntry();
+                        break;
+                    default:
+                        LOG.warn("Execution output '{}' has unsupported type '{}'!", output.getName(), output.getType());
+                        break;
                 }
             }
         }
@@ -146,13 +156,20 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
             Execution execution,
             Output output)
             throws IOException {
-        if (output instanceof FileOutput) {
-            FileOutput fileOutput = (FileOutput) output;
-            respondDownload(response, fileOutput.getMimeType(), fileOutput.getDownloadName());
-            InputStream inputStream = executionHistory.readOutputByName(execution, name);
-            IOUtils.copy(inputStream, response.getOutputStream());
-        } else {
-            // TODO handle text outputs
+        switch (output.getType()) {
+            case FILE:
+                FileOutput fileOutput = (FileOutput) output;
+                respondDownload(response, fileOutput.getMimeType(), fileOutput.getDownloadName());
+                InputStream inputStream = executionHistory.readOutputByName(execution, name);
+                IOUtils.copy(inputStream, response.getOutputStream());
+                break;
+            case TEXT:
+                respondDownload(response, "text/markdown", name);
+                IOUtils.write(((TextOutput) output).getText(), response.getOutputStream(), "UTF-8");
+                break;
+            default:
+                respondJson(response, error(String.format("Execution output '%s' has unsupported type '%s'!", name, output.getType()).trim()));
+                return;
         }
     }
 

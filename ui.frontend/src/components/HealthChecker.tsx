@@ -13,7 +13,8 @@ import Settings from '@spectrum-icons/workflow/Settings';
 import UploadToCloud from '@spectrum-icons/workflow/UploadToCloud';
 import { ReactNode } from 'react';
 import { useAppState } from '../hooks/app.ts';
-import { HealthIssueSeverity, instancePrefix, InstanceType } from '../utils/api.types';
+import { HealthIssueSeverity } from '../types/health.ts';
+import { instancePrefix, InstanceType } from '../types/aem.ts';
 import { Strings } from '../utils/strings.ts';
 import CodeEditor from './CodeEditor';
 

@@ -7,7 +7,10 @@ import { useDeepCompareEffect } from 'react-use';
 import { useAppState } from '../hooks/app.ts';
 import { pollExecutionPending } from '../hooks/execution';
 import { apiRequest } from '../utils/api';
-import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
+import { QueueOutput } from '../types/main.ts';
+import { isExecutionPending } from '../types/execution.ts';
+import { ExecutionStatus } from '../types/execution.ts';
+import { Execution } from '../types/execution.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
 interface ExecutionAbortButtonProps {

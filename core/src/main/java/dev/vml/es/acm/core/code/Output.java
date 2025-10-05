@@ -10,16 +10,23 @@ public abstract class Output implements Serializable {
 
     private String description;
 
+    private OutputType type = OutputType.FILE; // TODO 'FILE'' here only for backward compatibility
+
     public Output() {
         // for deserialization
     }
 
-    public Output(String name) {
+    public Output(String name, OutputType type) {
         this.name = name;
+        this.type = type;
     }
 
     public String getName() {
         return name;
+    }
+
+    public OutputType getType() {
+        return type;
     }
 
     public String getLabel() {

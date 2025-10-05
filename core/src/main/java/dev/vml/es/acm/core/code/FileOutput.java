@@ -33,7 +33,7 @@ public class FileOutput extends Output implements Flushable, Closeable {
     }
 
     public FileOutput(String name, ExecutionContext executionContext) {
-        super(name);
+        super(name, OutputType.FILE);
         this.executionContext = executionContext;
     }
 

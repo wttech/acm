@@ -3,7 +3,7 @@ import Delete from '@spectrum-icons/workflow/Delete';
 import FileAdd from '@spectrum-icons/workflow/FileAdd';
 import { useState } from 'react';
 import { toastRequest } from '../utils/api';
-import { FileOutput } from '../utils/api.types.ts';
+import { FileOutput } from '../types/main.ts';
 
 interface FileFieldProps {
   value: string | string[];

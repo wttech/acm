@@ -71,7 +71,7 @@ public class ExecutionHistory {
     private void saveOutputs(ContextualExecution execution, Resource entry) {
         for (Output output :
                 execution.getContext().getOutputs().getDefinitions().values()) {
-            if (output instanceof FileOutput) {
+            if (OutputType.FILE.equals(output.getType())) {
                 saveFileOutput((FileOutput) output, entry);
             }
         }

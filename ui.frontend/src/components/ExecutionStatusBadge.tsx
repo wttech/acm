@@ -5,7 +5,7 @@ import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Clock from '@spectrum-icons/workflow/Clock';
 import Pause from '@spectrum-icons/workflow/Pause';
 import React from 'react';
-import { ExecutionStatus } from '../utils/api.types';
+import { ExecutionStatus } from '../types/execution';
 
 type ExecutionStatusProps = {
   value: ExecutionStatus;

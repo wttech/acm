@@ -9,7 +9,8 @@ import Footer from './components/Footer';
 import Header from './components/Header';
 import router from './router';
 import { apiRequest } from './utils/api';
-import { InstanceRole, InstanceType, State } from './utils/api.types';
+import { State } from './types/main.ts';
+import { InstanceRole, InstanceType } from './types/aem.ts';
 import { intervalToTimeout } from './utils/spectrum.ts';
 
 function App() {

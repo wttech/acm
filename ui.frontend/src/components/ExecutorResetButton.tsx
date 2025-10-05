@@ -5,7 +5,7 @@ import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import GearsDelete from '@spectrum-icons/workflow/GearsDelete';
 import React, { useState } from 'react';
 import { toastRequest } from '../utils/api.ts';
-import { EventType, QueueOutput } from '../utils/api.types.ts';
+import { EventType, QueueOutput } from '../types/main.ts';
 
 type ExecutionsResetButtonProps = {
   onReset?: () => void;
