@@ -14,7 +14,7 @@ import CodeEditor from '../components/CodeEditor.tsx';
 import ExecutableIdValue from '../components/ExecutableIdValue';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
-import ExecutionDownloadOutputsButton from '../components/ExecutionDownloadOutputsButton.tsx';
+import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsButton.tsx';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import Toggle from '../components/Toggle.tsx';
@@ -169,7 +169,7 @@ const ExecutionView = () => {
                       <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     </Toggle>
                     <Toggle when={!isExecutionPending(execution.status)}>
-                      <ExecutionDownloadOutputsButton variant="cta" execution={execution} />
+                      <ExecutionReviewOutputsButton variant="cta" execution={execution} />
                     </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>

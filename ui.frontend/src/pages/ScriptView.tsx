@@ -12,7 +12,8 @@ import CodeExecuteButton from '../components/CodeExecuteButton';
 import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation';
 import { InputValues } from '../types/input.ts';
 import { Description, ExecutionQueryParams, QueueOutput } from '../types/main.ts';
-import { Script, ScriptOutput, ScriptType } from '../types/script.ts';
+import { Script, ScriptType } from '../types/script.ts';
+import { ScriptOutput } from '../types/main.ts';
 import { toastRequest } from '../utils/api';
 import { Urls } from '../utils/url.ts';
 

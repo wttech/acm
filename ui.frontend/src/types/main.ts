@@ -2,6 +2,7 @@ import { InstanceRole, InstanceType } from './aem.ts';
 import { Execution, ExecutionStatus } from './execution.ts';
 import { HealthStatus } from './health.ts';
 import { Input, InputValue } from './input.ts';
+import { Script, ScriptStats } from './script.ts';
 import { Snippet } from './snippet.ts';
 import { Suggestion } from './suggestion.ts';
 
@@ -88,4 +89,8 @@ export enum EventType {
   EXECUTOR_RESET = 'executor_reset',
   HISTORY_CLEAR = 'history_clear',
   SCRIPT_SCHEDULER_BOOT = 'script_scheduler_boot',
-}
+}export type ScriptOutput = {
+  list: Script[];
+  stats: ScriptStats[];
+};
+

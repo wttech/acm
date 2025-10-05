@@ -7,18 +7,21 @@ import Help from '@spectrum-icons/workflow/Help';
 import Print from '@spectrum-icons/workflow/Print';
 import React, { useState } from 'react';
 import { Execution } from '../types/execution.ts';
-import { Output, OutputNames } from '../types/output.ts';
+import { Output, OutputNames, OutputType } from '../types/output.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
+import Magnify from '@spectrum-icons/workflow/Magnify';
 
-interface ExecutionDownloadOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {
+interface ExecutionReviewOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {
   execution: Execution;
 }
 
-const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonProps> = ({ execution, ...buttonProps }) => {
+const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> = ({ execution, ...buttonProps }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const outputs = execution.outputs || {};
   const outputEntries = Object.entries(outputs);
+  const outputFiles = outputEntries.filter(([, output]) => output.type === 'FILE');
+  const outputTexts = outputEntries.filter(([, output]) => output.type === 'TEXT'); // TODO use somewhere
 
   const handleOpenDialog = () => {
     setDialogOpen(true);
@@ -60,13 +63,13 @@ const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonPro
   return (
     <>
       <Button {...buttonProps} onPress={handleOpenDialog}>
-        <Download />
-        <Text>Download</Text>
+        <Magnify />
+        <Text>Review</Text>
       </Button>
       <DialogContainer onDismiss={handleCloseDialog}>
         {dialogOpen && (
           <Dialog minWidth="40vw" maxHeight="70vh">
-            <Heading>Download Outputs</Heading>
+            <Heading>Review Outputs</Heading>
             <Divider />
             <Content>
               <Flex direction="column" gap="size-200">
@@ -97,14 +100,14 @@ const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonPro
                     </Flex>
                   </View>
 
-                  {outputEntries.map(([key, output]) => (
+                  {outputFiles.map(([key, outputFile]) => (
                     <View key={key} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
                       <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
                         <Flex direction="column">
-                          <Text UNSAFE_style={{ fontWeight: 'bold' }}>{output.label || output.name}</Text>
-                          {output.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{output.description}</Text>}
+                          <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputFile.label || outputFile.name}</Text>
+                          {outputFile.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputFile.description}</Text>}
                         </Flex>
-                        <Button variant="primary" onPress={() => handleDownloadSingle(output)}>
+                        <Button variant="primary" onPress={() => handleDownloadSingle(outputFile)}>
                           <Download />
                           <Text>Download</Text>
                         </Button>
@@ -134,4 +137,4 @@ const ExecutionDownloadOutputsButton: React.FC<ExecutionDownloadOutputsButtonPro
   );
 };
 
-export default ExecutionDownloadOutputsButton;
+export default ExecutionReviewOutputsButton;

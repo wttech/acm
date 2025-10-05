@@ -25,11 +25,8 @@ export type ScriptStats = {
   averageDuration: number;
 };
 
-export type ScriptOutput = {
-  list: Script[];
-  stats: ScriptStats[];
-};
 export const ScriptRoot = '/conf/acm/settings/script';
+
 export const ScriptRoots: Record<ScriptType, string> = {
   MANUAL: '/conf/acm/settings/script/manual',
   AUTOMATIC: '/conf/acm/settings/script/automatic',

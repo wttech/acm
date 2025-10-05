@@ -10,7 +10,7 @@ import CompilationStatus from '../components/CompilationStatus';
 import ConsoleHelpButton from '../components/ConsoleHelpButton';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
-import ExecutionDownloadOutputsButton from '../components/ExecutionDownloadOutputsButton.tsx';
+import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsButton.tsx';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import ScriptExecutorStatusLight from '../components/ScriptExecutorStatusLight';
@@ -23,7 +23,7 @@ import { ExecutableIdConsole } from '../types/executable.ts';
 import { Execution, isExecutionPending } from '../types/execution.ts';
 import { InputValues } from '../types/input.ts';
 import { Description, QueueOutput } from '../types/main.ts';
-import { ScriptOutput } from '../types/script.ts';
+import { ScriptOutput } from '../types/main.ts';
 import { apiRequest, toastRequest } from '../utils/api';
 import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
 import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
@@ -163,7 +163,7 @@ const ConsolePage = () => {
                       <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     </Toggle>
                     <Toggle when={!executing && !!execution}>
-                      <ExecutionDownloadOutputsButton variant="cta" execution={execution!} isDisabled={executionType === 'compile'} />
+                      <ExecutionReviewOutputsButton variant="cta" execution={execution!} isDisabled={executionType === 'compile'} />
                     </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>
