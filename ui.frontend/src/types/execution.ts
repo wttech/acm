@@ -1,7 +1,6 @@
 import { Executable } from './executable';
-import { InputValues } from "./input";
-import { Outputs } from "./output";
-
+import { InputValues } from './input';
+import { Outputs } from './output';
 
 export type Execution = {
   id: string;
@@ -15,7 +14,8 @@ export type Execution = {
   error: string | null;
   inputs: InputValues;
   outputs: Outputs;
-};export enum ExecutionStatus {
+};
+export enum ExecutionStatus {
   QUEUED = 'QUEUED',
   ACTIVE = 'ACTIVE',
   PARSING = 'PARSING',
@@ -25,7 +25,7 @@ export type Execution = {
   FAILED = 'FAILED',
   SKIPPED = 'SKIPPED',
   ABORTED = 'ABORTED',
-  SUCCEEDED = 'SUCCEEDED'
+  SUCCEEDED = 'SUCCEEDED',
 }
 export function isExecutionNegative(status: ExecutionStatus | null | undefined): boolean {
   return !!status && [ExecutionStatus.FAILED, ExecutionStatus.ABORTED].includes(status);
@@ -42,4 +42,3 @@ export function isExecutionActive(status: ExecutionStatus | null | undefined): b
 export function isExecutionCompleted(status: ExecutionStatus | null | undefined): boolean {
   return !!status && [ExecutionStatus.FAILED, ExecutionStatus.SUCCEEDED].includes(status);
 }
-

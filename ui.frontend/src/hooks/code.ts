@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDebounce } from 'react-use';
-import { apiRequest } from '../utils/api.ts';
 import { ExecutableIdConsole } from '../types/executable.ts';
 import { Execution } from '../types/execution.ts';
+import { apiRequest } from '../utils/api.ts';
 
 const CompilationDelay = 1500;
 

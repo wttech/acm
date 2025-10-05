@@ -7,9 +7,8 @@ import Launch from '@spectrum-icons/workflow/Launch';
 import UploadToCloud from '@spectrum-icons/workflow/UploadToCloud';
 import React, { useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { ScriptRoots, ScriptType } from '../types/script';
 import { toastRequest } from '../utils/api';
-import { ScriptRoots } from '../types/script';
-import { ScriptType } from '../types/script';
 import { Strings } from '../utils/strings';
 
 interface CodeSaveButtonProps extends React.ComponentProps<typeof Button> {

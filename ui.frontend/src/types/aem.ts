@@ -1,4 +1,4 @@
-import { isProduction } from "../utils/node";
+import { isProduction } from '../utils/node';
 
 export enum NodeType {
   FOLDER = 'nt:folder',
@@ -8,21 +8,21 @@ export enum NodeType {
   REDIRECT = 'sling:redirect',
   ACL = 'rep:ACL',
   PAGE = 'cq:Page',
-  FILE = 'nt:file'
+  FILE = 'nt:file',
 }
 
 export enum JcrConstants {
-  JCR_CONTENT = 'jcr:content'
+  JCR_CONTENT = 'jcr:content',
 }
 export enum InstanceRole {
   AUTHOR = 'AUTHOR',
-  PUBLISH = 'PUBLISH'
+  PUBLISH = 'PUBLISH',
 }
 
 export enum InstanceType {
   ON_PREM = 'ON_PREM',
   CLOUD_SDK = 'CLOUD_SDK',
-  CLOUD_CONTAINER = 'CLOUD_CONTAINER'
+  CLOUD_CONTAINER = 'CLOUD_CONTAINER',
 }
 
 export const instancePrefix = isProduction() ? '' : 'http://localhost:5502';
@@ -41,11 +41,10 @@ export enum InstanceOsgiServicePid {
   INSTANCE_INFO = 'dev.vml.es.acm.core.osgi.InstanceInfo',
 
   NOTIFICATION_SLACK_FACTORY = 'dev.vml.es.acm.core.notification.slack.SlackFactory',
-  NOTIFICATION_TEAMS_FACTORY = 'dev.vml.es.acm.core.notification.teams.TeamsFactory'
+  NOTIFICATION_TEAMS_FACTORY = 'dev.vml.es.acm.core.notification.teams.TeamsFactory',
 }
 
 export function instanceOsgiServiceConfigUrl(pid: InstanceOsgiServicePid): string {
   return `${instancePrefix}/system/console/configMgr/${pid}`;
 }
 export const UserIdServicePrefix = 'acm-';
-

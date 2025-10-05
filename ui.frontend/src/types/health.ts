@@ -1,4 +1,3 @@
-
 export type HealthStatus = {
   healthy: boolean;
   issues: HealthIssue[];
@@ -17,11 +16,11 @@ export enum HealthIssueCategory {
   OSGI = 'OSGI',
   INSTALLER = 'INSTALLER',
   CODE_EXECUTOR = 'CODE_EXECUTOR',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 export enum HealthIssueSeverity {
   CRITICAL = 'CRITICAL',
   WARNING = 'WARNING',
-  INFO = 'INFO'
+  INFO = 'INFO',
 }

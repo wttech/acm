@@ -6,9 +6,9 @@ import { useEffect, useState } from 'react';
 import Markdown from '../components/Markdown';
 import SnippetCode from '../components/SnippetCode';
 import { useNavigationTab } from '../hooks/navigation';
-import { toastRequest } from '../utils/api';
 import { SnippetOutput } from '../types/main';
 import { Snippet } from '../types/snippet';
+import { toastRequest } from '../utils/api';
 
 const SnippetsPage = () => {
   const [snippets, setSnippets] = useState<SnippetOutput | null>(null);

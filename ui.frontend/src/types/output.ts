@@ -1,4 +1,3 @@
-
 export type Outputs = {
   [key: string]: Output;
 };
@@ -10,12 +9,12 @@ export type Output = {
   description?: string;
 };
 
-export type OutputFile = Output & {
+export type FileOutput = Output & {
   mimeType: string;
   downloadName: string;
 };
 
-export type OutputText = Output & {
+export type TextOutput = Output & {
   text: string;
 };
 

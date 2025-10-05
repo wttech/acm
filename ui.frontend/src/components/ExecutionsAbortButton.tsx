@@ -2,8 +2,8 @@ import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Heading, 
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import React, { useState } from 'react';
-import { toastRequest } from '../utils/api';
 import { QueueOutput } from '../types/main.ts';
+import { toastRequest } from '../utils/api';
 
 type ExecutionsAbortButtonProps = {
   selectedKeys: string[];

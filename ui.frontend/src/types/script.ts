@@ -1,12 +1,11 @@
-import { ExecutionSummary } from "./main";
 import { ExecutionStatus } from './execution';
-
+import { ExecutionSummary } from './main';
 
 export enum ScriptType {
   AUTOMATIC = 'AUTOMATIC',
   MANUAL = 'MANUAL',
   EXTENSION = 'EXTENSION',
-  MOCK = 'MOCK'
+  MOCK = 'MOCK',
 }
 
 export type Script = {
@@ -29,11 +28,11 @@ export type ScriptStats = {
 export type ScriptOutput = {
   list: Script[];
   stats: ScriptStats[];
-};export const ScriptRoot = '/conf/acm/settings/script';
+};
+export const ScriptRoot = '/conf/acm/settings/script';
 export const ScriptRoots: Record<ScriptType, string> = {
   MANUAL: '/conf/acm/settings/script/manual',
   AUTOMATIC: '/conf/acm/settings/script/automatic',
   EXTENSION: '/conf/acm/settings/script/extension',
   MOCK: '/conf/acm/settings/script/mock',
 };
-

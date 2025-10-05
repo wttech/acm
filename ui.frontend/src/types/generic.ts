@@ -1,4 +1,3 @@
-
 export type RangeValue = {
   start: number;
   end: number;

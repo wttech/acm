@@ -1,6 +1,5 @@
 import { useFormContext } from 'react-hook-form';
-import { isDateTimeInput, isMultiFileInput, isNumberInput, isPathInput } from '../types/input.ts';
-import { Input, InputValue } from '../types/input.ts';
+import { Input, InputValue, isDateTimeInput, isMultiFileInput, isNumberInput, isPathInput } from '../types/input.ts';
 import { Dates } from '../utils/dates';
 
 type ValidationResult = string | true | undefined;

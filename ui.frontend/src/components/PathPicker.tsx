@@ -31,10 +31,9 @@ import FolderSearch from '@spectrum-icons/workflow/FolderSearch';
 import Home from '@spectrum-icons/workflow/Home';
 import Project from '@spectrum-icons/workflow/Project';
 import { forwardRef, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-import { apiRequest } from '../utils/api';
+import { JcrConstants, NodeType } from '../types/aem.ts';
 import { AssistCodeOutput } from '../types/main.ts';
-import { JcrConstants } from '../types/aem.ts';
-import { NodeType } from '../types/aem.ts';
+import { apiRequest } from '../utils/api';
 import LoadingWrapper from './LoadingWrapper.tsx';
 
 const FOLDER_NODE_TYPES = [NodeType.FOLDER, NodeType.ORDERED_FOLDER, NodeType.SLING_FOLDER, NodeType.CQ_PROJECTS, NodeType.REDIRECT, NodeType.ACL] as const;

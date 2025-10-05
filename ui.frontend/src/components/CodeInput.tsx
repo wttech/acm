@@ -28,6 +28,8 @@ import React from 'react';
 import { Controller } from 'react-hook-form';
 import { useInput } from '../hooks/form.ts';
 import {
+  Input,
+  InputValue,
   isBoolInput,
   isColorInput,
   isDateTimeInput,
@@ -41,11 +43,7 @@ import {
   isRangeInput,
   isSelectInput,
   isStringInput,
-  isTextInput
-} from '../types/input.ts';
-import {
-  Input,
-  InputValue
+  isTextInput,
 } from '../types/input.ts';
 import { Dates } from '../utils/dates.ts';
 import { Strings } from '../utils/strings.ts';

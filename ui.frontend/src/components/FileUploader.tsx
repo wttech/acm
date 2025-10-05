@@ -2,8 +2,8 @@ import { Button, FileTrigger, Flex, Item, ListView, ProgressCircle, Text } from 
 import Delete from '@spectrum-icons/workflow/Delete';
 import FileAdd from '@spectrum-icons/workflow/FileAdd';
 import { useState } from 'react';
-import { toastRequest } from '../utils/api';
 import { FileOutput } from '../types/main.ts';
+import { toastRequest } from '../utils/api';
 
 interface FileFieldProps {
   value: string | string[];

@@ -1,4 +1,3 @@
-
 export type Snippet = {
   name: string;
   id: string;

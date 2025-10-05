@@ -1,4 +1,4 @@
-import { RangeValue, KeyValue, MapValue } from './generic';
+import { KeyValue, MapValue, RangeValue } from './generic';
 
 export type InputType = 'BOOL' | 'STRING' | 'TEXT' | 'SELECT' | 'MULTISELECT' | 'INTEGER' | 'DECIMAL' | 'DATETIME' | 'DATE' | 'TIME' | 'COLOR' | 'NUMBER_RANGE' | 'PATH' | 'FILE' | 'MULTIFILE' | 'MAP' | 'KEY_VALUE_LIST';
 export type InputValue = string | string[] | number | number[] | boolean | null | undefined | RangeValue | KeyValue | MapValue;
@@ -15,7 +15,8 @@ export type Input<T> = {
   required: boolean;
   group: string;
   validator?: string;
-};export type MinMaxInput = Input<InputValue> & {
+};
+export type MinMaxInput = Input<InputValue> & {
   min: number;
   max: number;
 };
@@ -47,9 +48,10 @@ export type ColorInput = Input<string> & {
   format: 'HEX' | 'RGBA' | 'HSL' | 'HSB';
 };
 
-export type NumberRangeInput = Input<RangeValue> & MinMaxInput & {
+export type NumberRangeInput = Input<RangeValue> &
+  MinMaxInput & {
     step: number;
-};
+  };
 
 export type SelectInput = Input<InputValue> & {
   options: Record<string, InputValue>;
@@ -138,4 +140,3 @@ export function isMapInput(input: Input<InputValue>): input is MapInput {
 export function isKeyValueListInput(input: Input<InputValue>): input is KeyValueListInput {
   return input.type === 'KEY_VALUE_LIST';
 }
-

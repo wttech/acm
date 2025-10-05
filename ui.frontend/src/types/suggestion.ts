@@ -1,9 +1,8 @@
-
 export enum SuggestionKind {
   VARIABLE = 'variable',
   RESOURCE = 'resource',
   SNIPPET = 'snippet',
-  CLASS = 'class'
+  CLASS = 'class',
 }
 
 export type Suggestion = {

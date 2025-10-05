@@ -1,5 +1,4 @@
-import { ScriptRoot } from "./script";
-
+import { ScriptRoot } from './script';
 
 export const ConsoleDefaultScriptPath = `${ScriptRoot}/template/core/console.groovy`;
 export const ConsoleDefaultScriptContent = `
