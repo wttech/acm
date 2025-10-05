@@ -142,7 +142,8 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
                         zipStream.closeEntry();
                         break;
                     default:
-                        LOG.warn("Execution output '{}' has unsupported type '{}'!", output.getName(), output.getType());
+                        LOG.warn(
+                                "Execution output '{}' has unsupported type '{}'!", output.getName(), output.getType());
                         break;
                 }
             }
@@ -168,7 +169,10 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
                 IOUtils.write(((TextOutput) output).getText(), response.getOutputStream(), "UTF-8");
                 break;
             default:
-                respondJson(response, error(String.format("Execution output '%s' has unsupported type '%s'!", name, output.getType()).trim()));
+                respondJson(
+                        response,
+                        error(String.format("Execution output '%s' has unsupported type '%s'!", name, output.getType())
+                                .trim()));
                 return;
         }
     }

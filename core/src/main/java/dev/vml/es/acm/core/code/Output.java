@@ -1,7 +1,18 @@
 package dev.vml.es.acm.core.code;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type",
+        defaultImpl = FileOutput.class) // TODO remove 'defaultImpl'
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = FileOutput.class, name = "FILE"),
+    @JsonSubTypes.Type(value = TextOutput.class, name = "TEXT")
+})
 public abstract class Output implements Serializable {
 
     private String name;
@@ -10,7 +21,7 @@ public abstract class Output implements Serializable {
 
     private String description;
 
-    private OutputType type = OutputType.FILE; // TODO 'FILE'' here only for backward compatibility
+    private OutputType type;
 
     public Output() {
         // for deserialization

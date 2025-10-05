@@ -25,7 +25,7 @@ public class TextOutput extends Output {
 
     public void setLinks(Map<String, String> links) {
         text = links.entrySet().stream()
-            .map(entry -> "- [" + entry.getKey() + "](" + entry.getValue() + ")")
-            .collect(Collectors.joining(System.lineSeparator()));
+                .map(entry -> "- [" + entry.getKey() + "](" + entry.getValue() + ")")
+                .collect(Collectors.joining(System.lineSeparator()));
     }
 }
