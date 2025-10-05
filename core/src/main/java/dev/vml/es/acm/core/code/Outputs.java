@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import com.day.jcr.vault.util.Text;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import dev.vml.es.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
@@ -57,6 +58,17 @@ public class Outputs implements Serializable, Closeable {
 
     public FileOutput file(String name, Closure<FileOutput> options) {
         FileOutput result = new FileOutput(name, executionContext);
+        GroovyUtils.with(result, options);
+        add(result);
+        return result;
+    }
+
+    public TextOutput text(String name) {
+        return text(name, null);
+    }
+
+    public TextOutput text(String name, Closure<TextOutput> options) {
+        TextOutput result = new TextOutput(name);
         GroovyUtils.with(result, options);
         add(result);
         return result;
