@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.repo.RepoChunks;
+import java.io.Closeable;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,7 +13,7 @@ import java.io.PrintStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 
-public class FileOutput extends Output {
+public class FileOutput extends Output implements Flushable, Closeable {
 
     @JsonIgnore
     private transient RepoChunks repoChunks;
@@ -67,19 +69,16 @@ public class FileOutput extends Output {
     }
 
     @JsonIgnore
-    @Override
     public OutputStream getOutputStream() {
         return getRepoChunks().getOutputStream();
     }
 
     @JsonIgnore
-    @Override
     public InputStream getInputStream() {
         return getRepoChunks().getInputStream();
     }
 
     @JsonIgnore
-    @Override
     public PrintStream getOut() {
         if (printStream == null) {
             printStream = new PrintStream(getOutputStream());

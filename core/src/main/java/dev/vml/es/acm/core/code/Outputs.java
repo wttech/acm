@@ -65,10 +65,12 @@ public class Outputs implements Serializable, Closeable {
     @Override
     public void close() {
         for (Output output : getDefinitions().values()) {
-            try {
-                output.close();
-            } catch (IOException e) {
-                throw new UncheckedIOException(String.format("Output '%s' cannot be closed!", output.getName()), e);
+            if (output instanceof Closeable) {
+                try {
+                    ((Closeable) output).close();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(String.format("Output '%s' cannot be closed!", output.getName()), e);
+                }
             }
         }
     }
