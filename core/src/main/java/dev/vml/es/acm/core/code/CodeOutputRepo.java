@@ -31,7 +31,7 @@ public class CodeOutputRepo implements CodeOutput {
         this.repoChunks = new RepoChunks(
                 resolverFactory,
                 String.format("%s/output", ExecutionContext.varPath(executionId)),
-                spaSettings.getExecutionConsoleOutputChunkSize());
+                spaSettings.getExecutionCodeOutputChunkSize());
     }
 
     @Override

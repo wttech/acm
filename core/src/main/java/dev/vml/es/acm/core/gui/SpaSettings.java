@@ -16,7 +16,7 @@ public class SpaSettings implements Serializable {
 
     private long executionPollInterval;
 
-    private int executionConsoleOutputChunkSize;
+    private int executionCodeOutputChunkSize;
 
     private int executionFileOutputChunkSize;
 
@@ -29,8 +29,8 @@ public class SpaSettings implements Serializable {
     protected void activate(Config config) {
         this.appStateInterval = config.appStateInterval();
         this.executionPollInterval = config.executionPollInterval();
-        this.executionConsoleOutputChunkSize = config.executionCodeOutputChunkSize();
-        this.executionFileOutputChunkSize = config.executionHistoryOutputChunkSize();
+        this.executionCodeOutputChunkSize = config.executionCodeOutputChunkSize();
+        this.executionFileOutputChunkSize = config.executionFileOutputChunkSize();
         this.scriptStatsLimit = config.scriptStatsLimit();
         this.scriptManagementEnabled = config.scriptManagementEnabled();
     }
@@ -43,8 +43,8 @@ public class SpaSettings implements Serializable {
         return executionPollInterval;
     }
 
-    public int getExecutionConsoleOutputChunkSize() {
-        return executionConsoleOutputChunkSize;
+    public int getExecutionCodeOutputChunkSize() {
+        return executionCodeOutputChunkSize;
     }
 
     public int getExecutionFileOutputChunkSize() {
@@ -75,8 +75,8 @@ public class SpaSettings implements Serializable {
         @AttributeDefinition(name = "Execution Code Output Chunk Size", description = "In bytes. Default is 2 MB.")
         int executionCodeOutputChunkSize() default 2 * 1024 * 1024;
 
-        @AttributeDefinition(name = "Execution History Output Chunk Size", description = "In bytes. Default is 10 MB.")
-        int executionHistoryOutputChunkSize() default 10 * 1024 * 1024;
+        @AttributeDefinition(name = "Execution File Output Chunk Size", description = "In bytes. Default is 10 MB.")
+        int executionFileOutputChunkSize() default 10 * 1024 * 1024;
 
         @AttributeDefinition(
                 name = "Script Stats Limit",

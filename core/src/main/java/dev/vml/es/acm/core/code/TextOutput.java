@@ -37,6 +37,6 @@ public class TextOutput extends Output {
     public String links(Map<String, String> links) {
         return links.entrySet().stream()
                 .map(entry -> "- [" + entry.getKey() + "](" + entry.getValue() + ")")
-                .collect(Collectors.joining(System.lineSeparator()));   
+                .collect(Collectors.joining(System.lineSeparator()));
     }
 }
