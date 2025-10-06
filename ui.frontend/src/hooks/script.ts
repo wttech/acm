@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ScriptType } from '../types/script';
 import { ScriptOutput } from '../types/main';
+import { ScriptType } from '../types/script';
 import { toastRequest } from '../utils/api';
 
 export function useScripts(type: ScriptType) {

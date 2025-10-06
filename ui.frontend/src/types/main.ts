@@ -89,8 +89,8 @@ export enum EventType {
   EXECUTOR_RESET = 'executor_reset',
   HISTORY_CLEAR = 'history_clear',
   SCRIPT_SCHEDULER_BOOT = 'script_scheduler_boot',
-}export type ScriptOutput = {
+}
+export type ScriptOutput = {
   list: Script[];
   stats: ScriptStats[];
 };
-

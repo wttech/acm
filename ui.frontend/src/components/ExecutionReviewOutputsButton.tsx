@@ -1,16 +1,16 @@
-import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Flex, Heading, Text, View, Well } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Flex, Heading, Item, TabList, TabPanels, Tabs, Text, View, Well } from '@adobe/react-spectrum';
 import { ToastQueue } from '@react-spectrum/toast';
 import Close from '@spectrum-icons/workflow/Close';
 import Download from '@spectrum-icons/workflow/Download';
 import FolderArchive from '@spectrum-icons/workflow/FolderArchive';
 import Help from '@spectrum-icons/workflow/Help';
+import Magnify from '@spectrum-icons/workflow/Magnify';
 import Print from '@spectrum-icons/workflow/Print';
 import React, { useState } from 'react';
+import Markdown from 'react-markdown';
 import { Execution } from '../types/execution.ts';
 import { FileOutput, Output, OutputNames, TextOutput } from '../types/output.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
-import Magnify from '@spectrum-icons/workflow/Magnify';
-import Markdown from 'react-markdown';
 
 interface ExecutionReviewOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {
   execution: Execution;
@@ -74,67 +74,79 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
             <Divider />
             <Content>
               <Flex direction="column" gap="size-200">
-                <Flex direction="column" gap="size-100">
+                <Tabs aria-label="Outputs">
+                  <TabList>
+                    <Item key="output-texts">Texts</Item>
+                    <Item key="output-files">Files</Item>
+                  </TabList>
+                  <TabPanels>
+                    <Item key="output-texts">
+                      <Flex marginY="size-100" direction="column" gap="size-100">
+                        {outputTexts.map((outputText) => (
+                          <View key={outputText.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
+                            <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
+                              <Flex direction="column">
+                                <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputText.label || outputText.name}</Text>
+                                {outputText.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputText.description}</Text>}
+                              </Flex>
+                            </Flex>
+                            <Markdown children={outputText.text} />
+                          </View>
+                        ))}
+                      </Flex>
+                    </Item>
+                    <Item key="output-files">
+                      <Flex marginY="size-100" direction="column" gap="size-100">
+                        <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
+                          <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
+                            <Flex direction="column">
+                              <Text UNSAFE_style={{ fontWeight: 'bold' }}>Complete Archive</Text>
+                              <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Console and generated outputs bundled as ZIP archive</Text>
+                            </Flex>
+                            <Button variant="cta" onPress={handleDownloadAll}>
+                              <FolderArchive />
+                              <Text>Download</Text>
+                            </Button>
+                          </Flex>
+                        </View>
 
-                 {outputTexts.map((outputText) => (
-                    <View key={outputText.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
-                      <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
-                        <Flex direction="column">
-                          <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputText.label || outputText.name}</Text>
-                          {outputText.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputText.description}</Text>}
-                        </Flex>
+                        <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
+                          <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
+                            <Flex direction="column">
+                              <Text UNSAFE_style={{ fontWeight: 'bold' }}>Console</Text>
+                              <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Execution logs and errors as text file</Text>
+                            </Flex>
+                            <Button variant="primary" onPress={handleDownloadConsole}>
+                              <Print />
+                              <Text>Download</Text>
+                            </Button>
+                          </Flex>
+                        </View>
+                        {outputFiles.map((outputFile) => (
+                          <View key={outputFile.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
+                            <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
+                              <Flex direction="column">
+                                <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputFile.label || outputFile.name}</Text>
+                                {outputFile.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputFile.description}</Text>}
+                              </Flex>
+                              <Button variant="primary" onPress={() => handleDownloadSingle(outputFile)}>
+                                <Download />
+                                <Text>Download</Text>
+                              </Button>
+                            </Flex>
+                          </View>
+                        ))}
+                        {outputValues.length === 0 && (
+                          <Well UNSAFE_style={{ padding: 'var(--spectrum-global-dimension-size-100)' }}>
+                            <Text>
+                              <Help size="XS" /> No additional outputs generated by this execution.
+                            </Text>
+                          </Well>
+                        )}
                       </Flex>
-                      <Markdown children={outputText.text} />
-                    </View>
-                  ))}
-
-                  <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
-                    <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
-                      <Flex direction="column">
-                        <Text UNSAFE_style={{ fontWeight: 'bold' }}>Complete Archive</Text>
-                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Console and generated outputs bundled as ZIP archive</Text>
-                      </Flex>
-                      <Button variant="cta" onPress={handleDownloadAll}>
-                        <FolderArchive />
-                        <Text>Download</Text>
-                      </Button>
-                    </Flex>
-                  </View>
-
-                  <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
-                    <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
-                      <Flex direction="column">
-                        <Text UNSAFE_style={{ fontWeight: 'bold' }}>Console</Text>
-                        <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Execution logs and errors as text file</Text>
-                      </Flex>
-                      <Button variant="primary" onPress={handleDownloadConsole}>
-                        <Print />
-                        <Text>Download</Text>
-                      </Button>
-                    </Flex>
-                  </View>
-                  {outputFiles.map((outputFile) => (
-                    <View key={outputFile.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
-                      <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
-                        <Flex direction="column">
-                          <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputFile.label || outputFile.name}</Text>
-                          {outputFile.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputFile.description}</Text>}
-                        </Flex>
-                        <Button variant="primary" onPress={() => handleDownloadSingle(outputFile)}>
-                          <Download />
-                          <Text>Download</Text>
-                        </Button>
-                      </Flex>
-                    </View>
-                  ))}
-                  {outputValues.length === 0 && (
-                    <Well UNSAFE_style={{ padding: 'var(--spectrum-global-dimension-size-100)' }}>
-                      <Text>
-                        <Help size="XS" /> No additional outputs generated by this execution.
-                      </Text>
-                    </Well>
-                  )}
-                </Flex>
+                    </Item>
+                  </TabPanels>
+                </Tabs>
               </Flex>
             </Content>
             <ButtonGroup>

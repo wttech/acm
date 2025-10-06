@@ -4,8 +4,8 @@ import { useDeepCompareEffect, useInterval } from 'react-use';
 import { useFormatter } from '../hooks/formatter';
 import { isExecutableScript } from '../types/executable';
 import { Execution, ExecutionStatus, isExecutionPending } from '../types/execution';
-import { ScriptStats } from '../types/script';
 import { ScriptOutput } from '../types/main';
+import { ScriptStats } from '../types/script';
 import { apiRequest } from '../utils/api';
 import { Strings } from '../utils/strings';
 
