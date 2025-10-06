@@ -12,7 +12,12 @@ public class TextOutput extends Output {
     }
 
     public TextOutput(String name) {
-        super(name, OutputType.TEXT);
+        super(name);
+    }
+
+    @Override
+    public OutputType getType() {
+        return OutputType.TEXT;
     }
 
     public String getText() {

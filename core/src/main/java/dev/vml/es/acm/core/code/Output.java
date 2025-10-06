@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
@@ -8,6 +9,7 @@ import java.io.Serializable;
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "type",
+        visible = true,
         defaultImpl = FileOutput.class) // TODO remove 'defaultImpl'
 @JsonSubTypes({
     @JsonSubTypes.Type(value = FileOutput.class, name = "FILE"),
@@ -21,24 +23,20 @@ public abstract class Output implements Serializable {
 
     private String description;
 
-    private OutputType type;
-
     public Output() {
         // for deserialization
     }
 
-    public Output(String name, OutputType type) {
+    public Output(String name) {
         this.name = name;
-        this.type = type;
     }
 
     public String getName() {
         return name;
     }
 
-    public OutputType getType() {
-        return type;
-    }
+    @JsonIgnore
+    public abstract OutputType getType();
 
     public String getLabel() {
         return label;

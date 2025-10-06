@@ -32,8 +32,13 @@ public class FileOutput extends Output implements Flushable, Closeable {
         super(); // for deserialization
     }
 
+    @Override
+    public OutputType getType() {
+        return OutputType.FILE;
+    }
+
     public FileOutput(String name, ExecutionContext executionContext) {
-        super(name, OutputType.FILE);
+        super(name);
         this.executionContext = executionContext;
     }
 
