@@ -71,7 +71,11 @@ public class RepoChunks implements Closeable, Flushable {
     }
 
     private class ChunkingOutputStream extends OutputStream {
+
+        private static final int LINE_LOOPBACK_CHARS_MAX = 1024;
+
         private final ByteArrayOutputStream buffer;
+
         private int chunkIndex = 1;
 
         ChunkingOutputStream() {
@@ -81,7 +85,7 @@ public class RepoChunks implements Closeable, Flushable {
         @Override
         public void write(int b) throws IOException {
             buffer.write(b);
-            if (buffer.size() >= chunkSize) { // TODO chunk on the closest NL if almost full
+            if (buffer.size() >= chunkSize) {
                 createNewChunk();
             }
         }
@@ -110,13 +114,28 @@ public class RepoChunks implements Closeable, Flushable {
         }
 
         private void createNewChunk() throws IOException {
+            byte[] data = buffer.toByteArray();
+            final int pivot = findPivot(data);
+
             ResolverUtils.useContentResolver(resolverFactory, null, resolver -> {
                 RepoResource chunkFolder = Repo.quiet(resolver).get(chunkFolderPath);
                 chunkFolder.ensureRegularFolder();
                 RepoResource chunk = chunkFolder.child(CHUNK_BASE_NAME + chunkIndex++);
-                chunk.saveFile(CHUNK_MIME_TYPE, new ByteArrayInputStream(buffer.toByteArray()));
+                chunk.saveFile(CHUNK_MIME_TYPE, new ByteArrayInputStream(data, 0, pivot));
             });
+
             buffer.reset();
+            if (pivot < data.length) {
+                buffer.write(data, pivot, data.length - pivot);
+            }
+        }
+
+        private int findPivot(byte[] data) {
+            int start = Math.max(0, data.length - LINE_LOOPBACK_CHARS_MAX);
+            for (int i = data.length - 1; i >= start; i--) {
+                if (data[i] == '\n' || data[i] == '\r') return i + 1;
+            }
+            return data.length;
         }
 
         @Override
