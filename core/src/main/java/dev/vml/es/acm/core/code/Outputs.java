@@ -63,7 +63,7 @@ public class Outputs implements Serializable, Closeable {
     }
 
     public TextOutput text(String name) {
-        return text(name, null);
+        return text(name, (Closure<TextOutput>) null);
     }
 
     public TextOutput text(String name, Closure<TextOutput> options) {

@@ -15,7 +15,7 @@ export type FileOutput = Output & {
 };
 
 export type TextOutput = Output & {
-  text: string;
+  value: string;
 };
 
 export type OutputType = 'FILE' | 'TEXT';

@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 public class TextOutput extends Output {
 
-    private String text;
+    private String value;
 
     public TextOutput() {
         super(); // for deserialization
@@ -20,17 +20,23 @@ public class TextOutput extends Output {
         return OutputType.TEXT;
     }
 
-    public String getText() {
-        return text;
+    public String getValue() {
+        return value;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setValue(String text) {
+        this.value = text;
     }
 
-    public void setLinks(Map<String, String> links) {
-        text = links.entrySet().stream()
+    // Utility methods
+
+    public String link(String name, String url) {
+        return "[" + name + "](" + url + ")";
+    }
+
+    public String links(Map<String, String> links) {
+        return links.entrySet().stream()
                 .map(entry -> "- [" + entry.getKey() + "](" + entry.getValue() + ")")
-                .collect(Collectors.joining(System.lineSeparator()));
+                .collect(Collectors.joining(System.lineSeparator()));   
     }
 }

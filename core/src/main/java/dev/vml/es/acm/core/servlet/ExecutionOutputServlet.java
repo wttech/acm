@@ -138,7 +138,7 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
                         TextOutput textOutput = (TextOutput) output;
                         ZipEntry textEntry = new ZipEntry(String.format("%s.md", textOutput.getName()));
                         zipStream.putNextEntry(textEntry);
-                        zipStream.write(textOutput.getText().getBytes("UTF-8"));
+                        zipStream.write(textOutput.getValue().getBytes("UTF-8"));
                         zipStream.closeEntry();
                         break;
                     default:
@@ -166,7 +166,7 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
                 break;
             case TEXT:
                 respondDownload(response, "text/markdown", name);
-                IOUtils.write(((TextOutput) output).getText(), response.getOutputStream(), "UTF-8");
+                IOUtils.write(((TextOutput) output).getValue(), response.getOutputStream(), "UTF-8");
                 break;
             default:
                 respondJson(

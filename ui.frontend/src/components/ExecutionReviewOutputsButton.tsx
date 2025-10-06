@@ -2,15 +2,18 @@ import { Button, ButtonGroup, Content, Dialog, DialogContainer, Divider, Flex, H
 import { ToastQueue } from '@react-spectrum/toast';
 import Close from '@spectrum-icons/workflow/Close';
 import Download from '@spectrum-icons/workflow/Download';
+import FileFolder from '@spectrum-icons/workflow/FileFolder';
 import FolderArchive from '@spectrum-icons/workflow/FolderArchive';
 import Help from '@spectrum-icons/workflow/Help';
-import Magnify from '@spectrum-icons/workflow/Magnify';
+import Info from '@spectrum-icons/workflow/Info';
+import Preview from '@spectrum-icons/workflow/Preview';
 import Print from '@spectrum-icons/workflow/Print';
 import React, { useState } from 'react';
-import Markdown from 'react-markdown';
 import { Execution } from '../types/execution.ts';
 import { FileOutput, Output, OutputNames, TextOutput } from '../types/output.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
+import { Strings } from '../utils/strings.ts';
+import Markdown from './Markdown.tsx';
 
 interface ExecutionReviewOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {
   execution: Execution;
@@ -64,7 +67,7 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
   return (
     <>
       <Button {...buttonProps} onPress={handleOpenDialog}>
-        <Magnify />
+        <Preview />
         <Text>Review</Text>
       </Button>
       <DialogContainer onDismiss={handleCloseDialog}>
@@ -73,34 +76,50 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
             <Heading>Review Outputs</Heading>
             <Divider />
             <Content>
-              <Flex direction="column" gap="size-200">
-                <Tabs aria-label="Outputs">
-                  <TabList>
-                    <Item key="output-texts">Texts</Item>
-                    <Item key="output-files">Files</Item>
-                  </TabList>
-                  <TabPanels>
-                    <Item key="output-texts">
-                      <Flex marginY="size-100" direction="column" gap="size-100">
-                        {outputTexts.map((outputText) => (
-                          <View key={outputText.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
-                            <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
-                              <Flex direction="column">
-                                <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputText.label || outputText.name}</Text>
-                                {outputText.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputText.description}</Text>}
-                              </Flex>
+              <Tabs aria-label="Outputs">
+                <TabList>
+                  {[
+                    ...(outputTexts.length > 0
+                      ? [
+                          <Item key="output-texts">
+                            <Info size="XS" />
+                            <Text>Texts</Text>
+                          </Item>,
+                        ]
+                      : []),
+                    <Item key="output-files">
+                      <FileFolder size="XS" />
+                      <Text>Files</Text>
+                    </Item>,
+                  ]}
+                </TabList>
+                <TabPanels>
+                  {[
+                    ...(outputTexts.length > 0
+                      ? [
+                          <Item key="output-texts">
+                            <Flex marginY="size-100" direction="column" gap="size-100">
+                              {outputTexts.map((outputText) => (
+                                <View key={outputText.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
+                                  <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
+                                    <Flex direction="column">
+                                      <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputText.label || Strings.capitalizeWords(outputText.name)}</Text>
+                                      {outputText.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputText.description}</Text>}
+                                    </Flex>
+                                  </Flex>
+                                  <Markdown>{outputText.value}</Markdown>
+                                </View>
+                              ))}
                             </Flex>
-                            <Markdown children={outputText.text} />
-                          </View>
-                        ))}
-                      </Flex>
-                    </Item>
+                          </Item>,
+                        ]
+                      : []),
                     <Item key="output-files">
                       <Flex marginY="size-100" direction="column" gap="size-100">
                         <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
                           <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
                             <Flex direction="column">
-                              <Text UNSAFE_style={{ fontWeight: 'bold' }}>Complete Archive</Text>
+                              <Text UNSAFE_style={{ fontWeight: 'bold' }}>Archive</Text>
                               <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Console and generated outputs bundled as ZIP archive</Text>
                             </Flex>
                             <Button variant="cta" onPress={handleDownloadAll}>
@@ -126,7 +145,7 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                           <View key={outputFile.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
                             <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
                               <Flex direction="column">
-                                <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputFile.label || outputFile.name}</Text>
+                                <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputFile.label || Strings.capitalizeWords(outputFile.name)}</Text>
                                 {outputFile.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputFile.description}</Text>}
                               </Flex>
                               <Button variant="primary" onPress={() => handleDownloadSingle(outputFile)}>
@@ -144,10 +163,10 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                           </Well>
                         )}
                       </Flex>
-                    </Item>
-                  </TabPanels>
-                </Tabs>
-              </Flex>
+                    </Item>,
+                  ]}
+                </TabPanels>
+              </Tabs>
             </Content>
             <ButtonGroup>
               <Button aria-label="Close" variant="secondary" onPress={handleCloseDialog}>
