@@ -18,6 +18,7 @@ public final class ExecutionId {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd/HH/mm");
         String formattedDate = now.format(formatter);
         String uuid = UUID.randomUUID().toString();
-        return String.format("%s-%s_%d", formattedDate, uuid, now.getNano());
+        int nanoFirst3Digits = now.getNano() / 1_000_000; // first 3 digits
+        return String.format("%s-%s_%d", formattedDate, uuid, nanoFirst3Digits);
     }
 }

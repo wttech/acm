@@ -2,8 +2,9 @@ import { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import { MarkdownString } from 'monaco-editor/esm/vs/base/common/htmlContent';
 import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
+import { AssistCodeOutput } from '../../../../types/main.ts';
+import { Suggestion, SuggestionKind } from '../../../../types/suggestion.ts';
 import { apiRequest } from '../../../api.ts';
-import { AssistCodeOutput, Suggestion, SuggestionKind } from '../../../api.types.ts';
 import { Strings } from '../../../strings.ts';
 import { GROOVY_LANGUAGE_ID } from '../../groovy.ts';
 

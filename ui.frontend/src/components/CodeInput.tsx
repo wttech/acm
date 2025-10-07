@@ -44,7 +44,7 @@ import {
   isSelectInput,
   isStringInput,
   isTextInput,
-} from '../utils/api.types.ts';
+} from '../types/input.ts';
 import { Dates } from '../utils/dates.ts';
 import { Strings } from '../utils/strings.ts';
 import FileUploader from './FileUploader.tsx';

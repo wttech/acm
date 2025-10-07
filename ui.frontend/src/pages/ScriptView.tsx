@@ -10,8 +10,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor';
 import CodeExecuteButton from '../components/CodeExecuteButton';
 import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation';
+import { InputValues } from '../types/input.ts';
+import { Description, ExecutionQueryParams, QueueOutput, ScriptOutput } from '../types/main.ts';
+import { Script, ScriptType } from '../types/script.ts';
 import { toastRequest } from '../utils/api';
-import { Description, ExecutionQueryParams, InputValues, QueueOutput, Script, ScriptOutput, ScriptType } from '../utils/api.types';
 import { Urls } from '../utils/url.ts';
 
 const toastTimeout = 3000;

@@ -14,15 +14,16 @@ import CodeEditor from '../components/CodeEditor.tsx';
 import ExecutableIdValue from '../components/ExecutableIdValue';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
-import ExecutionDownloadOutputsButton from '../components/ExecutionDownloadOutputsButton.tsx';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
+import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsButton.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import Toggle from '../components/Toggle.tsx';
 import { useAppState } from '../hooks/app.ts';
 import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
-import { isExecutableScript, isExecutionPending } from '../utils/api.types';
+import { isExecutableScript } from '../types/executable.ts';
+import { isExecutionPending } from '../types/execution.ts';
 import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
 import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
 import { Objects } from '../utils/objects';
@@ -168,7 +169,7 @@ const ExecutionView = () => {
                       <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     </Toggle>
                     <Toggle when={!isExecutionPending(execution.status)}>
-                      <ExecutionDownloadOutputsButton variant="cta" execution={execution} />
+                      <ExecutionReviewOutputsButton variant="cta" execution={execution} />
                     </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>

@@ -12,7 +12,7 @@ import Info from '@spectrum-icons/workflow/Info';
 import UserGroup from '@spectrum-icons/workflow/UserGroup';
 
 import { useAppState } from '../hooks/app';
-import { instanceOsgiServiceConfigUrl, InstanceOsgiServicePid, InstanceType } from '../utils/api.types';
+import { instanceOsgiServiceConfigUrl, InstanceOsgiServicePid, InstanceType } from '../types/aem';
 import ExecutionHistoryClearButton from './ExecutionHistoryClearButton';
 
 const Misc = () => {

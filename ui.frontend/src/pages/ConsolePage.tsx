@@ -10,16 +10,20 @@ import CompilationStatus from '../components/CompilationStatus';
 import ConsoleHelpButton from '../components/ConsoleHelpButton';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
-import ExecutionDownloadOutputsButton from '../components/ExecutionDownloadOutputsButton.tsx';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
+import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsButton.tsx';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import ScriptExecutorStatusLight from '../components/ScriptExecutorStatusLight';
 import Toggle from '../components/Toggle';
 import { useAppState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
+import { ConsoleDefaultScriptContent, ConsoleDefaultScriptPath } from '../types/console.ts';
+import { ExecutableIdConsole } from '../types/executable.ts';
+import { Execution, isExecutionPending } from '../types/execution.ts';
+import { InputValues } from '../types/input.ts';
+import { Description, QueueOutput, ScriptOutput } from '../types/main.ts';
 import { apiRequest, toastRequest } from '../utils/api';
-import { ConsoleDefaultScriptContent, ConsoleDefaultScriptPath, Description, ExecutableIdConsole, Execution, InputValues, isExecutionPending, QueueOutput, ScriptOutput } from '../utils/api.types.ts';
 import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
 import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
@@ -158,7 +162,7 @@ const ConsolePage = () => {
                       <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     </Toggle>
                     <Toggle when={!executing && !!execution}>
-                      <ExecutionDownloadOutputsButton variant="cta" execution={execution!} isDisabled={executionType === 'compile'} />
+                      <ExecutionReviewOutputsButton variant="cta" execution={execution!} isDisabled={executionType === 'compile'} />
                     </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>

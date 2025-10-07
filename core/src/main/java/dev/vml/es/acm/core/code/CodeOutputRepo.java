@@ -1,17 +1,12 @@
 package dev.vml.es.acm.core.code;
 
-import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.gui.SpaSettings;
-import dev.vml.es.acm.core.repo.Repo;
-import dev.vml.es.acm.core.repo.RepoResource;
-import dev.vml.es.acm.core.util.ResolverUtils;
+import dev.vml.es.acm.core.repo.RepoChunks;
 import java.io.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,74 +15,29 @@ public class CodeOutputRepo implements CodeOutput {
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeOutputRepo.class);
 
-    private static final String MIME_TYPE = "text/plain";
-
-    private static final String OUTPUT_ROOT = "output";
-
     private static final int SCHEDULER_TERMINATION_TIMEOUT_SECONDS = 5;
-
-    private final ResourceResolverFactory resolverFactory;
 
     private SpaSettings spaSettings;
 
     private final String executionId;
 
-    private final ByteArrayOutputStream buffer;
+    private final RepoChunks repoChunks;
 
-    private ScheduledExecutorService scheduler;
+    private ScheduledExecutorService asyncFlushScheduler;
 
     public CodeOutputRepo(ResourceResolverFactory resolverFactory, SpaSettings spaSettings, String executionId) {
-        this.resolverFactory = resolverFactory;
         this.spaSettings = spaSettings;
         this.executionId = executionId;
-        this.buffer = new ByteArrayOutputStream();
-    }
-
-    private void startAsyncSave() {
-        if (scheduler == null) {
-            scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.scheduleWithFixedDelay(
-                    this::saveToRepo,
-                    0,
-                    Math.round(0.8 * spaSettings.getExecutionPollInterval()),
-                    TimeUnit.MILLISECONDS);
-        }
-    }
-
-    private RepoResource getFile(ResourceResolver resolver) {
-        return Repo.quiet(resolver)
-                .get(String.format(
-                        "%s/%s/%s_output.txt",
-                        AcmConstants.VAR_ROOT, OUTPUT_ROOT, StringUtils.replace(executionId, "/", "-")));
-    }
-
-    private void saveToRepo() {
-        byte[] data = buffer.toByteArray();
-        if (data.length == 0) {
-            return;
-        }
-
-        try {
-            ResolverUtils.useContentResolver(resolverFactory, null, resolver -> {
-                RepoResource dataResource = getFile(resolver);
-                dataResource.parent().ensureRegularFolder();
-                dataResource.saveFile(MIME_TYPE, new ByteArrayInputStream(data));
-            });
-        } catch (Exception e) {
-            LOG.error("Output repo cannot save data for execution ID '{}'", executionId, e);
-        }
+        this.repoChunks = new RepoChunks(
+                resolverFactory,
+                String.format("%s/output", ExecutionContext.varPath(executionId)),
+                spaSettings.getExecutionCodeOutputChunkSize());
     }
 
     @Override
     public InputStream read() {
         try {
-            return ResolverUtils.queryContentResolver(resolverFactory, null, resolver -> {
-                RepoResource resource = getFile(resolver);
-                if (!resource.exists()) {
-                    return new ByteArrayInputStream(new byte[0]);
-                }
-                return resource.readFileAsStream();
-            });
+            return repoChunks.getInputStream();
         } catch (Exception e) {
             throw new AcmException(
                     String.format("Output repo cannot open for reading for execution ID '%s'", executionId), e);
@@ -96,38 +46,45 @@ public class CodeOutputRepo implements CodeOutput {
 
     @Override
     public OutputStream write() {
-        startAsyncSave();
-        return buffer;
+        startAsyncFlush();
+        return repoChunks.getOutputStream();
     }
 
     @Override
     public void flush() {
-        saveToRepo();
+        try {
+            repoChunks.flush();
+        } catch (IOException e) {
+            LOG.error("Output repo cannot flush for execution ID '{}'", executionId, e);
+        }
     }
 
     @Override
     public void close() {
-        if (scheduler != null) {
-            scheduler.shutdown();
+        stopAsyncFlush();
+        try {
+            repoChunks.close();
+        } catch (IOException e) {
+            LOG.error("Output repo cannot close for execution ID '{}'", executionId, e);
+        }
+    }
+
+    private void startAsyncFlush() {
+        if (asyncFlushScheduler == null) {
+            asyncFlushScheduler = Executors.newSingleThreadScheduledExecutor();
+            asyncFlushScheduler.scheduleWithFixedDelay(
+                    this::flush, 0, Math.round(0.8 * spaSettings.getExecutionPollInterval()), TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private void stopAsyncFlush() {
+        if (asyncFlushScheduler != null) {
+            asyncFlushScheduler.shutdown();
             try {
-                scheduler.awaitTermination(SCHEDULER_TERMINATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                asyncFlushScheduler.awaitTermination(SCHEDULER_TERMINATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-        }
-        deleteFromRepo();
-    }
-
-    private void deleteFromRepo() {
-        try {
-            ResolverUtils.useContentResolver(resolverFactory, null, resolver -> {
-                RepoResource fileResource = getFile(resolver);
-                if (fileResource.exists()) {
-                    fileResource.delete();
-                }
-            });
-        } catch (Exception e) {
-            LOG.error("Output repo cannot clean up data for execution ID '{}'", executionId, e);
         }
     }
 }

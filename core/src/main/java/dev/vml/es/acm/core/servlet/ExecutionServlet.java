@@ -4,6 +4,7 @@ import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.*;
 
 import dev.vml.es.acm.core.code.*;
+import dev.vml.es.acm.core.servlet.output.ExecutionOutput;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -5,8 +5,8 @@ import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import DataRemove from '@spectrum-icons/workflow/DataRemove';
 import Flashlight from '@spectrum-icons/workflow/Flashlight';
 import React, { useState } from 'react';
+import { EventType, QueueOutput } from '../types/main.ts';
 import { toastRequest } from '../utils/api';
-import { EventType, QueueOutput } from '../utils/api.types.ts';
 
 type ExecutionHistoryClearButtonProps = {
   onClear?: () => void;

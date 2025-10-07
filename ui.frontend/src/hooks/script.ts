@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ScriptOutput } from '../types/main';
+import { ScriptType } from '../types/script';
 import { toastRequest } from '../utils/api';
-import { ScriptOutput, ScriptType } from '../utils/api.types';
 
 export function useScripts(type: ScriptType) {
   const [scripts, setScripts] = useState<ScriptOutput | null>(null);

@@ -1,6 +1,6 @@
 import { Content, ContextualHelp, Flex, Heading, Link, Text } from '@adobe/react-spectrum';
 import React from 'react';
-import { UserIdServicePrefix } from '../utils/api.types';
+import { UserIdServicePrefix } from '../types/aem';
 import { Strings } from '../utils/strings';
 
 type UserInfoProps = {

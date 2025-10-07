@@ -1,8 +1,9 @@
 import { ToastQueue } from '@react-spectrum/toast';
 import { useState } from 'react';
 import { useInterval } from 'react-use';
+import { Execution, ExecutionStatus, isExecutionPending } from '../types/execution';
+import { QueueOutput } from '../types/main';
 import { apiRequest } from '../utils/api';
-import { Execution, ExecutionStatus, isExecutionPending, QueueOutput } from '../utils/api.types';
 import { intervalToTimeout, ToastTimeoutQuick } from '../utils/spectrum';
 import { useAppState } from './app';
 import { useFormatter } from './formatter';

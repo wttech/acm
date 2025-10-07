@@ -1,6 +1,7 @@
 import { Badge, Text } from '@adobe/react-spectrum';
 import React from 'react';
-import { ExecutionStatus, isExecutionCompleted, ScriptStats } from '../utils/api.types';
+import { ExecutionStatus, isExecutionCompleted } from '../types/execution';
+import { ScriptStats } from '../types/script';
 
 interface ExecutionStatsBadgeProps {
   stats: ScriptStats;

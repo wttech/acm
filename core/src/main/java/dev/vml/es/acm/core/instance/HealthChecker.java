@@ -248,7 +248,8 @@ public class HealthChecker implements EventHandler {
                 ExecutionMode.RUN,
                 Code.consoleMinimal(),
                 new InputValues(),
-                resourceResolver)) {
+                resourceResolver,
+                new CodeOutputMemory())) {
             context.setHistory(false);
             context.setLocking(false);
 

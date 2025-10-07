@@ -4,6 +4,7 @@ import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.*;
 
 import dev.vml.es.acm.core.code.*;
+import dev.vml.es.acm.core.servlet.output.ExecutionOutput;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -122,12 +123,29 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
 
             // Dynamic outputs
             for (Output output : execution.getOutputs()) {
-                ZipEntry outputEntry = new ZipEntry(output.getDownloadName());
-                zipStream.putNextEntry(outputEntry);
-                try (InputStream outputStream = executionHistory.readOutputByName(execution, output.getName())) {
-                    IOUtils.copy(outputStream, zipStream);
+                switch (output.getType()) {
+                    case FILE:
+                        FileOutput fileOutput = (FileOutput) output;
+                        ZipEntry outputEntry = new ZipEntry(fileOutput.getDownloadName());
+                        zipStream.putNextEntry(outputEntry);
+                        try (InputStream outputStream =
+                                executionHistory.readOutputByName(execution, fileOutput.getName())) {
+                            IOUtils.copy(outputStream, zipStream);
+                        }
+                        zipStream.closeEntry();
+                        break;
+                    case TEXT:
+                        TextOutput textOutput = (TextOutput) output;
+                        ZipEntry textEntry = new ZipEntry(String.format("%s.md", textOutput.getName()));
+                        zipStream.putNextEntry(textEntry);
+                        zipStream.write(textOutput.getValue().getBytes("UTF-8"));
+                        zipStream.closeEntry();
+                        break;
+                    default:
+                        LOG.warn(
+                                "Execution output '{}' has unsupported type '{}'!", output.getName(), output.getType());
+                        break;
                 }
-                zipStream.closeEntry();
             }
         }
     }
@@ -139,9 +157,24 @@ public class ExecutionOutputServlet extends SlingAllMethodsServlet {
             Execution execution,
             Output output)
             throws IOException {
-        respondDownload(response, output.getMimeType(), output.getDownloadName());
-        InputStream inputStream = executionHistory.readOutputByName(execution, name);
-        IOUtils.copy(inputStream, response.getOutputStream());
+        switch (output.getType()) {
+            case FILE:
+                FileOutput fileOutput = (FileOutput) output;
+                respondDownload(response, fileOutput.getMimeType(), fileOutput.getDownloadName());
+                InputStream inputStream = executionHistory.readOutputByName(execution, name);
+                IOUtils.copy(inputStream, response.getOutputStream());
+                break;
+            case TEXT:
+                respondDownload(response, "text/markdown", name);
+                IOUtils.write(((TextOutput) output).getValue(), response.getOutputStream(), "UTF-8");
+                break;
+            default:
+                respondJson(
+                        response,
+                        error(String.format("Execution output '%s' has unsupported type '%s'!", name, output.getType())
+                                .trim()));
+                return;
+        }
     }
 
     private void respondDownload(SlingHttpServletResponse response, String mimeType, String fileName) {

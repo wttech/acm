@@ -3,7 +3,7 @@ import Draft from '@spectrum-icons/workflow/Draft';
 import FlashOn from '@spectrum-icons/workflow/FlashOn';
 import Hand from '@spectrum-icons/workflow/Hand';
 import React from 'react';
-import { isExecutableConsole } from '../utils/api.types';
+import { isExecutableConsole } from '../types/executable.ts';
 import { Strings } from '../utils/strings.ts';
 
 interface ExecutableIdValueProps {

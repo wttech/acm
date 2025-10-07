@@ -4,6 +4,8 @@ import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.*;
 
 import dev.vml.es.acm.core.code.*;
+import dev.vml.es.acm.core.servlet.input.QueueCodeInput;
+import dev.vml.es.acm.core.servlet.output.QueueOutput;
 import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
 import java.util.Collections;
@@ -60,7 +62,8 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                     ExecutionMode.CHECK,
                     input.getCode(),
                     input.getInputs(),
-                    request.getResourceResolver())) {
+                    request.getResourceResolver(),
+                    new CodeOutputMemory())) {
                 Execution checkExecution = executor.execute(context);
                 if (checkExecution.getStatus() == ExecutionStatus.SKIPPED) {
                     QueueOutput output = new QueueOutput(Collections.singletonList(checkExecution));

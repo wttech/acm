@@ -2,8 +2,11 @@ import { Meter, ProgressBar } from '@adobe/react-spectrum';
 import React, { useState } from 'react';
 import { useDeepCompareEffect, useInterval } from 'react-use';
 import { useFormatter } from '../hooks/formatter';
+import { isExecutableScript } from '../types/executable';
+import { Execution, ExecutionStatus, isExecutionPending } from '../types/execution';
+import { ScriptOutput } from '../types/main';
+import { ScriptStats } from '../types/script';
 import { apiRequest } from '../utils/api';
-import { Execution, ExecutionStatus, isExecutableScript, isExecutionPending, ScriptOutput, ScriptStats } from '../utils/api.types';
 import { Strings } from '../utils/strings';
 
 interface ExecutionProgressBarProps {

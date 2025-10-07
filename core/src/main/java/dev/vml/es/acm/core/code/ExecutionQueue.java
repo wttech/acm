@@ -196,7 +196,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
         ExecutionContextOptions contextOptions = ExecutionContextOptions.fromJob(job);
-        QueuedExecution queuedExecution = new QueuedExecution(executor, job, new CodeOutputString());
+        QueuedExecution queuedExecution = new QueuedExecution(executor, job, new CodeOutputMemory());
 
         LOG.debug("Execution started '{}'", queuedExecution);
 
@@ -260,11 +260,20 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                         contextOptions.getExecutionMode(),
                         execution.getExecutable(),
                         contextOptions.getInputs(),
-                        resolver)) {
+                        resolver,
+                        determineOutput(
+                                contextOptions.getExecutionMode(),
+                                execution.getJob().getId()))) {
             return executor.execute(context);
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
         }
+    }
+
+    private CodeOutput determineOutput(ExecutionMode mode, String executionId) {
+        return mode == ExecutionMode.RUN
+                ? new CodeOutputRepo(resourceResolverFactory, spaSettings, executionId)
+                : new CodeOutputMemory();
     }
 
     public void reset() {

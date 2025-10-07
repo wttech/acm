@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { State } from './utils/api.types';
+import { State } from './types/main';
 
 const AppContext = createContext<State | undefined>(undefined);
 

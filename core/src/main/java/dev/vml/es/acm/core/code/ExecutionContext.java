@@ -1,11 +1,20 @@
 package dev.vml.es.acm.core.code;
 
-import dev.vml.es.acm.core.gui.SpaSettings;
+import dev.vml.es.acm.core.AcmConstants;
+import dev.vml.es.acm.core.repo.Repo;
+import dev.vml.es.acm.core.util.ResolverUtils;
 import groovy.lang.Binding;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.slf4j.Logger;
 
 public class ExecutionContext implements AutoCloseable {
+
+    public static final String VAR_ROOT = AcmConstants.VAR_ROOT + "/execution/context";
+
+    public static String varPath(String executionId) {
+        return String.format("%s/%s", VAR_ROOT, StringUtils.replace(executionId, "/", "-"));
+    }
 
     private final String id;
 
@@ -19,7 +28,7 @@ public class ExecutionContext implements AutoCloseable {
 
     private final CodeContext codeContext;
 
-    private final CodeOutput output;
+    private final CodeOutput codeOutput;
 
     private final CodePrintStream printStream;
 
@@ -46,7 +55,8 @@ public class ExecutionContext implements AutoCloseable {
             Executor executor,
             Executable executable,
             InputValues inputValues,
-            CodeContext codeContext) {
+            CodeContext codeContext,
+            CodeOutput codeOutput) {
         this.id = id;
         this.userId = userId;
         this.mode = mode;
@@ -54,23 +64,22 @@ public class ExecutionContext implements AutoCloseable {
         this.executable = executable;
         this.inputValues = inputValues;
         this.codeContext = codeContext;
-        this.output = determineOutput(mode, codeContext, id);
-        this.printStream = new CodePrintStream(output.write(), String.format("%s|%s", executable.getId(), id));
+        this.codeOutput = codeOutput;
+        this.printStream = new CodePrintStream(codeOutput.write(), String.format("%s|%s", executable.getId(), id));
         this.schedules = new Schedules();
         this.conditions = new Conditions(this);
         this.inputs = new Inputs();
-        this.outputs = new Outputs();
+        this.outputs = new Outputs(this);
 
         customizeBinding();
     }
 
-    private CodeOutput determineOutput(ExecutionMode mode, CodeContext codeContext, String id) {
-        return mode == ExecutionMode.RUN
-                ? new CodeOutputRepo(
-                        codeContext.getOsgiContext().getService(ResourceResolverFactory.class),
-                        codeContext.getOsgiContext().getService(SpaSettings.class),
-                        id)
-                : new CodeOutputString();
+    private void cleanOutputs() {
+        ResourceResolverFactory resolverFactory =
+                codeContext.getOsgiContext().getService(ResourceResolverFactory.class);
+        ResolverUtils.useContentResolver(resolverFactory, null, resolver -> {
+            Repo.quiet(resolver).get(ExecutionContext.varPath(getId())).delete();
+        });
     }
 
     public String getId() {
@@ -93,8 +102,13 @@ public class ExecutionContext implements AutoCloseable {
         return codeContext;
     }
 
+    public CodeOutput getCodeOutput() {
+        return codeOutput;
+    }
+
+    @Deprecated
     public CodeOutput getOutput() {
-        return output;
+        return getCodeOutput();
     }
 
     public CodePrintStream getOut() {
@@ -172,7 +186,9 @@ public class ExecutionContext implements AutoCloseable {
     @Override
     public void close() {
         printStream.close();
-        output.close();
+        codeOutput.close();
+        outputs.close();
+        cleanOutputs();
     }
 
     public void variable(String name, Object value) {

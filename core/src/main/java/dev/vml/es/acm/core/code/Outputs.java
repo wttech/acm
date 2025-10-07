@@ -3,13 +3,22 @@ package dev.vml.es.acm.core.code;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import dev.vml.es.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Outputs implements Serializable {
+public class Outputs implements Serializable, Closeable {
 
     private final Map<String, Output> definitions = new LinkedHashMap<>();
+
+    private final transient ExecutionContext executionContext;
+
+    public Outputs(ExecutionContext executionContext) {
+        this.executionContext = executionContext;
+    }
 
     public Output get(String name) {
         Output result = definitions.get(name);
@@ -32,14 +41,48 @@ public class Outputs implements Serializable {
         return definitions;
     }
 
-    public Output make(String name) {
-        return make(name, null);
+    @Deprecated
+    public FileOutput make(String name) {
+        return file(name);
     }
 
-    public Output make(String name, Closure<Output> options) {
-        Output result = new Output(name);
+    @Deprecated
+    public FileOutput make(String name, Closure<FileOutput> options) {
+        return file(name, options);
+    }
+
+    public FileOutput file(String name) {
+        return file(name, null);
+    }
+
+    public FileOutput file(String name, Closure<FileOutput> options) {
+        FileOutput result = new FileOutput(name, executionContext);
         GroovyUtils.with(result, options);
         add(result);
         return result;
+    }
+
+    public TextOutput text(String name) {
+        return text(name, (Closure<TextOutput>) null);
+    }
+
+    public TextOutput text(String name, Closure<TextOutput> options) {
+        TextOutput result = new TextOutput(name);
+        GroovyUtils.with(result, options);
+        add(result);
+        return result;
+    }
+
+    @Override
+    public void close() {
+        for (Output output : getDefinitions().values()) {
+            if (output instanceof Closeable) {
+                try {
+                    ((Closeable) output).close();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(String.format("Output '%s' cannot be closed!", output.getName()), e);
+                }
+            }
+        }
     }
 }

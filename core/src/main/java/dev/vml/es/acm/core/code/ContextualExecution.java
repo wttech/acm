@@ -78,8 +78,8 @@ public class ContextualExecution implements Execution {
 
     @Override
     public String getOutput() {
-        context.getOutput().flush();
-        try (InputStream stream = context.getOutput().read()) {
+        context.getCodeOutput().flush();
+        try (InputStream stream = context.getCodeOutput().read()) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
         } catch (Exception e) {
             return null;
@@ -92,8 +92,8 @@ public class ContextualExecution implements Execution {
     }
 
     public InputStream readOutput() throws AcmException {
-        context.getOutput().flush();
-        return context.getOutput().read();
+        context.getCodeOutput().flush();
+        return context.getCodeOutput().read();
     }
 
     @Override
