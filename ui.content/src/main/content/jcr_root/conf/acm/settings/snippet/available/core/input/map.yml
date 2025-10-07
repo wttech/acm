@@ -1,7 +1,7 @@
 group: Input
 name: input_map
 content: |
-  inputs.map("${1:name}") { label = "${2:Label}"; value = ["${3:key}": "${4:value}"] }
+  inputs.map("${1:name}") { label = "${2:label}"; value = ["${3:key}": "${4:value}"] }
 documentation: |
   An input that allows to input a map of key-value pairs.
   

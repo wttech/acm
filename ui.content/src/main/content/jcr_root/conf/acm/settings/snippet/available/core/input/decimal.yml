@@ -1,7 +1,7 @@
 group: Input
 name: input_decimal
 content: |
-  inputs.decimalNumber("${1:name}") { label = "${2:Label}"; value = ${3:value} }
+  inputs.decimalNumber("${1:name}") { label = "${2:label}"; value = ${3:value} }
 documentation: |
   An input holding a decimal number value.<br>
   Can be displayed as `input()` or `slider()`.

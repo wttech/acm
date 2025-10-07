@@ -1,7 +1,7 @@
 group: Input
 name: input_key_value_list
 content: |
-  inputs.keyValueList("${1:name}") { label = "${2:Label}"; value = [ ["${3:key}", "${4:value}"] ] }
+  inputs.keyValueList("${1:name}") { label = "${2:label}"; value = [ ["${3:key}", "${4:value}"] ] }
 documentation: |
   An input that allows to input a list of key-value pairs.
   

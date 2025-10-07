@@ -1,7 +1,7 @@
 group: Input
 name: input_color
 content: |
-  inputs.color("${1:name}") { label = "${2:Label}"; value = ${3:value} }
+  inputs.color("${1:name}") { label = "${2:label}"; value = ${3:value} }
 documentation: |
     An input that allows to choose a value from color picker.<br>
     Supported formats: `rgba()` (default), `hex()`, `hsl()`, `hsb()`.

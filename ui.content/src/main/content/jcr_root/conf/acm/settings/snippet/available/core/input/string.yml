@@ -1,7 +1,7 @@
 group: Input
 name: input_string
 content: |
-  inputs.string("${1:name}") { label = "${2:Label}"; value = "${3:value}" }
+  inputs.string("${1:name}") { label = "${2:label}"; value = "${3:value}" }
 documentation: |
   An input holding a string value.<br>
   

@@ -16,6 +16,7 @@ export type FileOutput = Output & {
 
 export type TextOutput = Output & {
   value: string;
+  language?: string;
 };
 
 export type OutputType = 'FILE' | 'TEXT';

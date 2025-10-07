@@ -1,7 +1,7 @@
 group: Input
 name: input_path
 content: |
-  inputs.path("${1:name}") { label = "${2:Label}"; rootPathExclusive = "${3:rootPath}" }
+  inputs.path("${1:name}") { label = "${2:label}"; rootPathExclusive = "${3:rootPath}" }
 documentation: |
   The path picker allows users to browse and select paths from the JCR repository.
   It can be configured to restrict the selection to a specific root path, either inclusive or exclusive which means the root path itself can be selected or not.
