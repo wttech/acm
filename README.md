@@ -281,8 +281,7 @@ void doRun() {
 
     def users = [
         [name: "John", surname: "Doe", birth: "1991"],
-        [name: "Jane", surname: "Doe", birth: "1995"],
-        [name: "Jack", surname: "Doe", birth: "2000"]
+        [name: "Jane", surname: "Doe", birth: "1995"]
     ] 
     for (def user : users) {
         report.out.println("${user.name},${user.surname},${user.birth}")
@@ -293,6 +292,32 @@ void doRun() {
 ```
 
 <img src="docs/screenshot-content-script-outputs.png" width="720" alt="ACM Content Script Outputs">
+
+There is also available text output type, which allows you to generate markdown or any text with syntax highlighting (JSON, XML, YAML, etc.). This may be useful to allow users to quickly open links to e.g. just created pages, copy-paste generated configuration and use it somewhere else.
+
+```groovy
+outputs.text("summary") { 
+    label = "Summary"
+    value = """
+    - Total Users: ${totalUsers}
+    - Active Users: ${activeUsers}
+    - Inactive Users: ${inactiveUsers}
+    - Generated At: ${new Date()}
+    """.stripIndent().trim()
+}
+
+outputs.text("configJson") { 
+    label = "Configuration"
+    value = '''
+    {
+        "setting1": true,
+        "setting2": "value",
+        "setting3": 10
+    }
+    '''.stripIndent().trim()
+    language = "json"
+}
+```
 
 #### ACL example
 
