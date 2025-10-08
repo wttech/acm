@@ -281,7 +281,8 @@ void doRun() {
 
     def users = [
         [name: "John", surname: "Doe", birth: "1991"],
-        [name: "Jane", surname: "Doe", birth: "1995"]
+        [name: "Jane", surname: "Doe", birth: "1995"],
+        [name: "Jack", surname: "Smith", birth: "1988"]
     ] 
     for (def user : users) {
         report.out.println("${user.name},${user.surname},${user.birth}")
