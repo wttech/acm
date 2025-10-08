@@ -1,0 +1,15 @@
+group: Output
+name: output_file
+content: |
+  outputs.file("${1:name}") { label = "${2:label}"; downloadName = ${3:downloadName} }
+documentation: |
+  An output that could be later downloaded as a file.
+  
+  For example:
+  ```groovy
+  def report = outputs.file("report") { label = "Download Report"; downloadName = "report.csv"; mimeType = "text/csv" }
+  report.out.println("id,name,age")
+  report.out.println("1,John,30")
+  report.out.println("2,Jane,25")
+  report.out.close()
+  ```

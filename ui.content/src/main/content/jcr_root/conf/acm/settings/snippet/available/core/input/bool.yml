@@ -1,7 +1,7 @@
 group: Input
 name: input_bool
 content: |
-  inputs.bool("${1:name}") { label = "${2:Label}"; value = ${3:value} }
+  inputs.bool("${1:name}") { label = "${2:label}"; value = ${3:value} }
 documentation: |
   An input that can be either true or false.<br>
   Display mode can be adjusted by using `checkbox()` or `toggle()` methods.

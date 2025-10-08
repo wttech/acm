@@ -1,7 +1,7 @@
 group: Input
 name: input_integer
 content: |
-  inputs.integerNumber("${1:name}") { label = "${2:Label}"; value = ${3:value} }
+  inputs.integerNumber("${1:name}") { label = "${2:label}"; value = ${3:value} }
 documentation: |
   An input holding a integer number value.<br>
   This input can be also displayed as a slider.

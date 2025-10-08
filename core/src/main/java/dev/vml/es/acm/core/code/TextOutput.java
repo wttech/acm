@@ -7,6 +7,8 @@ public class TextOutput extends Output {
 
     private String value;
 
+    private String language;
+
     public TextOutput() {
         super(); // for deserialization
     }
@@ -26,6 +28,14 @@ public class TextOutput extends Output {
 
     public void setValue(String text) {
         this.value = text;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
     // Utility methods

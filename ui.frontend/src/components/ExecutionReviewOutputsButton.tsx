@@ -14,6 +14,7 @@ import { FileOutput, Output, OutputNames, TextOutput } from '../types/output.ts'
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { Strings } from '../utils/strings.ts';
 import Markdown from './Markdown.tsx';
+import CodeTextarea from './CodeTextarea.tsx';
 
 interface ExecutionReviewOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {
   execution: Execution;
@@ -101,13 +102,15 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                             <Flex marginY="size-100" direction="column" gap="size-100">
                               {outputTexts.map((outputText) => (
                                 <View key={outputText.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
-                                  <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
-                                    <Flex direction="column">
+                                    <Flex direction="column" gap="size-50">
                                       <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputText.label || Strings.capitalizeWords(outputText.name)}</Text>
                                       {outputText.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputText.description}</Text>}
+                                      {outputText.language ? (
+                                        <CodeTextarea aria-label={`Output '${outputText.name}'`} language={outputText.language} value={outputText.value} options={{ readOnly: true, scrollBeyondLastLine: false }} />
+                                      ) : (
+                                        <Markdown code={outputText.value} />
+                                      )}
                                     </Flex>
-                                  </Flex>
-                                  <Markdown>{outputText.value}</Markdown>
                                 </View>
                               ))}
                             </Flex>
@@ -118,7 +121,7 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                       <Flex marginY="size-100" direction="column" gap="size-100">
                         <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
                           <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
-                            <Flex direction="column">
+                            <Flex direction="column" gap="size-50">
                               <Text UNSAFE_style={{ fontWeight: 'bold' }}>Archive</Text>
                               <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Console and generated outputs bundled as ZIP archive</Text>
                             </Flex>
@@ -131,7 +134,7 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
 
                         <View padding="size-100" backgroundColor="gray-50" borderRadius="medium">
                           <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
-                            <Flex direction="column">
+                            <Flex direction="column" gap="size-50">
                               <Text UNSAFE_style={{ fontWeight: 'bold' }}>Console</Text>
                               <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Execution logs and errors as text file</Text>
                             </Flex>
@@ -144,7 +147,7 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                         {outputFiles.map((outputFile) => (
                           <View key={outputFile.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
                             <Flex direction="row" justifyContent="space-between" alignItems="center" gap="size-200">
-                              <Flex direction="column">
+                              <Flex direction="column" gap="size-50">
                                 <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputFile.label || Strings.capitalizeWords(outputFile.name)}</Text>
                                 {outputFile.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputFile.description}</Text>}
                               </Flex>

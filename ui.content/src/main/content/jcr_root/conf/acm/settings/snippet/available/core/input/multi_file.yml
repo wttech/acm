@@ -1,7 +1,7 @@
 group: Input
 name: input_multi_file
 content: |
-  inputs.multiFile("${1:name}") { label = "${2:Label}" }
+  inputs.multiFile("${1:name}") { label = "${2:label}" }
 documentation: |
   An input that allows to use multiple uploaded files.
   

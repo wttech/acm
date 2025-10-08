@@ -1,7 +1,7 @@
 group: Input
 name: input_file
 content: |
-  inputs.file("${1:name}") { label = "${2:Label}" }
+  inputs.file("${1:name}") { label = "${2:label}" }
 documentation: |
   An input that allows to use uploaded file.
   

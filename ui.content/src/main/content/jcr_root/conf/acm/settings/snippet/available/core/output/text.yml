@@ -1,0 +1,33 @@
+group: Output
+name: output_text
+content: |
+  outputs.text("${1:name}") { label = "${2:label}"; value = "${3:value}" }
+documentation: |
+  An output that displays a markdown-formatted text.
+
+  Optionally, when language is set to 'html', 'xml', 'json', 'yaml', the text will be syntax highlighted accordingly.
+
+  For example:
+  ```groovy
+  outputs.text("summary") { 
+    label = "Summary"
+    value = """
+    - Total Users: 150
+    - Active Users: 120
+    - Inactive Users: 30
+    - Generated At: ${new Date()}
+    """.stripIndent().trim()
+  }
+
+  outputs.text("configJson") { 
+    label = "Configuration"
+    value = '''
+    {
+      "setting1": true,
+      "setting2": "value",
+      "setting3": 10
+    }
+    '''.stripIndent().trim()
+    language = "json"
+  }
+  ```
