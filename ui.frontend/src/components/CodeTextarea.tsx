@@ -17,7 +17,7 @@ const CodeTextarea: React.FC<EditorProps> = (props) => {
       <Editor
         theme="vs-dark"
         height="160px"
-        options={{ scrollBeyondLastLine: false }}
+        options={{ scrollBeyondLastLine: false, ...(props.options || {}) }}
         {...props}
       />
     </View>
