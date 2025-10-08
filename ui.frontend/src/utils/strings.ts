@@ -2,6 +2,16 @@ export class Strings {
   static notBlank(text: string | null | undefined): boolean {
     return !!text && text.trim() !== '';
   }
+  static trimIndent(text?: string): string {
+    if (!text) {
+      return '';
+    }
+    return text
+      .split('\n')
+      .map(line => line.trimStart())
+      .join('\n')
+      .trim();
+  }
   static capitalize(text: string): string {
     if (!text) {
       return text;

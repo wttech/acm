@@ -81,7 +81,7 @@ const SnippetsPage = () => {
                     <View key={snippet.id} backgroundColor="gray-50" borderWidth="thin" borderColor="dark" borderRadius="medium" paddingY="size-100" paddingX="size-200" marginY="size-10">
                       <Heading level={3}>{snippet.name}</Heading>
                       <Content>
-                        <Markdown>{snippet.documentation}</Markdown>
+                        <Markdown code={snippet.documentation} />
                       </Content>
                       <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" marginY="size-100">
                         <SnippetCode content={snippet.content} />

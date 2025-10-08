@@ -51,6 +51,7 @@ import FileUploader from './FileUploader.tsx';
 import KeyValueEditor from './KeyValueEditor.tsx';
 import Markdown from './Markdown.tsx';
 import PathField from './PathPicker.tsx';
+import CodeTextarea from './CodeTextarea.tsx';
 
 interface CodeInputProps {
   input: Input<InputValue>;
@@ -61,7 +62,7 @@ interface CodeInputProps {
 const CodeInput: React.FC<CodeInputProps> = ({ input }) => {
   const { control, controllerRules } = useInput(input);
   const label = input.label || Strings.capitalizeWords(input.name);
-  const description = input.description ? <Markdown>{input.description}</Markdown> : undefined;
+  const description = input.description ? <Markdown code={input.description}/> : undefined;
 
   return (
     <Controller
@@ -162,9 +163,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ input }) => {
                   })}
                 >
                   <div>
-                    <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
-                      <Editor aria-label={`Input '${input.name}'`} language={input.language} theme="vs-dark" height="200px" options={{ scrollBeyondLastLine: false }} value={field.value?.toString() || ''} onChange={field.onChange} />
-                    </View>
+                    <CodeTextarea aria-label={`Input '${input.name}'`} language={input.language} value={field.value?.toString() || ''} onChange={field.onChange} />
                   </div>
                 </Field>
               ) : (

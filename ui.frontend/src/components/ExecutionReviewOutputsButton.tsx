@@ -14,6 +14,7 @@ import { FileOutput, Output, OutputNames, TextOutput } from '../types/output.ts'
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { Strings } from '../utils/strings.ts';
 import Markdown from './Markdown.tsx';
+import CodeTextarea from './CodeTextarea.tsx';
 
 interface ExecutionReviewOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {
   execution: Execution;
@@ -107,7 +108,11 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                                       {outputText.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputText.description}</Text>}
                                     </Flex>
                                   </Flex>
-                                  <Markdown>{outputText.value}</Markdown>
+                                  {outputText.language ? (
+                                    <CodeTextarea aria-label={`Output '${outputText.name}'`} language={outputText.language} value={outputText.value} options={{ readOnly: true, scrollBeyondLastLine: false }} />
+                                  ) : (
+                                    <Markdown code={outputText.value} />
+                                  )}
                                 </View>
                               ))}
                             </Flex>
