@@ -2,7 +2,7 @@ import React from 'react';
 import { default as ReactMarkdown } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
-import dedent from 'dedent';
+import { Strings } from '../utils/strings';
 import styles from './markdown.module.css';
 
 interface MarkdownProps {
@@ -11,15 +11,11 @@ interface MarkdownProps {
 }
 
 const Markdown: React.FC<MarkdownProps> = ({ code, trimIndent = true }) => {
-  const processedCode = trimIndent 
-    ? dedent.withOptions({ alignValues: true })(code)
-    : code;
+  const processedCode = trimIndent ? Strings.dedent(code) : code;
 
   return (
     <div className={styles.markdown}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-        {processedCode}
-      </ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} children={processedCode} />
     </div>
   );
 };
