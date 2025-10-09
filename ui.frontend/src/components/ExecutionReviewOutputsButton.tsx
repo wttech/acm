@@ -13,8 +13,8 @@ import { Execution } from '../types/execution.ts';
 import { FileOutput, Output, OutputNames, TextOutput } from '../types/output.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { Strings } from '../utils/strings.ts';
-import Markdown from './Markdown.tsx';
 import CodeTextarea from './CodeTextarea.tsx';
+import Markdown from './Markdown.tsx';
 
 interface ExecutionReviewOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {
   execution: Execution;
@@ -102,15 +102,15 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                             <Flex marginY="size-100" direction="column" gap="size-100">
                               {outputTexts.map((outputText) => (
                                 <View key={outputText.name} padding="size-100" backgroundColor="gray-50" borderRadius="medium">
-                                    <Flex direction="column" gap="size-50">
-                                      <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputText.label || Strings.capitalizeWords(outputText.name)}</Text>
-                                      {outputText.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputText.description}</Text>}
-                                      {outputText.language ? (
-                                        <CodeTextarea aria-label={`Output '${outputText.name}'`} language={outputText.language} value={outputText.value} options={{ readOnly: true, scrollBeyondLastLine: false }} />
-                                      ) : (
-                                        <Markdown code={outputText.value} />
-                                      )}
-                                    </Flex>
+                                  <Flex direction="column" gap="size-50">
+                                    <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputText.label || Strings.capitalizeWords(outputText.name)}</Text>
+                                    {outputText.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputText.description}</Text>}
+                                    {outputText.language ? (
+                                      <CodeTextarea aria-label={`Output '${outputText.name}'`} language={outputText.language} value={outputText.value} options={{ readOnly: true, scrollBeyondLastLine: false }} />
+                                    ) : (
+                                      <Markdown code={outputText.value} />
+                                    )}
+                                  </Flex>
                                 </View>
                               ))}
                             </Flex>

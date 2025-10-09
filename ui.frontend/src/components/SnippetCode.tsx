@@ -44,20 +44,24 @@ interface SnippetCodeProps {
 }
 
 const SnippetCode: React.FC<SnippetCodeProps> = ({ content }) => {
-  const codeRef = useRef<HTMLDivElement>(null);
+  const codeRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (codeRef.current) {
-      codeRef.current.querySelectorAll('code').forEach((block) => {
-        hljs.highlightBlock(block as HTMLElement);
-      });
+      const element = codeRef.current;
+      // Clear previous highlighting by resetting content and removing data attribute
+      element.textContent = content;
+      delete element.dataset.highlighted;
+      element.className = 'snippet-code-groovy';
+      // Then highlight
+      hljs.highlightElement(element);
     }
   }, [content]);
 
   return (
-    <div ref={codeRef}>
-      <code className="snippet-code-groovy">{content}</code>
-    </div>
+    <pre>
+      <code ref={codeRef} className="snippet-code-groovy" />
+    </pre>
   );
 };
 

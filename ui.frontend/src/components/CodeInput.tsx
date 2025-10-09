@@ -22,7 +22,6 @@ import {
   TimeField,
   View,
 } from '@adobe/react-spectrum';
-import { Editor } from '@monaco-editor/react';
 import { Field } from '@react-spectrum/label';
 import React from 'react';
 import { Controller } from 'react-hook-form';
@@ -47,11 +46,11 @@ import {
 } from '../types/input.ts';
 import { Dates } from '../utils/dates.ts';
 import { Strings } from '../utils/strings.ts';
+import CodeTextarea from './CodeTextarea.tsx';
 import FileUploader from './FileUploader.tsx';
 import KeyValueEditor from './KeyValueEditor.tsx';
 import Markdown from './Markdown.tsx';
 import PathField from './PathPicker.tsx';
-import CodeTextarea from './CodeTextarea.tsx';
 
 interface CodeInputProps {
   input: Input<InputValue>;
@@ -62,7 +61,7 @@ interface CodeInputProps {
 const CodeInput: React.FC<CodeInputProps> = ({ input }) => {
   const { control, controllerRules } = useInput(input);
   const label = input.label || Strings.capitalizeWords(input.name);
-  const description = input.description ? <Markdown code={input.description}/> : undefined;
+  const description = input.description ? <Markdown code={input.description} /> : undefined;
 
   return (
     <Controller

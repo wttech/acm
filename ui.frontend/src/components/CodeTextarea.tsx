@@ -4,22 +4,8 @@ import React from 'react';
 
 const CodeTextarea: React.FC<EditorProps> = (props) => {
   return (
-    <View
-      width="100%"
-      backgroundColor="gray-800"
-      borderWidth="thin"
-      position="relative"
-      borderColor="dark"
-      height="100%"
-      borderRadius="medium"
-      padding="size-50"
-    >
-      <Editor
-        theme="vs-dark"
-        height="160px"
-        options={{ scrollBeyondLastLine: false, ...(props.options || {}) }}
-        {...props}
-      />
+    <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
+      <Editor theme="vs-dark" height="160px" options={{ scrollBeyondLastLine: false, ...(props.options || {}) }} {...props} />
     </View>
   );
 };

@@ -11,10 +11,15 @@ interface MarkdownProps {
 }
 
 const Markdown: React.FC<MarkdownProps> = ({ code, trimIndent = true }) => {
-  const codeDedented = (trimIndent && code) ? dedent(code) : code;
+  const processedCode = trimIndent 
+    ? dedent.withOptions({ alignValues: true })(code)
+    : code;
+
   return (
     <div className={styles.markdown}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} children={codeDedented} />
+      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+        {processedCode}
+      </ReactMarkdown>
     </div>
   );
 };

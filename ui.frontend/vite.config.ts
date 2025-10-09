@@ -23,7 +23,7 @@ function serverProxyConfig() {
 }
 
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/apps/acm/spa/' : '/',
+  base: process.env.NODE_ENV === 'production' ? '/apps/acm/spa/' : '/acm/',
   plugins: [
     react(),
     eslint(),
