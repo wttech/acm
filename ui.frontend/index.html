@@ -7,11 +7,16 @@
     <title>Content Manager</title>
     <style>
       html,
-      body,
-      #root {
+      body {
         margin: 0;
         padding: 0;
         height: 100%;
+      }
+      #root {
+        height: calc(100% - 101px);
+      }
+      #shell {
+        height: 101px;
       }
       #shell .header {
         width: 100%;
