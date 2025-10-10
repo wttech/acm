@@ -44,7 +44,7 @@ interface SnippetCodeProps {
 }
 
 const SnippetCode: React.FC<SnippetCodeProps> = ({ content }) => {
-  const codeRef = useRef<HTMLElement>(null);
+  const codeRef = useRef<HTMLCodeElement>(null);
 
   useEffect(() => {
     if (codeRef.current) {
