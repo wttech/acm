@@ -27,6 +27,7 @@ export default defineConfig({
   plugins: [
     react(),
     eslint(),
+    // Copy Monaco embeddables
     viteStaticCopy({
       targets: [
         // { src: 'public/*', dest: '../' },

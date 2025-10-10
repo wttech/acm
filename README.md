@@ -517,7 +517,19 @@ notifier.sendMessage("ACME Project Notifications", "Let's start the day with a c
     sh taskw develop:content:example
     ```
 
-3. Frontend with live reloading:
+3. Backend only
+
+    ```shell
+    sh taskw develop:core
+    ```
+
+4. Frontend only with production build mode
+
+    ```shell
+    sh taskw develop:frontend
+    ```
+
+5. Frontend only with dev build mode (live reloading)
 
     ```shell
     sh taskw develop:frontend:dev
