@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react';
-import { ClientRequest } from 'node:http';
+import { ClientRequest, IncomingMessage, ServerResponse } from 'node:http';
 import path from 'path';
-import { defineConfig, HttpProxy, normalizePath } from 'vite';
+import { defineConfig, HttpProxy, normalizePath, ViteDevServer } from 'vite';
 import eslint from 'vite-plugin-eslint'; // TODO fixed by workaround: https://github.com/gxmari007/vite-plugin-eslint/issues/74#issuecomment-1647431890
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
@@ -36,6 +36,20 @@ export default defineConfig({
         },
       ],
     }),
+    // Redirect '/acm' to '/acm/' (add trailing slash)
+    {
+      name: 'redirect-acm-trailing-slash',
+      configureServer(server: ViteDevServer) {
+        server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
+          if (req.url === '/acm') {
+            res.writeHead(301, { Location: '/acm/' });
+            res.end();
+            return;
+          }
+          next();
+        });
+      },
+    },
   ],
   server: {
     strictPort: true,
