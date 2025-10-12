@@ -21,7 +21,7 @@
 
 **Manage permissions & content updates as code.**
 
-ACM streamlines workflows and boosts productivity with an intuitive interface and robust features. It automates bulk content and permission changes, making it ideal for content migration and large-scale permission management. ACM offers an IDE-like experience with code completion, auto-import, and on-the-fly compilation.
+ACM for Adobe Experience Manager (AEM) streamlines workflows and boosts productivity with an intuitive interface and robust features. It automates bulk content and permission changes, making it ideal for content migration and large-scale permission management. ACM offers an IDE-like experience with code completion, auto-import, and on-the-fly compilation.
 
 It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
 
@@ -67,7 +67,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
 
 ACM is a comprehensive alternative to tools like APM, AECU, AEM Groovy Console, and AC Tool.
 It leverages the Groovy language, which is familiar to most Java developers, eliminating the need to learn custom YAML syntax or languages/grammars. 
-Enjoy a single, painless tool setup in AEM projects with no hooks and POM updates.
+Enjoy a single, painless tool setup in AEM (Adobe Experience Manager) projects with no hooks and POM updates.
 
 ### New Approach
 
@@ -96,7 +96,7 @@ The ready-to-install AEM packages are available on:
 - [GitHub releases](https://github.com/wttech/acm/releases).
 - [Maven Central](https://central.sonatype.com/search?q=dev.vml.es.acm).
 
-There are two ways to install AEM Content Manager on your AEM instances:
+There are two ways to install AEM Content Manager on your AEM (Adobe Experience Manager) instances:
 
 1. **Using the 'all' package:**
     * Recommended for fresh AEM instances.
