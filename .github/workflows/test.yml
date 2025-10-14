@@ -1,6 +1,12 @@
 name: Test
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      acm_version:
+        description: 'ACM Version'
+        required: false
+        type: string
 
 jobs:
   e2e:
@@ -45,6 +51,21 @@ jobs:
       - name: Start AEM Instance
         run: |
           sh aemw instance launch
+
+      - name: Get ACM Version
+        id: acm_version
+        run: |
+          if [ -z "${{ inputs.acm_version }}" ]; then
+            VERSION=$(gh release view --repo wttech/acm --json tagName --jq '.tagName')
+          else
+            VERSION="${{ inputs.acm_version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Deploy ACM Package
+        run: |
+          VERSION="${{ steps.acm_version.outputs.version }}"
+          sh aemw pkg deploy --url "https://github.com/wttech/acm/releases/download/$VERSION/acm.all-$VERSION.zip"
 
       - name: Run Playwright Tests
         working-directory: ./test/e2e
