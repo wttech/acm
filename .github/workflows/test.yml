@@ -6,6 +6,7 @@ on:
       acm_version:
         description: 'ACM Version'
         required: false
+        default: 'latest'
         type: string
 
 jobs:
@@ -14,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
+      AEM_OUTPUT_LOG_MODE: none
       FORCE_COLOR: 1
     steps:
       - name: Checkout Code
@@ -54,10 +56,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -z "${{ inputs.acm_version }}" ]; then
+          INPUT_VERSION="${{ inputs.acm_version }}"
+          if [ -z "$INPUT_VERSION" ] || [ "$INPUT_VERSION" = "latest" ]; then
             VERSION=$(gh release view --repo wttech/acm --json tagName --jq '.tagName')
           else
-            VERSION="${{ inputs.acm_version }}"
+            VERSION="$INPUT_VERSION"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
