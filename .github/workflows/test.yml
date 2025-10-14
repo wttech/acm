@@ -9,11 +9,9 @@ jobs:
     timeout-minutes: 60
     env:
       FORCE_COLOR: 1
-    defaults:
-      run:
-        working-directory: ./test/e2e
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -24,8 +22,6 @@ jobs:
       
       - name: Setup AEM Compose
         run: |
-          curl https://raw.githubusercontent.com/wttech/aemc/main/project-install.sh | sh
-          sh aemw project scaffold --project-kind instance
           echo "AEM_PUBLISH_ACTIVE=false" >> .env
 
       - name: Download AEM files
@@ -40,16 +36,18 @@ jobs:
         with:
           node-version: lts/*
           cache: 'npm'
-          cache-dependency-path: './package-lock.json'
+          cache-dependency-path: './test/e2e/package-lock.json'
 
       - name: Install Dependencies
+        working-directory: ./test/e2e
         run: npm ci
 
-      - name: Start AEM instance
+      - name: Start AEM Instance
         run: |
           sh aemw instance launch
 
       - name: Run Playwright Tests
+        working-directory: ./test/e2e
         run: npx playwright test
 
       - name: Upload Playwright Report
@@ -57,5 +55,5 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: playwright-report/
+          path: ./test/e2e/playwright-report/
           retention-days: 30
