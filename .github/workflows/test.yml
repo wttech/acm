@@ -26,30 +26,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       
-      - name: Setup AEM Compose
-        run: |
-          echo "AEM_PUBLISH_ACTIVE=false" >> .env
-
-      - name: Download AEM files
-        run: |
-          set -e
-          mkdir -p aem/home/lib
-          aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/cq-quickstart-6.5.0.jar aem/home/lib/cq-quickstart-6.5.0.jar
-          aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/license.properties aem/home/lib/license.properties
-
-      - name: Setup NodeJS
+      - name: Setup NodeJS Runtime
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: 'npm'
           cache-dependency-path: './test/e2e/package-lock.json'
 
-      - name: Install Dependencies
+      - name: Setup NodeJS Dependencies
         working-directory: ./test/e2e
         run: npm ci
 
-      - name: Start AEM Instance
+      - name: Setup AEM Compose
         run: |
+          echo "AEM_PUBLISH_ACTIVE=false" >> .env
+
+      - name: Setup AEM Instance
+        run: |
+          set -e
+          mkdir -p aem/home/lib
+          aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/cq-quickstart-6.5.0.jar aem/home/lib/cq-quickstart-6.5.0.jar
+          aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/license.properties aem/home/lib/license.properties
           sh aemw instance launch
 
       - name: Get ACM Version
