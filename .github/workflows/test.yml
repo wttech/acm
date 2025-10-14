@@ -39,6 +39,10 @@ jobs:
         working-directory: ./test/e2e
         run: npm ci
 
+      - name: Install Playwright Browsers
+        working-directory: ./test/e2e
+        run: npx playwright install --with-deps chromium
+
       - name: Setup AEM Compose
         run: |
           echo "AEM_PUBLISH_ACTIVE=false" >> .env
