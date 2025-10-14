@@ -75,7 +75,9 @@ jobs:
       - name: Deploy ACM Package
         run: |
           VERSION="${{ steps.acm_version.outputs.version }}"
+          echo "Deploying ACM version $VERSION"
           sh aemw pkg deploy --url "https://github.com/wttech/acm/releases/download/$VERSION/acm.all-$VERSION.zip"
+          echo "Deployed ACM version $VERSION"
 
       - name: Run Playwright Tests
         working-directory: ./test/e2e
