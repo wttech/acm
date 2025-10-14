@@ -14,6 +14,10 @@ jobs:
     name: 'E2E Tests'
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     env:
       AEM_OUTPUT_LOG_MODE: none
       FORCE_COLOR: 1
