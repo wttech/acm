@@ -52,8 +52,8 @@ jobs:
           set -e
           echo "Preparing AEM instance"
           mkdir -p aem/home/lib
-          aws s3 cp --no-progress s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/cq-quickstart-6.5.0.jar aem/home/lib/cq-quickstart-6.5.0.jar
-          aws s3 cp --no-progress s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/license.properties aem/home/lib/license.properties
+          aws s3 cp --no-progress --only-show-errors s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/cq-quickstart-6.5.0.jar aem/home/lib/cq-quickstart-6.5.0.jar
+          aws s3 cp --no-progress --only-show-errors s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/license.properties aem/home/lib/license.properties
           echo "Prepared AEM instance"
           echo "Launching AEM instance"
           sh aemw instance launch
