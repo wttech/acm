@@ -12,7 +12,7 @@ This test project is used for testing ACM in the AEM as a Cloud Service environm
 2. Run script by task from the root of the repository:
 
     ```bash
-    sh taskw release:test:project
+    sh taskw test:project
     ```
 
 3. Setup Pipeline in Adobe Cloud Manager UI and select repository created in the previous step.

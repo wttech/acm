@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
   
 test('Console executes script', async ({ page }) => {
-    await page.goto('/acm');
+    await page.goto('/acm#console');
 
-    await page.getByRole('button', { name: 'Console' }).click();
+    await page.getByText('Compilation succeeded');
     await page.getByRole('button', { name: 'Execute' }).click();
 
     await page.getByText('Output').click();
-    await page.getByText('Hello World!').waitFor({ timeout: 15000 });
+    await expect(page.locator('text=Succeeded after')).toHaveText(/Succeeded after \d+ ms/);
+    await page.getByText('Hello World!');
 });

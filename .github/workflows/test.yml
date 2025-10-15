@@ -47,14 +47,11 @@ jobs:
         working-directory: ./test/e2e
         run: npx playwright install --with-deps chromium
 
-      - name: Setup AEM Compose
-        run: |
-          echo "AEM_PUBLISH_ACTIVE=false" >> .env
-
       - name: Setup AEM Instance
         run: |
           set -e
           echo "Preparing AEM instance"
+          echo "AEM_PUBLISH_ACTIVE=false" >> .env
           mkdir -p aem/home/lib
           aws s3 cp --no-progress --only-show-errors s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/cq-quickstart-6.5.0.jar aem/home/lib/cq-quickstart-6.5.0.jar
           aws s3 cp --no-progress --only-show-errors s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/license.properties aem/home/lib/license.properties

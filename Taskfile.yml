@@ -319,7 +319,16 @@ tasks:
         git tag "$VERSION_TAG"
         git push origin "$VERSION_TAG" || echo "Tag already exists or cannot push"
 
-  release:test:project:
+  test:project:
+    desc: Test tool by setting it up and deploying on AEMaaCS
     dir: test/project
     cmd: |
       sh setup.sh
+
+  test:e2e:
+    dir: test/e2e
+    desc: Test tool using end-to-end tests using Playwright
+    cmd: |
+      set -e
+      sh nw npm install
+      sh nw npx playwright {{.CLI_ARGS | default "test"}}
