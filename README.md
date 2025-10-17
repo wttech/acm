@@ -27,7 +27,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
 
 # References
 
-* Talk at AdaptTo 2025 Conference - [First-ever IaC Providers for AEM](https://adapt.to/2025/schedule/cant-we-just-automate-this-permissions-and-content-updates-as-a-code-with-acm-tool) by [Krystian Panek](mailto:krystian.panek@vml.com)
+* Talk at AdaptTo 2025 Conference - [Can't we just automate this? Permissions & content updates as-a-code with ACM Tool](https://adapt.to/2025/schedule/cant-we-just-automate-this-permissions-and-content-updates-as-a-code-with-acm-tool) by [Krystian Panek](mailto:krystian.panek@vml.com) &amp; [Tomasz Sobczyk](mailto:tomasz.sobczyk@vml.com)
 
 [![AdaptTo 2025 Video](docs/adaptto-2025-video.jpg)](https://www.youtube.com/watch?v=hGcMWGE7ZiU)
 
