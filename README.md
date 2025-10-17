@@ -25,18 +25,22 @@ ACM for Adobe Experience Manager (AEM) streamlines workflows and boosts producti
 
 It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
 
-<img src="docs/screenshot-dashboard.png" width="720" alt="ACM Dashboard">
-
 # References
 
 * Talk at AdaptTo 2025 Conference - [First-ever IaC Providers for AEM](https://adapt.to/2025/schedule/cant-we-just-automate-this-permissions-and-content-updates-as-a-code-with-acm-tool) by [Krystian Panek](mailto:krystian.panek@vml.com)
 
 [![AdaptTo 2025 Video](docs/adaptto-2025-video.jpg)](https://www.youtube.com/watch?v=hGcMWGE7ZiU)
 
+# Screenshots
+
+<img src="docs/screenshot-dashboard.png" width="720" alt="ACM Dashboard">
+
+
 ## Table of Contents
 
 - [AEM Content Manager (ACM)](#aem-content-manager-acm)
 - [References](#references)
+- [Screenshots](#screenshots)
   - [Table of Contents](#table-of-contents)
   - [Key Features](#key-features)
     - [All-in-one Solution](#all-in-one-solution)
