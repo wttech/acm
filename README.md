@@ -398,7 +398,7 @@ void doRun() {
         log.info "Creating a post in the temporary directory of the repository."
         def postFolder = repo.get("/tmp/acm/demo/posts").ensureFolder()
         def post = postFolder.child("hello-world.yml").saveFile("application/x-yaml") { output ->
-            formatter.yml.write(output, [
+            formatter.yaml.write(output, [
                     title: "Hello World",
                     description: "This is a sample post.",
                     tags: ["sample", "post"]
