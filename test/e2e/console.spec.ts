@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
   
 test('Console executes script', async ({ page }) => {
-    await page.goto('/acm#console');
+    await page.goto('/acm#/console');
 
     await page.getByText('Compilation succeeded');
     await page.getByRole('button', { name: 'Execute' }).click();
