@@ -124,11 +124,3 @@ jobs:
           name: playwright-report
           path: ./test/e2e/playwright-report/
           retention-days: 30
-
-      - name: Upload AEM Logs
-        uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: aem-log-error
-          path: ./aem/home/var/instance/author/crx-quickstart/logs/error.log
-          retention-days: 30
