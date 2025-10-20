@@ -1,6 +1,7 @@
+import { Page } from "@playwright/test";
 import { Strings } from "./lang";
 
-export async function writeToCodeEditor(page: any, code: string, editorIndex: number = 0) {
+export async function writeToCodeEditor(page: Page, code: string, editorIndex: number = 0) {
   const codeClean = Strings.dedent(code).trim();
   
   await page.waitForFunction((data: { editorIndex: number }) => {
@@ -21,7 +22,7 @@ export async function writeToCodeEditor(page: any, code: string, editorIndex: nu
   }, { editorIndex, codeClean });
 }
 
-export async function readFromCodeEditor(page: any, editorIndex: number = 0): Promise<string> {
+export async function readFromCodeEditor(page: Page, editorIndex: number = 0): Promise<string> {
   await page.waitForFunction((data: { editorIndex: number }) => {
     const editors = (window as any).monaco?.editor?.getEditors?.() || [];
     if (editors.length <= data.editorIndex) {
