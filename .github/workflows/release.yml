@@ -33,7 +33,7 @@ jobs:
 
       # https://central.sonatype.org/publish/requirements/#sign-files-with-gpgpgp
       - name: Import GPG Key
-        uses: crazy-max/ghaction-import-gpg@v5
+        uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -58,7 +58,7 @@ jobs:
             ]
 
       - name: Setup Maven Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: always()
         with:
           path: ~/.m2/repository
