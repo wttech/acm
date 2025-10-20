@@ -3,12 +3,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '../hooks/app';
 
-const ScriptExecutorStatusLight: React.FC = () => {
+const ExecutorStatusLight: React.FC = () => {
   const appState = useAppState();
   const navigate = useNavigate();
 
   return (
-    <StatusLight variant={appState.healthStatus.healthy ? 'positive' : 'negative'}>
+    <StatusLight id="executor-status" variant={appState.healthStatus.healthy ? 'positive' : 'negative'}>
       {appState.healthStatus.healthy ? (
         <Text>Executor active</Text>
       ) : (
@@ -24,4 +24,4 @@ const ScriptExecutorStatusLight: React.FC = () => {
   );
 };
 
-export default ScriptExecutorStatusLight;
+export default ExecutorStatusLight;
