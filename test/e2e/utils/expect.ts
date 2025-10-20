@@ -10,7 +10,11 @@ export async function expectExecutionProgressBarSucceeded(page: Page) {
 }
 
 export async function expectHealthyStatus(page: Page) {
-  await expect(page.locator('#health-status')).toHaveText(/Healthy/, { timeout: 60000 });
+  await expect(page.locator('#health-checker-status')).toHaveText('Healthy', { timeout: 60000 });
+}
+
+export async function expectCodeExecutorStatus(page: Page) {
+  await expect(page.locator('#code-executor-status')).toHaveText('Idle', { timeout: 60000 });
 }
 
 export function expectToHaveMultilineText(actual: string, expected: string) {

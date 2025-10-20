@@ -82,7 +82,7 @@ const CodeExecutor = () => {
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight variant={executions.length === 0 ? 'positive' : 'notice'}>{executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}</StatusLight>
+            <StatusLight id="code-executor-status" variant={executions.length === 0 ? 'positive' : 'notice'}>{executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}</StatusLight>
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
             <ButtonGroup>
