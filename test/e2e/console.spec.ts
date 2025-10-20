@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded, expectOutputToContainLines } from './utils/expect'
+import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded, expectToHaveMultilineText } from './utils/expect'
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
   
 test('Console executes script', async ({ page }) => {
@@ -25,7 +25,7 @@ test('Console executes script', async ({ page }) => {
     await expectExecutionProgressBarSucceeded(page);
     
     const output = await readFromCodeEditor(page);
-    expectOutputToContainLines(output, `
+    expectToHaveMultilineText(output, `
         Hello World!
     `);
 });
