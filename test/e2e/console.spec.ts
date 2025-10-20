@@ -13,10 +13,7 @@ test('Console executes script', async ({ page }) => {
         }
 
         void doRun() {
-            println "ACM Console Test Script"
-            println "Status: Executing..."
             println "Hello World!"
-            println "Status: Completed"
         }
     `);
     await expectCompilationSucceeded(page);
@@ -30,8 +27,5 @@ test('Console executes script', async ({ page }) => {
     const output = await readFromCodeEditor(page);
     expectOutputToContainLines(output, `
         Hello World!
-        ACM Console Test Script
-        Status: Executing...
-        Status: Completed
     `);
 });

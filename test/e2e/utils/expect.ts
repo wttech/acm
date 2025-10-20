@@ -1,11 +1,12 @@
 import { expect, Page } from '@playwright/test';
+import { Strings } from './lang';
 
 export function expectCompilationSucceeded(page: Page) {
   return page.getByText('Compilation succeeded');
 }
 
 export function expectOutputToContainLines(actual: string, expected: string) {
-  const lines = expected.trim().split('\n').map(line => line.trim());
+  const lines = Strings.dedent(expected).trim().split('\n').map(line => line.trim());
   for (const line of lines) {
     expect(actual).toContain(line);
   }
