@@ -109,6 +109,8 @@ jobs:
           PACKAGE_PATH=$(find ./aem/home/lib/acm -name "*.zip" | head -1)
           echo "Deploying ACM Package '$PACKAGE_PATH'"
           sh aemw pkg deploy --file "$PACKAGE_PATH"
+          echo "Restarting AEM instance to apply repoinit scripts"
+          sh aemw instance restart
           echo "Deployed ACM Package '$PACKAGE_PATH'"
 
       - name: Run Playwright Tests
