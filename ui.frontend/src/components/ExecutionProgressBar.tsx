@@ -95,17 +95,17 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
   })();
 
   if (!execution) {
-    return <Meter width="size-3000" aria-label={label} label={label} showValueLabel={false} value={0} />;
+    return <Meter id="execution-progress-bar" width="size-3000" aria-label={label} label={label} showValueLabel={false} value={0} />;
   }
 
   if (active || isExecutionPending(execution.status)) {
     if (percentage !== null && percentage < 100) {
-      return <ProgressBar minWidth="size-3000" aria-label={label} label={label} value={percentage} />;
+      return <ProgressBar id="execution-progress-bar" minWidth="size-3000" aria-label={label} label={label} value={percentage} />;
     }
-    return <ProgressBar minWidth="size-3000" aria-label={label} showValueLabel={false} label={label} isIndeterminate />;
+    return <ProgressBar id="execution-progress-bar" minWidth="size-3000" aria-label={label} showValueLabel={false} label={label} isIndeterminate />;
   }
 
-  return <Meter minWidth="size-3000" aria-label={label} variant={variant} showValueLabel={false} value={100} label={label} />;
+  return <Meter id="execution-progress-bar" minWidth="size-3000" aria-label={label} variant={variant} showValueLabel={false} value={100} label={label} />;
 };
 
 export default ExecutionProgressBar;

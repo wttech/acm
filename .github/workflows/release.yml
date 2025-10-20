@@ -6,9 +6,14 @@ on:
       - 'v*'
 
 jobs:
+  test:
+    name: Test
+    uses: ./.github/workflows/test.yml
+
   release:
     name: Release
     runs-on: ubuntu-latest
+    needs: test
     permissions:
       contents: write
       packages: write

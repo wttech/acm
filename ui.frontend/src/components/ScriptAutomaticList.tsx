@@ -14,7 +14,7 @@ import { ScriptType } from '../types/script';
 import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ExecutorBootButton from './ExecutorBootButton';
-import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
+import ScriptExecutorStatusLight from './ExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import ScriptsDeleteButton from './ScriptsDeleteButton';
 import ScriptsSyncButton from './ScriptsSyncButton';

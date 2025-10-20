@@ -95,7 +95,7 @@ const HealthChecker = () => {
             &nbsp;
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight variant={healthIssues.length === 0 ? 'positive' : 'negative'}>{healthIssues.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}</StatusLight>
+            <StatusLight id="health-checker-status" variant={healthIssues.length === 0 ? 'positive' : 'negative'}>{healthIssues.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}</StatusLight>
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
             <ButtonGroup>

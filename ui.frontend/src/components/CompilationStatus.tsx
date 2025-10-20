@@ -11,18 +11,18 @@ type CompilationStatusProps = {
 const CompilationStatus = ({ compiling, syntaxError, compileError, onErrorClick }: CompilationStatusProps) => {
   if (compiling) {
     return (
-      <StatusLight variant="yellow" isDisabled>
+      <StatusLight id="compilation-status" variant="yellow" isDisabled>
         Compilation in progress
       </StatusLight>
     );
   }
   if (syntaxError) {
-    return <StatusLight variant="negative">Compilation failed &mdash; Syntax error</StatusLight>;
+    return <StatusLight id="compilation-status" variant="negative">Compilation failed &mdash; Syntax error</StatusLight>;
   }
 
   if (compileError) {
     return (
-      <StatusLight variant="negative">
+      <StatusLight id="compilation-status" variant="negative">
         <Text>Compilation failed</Text>
         <Text>&nbsp;&mdash;&nbsp;</Text>
         <Link isQuiet onPress={onErrorClick}>
@@ -32,7 +32,7 @@ const CompilationStatus = ({ compiling, syntaxError, compileError, onErrorClick 
     );
   }
 
-  return <StatusLight variant="positive">Compilation succeeded</StatusLight>;
+  return <StatusLight id="compilation-status" variant="positive">Compilation succeeded</StatusLight>;
 };
 
 export default CompilationStatus;

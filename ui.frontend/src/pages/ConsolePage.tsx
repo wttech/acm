@@ -12,8 +12,8 @@ import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsButton.tsx';
+import ExecutorStatusLight from '../components/ExecutorStatusLight.tsx';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
-import ScriptExecutorStatusLight from '../components/ScriptExecutorStatusLight';
 import Toggle from '../components/Toggle';
 import { useAppState } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
@@ -144,7 +144,7 @@ const ConsolePage = () => {
                   </ButtonGroup>
                 </Flex>
                 <Flex flex="1" justifyContent="center" alignItems="center">
-                  {pausedExecution ? <ScriptExecutorStatusLight /> : <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />}
+                  {pausedExecution ? <ExecutorStatusLight /> : <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />}
                 </Flex>
                 <Flex flex="1" justifyContent="end" alignItems="center">
                   <KeyboardShortcutsButton />

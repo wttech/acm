@@ -11,7 +11,7 @@ import { isExecutionNegative } from '../types/execution';
 import { ScriptType } from '../types/script';
 import DateExplained from './DateExplained';
 import ExecutionStatsBadge from './ExecutionStatsBadge';
-import ScriptExecutorStatusLight from './ScriptExecutorStatusLight';
+import ScriptExecutorStatusLight from './ExecutorStatusLight';
 import ScriptsDeleteButton from './ScriptsDeleteButton';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
 import { Toggle } from './Toggle';
