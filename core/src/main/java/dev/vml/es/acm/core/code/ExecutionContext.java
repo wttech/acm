@@ -36,7 +36,7 @@ public class ExecutionContext implements AutoCloseable {
 
     private boolean debug = false;
 
-    private boolean locking = true;
+    private boolean skipped = false;
 
     private final Inputs inputs;
 
@@ -143,12 +143,12 @@ public class ExecutionContext implements AutoCloseable {
         this.debug = debug;
     }
 
-    public boolean isLocking() {
-        return locking;
+    public boolean isSkipped() {
+        return skipped;
     }
 
-    public void setLocking(boolean locking) {
-        this.locking = locking;
+    public void setSkipped(boolean skipped) {
+        this.skipped = skipped;
     }
 
     public Inputs getInputs() {
