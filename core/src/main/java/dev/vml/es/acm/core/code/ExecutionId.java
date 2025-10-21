@@ -6,6 +6,8 @@ import java.util.UUID;
 
 public final class ExecutionId {
 
+    public static final String HEALTH_CHECK = "health-check";
+
     private ExecutionId() {
         // intentionally empty
     }

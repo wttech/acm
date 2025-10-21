@@ -183,6 +183,11 @@ public class Executor implements EventListener {
     private ContextualExecution executeInternal(ExecutionContext context) {
         ContextualExecution.Builder execution = new ContextualExecution.Builder(context).start();
 
+        boolean healthChecking = ExecutionId.HEALTH_CHECK.equals(context.getId());
+        if ((!healthChecking && context.isSkipped())) {
+            return execution.end(ExecutionStatus.SKIPPED);
+        }
+
         try {
             statuses.put(context.getId(), ExecutionStatus.PARSING);
 
@@ -204,13 +209,14 @@ public class Executor implements EventListener {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
+            boolean locking = !healthChecking;
             String lockName = executableLockName(context);
-            if (context.isLocking() && queryLocker(resolverFactory, l -> l.isLocked(lockName))) {
+            if (locking && queryLocker(resolverFactory, l -> l.isLocked(lockName))) {
                 return execution.end(ExecutionStatus.SKIPPED);
             }
 
             try {
-                if (context.isLocking()) {
+                if (locking) {
                     useLocker(resolverFactory, l -> l.lock(lockName));
                 }
                 statuses.put(context.getId(), ExecutionStatus.RUNNING);
@@ -222,7 +228,7 @@ public class Executor implements EventListener {
                 contentScript.run();
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                if (context.isLocking()) {
+                if (locking) {
                     useLocker(resolverFactory, l -> l.unlock(lockName));
                 }
             }
