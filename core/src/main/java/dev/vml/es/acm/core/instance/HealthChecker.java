@@ -9,6 +9,7 @@ import dev.vml.es.acm.core.osgi.OsgiEventCollector;
 import dev.vml.es.acm.core.osgi.OsgiScanner;
 import dev.vml.es.acm.core.osgi.OsgiUtils;
 import dev.vml.es.acm.core.repo.Repo;
+import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.util.ExceptionUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import java.util.*;
@@ -18,7 +19,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.discovery.DiscoveryService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
@@ -52,9 +52,6 @@ public class HealthChecker implements EventHandler {
 
     @Reference
     private SlingInstaller slingInstaller;
-
-    @Reference
-    private DiscoveryService discoveryService;
 
     private Config config;
 
@@ -129,6 +126,14 @@ public class HealthChecker implements EventHandler {
                     HealthIssueSeverity.CRITICAL,
                     HealthIssueCategory.REPOSITORY,
                     "Composite node store not available",
+                    null));
+        }
+        if (Arrays.stream(ScriptType.values())
+                .anyMatch(st -> !repo.get(st.root()).exists())) {
+            issues.add(new HealthIssue(
+                    HealthIssueSeverity.CRITICAL,
+                    HealthIssueCategory.INSTANCE,
+                    "Restart required: repo-init not yet executed",
                     null));
         }
         if (ArrayUtils.isNotEmpty(config.repositoryPathsExisted())) {
