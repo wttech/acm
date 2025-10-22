@@ -36,11 +36,21 @@ public class StringInput extends Input<String> {
         this.display = Display.TEL;
     }
 
+    public void numeric() {
+        this.display = Display.NUMERIC;
+    }
+
+    public void decimal() {
+        this.display = Display.DECIMAL;
+    }
+
     public enum Display {
         TEXT,
         PASSWORD,
         URL,
         TEL,
+        NUMERIC,
+        DECIMAL,
         EMAIL;
 
         public static Display of(String name) {

@@ -29,6 +29,8 @@ import { useInput } from '../hooks/form.ts';
 import {
   Input,
   InputValue,
+  stringInputDisplayToMode,
+  stringInputDisplayToType,
   isBoolInput,
   isColorInput,
   isDateTimeInput,
@@ -138,7 +140,8 @@ const CodeInput: React.FC<CodeInputProps> = ({ input }) => {
             } else if (isStringInput(input)) {
               return (
                 <TextField
-                  type={input.display}
+                  type={stringInputDisplayToType(input.display)}
+                  inputMode={stringInputDisplayToMode(input.display)}
                   {...field}
                   value={field.value ?? ''}
                   label={label}
