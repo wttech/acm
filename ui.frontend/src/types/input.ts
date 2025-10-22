@@ -35,7 +35,7 @@ export type TextInput = Input<string> & {
 };
 
 export type StringInput = Input<string> & {
-  display: 'PLAIN' | 'PASSWORD';
+  display: 'TEXT' | 'PASSWORD' | 'URL' | 'TEL' | 'EMAIL' | 'NUMERIC' | 'DECIMAL';
 };
 
 export type NumberInput = Input<number> &
@@ -139,4 +139,39 @@ export function isMapInput(input: Input<InputValue>): input is MapInput {
 
 export function isKeyValueListInput(input: Input<InputValue>): input is KeyValueListInput {
   return input.type === 'KEY_VALUE_LIST';
+}
+
+export function stringInputDisplayToType(display: string): string {
+  switch (display) {
+    case 'PASSWORD':
+      return 'password';
+    case 'URL':
+      return 'url';
+    case 'TEL':
+      return 'tel';
+    case 'EMAIL':
+      return 'email';
+    case 'TEXT':
+    default:
+      return 'text';
+  }
+}
+
+export function stringInputDisplayToMode(display: string): "url" | "tel" | "email" | "text" | "numeric" | "decimal" {
+  switch (display) {
+    case 'URL':
+      return 'url';
+    case 'TEL':
+      return 'tel';
+    case 'EMAIL':
+      return 'email';
+    case 'NUMERIC':
+      return 'numeric';
+    case 'DECIMAL':
+      return 'decimal';
+    case 'TEXT':
+    case 'PASSWORD':
+    default:
+      return 'text';
+  }
 }
