@@ -135,7 +135,7 @@ public class AclAuthorizable {
                 context.getLogger().info("Skipped removing authorizable '{}' from all groups (not a member of any group)", id);
             }
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Cannot remove authorizable '%s' from all groups", id), e);
+            throw new AclException(String.format("Cannot remove authorizable '%s' from all groups!", id), e);
         }
     }
 
@@ -182,7 +182,7 @@ public class AclAuthorizable {
         
         if (context.getResourceResolver().getResource(path) == null) {
             if (mode == PermissionsOptions.Mode.FAIL) {
-                throw new AclException(String.format("Path '%s' not found", path));
+                throw new AclException(String.format("Cannot apply permissions for authorizable '%s' at path '%s'! (path not found)", id, path));
             }
             String actionDescription = allow ? "allow permissions" : "deny permissions";
             context.getLogger().info("Skipped setting {} for authorizable '{}' at path '{}' (path not found)", actionDescription, id, path);

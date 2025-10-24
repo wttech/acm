@@ -105,7 +105,7 @@ public class AclGroup extends AclAuthorizable {
                 context.getLogger().info("Skipped removing all members from group '{}' (no members to remove)", getId());
             }
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Failed to remove all members from group '%s'", getId()), e);
+            throw new AclException(String.format("Cannot remove all members from group '%s'!", getId()), e);
         }
     }
 
@@ -115,7 +115,7 @@ public class AclGroup extends AclAuthorizable {
                     .map(context::determineAuthorizable)
                     .filter(a -> a != null);
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Failed to get members of group '%s'", getId()), e);
+            throw new AclException(String.format("Cannot get members of group '%s'!", getId()), e);
         }
     }
 
@@ -126,7 +126,7 @@ public class AclGroup extends AclAuthorizable {
                     .map(m -> context.determineGroup((Group) m))
                     .filter(g -> g != null);
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Failed to get all groups of group '%s'", getId()), e);
+            throw new AclException(String.format("Cannot get all groups of group '%s'!", getId()), e);
         }
     }
 
@@ -137,7 +137,7 @@ public class AclGroup extends AclAuthorizable {
                     .map(m -> context.determineUser((User) m))
                     .filter(u -> u != null);
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Failed to get all users of group '%s'", getId()), e);
+            throw new AclException(String.format("Cannot get all users of group '%s'!", getId()), e);
         }
     }
 
