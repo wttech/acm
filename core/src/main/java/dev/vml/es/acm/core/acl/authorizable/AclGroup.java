@@ -71,7 +71,7 @@ public class AclGroup extends AclAuthorizable {
             return;
         }
         
-        boolean changed = context.getAuthorizableManager().removeMember(get(), member.get());
+        boolean changed = context.getAuthorizableManager().removeMember(group, member.get());
         if (changed) {
             context.getLogger().info("Removed member '{}' from group '{}'", memberId, getId());
         } else {
