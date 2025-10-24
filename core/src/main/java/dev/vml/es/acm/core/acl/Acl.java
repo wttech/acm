@@ -37,64 +37,64 @@ public class Acl {
         return getGroup(GroovyUtils.with(new GetAuthorizableOptions(), closure));
     }
 
-    public AclResult deleteUser(Closure<DeleteUserOptions> closure) {
-        return deleteUser(GroovyUtils.with(new DeleteUserOptions(), closure));
+    public void deleteUser(Closure<DeleteUserOptions> closure) {
+        deleteUser(GroovyUtils.with(new DeleteUserOptions(), closure));
     }
 
-    public AclResult deleteGroup(Closure<DeleteGroupOptions> closure) {
-        return deleteGroup(GroovyUtils.with(new DeleteGroupOptions(), closure));
+    public void deleteGroup(Closure<DeleteGroupOptions> closure) {
+        deleteGroup(GroovyUtils.with(new DeleteGroupOptions(), closure));
     }
 
-    public AclResult addToGroup(Closure<GroupOptions> closure) {
-        return addToGroup(GroovyUtils.with(new GroupOptions(), closure));
+    public void addToGroup(Closure<GroupOptions> closure) {
+        addToGroup(GroovyUtils.with(new GroupOptions(), closure));
     }
 
-    public AclResult removeFromGroup(Closure<GroupOptions> closure) {
-        return removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
+    public void removeFromGroup(Closure<GroupOptions> closure) {
+        removeFromGroup(GroovyUtils.with(new GroupOptions(), closure));
     }
 
-    public AclResult removeFromAllGroups(Closure<AuthorizableOptions> closure) {
-        return removeFromAllGroups(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public void removeFromAllGroups(Closure<AuthorizableOptions> closure) {
+        removeFromAllGroups(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
-    public AclResult addMember(Closure<MemberOptions> closure) {
-        return addMember(GroovyUtils.with(new MemberOptions(), closure));
+    public void addMember(Closure<MemberOptions> closure) {
+        addMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public AclResult removeMember(Closure<MemberOptions> closure) {
-        return removeMember(GroovyUtils.with(new MemberOptions(), closure));
+    public void removeMember(Closure<MemberOptions> closure) {
+        removeMember(GroovyUtils.with(new MemberOptions(), closure));
     }
 
-    public AclResult removeAllMembers(Closure<RemoveAllMembersOptions> closure) {
-        return removeAllMembers(GroovyUtils.with(new RemoveAllMembersOptions(), closure));
+    public void removeAllMembers(Closure<RemoveAllMembersOptions> closure) {
+        removeAllMembers(GroovyUtils.with(new RemoveAllMembersOptions(), closure));
     }
 
-    public AclResult clear(Closure<ClearOptions> closure) {
-        return clear(GroovyUtils.with(new ClearOptions(), closure));
+    public void clear(Closure<ClearOptions> closure) {
+        clear(GroovyUtils.with(new ClearOptions(), closure));
     }
 
-    public AclResult purge(Closure<AuthorizableOptions> closure) {
-        return purge(GroovyUtils.with(new AuthorizableOptions(), closure));
+    public void purge(Closure<AuthorizableOptions> closure) {
+        purge(GroovyUtils.with(new AuthorizableOptions(), closure));
     }
 
-    public AclResult allow(Closure<PermissionsOptions> closure) {
-        return allow(GroovyUtils.with(new PermissionsOptions(), closure));
+    public void allow(Closure<PermissionsOptions> closure) {
+        allow(GroovyUtils.with(new PermissionsOptions(), closure));
     }
 
-    public AclResult deny(Closure<PermissionsOptions> closure) {
-        return deny(GroovyUtils.with(new PermissionsOptions(), closure));
+    public void deny(Closure<PermissionsOptions> closure) {
+        deny(GroovyUtils.with(new PermissionsOptions(), closure));
     }
 
-    public AclResult setProperty(Closure<SetPropertyOptions> closure) {
-        return setProperty(GroovyUtils.with(new SetPropertyOptions(), closure));
+    public void setProperty(Closure<SetPropertyOptions> closure) {
+        setProperty(GroovyUtils.with(new SetPropertyOptions(), closure));
     }
 
-    public AclResult removeProperty(Closure<RemovePropertyOptions> closure) {
-        return removeProperty(GroovyUtils.with(new RemovePropertyOptions(), closure));
+    public void removeProperty(Closure<RemovePropertyOptions> closure) {
+        removeProperty(GroovyUtils.with(new RemovePropertyOptions(), closure));
     }
 
-    public AclResult setPassword(Closure<PasswordOptions> closure) {
-        return setPassword(GroovyUtils.with(new PasswordOptions(), closure));
+    public void setPassword(Closure<PasswordOptions> closure) {
+        setPassword(GroovyUtils.with(new PasswordOptions(), closure));
     }
 
     public void check(Closure<AclChecker> closure) {
@@ -103,7 +103,7 @@ public class Acl {
 
     public AclUser createUser(CreateUserOptions options) {
         User user = context.getAuthorizableManager().getUser(options.getId());
-        AclResult result = AclResult.OK;
+        boolean created = false;
         if (user == null) {
             if (options.isSystemUser()) {
                 user = context.getAuthorizableManager().createSystemUser(options.getId(), options.getPath());
@@ -112,15 +112,19 @@ public class Acl {
                         .createUser(options.getId(), options.getPassword(), options.getPath());
             }
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
-            result = AclResult.CHANGED;
+            created = true;
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
-            throw new AclException(String.format("User '%s' already exists", options.getId()));
+            throw new AclException(String.format("Cannot create user '%s' as it already exists!", options.getId()));
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
-            result = AclResult.CHANGED;
+            created = true;
         }
         AclUser aclUser = context.determineUser(user);
-        context.getLogger().info("Created user '{}' [{}]", aclUser.getId(), result);
+        if (created) {
+            context.getLogger().info("Created user '{}'", aclUser.getId());
+        } else {
+            context.getLogger().info("Skipped creating user '{}' (already exists)", aclUser.getId());
+        }
         return aclUser;
     }
 
@@ -146,20 +150,24 @@ public class Acl {
 
     public AclGroup createGroup(CreateGroupOptions options) {
         Group group = context.getAuthorizableManager().getGroup(options.getId());
-        AclResult result = AclResult.OK;
+        boolean created = false;
         if (group == null) {
             group = context.getAuthorizableManager()
                     .createGroup(options.getId(), options.getPath(), options.getExternalId());
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
-            result = AclResult.CHANGED;
+            created = true;
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
             throw new AclException(String.format("Group '%s' already exists", options.getId()));
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateGroup(group, options.determineProperties());
-            result = AclResult.CHANGED;
+            created = true;
         }
         AclGroup aclGroup = context.determineGroup(group);
-        context.getLogger().info("Created group '{}' [{}]", aclGroup.getId(), result);
+        if (created) {
+            context.getLogger().info("Created group '{}'", aclGroup.getId());
+        } else {
+            context.getLogger().info("Skipped creating group '{}' (already exists)", aclGroup.getId());
+        }
         return aclGroup;
     }
 
@@ -192,444 +200,443 @@ public class Acl {
         return context.determineGroup(id);
     }
 
-    private AclResult deleteAuthorizable(AclAuthorizable authorizable, String id) {
-        AclResult result;
+    private void deleteAuthorizable(AclAuthorizable authorizable, String id) {
         if (authorizable == null) {
-            result = AclResult.OK;
-        } else if (context.getAuthorizableManager().getAuthorizable(id) == null) {
-            result = AclResult.OK;
-        } else {
-            purge(authorizable);
-            context.getAuthorizableManager().deleteAuthorizable(authorizable.get());
-            result = AclResult.CHANGED;
+            context.getLogger().info("Skipped deleting authorizable '{}' (already deleted or never existed)", id);
+            return;
+        } 
+        if (context.getAuthorizableManager().getAuthorizable(id) == null) {
+            context.getLogger().info("Skipped deleting authorizable '{}' (already deleted)", id);
+            return;
         }
-        return result;
+        
+        purge(authorizable);
+        context.getAuthorizableManager().deleteAuthorizable(authorizable.get());
     }
 
-    public AclResult deleteUser(DeleteUserOptions options) {
+    public void deleteUser(DeleteUserOptions options) {
         AclUser user = context.determineUser(options.getUser(), options.getId());
         String id = context.determineId(options.getUser(), options.getId());
-        AclResult result = deleteAuthorizable(user, id);
-        context.getLogger().info("Deleted user '{}' [{}]", id, result);
-        return result;
+        deleteAuthorizable(user, id);
+        context.getLogger().info("Deleted user '{}'", id);
     }
 
-    public AclResult deleteUser(String id) {
+    public void deleteUser(String id) {
         DeleteUserOptions options = new DeleteUserOptions();
         options.setId(id);
-        return deleteUser(options);
+        deleteUser(options);
     }
 
-    public AclResult deleteUser(AclUser user) {
+    public void deleteUser(AclUser user) {
         DeleteUserOptions options = new DeleteUserOptions();
         options.setUser(user);
-        return deleteUser(options);
+        deleteUser(options);
     }
 
-    public AclResult deleteGroup(DeleteGroupOptions options) {
+    public void deleteGroup(DeleteGroupOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getId());
         String id = context.determineId(options.getGroup(), options.getId());
-        AclResult result = deleteAuthorizable(group, id);
-        context.getLogger().info("Deleted group '{}' [{}]", id, result);
-        return result;
+        deleteAuthorizable(group, id);
+        context.getLogger().info("Deleted group '{}'", id);
     }
 
-    public AclResult deleteGroup(String id) {
+    public void deleteGroup(String id) {
         DeleteGroupOptions options = new DeleteGroupOptions();
         options.setId(id);
-        return deleteGroup(options);
+        deleteGroup(options);
     }
 
-    public AclResult deleteGroup(AclGroup group) {
+    public void deleteGroup(AclGroup group) {
         DeleteGroupOptions options = new DeleteGroupOptions();
         options.setGroup(group);
-        return deleteGroup(options);
+        deleteGroup(options);
     }
 
-    public AclResult addToGroup(GroupOptions options) {
+    public void addToGroup(GroupOptions options) {
         AclAuthorizable authorizable =
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             String groupId = context.determineId(options.getGroup(), options.getGroupId());
             context.getLogger()
-                    .info("Added authorizable '{}' to group '{}' [{}]", authorizableId, groupId, AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+                    .info("Skipped adding authorizable '{}' to group '{}' (authorizable not found)", authorizableId, groupId);
+            return;
         }
-        return authorizable.addToGroup(options);
+        authorizable.addToGroup(options);
     }
 
-    public AclResult addToGroup(String authorizableId, String groupId) {
+    public void addToGroup(String authorizableId, String groupId) {
         GroupOptions options = new GroupOptions();
         options.setAuthorizableId(authorizableId);
         options.setGroupId(groupId);
-        return addToGroup(options);
+        addToGroup(options);
     }
 
-    public AclResult addToGroup(AclAuthorizable authorizable, String groupId) {
+    public void addToGroup(AclAuthorizable authorizable, String groupId) {
         GroupOptions options = new GroupOptions();
         options.setAuthorizable(authorizable);
         options.setGroupId(groupId);
-        return addToGroup(options);
+        addToGroup(options);
     }
 
-    public AclResult addToGroup(String authorizableId, AclGroup group) {
+    public void addToGroup(String authorizableId, AclGroup group) {
         GroupOptions options = new GroupOptions();
         options.setAuthorizableId(authorizableId);
         options.setGroup(group);
-        return addToGroup(options);
+        addToGroup(options);
     }
 
-    public AclResult addToGroup(AclAuthorizable authorizable, AclGroup group) {
+    public void addToGroup(AclAuthorizable authorizable, AclGroup group) {
         GroupOptions options = new GroupOptions();
         options.setAuthorizable(authorizable);
         options.setGroup(group);
-        return addToGroup(options);
+        addToGroup(options);
     }
 
-    public AclResult removeFromGroup(GroupOptions options) {
+    public void removeFromGroup(GroupOptions options) {
         AclAuthorizable authorizable =
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             String groupId = context.determineId(options.getGroup(), options.getGroupId());
             context.getLogger()
-                    .info("Removed authorizable '{}' from group '{}' [{}]", authorizableId, groupId, AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+                    .info("Skipped removing authorizable '{}' from group '{}' (authorizable not found)", authorizableId, groupId);
+            return;
         }
-        return authorizable.removeFromGroup(options);
+        authorizable.removeFromGroup(options);
     }
 
-    public AclResult removeFromGroup(String authorizableId, String groupId) {
+    public void removeFromGroup(String authorizableId, String groupId) {
         GroupOptions options = new GroupOptions();
         options.setAuthorizableId(authorizableId);
         options.setGroupId(groupId);
-        return removeFromGroup(options);
+        removeFromGroup(options);
     }
 
-    public AclResult removeFromGroup(AclAuthorizable authorizable, String groupId) {
+    public void removeFromGroup(AclAuthorizable authorizable, String groupId) {
         GroupOptions options = new GroupOptions();
         options.setAuthorizable(authorizable);
         options.setGroupId(groupId);
-        return removeFromGroup(options);
+        removeFromGroup(options);
     }
 
-    public AclResult removeFromGroup(String authorizableId, AclGroup group) {
+    public void removeFromGroup(String authorizableId, AclGroup group) {
         GroupOptions options = new GroupOptions();
         options.setAuthorizableId(authorizableId);
         options.setGroup(group);
-        return removeFromGroup(options);
+        removeFromGroup(options);
     }
 
-    public AclResult removeFromGroup(AclAuthorizable authorizable, AclGroup group) {
+    public void removeFromGroup(AclAuthorizable authorizable, AclGroup group) {
         GroupOptions options = new GroupOptions();
         options.setAuthorizable(authorizable);
         options.setGroup(group);
-        return removeFromGroup(options);
+        removeFromGroup(options);
     }
 
-    public AclResult removeFromAllGroups(AuthorizableOptions options) {
+    public void removeFromAllGroups(AuthorizableOptions options) {
         AclAuthorizable authorizable =
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
-                    .info("Removed authorizable '{}' from all groups [{}]", authorizableId, AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+                    .info("Skipped removing authorizable '{}' from all groups (authorizable not found)", authorizableId);
+            return;
         }
-        return authorizable.removeFromAllGroups();
+        authorizable.removeFromAllGroups();
     }
 
-    public AclResult removeFromAllGroups(String authorizableId) {
+    public void removeFromAllGroups(String authorizableId) {
         AuthorizableOptions options = new AuthorizableOptions();
         options.setAuthorizableId(authorizableId);
-        return removeFromAllGroups(options);
+        removeFromAllGroups(options);
     }
 
-    public AclResult removeFromAllGroups(AclAuthorizable authorizable) {
+    public void removeFromAllGroups(AclAuthorizable authorizable) {
         AuthorizableOptions options = new AuthorizableOptions();
         options.setAuthorizable(authorizable);
-        return removeFromAllGroups(options);
+        removeFromAllGroups(options);
     }
 
-    public AclResult addMember(MemberOptions options) {
+    public void addMember(MemberOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         if (group == null) {
             String memberId = context.determineId(options.getMember(), options.getMemberId());
             String groupId = context.determineId(options.getGroup(), options.getGroupId());
-            context.getLogger().info("Added member '{}' to group '{}' [{}]", memberId, groupId, AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+            context.getLogger().info("Skipped adding member '{}' to group '{}' (group not found)", memberId, groupId);
+            return;
         }
-        return group.addMember(options);
+        group.addMember(options);
     }
 
-    public AclResult addMember(String groupId, String memberId) {
+    public void addMember(String groupId, String memberId) {
         MemberOptions options = new MemberOptions();
         options.setGroupId(groupId);
         options.setMemberId(memberId);
-        return addMember(options);
+        addMember(options);
     }
 
-    public AclResult addMember(AclGroup group, String memberId) {
+    public void addMember(AclGroup group, String memberId) {
         MemberOptions options = new MemberOptions();
         options.setGroup(group);
         options.setMemberId(memberId);
-        return addMember(options);
+        addMember(options);
     }
 
-    public AclResult addMember(String groupId, AclAuthorizable member) {
+    public void addMember(String groupId, AclAuthorizable member) {
         MemberOptions options = new MemberOptions();
         options.setGroupId(groupId);
         options.setMember(member);
-        return addMember(options);
+        addMember(options);
     }
 
-    public AclResult addMember(AclGroup group, AclAuthorizable member) {
+    public void addMember(AclGroup group, AclAuthorizable member) {
         MemberOptions options = new MemberOptions();
         options.setGroup(group);
         options.setMember(member);
-        return addMember(options);
+        addMember(options);
     }
 
-    public AclResult removeMember(MemberOptions options) {
+    public void removeMember(MemberOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         if (group == null) {
             String memberId = context.determineId(options.getMember(), options.getMemberId());
             String groupId = context.determineId(options.getGroup(), options.getGroupId());
-            context.getLogger().info("Removed member '{}' from group '{}' [{}]", memberId, groupId, AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+            context.getLogger().info("Skipped removing member '{}' from group '{}' (group not found)", memberId, groupId);
+            return;
         }
-        return group.removeMember(options);
+        group.removeMember(options);
     }
 
-    public AclResult removeMember(String groupId, String memberId) {
+    public void removeMember(String groupId, String memberId) {
         MemberOptions options = new MemberOptions();
         options.setGroupId(groupId);
         options.setMemberId(memberId);
-        return removeMember(options);
+        removeMember(options);
     }
 
-    public AclResult removeMember(AclGroup group, String memberId) {
+    public void removeMember(AclGroup group, String memberId) {
         MemberOptions options = new MemberOptions();
         options.setGroup(group);
         options.setMemberId(memberId);
-        return removeMember(options);
+        removeMember(options);
     }
 
-    public AclResult removeMember(String groupId, AclAuthorizable member) {
+    public void removeMember(String groupId, AclAuthorizable member) {
         MemberOptions options = new MemberOptions();
         options.setGroupId(groupId);
         options.setMember(member);
-        return removeMember(options);
+        removeMember(options);
     }
 
-    public AclResult removeMember(AclGroup group, AclAuthorizable member) {
+    public void removeMember(AclGroup group, AclAuthorizable member) {
         MemberOptions options = new MemberOptions();
         options.setGroup(group);
         options.setMember(member);
-        return removeMember(options);
+        removeMember(options);
     }
 
-    public AclResult removeAllMembers(RemoveAllMembersOptions options) {
+    public void removeAllMembers(RemoveAllMembersOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         if (group == null) {
             String groupId = context.determineId(options.getGroup(), options.getGroupId());
-            context.getLogger().info("Removed all members from group '{}' [{}]", groupId, AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+            context.getLogger().info("Skipped removing all members from group '{}' (group not found)", groupId);
+            return;
         }
-        return group.removeAllMembers();
+        group.removeAllMembers();
     }
 
-    public AclResult removeAllMembers(String groupId) {
+    public void removeAllMembers(String groupId) {
         RemoveAllMembersOptions options = new RemoveAllMembersOptions();
         options.setGroupId(groupId);
-        return removeAllMembers(options);
+        removeAllMembers(options);
     }
 
-    public AclResult removeAllMembers(AclGroup group) {
+    public void removeAllMembers(AclGroup group) {
         RemoveAllMembersOptions options = new RemoveAllMembersOptions();
         options.setGroup(group);
-        return removeAllMembers(options);
+        removeAllMembers(options);
     }
 
-    public AclResult clear(ClearOptions options) {
+    public void clear(ClearOptions options) {
         AclAuthorizable authorizable =
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info(
-                            "Cleared permissions for authorizable '{}' at path '{}' [{}]",
+                            "Skipped clearing permissions for authorizable '{}' at path '{}' (authorizable not found)",
                             authorizableId,
-                            options.getPath(),
-                            AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+                            options.getPath());
+            return;
         }
-        return authorizable.clear(options);
+        authorizable.clear(options);
     }
 
-    public AclResult clear(String authorizableId, String path, boolean strict) {
+    public void clear(String authorizableId, String path, boolean strict) {
         ClearOptions options = new ClearOptions();
         options.setAuthorizableId(authorizableId);
         options.setPath(path);
         options.setStrict(strict);
-        return clear(options);
+        clear(options);
     }
 
-    public AclResult clear(AclAuthorizable authorizable, String path, boolean strict) {
+    public void clear(AclAuthorizable authorizable, String path, boolean strict) {
         ClearOptions options = new ClearOptions();
         options.setAuthorizable(authorizable);
         options.setPath(path);
         options.setStrict(strict);
-        return clear(options);
+        clear(options);
     }
 
-    public AclResult clear(String authorizableId, String path) {
+    public void clear(String authorizableId, String path) {
         ClearOptions options = new ClearOptions();
         options.setAuthorizableId(authorizableId);
         options.setPath(path);
-        return clear(options);
+        clear(options);
     }
 
-    public AclResult clear(AclAuthorizable authorizable, String path) {
+    public void clear(AclAuthorizable authorizable, String path) {
         ClearOptions options = new ClearOptions();
         options.setAuthorizable(authorizable);
         options.setPath(path);
-        return clear(options);
+        clear(options);
     }
 
-    public AclResult purge(AuthorizableOptions options) {
+    public void purge(AuthorizableOptions options) {
         AclAuthorizable authorizable =
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
-            context.getLogger().info("Purged authorizable '{}' [{}]", authorizableId, AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+            context.getLogger().info("Skipped purging authorizable '{}' (authorizable not found)", authorizableId);
+            return;
         }
-        return authorizable.purge();
+        authorizable.purge();
     }
 
-    public AclResult purge(String authorizableId) {
+    public void purge(String authorizableId) {
         AuthorizableOptions options = new AuthorizableOptions();
         options.setAuthorizableId(authorizableId);
-        return purge(options);
+        purge(options);
     }
 
-    public AclResult purge(AclAuthorizable authorizable) {
+    public void purge(AclAuthorizable authorizable) {
         AuthorizableOptions options = new AuthorizableOptions();
         options.setAuthorizable(authorizable);
-        return purge(options);
+        purge(options);
     }
 
-    private AclResult apply(PermissionsOptions options, boolean allow) {
+    private void apply(PermissionsOptions options, boolean allow) {
         AclAuthorizable authorizable =
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
+            String actionDescription = allow ? "allow permissions" : "deny permissions";
             context.getLogger()
                     .info(
-                            "Applied {} permissions for authorizable '{}' at path '{}' [{}]",
-                            allow ? "allow" : "deny",
+                            "Skipped setting {} for authorizable '{}' at path '{}' (authorizable not found)",
+                            actionDescription,
                             authorizableId,
-                            options.getPath(),
-                            AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+                            options.getPath());
+            return;
         }
-        return allow ? authorizable.allow(options) : authorizable.deny(options);
+        if (allow) {
+            authorizable.allow(options);
+        } else {
+            authorizable.deny(options);
+        }
     }
 
-    public AclResult allow(PermissionsOptions options) {
-        return apply(options, true);
+    public void allow(PermissionsOptions options) {
+        apply(options, true);
     }
 
-    public AclResult deny(PermissionsOptions options) {
-        return apply(options, false);
+    public void deny(PermissionsOptions options) {
+        apply(options, false);
     }
 
-    public AclResult setProperty(SetPropertyOptions options) {
+    public void setProperty(SetPropertyOptions options) {
         AclAuthorizable authorizable =
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info(
-                            "Set property '{}' for authorizable '{}' [{}]",
+                            "Skipped setting property '{}' for authorizable '{}' (authorizable not found)",
                             options.getRelPath(),
-                            authorizableId,
-                            AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+                            authorizableId);
+            return;
         }
-        return authorizable.setProperty(options);
+        authorizable.setProperty(options);
     }
 
-    public AclResult setProperty(String authorizableId, String relPath, String value) {
+    public void setProperty(String authorizableId, String relPath, String value) {
         SetPropertyOptions options = new SetPropertyOptions();
         options.setAuthorizableId(authorizableId);
         options.setRelPath(relPath);
         options.setValue(value);
-        return setProperty(options);
+        setProperty(options);
     }
 
-    public AclResult setProperty(AclAuthorizable authorizable, String relPath, String value) {
+    public void setProperty(AclAuthorizable authorizable, String relPath, String value) {
         SetPropertyOptions options = new SetPropertyOptions();
         options.setAuthorizable(authorizable);
         options.setRelPath(relPath);
         options.setValue(value);
-        return setProperty(options);
+        setProperty(options);
     }
 
-    public AclResult removeProperty(RemovePropertyOptions options) {
+    public void removeProperty(RemovePropertyOptions options) {
         AclAuthorizable authorizable =
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
                     .info(
-                            "Removed property '{}' for authorizable '{}' [{}]",
+                            "Skipped removing property '{}' for authorizable '{}' (authorizable not found)",
                             options.getRelPath(),
-                            authorizableId,
-                            AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+                            authorizableId);
+            return;
         }
-        return authorizable.removeProperty(options);
+        authorizable.removeProperty(options);
     }
 
-    public AclResult removeProperty(String authorizableId, String relPath) {
+    public void removeProperty(String authorizableId, String relPath) {
         RemovePropertyOptions options = new RemovePropertyOptions();
         options.setAuthorizableId(authorizableId);
         options.setRelPath(relPath);
-        return removeProperty(options);
+        removeProperty(options);
     }
 
-    public AclResult removeProperty(AclAuthorizable authorizable, String relPath) {
+    public void removeProperty(AclAuthorizable authorizable, String relPath) {
         RemovePropertyOptions options = new RemovePropertyOptions();
         options.setAuthorizable(authorizable);
         options.setRelPath(relPath);
-        return removeProperty(options);
+        removeProperty(options);
     }
 
-    public AclResult setPassword(PasswordOptions options) {
+    public void setPassword(PasswordOptions options) {
         AclUser user = context.determineUser(options.getUser(), options.getUserId());
         if (user == null) {
             String userId = context.determineId(options.getUser(), options.getUserId());
-            context.getLogger().info("Set password for user '{}' [{}]", userId, AclResult.SKIPPED);
-            return AclResult.SKIPPED;
+            context.getLogger().info("Skipped setting password for user '{}' (user not found)", userId);
+            return;
         }
-        return user.setPassword(options);
+        user.setPassword(options);
     }
 
-    public AclResult setPassword(String userId, String password) {
+    public void setPassword(String userId, String password) {
         PasswordOptions options = new PasswordOptions();
         options.setUserId(userId);
         options.setPassword(password);
-        return setPassword(options);
+        setPassword(options);
     }
 
-    public AclResult setPassword(AclUser user, String password) {
+    public void setPassword(AclUser user, String password) {
         PasswordOptions options = new PasswordOptions();
         options.setUser(user);
         options.setPassword(password);
-        return setPassword(options);
+        setPassword(options);
     }
 
     public AclUser user(User user) {
