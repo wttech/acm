@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.acl.authorizable;
 
 import dev.vml.es.acm.core.acl.AclContext;
-import dev.vml.es.acm.core.acl.AclResult;
 import dev.vml.es.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -19,31 +18,28 @@ public class AclUser extends AclAuthorizable {
         this.user = user;
     }
 
-    public AclResult setPassword(Closure<PasswordOptions> closure) {
-        return setPassword(GroovyUtils.with(new PasswordOptions(), closure));
+    public void setPassword(Closure<PasswordOptions> closure) {
+        setPassword(GroovyUtils.with(new PasswordOptions(), closure));
     }
 
     @Override
-    public AclResult purge() {
-        AclResult result = AclResult.of(removeFromAllGroups(), clear("/"));
-        context.getLogger().info("Purged user '{}' [{}]", getId(), result);
-        return result;
+    public void purge() {
+        removeFromAllGroups();
+        clear("/");
+        context.getLogger().info("Purged user '{}'", getId());
     }
 
-    public AclResult setPassword(PasswordOptions options) {
-        return setPassword(options.getPassword());
+    public void setPassword(PasswordOptions options) {
+        setPassword(options.getPassword());
     }
 
-    public AclResult setPassword(String password) {
-        AclResult result;
+    public void setPassword(String password) {
         if (context.getAuthorizableManager().testPassword(user, password)) {
-            result = AclResult.OK;
+            context.getLogger().info("Password already set for user '{}'", getId());
         } else {
             context.getAuthorizableManager().changePassword(user, password);
-            result = AclResult.CHANGED;
+            context.getLogger().info("Set password for user '{}'", getId());
         }
-        context.getLogger().info("Set password for user '{}' [{}]", getId(), result);
-        return result;
     }
 
     @Override
