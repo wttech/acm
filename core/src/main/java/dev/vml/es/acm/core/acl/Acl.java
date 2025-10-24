@@ -114,7 +114,7 @@ public class Acl {
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
             created = true;
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.FAIL) {
-            throw new AclException(String.format("User '%s' already exists", options.getId()));
+            throw new AclException(String.format("Cannot create user '%s' as it already exists!", options.getId()));
         } else if (options.getMode() == CreateAuthorizableOptions.Mode.OVERRIDE) {
             context.getAuthorizableManager().updateUser(user, options.getPassword(), options.determineProperties());
             created = true;
@@ -123,7 +123,7 @@ public class Acl {
         if (created) {
             context.getLogger().info("Created user '{}'", aclUser.getId());
         } else {
-            context.getLogger().info("User '{}' already exists", aclUser.getId());
+            context.getLogger().info("Skipped creating user '{}' (already exists)", aclUser.getId());
         }
         return aclUser;
     }
@@ -166,7 +166,7 @@ public class Acl {
         if (created) {
             context.getLogger().info("Created group '{}'", aclGroup.getId());
         } else {
-            context.getLogger().info("Group '{}' already exists", aclGroup.getId());
+            context.getLogger().info("Skipped creating group '{}' (already exists)", aclGroup.getId());
         }
         return aclGroup;
     }
@@ -202,11 +202,11 @@ public class Acl {
 
     private void deleteAuthorizable(AclAuthorizable authorizable, String id) {
         if (authorizable == null) {
-            context.getLogger().info("Authorizable '{}' not found (already deleted or never existed)", id);
+            context.getLogger().info("Skipped deleting authorizable '{}' (already deleted or never existed)", id);
             return;
         } 
         if (context.getAuthorizableManager().getAuthorizable(id) == null) {
-            context.getLogger().info("Authorizable '{}' not found (already deleted)", id);
+            context.getLogger().info("Skipped deleting authorizable '{}' (already deleted)", id);
             return;
         }
         

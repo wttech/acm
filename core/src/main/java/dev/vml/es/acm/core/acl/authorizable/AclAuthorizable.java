@@ -102,7 +102,7 @@ public class AclAuthorizable {
         if (changed) {
             context.getLogger().info("Removed authorizable '{}' from group '{}'", id, groupId);
         } else {
-            context.getLogger().info("Authorizable '{}' was not member of group '{}'", id, groupId);
+            context.getLogger().info("Skipped removing authorizable '{}' from group '{}' (not a member)", id, groupId);
         }
     }
 
@@ -132,7 +132,7 @@ public class AclAuthorizable {
             if (anyChanged) {
                 context.getLogger().info("Removed authorizable '{}' from all groups", id);
             } else {
-                context.getLogger().info("Authorizable '{}' was not member of any groups", id);
+                context.getLogger().info("Skipped removing authorizable '{}' from all groups (not a member of any group)", id);
             }
         } catch (RepositoryException e) {
             throw new AclException(String.format("Cannot remove authorizable '%s' from all groups", id), e);
@@ -156,7 +156,7 @@ public class AclAuthorizable {
         if (changed) {
             context.getLogger().info("Cleared permissions for authorizable '{}' at path '{}'", id, path);
         } else {
-            context.getLogger().info("No permissions to clear for authorizable '{}' at path '{}'", id, path);
+            context.getLogger().info("Skipped clearing permissions for authorizable '{}' at path '{}' (no permissions to clear)", id, path);
         }
     }
 
@@ -165,7 +165,7 @@ public class AclAuthorizable {
     }
 
     public void purge() {
-        context.getLogger().info("Purge operation skipped for authorizable '{}'", id);
+        context.getLogger().info("Skipped purging authorizable '{}' (operation not supported)", id);
     }
 
     private void apply(PermissionsOptions options, boolean allow) {
@@ -230,7 +230,7 @@ public class AclAuthorizable {
         if (changed) {
             context.getLogger().info("Removed property '{}' for authorizable '{}'", relPath, id);
         } else {
-            context.getLogger().info("Property '{}' was not set for authorizable '{}'", relPath, id);
+            context.getLogger().info("Skipped removing property '{}' for authorizable '{}' (property not set)", relPath, id);
         }
     }
 

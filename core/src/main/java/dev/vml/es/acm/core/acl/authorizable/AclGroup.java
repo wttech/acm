@@ -46,7 +46,7 @@ public class AclGroup extends AclAuthorizable {
         if (changed) {
             context.getLogger().info("Added member '{}' to group '{}'", memberId, getId());
         } else {
-            context.getLogger().info("Member '{}' already in group '{}'", memberId, getId());
+            context.getLogger().info("Skipped adding member '{}' to group '{}' (already a member)", memberId, getId());
         }
     }
 
@@ -71,11 +71,11 @@ public class AclGroup extends AclAuthorizable {
             return;
         }
         
-        boolean changed = context.getAuthorizableManager().removeMember(group, member.get());
+        boolean changed = context.getAuthorizableManager().removeMember(get(), member.get());
         if (changed) {
             context.getLogger().info("Removed member '{}' from group '{}'", memberId, getId());
         } else {
-            context.getLogger().info("Member '{}' was not in group '{}'", memberId, getId());
+            context.getLogger().info("Skipped removing member '{}' from group '{}' (not a member)", memberId, getId());
         }
     }
 
@@ -102,7 +102,7 @@ public class AclGroup extends AclAuthorizable {
             if (anyChanged) {
                 context.getLogger().info("Removed all members from group '{}'", getId());
             } else {
-                context.getLogger().info("Group '{}' had no members to remove", getId());
+                context.getLogger().info("Skipped removing all members from group '{}' (no members to remove)", getId());
             }
         } catch (RepositoryException e) {
             throw new AclException(String.format("Failed to remove all members from group '%s'", getId()), e);
