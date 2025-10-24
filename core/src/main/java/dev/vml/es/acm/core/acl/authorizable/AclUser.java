@@ -35,7 +35,7 @@ public class AclUser extends AclAuthorizable {
 
     public void setPassword(String password) {
         if (context.getAuthorizableManager().testPassword(user, password)) {
-            context.getLogger().info("Password already set for user '{}'", getId());
+            context.getLogger().info("Skipped setting password for user '{}' (already set)", getId());
         } else {
             context.getAuthorizableManager().changePassword(user, password);
             context.getLogger().info("Set password for user '{}'", getId());

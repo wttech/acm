@@ -531,11 +531,11 @@ public class Acl {
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
-            String action = allow ? "allow" : "deny";
+            String actionDescription = allow ? "allow permissions" : "deny permissions";
             context.getLogger()
                     .info(
-                            "Skipped {} permissions for authorizable '{}' at path '{}' (authorizable not found)",
-                            action,
+                            "Skipped setting {} for authorizable '{}' at path '{}' (authorizable not found)",
+                            actionDescription,
                             authorizableId,
                             options.getPath());
             return;

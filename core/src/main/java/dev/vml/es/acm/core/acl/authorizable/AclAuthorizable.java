@@ -73,7 +73,7 @@ public class AclAuthorizable {
         if (changed) {
             context.getLogger().info("Added authorizable '{}' to group '{}'", id, groupId);
         } else {
-            context.getLogger().info("Authorizable '{}' already member of group '{}'", id, groupId);
+            context.getLogger().info("Skipped adding authorizable '{}' to group '{}' (already member)", id, groupId);
         }
     }
 
@@ -135,7 +135,7 @@ public class AclAuthorizable {
                 context.getLogger().info("Authorizable '{}' was not member of any groups", id);
             }
         } catch (RepositoryException e) {
-            throw new AclException(String.format("Failed to remove authorizable '%s' from all groups", id), e);
+            throw new AclException(String.format("Cannot remove authorizable '%s' from all groups", id), e);
         }
     }
 
@@ -173,10 +173,10 @@ public class AclAuthorizable {
         List<String> permissions = options.determineAllPermissions();
         Map<String, Object> restrictions = options.determineAllRestrictions();
         PermissionsOptions.Mode mode = options.getMode();
-        String action = allow ? "allow" : "deny";
         
         if (context.isCompositeNodeStore() && isAppsOrLibsPath(path)) {
-            context.getLogger().info("Skipped {} permissions for authorizable '{}' at path '{}' (composite node store)", action, id, path);
+            String actionDescription = allow ? "allow permissions" : "deny permissions";
+            context.getLogger().info("Skipped setting {} for authorizable '{}' at path '{}' (composite node store)", actionDescription, id, path);
             return;
         }
         
@@ -184,15 +184,18 @@ public class AclAuthorizable {
             if (mode == PermissionsOptions.Mode.FAIL) {
                 throw new AclException(String.format("Path '%s' not found", path));
             }
-            context.getLogger().info("Skipped {} permissions for authorizable '{}' at path '{}' (path not found)", action, id, path);
+            String actionDescription = allow ? "allow permissions" : "deny permissions";
+            context.getLogger().info("Skipped setting {} for authorizable '{}' at path '{}' (path not found)", actionDescription, id, path);
             return;
         }
         
         if (context.getPermissionsManager().check(authorizable, path, permissions, restrictions, allow)) {
-            context.getLogger().info("Permissions already set to {} for authorizable '{}' at path '{}'", action, id, path);
+            String actionDescription = allow ? "allow permissions" : "deny permissions";
+            context.getLogger().info("Skipped setting {} for authorizable '{}' at path '{}' (already set)", actionDescription, id, path);
         } else {
             context.getPermissionsManager().apply(authorizable, path, permissions, restrictions, allow);
-            context.getLogger().info("Applied {} permissions for authorizable '{}' at path '{}'", action, id, path);
+            String actionDescription = allow ? "allow permissions" : "deny permissions";
+            context.getLogger().info("Applied {} for authorizable '{}' at path '{}'", actionDescription, id, path);
         }
     }
 
@@ -211,7 +214,7 @@ public class AclAuthorizable {
     public void setProperty(String relPath, String value) {
         List<String> values = context.getAuthorizableManager().getProperty(authorizable, relPath);
         if (values != null && values.contains(value)) {
-            context.getLogger().info("Property '{}' already set for authorizable '{}'", relPath, id);
+            context.getLogger().info("Skipped setting property '{}' for authorizable '{}' (already set)", relPath, id);
         } else {
             context.getAuthorizableManager().setProperty(authorizable, relPath, value);
             context.getLogger().info("Set property '{}' for authorizable '{}'", relPath, id);
