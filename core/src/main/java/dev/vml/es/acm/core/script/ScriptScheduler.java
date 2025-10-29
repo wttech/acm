@@ -43,7 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-        service = {ResourceChangeListener.class, EventListener.class, JobConsumer.class},
+        service = {ScriptScheduler.class, ResourceChangeListener.class, EventListener.class, JobConsumer.class},
         immediate = true,
         property = {
             ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
@@ -458,4 +458,23 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         }
         return true;
     }
+
+    public Optional<ScriptSchedule> findScriptSchedule(String path) {
+        Map<String, Object> filterProps = new HashMap<>();
+        filterProps.put(ScriptScheduler.JOB_PROP_TYPE, ScriptScheduler.JobType.CRON.name());
+        filterProps.put(ScriptScheduler.JOB_PROP_SCRIPT_PATH, path);
+
+        @SuppressWarnings("unchecked")
+        Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(ScriptScheduler.JOB_TOPIC, -1, filterProps);
+
+        if (jobInfos.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ScheduledJobInfo jobInfo = jobInfos.iterator().next();
+        Date nextExecution = jobInfo.getNextScheduledExecution();
+
+        return Optional.of(new ScriptSchedule(path, nextExecution));
+    }
+
 }

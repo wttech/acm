@@ -36,12 +36,12 @@ public class AclGroup extends AclAuthorizable {
     public void addMember(MemberOptions options) {
         AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         String memberId = context.determineId(options.getMember(), options.getMemberId());
-        
+
         if (member == null) {
             context.getLogger().info("Skipped adding member '{}' to group '{}' (member not found)", memberId, getId());
             return;
         }
-        
+
         boolean changed = context.getAuthorizableManager().addMember(group, member.get());
         if (changed) {
             context.getLogger().info("Added member '{}' to group '{}'", memberId, getId());
@@ -65,12 +65,13 @@ public class AclGroup extends AclAuthorizable {
     public void removeMember(MemberOptions options) {
         AclAuthorizable member = context.determineAuthorizable(options.getMember(), options.getMemberId());
         String memberId = context.determineId(options.getMember(), options.getMemberId());
-        
+
         if (member == null) {
-            context.getLogger().info("Skipped removing member '{}' from group '{}' (member not found)", memberId, getId());
+            context.getLogger()
+                    .info("Skipped removing member '{}' from group '{}' (member not found)", memberId, getId());
             return;
         }
-        
+
         boolean changed = context.getAuthorizableManager().removeMember(group, member.get());
         if (changed) {
             context.getLogger().info("Removed member '{}' from group '{}'", memberId, getId());
@@ -102,7 +103,8 @@ public class AclGroup extends AclAuthorizable {
             if (anyChanged) {
                 context.getLogger().info("Removed all members from group '{}'", getId());
             } else {
-                context.getLogger().info("Skipped removing all members from group '{}' (no members to remove)", getId());
+                context.getLogger()
+                        .info("Skipped removing all members from group '{}' (no members to remove)", getId());
             }
         } catch (RepositoryException e) {
             throw new AclException(String.format("Cannot remove all members from group '%s'!", getId()), e);

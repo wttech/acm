@@ -14,6 +14,10 @@ const DateExplained: React.FC<DateExplainedProps> = ({ value }) => {
   }
 
   if (formatter.isTimezoneDifference()) {
+    const date = value instanceof Date ? value : new Date(value);
+    const isFuture = date.getTime() > Date.now();
+    const relativeText = isFuture ? 'This will be' : 'This was';
+
     return (
       <>
         <Text>{formatter.dateAtInstance(value)}</Text>
@@ -26,7 +30,7 @@ const DateExplained: React.FC<DateExplainedProps> = ({ value }) => {
               <p>
                 In your local timezone ({formatter.userTimezone()}), the date and time are {formatter.dateAtUser(value)}.
               </p>
-              <p>This was {formatter.dateRelative(value)}.</p>
+              <p>{relativeText} {formatter.dateRelative(value)}.</p>
             </Text>
           </Content>
         </ContextualHelp>

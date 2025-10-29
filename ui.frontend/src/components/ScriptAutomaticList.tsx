@@ -19,7 +19,6 @@ import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import ScriptsDeleteButton from './ScriptsDeleteButton';
 import ScriptsSyncButton from './ScriptsSyncButton';
 import Toggle from './Toggle';
-import UserInfo from './UserInfo';
 
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
@@ -96,7 +95,14 @@ const ScriptAutomaticList: React.FC = () => {
       >
         <TableHeader>
           <Column width="4fr">Name</Column>
-          <Column width="5fr">Last Execution</Column>
+          <Column width="3fr">Last Execution</Column>
+          <Column width="3fr">
+            <Text>Next Execution</Text>
+            <ContextualHelp variant="info">
+              <Heading>Explanation</Heading>
+              <Content>Shows the next scheduled execution time e.g. for scripts with cron schedules.</Content>
+            </ContextualHelp>
+          </Column>
           <Column width="3fr">
             <Text>Average Duration</Text>
             <ContextualHelp variant="info">
@@ -116,6 +122,7 @@ const ScriptAutomaticList: React.FC = () => {
           {(scripts.list || []).map((script) => {
             const scriptStats = scripts.stats.find((stat) => stat.path === script.id)!;
             const lastExecution = scriptStats?.lastExecution;
+            const scriptSchedule = scripts.schedules.find((sched) => sched.path === script.id)!;
 
             return (
               <Row key={script.id}>
@@ -130,13 +137,20 @@ const ScriptAutomaticList: React.FC = () => {
                         <Text>
                           <DateExplained value={lastExecution.startDate} />
                         </Text>
-                        <Text>by</Text>
-                        <UserInfo id={lastExecution.userId} />
                       </>
                     ) : (
                       <Text>&mdash;</Text>
                     )}
                   </Flex>
+                </Cell>
+                <Cell>
+                  {scriptSchedule?.nextExecution ? (
+                    <Text>
+                      <DateExplained value={scriptSchedule.nextExecution} />
+                    </Text>
+                  ) : (
+                    <Text>&mdash;</Text>
+                  )}
                 </Cell>
                 <Cell>
                   <Text>{lastExecution ? formatter.duration(scriptStats.averageDuration) : <>&mdash;</>}</Text>
