@@ -122,7 +122,7 @@ const ScriptAutomaticList: React.FC = () => {
           {(scripts.list || []).map((script) => {
             const scriptStats = scripts.stats.find((stat) => stat.path === script.id)!;
             const lastExecution = scriptStats?.lastExecution;
-            const scriptSchedule = scripts.schedules.find((sched) => sched.path === script.id)!;
+            const scriptSchedule = scripts.schedules.find((sched) => sched.path === script.id);
 
             return (
               <Row key={script.id}>
