@@ -25,6 +25,11 @@ export type ScriptStats = {
   averageDuration: number;
 };
 
+export type ScriptSchedule = {
+  path: string;
+  nextExecution: string;
+};
+
 export const ScriptRoot = '/conf/acm/settings/script';
 
 export const ScriptRoots: Record<ScriptType, string> = {

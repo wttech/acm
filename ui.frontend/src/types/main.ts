@@ -2,7 +2,7 @@ import { InstanceRole, InstanceType } from './aem.ts';
 import { Execution, ExecutionStatus } from './execution.ts';
 import { HealthStatus } from './health.ts';
 import { Input, InputValue } from './input.ts';
-import { Script, ScriptStats } from './script.ts';
+import { Script, ScriptSchedule, ScriptStats } from './script.ts';
 import { Snippet } from './snippet.ts';
 import { Suggestion } from './suggestion.ts';
 
@@ -93,4 +93,5 @@ export enum EventType {
 export type ScriptOutput = {
   list: Script[];
   stats: ScriptStats[];
+  schedules: ScriptSchedule[];
 };

@@ -63,12 +63,12 @@ public class AclAuthorizable {
     public void addToGroup(GroupOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         String groupId = context.determineId(options.getGroup(), options.getGroupId());
-        
+
         if (group == null) {
             context.getLogger().info("Skipped adding authorizable '{}' to group '{}' (group not found)", id, groupId);
             return;
         }
-        
+
         boolean changed = context.getAuthorizableManager().addMember(group.get(), authorizable);
         if (changed) {
             context.getLogger().info("Added authorizable '{}' to group '{}'", id, groupId);
@@ -92,12 +92,13 @@ public class AclAuthorizable {
     public void removeFromGroup(GroupOptions options) {
         AclGroup group = context.determineGroup(options.getGroup(), options.getGroupId());
         String groupId = context.determineId(options.getGroup(), options.getGroupId());
-        
+
         if (group == null) {
-            context.getLogger().info("Skipped removing authorizable '{}' from group '{}' (group not found)", id, groupId);
+            context.getLogger()
+                    .info("Skipped removing authorizable '{}' from group '{}' (group not found)", id, groupId);
             return;
         }
-        
+
         boolean changed = context.getAuthorizableManager().removeMember(group.get(), authorizable);
         if (changed) {
             context.getLogger().info("Removed authorizable '{}' from group '{}'", id, groupId);
@@ -132,7 +133,8 @@ public class AclAuthorizable {
             if (anyChanged) {
                 context.getLogger().info("Removed authorizable '{}' from all groups", id);
             } else {
-                context.getLogger().info("Skipped removing authorizable '{}' from all groups (not a member of any group)", id);
+                context.getLogger()
+                        .info("Skipped removing authorizable '{}' from all groups (not a member of any group)", id);
             }
         } catch (RepositoryException e) {
             throw new AclException(String.format("Cannot remove authorizable '%s' from all groups!", id), e);
@@ -145,18 +147,27 @@ public class AclAuthorizable {
 
     public void clear(String path, boolean strict) {
         if (context.isCompositeNodeStore() && isAppsOrLibsPath(path)) {
-            context.getLogger().info("Skipped clearing permissions for authorizable '{}' at path '{}' (composite node store)", id, path);
+            context.getLogger()
+                    .info(
+                            "Skipped clearing permissions for authorizable '{}' at path '{}' (composite node store)",
+                            id,
+                            path);
             return;
         }
         if (context.getResourceResolver().getResource(path) == null) {
-            context.getLogger().info("Skipped clearing permissions for authorizable '{}' at path '{}' (path not found)", id, path);
+            context.getLogger()
+                    .info("Skipped clearing permissions for authorizable '{}' at path '{}' (path not found)", id, path);
             return;
         }
         boolean changed = context.getPermissionsManager().clear(authorizable, path, strict);
         if (changed) {
             context.getLogger().info("Cleared permissions for authorizable '{}' at path '{}'", id, path);
         } else {
-            context.getLogger().info("Skipped clearing permissions for authorizable '{}' at path '{}' (no permissions to clear)", id, path);
+            context.getLogger()
+                    .info(
+                            "Skipped clearing permissions for authorizable '{}' at path '{}' (no permissions to clear)",
+                            id,
+                            path);
         }
     }
 
@@ -173,25 +184,41 @@ public class AclAuthorizable {
         List<String> permissions = options.determineAllPermissions();
         Map<String, Object> restrictions = options.determineAllRestrictions();
         PermissionsOptions.Mode mode = options.getMode();
-        
+
         if (context.isCompositeNodeStore() && isAppsOrLibsPath(path)) {
             String actionDescription = allow ? "allow permissions" : "deny permissions";
-            context.getLogger().info("Skipped setting {} for authorizable '{}' at path '{}' (composite node store)", actionDescription, id, path);
+            context.getLogger()
+                    .info(
+                            "Skipped setting {} for authorizable '{}' at path '{}' (composite node store)",
+                            actionDescription,
+                            id,
+                            path);
             return;
         }
-        
+
         if (context.getResourceResolver().getResource(path) == null) {
             if (mode == PermissionsOptions.Mode.FAIL) {
-                throw new AclException(String.format("Cannot apply permissions for authorizable '%s' at path '%s'! (path not found)", id, path));
+                throw new AclException(String.format(
+                        "Cannot apply permissions for authorizable '%s' at path '%s'! (path not found)", id, path));
             }
             String actionDescription = allow ? "allow permissions" : "deny permissions";
-            context.getLogger().info("Skipped setting {} for authorizable '{}' at path '{}' (path not found)", actionDescription, id, path);
+            context.getLogger()
+                    .info(
+                            "Skipped setting {} for authorizable '{}' at path '{}' (path not found)",
+                            actionDescription,
+                            id,
+                            path);
             return;
         }
-        
+
         if (context.getPermissionsManager().check(authorizable, path, permissions, restrictions, allow)) {
             String actionDescription = allow ? "allow permissions" : "deny permissions";
-            context.getLogger().info("Skipped setting {} for authorizable '{}' at path '{}' (already set)", actionDescription, id, path);
+            context.getLogger()
+                    .info(
+                            "Skipped setting {} for authorizable '{}' at path '{}' (already set)",
+                            actionDescription,
+                            id,
+                            path);
         } else {
             context.getPermissionsManager().apply(authorizable, path, permissions, restrictions, allow);
             String actionDescription = allow ? "allow permissions" : "deny permissions";
@@ -230,7 +257,8 @@ public class AclAuthorizable {
         if (changed) {
             context.getLogger().info("Removed property '{}' for authorizable '{}'", relPath, id);
         } else {
-            context.getLogger().info("Skipped removing property '{}' for authorizable '{}' (property not set)", relPath, id);
+            context.getLogger()
+                    .info("Skipped removing property '{}' for authorizable '{}' (property not set)", relPath, id);
         }
     }
 

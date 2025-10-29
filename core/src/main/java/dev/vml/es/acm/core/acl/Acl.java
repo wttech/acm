@@ -204,12 +204,12 @@ public class Acl {
         if (authorizable == null) {
             context.getLogger().info("Skipped deleting authorizable '{}' (already deleted or never existed)", id);
             return;
-        } 
+        }
         if (context.getAuthorizableManager().getAuthorizable(id) == null) {
             context.getLogger().info("Skipped deleting authorizable '{}' (already deleted)", id);
             return;
         }
-        
+
         purge(authorizable);
         context.getAuthorizableManager().deleteAuthorizable(authorizable.get());
     }
@@ -259,7 +259,10 @@ public class Acl {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             String groupId = context.determineId(options.getGroup(), options.getGroupId());
             context.getLogger()
-                    .info("Skipped adding authorizable '{}' to group '{}' (authorizable not found)", authorizableId, groupId);
+                    .info(
+                            "Skipped adding authorizable '{}' to group '{}' (authorizable not found)",
+                            authorizableId,
+                            groupId);
             return;
         }
         authorizable.addToGroup(options);
@@ -300,7 +303,10 @@ public class Acl {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             String groupId = context.determineId(options.getGroup(), options.getGroupId());
             context.getLogger()
-                    .info("Skipped removing authorizable '{}' from group '{}' (authorizable not found)", authorizableId, groupId);
+                    .info(
+                            "Skipped removing authorizable '{}' from group '{}' (authorizable not found)",
+                            authorizableId,
+                            groupId);
             return;
         }
         authorizable.removeFromGroup(options);
@@ -340,7 +346,9 @@ public class Acl {
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
             context.getLogger()
-                    .info("Skipped removing authorizable '{}' from all groups (authorizable not found)", authorizableId);
+                    .info(
+                            "Skipped removing authorizable '{}' from all groups (authorizable not found)",
+                            authorizableId);
             return;
         }
         authorizable.removeFromAllGroups();
@@ -402,7 +410,8 @@ public class Acl {
         if (group == null) {
             String memberId = context.determineId(options.getMember(), options.getMemberId());
             String groupId = context.determineId(options.getGroup(), options.getGroupId());
-            context.getLogger().info("Skipped removing member '{}' from group '{}' (group not found)", memberId, groupId);
+            context.getLogger()
+                    .info("Skipped removing member '{}' from group '{}' (group not found)", memberId, groupId);
             return;
         }
         group.removeMember(options);

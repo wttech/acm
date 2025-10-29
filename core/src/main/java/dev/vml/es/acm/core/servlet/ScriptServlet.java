@@ -9,6 +9,8 @@ import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.replication.Activator;
 import dev.vml.es.acm.core.script.Script;
 import dev.vml.es.acm.core.script.ScriptRepository;
+import dev.vml.es.acm.core.script.ScriptSchedule;
+import dev.vml.es.acm.core.script.ScriptScheduler;
 import dev.vml.es.acm.core.script.ScriptStats;
 import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.servlet.input.ScriptInput;
@@ -70,6 +72,9 @@ public class ScriptServlet extends SlingAllMethodsServlet {
     @Reference
     private transient SpaSettings spaSettings;
 
+    @Reference
+    private transient ScriptScheduler scriptScheduler;
+
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         long statsLimit =
@@ -101,8 +106,14 @@ public class ScriptServlet extends SlingAllMethodsServlet {
                     .map(Script::getPath)
                     .map(path -> ScriptStats.forCompletedByPath(request.getResourceResolver(), path, statsLimit))
                     .collect(Collectors.toList());
+            List<ScriptSchedule> schedules = scripts.stream()
+                    .map(Script::getPath)
+                    .map(path -> scriptScheduler.findScriptSchedule(path))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());
 
-            ScriptListOutput output = new ScriptListOutput(scripts, stats);
+            ScriptListOutput output = new ScriptListOutput(scripts, stats, schedules);
             respondJson(response, ok("Scripts listed successfully", output));
         } catch (Exception e) {
             LOG.error("Scripts cannot be read!", e);
