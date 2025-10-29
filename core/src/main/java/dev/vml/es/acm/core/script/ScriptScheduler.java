@@ -476,5 +476,4 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
         return Optional.of(new ScriptSchedule(path, nextExecution));
     }
-
 }
