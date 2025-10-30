@@ -34,6 +34,9 @@ function App() {
       role: InstanceRole.AUTHOR,
       type: InstanceType.CLOUD_CONTAINER,
     },
+    permissions: {
+      console: false,
+    },
   });
 
   const isFetching = useRef(false);

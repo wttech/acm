@@ -42,7 +42,6 @@ const ConsolePage = () => {
   const { execution, setExecution, executing, setExecuting } = useExecutionPolling(queuedExecution?.id, appState.spaSettings.executionPollInterval);
   const [autoscroll, setAutoscroll] = useState<boolean>(true);
 
-  // TODO if console template cannot be loaded it means that console is disabled - handle it in UI
   useEffect(() => {
     if (code === undefined) {
       toastRequest<ScriptOutput>({

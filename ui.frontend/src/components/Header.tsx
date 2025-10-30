@@ -7,9 +7,12 @@ import Home from '@spectrum-icons/workflow/Home';
 import Maintenance from '@spectrum-icons/workflow/Settings';
 import { useLocation } from 'react-router-dom';
 import { AppLink } from '../AppLink.tsx';
+import { useAppState } from '../hooks/app.ts';
+import Toggle from './Toggle.tsx';
 
 const Header = () => {
   const location = useLocation();
+  const state = useAppState();
 
   return (
     <Flex justifyContent="center" gap="size-100" marginBottom="size-200">
@@ -18,12 +21,14 @@ const Header = () => {
           <Home />
         </Button>
       </AppLink>
-      <AppLink to="/console">
-        <Button variant={location.pathname.startsWith('/console') ? 'accent' : 'primary'} style="outline">
-          <Draft />
-          <Text>Console</Text>
-        </Button>
-      </AppLink>
+      <Toggle when={state.permissions.console}>
+        <AppLink to="/console">
+          <Button variant={location.pathname.startsWith('/console') ? 'accent' : 'primary'} style="outline">
+            <Draft />
+            <Text>Console</Text>
+          </Button>
+        </AppLink>
+      </Toggle>
       <AppLink to="/scripts">
         <Button variant={location.pathname.startsWith('/scripts') ? 'accent' : 'primary'} style="outline">
           <FileCode />

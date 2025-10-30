@@ -133,6 +133,21 @@ public class Executor implements EventListener {
         }
     }
 
+    public boolean authorize(Executable executable, String userId) {
+        return ResolverUtils.queryContentResolver(resolverFactory, userId, resolver -> {
+            return authorize(executable, resolver);
+        });
+    }
+
+    public boolean authorize(Executable executable, ResourceResolver resolver) {
+        String scriptPath = executable.getId();
+        if (Executable.CONSOLE_ID.equals(executable.getId())) {
+            scriptPath = Executable.CONSOLE_SCRIPT_PATH;
+        }
+        ScriptRepository repository = new ScriptRepository(resolver);
+        return repository.read(scriptPath).isPresent();
+    }
+
     public ExecutionContext createContext(
             String id,
             String userId,
@@ -374,16 +389,5 @@ public class Executor implements EventListener {
 
     private void useHistory(ResourceResolverFactory resolverFactory, Consumer<ExecutionHistory> consumer) {
         ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.accept(new ExecutionHistory(r)));
-    }
-
-    public boolean authorize(String executableId, String userId) {
-        return ResolverUtils.queryContentResolver(resolverFactory, userId, resolver -> {
-            String scriptPath = executableId;
-            if (Executable.CONSOLE_ID.equals(executableId)) {
-                scriptPath = Executable.CONSOLE_SCRIPT_PATH;
-            }
-            ScriptRepository repository = new ScriptRepository(resolver);
-            return repository.read(scriptPath).isPresent();
-        });
     }
 }

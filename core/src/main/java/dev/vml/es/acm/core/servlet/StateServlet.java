@@ -4,13 +4,16 @@ import static dev.vml.es.acm.core.util.ServletResult.error;
 import static dev.vml.es.acm.core.util.ServletResult.ok;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 
+import dev.vml.es.acm.core.code.Executable;
 import dev.vml.es.acm.core.code.ExecutionQueue;
+import dev.vml.es.acm.core.code.Executor;
 import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.mock.MockHttpFilter;
 import dev.vml.es.acm.core.mock.MockStatus;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
+import dev.vml.es.acm.core.state.Permissions;
 import dev.vml.es.acm.core.state.State;
 import java.io.IOException;
 import javax.servlet.Servlet;
@@ -51,12 +54,16 @@ public class StateServlet extends SlingAllMethodsServlet {
     @Reference
     private transient SpaSettings spaSettings;
 
+    @Reference
+    private transient Executor executor;
+
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
             MockStatus mockStatus = mockHttpFilter.checkStatus();
-            State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getSettings());
+            Permissions permissions = new Permissions(executor.authorize(Executable.CONSOLE_ID, request.getResourceResolver()));
+            State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getSettings(), permissions);
 
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {
