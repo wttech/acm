@@ -33,6 +33,8 @@ import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(
         immediate = true,
@@ -42,6 +44,8 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 public class Executor implements EventListener {
 
     public static final String LOCK_DIR = "executor";
+
+    private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
     @ObjectClassDefinition(name = "AEM Content Manager - Code Executor")
     public @interface Config {
@@ -278,10 +282,8 @@ public class Executor implements EventListener {
                         ? "✅"
                         : (execution.getStatus() == ExecutionStatus.FAILED ? "❌" : "⚠️"));
         templateVars.put("statusHere", execution.getStatus() == ExecutionStatus.SUCCEEDED ? "" : "@here");
-        TemplateFormatter templateFormatter =
-                execution.getContext().getCodeContext().getFormatter().getTemplate();
-        String title = StringUtils.trim(templateFormatter.renderString(config.notificationTitle(), templateVars));
-        String text = StringUtils.trim(templateFormatter.renderString(config.notificationText(), templateVars));
+        String title = StringUtils.trim(formatTemplate(config.notificationTitle(), templateVars));
+        String text = StringUtils.trim(formatTemplate(config.notificationText(), templateVars));
 
         Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("Status", execution.getStatus().name().toLowerCase());
@@ -371,5 +373,14 @@ public class Executor implements EventListener {
 
     private void useHistory(ResourceResolverFactory resolverFactory, Consumer<ExecutionHistory> consumer) {
         ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.accept(new ExecutionHistory(r)));
+    }
+
+    private String formatTemplate(String template, Map<String, Object> vars) {
+        try {
+            return new TemplateFormatter().renderString(template, vars);
+        } catch (Exception e) {
+            LOG.warn("Cannot format template '{}'!", template, e);
+            return template;
+        }
     }
 }
