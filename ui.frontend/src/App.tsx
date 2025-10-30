@@ -35,7 +35,7 @@ function App() {
       type: InstanceType.CLOUD_CONTAINER,
     },
     permissions: {
-      console: false,
+      console: true,
     },
   });
 

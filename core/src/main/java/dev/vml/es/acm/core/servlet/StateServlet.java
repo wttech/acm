@@ -5,7 +5,6 @@ import static dev.vml.es.acm.core.util.ServletResult.ok;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 
 import dev.vml.es.acm.core.code.Code;
-import dev.vml.es.acm.core.code.Executable;
 import dev.vml.es.acm.core.code.ExecutionQueue;
 import dev.vml.es.acm.core.code.Executor;
 import dev.vml.es.acm.core.gui.SpaSettings;
@@ -63,7 +62,8 @@ public class StateServlet extends SlingAllMethodsServlet {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
             MockStatus mockStatus = mockHttpFilter.checkStatus();
-            Permissions permissions = new Permissions(executor.authorize(Code.consoleMinimal(), request.getResourceResolver()));
+            Permissions permissions =
+                    new Permissions(executor.authorize(Code.consoleMinimal(), request.getResourceResolver()));
             State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getSettings(), permissions);
 
             respondJson(response, ok("State read successfully", state));

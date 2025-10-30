@@ -1,6 +1,7 @@
-import { createHashRouter } from 'react-router-dom';
+import { createHashRouter, Navigate } from 'react-router-dom';
 import App from './App';
 import ErrorHandler from './ErrorHandler';
+import { Route } from './Route';
 import ConsolePage from './pages/ConsolePage';
 import DashboardPage from './pages/DashboardPage';
 import ExecutionView from './pages/ExecutionView';
@@ -20,11 +21,12 @@ const router = createHashRouter([
       { path: '/scripts/:tab?', element: <ScriptsPage /> },
       { path: '/scripts/view/:scriptId', element: <ScriptView /> },
       { path: '/snippets/:tab?', element: <SnippetsPage /> },
-      { path: '/console', element: <ConsolePage /> },
+      { path: '/console', element: <Route permission="console"><ConsolePage /></Route> },
       { path: '/history', element: <HistoryPage /> },
       { path: '/executions', element: <HistoryPage /> },
       { path: '/executions/view/:executionId/:tab?', element: <ExecutionView /> },
       { path: '/maintenance/:tab?', element: <MaintenancePage /> },
+      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
 ]);
