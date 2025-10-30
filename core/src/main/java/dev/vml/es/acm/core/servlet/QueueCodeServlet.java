@@ -55,7 +55,7 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
             }
 
             Code code = input.getCode();
-            if (!executor.authorize(code.getId(), request.getResourceResolver())) {
+            if (!executor.authorize(code, request.getResourceResolver())) {
                 respondJson(response, forbidden(String.format("Code from '%s' is not authorized!", code.getId())));
                 return;
             }
