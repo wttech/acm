@@ -52,7 +52,12 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         @AttributeDefinition(
                 name = "Async Poll Interval",
                 description = "Interval in milliseconds to poll for job status.")
-        long asyncPollInterval() default 500L;
+        long asyncPollInterval() default 750L;
+
+        @AttributeDefinition(
+                name = "Abort Timeout",
+                description = "Time in milliseconds to wait for graceful abort before forcing it.")
+        long abortTimeout() default -1;
     }
 
     @Reference
@@ -208,12 +213,28 @@ public class ExecutionQueue implements JobExecutor, EventListener {
             }
         });
 
+        Long abortStartTime = null;
         while (!future.isDone()) {
-            if (context.isStopped() || Thread.currentThread().isInterrupted()) {
-                future.cancel(true);
-                LOG.debug("Execution is cancelling '{}'", queuedExecution);
-                break;
+            if (context.isStopped()) {
+                if (abortStartTime == null) {
+                    abortStartTime = System.currentTimeMillis();
+                    if (config.abortTimeout() < 0) {
+                        LOG.info("Execution is aborting gracefully '{}' (no timeout)", queuedExecution);
+                    } else {
+                        LOG.info("Execution is aborting '{}' (timeout: {}ms)", 
+                                queuedExecution, config.abortTimeout());
+                    }
+                } else if (config.abortTimeout() >= 0) {
+                    long abortDuration = System.currentTimeMillis() - abortStartTime;
+                    if (abortDuration >= config.abortTimeout()) {
+                        LOG.error("Execution abort timeout exceeded ({}ms), forcing abort '{}'", 
+                                abortDuration, queuedExecution);
+                        future.cancel(true);
+                        break;
+                    }
+                }
             }
+            
             try {
                 Thread.sleep(config.asyncPollInterval());
             } catch (InterruptedException e) {
@@ -236,12 +257,21 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                 return context.result().succeeded();
             }
         } catch (CancellationException e) {
-            LOG.warn("Execution aborted '{}'", queuedExecution);
+            LOG.warn("Execution aborted forcefully '{}'", queuedExecution);
             return context.result()
                     .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(e))
                             .toJson())
                     .cancelled();
         } catch (Exception e) {
+            Throwable cause = ExceptionUtils.getRootCause(e);
+            if (cause instanceof ExecutionAbortException) {
+                LOG.warn("Execution aborted gracefully '{}'", queuedExecution);
+                return context.result()
+                        .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(cause))
+                                .toJson())
+                        .cancelled();
+            }
+            
             LOG.error("Execution failed '{}'", queuedExecution, e);
             return context.result()
                     .message(QueuedMessage.of(ExecutionStatus.FAILED, ExceptionUtils.toString(e))

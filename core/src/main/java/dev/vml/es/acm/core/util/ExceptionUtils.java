@@ -13,4 +13,8 @@ public final class ExceptionUtils {
                 .map(org.apache.commons.lang3.exception.ExceptionUtils::getStackTrace)
                 .orElse(null);
     }
+
+    public static Throwable getRootCause(Throwable throwable) {
+        return org.apache.commons.lang3.exception.ExceptionUtils.getRootCause(throwable);
+    }
 }
