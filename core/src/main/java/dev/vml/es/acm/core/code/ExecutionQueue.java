@@ -52,7 +52,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         @AttributeDefinition(
                 name = "Async Poll Interval",
                 description = "Interval in milliseconds to poll for job status.")
-        long asyncPollInterval() default 500L;
+        long asyncPollInterval() default 750L;
     }
 
     @Reference
@@ -209,9 +209,13 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         });
 
         while (!future.isDone()) {
-            if (context.isStopped() || Thread.currentThread().isInterrupted()) {
-                future.cancel(true);
-                LOG.debug("Execution is cancelling '{}'", queuedExecution);
+            if (context.isStopped()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    LOG.debug("Execution is aborting forcefully '{}'", queuedExecution); 
+                    future.cancel(true); 
+                } else {
+                    LOG.debug("Execution is aborting gracefully '{}'", queuedExecution); 
+                }
                 break;
             }
             try {
@@ -236,12 +240,21 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                 return context.result().succeeded();
             }
         } catch (CancellationException e) {
-            LOG.warn("Execution aborted '{}'", queuedExecution);
+            LOG.warn("Execution aborted forcefully '{}'", queuedExecution);
             return context.result()
                     .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(e))
                             .toJson())
                     .cancelled();
         } catch (Exception e) {
+            Throwable cause = ExceptionUtils.getRootCause(e);
+            if (cause instanceof ExecutionAbortException) {
+                LOG.warn("Execution aborted gracefully '{}'", queuedExecution);
+                return context.result()
+                        .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(cause))
+                                .toJson())
+                        .cancelled();
+            }
+            
             LOG.error("Execution failed '{}'", queuedExecution, e);
             return context.result()
                     .message(QueuedMessage.of(ExecutionStatus.FAILED, ExceptionUtils.toString(e))
