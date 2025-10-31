@@ -79,7 +79,8 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
         <Divider />
         <Content>
           <p>This action will abort current code execution.</p>
-          <p>Be aware that aborting execution may leave data in an inconsistent state.</p>
+          <p>Ensure that for long-running executions, <code>context.checkAborted()</code> is called regularly to allow for graceful termination.</p>
+          <p>If graceful termination is not possible and timed out, the execution will be forcefully terminated. This may result in data loss or corruption sometimes making the instance unusable.</p>
         </Content>
         <ButtonGroup>
           <Button variant="secondary" onPress={() => setShowDialog(false)} isDisabled={isAborting}>

@@ -53,6 +53,11 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                 name = "Async Poll Interval",
                 description = "Interval in milliseconds to poll for job status.")
         long asyncPollInterval() default 750L;
+
+        @AttributeDefinition(
+                name = "Abort Timeout",
+                description = "Time in milliseconds to wait for graceful abort before forcing it.")
+        long abortTimeout() default -1;
     }
 
     @Reference
@@ -208,16 +213,28 @@ public class ExecutionQueue implements JobExecutor, EventListener {
             }
         });
 
+        Long abortStartTime = null;
         while (!future.isDone()) {
             if (context.isStopped()) {
-                if (Thread.currentThread().isInterrupted()) {
-                    LOG.debug("Execution is aborting forcefully '{}'", queuedExecution); 
-                    future.cancel(true); 
-                } else {
-                    LOG.debug("Execution is aborting gracefully '{}'", queuedExecution); 
+                if (abortStartTime == null) {
+                    abortStartTime = System.currentTimeMillis();
+                    if (config.abortTimeout() < 0) {
+                        LOG.info("Execution is aborting gracefully '{}' (no timeout)", queuedExecution);
+                    } else {
+                        LOG.info("Execution is aborting '{}' (timeout: {}ms)", 
+                                queuedExecution, config.abortTimeout());
+                    }
+                } else if (config.abortTimeout() >= 0) {
+                    long abortDuration = System.currentTimeMillis() - abortStartTime;
+                    if (abortDuration >= config.abortTimeout()) {
+                        LOG.error("Execution abort timeout exceeded ({}ms), forcing abort '{}'", 
+                                abortDuration, queuedExecution);
+                        future.cancel(true);
+                        break;
+                    }
                 }
-                break;
             }
+            
             try {
                 Thread.sleep(config.asyncPollInterval());
             } catch (InterruptedException e) {
