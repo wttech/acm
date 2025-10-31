@@ -35,6 +35,10 @@ public class ServletResult<D> implements Serializable {
         return new ServletResult<>(HttpServletResponse.SC_BAD_REQUEST, message);
     }
 
+    public static ServletResult<Void> forbidden(String message) {
+        return new ServletResult<>(HttpServletResponse.SC_FORBIDDEN, message);
+    }
+
     public static ServletResult<Void> error(String message) {
         return new ServletResult<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message);
     }

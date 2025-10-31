@@ -13,6 +13,9 @@ import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.repo.Locker;
+import dev.vml.es.acm.core.script.Script;
+import dev.vml.es.acm.core.script.ScriptRepository;
+import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StringUtil;
@@ -132,6 +135,21 @@ public class Executor implements EventListener {
         if (eventType == EventType.EXECUTOR_RESET) {
             reset();
         }
+    }
+
+    public boolean authorize(Executable executable, String userId) {
+        return ResolverUtils.queryContentResolver(resolverFactory, userId, resolver -> {
+            return authorize(executable, resolver);
+        });
+    }
+
+    public boolean authorize(Executable executable, ResourceResolver resolver) {
+        String scriptPath = executable.getId();
+        if (Executable.CONSOLE_ID.equals(executable.getId())) {
+            scriptPath = Executable.CONSOLE_SCRIPT_PATH;
+        }
+        ScriptRepository repository = new ScriptRepository(resolver);
+        return repository.read(scriptPath).isPresent();
     }
 
     public ExecutionContext createContext(

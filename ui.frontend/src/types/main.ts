@@ -45,6 +45,7 @@ export type State = {
   healthStatus: HealthStatus;
   mockStatus: MockStatus;
   instanceSettings: InstanceSettings;
+  permissions: Permissions;
 };
 
 export type SpaSettings = {
@@ -63,6 +64,10 @@ export type InstanceSettings = {
 
 export type MockStatus = {
   enabled: boolean;
+};
+
+export type Permissions = {
+  console: boolean;
 };
 
 export enum ExecutionFormat {
