@@ -236,12 +236,20 @@ public class Executor implements EventListener {
                     useLocker(resolverFactory, l -> l.unlock(lockName));
                 }
             }
-        } catch (Throwable e) {
+        } catch (AbortException e) {
+            LOG.warn("Execution aborted gracefully '{}'", context.getId());
             execution.error(e);
+            return execution.end(ExecutionStatus.ABORTED);
+        } catch (Throwable e) {
             if ((e.getCause() != null && e.getCause() instanceof InterruptedException)) {
+                LOG.warn("Execution aborted forcefully '{}'", context.getId());
+                execution.error(e);
                 return execution.end(ExecutionStatus.ABORTED);
+            } else {
+                LOG.error("Execution failed '{}'", context.getId(), e);
+                execution.error(e);
+                return execution.end(ExecutionStatus.FAILED);
             }
-            return execution.end(ExecutionStatus.FAILED);
         } finally {
             statuses.remove(context.getId());
         }

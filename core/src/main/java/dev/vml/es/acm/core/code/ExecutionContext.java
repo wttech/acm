@@ -158,9 +158,9 @@ public class ExecutionContext implements AutoCloseable {
                 .isAborted(getId());
     }
 
-    public void checkAborted() throws ExecutionAbortException {
+    public void checkAborted() throws AbortException {
         if (isAborted()) {
-            throw new ExecutionAbortException("Execution has been aborted gracefully!");
+            throw new AbortException("Execution aborted gracefully!");
         }
     }
 

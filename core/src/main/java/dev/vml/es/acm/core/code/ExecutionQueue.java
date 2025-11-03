@@ -278,11 +278,11 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                                 .toJson())
                         .cancelled();
             } catch (Exception e) {
-                Throwable cause = ExceptionUtils.getRootCause(e);
-                if (cause instanceof ExecutionAbortException) {
+                AbortException abortException = findAbortException(e);
+                if (abortException != null) {
                     LOG.warn("Execution aborted gracefully '{}'", queuedExecution);
                     return context.result()
-                            .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(cause))
+                            .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(abortException))
                                     .toJson())
                             .cancelled();
                 }
@@ -296,6 +296,17 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         } finally {
             jobAborted.remove(job.getId());
         }
+    }
+
+    private AbortException findAbortException(Throwable e) {
+        Throwable current = e;
+        while (current != null) {
+            if (current instanceof AbortException) {
+                return (AbortException) current;
+            }
+            current = current.getCause();
+        }
+        return null;
     }
 
     private Execution executeAsync(ExecutionContextOptions contextOptions, QueuedExecution execution)
