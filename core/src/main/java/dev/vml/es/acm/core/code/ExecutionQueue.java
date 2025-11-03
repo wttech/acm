@@ -229,9 +229,9 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                         jobAborted.put(job.getId(), Boolean.TRUE);
 
                         if (config.abortTimeout() < 0) {
-                            LOG.info("Execution is aborting gracefully '{}' (no timeout)", queuedExecution);
+                            LOG.debug("Execution is aborting gracefully '{}' (no timeout)", queuedExecution);
                         } else {
-                            LOG.info(
+                            LOG.debug(
                                     "Execution is aborting '{}' (timeout: {}ms)",
                                     queuedExecution,
                                     config.abortTimeout());
@@ -239,7 +239,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                     } else if (config.abortTimeout() >= 0) {
                         long abortDuration = System.currentTimeMillis() - abortStartTime;
                         if (abortDuration >= config.abortTimeout()) {
-                            LOG.error(
+                            LOG.debug(
                                     "Execution abort timeout exceeded ({}ms), forcing abort '{}'",
                                     abortDuration,
                                     queuedExecution);
@@ -268,11 +268,11 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                                     .toJson())
                             .cancelled();
                 } else {
-                    LOG.info("Execution succeeded '{}'", immediateExecution);
+                    LOG.debug("Execution succeeded '{}'", immediateExecution);
                     return context.result().succeeded();
                 }
             } catch (CancellationException e) {
-                LOG.warn("Execution aborted forcefully '{}'", queuedExecution);
+                LOG.debug("Execution aborted forcefully '{}'", queuedExecution);
                 return context.result()
                         .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(e))
                                 .toJson())
@@ -280,14 +280,14 @@ public class ExecutionQueue implements JobExecutor, EventListener {
             } catch (Exception e) {
                 AbortException abortException = findAbortException(e);
                 if (abortException != null) {
-                    LOG.warn("Execution aborted gracefully '{}'", queuedExecution);
+                    LOG.debug("Execution aborted gracefully '{}'", queuedExecution);
                     return context.result()
                             .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(abortException))
                                     .toJson())
                             .cancelled();
                 }
 
-                LOG.error("Execution failed '{}'", queuedExecution, e);
+                LOG.debug("Execution failed '{}'", queuedExecution, e);
                 return context.result()
                         .message(QueuedMessage.of(ExecutionStatus.FAILED, ExceptionUtils.toString(e))
                                 .toJson())

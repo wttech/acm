@@ -230,6 +230,8 @@ public class Executor implements EventListener {
                     context.getOut().withLoggerTimestamps(config.logPrintingTimestamps());
                 }
                 contentScript.run();
+
+                LOG.info("Execution succeeded '{}'", context.getId());
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
                 if (locking) {
