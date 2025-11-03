@@ -1,6 +1,9 @@
-import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Heading, Text } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Heading, InlineAlert, Text } from '@adobe/react-spectrum';
 import { ToastQueue } from '@react-spectrum/toast';
+import AlertIcon from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
+import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
+import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
 import StopCircle from '@spectrum-icons/workflow/StopCircle';
 import React, { useState } from 'react';
 import { useDeepCompareEffect } from 'react-use';
@@ -78,9 +81,22 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
         </Heading>
         <Divider />
         <Content>
-          <p>This action will abort current code execution.</p>
-          <p>Ensure that for long-running executions, <code>context.checkAborted()</code> is called regularly to allow for graceful termination.</p>
-          <p>If graceful termination is not possible and timed out, the execution will be forcefully terminated. This may result in data loss or corruption, which may sometimes make the instance unusable.</p>
+          <p>
+            <CheckmarkCircle size="XS" /> The abort request signals the script to stop, but the script must explicitly check for this signal by calling <code>context.checkAborted()</code>.
+          </p>
+          <p>
+            <CloseCircle size="XS" /> If the script doesn't check for abort, it will continue running until it completes naturally. Only if an abort timeout is configured (by default it's not), will the execution be forcefully terminated after the timeout expires.
+          </p>
+          <p>
+            <AlertIcon size="XS" /> For scripts with loops or long-running operations, add <code>context.checkAborted()</code> at safe checkpoints (e.g., at the beginning of each loop iteration) to enable graceful termination and prevent data corruption.
+          </p>
+
+          <InlineAlert width="100%" variant="negative" UNSAFE_style={{ padding: '8px' }} marginTop="size-200">
+            <Heading>Warning</Heading>
+            <Content>
+              Proceed with aborting only if the requirements above are met.
+            </Content>
+          </InlineAlert>
         </Content>
         <ButtonGroup>
           <Button variant="secondary" onPress={() => setShowDialog(false)} isDisabled={isAborting}>
