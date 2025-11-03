@@ -59,6 +59,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
       - [Outputs example](#outputs-example)
       - [ACL example](#acl-example)
       - [Repo example](#repo-example)
+      - [Abortable example](#abortable-example)
     - [History](#history)
     - [Extension scripts](#extension-scripts)
       - [Example extension script](#example-extension-script)
@@ -420,6 +421,38 @@ void doRun() {
 ```
 
 <img src="docs/screenshot-content-script-repo-output.png" width="720" alt="ACM ACL Repo Output">
+
+#### Abortable example
+
+For long-running scripts that process many nodes, it's important to support graceful abortion. This allows users to stop the script execution without leaving the repository in an inconsistent state.
+
+```groovy
+void doRun() {
+    repo.queryRaw("SELECT * FROM [nt:base] WHERE ISDESCENDANTNODE('/content/acme/us/en')").forEach { resource ->
+        // Check for abort at appropriate safe points (loop, recursion, etc.)
+        context.checkAborted()
+        
+        // Process resource
+        // TODO resource.save() etc.
+    }
+}
+```
+
+Alternatively, you can use `context.isAborted()` for manual control:
+
+```groovy
+void doRun() {
+    def assets = repo.queryRaw("SELECT * FROM [dam:Asset] WHERE ISDESCENDANTNODE('/content/dam')").iterator()
+    for (asset in assets) {
+        if (context.isAborted()) {
+            // do clean up if needed
+            break
+        }
+    }
+    // still remember to propagate abort status
+    context.checkAborted()
+}
+```
 
 ### History
 
