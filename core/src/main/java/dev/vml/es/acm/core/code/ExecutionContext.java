@@ -152,11 +152,10 @@ public class ExecutionContext implements AutoCloseable {
     }
 
     public boolean isAborted() {
-        return getCodeContext().getOsgiContext()
+        return getCodeContext()
+                .getOsgiContext()
                 .getService(ExecutionQueue.class)
-                .findByExecutableId(id)
-                .map(e -> e.getStatus() == ExecutionStatus.ABORTED)
-                .orElse(false);
+                .isAborted(getId());
     }
 
     public void checkAborted() throws ExecutionAbortException {
