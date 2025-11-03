@@ -14,7 +14,4 @@ public final class ExceptionUtils {
                 .orElse(null);
     }
 
-    public static Throwable getRootCause(Throwable throwable) {
-        return org.apache.commons.lang3.exception.ExceptionUtils.getRootCause(throwable);
-    }
 }
