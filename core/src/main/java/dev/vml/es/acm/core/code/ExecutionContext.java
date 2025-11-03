@@ -151,6 +151,23 @@ public class ExecutionContext implements AutoCloseable {
         this.skipped = skipped;
     }
 
+    public boolean isAborted() {
+        return getCodeContext()
+                .getOsgiContext()
+                .getService(ExecutionQueue.class)
+                .isAborted(getId());
+    }
+
+    public void abort() {
+        throw new AbortException("Execution aborted gracefully!");
+    }
+
+    public void checkAborted() throws AbortException {
+        if (isAborted()) {
+            abort();
+        }
+    }
+
     public Inputs getInputs() {
         return inputs;
     }
@@ -174,6 +191,7 @@ public class ExecutionContext implements AutoCloseable {
     private void customizeBinding() {
         Binding binding = getCodeContext().getBinding();
 
+        binding.setVariable("context", this);
         binding.setVariable("schedules", schedules);
         binding.setVariable("arguments", inputs); // TODO deprecated
         binding.setVariable("inputs", inputs);
