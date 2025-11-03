@@ -429,7 +429,7 @@ For long-running scripts that process many nodes, it's important to support grac
 ```groovy
 void doRun() {
     repo.queryRaw("SELECT * FROM [nt:base] WHERE ISDESCENDANTNODE('/content/acme/us/en')").forEach { resource ->
-        // Check for abort at appropriate safe points (loop, recursion, etc.)
+        // Safe point
         context.checkAborted()
         
         // Process resource
@@ -445,11 +445,11 @@ void doRun() {
     def assets = repo.queryRaw("SELECT * FROM [dam:Asset] WHERE ISDESCENDANTNODE('/content/dam')").iterator()
     for (asset in assets) {
         if (context.isAborted()) {
-            // do clean up if needed
+            // Do clean when aborted
             break
         }
     }
-    // still remember to propagate abort status
+    // Still remember to propagate abort status
     context.checkAborted()
 }
 ```
