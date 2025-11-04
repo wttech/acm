@@ -153,8 +153,8 @@ Adjust file 'all/pom.xml':
 
 3. Consider refining the ACL settings
 
-   The default settings are defined in the [repo init OSGi config](https://github.com/wttech/acm/blob/main/ui.config/src/main/content/jcr_root/apps/acm-config/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~acmcore.config), which effectively restrict access to the tool and script execution to administrators only—a recommended practice for production environments.
-   If you require further customization, you can create your own repo init OSGi config to override or extend the default configuration. Ensure to specify [higher service ranking](https://sling.apache.org/documentation/bundles/repository-initialization.html#slingrepositoryinitializer) to take precedence over the default settings.
+   The default settings are defined in the [repo init OSGi config](https://github.com/wttech/acm/blob/main/ui.config/src/main/content/jcr_root/apps/acm-config/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~acmcore.config), which effectively restrict access to the tool and script execution to administrators only - a recommended practice for production environments.
+   If you require further customization, you can create your own repo init OSGi config to override or extend the default configuration.
 
    For example:
    ```ini
