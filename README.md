@@ -158,12 +158,17 @@ Adjust file 'all/pom.xml':
 
    For example:
    ```ini
-   service.ranking=I"201"
-   scripts=["
+   service.ranking=I"100"
+   scripts=["  
+       set ACL for everyone
+           deny jcr:read on /apps/acm
+           deny jcr:read on /apps/cq/core/content/nav/tools/acm
+       end
+
        create group acm-users
        set ACL for acm-users
-       allow jcr:read on /apps/acm
-       allow jcr:read on /apps/cq/core/content/nav/tools/acm
+           allow jcr:read on /apps/acm
+           allow jcr:read on /apps/cq/core/content/nav/tools/acm
        end
    "]
    ```
