@@ -49,7 +49,7 @@ public class ExecutionContext implements AutoCloseable {
 
     private final Conditions conditions;
 
-    private Consumer<ExecutionStatus> statusUpdater;
+    private Consumer<ExecutionStatus> statusListener;
 
     public ExecutionContext(
             String id,
@@ -220,13 +220,13 @@ public class ExecutionContext implements AutoCloseable {
         return codeContext.getBinding().getVariable(name);
     }
 
-    void setStatusUpdater(Consumer<ExecutionStatus> statusUpdater) {
-        this.statusUpdater = statusUpdater;
+    void setStatusListener(Consumer<ExecutionStatus> statusListener) {
+        this.statusListener = statusListener;
     }
 
     void updateStatus(ExecutionStatus status) {
-        if (statusUpdater != null) {
-            statusUpdater.accept(status);
+        if (statusListener != null) {
+            statusListener.accept(status);
         }
     }
 }
