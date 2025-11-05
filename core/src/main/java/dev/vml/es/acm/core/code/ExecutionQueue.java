@@ -135,6 +135,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     }
 
     public boolean isAborted(String executionId) {
+        // TODO read 'aborting' flag from repo instead of job state
         return readJob(executionId)
                 .map(Job::getJobState)
                 .map(Job.JobState.STOPPED::equals)
@@ -200,6 +201,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
 
     public void stop(String executionId) {
         jobManager.stopJobById(executionId);
+        // TODO mark job as 'aborting' job property
     }
 
     private CodeOutput determineCodeOutput(String executionId) {
