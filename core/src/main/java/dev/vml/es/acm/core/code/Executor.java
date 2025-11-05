@@ -231,7 +231,9 @@ public class Executor implements EventListener {
                 }
                 contentScript.run();
 
-                LOG.info("Execution succeeded '{}'", context.getId());
+                if (!healthChecking) {
+                    LOG.info("Execution succeeded '{}'", context.getId());
+                }
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
                 if (locking) {
@@ -248,7 +250,9 @@ public class Executor implements EventListener {
                 execution.error(e);
                 return execution.end(ExecutionStatus.ABORTED);
             } else {
-                LOG.error("Execution failed '{}'", context.getId(), e);
+                if (!healthChecking) {
+                    LOG.error("Execution failed '{}'", context.getId(), e);
+                }
                 execution.error(e);
                 return execution.end(ExecutionStatus.FAILED);
             }
