@@ -49,11 +49,12 @@ public enum ExecutionStatus {
             case QUEUED:
                 return ExecutionStatus.QUEUED;
             case ACTIVE:
-                ExecutionStatus propStatus = of(job.getProperty(ExecutionJob.STATUS_PROP, String.class))
+                ExecutionStatus activeStatus = of(job.getProperty(ExecutionJob.ACTIVE_STATUS_PROP, String.class))
                         .orElse(null);
-                if (propStatus != null) {
-                    return propStatus;
+                if (activeStatus != null) {
+                    return activeStatus;
                 }
+                // TODO get rid of executor.checkStatus() / not cluster-ready
                 return executor.checkStatus(job.getId()).orElse(ExecutionStatus.ACTIVE);
             case STOPPED:
                 return ExecutionStatus.STOPPED;

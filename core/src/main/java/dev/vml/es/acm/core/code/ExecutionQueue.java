@@ -135,12 +135,12 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                 .findFirst();
     }
 
-    public boolean isAborted(String executionId) {
+    public boolean isStoppingOrStopped(String executionId) {
         Job job = readJob(executionId).orElse(null);
         if (job == null) {
             return false;
         }
-        ExecutionStatus status = ExecutionStatus.of(job.getProperty(ExecutionJob.STATUS_PROP, String.class))
+        ExecutionStatus status = ExecutionStatus.of(job.getProperty(ExecutionJob.ACTIVE_STATUS_PROP, String.class))
                 .orElse(null);
         if (ExecutionStatus.STOPPING.equals(status)) {
             return true;
@@ -210,15 +210,21 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         if (job == null) {
             return;
         }
+        setJobActiveStatus(job, ExecutionStatus.STOPPING);
+        jobManager.stopJobById(job.getId());
+    }
+
+    private void setJobActiveStatus(Job job, ExecutionStatus status) {
         try {
             String path = FieldUtils.readField(job, "path", true).toString();
             ResolverUtils.useContentResolver(resourceResolverFactory, null, resolver -> {
-                Repo.quiet(resolver).get(path).save(ExecutionJob.STATUS_PROP, ExecutionStatus.STOPPING.name());
+                Repo.quiet(resolver).get(path).save(ExecutionJob.ACTIVE_STATUS_PROP, status.name());
             });
         } catch (Exception e) {
-            throw new AcmException(String.format("Cannot mark execution '%s' as stopping!", executionId), e);
+            throw new AcmException(
+                    String.format("Cannot set execution '%s' job active status to '%s'!", job.getId(), status.name()),
+                    e);
         }
-        jobManager.stopJobById(job.getId());
     }
 
     private CodeOutput determineCodeOutput(String executionId) {
@@ -242,7 +248,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
 
         Long abortStartTime = null;
         while (!future.isDone()) {
-            if (context.isStopped() || isAborted(job.getId())) {
+            if (context.isStopped() || isStoppingOrStopped(job.getId())) {
                 if (abortStartTime == null) {
                     abortStartTime = System.currentTimeMillis();
                     if (config.abortTimeout() < 0) {

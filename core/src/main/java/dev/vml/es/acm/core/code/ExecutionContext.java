@@ -155,7 +155,7 @@ public class ExecutionContext implements AutoCloseable {
         return getCodeContext()
                 .getOsgiContext()
                 .getService(ExecutionQueue.class)
-                .isAborted(getId());
+                .isStoppingOrStopped(getId());
     }
 
     public void abort() {
