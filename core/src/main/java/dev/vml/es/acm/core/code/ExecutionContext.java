@@ -4,6 +4,7 @@ import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import groovy.lang.Binding;
+import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.slf4j.Logger;
@@ -47,6 +48,8 @@ public class ExecutionContext implements AutoCloseable {
     private final Schedules schedules;
 
     private final Conditions conditions;
+
+    private Consumer<ExecutionStatus> statusUpdater;
 
     public ExecutionContext(
             String id,
@@ -215,5 +218,15 @@ public class ExecutionContext implements AutoCloseable {
 
     public Object variable(String name) {
         return codeContext.getBinding().getVariable(name);
+    }
+
+    void setStatusUpdater(Consumer<ExecutionStatus> statusUpdater) {
+        this.statusUpdater = statusUpdater;
+    }
+
+    void updateStatus(ExecutionStatus status) {
+        if (statusUpdater != null) {
+            statusUpdater.accept(status);
+        }
     }
 }

@@ -339,6 +339,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                         determineOutput(
                                 contextOptions.getExecutionMode(),
                                 execution.getJob().getId()))) {
+            context.setStatusUpdater(status -> setJobActiveStatus(execution.getJob(), status));
             return executor.execute(context);
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);

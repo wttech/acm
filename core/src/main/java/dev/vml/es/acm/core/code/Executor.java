@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -118,8 +116,6 @@ public class Executor implements EventListener {
 
     private Config config;
 
-    private final Map<String, ExecutionStatus> statuses = new ConcurrentHashMap<>();
-
     @Activate
     @Modified
     protected void activate(Config config) {
@@ -193,7 +189,7 @@ public class Executor implements EventListener {
         }
 
         try {
-            statuses.put(context.getId(), ExecutionStatus.PARSING);
+            context.updateStatus(ExecutionStatus.PARSING);
 
             ContentScript contentScript = new ContentScript(context);
 
@@ -201,7 +197,7 @@ public class Executor implements EventListener {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            statuses.put(context.getId(), ExecutionStatus.CHECKING);
+            context.updateStatus(ExecutionStatus.CHECKING);
 
             contentScript.describe();
             context.useInputValues();
@@ -223,7 +219,7 @@ public class Executor implements EventListener {
                 if (locking) {
                     useLocker(resolverFactory, l -> l.lock(lockName));
                 }
-                statuses.put(context.getId(), ExecutionStatus.RUNNING);
+                context.updateStatus(ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
                     context.getOut().fromLoggers(config.logPrintingNames());
@@ -256,8 +252,6 @@ public class Executor implements EventListener {
                 execution.error(e);
                 return execution.end(ExecutionStatus.FAILED);
             }
-        } finally {
-            statuses.remove(context.getId());
         }
     }
 
@@ -265,10 +259,6 @@ public class Executor implements EventListener {
         return String.format(
                 "%s/%s",
                 LOCK_DIR, StringUtils.removeStart(context.getExecutable().getId(), AcmConstants.SETTINGS_ROOT + "/"));
-    }
-
-    public Optional<ExecutionStatus> checkStatus(String executionId) {
-        return Optional.ofNullable(statuses.get(executionId));
     }
 
     private void handleHistory(ContextualExecution execution) {
