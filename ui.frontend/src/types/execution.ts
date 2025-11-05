@@ -21,6 +21,7 @@ export enum ExecutionStatus {
   PARSING = 'PARSING',
   CHECKING = 'CHECKING',
   RUNNING = 'RUNNING',
+  STOPPING = 'STOPPING',
   STOPPED = 'STOPPED',
   FAILED = 'FAILED',
   SKIPPED = 'SKIPPED',

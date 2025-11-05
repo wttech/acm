@@ -14,20 +14,13 @@ public enum ExecutionStatus {
     PARSING,
     CHECKING,
     RUNNING,
+    STOPPING,
     // queued & immediate execution statuses
     SKIPPED,
     STOPPED,
     ABORTED,
     FAILED,
     SUCCEEDED;
-
-    public boolean isPending() {
-        return this == QUEUED || isActive();
-    }
-
-    public boolean isActive() {
-        return this == ACTIVE || this == PARSING || this == CHECKING || this == RUNNING;
-    }
 
     public static List<ExecutionStatus> manyOf(List<String> names) {
         return (names != null ? names.stream() : Stream.<String>empty())
@@ -44,18 +37,25 @@ public enum ExecutionStatus {
     }
 
     public static ExecutionStatus of(Job job, Executor executor) {
-        ExecutionStatus jobStatus = Optional.ofNullable(job.getResultMessage())
+        ExecutionStatus resultStatus = Optional.ofNullable(job.getResultMessage())
                 .map(QueuedMessage::fromJson)
                 .map(QueuedMessage::getStatus)
                 .orElse(null);
-        if (jobStatus != null) {
-            return jobStatus;
+        if (resultStatus != null) {
+            return resultStatus;
         }
 
         switch (job.getJobState()) {
             case QUEUED:
                 return ExecutionStatus.QUEUED;
             case ACTIVE:
+                /*
+                ExecutionStatus propStatus = of(job.getProperty(ExecutionJob.STATUS_PROP, String.class)).orElse(null);
+                if (propStatus != null) {
+                    return propStatus;
+                }
+                */
+
                 return executor.checkStatus(job.getId()).orElse(ExecutionStatus.ACTIVE);
             case STOPPED:
                 return ExecutionStatus.STOPPED;

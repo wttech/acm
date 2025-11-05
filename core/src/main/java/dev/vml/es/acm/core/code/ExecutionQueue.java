@@ -5,17 +5,18 @@ import dev.vml.es.acm.core.event.Event;
 import dev.vml.es.acm.core.event.EventListener;
 import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.gui.SpaSettings;
+import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ExceptionUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.util.*;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -135,11 +136,16 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     }
 
     public boolean isAborted(String executionId) {
-        // TODO read 'aborting' flag from repo instead of job state
-        return readJob(executionId)
-                .map(Job::getJobState)
-                .map(Job.JobState.STOPPED::equals)
-                .orElse(false);
+        Job job = readJob(executionId).orElse(null);
+        if (job == null) {
+            return false;
+        }
+        ExecutionStatus status = ExecutionStatus.of(job.getProperty(ExecutionJob.STATUS_PROP, String.class))
+                .orElse(null);
+        if (ExecutionStatus.STOPPING.equals(status)) {
+            return true;
+        }
+        return Job.JobState.STOPPED.equals(job.getJobState());
     }
 
     public Stream<ExecutionSummary> findAllSummaries() {
@@ -200,8 +206,19 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     }
 
     public void stop(String executionId) {
-        jobManager.stopJobById(executionId);
-        // TODO mark job as 'aborting' job property
+        Job job = readJob(executionId).orElse(null);
+        if (job == null) {
+            return;
+        }
+        try {
+            String path = FieldUtils.readField(job, "path", true).toString();
+            ResolverUtils.useContentResolver(resourceResolverFactory, null, resolver -> {
+                Repo.quiet(resolver).get(path).save(ExecutionJob.STATUS_PROP, ExecutionStatus.STOPPING.name());
+            });
+        } catch (Exception e) {
+            throw new AcmException(String.format("Cannot mark execution '%s' as stopping!", executionId), e);
+        }
+        jobManager.stopJobById(job.getId());
     }
 
     private CodeOutput determineCodeOutput(String executionId) {
@@ -231,10 +248,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                     if (config.abortTimeout() < 0) {
                         LOG.debug("Execution is aborting gracefully '{}' (no timeout)", queuedExecution);
                     } else {
-                        LOG.debug(
-                                "Execution is aborting '{}' (timeout: {}ms)",
-                                queuedExecution,
-                                config.abortTimeout());
+                        LOG.debug("Execution is aborting '{}' (timeout: {}ms)", queuedExecution, config.abortTimeout());
                     }
                 } else if (config.abortTimeout() >= 0) {
                     long abortDuration = System.currentTimeMillis() - abortStartTime;
@@ -264,8 +278,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
             if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
                 LOG.debug("Execution skipped '{}'", immediateExecution);
                 return context.result()
-                        .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null)
-                                .toJson())
+                        .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null).toJson())
                         .cancelled();
             } else {
                 LOG.debug("Execution succeeded '{}'", immediateExecution);
