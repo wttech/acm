@@ -45,10 +45,10 @@ const getIcon = (status: ExecutionStatus) => {
     case ExecutionStatus.PARSING:
     case ExecutionStatus.CHECKING:
     case ExecutionStatus.RUNNING:
+    case ExecutionStatus.STOPPING:
       return <ProgressCircle size="S" aria-label="Loading…" isIndeterminate marginX="size-100" />;
     case ExecutionStatus.QUEUED:
       return <Clock />;
-    case ExecutionStatus.STOPPING:
     case ExecutionStatus.STOPPED:
       return <Pause />;
     case ExecutionStatus.SKIPPED:
