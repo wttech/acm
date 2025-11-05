@@ -13,5 +13,4 @@ public final class ExceptionUtils {
                 .map(org.apache.commons.lang3.exception.ExceptionUtils::getStackTrace)
                 .orElse(null);
     }
-
 }
