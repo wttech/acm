@@ -220,11 +220,11 @@ public class ExecutionContext implements AutoCloseable {
         return codeContext.getBinding().getVariable(name);
     }
 
-    void setStatusListener(Consumer<ExecutionStatus> statusListener) {
+    void listenStatus(Consumer<ExecutionStatus> statusListener) {
         this.statusListener = statusListener;
     }
 
-    void updateStatus(ExecutionStatus status) {
+    void notifyStatus(ExecutionStatus status) {
         if (statusListener != null) {
             statusListener.accept(status);
         }

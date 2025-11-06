@@ -189,7 +189,7 @@ public class Executor implements EventListener {
         }
 
         try {
-            context.updateStatus(ExecutionStatus.PARSING);
+            context.notifyStatus(ExecutionStatus.PARSING);
 
             ContentScript contentScript = new ContentScript(context);
 
@@ -197,7 +197,7 @@ public class Executor implements EventListener {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            context.updateStatus(ExecutionStatus.CHECKING);
+            context.notifyStatus(ExecutionStatus.CHECKING);
 
             contentScript.describe();
             context.useInputValues();
@@ -219,7 +219,7 @@ public class Executor implements EventListener {
                 if (locking) {
                     useLocker(resolverFactory, l -> l.lock(lockName));
                 }
-                context.updateStatus(ExecutionStatus.RUNNING);
+                context.notifyStatus(ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
                     context.getOut().fromLoggers(config.logPrintingNames());
