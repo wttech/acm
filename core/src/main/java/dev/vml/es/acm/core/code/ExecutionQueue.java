@@ -140,12 +140,8 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         if (job == null) {
             return false;
         }
-        ExecutionStatus status = ExecutionStatus.of(job.getProperty(ExecutionJob.ACTIVE_STATUS_PROP, String.class))
-                .orElse(null);
-        if (ExecutionStatus.STOPPING.equals(status)) {
-            return true;
-        }
-        return Job.JobState.STOPPED.equals(job.getJobState());
+        ExecutionStatus status = ExecutionStatus.of(job, executor);
+        return status == ExecutionStatus.STOPPING || status == ExecutionStatus.STOPPED;
     }
 
     public Stream<ExecutionSummary> findAllSummaries() {
