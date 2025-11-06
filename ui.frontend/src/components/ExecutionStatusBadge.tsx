@@ -21,6 +21,7 @@ const getVariant = (status: ExecutionStatus): 'positive' | 'negative' | 'neutral
     case ExecutionStatus.PARSING:
     case ExecutionStatus.CHECKING:
     case ExecutionStatus.RUNNING:
+    case ExecutionStatus.STOPPING:
       return 'info';
     case ExecutionStatus.QUEUED:
       return 'yellow';
@@ -44,6 +45,7 @@ const getIcon = (status: ExecutionStatus) => {
     case ExecutionStatus.PARSING:
     case ExecutionStatus.CHECKING:
     case ExecutionStatus.RUNNING:
+    case ExecutionStatus.STOPPING:
       return <ProgressCircle size="S" aria-label="Loading…" isIndeterminate marginX="size-100" />;
     case ExecutionStatus.QUEUED:
       return <Clock />;

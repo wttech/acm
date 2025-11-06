@@ -94,7 +94,8 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
           <InlineAlert width="100%" variant="negative" UNSAFE_style={{ padding: '8px' }} marginTop="size-200">
             <Heading>Warning</Heading>
             <Content>
-              Proceed with aborting only if the requirements above are met.
+              Proceed with aborting only if the requirements above are met.<br/>
+              This action cannot be undone.
             </Content>
           </InlineAlert>
         </Content>

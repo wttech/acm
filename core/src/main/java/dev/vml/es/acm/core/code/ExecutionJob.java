@@ -12,6 +12,8 @@ public final class ExecutionJob {
 
     public static final String EXECUTION_MODE_PROP = "executionMode";
 
+    public static final String ACTIVE_STATUS_PROP = "executionActiveStatus";
+
     private ExecutionJob() {
         // intentionally empty
     }

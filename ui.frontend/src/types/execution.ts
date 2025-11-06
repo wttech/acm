@@ -21,6 +21,7 @@ export enum ExecutionStatus {
   PARSING = 'PARSING',
   CHECKING = 'CHECKING',
   RUNNING = 'RUNNING',
+  STOPPING = 'STOPPING',
   STOPPED = 'STOPPED',
   FAILED = 'FAILED',
   SKIPPED = 'SKIPPED',
@@ -36,7 +37,7 @@ export function isExecutionPending(status: ExecutionStatus | null | undefined): 
 }
 
 export function isExecutionActive(status: ExecutionStatus | null | undefined): boolean {
-  return !!status && [ExecutionStatus.ACTIVE, ExecutionStatus.PARSING, ExecutionStatus.CHECKING, ExecutionStatus.RUNNING].includes(status);
+  return !!status && [ExecutionStatus.ACTIVE, ExecutionStatus.PARSING, ExecutionStatus.CHECKING, ExecutionStatus.RUNNING, ExecutionStatus.STOPPING].includes(status);
 }
 
 export function isExecutionCompleted(status: ExecutionStatus | null | undefined): boolean {

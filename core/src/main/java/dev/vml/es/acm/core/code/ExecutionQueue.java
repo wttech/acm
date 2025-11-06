@@ -5,17 +5,18 @@ import dev.vml.es.acm.core.event.Event;
 import dev.vml.es.acm.core.event.EventListener;
 import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.gui.SpaSettings;
+import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ExceptionUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.util.*;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -74,8 +75,6 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     private Executor executor;
 
     private ExecutorService jobAsyncExecutor;
-
-    private final Map<String, Boolean> jobAborted = new ConcurrentHashMap<>();
 
     private Config config;
 
@@ -136,8 +135,13 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                 .findFirst();
     }
 
-    public boolean isAborted(String executionId) {
-        return Boolean.TRUE.equals(jobAborted.get(executionId));
+    public boolean isStoppingOrStopped(String executionId) {
+        Job job = readJob(executionId).orElse(null);
+        if (job == null) {
+            return false;
+        }
+        ExecutionStatus status = ExecutionStatus.of(job, executor);
+        return status == ExecutionStatus.STOPPING || status == ExecutionStatus.STOPPED;
     }
 
     public Stream<ExecutionSummary> findAllSummaries() {
@@ -198,7 +202,25 @@ public class ExecutionQueue implements JobExecutor, EventListener {
     }
 
     public void stop(String executionId) {
-        jobManager.stopJobById(executionId);
+        Job job = readJob(executionId).orElse(null);
+        if (job == null) {
+            return;
+        }
+        setJobActiveStatus(job, ExecutionStatus.STOPPING);
+        jobManager.stopJobById(job.getId());
+    }
+
+    private void setJobActiveStatus(Job job, ExecutionStatus status) {
+        try {
+            String path = FieldUtils.readField(job, "path", true).toString();
+            ResolverUtils.useContentResolver(resourceResolverFactory, null, resolver -> {
+                Repo.quiet(resolver).get(path).save(ExecutionJob.ACTIVE_STATUS_PROP, status.name());
+            });
+        } catch (Exception e) {
+            throw new AcmException(
+                    String.format("Cannot set execution '%s' job active status to '%s'!", job.getId(), status.name()),
+                    e);
+        }
     }
 
     private CodeOutput determineCodeOutput(String executionId) {
@@ -220,81 +242,71 @@ public class ExecutionQueue implements JobExecutor, EventListener {
             }
         });
 
-        try {
-            Long abortStartTime = null;
-            while (!future.isDone()) {
-                if (context.isStopped()) {
-                    if (abortStartTime == null) {
-                        abortStartTime = System.currentTimeMillis();
-                        jobAborted.put(job.getId(), Boolean.TRUE);
-
-                        if (config.abortTimeout() < 0) {
-                            LOG.debug("Execution is aborting gracefully '{}' (no timeout)", queuedExecution);
-                        } else {
-                            LOG.debug(
-                                    "Execution is aborting '{}' (timeout: {}ms)",
-                                    queuedExecution,
-                                    config.abortTimeout());
-                        }
-                    } else if (config.abortTimeout() >= 0) {
-                        long abortDuration = System.currentTimeMillis() - abortStartTime;
-                        if (abortDuration >= config.abortTimeout()) {
-                            LOG.debug(
-                                    "Execution abort timeout exceeded ({}ms), forcing abort '{}'",
-                                    abortDuration,
-                                    queuedExecution);
-                            future.cancel(true);
-                            break;
-                        }
+        Long abortStartTime = null;
+        while (!future.isDone()) {
+            if (context.isStopped() || isStoppingOrStopped(job.getId())) {
+                if (abortStartTime == null) {
+                    abortStartTime = System.currentTimeMillis();
+                    if (config.abortTimeout() < 0) {
+                        LOG.debug("Execution is aborting gracefully '{}' (no timeout)", queuedExecution);
+                    } else {
+                        LOG.debug("Execution is aborting '{}' (timeout: {}ms)", queuedExecution, config.abortTimeout());
                     }
-                }
-
-                try {
-                    Thread.sleep(config.asyncPollInterval());
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    LOG.debug("Execution is interrupted '{}'", queuedExecution);
-                    return context.result().cancelled();
+                } else if (config.abortTimeout() >= 0) {
+                    long abortDuration = System.currentTimeMillis() - abortStartTime;
+                    if (abortDuration >= config.abortTimeout()) {
+                        LOG.debug(
+                                "Execution abort timeout exceeded ({}ms), forcing abort '{}'",
+                                abortDuration,
+                                queuedExecution);
+                        future.cancel(true);
+                        break;
+                    }
                 }
             }
 
             try {
-                Execution immediateExecution = future.get();
+                Thread.sleep(config.asyncPollInterval());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.debug("Execution is interrupted '{}'", queuedExecution);
+                return context.result().cancelled();
+            }
+        }
 
-                if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
-                    LOG.debug("Execution skipped '{}'", immediateExecution);
-                    return context.result()
-                            .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null)
-                                    .toJson())
-                            .cancelled();
-                } else {
-                    LOG.debug("Execution succeeded '{}'", immediateExecution);
-                    return context.result().succeeded();
-                }
-            } catch (CancellationException e) {
-                LOG.debug("Execution aborted forcefully '{}'", queuedExecution);
+        try {
+            Execution immediateExecution = future.get();
+
+            if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
+                LOG.debug("Execution skipped '{}'", immediateExecution);
                 return context.result()
-                        .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(e))
+                        .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null).toJson())
+                        .cancelled();
+            } else {
+                LOG.debug("Execution succeeded '{}'", immediateExecution);
+                return context.result().succeeded();
+            }
+        } catch (CancellationException e) {
+            LOG.debug("Execution aborted forcefully '{}'", queuedExecution);
+            return context.result()
+                    .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(e))
+                            .toJson())
+                    .cancelled();
+        } catch (Exception e) {
+            AbortException abortException = findAbortException(e);
+            if (abortException != null) {
+                LOG.debug("Execution aborted gracefully '{}'", queuedExecution);
+                return context.result()
+                        .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(abortException))
                                 .toJson())
                         .cancelled();
-            } catch (Exception e) {
-                AbortException abortException = findAbortException(e);
-                if (abortException != null) {
-                    LOG.debug("Execution aborted gracefully '{}'", queuedExecution);
-                    return context.result()
-                            .message(QueuedMessage.of(ExecutionStatus.ABORTED, ExceptionUtils.toString(abortException))
-                                    .toJson())
-                            .cancelled();
-                }
-
-                LOG.debug("Execution failed '{}'", queuedExecution, e);
-                return context.result()
-                        .message(QueuedMessage.of(ExecutionStatus.FAILED, ExceptionUtils.toString(e))
-                                .toJson())
-                        .failed();
             }
-        } finally {
-            jobAborted.remove(job.getId());
+
+            LOG.debug("Execution failed '{}'", queuedExecution, e);
+            return context.result()
+                    .message(QueuedMessage.of(ExecutionStatus.FAILED, ExceptionUtils.toString(e))
+                            .toJson())
+                    .failed();
         }
     }
 
@@ -323,6 +335,7 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                         determineOutput(
                                 contextOptions.getExecutionMode(),
                                 execution.getJob().getId()))) {
+            context.listenStatus(status -> setJobActiveStatus(execution.getJob(), status));
             return executor.execute(context);
         } catch (LoginException e) {
             throw new AcmException(String.format("Cannot access repository for execution '%s'", execution.getId()), e);
