@@ -1,0 +1,6 @@
+{
+    "search.exclude": {
+        "**/aem/home": true,
+        "**/node": true
+    }
+}

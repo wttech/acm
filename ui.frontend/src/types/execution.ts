@@ -33,7 +33,7 @@ export function isExecutionNegative(status: ExecutionStatus | null | undefined):
 }
 
 export function isExecutionPending(status: ExecutionStatus | null | undefined): boolean {
-  return !!status && (status === ExecutionStatus.QUEUED || isExecutionActive(status));
+  return !!status && (status === ExecutionStatus.QUEUED || status === ExecutionStatus.STOPPED || isExecutionActive(status));
 }
 
 export function isExecutionActive(status: ExecutionStatus | null | undefined): boolean {
