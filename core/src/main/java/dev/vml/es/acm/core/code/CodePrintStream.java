@@ -147,47 +147,22 @@ public class CodePrintStream extends PrintStream {
         loggerNames.forEach(this::fromLogger);
     }
 
-    /**
-     * Prints a message with INFO level and timestamp.
-     *
-     * @param message the message to print
-     */
     public void info(String message) {
         printWithTimestamp("INFO", message);
     }
 
-    /**
-     * Prints a message with ERROR level and timestamp.
-     *
-     * @param message the message to print
-     */
     public void error(String message) {
         printWithTimestamp("ERROR", message);
     }
 
-    /**
-     * Prints a message with WARN level and timestamp.
-     *
-     * @param message the message to print
-     */
     public void warn(String message) {
         printWithTimestamp("WARN", message);
     }
 
-    /**
-     * Prints a message with DEBUG level and timestamp.
-     *
-     * @param message the message to print
-     */
     public void debug(String message) {
         printWithTimestamp("DEBUG", message);
     }
 
-    /**
-     * Prints a message with TRACE level and timestamp.
-     *
-     * @param message the message to print
-     */
     public void trace(String message) {
         printWithTimestamp("TRACE", message);
     }
