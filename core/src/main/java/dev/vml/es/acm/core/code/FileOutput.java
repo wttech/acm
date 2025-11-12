@@ -1,22 +1,28 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import dev.vml.es.acm.core.gui.SpaSettings;
-import dev.vml.es.acm.core.osgi.OsgiContext;
-import dev.vml.es.acm.core.repo.RepoChunks;
+import dev.vml.es.acm.core.AcmException;
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.sling.api.resource.ResourceResolverFactory;
 
 public class FileOutput extends Output implements Flushable, Closeable {
 
+    private static final String TEMP_DIR = "acm/execution/file";
+
     @JsonIgnore
-    private transient RepoChunks repoChunks;
+    private transient File tempFile;
+
+    @JsonIgnore
+    private transient FileOutputStream fileOutputStream;
 
     @JsonIgnore
     private transient PrintStream printStream;
@@ -59,28 +65,47 @@ public class FileOutput extends Output implements Flushable, Closeable {
     }
 
     @JsonIgnore
-    private RepoChunks getRepoChunks() {
-        if (repoChunks == null) {
-            OsgiContext osgi = executionContext.getCodeContext().getOsgiContext();
-            SpaSettings spaSettings = osgi.getService(SpaSettings.class);
-            ResourceResolverFactory resolverFactory = osgi.getService(ResourceResolverFactory.class);
-            String chunkFolderPath = String.format(
-                    "%s/outputs/%s",
-                    ExecutionContext.varPath(executionContext.getId()), StringUtils.replace(getName(), "/", "-"));
-            repoChunks =
-                    new RepoChunks(resolverFactory, chunkFolderPath, spaSettings.getExecutionFileOutputChunkSize());
+    private File getTempFile() {
+        if (tempFile == null) {
+            File tmpDir = FileUtils.getTempDirectory();
+            String contextPrefix = StringUtils.replace(executionContext.getId(), "/", "-");
+            String sanitizedName = StringUtils.replace(getName(), "/", "-");
+            String fileName = String.format("%s_%s.out", contextPrefix, sanitizedName);
+            File result = new File(new File(tmpDir, TEMP_DIR), fileName);
+            File parentDir = result.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                try {
+                    FileUtils.forceMkdir(parentDir);
+                } catch (IOException e) {
+                    throw new AcmException(
+                            String.format("Cannot create temp directory for output '%s'!", getName()), e);
+                }
+            }
+            this.tempFile = result;
         }
-        return repoChunks;
+        return tempFile;
     }
 
     @JsonIgnore
     public OutputStream getOutputStream() {
-        return getRepoChunks().getOutputStream();
+        if (fileOutputStream == null) {
+            try {
+                fileOutputStream = new FileOutputStream(getTempFile());
+            } catch (IOException e) {
+                throw new AcmException(
+                        String.format("Cannot create output stream for file output '%s'!", getName()), e);
+            }
+        }
+        return fileOutputStream;
     }
 
     @JsonIgnore
     public InputStream getInputStream() {
-        return getRepoChunks().getInputStream();
+        try {
+            return new FileInputStream(getTempFile());
+        } catch (IOException e) {
+            throw new AcmException(String.format("Cannot read file output '%s'!", getName()), e);
+        }
     }
 
     @JsonIgnore
@@ -96,11 +121,38 @@ public class FileOutput extends Output implements Flushable, Closeable {
         if (printStream != null) {
             printStream.flush();
         }
-        getRepoChunks().flush();
+        if (fileOutputStream != null) {
+            fileOutputStream.flush();
+        }
     }
 
     @Override
     public void close() throws IOException {
-        getRepoChunks().close();
+        IOException exception = null;
+        try {
+            if (printStream != null) {
+                printStream.close();
+            }
+            if (fileOutputStream != null) {
+                fileOutputStream.close();
+            }
+        } catch (IOException e) {
+            exception = e;
+        } finally {
+            try {
+                if (tempFile != null && tempFile.exists()) {
+                    FileUtils.forceDelete(tempFile);
+                }
+            } catch (IOException e) {
+                if (exception != null) {
+                    exception.addSuppressed(e);
+                } else {
+                    exception = e;
+                }
+            }
+        }
+        if (exception != null) {
+            throw exception;
+        }
     }
 }

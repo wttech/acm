@@ -10,7 +10,7 @@ boolean canRun() {
 }
 
 void describeRun() {
-  inputs.integerNumber("count") { label = "Users to generate"; min = 1; value = 1000 }
+  inputs.integerNumber("count") { label = "Users to generate"; min = 1; value = 100000 }
   inputs.text("firstNames") { label = "First names"; description = "One first name per line"; value = "John\nJane\nJack\nAlice\nBob"}
   inputs.text("lastNames") { label = "Last names"; description = "One last name per line"; value = "Doe\nSmith\nBrown\nJohnson\nWhite" }
 }
@@ -38,6 +38,8 @@ void doRun() {
   dateStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy-mm-dd"))
 
   (1..count).each { i ->
+    context.checkAborted()
+
     def name = firstNames[random.nextInt(firstNames.size())]
     def surname = lastNames[random.nextInt(lastNames.size())]
     def birthDate = randomDateBetween(hundredYearsAgo, now)
