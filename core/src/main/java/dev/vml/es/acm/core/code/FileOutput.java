@@ -71,8 +71,8 @@ public class FileOutput extends Output implements Flushable, Closeable {
             String contextPrefix = StringUtils.replace(executionContext.getId(), "/", "-");
             String sanitizedName = StringUtils.replace(getName(), "/", "-");
             String fileName = String.format("%s_%s.out", contextPrefix, sanitizedName);
-            File tempFile = new File(new File(tmpDir, TEMP_DIR), fileName);
-            File parentDir = tempFile.getParentFile();
+            File result = new File(new File(tmpDir, TEMP_DIR), fileName);
+            File parentDir = result.getParentFile();
             if (parentDir != null && !parentDir.exists()) {
                 try {
                     FileUtils.forceMkdir(parentDir);
@@ -80,7 +80,7 @@ public class FileOutput extends Output implements Flushable, Closeable {
                     throw new AcmException(String.format("Cannot create temp directory for output '%s'!", getName()), e);
                 }
             }
-            this.tempFile = tempFile;
+            this.tempFile = result;
         }
         return tempFile;
     }
