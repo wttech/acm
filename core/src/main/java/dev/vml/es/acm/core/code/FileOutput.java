@@ -128,14 +128,31 @@ public class FileOutput extends Output implements Flushable, Closeable {
 
     @Override
     public void close() throws IOException {
-        if (printStream != null) {
-            printStream.close();
+        IOException exception = null;
+        try {
+            if (printStream != null) {
+                printStream.close();
+            }
+            if (fileOutputStream != null) {
+                fileOutputStream.close();
+            }
+        } catch (IOException e) {
+            exception = e;
+        } finally {
+            try {
+                if (tempFile != null && tempFile.exists()) {
+                    FileUtils.forceDelete(tempFile);
+                }
+            } catch (IOException e) {
+                if (exception != null) {
+                    exception.addSuppressed(e);
+                } else {
+                    exception = e;
+                }
+            }
         }
-        if (fileOutputStream != null) {
-            fileOutputStream.close();
-        }
-        if (tempFile != null && tempFile.exists()) {
-            FileUtils.forceDelete(tempFile);
+        if (exception != null) {
+            throw exception;
         }
     }
 }
