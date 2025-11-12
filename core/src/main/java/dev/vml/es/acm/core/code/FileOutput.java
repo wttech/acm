@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.vml.es.acm.core.AcmException;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -67,15 +68,19 @@ public class FileOutput extends Output implements Flushable, Closeable {
     private File getTempFile() {
         if (tempFile == null) {
             File tmpDir = FileUtils.getTempDirectory();
+            String contextPrefix = StringUtils.replace(executionContext.getId(), "/", "-");
             String sanitizedName = StringUtils.replace(getName(), "/", "-");
-            String filePath = String.format("%s/%s/%s", TEMP_DIR, executionContext.getId(), sanitizedName);
-            tempFile = new File(tmpDir, filePath);
-            try {
-                FileUtils.forceMkdirParent(tempFile);
-            } catch (IOException e) {
-                throw new RuntimeException(
-                        String.format("Cannot create temp directory for output '%s'", getName()), e);
+            String fileName = String.format("%s_%s.out", contextPrefix, sanitizedName);
+            File tempFile = new File(new File(tmpDir, TEMP_DIR), fileName);
+            File parentDir = tempFile.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                try {
+                    FileUtils.forceMkdir(parentDir);
+                } catch (IOException e) {
+                    throw new AcmException(String.format("Cannot create temp directory for output '%s'", getName()), e);
+                }
             }
+            this.tempFile = tempFile;
         }
         return tempFile;
     }
@@ -86,8 +91,7 @@ public class FileOutput extends Output implements Flushable, Closeable {
             try {
                 fileOutputStream = new FileOutputStream(getTempFile());
             } catch (IOException e) {
-                throw new RuntimeException(
-                        String.format("Cannot create output stream for file output '%s'", getName()), e);
+                throw new AcmException(String.format("Cannot create output stream for file output '%s'", getName()), e);
             }
         }
         return fileOutputStream;
@@ -98,8 +102,7 @@ public class FileOutput extends Output implements Flushable, Closeable {
         try {
             return new FileInputStream(getTempFile());
         } catch (IOException e) {
-            throw new RuntimeException(
-                    String.format("Cannot read file output '%s'", getName()), e);
+            throw new AcmException(String.format("Cannot read file output '%s'", getName()), e);
         }
     }
 
