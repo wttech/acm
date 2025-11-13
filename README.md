@@ -371,7 +371,7 @@ void doRun() {
 
 ##### Timestamped console output
 
-Use `out.error()`, `out.warn()`, `out.success()`, `out.info()` to write messages to the console with timestamps and log levels. These messages appear only in the execution console and are not persisted to AEM logs.
+Use `out.error()`, `out.warn()`, `out.success()`, `out.info()`, `out.debug()` to write messages to the console with timestamps and log levels. These messages appear only in the execution console and are not persisted to AEM logs.
 
 ```groovy
 void doRun() {
