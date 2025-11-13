@@ -239,7 +239,7 @@ public class Executor implements EventListener {
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
                     context.getOut().fromLoggers(config.logPrintingNames());
-                    context.getOut().withLoggerTimestamps(config.logPrintingTimestamps());
+                    context.getOut().setLoggerTimestamps(config.logPrintingTimestamps());
                 }
                 contentScript.run();
 
