@@ -148,26 +148,30 @@ public class CodePrintStream extends PrintStream {
     }
 
     public void info(String message) {
-        printWithTimestamp(CodePrintLevel.INFO, message);
+        printStamped(CodePrintLevel.INFO, message);
     }
 
     public void error(String message) {
-        printWithTimestamp(CodePrintLevel.ERROR, message);
+        printStamped(CodePrintLevel.ERROR, message);
     }
 
     public void warn(String message) {
-        printWithTimestamp(CodePrintLevel.WARN, message);
+        printStamped(CodePrintLevel.WARN, message);
     }
 
     public void debug(String message) {
-        printWithTimestamp(CodePrintLevel.DEBUG, message);
+        printStamped(CodePrintLevel.DEBUG, message);
     }
 
     public void trace(String message) {
-        printWithTimestamp(CodePrintLevel.TRACE, message);
+        printStamped(CodePrintLevel.TRACE, message);
     }
 
-    private void printWithTimestamp(CodePrintLevel level, String message) {
+    public void printStamped(String level, String message) {
+        printStamped(CodePrintLevel.of(level), message);
+    }
+
+    public void printStamped(CodePrintLevel level, String message) {
         LocalDateTime now = LocalDateTime.now();
         String timestamp = now.format(LOGGER_TIMESTAMP_FORMATTER);
         println(timestamp + " [" + level + "] " + message);

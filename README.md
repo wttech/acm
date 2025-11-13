@@ -375,24 +375,24 @@ Use `out.error()`, `out.warn()`, `out.info()`, `out.debug()`, `out.trace()` to w
 
 ```groovy
 void doRun() {
-    out.error "Failed to process item: ${item.path}"
-    out.warn "Item ${item.path} is missing required property"
+    out.error "Failed to process resource: ${resource.path}"
+    out.warn "Resource ${resource.path} is missing required property"
     out.info "Processing started"
-    out.debug "Processing item: ${item.path}"
+    out.debug "Processing resource: ${resource.path}"
     out.trace "Entering method with params: ${params}"
 }
 ```
 
 ##### Logged console output
 
-Use `log.error()`, `log.warn()`, `log.info()`, `log.debug()`, `log.trace()` to write messages both to the console and to AEM logs (e.g., `error.log`). This is recommended for production scripts where you need persistent log records.
+Use `log.error()`, `log.warn()`, `log.info()`, `log.debug()`, `log.trace()` to write messages both to the console and to AEM logs (e.g., error.log). This is recommended for production scripts where you need persistent log records.
 
 ```groovy
 void doRun() {
     log.info "Script execution started"
     
     try {
-        // ... script logic
+        // ... risky script logic
         log.info "Processing completed successfully"
     } catch (Exception e) {
         log.error "Script execution failed: ${e.message}", e
