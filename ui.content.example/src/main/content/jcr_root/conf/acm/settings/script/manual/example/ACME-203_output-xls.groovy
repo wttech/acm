@@ -16,7 +16,7 @@ void describeRun() {
 }
 
 void doRun() {
-  log.info "Users XLS report generation started"
+  out.info "Users XLS report generation started"
 
   int count = inputs.value("count")
   def firstNames = (inputs.value("firstNames")).readLines().findAll { it.trim() }
@@ -51,11 +51,12 @@ void doRun() {
     dateCell.setCellValue(Date.from(birthDate.atStartOfDay(ZoneId.systemDefault()).toInstant()))
     dateCell.setCellStyle(dateStyle)
 
-    if (i % 100 == 0) log.info("Generated ${i} users...")
+    if (i % 100 == 0) out.info("Generated ${i} users...")
   }
 
   (0..<headers.size()).each { sheet.autoSizeColumn(it) }
 
+  out.info "Writing report to output file..."
   def report = outputs.file("report") {
     label = "Report"
     description = "Users report generated as XLSX file"
@@ -79,7 +80,7 @@ void doRun() {
     ])
   }
 
-  log.info "Users XLS report generation ended successfully"
+  out.success "Users XLS report generation ended successfully"
 }
 
 LocalDate randomDateBetween(LocalDate start, LocalDate end) {
