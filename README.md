@@ -389,13 +389,13 @@ Use `log.error()`, `log.warn()`, `log.info()`, `log.debug()`, `log.trace()` to w
 
 ```groovy
 void doRun() {
-    log.info "Script execution started"
+    log.info "Doing regular stuff"
     
     try {
-        // ... risky script logic
-        log.info "Processing completed successfully"
+        // ... risky logic
+        log.info "Doing risky stuff ended"
     } catch (Exception e) {
-        log.error "Script execution failed: ${e.message}", e
+        log.error "Doing risky stuff failed: ${e.message}", e
     }
 }
 ```
