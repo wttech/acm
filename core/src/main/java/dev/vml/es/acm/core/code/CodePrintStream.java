@@ -147,6 +147,10 @@ public class CodePrintStream extends PrintStream {
         loggerNames.forEach(this::fromLogger);
     }
 
+    public void success(String message) {
+        printStamped(CodePrintLevel.SUCCESS, message);
+    }
+
     public void info(String message) {
         printStamped(CodePrintLevel.INFO, message);
     }
@@ -161,10 +165,6 @@ public class CodePrintStream extends PrintStream {
 
     public void debug(String message) {
         printStamped(CodePrintLevel.DEBUG, message);
-    }
-
-    public void trace(String message) {
-        printStamped(CodePrintLevel.TRACE, message);
     }
 
     public void printStamped(String level, String message) {

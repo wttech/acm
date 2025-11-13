@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum CodePrintLevel {
-    INFO,
+    SUCCESS,
     ERROR,
+    INFO,
     WARN,
-    DEBUG,
-    TRACE;
+    DEBUG;
 
     public static Optional<CodePrintLevel> find(String level) {
         return Arrays.stream(values())

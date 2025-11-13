@@ -371,15 +371,14 @@ void doRun() {
 
 ##### Timestamped console output
 
-Use `out.error()`, `out.warn()`, `out.info()`, `out.debug()`, `out.trace()` to write messages to the console with timestamps and log levels. These messages appear only in the execution console and are not persisted to AEM logs.
+Use `out.error()`, `out.warn()`, `out.success()`, `out.info()` to write messages to the console with timestamps and log levels. These messages appear only in the execution console and are not persisted to AEM logs.
 
 ```groovy
 void doRun() {
     out.error "Failed to process resource: ${resource.path}"
     out.warn "Resource ${resource.path} is missing required property"
+    out.success "Resource ${resource.path} processed successfully"
     out.info "Processing started"
-    out.debug "Processing resource: ${resource.path}"
-    out.trace "Entering method with params: ${params}"
 }
 ```
 
