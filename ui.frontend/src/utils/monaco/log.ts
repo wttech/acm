@@ -17,6 +17,7 @@ export function registerLogLanguage(instance: Monaco) {
       root: [
         [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[ERROR\].*$/, 'log-error'],
         [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[WARN\].*$/, 'log-warn'],
+        [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[SUCCESS\].*$/, 'log-success'],
         [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[INFO\].*$/, 'log-info'],
         [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[DEBUG\].*$/, 'log-debug'],
         [/^(\d{2}:\d{2}:\d{2}\.\d{3} )?\[TRACE\].*$/, 'log-trace'],
@@ -30,6 +31,7 @@ export function registerLogLanguage(instance: Monaco) {
     rules: [
       { token: 'log-error', foreground: 'f14c4c', fontStyle: 'bold' },
       { token: 'log-warn', foreground: 'e5c07b' },
+      { token: 'log-success', foreground: '89d185', fontStyle: 'bold' },
       { token: 'log-info', foreground: 'ededed' },
       { token: 'log-debug', foreground: '8b949e' },
       { token: 'log-trace', foreground: '6a6a6a' },

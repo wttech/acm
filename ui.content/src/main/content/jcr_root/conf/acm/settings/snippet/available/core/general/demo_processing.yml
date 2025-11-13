@@ -16,7 +16,7 @@ content: |
       out.info "Updated (\${i + 1}/\${max})"
     }
     
-    out.info "Processing done"
+    out.success "Processing done"
   }
 documentation: |
   A skeleton for a script that simulates a processing task.

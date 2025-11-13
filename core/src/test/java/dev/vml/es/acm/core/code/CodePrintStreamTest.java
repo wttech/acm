@@ -16,9 +16,9 @@ class CodePrintStreamTest {
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        CodePrintStream printStream = new CodePrintStream(outputStream, "test-id");
-
-        printStream.info("Test info message");
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+            out.info("Test info message");
+        }
 
         String output = outputStream.toString();
         assertTrue(output.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3} \\[INFO\\] Test info message\\R"));
@@ -31,9 +31,9 @@ class CodePrintStreamTest {
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        CodePrintStream printStream = new CodePrintStream(outputStream, "test-id");
-
-        printStream.error("Test error message");
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+            out.error("Test error message");
+        }
 
         String output = outputStream.toString();
         assertTrue(output.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3} \\[ERROR\\] Test error message\\R"));
@@ -46,12 +46,27 @@ class CodePrintStreamTest {
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        CodePrintStream printStream = new CodePrintStream(outputStream, "test-id");
-
-        printStream.warn("Test warn message");
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+            out.warn("Test warn message");
+        }
 
         String output = outputStream.toString();
         assertTrue(output.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3} \\[WARN\\] Test warn message\\R"));
+    }
+
+    @Test
+    void shouldPrintSuccessWithTimestamp() {
+        if (!(LoggerFactory.getILoggerFactory() instanceof LoggerContext)) {
+            return;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+            out.success("Test success message");
+        }
+
+        String output = outputStream.toString();
+        assertTrue(output.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3} \\[SUCCESS\\] Test success message\\R"));
     }
 
     @Test
@@ -61,27 +76,12 @@ class CodePrintStreamTest {
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        CodePrintStream printStream = new CodePrintStream(outputStream, "test-id");
-
-        printStream.debug("Test debug message");
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+            out.debug("Test debug message");
+        }
 
         String output = outputStream.toString();
         assertTrue(output.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3} \\[DEBUG\\] Test debug message\\R"));
-    }
-
-    @Test
-    void shouldPrintTraceWithTimestamp() {
-        if (!(LoggerFactory.getILoggerFactory() instanceof LoggerContext)) {
-            return;
-        }
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        CodePrintStream printStream = new CodePrintStream(outputStream, "test-id");
-
-        printStream.trace("Test trace message");
-
-        String output = outputStream.toString();
-        assertTrue(output.matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3} \\[TRACE\\] Test trace message\\R"));
     }
 
     @Test
@@ -91,15 +91,19 @@ class CodePrintStreamTest {
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        CodePrintStream printStream = new CodePrintStream(outputStream, "test-id");
-
-        printStream.info("Info message");
-        printStream.error("Error message");
-        printStream.warn("Warn message");
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+            out.info("Info message");
+            out.error("Error message");
+            out.warn("Warn message");
+            out.debug("Debug message");
+            out.success("Success message");
+        }
 
         String output = outputStream.toString();
         assertTrue(output.contains("[INFO] Info message"));
         assertTrue(output.contains("[ERROR] Error message"));
         assertTrue(output.contains("[WARN] Warn message"));
+        assertTrue(output.contains("[DEBUG] Debug message"));
+        assertTrue(output.contains("[SUCCESS] Success message"));
     }
 }
