@@ -146,4 +146,34 @@ public class CodePrintStream extends PrintStream {
     public void fromLoggers(List<String> loggerNames) {
         loggerNames.forEach(this::fromLogger);
     }
+
+    public void success(String message) {
+        printStamped(CodePrintLevel.SUCCESS, message);
+    }
+
+    public void info(String message) {
+        printStamped(CodePrintLevel.INFO, message);
+    }
+
+    public void error(String message) {
+        printStamped(CodePrintLevel.ERROR, message);
+    }
+
+    public void warn(String message) {
+        printStamped(CodePrintLevel.WARN, message);
+    }
+
+    public void debug(String message) {
+        printStamped(CodePrintLevel.DEBUG, message);
+    }
+
+    public void printStamped(String level, String message) {
+        printStamped(CodePrintLevel.of(level), message);
+    }
+
+    public void printStamped(CodePrintLevel level, String message) {
+        LocalDateTime now = LocalDateTime.now();
+        String timestamp = now.format(LOGGER_TIMESTAMP_FORMATTER);
+        println(timestamp + " [" + level + "] " + message);
+    }
 }

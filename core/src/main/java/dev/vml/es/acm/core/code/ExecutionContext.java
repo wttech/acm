@@ -4,6 +4,7 @@ import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import groovy.lang.Binding;
+import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.slf4j.Logger;
@@ -47,6 +48,8 @@ public class ExecutionContext implements AutoCloseable {
     private final Schedules schedules;
 
     private final Conditions conditions;
+
+    private Consumer<ExecutionStatus> statusListener;
 
     public ExecutionContext(
             String id,
@@ -151,6 +154,23 @@ public class ExecutionContext implements AutoCloseable {
         this.skipped = skipped;
     }
 
+    public boolean isAborted() {
+        return getCodeContext()
+                .getOsgiContext()
+                .getService(ExecutionQueue.class)
+                .isStoppingOrStopped(getId());
+    }
+
+    public void abort() {
+        throw new AbortException("Execution aborted gracefully!");
+    }
+
+    public void checkAborted() throws AbortException {
+        if (isAborted()) {
+            abort();
+        }
+    }
+
     public Inputs getInputs() {
         return inputs;
     }
@@ -174,6 +194,7 @@ public class ExecutionContext implements AutoCloseable {
     private void customizeBinding() {
         Binding binding = getCodeContext().getBinding();
 
+        binding.setVariable("context", this);
         binding.setVariable("schedules", schedules);
         binding.setVariable("arguments", inputs); // TODO deprecated
         binding.setVariable("inputs", inputs);
@@ -197,5 +218,15 @@ public class ExecutionContext implements AutoCloseable {
 
     public Object variable(String name) {
         return codeContext.getBinding().getVariable(name);
+    }
+
+    void listenStatus(Consumer<ExecutionStatus> statusListener) {
+        this.statusListener = statusListener;
+    }
+
+    void notifyStatus(ExecutionStatus status) {
+        if (statusListener != null) {
+            statusListener.accept(status);
+        }
     }
 }

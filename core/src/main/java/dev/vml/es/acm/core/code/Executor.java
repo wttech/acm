@@ -21,8 +21,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -34,6 +32,8 @@ import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(
         immediate = true,
@@ -43,6 +43,8 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 public class Executor implements EventListener {
 
     public static final String LOCK_DIR = "executor";
+
+    private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
     @ObjectClassDefinition(name = "AEM Content Manager - Code Executor")
     public @interface Config {
@@ -114,8 +116,6 @@ public class Executor implements EventListener {
     private SpaSettings spaSettings;
 
     private Config config;
-
-    private final Map<String, ExecutionStatus> statuses = new ConcurrentHashMap<>();
 
     @Activate
     @Modified
@@ -205,7 +205,7 @@ public class Executor implements EventListener {
         }
 
         try {
-            statuses.put(context.getId(), ExecutionStatus.PARSING);
+            context.notifyStatus(ExecutionStatus.PARSING);
 
             ContentScript contentScript = new ContentScript(context);
 
@@ -213,7 +213,7 @@ public class Executor implements EventListener {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            statuses.put(context.getId(), ExecutionStatus.CHECKING);
+            context.notifyStatus(ExecutionStatus.CHECKING);
 
             contentScript.describe();
             context.useInputValues();
@@ -235,27 +235,39 @@ public class Executor implements EventListener {
                 if (locking) {
                     useLocker(resolverFactory, l -> l.lock(lockName));
                 }
-                statuses.put(context.getId(), ExecutionStatus.RUNNING);
+                context.notifyStatus(ExecutionStatus.RUNNING);
                 if (config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
                     context.getOut().fromLoggers(config.logPrintingNames());
                     context.getOut().withLoggerTimestamps(config.logPrintingTimestamps());
                 }
                 contentScript.run();
+
+                if (!healthChecking) {
+                    LOG.info("Execution succeeded '{}'", context.getId());
+                }
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
                 if (locking) {
                     useLocker(resolverFactory, l -> l.unlock(lockName));
                 }
             }
-        } catch (Throwable e) {
+        } catch (AbortException e) {
+            LOG.warn("Execution aborted gracefully '{}'", context.getId());
             execution.error(e);
+            return execution.end(ExecutionStatus.ABORTED);
+        } catch (Throwable e) {
             if ((e.getCause() != null && e.getCause() instanceof InterruptedException)) {
+                LOG.warn("Execution aborted forcefully '{}'", context.getId());
+                execution.error(e);
                 return execution.end(ExecutionStatus.ABORTED);
+            } else {
+                if (!healthChecking) {
+                    LOG.error("Execution failed '{}'", context.getId(), e);
+                }
+                execution.error(e);
+                return execution.end(ExecutionStatus.FAILED);
             }
-            return execution.end(ExecutionStatus.FAILED);
-        } finally {
-            statuses.remove(context.getId());
         }
     }
 
@@ -263,10 +275,6 @@ public class Executor implements EventListener {
         return String.format(
                 "%s/%s",
                 LOCK_DIR, StringUtils.removeStart(context.getExecutable().getId(), AcmConstants.SETTINGS_ROOT + "/"));
-    }
-
-    public Optional<ExecutionStatus> checkStatus(String executionId) {
-        return Optional.ofNullable(statuses.get(executionId));
     }
 
     private void handleHistory(ContextualExecution execution) {
@@ -294,10 +302,8 @@ public class Executor implements EventListener {
                         ? "✅"
                         : (execution.getStatus() == ExecutionStatus.FAILED ? "❌" : "⚠️"));
         templateVars.put("statusHere", execution.getStatus() == ExecutionStatus.SUCCEEDED ? "" : "@here");
-        TemplateFormatter templateFormatter =
-                execution.getContext().getCodeContext().getFormatter().getTemplate();
-        String title = StringUtils.trim(templateFormatter.renderString(config.notificationTitle(), templateVars));
-        String text = StringUtils.trim(templateFormatter.renderString(config.notificationText(), templateVars));
+        String title = StringUtils.trim(formatTemplate(config.notificationTitle(), templateVars));
+        String text = StringUtils.trim(formatTemplate(config.notificationText(), templateVars));
 
         Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("Status", execution.getStatus().name().toLowerCase());
@@ -387,5 +393,14 @@ public class Executor implements EventListener {
 
     private void useHistory(ResourceResolverFactory resolverFactory, Consumer<ExecutionHistory> consumer) {
         ResolverUtils.useContentResolver(resolverFactory, null, r -> consumer.accept(new ExecutionHistory(r)));
+    }
+
+    private String formatTemplate(String template, Map<String, Object> vars) {
+        try {
+            return new TemplateFormatter().renderString(template, vars);
+        } catch (Exception e) {
+            LOG.warn("Cannot format template '{}'!", template, e);
+            return template;
+        }
     }
 }

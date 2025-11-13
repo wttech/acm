@@ -91,7 +91,12 @@ public class ExecutionHistory {
                             "Output '%s' cannot be flushed before saving to the execution history!", output.getName()),
                     e);
         }
-        file.saveFile(output.getMimeType(), output.getInputStream());
+        try (InputStream inputStream = output.getInputStream()) {
+            file.saveFile(output.getMimeType(), inputStream);
+        } catch (IOException e) {
+            throw new AcmException(
+                    String.format("Output '%s' cannot be saved to the execution history!", output.getName()), e);
+        }
     }
 
     public InputStream readOutputByName(Execution execution, String name) {

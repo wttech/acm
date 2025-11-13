@@ -40,12 +40,11 @@ public final class ScriptUtils {
 
     public static boolean isMethodValid(ClassNode mainClass, String methodName, String returnType, int paramCount) {
         for (MethodNode method : mainClass.getMethods()) {
-            String actualReturnType = method.getReturnType().getName();
-            if (DEF_TYPE.equals(actualReturnType)
-                    || methodName.equals(method.getName())
-                            && returnType.equals(actualReturnType)
-                            && (method.getParameters().length == paramCount)) {
-                return true;
+            if (methodName.equals(method.getName()) && method.getParameters().length == paramCount) {
+                String actualReturnType = method.getReturnType().getName();
+                if (returnType.equals(actualReturnType) || DEF_TYPE.equals(actualReturnType)) {
+                    return true;
+                }
             }
         }
         return false;

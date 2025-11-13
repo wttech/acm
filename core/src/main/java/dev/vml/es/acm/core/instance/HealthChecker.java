@@ -247,6 +247,9 @@ public class HealthChecker implements EventHandler {
     }
 
     private void checkCodeExecutor(List<HealthIssue> issues, ResourceResolver resourceResolver) {
+        if (!config.codeExecutorChecking()) {
+            return;
+        }
         try (ExecutionContext context = executor.createContext(
                 ExecutionId.HEALTH_CHECK,
                 resourceResolver.getUserID(),
@@ -319,5 +322,10 @@ public class HealthChecker implements EventHandler {
                 name = "Installer Checking",
                 description = "Check if any CRX package is currently installed. Supported only on AEM On-Premise")
         boolean installerChecking() default false;
+
+        @AttributeDefinition(
+                name = "Code Executor Checking",
+                description = "Check if code executor can successfully run a simple script")
+        boolean codeExecutorChecking() default true;
     }
 }

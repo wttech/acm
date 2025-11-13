@@ -6,16 +6,10 @@ import java.util.Map;
 
 public class TemplateFormatter {
 
-    private final GStringTemplateEngine engine;
-
-    public TemplateFormatter() {
-        this.engine = new GStringTemplateEngine();
-    }
-
     public String renderString(String template, Map<?, ?> vars) {
         try {
             Writer writer = new StringWriter();
-            engine.createTemplate(template).make(vars).writeTo(writer);
+            getEngine().createTemplate(template).make(vars).writeTo(writer);
             return writer.toString();
         } catch (Exception e) {
             throw new FormatException("Cannot render template from & to string!", e);
@@ -24,7 +18,7 @@ public class TemplateFormatter {
 
     public void renderFromString(String template, Map<?, ?> vars, Writer writer) {
         try {
-            engine.createTemplate(template).make(vars).writeTo(writer);
+            getEngine().createTemplate(template).make(vars).writeTo(writer);
         } catch (Exception e) {
             throw new FormatException("Cannot render template from string!", e);
         }
@@ -33,7 +27,7 @@ public class TemplateFormatter {
     public String renderToString(Reader reader, Map<?, ?> vars) {
         try {
             Writer writer = new StringWriter();
-            engine.createTemplate(reader).make(vars).writeTo(writer);
+            getEngine().createTemplate(reader).make(vars).writeTo(writer);
             return writer.toString();
         } catch (Exception e) {
             throw new FormatException("Cannot render template to string!", e);
@@ -43,7 +37,7 @@ public class TemplateFormatter {
     public void render(InputStream inputStream, Map<?, ?> vars, OutputStream outputStream) {
         try (Reader reader = new InputStreamReader(inputStream);
                 Writer writer = new OutputStreamWriter(outputStream)) {
-            engine.createTemplate(reader).make(vars).writeTo(writer);
+            getEngine().createTemplate(reader).make(vars).writeTo(writer);
         } catch (Exception e) {
             throw new FormatException("Cannot render template!", e);
         }
@@ -51,9 +45,13 @@ public class TemplateFormatter {
 
     public void render(Reader reader, Map<?, ?> vars, Writer writer) {
         try {
-            engine.createTemplate(reader).make(vars).writeTo(writer);
+            getEngine().createTemplate(reader).make(vars).writeTo(writer);
         } catch (Exception e) {
             throw new FormatException("Cannot render template!", e);
         }
+    }
+
+    private GStringTemplateEngine getEngine() {
+        return new GStringTemplateEngine();
     }
 }

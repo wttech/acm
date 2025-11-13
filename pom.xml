@@ -346,7 +346,7 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                         <skipPublishing>${maven.deploy.skip}</skipPublishing>
                         <publishingServerId>central</publishingServerId>
                         <autoPublish>true</autoPublish>
-                        <waitUntil>published</waitUntil>
+                        <waitUntil>validated</waitUntil>
                     </configuration>
                 </plugin>
                 <!-- Apache Sling Plugin -->

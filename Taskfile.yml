@@ -332,3 +332,25 @@ tasks:
       set -e
       sh nw npm install
       sh nw npx playwright {{.CLI_ARGS | default "test"}}
+
+  rde:setup:
+    desc: setup access to RDE
+    cmds:
+      - command -v aio || npm install -g @adobe/aio-cli
+      - aio plugins:install @adobe/aio-cli-plugin-aem-rde
+      - aio login
+      - echo -e "Connecting to RDE..."
+      - aio aem:rde:setup
+
+  rde:deploy:all:
+    desc: deploy AEM all package to RDE
+    cmd: |
+      package=$(find all/target/ -name "acm.all*.zip" -type f | head -n 1)
+      if [ -z "$package" ]; then
+          echo "Error: Could not find package starting with 'acm.all' in all/target"
+          exit 1
+      fi
+      package_name=$(basename "$package")
+      echo "Package name: $package_name"
+      echo "Installing package on RDE..."
+      aio aem:rde:install --type "content-package" "all/target/$package_name"

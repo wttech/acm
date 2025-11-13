@@ -57,8 +57,13 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
       - [Minimal example](#minimal-example)
       - [Inputs example](#inputs-example)
       - [Outputs example](#outputs-example)
+      - [Console \& logging](#console--logging)
+        - [Simple console output](#simple-console-output)
+        - [Timestamped console output](#timestamped-console-output)
+        - [Logged console output](#logged-console-output)
       - [ACL example](#acl-example)
       - [Repo example](#repo-example)
+      - [Abortable example](#abortable-example)
     - [History](#history)
     - [Extension scripts](#extension-scripts)
       - [Example extension script](#example-extension-script)
@@ -152,8 +157,25 @@ Adjust file 'all/pom.xml':
 
 3. Consider refining the ACL settings
 
-   The default settings are defined in the [repo init OSGi config](https://github.com/wttech/acm/blob/main/ui.config/src/main/content/jcr_root/apps/acm-config/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~acmcore.config), which effectively restrict access to the tool and script execution to administrators only—a recommended practice for production environments.
+   The default settings are defined in the [repo init OSGi config](https://github.com/wttech/acm/blob/main/ui.config/src/main/content/jcr_root/apps/acm-config/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~acmcore.config), which effectively restrict access to the tool and script execution to administrators only - a recommended practice for production environments.
    If you require further customization, you can create your own repo init OSGi config to override or extend the default configuration.
+
+   For example:
+   ```ini
+   service.ranking=I"100"
+   scripts=["  
+       set ACL for everyone
+           deny jcr:read on /apps/acm
+           deny jcr:read on /apps/cq/core/content/nav/tools/acm
+       end
+
+       create group acm-users
+       set ACL for acm-users
+           allow jcr:read on /apps/acm
+           allow jcr:read on /apps/cq/core/content/nav/tools/acm
+       end
+   "]
+   ```
 
 ## Compatibility
 
@@ -285,7 +307,7 @@ boolean canRun() {
 void doRun() { 
     log.info "Users report generation started"
 
-    def report = outputs.make("report") {
+    def report = outputs.file("report") {
         label = "Report"
         description = "Users report generated as CSV file"
         downloadName = "report.csv"
@@ -331,6 +353,57 @@ outputs.text("configJson") {
     language = "json"
 }
 ```
+
+#### Console & logging
+
+Scripts provide three different ways to write messages to the console and logs, each serving different purposes:
+
+##### Simple console output
+
+Use `println` or `printf` for simple console output without timestamps or log levels. This is useful for quick debugging or generating simple text output.
+
+```groovy
+void doRun() {
+    println "Simple message without timestamp"
+    printf "Formatted: %s = %d\n", "count", 42
+}
+```
+
+##### Timestamped console output
+
+Use `out.error()`, `out.warn()`, `out.success()`, `out.info()`, `out.debug()` to write messages to the console with timestamps and log levels. These messages appear only in the execution console and are not persisted to AEM logs.
+
+```groovy
+void doRun() {
+    out.error "Failed to process resource: ${resource.path}"
+    out.warn "Resource ${resource.path} is missing required property"
+    out.success "Resource ${resource.path} processed successfully"
+    out.info "Processing started"
+}
+```
+
+##### Logged console output
+
+Use `log.error()`, `log.warn()`, `log.info()`, `log.debug()`, `log.trace()` to write messages both to the console and to AEM logs (e.g., error.log). This is recommended for production scripts where you need persistent log records.
+
+```groovy
+void doRun() {
+    log.info "Doing regular stuff"
+    
+    try {
+        // ... risky logic
+        log.info "Doing risky stuff ended"
+    } catch (Exception e) {
+        log.error "Doing risky stuff failed: ${e.message}", e
+    }
+}
+```
+
+**Best practices:**
+
+- Use `println` / `printf` for quick debugging or simple text generation
+- Use `out.*` for console-only feedback during script execution (progress indicators, status updates)
+- Use `log.*` for important events that should be persisted in AEM logs (errors, warnings, critical operations)
 
 #### ACL example
 
@@ -420,6 +493,38 @@ void doRun() {
 ```
 
 <img src="docs/screenshot-content-script-repo-output.png" width="720" alt="ACM ACL Repo Output">
+
+#### Abortable example
+
+For long-running scripts that process many nodes, it's important to support graceful abortion. This allows users to stop the script execution without leaving the repository in an inconsistent state.
+
+```groovy
+void doRun() {
+    repo.queryRaw("SELECT * FROM [nt:base] WHERE ISDESCENDANTNODE('/content/acme/us/en')").forEach { resource ->
+        // Safe point
+        context.checkAborted()
+        
+        // Process resource
+        // TODO resource.save() etc.
+    }
+}
+```
+
+Alternatively, you can use `context.isAborted()` for manual control:
+
+```groovy
+void doRun() {
+    def assets = repo.queryRaw("SELECT * FROM [dam:Asset] WHERE ISDESCENDANTNODE('/content/dam')").iterator()
+    for (asset in assets) {
+        if (context.isAborted()) {
+            // Do clean when aborted
+            break
+        }
+    }
+    // Still remember to propagate abort status
+    context.checkAborted()
+}
+```
 
 ### History
 

@@ -6,16 +6,17 @@ content: |
   }
     
   void doRun() {
-    println "Processing..."
+    out.info "Processing..."
     
-    println "Updating resources..."
+    out.info "Updating resources..."
     def max = 20
     for (int i = 0; i < max; i++) {
+      context.checkAborted()
       Thread.sleep(1000)
-      println "Updated (\${i + 1}/\${max})"
+      out.info "Updated (\${i + 1}/\${max})"
     }
     
-    println "Processing done"
+    out.success "Processing done"
   }
 documentation: |
   A skeleton for a script that simulates a processing task.
