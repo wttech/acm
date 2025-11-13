@@ -307,7 +307,7 @@ boolean canRun() {
 void doRun() { 
     log.info "Users report generation started"
 
-    def report = outputs.make("report") {
+    def report = outputs.file("report") {
         label = "Report"
         description = "Users report generated as CSV file"
         downloadName = "report.csv"
