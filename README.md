@@ -57,7 +57,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
       - [Minimal example](#minimal-example)
       - [Inputs example](#inputs-example)
       - [Outputs example](#outputs-example)
-      - [Console \& logging example](#console--logging-example)
+      - [Console \& logging](#console--logging)
         - [Simple console output](#simple-console-output)
         - [Timestamped console output](#timestamped-console-output)
         - [Logged console output](#logged-console-output)
@@ -354,7 +354,7 @@ outputs.text("configJson") {
 }
 ```
 
-#### Console & logging example
+#### Console & logging
 
 Scripts provide three different ways to write messages to the console and logs, each serving different purposes:
 
