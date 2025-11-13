@@ -57,6 +57,10 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
       - [Minimal example](#minimal-example)
       - [Inputs example](#inputs-example)
       - [Outputs example](#outputs-example)
+      - [Console \& logging](#console--logging)
+        - [Simple console output](#simple-console-output)
+        - [Timestamped console output](#timestamped-console-output)
+        - [Logged console output](#logged-console-output)
       - [ACL example](#acl-example)
       - [Repo example](#repo-example)
       - [Abortable example](#abortable-example)
@@ -349,6 +353,58 @@ outputs.text("configJson") {
     language = "json"
 }
 ```
+
+#### Console & logging
+
+Scripts provide three different ways to write messages to the console and logs, each serving different purposes:
+
+##### Simple console output
+
+Use `println` or `printf` for simple console output without timestamps or log levels. This is useful for quick debugging or generating simple text output.
+
+```groovy
+void doRun() {
+    println "Simple message without timestamp"
+    printf "Formatted: %s = %d\n", "count", 42
+}
+```
+
+##### Timestamped console output
+
+Use `out.error()`, `out.warn()`, `out.info()`, `out.debug()`, `out.trace()` to write messages to the console with timestamps and log levels. These messages appear only in the execution console and are not persisted to AEM logs.
+
+```groovy
+void doRun() {
+    out.error "Failed to process resource: ${resource.path}"
+    out.warn "Resource ${resource.path} is missing required property"
+    out.info "Processing started"
+    out.debug "Processing resource: ${resource.path}"
+    out.trace "Entering method with params: ${params}"
+}
+```
+
+##### Logged console output
+
+Use `log.error()`, `log.warn()`, `log.info()`, `log.debug()`, `log.trace()` to write messages both to the console and to AEM logs (e.g., error.log). This is recommended for production scripts where you need persistent log records.
+
+```groovy
+void doRun() {
+    log.info "Doing regular stuff"
+    
+    try {
+        // ... risky logic
+        log.info "Doing risky stuff ended"
+    } catch (Exception e) {
+        log.error "Doing risky stuff failed: ${e.message}", e
+    }
+}
+```
+
+**Best practices:**
+
+- Use `println` / `printf` for quick debugging or simple text generation
+- Use `out.*` for console-only feedback during script execution (progress indicators, status updates)
+- Use `log.*` for important events that should be persisted in AEM logs (errors, warnings, critical operations)
 
 #### ACL example
 
