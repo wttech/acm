@@ -75,10 +75,10 @@ export const StateDefault: State = {
       history: true,
       snippets: true,
       scripts: true,
-      'scripts.manage': false,
+      'scripts.manage': true,
       'scripts.execute': true,
-      maintenance: false,
-      'maintenance.manage': false,
+      maintenance: true,
+      'maintenance.manage': true,
     },
   },
 };
