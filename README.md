@@ -171,7 +171,7 @@ If you require further customization, you can create your own repo init OSGi con
 
 ACM supports fine-grained permission control through individual features. This allows you to grant specific capabilities to different user groups without providing full access to ACM tool. For a complete list of available features, see the [ACM features directory](https://github.com/wttech/acm/tree/main/ui.apps/src/main/content/jcr_root/apps/acm/feature).
 
-** Example: Create groups for full and limited access:**
+**Example: Create groups for full and limited access:**
 
 ```ini
 service.ranking=I"100"
@@ -208,13 +208,13 @@ Later on when AEM is running, just assign users to the created groups (`acm-admi
 
 Access to ACM's REST API endpoints is controlled through nodes under `/apps/acm/api`. For a complete list of available endpoints, see the [ACM API directory](https://github.com/wttech/acm/tree/main/ui.apps/src/main/content/jcr_root/apps/acm/api).
 
-**Important:** Code execution requires authorization at three levels: API endpoint, feature, and script path. Example:
+**Important:** Code execution requires authorization at three levels: API endpoint, feature, and e.g. script path. Example:
 
 ```ini
 set ACL for acm-automation-user
     allow jcr:read on /apps/acm/api
     allow jcr:read on /apps/acm/feature
-    allow jcr:read on /conf/acm/settings/script/manual/acme
+    allow jcr:read on /conf/acm/settings/script
 end
 ```
 
