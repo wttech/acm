@@ -171,7 +171,7 @@ If you require further customization, you can create your own repo init OSGi con
 
 ACM supports fine-grained permission control through individual features. This allows you to grant specific capabilities to different user groups without providing full access to ACM tool. For a complete list of available features, see the [ACM features directory](https://github.com/wttech/acm/tree/main/ui.apps/src/main/content/jcr_root/apps/acm/feature).
 
-**Example: Create a group for script viewers with limited access:**
+** Example: Create groups for full and limited access:**
 
 ```ini
 service.ranking=I"100"
@@ -187,39 +187,36 @@ scripts=["
         allow jcr:read on /apps/acm
     end
 
-    create group acm-script-viewers
-    set ACL for acm-script-viewers
+    create group acm-script-users
+    set ACL for acm-script-users
         allow jcr:read on /apps/cq/core/content/nav/tools/acm
         allow jcr:read on /apps/acm/gui
+        allow jcr:read on /apps/acm/api
 
         allow jcr:read on /apps/acm/feature/script/list
         allow jcr:read on /apps/acm/feature/script/view
-        allow jcr:read on /conf/acm/settings/script
-
         allow jcr:read on /apps/acm/feature/execution/view
+
+        allow jcr:read on /conf/acm/settings/script
     end
 "]
 ```
 
+Later on when AEM is running, just assign users to the created groups (`acm-admins` or `acm-script-users`) to grant them the corresponding access.
+
 #### API Permissions
 
-In addition to UI features, you can also control access to ACM's REST API endpoints. The API permissions are managed through nodes under */apps/acm/api*. For a complete list of available API endpoints, see the [ACM API directory](https://github.com/wttech/acm/tree/main/ui.apps/src/main/content/jcr_root/apps/acm/api).
+Access to ACM's REST API endpoints is controlled through nodes under `/apps/acm/api`. For a complete list of available endpoints, see the [ACM API directory](https://github.com/wttech/acm/tree/main/ui.apps/src/main/content/jcr_root/apps/acm/api).
 
-**Important:** API access alone may not be sufficient for code execution. Features are evaluated on both feature and API levels. For example, granting only */apps/acm/api/execute-code* permission will not allow code execution from console or scripts unless the user also has access to the corresponding features:
+**Important:** Code execution requires authorization at three levels: API endpoint, feature, and script path. Example:
 
 ```ini
 set ACL for acm-automation-user
-    # API access
-    allow jcr:read on /apps/acm/api/queue-code
-    allow jcr:read on /apps/acm/api/execute-code
-    # Feature access
-    allow jcr:read on /apps/acm/feature/scripts/execute
-    # Scripts access
+    allow jcr:read on /apps/acm/api
+    allow jcr:read on /apps/acm/feature
     allow jcr:read on /conf/acm/settings/script/manual/acme
 end
 ```
-
-This two-layer permission model ensures that both API and feature-level authorizations are properly enforced, preventing unauthorized code execution even when API access is granted.
 
 ## Compatibility
 
