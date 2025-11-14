@@ -89,6 +89,7 @@ const router = createHashRouter([
           </Route>
         ),
       },
+      // TODO fix redirect loop when no access to dashboard
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

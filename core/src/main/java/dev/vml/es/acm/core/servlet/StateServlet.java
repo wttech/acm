@@ -4,7 +4,6 @@ import static dev.vml.es.acm.core.util.ServletResult.error;
 import static dev.vml.es.acm.core.util.ServletResult.ok;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 
-import dev.vml.es.acm.core.code.Code;
 import dev.vml.es.acm.core.code.ExecutionQueue;
 import dev.vml.es.acm.core.code.Executor;
 import dev.vml.es.acm.core.gui.SpaSettings;

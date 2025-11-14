@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.gui;
 
+import dev.vml.es.acm.core.AcmConstants;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,8 +10,6 @@ import org.apache.sling.models.annotations.Model;
 import org.apache.sling.models.annotations.injectorspecific.Self;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import dev.vml.es.acm.core.AcmConstants;
 
 @Model(adaptables = SlingHttpServletRequest.class)
 public class Spa {
