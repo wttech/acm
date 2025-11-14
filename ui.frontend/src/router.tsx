@@ -60,7 +60,7 @@ const router = createHashRouter([
       {
         path: '/history',
         element: (
-          <Route featureId="history">
+          <Route featureId="executions">
             <HistoryPage />
           </Route>
         ),
@@ -68,12 +68,16 @@ const router = createHashRouter([
       {
         path: '/executions',
         element: (
-          <Route featureId="history">
+          <Route featureId="executions">
             <HistoryPage />
           </Route>
         ),
       },
-      { path: '/executions/view/:executionId/:tab?', element: <ExecutionView /> },
+      { path: '/executions/view/:executionId/:tab?', element: (
+        <Route featureId="executions.view">
+          <ExecutionView />
+        </Route>
+      ) },
       {
         path: '/maintenance/:tab?',
         element: (

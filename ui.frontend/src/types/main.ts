@@ -72,7 +72,8 @@ export const StateDefault: State = {
       console: true,
       'console.execute': true,
       dashboard: true,
-      history: true,
+      executions: true,
+      'executions.view': true,
       snippets: true,
       scripts: true,
       'scripts.manage': true,
@@ -104,7 +105,7 @@ export type Permissions = {
   features: Record<FeatureId, boolean>;
 };
 
-export type FeatureId = 'console' | 'console.execute' | 'dashboard' | 'history' | 'snippets' | 'scripts' | 'scripts.execute' | 'scripts.manage' | 'maintenance' | 'maintenance.manage';
+export type FeatureId = 'console' | 'console.execute' | 'dashboard' | 'executions' | 'executions.view' | 'snippets' | 'scripts' | 'scripts.execute' | 'scripts.manage' | 'maintenance' | 'maintenance.manage';
 
 export enum ExecutionFormat {
   SUMMARY = 'SUMMARY',

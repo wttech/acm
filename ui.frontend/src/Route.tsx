@@ -1,10 +1,10 @@
 import { Navigate } from 'react-router-dom';
 import { useAppState } from './hooks/app';
-import { State } from './types/main';
+import { FeatureId } from './types/main';
 
 interface RouteProps {
   children: React.ReactNode;
-  featureId?: keyof State['permissions']['features'];
+  featureId?: FeatureId;
 }
 
 export function Route({ children, featureId }: RouteProps) {

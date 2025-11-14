@@ -47,7 +47,7 @@ const Header = () => {
           </Button>
         </AppLink>
       </Toggle>
-      <Toggle when={state.permissions.features['history']}>
+      <Toggle when={state.permissions.features['executions']}>
         <AppLink to="/history">
           <Button variant={location.pathname.startsWith('/history') ? 'accent' : 'primary'} style="outline">
             <History />
