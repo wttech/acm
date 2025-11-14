@@ -8,7 +8,6 @@ import { AppContext } from './AppContext';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import router from './router';
-import { InstanceRole, InstanceType } from './types/aem.ts';
 import { State, StateDefault } from './types/main.ts';
 import { apiRequest } from './utils/api';
 import { intervalToTimeout } from './utils/spectrum.ts';

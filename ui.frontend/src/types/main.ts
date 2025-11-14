@@ -49,37 +49,39 @@ export type State = {
 };
 
 export const StateDefault: State = {
-    spaSettings: {
-      appStateInterval: 3000,
-      executionPollInterval: 1400,
-      scriptStatsLimit: 20,
+  spaSettings: {
+    appStateInterval: 3000,
+    executionPollInterval: 1400,
+    scriptStatsLimit: 20,
+  },
+  healthStatus: {
+    healthy: true,
+    issues: [],
+  },
+  mockStatus: {
+    enabled: false,
+  },
+  instanceSettings: {
+    id: 'default',
+    timezoneId: 'UTC',
+    role: InstanceRole.AUTHOR,
+    type: InstanceType.CLOUD_CONTAINER,
+  },
+  permissions: {
+    features: {
+      console: true,
+      'console.execute': true,
+      dashboard: true,
+      history: true,
+      snippets: true,
+      scripts: true,
+      'scripts.manage': false,
+      'scripts.execute': true,
+      maintenance: false,
+      'maintenance.manage': false,
     },
-    healthStatus: {
-      healthy: true,
-      issues: [],
-    },
-    mockStatus: {
-      enabled: false,
-    },
-    instanceSettings: {
-      id: 'default',
-      timezoneId: 'UTC',
-      role: InstanceRole.AUTHOR,
-      type: InstanceType.CLOUD_CONTAINER,
-    },
-    permissions: {
-      features: {
-        console: true,
-        dashboard: true,
-        history: true,
-        snippets: true,
-        scripts: true,
-        'scripts.manage': false,
-        maintenance: false,
-        'maintenance.manage': false,
-      },
-    },
-  };
+  },
+};
 
 export type SpaSettings = {
   appStateInterval: number;
@@ -102,7 +104,7 @@ export type Permissions = {
   features: Record<FeatureId, boolean>;
 };
 
-export type FeatureId = 'console' | 'dashboard' | 'history' | 'snippets' | 'scripts' | 'scripts.manage' | 'maintenance' | 'maintenance.manage';
+export type FeatureId = 'console' | 'console.execute' | 'dashboard' | 'history' | 'snippets' | 'scripts' | 'scripts.execute' | 'scripts.manage' | 'maintenance' | 'maintenance.manage';
 
 export enum ExecutionFormat {
   SUMMARY = 'SUMMARY',

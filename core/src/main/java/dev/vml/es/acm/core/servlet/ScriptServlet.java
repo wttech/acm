@@ -128,7 +128,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         if (!Permissions.check(Permissions.Feature.SCRIPTS_MANAGE, request.getResourceResolver())) {
-            respondJson(response, error("Script management is disabled!"));
+            respondJson(response, forbidden("Script management feature is not permitted!"));
             return;
         }
 

@@ -31,8 +31,9 @@ import { StorageKeys } from '../utils/storage';
 
 const ConsolePage = () => {
   const appState = useAppState();
-  const scriptsManageEnabled = useFeatureEnabled('scripts.manage');
   const pausedExecution = !appState.healthStatus.healthy;
+  const executeEnabled = useFeatureEnabled('console.execute');
+  const scriptsManageEnabled = useFeatureEnabled('scripts.manage');
 
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
@@ -138,7 +139,7 @@ const ConsolePage = () => {
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
-                    <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={executableNotReady} />
+                    <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={!executeEnabled || executableNotReady} />
                     <Toggle when={scriptsManageEnabled}>
                       <CodeSaveButton code={code || ''} variant="secondary" isDisabled={executableNotReady} />
                     </Toggle>

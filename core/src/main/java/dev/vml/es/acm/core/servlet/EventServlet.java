@@ -41,7 +41,7 @@ public class EventServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         if (!Permissions.check(Permissions.Feature.MAINTENANCE_MANAGE, request.getResourceResolver())) {
-            respondJson(response, forbidden("Event cannot be dispatched due to insufficient permissions!"));
+            respondJson(response, forbidden("Event cannot be dispatched as maintenance manage feature is not permitted!"));
             return;
         }
 
