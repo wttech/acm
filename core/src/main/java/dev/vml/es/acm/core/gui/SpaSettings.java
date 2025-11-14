@@ -22,8 +22,6 @@ public class SpaSettings implements Serializable {
 
     private long scriptStatsLimit;
 
-    private boolean scriptManagementEnabled;
-
     @Activate
     @Modified
     protected void activate(Config config) {
@@ -32,7 +30,6 @@ public class SpaSettings implements Serializable {
         this.executionCodeOutputChunkSize = config.executionCodeOutputChunkSize();
         this.executionFileOutputChunkSize = config.executionFileOutputChunkSize();
         this.scriptStatsLimit = config.scriptStatsLimit();
-        this.scriptManagementEnabled = config.scriptManagementEnabled();
     }
 
     public long getAppStateInterval() {
@@ -53,10 +50,6 @@ public class SpaSettings implements Serializable {
 
     public long getScriptStatsLimit() {
         return scriptStatsLimit;
-    }
-
-    public boolean isScriptManagementEnabled() {
-        return scriptManagementEnabled;
     }
 
     @ObjectClassDefinition(name = "AEM Content Manager - SPA Settings")
@@ -83,10 +76,5 @@ public class SpaSettings implements Serializable {
                 description =
                         "Limit for the number of historical executions to be considered to calculate the average duration.")
         long scriptStatsLimit() default 10;
-
-        @AttributeDefinition(
-                name = "Script Management Enabled",
-                description = "Enable or disable script management features (delete, save, sync, etc).")
-        boolean scriptManagementEnabled() default true;
     }
 }

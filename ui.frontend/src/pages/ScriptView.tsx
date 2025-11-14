@@ -9,19 +9,20 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor';
 import CodeExecuteButton from '../components/CodeExecuteButton';
+import { useFeatureEnabled } from '../hooks/app.ts';
 import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation';
 import { InputValues } from '../types/input.ts';
 import { Description, ExecutionQueryParams, QueueOutput, ScriptOutput } from '../types/main.ts';
 import { Script, ScriptType } from '../types/script.ts';
 import { toastRequest } from '../utils/api';
+import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 import { Urls } from '../utils/url.ts';
-
-const toastTimeout = 3000;
 
 const ScriptView = () => {
   const [script, setScript] = useState<Script | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [executing, setExecuting] = useState<boolean>(false);
+  const executeEnabled = useFeatureEnabled('script.execute');
   const scriptId = decodeURIComponent(useParams<{ scriptId: string }>().scriptId as string);
   const navigate = useNavigate();
   const [selectedTab, handleTabChange] = useNavigationTab('details');
@@ -69,14 +70,10 @@ const ScriptView = () => {
     navigator.clipboard
       .writeText(script.content)
       .then(() => {
-        ToastQueue.info('Script code copied to clipboard!', {
-          timeout: toastTimeout,
-        });
+        ToastQueue.info('Script code copied to clipboard!', { timeout: ToastTimeoutQuick });
       })
       .catch(() => {
-        ToastQueue.negative('Failed to copy script code!', {
-          timeout: toastTimeout,
-        });
+        ToastQueue.negative('Failed to copy script code!', { timeout: ToastTimeoutQuick });
       });
   };
 
@@ -85,9 +82,7 @@ const ScriptView = () => {
     if (description.execution.error) {
       console.error(description.execution.error);
     }
-    ToastQueue.negative('Script description failed. Check logs!', {
-      timeout: toastTimeout,
-    });
+    ToastQueue.negative('Script description failed. Check logs!', { timeout: ToastTimeoutQuick });
   };
 
   const onExecute = async (description: Description, inputs: InputValues) => {
@@ -110,7 +105,7 @@ const ScriptView = () => {
       navigate(Urls.compose(`/executions/view/${encodeURIComponent(queuedExecution.id)}`, { [NavigationSearchParams.TAB]: 'output' }));
     } catch (error) {
       console.error('Script execution error:', error);
-      ToastQueue.negative('Script execution error!', { timeout: toastTimeout });
+      ToastQueue.negative('Script execution error!', { timeout: ToastTimeoutQuick });
     } finally {
       setExecuting(false);
     }
@@ -135,7 +130,7 @@ const ScriptView = () => {
               <View>
                 <Flex justifyContent="space-between" alignItems="center">
                   <ButtonGroup>
-                    <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={script.type !== 'MANUAL'} isPending={executing} />
+                    <CodeExecuteButton code={script.content} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isDisabled={!executeEnabled || script.type !== 'MANUAL'} isPending={executing} />
                     {script.type !== ScriptType.EXTENSION && script.type !== ScriptType.MOCK && (
                       <Button
                         variant="secondary"

@@ -50,6 +50,10 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
         }
 
         Code code = input.getCode();
+        if (!executor.authorize(code, request.getResourceResolver())) {
+            respondJson(response, forbidden(String.format("Code from '%s' is not authorized!", code.getId())));
+            return;
+        }
 
         ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
         if (mode == null) {

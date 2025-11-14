@@ -28,7 +28,7 @@ public class CodePrintStream extends PrintStream {
     public static final String[] LOGGER_NAMES = {LOGGER_NAME_ACL, LOGGER_NAME_REPO};
 
     // have to match pattern in 'monaco/log.ts'
-    private static final DateTimeFormatter LOGGER_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
     private final Logger logger;
 
@@ -40,6 +40,8 @@ public class CodePrintStream extends PrintStream {
 
     private final LogAppender logAppender;
 
+    private boolean printerTimestamps;
+
     public CodePrintStream(OutputStream output, String id) {
         super(output);
 
@@ -48,6 +50,8 @@ public class CodePrintStream extends PrintStream {
         this.loggerTimestamps = true;
         this.logger = loggerContext.getLogger(id);
         this.logAppender = new LogAppender();
+
+        this.printerTimestamps = true;
     }
 
     private class LogAppender extends AppenderBase<ILoggingEvent> {
@@ -60,7 +64,7 @@ public class CodePrintStream extends PrintStream {
                     if (loggerTimestamps) {
                         LocalDateTime eventTime = LocalDateTime.ofInstant(
                                 Instant.ofEpochMilli(event.getTimeStamp()), ZoneId.systemDefault());
-                        String timestamp = eventTime.format(LOGGER_TIMESTAMP_FORMATTER);
+                        String timestamp = eventTime.format(TIMESTAMP_FORMATTER);
                         println(timestamp + " [" + level + "] " + event.getFormattedMessage());
                     } else {
                         println('[' + level + "] " + event.getFormattedMessage());
@@ -116,7 +120,7 @@ public class CodePrintStream extends PrintStream {
         return loggerTimestamps;
     }
 
-    public void withLoggerTimestamps(boolean flag) {
+    public void setLoggerTimestamps(boolean flag) {
         this.loggerTimestamps = flag;
     }
 
@@ -147,33 +151,45 @@ public class CodePrintStream extends PrintStream {
         loggerNames.forEach(this::fromLogger);
     }
 
+    public void setPrinterTimestamps(boolean flag) {
+        this.printerTimestamps = flag;
+    }
+
+    public boolean isPrinterTimestamps() {
+        return printerTimestamps;
+    }
+
+    public void printTimestamped(String level, String message) {
+        printTimestamped(CodePrintLevel.of(level), message);
+    }
+
+    public void printTimestamped(CodePrintLevel level, String message) {
+        if (printerTimestamps) {
+            LocalDateTime now = LocalDateTime.now();
+            String timestamp = now.format(TIMESTAMP_FORMATTER);
+            println(timestamp + " [" + level + "] " + message);
+        } else {
+            println("[" + level + "] " + message);
+        }
+    }
+
     public void success(String message) {
-        printStamped(CodePrintLevel.SUCCESS, message);
+        printTimestamped(CodePrintLevel.SUCCESS, message);
     }
 
     public void info(String message) {
-        printStamped(CodePrintLevel.INFO, message);
+        printTimestamped(CodePrintLevel.INFO, message);
     }
 
     public void error(String message) {
-        printStamped(CodePrintLevel.ERROR, message);
+        printTimestamped(CodePrintLevel.ERROR, message);
     }
 
     public void warn(String message) {
-        printStamped(CodePrintLevel.WARN, message);
+        printTimestamped(CodePrintLevel.WARN, message);
     }
 
     public void debug(String message) {
-        printStamped(CodePrintLevel.DEBUG, message);
-    }
-
-    public void printStamped(String level, String message) {
-        printStamped(CodePrintLevel.of(level), message);
-    }
-
-    public void printStamped(CodePrintLevel level, String message) {
-        LocalDateTime now = LocalDateTime.now();
-        String timestamp = now.format(LOGGER_TIMESTAMP_FORMATTER);
-        println(timestamp + " [" + level + "] " + message);
+        printTimestamped(CodePrintLevel.DEBUG, message);
     }
 }

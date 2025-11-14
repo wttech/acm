@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.gui;
 
+import dev.vml.es.acm.core.AcmConstants;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,7 +16,7 @@ public class Spa {
 
     private static final Logger LOG = LoggerFactory.getLogger(Spa.class);
 
-    private static final String ASSETS_ROOT = "/apps/acm/spa/assets";
+    private static final String ASSETS_ROOT = AcmConstants.APPS_ROOT + "/gui/spa/build/assets";
 
     @Self
     private SlingHttpServletRequest request;

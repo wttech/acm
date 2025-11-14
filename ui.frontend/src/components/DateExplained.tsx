@@ -30,7 +30,9 @@ const DateExplained: React.FC<DateExplainedProps> = ({ value }) => {
               <p>
                 In your local timezone ({formatter.userTimezone()}), the date and time are {formatter.dateAtUser(value)}.
               </p>
-              <p>{relativeText} {formatter.dateRelative(value)}.</p>
+              <p>
+                {relativeText} {formatter.dateRelative(value)}.
+              </p>
             </Text>
           </Content>
         </ContextualHelp>

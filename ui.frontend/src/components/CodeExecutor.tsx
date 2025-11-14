@@ -26,6 +26,8 @@ import UserInfo from './UserInfo';
 
 const CodeExecutor = () => {
   const appState = useAppState();
+  const maintenanceManage = appState.permissions.features['maintenance.manage'];
+
   const navigate = useNavigate();
 
   const [executions, setExecutions] = useState<ExecutionSummary[]>([]);
@@ -82,7 +84,9 @@ const CodeExecutor = () => {
             </ButtonGroup>
           </Flex>
           <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight id="code-executor-status" variant={executions.length === 0 ? 'positive' : 'notice'}>{executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}</StatusLight>
+            <StatusLight id="code-executor-status" variant={executions.length === 0 ? 'positive' : 'notice'}>
+              {executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}
+            </StatusLight>
           </Flex>
           <Flex flex="1" justifyContent="end" alignItems="center">
             <ButtonGroup>
@@ -144,7 +148,7 @@ const CodeExecutor = () => {
         flex="1"
         aria-label="Queued Executions"
         renderEmptyState={renderEmptyState}
-        selectionMode="multiple"
+        selectionMode={maintenanceManage ? 'multiple' : 'none'}
         selectedKeys={selectedKeys}
         onSelectionChange={setSelectedKeys}
         marginY="size-200"

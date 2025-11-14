@@ -13,7 +13,7 @@ public final class ExecutableUtils {
     }
 
     public static String nameById(String id) {
-        if (Executable.ID_CONSOLE.equals(id)) {
+        if (Executable.CONSOLE_ID.equals(id)) {
             return "Console";
         }
         if (StringUtils.startsWith(id, ScriptType.AUTOMATIC.root() + "/")) {
@@ -30,7 +30,7 @@ public final class ExecutableUtils {
     }
 
     public static boolean isIdExplicit(String id) {
-        return Executable.ID_CONSOLE.equals(id) || StringUtils.startsWith(id, ScriptRepository.ROOT + "/");
+        return Executable.CONSOLE_ID.equals(id) || StringUtils.startsWith(id, ScriptRepository.ROOT + "/");
     }
 
     public static boolean isUserExplicit(String userId) {

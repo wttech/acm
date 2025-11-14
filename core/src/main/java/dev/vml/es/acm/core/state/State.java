@@ -16,15 +16,19 @@ public class State implements Serializable {
 
     private final SpaSettings spaSettings;
 
+    private final Permissions permissions;
+
     public State(
             SpaSettings spaSettings,
             HealthStatus healthStatus,
             MockStatus mockStatus,
-            InstanceSettings instanceSettings) {
+            InstanceSettings instanceSettings,
+            Permissions permissions) {
         this.spaSettings = spaSettings;
         this.healthStatus = healthStatus;
         this.mockStatus = mockStatus;
         this.instanceSettings = instanceSettings;
+        this.permissions = permissions;
     }
 
     public HealthStatus getHealthStatus() {
@@ -41,5 +45,9 @@ public class State implements Serializable {
 
     public SpaSettings getSpaSettings() {
         return spaSettings;
+    }
+
+    public Permissions getPermissions() {
+        return permissions;
     }
 }

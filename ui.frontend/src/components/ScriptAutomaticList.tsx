@@ -5,7 +5,7 @@ import Magnify from '@spectrum-icons/workflow/Magnify';
 import Settings from '@spectrum-icons/workflow/Settings';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppState } from '../hooks/app';
+import { useAppState, useFeatureEnabled } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
 import { useScripts } from '../hooks/script';
 import { instanceOsgiServiceConfigUrl, InstanceOsgiServicePid, InstanceType } from '../types/aem';
@@ -22,7 +22,7 @@ import Toggle from './Toggle';
 
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
-  const managementEnabled = appState.spaSettings.scriptManagementEnabled;
+  const managementEnabled = useFeatureEnabled('script.manage');
 
   const navigate = useNavigate();
   const formatter = useFormatter();

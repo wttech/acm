@@ -1,7 +1,13 @@
 group: Condition
-name: condition_content_changed
+name: condition_changed
 content: |
-  conditions.contentChanged()
+  conditions.changed()
 documentation: |
-  Execute the script only once per its path.<br>
+  Execute the script only once per its path.
+
   When the script content is changed, the script will be executed again.<br>
+  When the instance is changed due to a deployment, such as an instance restart or an OSGi bundle change and the script previously failed, the script will be executed again.
+
+  Alias for `conditions.contentChanged() || conditions.retryIfInstanceChanged()`.
+
+  The most universal and recommended condition to use for automatic scripts.

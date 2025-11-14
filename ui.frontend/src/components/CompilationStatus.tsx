@@ -17,7 +17,11 @@ const CompilationStatus = ({ compiling, syntaxError, compileError, onErrorClick 
     );
   }
   if (syntaxError) {
-    return <StatusLight id="compilation-status" variant="negative">Compilation failed &mdash; Syntax error</StatusLight>;
+    return (
+      <StatusLight id="compilation-status" variant="negative">
+        Compilation failed &mdash; Syntax error
+      </StatusLight>
+    );
   }
 
   if (compileError) {
@@ -32,7 +36,11 @@ const CompilationStatus = ({ compiling, syntaxError, compileError, onErrorClick 
     );
   }
 
-  return <StatusLight id="compilation-status" variant="positive">Compilation succeeded</StatusLight>;
+  return (
+    <StatusLight id="compilation-status" variant="positive">
+      Compilation succeeded
+    </StatusLight>
+  );
 };
 
 export default CompilationStatus;

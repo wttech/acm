@@ -3,6 +3,6 @@
     jcr:mixinTypes="[rep:AccessControllable]"
     jcr:primaryType="sling:Folder">
     <api/>
+    <feature/>
     <gui/>
-    <spa/>
 </jcr:root>
