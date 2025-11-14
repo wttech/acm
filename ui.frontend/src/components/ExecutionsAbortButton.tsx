@@ -1,12 +1,13 @@
 import { Button, ButtonGroup, Content, Dialog, DialogTrigger, Divider, Heading, InlineAlert, Text } from '@adobe/react-spectrum';
+import AlertIcon from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
-import React, { useState } from 'react';
-import { QueueOutput } from '../types/main.ts';
-import { toastRequest } from '../utils/api';
 import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
 import CloseCircle from '@spectrum-icons/workflow/CloseCircle';
-import AlertIcon from '@spectrum-icons/workflow/Alert';
+import React, { useState } from 'react';
+import { useAppState } from '../hooks/app.ts';
+import { QueueOutput } from '../types/main.ts';
+import { toastRequest } from '../utils/api';
 
 type ExecutionsAbortButtonProps = {
   selectedKeys: string[];
@@ -14,6 +15,9 @@ type ExecutionsAbortButtonProps = {
 };
 
 const ExecutionsAbortButton: React.FC<ExecutionsAbortButtonProps> = ({ selectedKeys, onAbort }) => {
+  const appState = useAppState();
+  const maintenanceManage = appState.permissions.features['maintenance.manage'];
+
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,22 +50,27 @@ const ExecutionsAbortButton: React.FC<ExecutionsAbortButtonProps> = ({ selectedK
       </Heading>
       <Divider />
       <Content>
-        <p><strong>Are you sure you want to abort the selected executions?</strong></p>
+        <p>
+          <strong>Are you sure you want to abort the selected executions?</strong>
+        </p>
 
         <p>
           <CheckmarkCircle size="XS" /> The abort request signals scripts to stop, but scripts must explicitly check for this signal by calling <code>context.checkAborted()</code>.
         </p>
         <p>
-          <CloseCircle size="XS" /> If scripts don't check for abort, they will continue running until they complete naturally. Only if an abort timeout is configured (by default it's not), will the execution be forcefully terminated after the timeout expires.
+          <CloseCircle size="XS" /> If scripts don't check for abort, they will continue running until they complete naturally. Only if an abort timeout is configured (by default it's not), will the execution be forcefully terminated after
+          the timeout expires.
         </p>
         <p>
-          <AlertIcon size="XS" /> For scripts with loops or long-running operations, add <code>context.checkAborted()</code> at safe checkpoints (e.g., at the beginning of each loop iteration) to enable graceful termination and prevent data corruption.
+          <AlertIcon size="XS" /> For scripts with loops or long-running operations, add <code>context.checkAborted()</code> at safe checkpoints (e.g., at the beginning of each loop iteration) to enable graceful termination and prevent data
+          corruption.
         </p>
 
         <InlineAlert width="100%" variant="negative" UNSAFE_style={{ padding: '8px' }} marginTop="size-200">
           <Heading>Warning</Heading>
           <Content>
-            Proceed with aborting only if the requirements above are met.<br/>
+            Proceed with aborting only if the requirements above are met.
+            <br />
             This action cannot be undone.
           </Content>
         </InlineAlert>
@@ -81,7 +90,7 @@ const ExecutionsAbortButton: React.FC<ExecutionsAbortButtonProps> = ({ selectedK
 
   return (
     <DialogTrigger isOpen={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
-      <Button variant="negative" style="fill" isDisabled={selectedKeys.length === 0} onPress={() => setAbortDialogOpen(true)}>
+      <Button variant="negative" style="fill" isDisabled={!maintenanceManage || selectedKeys.length === 0} onPress={() => setAbortDialogOpen(true)}>
         <Cancel />
         <Text>Abort</Text>
       </Button>

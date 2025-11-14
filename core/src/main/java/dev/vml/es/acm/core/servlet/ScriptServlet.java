@@ -16,6 +16,7 @@ import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.servlet.input.ScriptInput;
 import dev.vml.es.acm.core.servlet.output.ScriptListOutput;
 import dev.vml.es.acm.core.servlet.output.ScriptOutput;
+import dev.vml.es.acm.core.state.Permissions;
 import dev.vml.es.acm.core.util.JsonUtils;
 import java.io.IOException;
 import java.util.Arrays;
@@ -126,7 +127,7 @@ public class ScriptServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        if (!spaSettings.isScriptManagementEnabled()) {
+        if (!Permissions.check(Permissions.Feature.SCRIPTS_MANAGE, request.getResourceResolver())) {
             respondJson(response, error("Script management is disabled!"));
             return;
         }

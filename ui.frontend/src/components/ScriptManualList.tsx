@@ -4,7 +4,7 @@ import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppState } from '../hooks/app';
+import { useAppState, useFeatureEnabled } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
 import { useScripts } from '../hooks/script';
 import { isExecutionNegative } from '../types/execution';
@@ -21,7 +21,7 @@ const ScriptManualList: React.FC = () => {
   const type = ScriptType.MANUAL;
   const { scripts, loading, loadScripts } = useScripts(type);
   const appState = useAppState();
-  const managementEnabled = appState.spaSettings.scriptManagementEnabled;
+  const managementEnabled = useFeatureEnabled('scripts.manage');
   const navigate = useNavigate();
   const formatter = useFormatter();
 

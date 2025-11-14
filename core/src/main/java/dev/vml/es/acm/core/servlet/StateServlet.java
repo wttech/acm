@@ -62,8 +62,7 @@ public class StateServlet extends SlingAllMethodsServlet {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
             MockStatus mockStatus = mockHttpFilter.checkStatus();
-            Permissions permissions =
-                    new Permissions(executor.authorize(Code.consoleMinimal(), request.getResourceResolver()));
+            Permissions permissions = new Permissions(request.getResourceResolver());
             State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getSettings(), permissions);
 
             respondJson(response, ok("State read successfully", state));

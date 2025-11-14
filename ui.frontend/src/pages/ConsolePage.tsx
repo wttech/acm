@@ -15,7 +15,7 @@ import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsBu
 import ExecutorStatusLight from '../components/ExecutorStatusLight.tsx';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import Toggle from '../components/Toggle';
-import { useAppState } from '../hooks/app';
+import { useAppState, useFeatureEnabled } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
 import { ConsoleDefaultScriptContent, ConsoleDefaultScriptPath } from '../types/console.ts';
@@ -31,6 +31,7 @@ import { StorageKeys } from '../utils/storage';
 
 const ConsolePage = () => {
   const appState = useAppState();
+  const scriptsManageEnabled = useFeatureEnabled('scripts.manage');
   const pausedExecution = !appState.healthStatus.healthy;
 
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
@@ -138,7 +139,7 @@ const ConsolePage = () => {
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
                     <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={executableNotReady} />
-                    <Toggle when={appState.spaSettings.scriptManagementEnabled}>
+                    <Toggle when={scriptsManageEnabled}>
                       <CodeSaveButton code={code || ''} variant="secondary" isDisabled={executableNotReady} />
                     </Toggle>
                   </ButtonGroup>

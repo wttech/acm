@@ -48,11 +48,43 @@ export type State = {
   permissions: Permissions;
 };
 
+export const StateDefault: State = {
+    spaSettings: {
+      appStateInterval: 3000,
+      executionPollInterval: 1400,
+      scriptStatsLimit: 20,
+    },
+    healthStatus: {
+      healthy: true,
+      issues: [],
+    },
+    mockStatus: {
+      enabled: false,
+    },
+    instanceSettings: {
+      id: 'default',
+      timezoneId: 'UTC',
+      role: InstanceRole.AUTHOR,
+      type: InstanceType.CLOUD_CONTAINER,
+    },
+    permissions: {
+      features: {
+        console: true,
+        dashboard: true,
+        history: true,
+        snippets: true,
+        scripts: true,
+        'scripts.manage': false,
+        maintenance: false,
+        'maintenance.manage': false,
+      },
+    },
+  };
+
 export type SpaSettings = {
   appStateInterval: number;
   executionPollInterval: number;
   scriptStatsLimit: number;
-  scriptManagementEnabled: boolean;
 };
 
 export type InstanceSettings = {
@@ -67,8 +99,10 @@ export type MockStatus = {
 };
 
 export type Permissions = {
-  console: boolean;
+  features: Record<FeatureId, boolean>;
 };
+
+export type FeatureId = 'console' | 'dashboard' | 'history' | 'snippets' | 'scripts' | 'scripts.manage' | 'maintenance' | 'maintenance.manage';
 
 export enum ExecutionFormat {
   SUMMARY = 'SUMMARY',

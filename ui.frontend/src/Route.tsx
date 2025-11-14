@@ -1,18 +1,17 @@
-
 import { Navigate } from 'react-router-dom';
-import { State } from './types/main';
 import { useAppState } from './hooks/app';
+import { State } from './types/main';
 
 interface RouteProps {
   children: React.ReactNode;
-  permission?: keyof State['permissions'];
+  featureId?: keyof State['permissions']['features'];
 }
 
-export function Route({ children, permission }: RouteProps) {
+export function Route({ children, featureId }: RouteProps) {
   const state = useAppState();
 
-  if (permission && (!state.permissions[permission])) {
-    return <Navigate to="/" replace/>;
+  if (featureId && !state.permissions.features[featureId]) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

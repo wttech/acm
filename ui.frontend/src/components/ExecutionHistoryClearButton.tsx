@@ -5,6 +5,7 @@ import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import DataRemove from '@spectrum-icons/workflow/DataRemove';
 import Flashlight from '@spectrum-icons/workflow/Flashlight';
 import React, { useState } from 'react';
+import { useFeatureEnabled } from '../hooks/app.ts';
 import { EventType, QueueOutput } from '../types/main.ts';
 import { toastRequest } from '../utils/api';
 
@@ -13,6 +14,8 @@ type ExecutionHistoryClearButtonProps = {
 };
 
 const ExecutionHistoryClearButton: React.FC<ExecutionHistoryClearButtonProps> = ({ onClear }) => {
+  const maintenanceManage = useFeatureEnabled('maintenance.manage');
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -67,7 +70,7 @@ const ExecutionHistoryClearButton: React.FC<ExecutionHistoryClearButtonProps> = 
 
   return (
     <DialogTrigger isOpen={dialogOpen} onOpenChange={setDialogOpen}>
-      <Button variant="negative" onPress={() => setDialogOpen(true)}>
+      <Button variant="negative" onPress={() => setDialogOpen(true)} isDisabled={!maintenanceManage}>
         <DataRemove />
         <Text>Clear</Text>
       </Button>

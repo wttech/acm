@@ -29,8 +29,6 @@ import { useInput } from '../hooks/form.ts';
 import {
   Input,
   InputValue,
-  stringInputDisplayToMode,
-  stringInputDisplayToType,
   isBoolInput,
   isColorInput,
   isDateTimeInput,
@@ -45,6 +43,8 @@ import {
   isSelectInput,
   isStringInput,
   isTextInput,
+  stringInputDisplayToMode,
+  stringInputDisplayToType,
 } from '../types/input.ts';
 import { Dates } from '../utils/dates.ts';
 import { Strings } from '../utils/strings.ts';

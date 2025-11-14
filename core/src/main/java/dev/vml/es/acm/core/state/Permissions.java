@@ -1,17 +1,59 @@
 package dev.vml.es.acm.core.state;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-// TODO manage permissions by reading perms from nodes: /apps/acm/feature/[console|history]
+import org.apache.sling.api.resource.ResourceResolver;
+
+import dev.vml.es.acm.core.AcmConstants;
+import dev.vml.es.acm.core.repo.Repo;
+
 public class Permissions implements Serializable {
 
-    private boolean console;
-
-    public Permissions(boolean console) {
-        this.console = console;
+    public enum Feature {
+        DASHBOARD,
+        CONSOLE,
+        HISTORY,
+        SCRIPTS,
+        SCRIPTS_MANAGE,
+        SNIPPETS,
+        MAINTENANCE,
+        MAINTENANCE_MANAGE;
     }
 
-    public boolean isConsole() {
-        return console;
+    private static final String FEATURE_ROOT = AcmConstants.APPS_ROOT + "/feature"; 
+
+    private final Map<String, Boolean> features;
+
+    public Permissions(ResourceResolver resolver) {
+        this.features = authorizeFeatures(resolver);
+    }
+
+    public static boolean check(Feature feature, ResourceResolver resolver) {
+        return authorizeFeature(feature, resolver);
+    }
+
+    public static boolean authorizeFeature(Feature f, ResourceResolver resolver) {
+        return Repo.quiet(resolver).get(FEATURE_ROOT + "/" + featureNodePath(f)).exists();
+    }
+
+    public Map<String, Boolean> authorizeFeatures(ResourceResolver resolver) {
+        return Arrays.stream(Feature.values())
+            .collect(Collectors.toMap(Permissions::featureId, f -> authorizeFeature(f, resolver), (a, b) -> b, LinkedHashMap::new));
+    }
+
+    private static String featureId(Feature f) {
+        return f.name().toLowerCase().replace("_", ".");
+    }
+
+    private static String featureNodePath(Feature f) {
+        return f.name().toLowerCase().replace("_", "/");
+    }
+
+    public Map<String, Boolean> getFeatures() {
+        return features;
     }
 }
