@@ -8,7 +8,7 @@ const Footer = () => {
         <Flex alignItems="center" gap="size-150" justifyContent="space-between">
           <Flex alignItems="center" gap="size-150">
             <Link href="https://www.vml.com" target="_blank">
-              <img src="/apps/acm/spa/vml-logo.svg" alt="VML Logo" width="85" />
+              <img src="/apps/acm/gui/spa/build/vml-logo.svg" alt="VML Logo" width="85" />
             </Link>
             <View>
               <Link href="https://www.vml.com/expertise/enterprise-solutions" target="_blank">
@@ -19,7 +19,7 @@ const Footer = () => {
           </Flex>
           <Link href="https://github.com/wttech/acm" target="_blank">
             <Flex alignItems="center" gap="size-75">
-              <img src="/apps/acm/spa/github-mark.svg" alt="GitHub" width="16" height="16" style={{ color: 'var(--spectrum-global-color-gray-800)' }} />
+              <img src="/apps/acm/gui/spa/build/github-mark.svg" alt="GitHub" width="16" height="16" style={{ color: 'var(--spectrum-global-color-gray-800)' }} />
               <View>View &apos;Content Manager&apos; on GitHub</View>
             </Flex>
           </Link>

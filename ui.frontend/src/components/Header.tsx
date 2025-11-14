@@ -16,13 +16,11 @@ const Header = () => {
 
   return (
     <Flex justifyContent="center" gap="size-100" marginBottom="size-200">
-      <Toggle when={state.permissions.features['dashboard.view']}>
-        <AppLink to="/">
-          <Button variant={location.pathname === '/' ? 'accent' : 'primary'} style="outline">
-            <Home />
-          </Button>
-        </AppLink>
-      </Toggle>
+      <AppLink to="/">
+        <Button variant={location.pathname === '/' ? 'accent' : 'primary'} style="outline">
+          <Home />
+        </Button>
+      </AppLink>
       <Toggle when={state.permissions.features['console.view']}>
         <AppLink to="/console">
           <Button variant={location.pathname.startsWith('/console') ? 'accent' : 'primary'} style="outline">

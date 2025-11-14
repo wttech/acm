@@ -14,7 +14,6 @@ public class Permissions implements Serializable {
     public enum Feature {
         CONSOLE_VIEW,
         CONSOLE_EXECUTE,
-        DASHBOARD_VIEW,
         EXECUTION_LIST,
         EXECUTION_VIEW,
         MAINTENANCE_VIEW,

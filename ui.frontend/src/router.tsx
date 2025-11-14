@@ -19,11 +19,7 @@ const router = createHashRouter([
     children: [
       {
         path: '/',
-        element: (
-          <Route featureId="dashboard.view">
-            <DashboardPage />
-          </Route>
-        ),
+        element: <DashboardPage />,
       },
       {
         path: '/scripts/:tab?',
@@ -89,7 +85,6 @@ const router = createHashRouter([
           </Route>
         ),
       },
-      // TODO fix redirect loop when no access to dashboard
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
