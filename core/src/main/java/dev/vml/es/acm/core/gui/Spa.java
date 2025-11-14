@@ -10,12 +10,14 @@ import org.apache.sling.models.annotations.injectorspecific.Self;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vml.es.acm.core.AcmConstants;
+
 @Model(adaptables = SlingHttpServletRequest.class)
 public class Spa {
 
     private static final Logger LOG = LoggerFactory.getLogger(Spa.class);
 
-    private static final String ASSETS_ROOT = "/apps/acm/spa/assets";
+    private static final String ASSETS_ROOT = AcmConstants.APPS_ROOT + "/gui/spa/build/assets";
 
     @Self
     private SlingHttpServletRequest request;

@@ -8,6 +8,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 const devServerPort = 5501;
 const aemInstanceTarget = 'http://localhost:5502';
 const aemInstanceCredentials = 'admin:admin';
+const buildPath = '/apps/acm/gui/spa/build';
 
 function serverProxyConfig() {
   return {
@@ -23,7 +24,7 @@ function serverProxyConfig() {
 }
 
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/apps/acm/spa/' : '/acm/',
+  base: process.env.NODE_ENV === 'production' ? `${buildPath}/` : '/acm/',
   plugins: [
     react(),
     eslint(),
@@ -65,7 +66,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../ui.apps/src/main/content/jcr_root/apps/acm/spa',
+    outDir: `../ui.apps/src/main/content/jcr_root${buildPath}`,
     emptyOutDir: true,
   },
 });

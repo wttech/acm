@@ -22,7 +22,7 @@ import Toggle from './Toggle';
 
 const ScriptAutomaticList: React.FC = () => {
   const appState = useAppState();
-  const managementEnabled = useFeatureEnabled('scripts.manage');
+  const managementEnabled = useFeatureEnabled('script.manage');
 
   const navigate = useNavigate();
   const formatter = useFormatter();

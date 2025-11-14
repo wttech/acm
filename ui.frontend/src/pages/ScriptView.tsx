@@ -22,7 +22,7 @@ const ScriptView = () => {
   const [script, setScript] = useState<Script | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [executing, setExecuting] = useState<boolean>(false);
-  const executeEnabled = useFeatureEnabled('scripts.execute');
+  const executeEnabled = useFeatureEnabled('script.execute');
   const scriptId = decodeURIComponent(useParams<{ scriptId: string }>().scriptId as string);
   const navigate = useNavigate();
   const [selectedTab, handleTabChange] = useNavigationTab('details');

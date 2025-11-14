@@ -20,7 +20,7 @@ const router = createHashRouter([
       {
         path: '/',
         element: (
-          <Route featureId="dashboard">
+          <Route featureId="dashboard.view">
             <DashboardPage />
           </Route>
         ),
@@ -28,7 +28,7 @@ const router = createHashRouter([
       {
         path: '/scripts/:tab?',
         element: (
-          <Route featureId="scripts">
+          <Route featureId="script.list">
             <ScriptsPage />
           </Route>
         ),
@@ -36,7 +36,7 @@ const router = createHashRouter([
       {
         path: '/scripts/view/:scriptId',
         element: (
-          <Route featureId="scripts">
+          <Route featureId="script.view">
             <ScriptView />
           </Route>
         ),
@@ -44,7 +44,7 @@ const router = createHashRouter([
       {
         path: '/snippets/:tab?',
         element: (
-          <Route featureId="snippets">
+          <Route featureId="snippet.list">
             <SnippetsPage />
           </Route>
         ),
@@ -52,7 +52,7 @@ const router = createHashRouter([
       {
         path: '/console',
         element: (
-          <Route featureId="console">
+          <Route featureId="console.view">
             <ConsolePage />
           </Route>
         ),
@@ -60,7 +60,7 @@ const router = createHashRouter([
       {
         path: '/history',
         element: (
-          <Route featureId="executions">
+          <Route featureId="execution.list">
             <HistoryPage />
           </Route>
         ),
@@ -68,20 +68,23 @@ const router = createHashRouter([
       {
         path: '/executions',
         element: (
-          <Route featureId="executions">
+          <Route featureId="execution.list">
             <HistoryPage />
           </Route>
         ),
       },
-      { path: '/executions/view/:executionId/:tab?', element: (
-        <Route featureId="executions.view">
-          <ExecutionView />
-        </Route>
-      ) },
+      {
+        path: '/executions/view/:executionId/:tab?',
+        element: (
+          <Route featureId="execution.view">
+            <ExecutionView />
+          </Route>
+        ),
+      },
       {
         path: '/maintenance/:tab?',
         element: (
-          <Route featureId="maintenance">
+          <Route featureId="maintenance.view">
             <MaintenancePage />
           </Route>
         ),

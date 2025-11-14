@@ -69,17 +69,18 @@ export const StateDefault: State = {
   },
   permissions: {
     features: {
-      console: true,
       'console.execute': true,
-      dashboard: true,
-      executions: true,
-      'executions.view': true,
-      snippets: true,
-      scripts: true,
-      'scripts.manage': true,
-      'scripts.execute': true,
-      maintenance: true,
+      'console.view': true,
+      'dashboard.view': true,
+      'execution.list': true,
+      'execution.view': true,
+      'maintenance.view': true,
       'maintenance.manage': true,
+      'script.list': true,
+      'script.view': true,
+      'script.manage': true,
+      'script.execute': true,
+      'snippet.list': true,
     },
   },
 };
@@ -105,7 +106,19 @@ export type Permissions = {
   features: Record<FeatureId, boolean>;
 };
 
-export type FeatureId = 'console' | 'console.execute' | 'dashboard' | 'executions' | 'executions.view' | 'snippets' | 'scripts' | 'scripts.execute' | 'scripts.manage' | 'maintenance' | 'maintenance.manage';
+export type FeatureId =
+  | 'console.view'
+  | 'console.execute'
+  | 'dashboard.view'
+  | 'execution.list'
+  | 'execution.view'
+  | 'snippet.list'
+  | 'maintenance.view'
+  | 'maintenance.manage'
+  | 'script.list'
+  | 'script.view'
+  | 'script.execute'
+  | 'script.manage';
 
 export enum ExecutionFormat {
   SUMMARY = 'SUMMARY',

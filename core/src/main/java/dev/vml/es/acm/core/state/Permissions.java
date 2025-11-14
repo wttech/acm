@@ -14,17 +14,18 @@ import dev.vml.es.acm.core.repo.Repo;
 public class Permissions implements Serializable {
 
     public enum Feature {
-        DASHBOARD,
-        CONSOLE,
+        CONSOLE_VIEW,
         CONSOLE_EXECUTE,
-        EXECUTIONS,
-        EXECUTIONS_VIEW,
-        SCRIPTS,
-        SCRIPTS_EXECUTE,
-        SCRIPTS_MANAGE,
-        SNIPPETS,
-        MAINTENANCE,
-        MAINTENANCE_MANAGE;
+        DASHBOARD_VIEW,
+        EXECUTION_LIST,
+        EXECUTION_VIEW,
+        MAINTENANCE_VIEW,
+        MAINTENANCE_MANAGE,
+        SCRIPT_LIST,
+        SCRIPT_VIEW,
+        SCRIPT_EXECUTE,
+        SCRIPT_MANAGE,
+        SNIPPET_LIST,
     }
 
     private static final String FEATURE_ROOT = AcmConstants.APPS_ROOT + "/feature"; 

@@ -146,7 +146,7 @@ public class Executor implements EventListener {
         if (Executable.CONSOLE_ID.equals(executable.getId())) {
             return Permissions.check(Permissions.Feature.CONSOLE_EXECUTE, resolver);
         }
-        return Permissions.check(Permissions.Feature.SCRIPTS_EXECUTE, resolver);
+        return Permissions.check(Permissions.Feature.SCRIPT_EXECUTE, resolver);
     }
 
     private boolean isExecutableAvailable(Executable executable, ResourceResolver resolver) {

@@ -33,7 +33,7 @@ const ConsolePage = () => {
   const appState = useAppState();
   const pausedExecution = !appState.healthStatus.healthy;
   const executeEnabled = useFeatureEnabled('console.execute');
-  const scriptsManageEnabled = useFeatureEnabled('scripts.manage');
+  const scriptsManageEnabled = useFeatureEnabled('script.manage');
 
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
