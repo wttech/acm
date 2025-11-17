@@ -47,7 +47,11 @@ public class ScriptRepository {
     }
 
     private Resource getRoot(ScriptType type) throws RepoException {
-        return resourceResolver.getResource(type.root());
+        Resource root = resourceResolver.getResource(type.root());
+        if (root == null) {
+            throw new RepoException(String.format("Script root does not exist at path '%s'!", type.root()));
+        }
+        return root;
     }
 
     public Script save(Code code) {

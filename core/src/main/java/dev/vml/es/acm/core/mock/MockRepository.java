@@ -36,9 +36,7 @@ public class MockRepository {
     }
 
     public Stream<Mock> findAll() throws MockException {
-        return ResourceSpliterator.stream(getRoot())
-                .filter(this::checkResource)
-                .map(Mock::new);
+        return ResourceSpliterator.stream(getRoot()).filter(this::checkResource).map(Mock::new);
     }
 
     public Optional<Mock> find(String subPath) {
@@ -54,6 +52,10 @@ public class MockRepository {
     }
 
     public Resource getRoot() throws RepoException {
-        return resolver.getResource(ScriptType.MOCK.root());
+        Resource root = resolver.getResource(ScriptType.MOCK.root());
+        if (root == null) {
+            throw new RepoException(String.format("Mock root does not exist at path '%s'!", ScriptType.MOCK.root()));
+        }
+        return root;
     }
 }
