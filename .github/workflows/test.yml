@@ -141,6 +141,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: acm-playwright-report
           path: ./test/e2e/playwright-report/
           retention-days: 30
