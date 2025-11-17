@@ -16,8 +16,6 @@ test.describe('Tool Access', () => {
 
       void doRun() {
           def scriptUsers = acl.createGroup { id = "acm-script-users" }.tap {
-              purge()
-
               allow { path = "/apps/cq/core/content/nav/tools/acm"; permissions = ["jcr:read"] }
               allow { path = "/apps/acm/gui"; permissions = ["jcr:read"] }
               allow { path = "/apps/acm/api"; permissions = ["jcr:read"] }
