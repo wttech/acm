@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded } from './utils/expect';
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
+import { newAemContext } from './utils/context';
 
 test.describe('Tool Access', () => {
   test('Setup test user and verify limited access', async ({ page, browser }) => {
@@ -53,15 +54,7 @@ test.describe('Tool Access', () => {
     const output = await readFromCodeEditor(page);
     expect(output).toContain('Setup complete!');
 
-    const context = await browser.newContext({
-      baseURL: 'http://localhost:5502',
-      extraHTTPHeaders: {
-        'Authorization': 'Basic ' + btoa('acm-test-user:test1234'),
-      },
-    });
-    const testUserPage = await context.newPage();
-
-    try {
+    await newAemContext(browser, 'acm-test-user', 'test1234', async (testUserPage) => {
       await testUserPage.goto('/acm');
       const title = testUserPage.locator('.granite-title', { hasText: 'Content Manager' });
       await expect(title).toBeVisible();
@@ -90,10 +83,7 @@ test.describe('Tool Access', () => {
 
       await testUserPage.goto('/acm#/maintenance');
       await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
-
-    } finally {
-      await context.close();
-    }
+    });
   });
 
   test('Admin user has full access', async ({ page }) => {

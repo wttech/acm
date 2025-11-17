@@ -3,7 +3,7 @@ import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded, expect
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
   
 test.describe('Console', () => {
-  test('Console executes script and appears in history', async ({ page }) => {
+  test('Executes script and appears in history', async ({ page }) => {
     await page.goto('/acm#/console');
 
     await expectCompilationSucceeded(page);
