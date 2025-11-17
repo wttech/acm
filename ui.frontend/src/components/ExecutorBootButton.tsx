@@ -4,6 +4,7 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Launch from '@spectrum-icons/workflow/Launch';
 import React, { useState } from 'react';
+import { useFeatureEnabled } from '../hooks/app.ts';
 import { EventType, QueueOutput } from '../types/main.ts';
 import { toastRequest } from '../utils/api.ts';
 
@@ -12,6 +13,7 @@ type ExecutionsBootButtonProps = {
 };
 
 const ExecutorBootButton: React.FC<ExecutionsBootButtonProps> = ({ onBoot }) => {
+  const maintenanceManage = useFeatureEnabled('maintenance.manage');
   const [bootDialogOpen, setBootDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -64,7 +66,7 @@ const ExecutorBootButton: React.FC<ExecutionsBootButtonProps> = ({ onBoot }) => 
 
   return (
     <DialogTrigger isOpen={bootDialogOpen} onOpenChange={setBootDialogOpen}>
-      <Button variant="secondary" style="outline" onPress={() => setBootDialogOpen(true)}>
+      <Button variant="secondary" style="outline" onPress={() => setBootDialogOpen(true)} isDisabled={!maintenanceManage}>
         <Launch />
         <Text>Boot</Text>
       </Button>

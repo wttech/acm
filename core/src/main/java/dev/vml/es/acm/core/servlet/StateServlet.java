@@ -11,6 +11,7 @@ import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.mock.MockHttpFilter;
 import dev.vml.es.acm.core.mock.MockStatus;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
+import dev.vml.es.acm.core.state.Permissions;
 import dev.vml.es.acm.core.state.State;
 import java.io.IOException;
 import javax.servlet.Servlet;
@@ -56,7 +57,8 @@ public class StateServlet extends SlingAllMethodsServlet {
         try {
             HealthStatus healthStatus = healthChecker.checkStatus();
             MockStatus mockStatus = mockHttpFilter.checkStatus();
-            State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getSettings());
+            Permissions permissions = new Permissions(request.getResourceResolver());
+            State state = new State(spaSettings, healthStatus, mockStatus, instanceInfo.getSettings(), permissions);
 
             respondJson(response, ok("State read successfully", state));
         } catch (Exception e) {

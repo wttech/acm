@@ -5,6 +5,7 @@ import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 
 import dev.vml.es.acm.core.event.EventManager;
 import dev.vml.es.acm.core.event.EventType;
+import dev.vml.es.acm.core.state.Permissions;
 import java.io.IOException;
 import java.util.Collections;
 import javax.servlet.Servlet;
@@ -37,6 +38,12 @@ public class EventServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+        if (!Permissions.check(Permissions.Feature.MAINTENANCE_MANAGE, request.getResourceResolver())) {
+            respondJson(
+                    response, forbidden("Event cannot be dispatched as maintenance manage feature is not permitted!"));
+            return;
+        }
+
         String name = request.getParameter(NAME_PARAM);
         EventType event = EventType.of(name).orElse(null);
         if (event == null) {

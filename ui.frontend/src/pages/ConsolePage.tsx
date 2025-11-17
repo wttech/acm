@@ -15,7 +15,7 @@ import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsBu
 import ExecutorStatusLight from '../components/ExecutorStatusLight.tsx';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import Toggle from '../components/Toggle';
-import { useAppState } from '../hooks/app';
+import { useAppState, useFeatureEnabled } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
 import { ConsoleDefaultScriptContent, ConsoleDefaultScriptPath } from '../types/console.ts';
@@ -32,6 +32,8 @@ import { StorageKeys } from '../utils/storage';
 const ConsolePage = () => {
   const appState = useAppState();
   const pausedExecution = !appState.healthStatus.healthy;
+  const executeEnabled = useFeatureEnabled('console.execute');
+  const scriptsManageEnabled = useFeatureEnabled('script.manage');
 
   const [selectedTab, setSelectedTab] = useState<'code' | 'output'>('code');
   const [code, setCode] = useState<string | undefined>(() => localStorage.getItem(StorageKeys.EDITOR_CODE) || undefined);
@@ -126,7 +128,7 @@ const ConsolePage = () => {
             <FileCode />
             <Text>Code</Text>
           </Item>
-          <Item key="output" aria-label="Execution">
+          <Item key="output" aria-label="Output">
             <Print />
             <Text>Output</Text>
           </Item>
@@ -137,8 +139,8 @@ const ConsolePage = () => {
               <Flex direction="row" justifyContent="space-between" alignItems="center">
                 <Flex flex="1" alignItems="center">
                   <ButtonGroup>
-                    <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={executableNotReady} />
-                    <Toggle when={appState.spaSettings.scriptManagementEnabled}>
+                    <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={!executeEnabled || executableNotReady} />
+                    <Toggle when={scriptsManageEnabled}>
                       <CodeSaveButton code={code || ''} variant="secondary" isDisabled={executableNotReady} />
                     </Toggle>
                   </ButtonGroup>

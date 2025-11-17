@@ -6,14 +6,12 @@ import dev.vml.es.acm.core.code.Code;
 import dev.vml.es.acm.core.code.script.ScriptUtils;
 import dev.vml.es.acm.core.repo.RepoException;
 import dev.vml.es.acm.core.repo.RepoResource;
-import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class ScriptRepository {
 
@@ -33,7 +31,7 @@ public class ScriptRepository {
     }
 
     public Stream<Script> findAll(ScriptType type) throws AcmException {
-        return ResourceSpliterator.stream(getOrCreateRoot(type))
+        return ResourceSpliterator.stream(getRoot(type))
                 .map(Script::from)
                 .filter(Optional::isPresent)
                 .map(Optional::get);
@@ -48,8 +46,12 @@ public class ScriptRepository {
                 .map(Optional::get);
     }
 
-    private Resource getOrCreateRoot(ScriptType type) throws RepoException {
-        return RepoUtils.ensure(resourceResolver, type.root(), JcrResourceConstants.NT_SLING_FOLDER, true);
+    private Resource getRoot(ScriptType type) throws RepoException {
+        Resource root = resourceResolver.getResource(type.root());
+        if (root == null) {
+            throw new RepoException(String.format("Script root does not exist at path '%s'!", type.root()));
+        }
+        return root;
     }
 
     public Script save(Code code) {

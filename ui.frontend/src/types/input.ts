@@ -157,7 +157,7 @@ export function stringInputDisplayToType(display: string): string {
   }
 }
 
-export function stringInputDisplayToMode(display: string): "url" | "tel" | "email" | "text" | "numeric" | "decimal" {
+export function stringInputDisplayToMode(display: string): 'url' | 'tel' | 'email' | 'text' | 'numeric' | 'decimal' {
   switch (display) {
     case 'URL':
       return 'url';

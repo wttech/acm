@@ -8,34 +8,12 @@ import { AppContext } from './AppContext';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import router from './router';
-import { InstanceRole, InstanceType } from './types/aem.ts';
-import { State } from './types/main.ts';
+import { State, StateDefault } from './types/main.ts';
 import { apiRequest } from './utils/api';
 import { intervalToTimeout } from './utils/spectrum.ts';
 
 function App() {
-  const [state, setState] = useState<State>({
-    spaSettings: {
-      appStateInterval: 3000,
-      executionPollInterval: 1400,
-      scriptStatsLimit: 20,
-      scriptManagementEnabled: false,
-    },
-    healthStatus: {
-      healthy: true,
-      issues: [],
-    },
-    mockStatus: {
-      enabled: false,
-    },
-    instanceSettings: {
-      id: 'default',
-      timezoneId: 'UTC',
-      role: InstanceRole.AUTHOR,
-      type: InstanceType.CLOUD_CONTAINER,
-    },
-  });
-
+  const [state, setState] = useState<State>(StateDefault);
   const isFetching = useRef(false);
 
   useEffect(() => {

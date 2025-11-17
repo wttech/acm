@@ -85,16 +85,19 @@ const ExecutionAbortButton: React.FC<ExecutionAbortButtonProps> = ({ execution, 
             <CheckmarkCircle size="XS" /> The abort request signals the script to stop, but the script must explicitly check for this signal by calling <code>context.checkAborted()</code>.
           </p>
           <p>
-            <CloseCircle size="XS" /> If the script doesn't check for abort, it will continue running until it completes naturally. Only if an abort timeout is configured (by default it's not), will the execution be forcefully terminated after the timeout expires.
+            <CloseCircle size="XS" /> If the script doesn't check for abort, it will continue running until it completes naturally. Only if an abort timeout is configured (by default it's not), will the execution be forcefully terminated
+            after the timeout expires.
           </p>
           <p>
-            <AlertIcon size="XS" /> For scripts with loops or long-running operations, add <code>context.checkAborted()</code> at safe checkpoints (e.g., at the beginning of each loop iteration) to enable graceful termination and prevent data corruption.
+            <AlertIcon size="XS" /> For scripts with loops or long-running operations, add <code>context.checkAborted()</code> at safe checkpoints (e.g., at the beginning of each loop iteration) to enable graceful termination and prevent
+            data corruption.
           </p>
 
           <InlineAlert width="100%" variant="negative" UNSAFE_style={{ padding: '8px' }} marginTop="size-200">
             <Heading>Warning</Heading>
             <Content>
-              Proceed with aborting only if the requirements above are met.<br/>
+              Proceed with aborting only if the requirements above are met.
+              <br />
               This action cannot be undone.
             </Content>
           </InlineAlert>

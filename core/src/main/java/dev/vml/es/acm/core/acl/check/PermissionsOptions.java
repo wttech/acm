@@ -11,6 +11,10 @@ import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.Access
 
 public class PermissionsOptions extends AuthorizableOptions {
 
+    public static final String GLOB_STRICT = "strict";
+
+    private static final String GLOB_STRICT_EFFECTIVE = "";
+
     private String path;
 
     private List<String> permissions = Collections.emptyList();
@@ -31,6 +35,11 @@ public class PermissionsOptions extends AuthorizableOptions {
         this.path = path;
     }
 
+    public void setPathStrict(String path) {
+        this.path = path;
+        this.glob = GLOB_STRICT_EFFECTIVE;
+    }
+
     public List<String> getPermissions() {
         return permissions;
     }
@@ -44,7 +53,7 @@ public class PermissionsOptions extends AuthorizableOptions {
     }
 
     public void setGlob(String glob) {
-        this.glob = glob;
+        this.glob = GLOB_STRICT.equalsIgnoreCase(glob) ? GLOB_STRICT_EFFECTIVE : glob;
     }
 
     public List<String> getTypes() {

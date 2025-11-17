@@ -49,6 +49,10 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
     - [Permissions Management](#permissions-management)
     - [Data Imports \& Exports](#data-imports--exports)
   - [Installation](#installation)
+    - [Package Installation](#package-installation)
+    - [Tools Access Configuration](#tools-access-configuration)
+      - [Feature Permissions](#feature-permissions)
+      - [API Permissions](#api-permissions)
   - [Compatibility](#compatibility)
   - [Documentation](#documentation)
     - [Usage](#usage)
@@ -107,6 +111,8 @@ By simplifying data import implementation, ACM allows developers to focus more o
 
 ## Installation
 
+### Package Installation
+
 The ready-to-install AEM packages are available on:
 
 - [GitHub releases](https://github.com/wttech/acm/releases).
@@ -155,27 +161,62 @@ Adjust file 'all/pom.xml':
 
     Repeat the same for [ui.content.example](https://central.sonatype.com/artifact/dev.vml.es/acm.ui.content.example) package if you want to install demonstrative ACM scripts to get you started quickly.
 
-3. Consider refining the ACL settings
+### Tools Access Configuration
 
-   The default settings are defined in the [repo init OSGi config](https://github.com/wttech/acm/blob/main/ui.config/src/main/content/jcr_root/apps/acm-config/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~acmcore.config), which effectively restrict access to the tool and script execution to administrators only - a recommended practice for production environments.
-   If you require further customization, you can create your own repo init OSGi config to override or extend the default configuration.
+The default settings are defined in the [repo init OSGi config](https://github.com/wttech/acm/blob/main/ui.config/src/main/content/jcr_root/apps/acm-config/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~acmcore.config), which effectively restrict access to the tool and script execution to administrators only - a recommended practice for production environments.
 
-   For example:
-   ```ini
-   service.ranking=I"100"
-   scripts=["  
-       set ACL for everyone
-           deny jcr:read on /apps/acm
-           deny jcr:read on /apps/cq/core/content/nav/tools/acm
-       end
+If you require further customization, you can create your own repo init OSGi config to override or extend the default configuration.
 
-       create group acm-users
-       set ACL for acm-users
-           allow jcr:read on /apps/acm
-           allow jcr:read on /apps/cq/core/content/nav/tools/acm
-       end
-   "]
-   ```
+#### Feature Permissions
+
+ACM supports fine-grained permission control through individual features. This allows you to grant specific capabilities to different user groups without providing full access to ACM tool. For a complete list of available features, see the [ACM features directory](https://github.com/wttech/acm/tree/main/ui.apps/src/main/content/jcr_root/apps/acm/feature).
+
+**Example: Create groups for full and limited access:**
+
+```ini
+service.ranking=I"100"
+scripts=["  
+    set ACL for everyone
+        deny jcr:read on /apps/cq/core/content/nav/tools/acm
+        deny jcr:read on /apps/acm
+    end
+
+    create group acm-admins
+    set ACL for acm-admins
+        allow jcr:read on /apps/cq/core/content/nav/tools/acm
+        allow jcr:read on /apps/acm
+    end
+
+    create group acm-script-users
+    set ACL for acm-script-users
+        allow jcr:read on /apps/cq/core/content/nav/tools/acm
+        allow jcr:read on /apps/acm/gui
+        allow jcr:read on /apps/acm/api
+
+        allow jcr:read on /apps/acm/feature/script/list
+        allow jcr:read on /apps/acm/feature/script/view
+        allow jcr:read on /apps/acm/feature/execution/view
+
+        allow jcr:read on /conf/acm/settings/script
+    end
+"]
+```
+
+Later on when AEM is running, just assign users to the created groups (`acm-admins` or `acm-script-users`) to grant them the corresponding access.
+
+#### API Permissions
+
+Access to ACM's REST API endpoints is controlled through nodes under `/apps/acm/api`. For a complete list of available endpoints, see the [ACM API directory](https://github.com/wttech/acm/tree/main/ui.apps/src/main/content/jcr_root/apps/acm/api).
+
+**Important:** Code execution requires authorization at three levels: API endpoint, feature, and e.g. script path. Example:
+
+```ini
+set ACL for acm-automation-user
+    allow jcr:read on /apps/acm/api
+    allow jcr:read on /apps/acm/feature
+    allow jcr:read on /conf/acm/settings/script
+end
+```
 
 ## Compatibility
 

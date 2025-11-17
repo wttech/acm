@@ -12,7 +12,7 @@ void describeRun() {
 }
 
 void doRun() {
-  log.info "Users CSV report generation started"
+  out.info "Users CSV report generation started"
 
   int count = inputs.value("count")
   def firstNames = (inputs.value("firstNames")).readLines().findAll { it.trim() }
@@ -41,14 +41,14 @@ void doRun() {
 
     report.out.println("${name},${surname},${birthDate}")
 
-    if (i % 100 == 0) log.info("Generated ${i} users...")
+    if (i % 100 == 0) out.info("Generated ${i} users...")
   }
 
   outputs.text("summary") {
     value = "Processed ${count} user(s)"
   }
 
-  log.info "Users CSV report generation ended successfully"
+  out.success "Users CSV report generation ended successfully"
 }
 
 LocalDate randomDateBetween(LocalDate start, LocalDate end) {

@@ -28,6 +28,6 @@ axios.interceptors.request.use(
 // Initialize Monaco Editor to be using embedded resources (to avoid CORS/CSP issues)
 monacoLoader.config({
   paths: {
-    vs: isProduction() ? `${window.origin}/apps/acm/spa/js/monaco-editor/vs` : `http://localhost:${devServerPort}/acm/js/monaco-editor/vs`,
+    vs: isProduction() ? `${window.origin}/apps/acm/gui/spa/build/js/monaco-editor/vs` : `http://localhost:${devServerPort}/acm/js/monaco-editor/vs`,
   },
 });

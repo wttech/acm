@@ -47,6 +47,13 @@ jobs:
           path: all/target/*.zip
           retention-days: 3
 
+      - name: Upload ACM Content Example Package Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: acm-content-example
+          path: ui.content.example/target/*.zip
+          retention-days: 3
+
   test:
     name: 'Test ACM Package'
     runs-on: ubuntu-latest
@@ -91,6 +98,12 @@ jobs:
           name: acm-package
           path: ./aem/home/lib/acm
 
+      - name: Download ACM Content Example Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: acm-content-example
+          path: ./aem/home/lib/acm-content-example
+
       - name: Setup AEM Instance
         run: |
           set -e
@@ -113,6 +126,13 @@ jobs:
           sh aemw instance restart
           echo "Deployed ACM Package '$PACKAGE_PATH'"
 
+      - name: Deploy ACM Content Example Package
+        run: |
+          PACKAGE_PATH=$(find ./aem/home/lib/acm-content-example -name "*.zip" | head -1)
+          echo "Deploying ACM Content Example Package '$PACKAGE_PATH'"
+          sh aemw pkg deploy --file "$PACKAGE_PATH"
+          echo "Deployed ACM Content Example Package '$PACKAGE_PATH'"
+
       - name: Run Playwright Tests
         working-directory: ./test/e2e
         run: npx playwright test
@@ -121,6 +141,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: acm-playwright-report
           path: ./test/e2e/playwright-report/
           retention-days: 30

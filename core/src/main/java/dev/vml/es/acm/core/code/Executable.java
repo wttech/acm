@@ -5,7 +5,9 @@ import java.io.Serializable;
 
 public interface Executable extends Serializable {
 
-    String ID_CONSOLE = "console";
+    String CONSOLE_ID = "console";
+
+    String CONSOLE_SCRIPT_PATH = "/conf/acm/settings/script/template/core/console.groovy";
 
     String getId();
 

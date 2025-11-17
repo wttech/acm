@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded, expectToHaveMultilineText } from './utils/expect'
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
   
-test('Console executes script', async ({ page }) => {
+test.describe('Console', () => {
+  test('Executes script', async ({ page }) => {
     await page.goto('/acm#/console');
 
     await expectCompilationSucceeded(page);
@@ -21,11 +22,13 @@ test('Console executes script', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
     await page.getByRole('button', { name: 'Execute' }).click();
 
-    await page.getByText('Output').click();
+    await page.getByRole('tab', { name: 'Output' }).click();
     await expectExecutionProgressBarSucceeded(page);
     
     const output = await readFromCodeEditor(page);
     expectToHaveMultilineText(output, `
         Hello World!
     `);
+  });
 });
+

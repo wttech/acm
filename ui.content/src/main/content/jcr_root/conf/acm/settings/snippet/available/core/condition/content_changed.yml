@@ -1,0 +1,8 @@
+group: Condition
+name: condition_content_changed
+content: |
+  conditions.contentChanged()
+documentation: |
+  Execute the script only once per its path.
+
+  When the script content is changed, the script will be executed again.

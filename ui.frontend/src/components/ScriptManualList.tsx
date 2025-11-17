@@ -4,7 +4,7 @@ import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Magnify from '@spectrum-icons/workflow/Magnify';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppState } from '../hooks/app';
+import { useAppState, useFeatureEnabled } from '../hooks/app';
 import { useFormatter } from '../hooks/formatter';
 import { useScripts } from '../hooks/script';
 import { isExecutionNegative } from '../types/execution';
@@ -18,10 +18,9 @@ import { Toggle } from './Toggle';
 import UserInfo from './UserInfo';
 
 const ScriptManualList: React.FC = () => {
-  const type = ScriptType.MANUAL;
-  const { scripts, loading, loadScripts } = useScripts(type);
+  const { scripts, loading, loadScripts } = useScripts(ScriptType.MANUAL);
   const appState = useAppState();
-  const managementEnabled = appState.spaSettings.scriptManagementEnabled;
+  const managementEnabled = useFeatureEnabled('script.manage');
   const navigate = useNavigate();
   const formatter = useFormatter();
 
@@ -74,7 +73,7 @@ const ScriptManualList: React.FC = () => {
       </View>
       <TableView
         flex="1"
-        aria-label={`Script list (${type})`}
+        aria-label={`Script list (${ScriptType.MANUAL.toLowerCase()})`}
         selectionMode={managementEnabled ? 'multiple' : 'none'}
         selectedKeys={selectedKeys}
         onSelectionChange={setSelectedKeys}

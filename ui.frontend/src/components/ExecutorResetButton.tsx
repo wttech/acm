@@ -4,6 +4,7 @@ import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import GearsDelete from '@spectrum-icons/workflow/GearsDelete';
 import React, { useState } from 'react';
+import { useFeatureEnabled } from '../hooks/app.ts';
 import { EventType, QueueOutput } from '../types/main.ts';
 import { toastRequest } from '../utils/api.ts';
 
@@ -12,6 +13,8 @@ type ExecutionsResetButtonProps = {
 };
 
 const ExecutorResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }) => {
+  const maintenanceManage = useFeatureEnabled('maintenance.manage');
+
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -64,7 +67,7 @@ const ExecutorResetButton: React.FC<ExecutionsResetButtonProps> = ({ onReset }) 
 
   return (
     <DialogTrigger isOpen={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-      <Button variant="secondary" style="outline" onPress={() => setResetDialogOpen(true)}>
+      <Button variant="secondary" style="outline" onPress={() => setResetDialogOpen(true)} isDisabled={!maintenanceManage}>
         <GearsDelete />
         <Text>Reset</Text>
       </Button>

@@ -3,14 +3,12 @@ package dev.vml.es.acm.core.snippet;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.repo.RepoResource;
-import dev.vml.es.acm.core.repo.RepoUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class SnippetRepository {
 
@@ -39,7 +37,7 @@ public class SnippetRepository {
     }
 
     public Stream<Snippet> findAll() throws AcmException {
-        return RepoResource.of(getOrCreateRoot())
+        return RepoResource.of(getRoot())
                 .descendants()
                 .map(RepoResource::resolve)
                 .map(Snippet::from)
@@ -47,7 +45,11 @@ public class SnippetRepository {
                 .map(Optional::get);
     }
 
-    private Resource getOrCreateRoot() throws AcmException {
-        return RepoUtils.ensure(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, true);
+    private Resource getRoot() throws AcmException {
+        Resource root = resourceResolver.getResource(ROOT);
+        if (root == null) {
+            throw new AcmException(String.format("Snippet root does not exist at path '%s'!", ROOT));
+        }
+        return root;
     }
 }

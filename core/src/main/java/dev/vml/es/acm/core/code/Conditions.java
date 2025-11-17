@@ -209,7 +209,7 @@ public class Conditions {
     // Executable-based
 
     public boolean isConsole() {
-        return Executable.ID_CONSOLE.equals(executableId());
+        return Executable.CONSOLE_ID.equals(executableId());
     }
 
     public boolean isAutomaticScript() {
