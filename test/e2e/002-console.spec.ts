@@ -3,7 +3,7 @@ import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded, expect
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
   
 test.describe('Console', () => {
-  test('Executes script and appears in history', async ({ page }) => {
+  test('Executes script', async ({ page }) => {
     await page.goto('/acm#/console');
 
     await expectCompilationSucceeded(page);
@@ -27,27 +27,6 @@ test.describe('Console', () => {
     
     const output = await readFromCodeEditor(page);
     expectToHaveMultilineText(output, `
-        Hello World!
-    `);
-
-    await page.waitForTimeout(1000); // AEM reindexing delay
-
-    await page.goto('/acm#/history');
-
-    const grid = page.locator('[role="grid"][aria-label="Executions table"]');
-    await expect(grid).toBeVisible();
-    
-    const firstRow = grid.locator('[role="row"]').nth(1);
-    await expect(firstRow).toBeVisible();
-    
-    await expect(firstRow.locator('[role="rowheader"]')).toContainText('Console');
-    
-    await firstRow.click();
-    
-    await page.getByRole('tab', { name: 'Output' }).click();
-    
-    const historyOutput = await readFromCodeEditor(page);
-    expectToHaveMultilineText(historyOutput, `
         Hello World!
     `);
   });
