@@ -33,16 +33,8 @@ test.describe('Tool Access', () => {
               allow { pathStrict = "/conf/acm/settings/script/automatic"; permissions = ["jcr:read"] }
               allow { pathStrict = "/conf/acm/settings/script/extension"; permissions = ["jcr:read"] }
           }
-          
-          def testUser = acl.createUser { 
-              id = "acm-test-user"
-              password = "test1234"
-          }
-          
-          acl.addToGroup {
-              authorizable = testUser
-              group = scriptUsers
-          }
+          def testUser = acl.createUser { id = "acm-test-user"; password = "test1234" }
+          acl.addToGroup { authorizable = testUser; group = scriptUsers }
           
           out.success "Setup complete!"
       }
