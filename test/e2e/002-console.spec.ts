@@ -30,6 +30,8 @@ test.describe('Console', () => {
         Hello World!
     `);
 
+    await page.waitForTimeout(1000); // AEM reindexing delay
+
     await page.goto('/acm#/history');
 
     const grid = page.locator('[role="grid"][aria-label="Executions table"]');
