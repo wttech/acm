@@ -128,7 +128,7 @@ const ConsolePage = () => {
             <FileCode />
             <Text>Code</Text>
           </Item>
-          <Item key="output" aria-label="Execution">
+          <Item key="output" aria-label="Output">
             <Print />
             <Text>Output</Text>
           </Item>

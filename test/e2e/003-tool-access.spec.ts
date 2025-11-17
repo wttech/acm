@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded } from './utils/expect';
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
 
-test.describe.serial('Tool Permissions', () => {
+test.describe.serial('Tool Access', () => {
   test('Setup test user with limited access', async ({ page }) => {
     await page.goto('/acm#/console');
 
@@ -45,7 +45,7 @@ test.describe.serial('Tool Permissions', () => {
     await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
     await page.getByRole('button', { name: 'Execute' }).click();
 
-    await page.getByText('Output').click();
+    await page.getByRole('tab', { name: 'Output' }).click();
     await expectExecutionProgressBarSucceeded(page);
     
     const output = await readFromCodeEditor(page);
