@@ -28,6 +28,9 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('')`. */
     baseURL: 'http://localhost:5502',
 
+    /* Action timeout (e.g. toBeEnabled, toBeVisible) */
+    actionTimeout: 10000,
+
     /* Basic Auth for AEM */
     extraHTTPHeaders: {
       'Authorization': 'Basic ' + Buffer.from('admin:admin').toString('base64'),
