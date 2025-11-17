@@ -105,6 +105,7 @@ export type Permissions = {
   features: Record<FeatureId, boolean>;
 };
 
+// prettier-ignore
 export type FeatureId =
   | 'console.view'
   | 'console.execute'
