@@ -4,6 +4,22 @@ import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
 import { newAemContext } from './utils/context';
 
 test.describe('Tool Access', () => {
+  test('Admin user has full access', async ({ page }) => {
+    await page.goto('/acm');
+
+    await expect(page.getByRole('button', { name: 'Console' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Scripts' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Snippets' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'History' })).toBeVisible();
+    
+    const maintenanceButton = page.locator('a[href="#/maintenance"] button');
+    await expect(maintenanceButton).toBeVisible();
+
+    await page.goto('/acm#/console');
+    await expectCompilationSucceeded(page);
+    await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
+  });
+
   test('Setup test user and verify limited access', async ({ page, browser }) => {
     await page.goto('/acm#/console');
 
@@ -80,21 +96,5 @@ test.describe('Tool Access', () => {
       await testUserPage.goto('/acm#/maintenance');
       await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
     });
-  });
-
-  test('Admin user has full access', async ({ page }) => {
-    await page.goto('/acm');
-
-    await expect(page.getByRole('button', { name: 'Console' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Scripts' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Snippets' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'History' })).toBeVisible();
-    
-    const maintenanceButton = page.locator('a[href="#/maintenance"] button');
-    await expect(maintenanceButton).toBeVisible();
-
-    await page.goto('/acm#/console');
-    await expectCompilationSucceeded(page);
-    await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
   });
 });
