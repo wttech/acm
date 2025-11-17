@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
+    <!-- Ensure roots -->
+    <filter root="/conf/acm/settings/script/manual" mode="update"/>
+    <filter root="/conf/acm/settings/script/automatic" mode="update"/>
+    <filter root="/conf/acm/settings/script/extension" mode="update"/>
+
+    <!-- Core contents -->
     <filter root="/conf/acm/settings/assist/java"/>
     <filter root="/conf/acm/settings/snippet/available/core"/>
     <filter root="/conf/acm/settings/script/mock/core"/>

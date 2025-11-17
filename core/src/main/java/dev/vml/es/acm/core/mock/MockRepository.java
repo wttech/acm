@@ -1,7 +1,6 @@
 package dev.vml.es.acm.core.mock;
 
 import dev.vml.es.acm.core.repo.RepoException;
-import dev.vml.es.acm.core.repo.RepoUtils;
 import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
 import java.util.Arrays;
@@ -11,7 +10,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
-import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 public class MockRepository {
 
@@ -38,7 +36,7 @@ public class MockRepository {
     }
 
     public Stream<Mock> findAll() throws MockException {
-        return ResourceSpliterator.stream(getOrCreateRoot())
+        return ResourceSpliterator.stream(getRoot())
                 .filter(this::checkResource)
                 .map(Mock::new);
     }
@@ -55,7 +53,7 @@ public class MockRepository {
         return SPECIAL_PATHS.stream().anyMatch(n -> StringUtils.endsWith(id, "/" + n));
     }
 
-    public Resource getOrCreateRoot() throws RepoException {
-        return RepoUtils.ensure(resolver, ScriptType.MOCK.root(), JcrResourceConstants.NT_SLING_FOLDER, true);
+    public Resource getRoot() throws RepoException {
+        return resolver.getResource(ScriptType.MOCK.root());
     }
 }

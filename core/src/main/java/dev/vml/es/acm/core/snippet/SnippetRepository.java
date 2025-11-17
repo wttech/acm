@@ -39,7 +39,7 @@ public class SnippetRepository {
     }
 
     public Stream<Snippet> findAll() throws AcmException {
-        return RepoResource.of(getOrCreateRoot())
+        return RepoResource.of(getRoot())
                 .descendants()
                 .map(RepoResource::resolve)
                 .map(Snippet::from)
@@ -47,7 +47,7 @@ public class SnippetRepository {
                 .map(Optional::get);
     }
 
-    private Resource getOrCreateRoot() throws AcmException {
-        return RepoUtils.ensure(resourceResolver, ROOT, JcrResourceConstants.NT_SLING_FOLDER, true);
+    private Resource getRoot() throws AcmException {
+        return resourceResolver.getResource(ROOT);
     }
 }
