@@ -16,6 +16,8 @@ test.describe('Tool Access', () => {
 
       void doRun() {
           def scriptUsers = acl.createGroup { id = "acm-script-users" }.tap {
+              purge()
+
               allow { path = "/apps/cq/core/content/nav/tools/acm"; permissions = ["jcr:read"] }
               allow { path = "/apps/acm/gui"; permissions = ["jcr:read"] }
               allow { path = "/apps/acm/api"; permissions = ["jcr:read"] }
@@ -25,9 +27,9 @@ test.describe('Tool Access', () => {
               deny { path = "/apps/acm/feature/execution/list"; permissions = ["jcr:read"] }
               allow { path = "/apps/acm/feature/execution/view"; permissions = ["jcr:read"] }
               
-              allow { path = "/conf/acm/settings/script"; permissions = ["jcr:read"] }
-              allow { path = "/conf/acm/settings/script/manual"; permissions = ["jcr:read"] }
-              allow { path = "/conf/acm/settings/script/manual/example"; permissions = ["jcr:read"] }
+              allow { path = "/conf/acm/settings/script"; glob = ""; permissions = ["jcr:read"] }
+              allow { path = "/conf/acm/settings/script/manual"; glob = ""; permissions = ["jcr:read"] }
+              allow { path = "/conf/acm/settings/script/manual/example"; glob = ""; permissions = ["jcr:read"] }
               allow { path = "/conf/acm/settings/script/manual/example/ACME-200_hello-world.groovy"; permissions = ["jcr:read"] }
           }
           
