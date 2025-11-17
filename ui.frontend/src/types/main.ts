@@ -71,7 +71,6 @@ export const StateDefault: State = {
     features: {
       'console.execute': true,
       'console.view': true,
-      'dashboard.view': true,
       'execution.list': true,
       'execution.view': true,
       'maintenance.view': true,
@@ -109,7 +108,6 @@ export type Permissions = {
 export type FeatureId =
   | 'console.view'
   | 'console.execute'
-  | 'dashboard.view'
   | 'execution.list'
   | 'execution.view'
   | 'snippet.list'

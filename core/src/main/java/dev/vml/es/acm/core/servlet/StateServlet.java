@@ -5,7 +5,6 @@ import static dev.vml.es.acm.core.util.ServletResult.ok;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 
 import dev.vml.es.acm.core.code.ExecutionQueue;
-import dev.vml.es.acm.core.code.Executor;
 import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
@@ -52,9 +51,6 @@ public class StateServlet extends SlingAllMethodsServlet {
 
     @Reference
     private transient SpaSettings spaSettings;
-
-    @Reference
-    private transient Executor executor;
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
