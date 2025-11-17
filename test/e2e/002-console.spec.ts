@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded, expectToHaveMultilineText } from './utils/expect'
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
   
-test.describe.serial('Console', () => {
-  test('Console executes script', async ({ page }) => {
+test.describe('Console', () => {
+  test('Console executes script and appears in history', async ({ page }) => {
     await page.goto('/acm#/console');
 
     await expectCompilationSucceeded(page);
@@ -29,9 +29,7 @@ test.describe.serial('Console', () => {
     expectToHaveMultilineText(output, `
         Hello World!
     `);
-  });
 
-  test('Console execution appears in history', async ({ page }) => {
     await page.goto('/acm#/history');
 
     const grid = page.locator('[role="grid"][aria-label="Executions table"]');
@@ -46,8 +44,8 @@ test.describe.serial('Console', () => {
     
     await page.getByRole('tab', { name: 'Output' }).click();
     
-    const output = await readFromCodeEditor(page);
-    expectToHaveMultilineText(output, `
+    const historyOutput = await readFromCodeEditor(page);
+    expectToHaveMultilineText(historyOutput, `
         Hello World!
     `);
   });

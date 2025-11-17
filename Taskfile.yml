@@ -249,7 +249,7 @@ tasks:
     desc: build & deploy frontend to instances
     cmds:
       - (cd ui.frontend && npm install && npm run build)
-      - sh aemw content push --dir 'ui.apps/src/main/content/jcr_root/apps/acm/spa'
+      - sh aemw content push --dir 'ui.apps/src/main/content/jcr_root/apps/acm/gui/spa/build'
 
   develop:frontend:dev:
     desc: build & deploy frontend to instances in development mode

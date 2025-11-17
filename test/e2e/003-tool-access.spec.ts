@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded } from './utils/expect';
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
 
-test.describe.serial('Tool Access', () => {
-  test('Setup test user with limited access', async ({ page }) => {
+test.describe('Tool Access', () => {
+  test('Setup test user and verify limited access', async ({ page, browser }) => {
     await page.goto('/acm#/console');
 
     await expectCompilationSucceeded(page);
@@ -24,6 +24,8 @@ test.describe.serial('Tool Access', () => {
               deny { path = "/apps/acm/feature/execution/list"; permissions = ["jcr:read"] }
               allow { path = "/apps/acm/feature/execution/view"; permissions = ["jcr:read"] }
               
+              allow { path = "/conf/acm/settings/script/manual/example"; permissions = ["jcr:read"] }
+              deny { path = "/conf/acm/settings/script/manual/example"; glob = "/*"; permissions = ["jcr:read"] }
               allow { path = "/conf/acm/settings/script/manual/example/ACME-200_hello-world.groovy"; permissions = ["jcr:read"] }
           }
           
@@ -50,37 +52,44 @@ test.describe.serial('Tool Access', () => {
     
     const output = await readFromCodeEditor(page);
     expect(output).toContain('Setup complete!');
-  });
 
-  test('Test user has limited access', async ({ browser }) => {
     const context = await browser.newContext({
       baseURL: 'http://localhost:5502',
       extraHTTPHeaders: {
         'Authorization': 'Basic ' + btoa('acm-test-user:test1234'),
       },
     });
-    const page = await context.newPage();
+    const testUserPage = await context.newPage();
 
     try {
-      await page.goto('/acm');
-      const title = page.locator('.granite-title', { hasText: 'Content Manager' });
+      await testUserPage.goto('/acm');
+      const title = testUserPage.locator('.granite-title', { hasText: 'Content Manager' });
       await expect(title).toBeVisible();
 
-      await expect(page.getByRole('button', { name: 'Scripts' })).toBeVisible();
+      await expect(testUserPage.getByRole('button', { name: 'Scripts' })).toBeVisible();
 
-      await expect(page.getByRole('button', { name: 'Console' })).not.toBeVisible();
-      await expect(page.getByRole('button', { name: 'Snippets' })).not.toBeVisible();
-      await expect(page.getByRole('button', { name: 'History' })).not.toBeVisible();
-      await expect(page.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
+      await expect(testUserPage.getByRole('button', { name: 'Console' })).not.toBeVisible();
+      await expect(testUserPage.getByRole('button', { name: 'Snippets' })).not.toBeVisible();
+      await expect(testUserPage.getByRole('button', { name: 'History' })).not.toBeVisible();
+      await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
 
-      await page.getByRole('button', { name: 'Scripts' }).click();
-      await expect(page).toHaveURL(/\/acm#\/scripts/);
+      await testUserPage.getByRole('button', { name: 'Scripts' }).click();
+      await expect(testUserPage).toHaveURL(/\/acm#\/scripts/);
 
-      await page.goto('/acm#/console');
-      await expect(page.getByRole('button', { name: 'Console' })).not.toBeVisible();
+      const grid = testUserPage.locator('[role="grid"][aria-label="Script list (manual)"]');
+      await expect(grid).toBeVisible();
+      
+      const rows = grid.locator('[role="row"]');
+      await expect(rows).toHaveCount(2);
+      
+      const scriptRow = rows.nth(1);
+      await expect(scriptRow.locator('[role="rowheader"]')).toContainText('example/ACME-200_hello-world');
 
-      await page.goto('/acm#/maintenance');
-      await expect(page.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
+      await testUserPage.goto('/acm#/console');
+      await expect(testUserPage.getByRole('button', { name: 'Console' })).not.toBeVisible();
+
+      await testUserPage.goto('/acm#/maintenance');
+      await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
 
     } finally {
       await context.close();

@@ -18,8 +18,7 @@ import { Toggle } from './Toggle';
 import UserInfo from './UserInfo';
 
 const ScriptManualList: React.FC = () => {
-  const type = ScriptType.MANUAL;
-  const { scripts, loading, loadScripts } = useScripts(type);
+  const { scripts, loading, loadScripts } = useScripts(ScriptType.MANUAL);
   const appState = useAppState();
   const managementEnabled = useFeatureEnabled('script.manage');
   const navigate = useNavigate();
@@ -74,7 +73,7 @@ const ScriptManualList: React.FC = () => {
       </View>
       <TableView
         flex="1"
-        aria-label={`Script list (${type})`}
+        aria-label={`Script list (${ScriptType.MANUAL.toLowerCase()})`}
         selectionMode={managementEnabled ? 'multiple' : 'none'}
         selectedKeys={selectedKeys}
         onSelectionChange={setSelectedKeys}
