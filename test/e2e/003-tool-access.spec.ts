@@ -21,10 +21,10 @@ test.describe.serial('Tool Access', () => {
               
               allow { path = "/apps/acm/feature/script/list"; permissions = ["jcr:read"] }
               allow { path = "/apps/acm/feature/script/view"; permissions = ["jcr:read"] }
-              allow { path = "/apps/acm/feature/execution/list"; permissions = ["jcr:read"] }
+              deny { path = "/apps/acm/feature/execution/list"; permissions = ["jcr:read"] }
               allow { path = "/apps/acm/feature/execution/view"; permissions = ["jcr:read"] }
               
-              allow { path = "/conf/acm/settings/script"; permissions = ["jcr:read"] }
+              allow { path = "/conf/acm/settings/script/manual/example/ACME-200_hello-world.groovy"; permissions = ["jcr:read"] }
           }
           
           def testUser = acl.createUser { 
@@ -67,17 +67,14 @@ test.describe.serial('Tool Access', () => {
       await expect(title).toBeVisible();
 
       await expect(page.getByRole('button', { name: 'Scripts' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'History' })).toBeVisible();
 
       await expect(page.getByRole('button', { name: 'Console' })).not.toBeVisible();
       await expect(page.getByRole('button', { name: 'Snippets' })).not.toBeVisible();
+      await expect(page.getByRole('button', { name: 'History' })).not.toBeVisible();
       await expect(page.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
 
       await page.getByRole('button', { name: 'Scripts' }).click();
       await expect(page).toHaveURL(/\/acm#\/scripts/);
-
-      await page.getByRole('button', { name: 'History' }).click();
-      await expect(page).toHaveURL(/\/acm#\/history/);
 
       await page.goto('/acm#/console');
       await expect(page.getByRole('button', { name: 'Console' })).not.toBeVisible();
