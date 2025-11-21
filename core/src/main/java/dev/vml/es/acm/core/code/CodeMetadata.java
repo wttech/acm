@@ -54,48 +54,41 @@ public class CodeMetadata implements Serializable {
     }
 
     /**
-     * Find the first doc comment (either at the top or after imports)
+     * Finds first JavaDoc/GroovyDoc comment that's properly separated with blank lines,
+     * or directly attached to describeRun() method.
      */
     private static String findFirstDocComment(String code) {
         Matcher matcher = DOC_COMMENT_PATTERN.matcher(code);
 
-        // Find first doc comment that's properly separated with newlines
         while (matcher.find()) {
             String comment = matcher.group();
             int commentStart = matcher.start();
             int commentEnd = matcher.end();
 
-            // Get text after comment (until next non-whitespace or end of line)
             String afterComment = code.substring(commentEnd);
 
-            // Must have at least one newline after the comment
             if (!NEWLINE_AFTER_COMMENT.matcher(afterComment).matches()) {
                 continue;
             }
 
-            // Check what follows after the newline(s)
             String trimmedAfter = afterComment.trim();
 
-            // Skip if directly followed by describeRun (it's OK to be attached)
             if (trimmedAfter.startsWith("void describeRun()")) {
                 return comment;
             }
 
-            // Must have blank line after (double newline) for other cases
             if (!BLANK_LINE_AFTER_COMMENT.matcher(afterComment).matches()) {
                 continue;
             }
 
-            // If there's code before the comment, check for blank line before
             if (commentStart > 0) {
                 String beforeComment = code.substring(0, commentStart);
-                // Should have imports or package, followed by blank line
-                if (beforeComment.trim().isEmpty()
+                String trimmedBefore = beforeComment.trim();
+                if (trimmedBefore.isEmpty()
                         || IMPORT_OR_PACKAGE_BEFORE.matcher(beforeComment).matches()) {
                     return comment;
                 }
             } else {
-                // Comment at the very start is OK
                 return comment;
             }
         }
@@ -104,17 +97,14 @@ public class CodeMetadata implements Serializable {
     }
 
     /**
-     * Parses the doc comment to extract description and tags.
+     * Extracts description and @tags from doc comment. Supports multiple values per tag.
      */
     private static Map<String, Object> parseDocComment(String docComment) {
         Map<String, Object> result = new LinkedHashMap<>();
 
-        // Remove /** and */ markers and leading comment decorations
         String content = DOC_MARKERS.matcher(docComment).replaceAll("");
 
-        // Extract general description (text before first @tag)
-        // Look for @tag pattern (@ at start of word boundary, not in middle of text
-        // like email)
+        // @ at line start (not in email addresses)
         Matcher firstTagMatcher = FIRST_TAG_PATTERN.matcher(content);
 
         if (firstTagMatcher.find()) {
@@ -126,26 +116,22 @@ public class CodeMetadata implements Serializable {
                 result.put("description", description);
             }
         } else {
-            // No tags, just description
             String description = LEADING_ASTERISK.matcher(content).replaceAll("").trim();
             if (!description.isEmpty()) {
                 result.put("description", description);
             }
         }
 
-        // Parse tags
         Matcher tagMatcher = TAG_PATTERN.matcher(content);
 
         while (tagMatcher.find()) {
             String tagName = tagMatcher.group(1);
             String tagValue = tagMatcher.group(2);
 
-            if (tagValue != null) {
-                tagValue = LEADING_ASTERISK.matcher(tagValue).replaceAll("") // Remove leading * from each line
-                        .trim();
+            if (tagValue != null && !tagValue.isEmpty()) {
+                tagValue = LEADING_ASTERISK.matcher(tagValue).replaceAll("").trim();
 
                 if (!tagValue.isEmpty()) {
-                    // Store tag value, use list for potential multiple values
                     Object existing = result.get(tagName);
 
                     if (existing == null) {
@@ -155,7 +141,6 @@ public class CodeMetadata implements Serializable {
                         List<String> list = (List<String>) existing;
                         list.add(tagValue);
                     } else {
-                        // Convert to list if we have multiple values
                         List<String> list = new ArrayList<>();
                         list.add((String) existing);
                         list.add(tagValue);
