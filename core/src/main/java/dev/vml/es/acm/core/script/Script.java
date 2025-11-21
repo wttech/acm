@@ -56,6 +56,11 @@ public class Script implements Executable, Comparable<Script> {
         }
     }
 
+    @Override
+    public CodeMetadata getMetadata() {
+        return CodeMetadata.of(this);
+    }
+
     @JsonIgnore
     public String getPath() {
         return resource.getPath();
@@ -73,10 +78,6 @@ public class Script implements Executable, Comparable<Script> {
 
     protected Resource getResource() {
         return resource;
-    }
-
-    public CodeMetadata getMetadata() {
-        return CodeMetadata.of(this);
     }
 
     @Override

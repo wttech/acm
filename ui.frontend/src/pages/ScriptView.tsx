@@ -8,7 +8,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor';
 import CodeExecuteButton from '../components/CodeExecuteButton';
-import Markdown from '../components/Markdown';
+import ExecutableMetadata from '../components/ExecutableMetadata';
+import InfoCard from '../components/InfoCard';
 import { useFeatureEnabled } from '../hooks/app.ts';
 import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation';
 import { InputValues } from '../types/input.ts';
@@ -151,39 +152,13 @@ const ScriptView = () => {
                 </Flex>
               </View>
               <Flex direction="row" gap="size-200" alignItems="stretch">
-                <View backgroundColor="static-white" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin" flex="1">
-                  <Flex direction="column" gap="size-200">
-                    <LabeledValue label="Name" value={script.name} />
-                    <LabeledValue label="ID" value={script.id} />
-                  </Flex>
-                </View>
-                {script.metadata && Object.keys(script.metadata).length > 0 && (
-                  <View backgroundColor="static-white" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin" flex="1">
-                    <Flex direction="column" gap="size-200">
-                      {Object.entries(script.metadata).map(([key, value]) => {
-                        const label = key.charAt(0).toUpperCase() + key.slice(1);
-                        
-                        if (Array.isArray(value)) {
-                          return value.map((item, index) => (
-                            <LabeledValue 
-                              key={`${key}-${index}`}
-                              label={label}
-                              value={<Markdown code={item} trimIndent={false} />}
-                            />
-                          ));
-                        }
-                        
-                        return (
-                          <LabeledValue 
-                            key={key}
-                            label={label}
-                            value={<Markdown code={value} trimIndent={false} />}
-                          />
-                        );
-                      })}
-                    </Flex>
-                  </View>
-                )}
+                <InfoCard>
+                  <LabeledValue label="Name" value={script.name} />
+                  <LabeledValue label="ID" value={script.id} />
+                </InfoCard>
+                <InfoCard>
+                  <ExecutableMetadata metadata={script.metadata} />
+                </InfoCard>
               </Flex>
             </Flex>
           </Item>

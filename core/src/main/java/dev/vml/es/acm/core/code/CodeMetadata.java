@@ -1,6 +1,6 @@
-
 package dev.vml.es.acm.core.code;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -8,12 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
 public class CodeMetadata implements Serializable {
 
@@ -21,13 +18,10 @@ public class CodeMetadata implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeMetadata.class);
 
-    private static final Pattern DOC_COMMENT_PATTERN = Pattern.compile(
-            "/\\*\\*([^*]|\\*(?!/))*\\*/",
-            Pattern.DOTALL);
+    private static final Pattern DOC_COMMENT_PATTERN = Pattern.compile("/\\*\\*([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
 
-    private static final Pattern TAG_PATTERN = Pattern.compile(
-            "(?m)^\\s*\\*?\\s*@(\\w+)\\s+(.+?)(?=(?m)^\\s*\\*?\\s*@\\w+|\\*/|$)",
-            Pattern.DOTALL);
+    private static final Pattern TAG_PATTERN =
+            Pattern.compile("(?m)^\\s*\\*?\\s*@(\\w+)\\s+(.+?)(?=(?m)^\\s*\\*?\\s*@\\w+|\\*/|$)", Pattern.DOTALL);
 
     private Map<String, Object> values;
 
@@ -91,8 +85,8 @@ public class CodeMetadata implements Serializable {
             if (commentStart > 0) {
                 String beforeComment = code.substring(0, commentStart);
                 // Should have imports or package, followed by blank line
-                if (beforeComment.trim().isEmpty() ||
-                        beforeComment.matches("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$")) {
+                if (beforeComment.trim().isEmpty()
+                        || beforeComment.matches("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$")) {
                     return comment;
                 }
             } else {
@@ -129,9 +123,7 @@ public class CodeMetadata implements Serializable {
             }
         } else {
             // No tags, just description
-            String description = content
-                    .replaceAll("(?m)^\\s*\\*\\s?", "")
-                    .trim();
+            String description = content.replaceAll("(?m)^\\s*\\*\\s?", "").trim();
             if (!description.isEmpty()) {
                 result.put("description", description);
             }
@@ -145,8 +137,7 @@ public class CodeMetadata implements Serializable {
             String tagValue = tagMatcher.group(2);
 
             if (tagValue != null) {
-                tagValue = tagValue
-                        .replaceAll("(?m)^\\s*\\*\\s?", "") // Remove leading * from each line
+                tagValue = tagValue.replaceAll("(?m)^\\s*\\*\\s?", "") // Remove leading * from each line
                         .trim();
 
                 if (!tagValue.isEmpty()) {
