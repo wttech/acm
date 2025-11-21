@@ -25,7 +25,7 @@ import { useAppState } from '../hooks/app.ts';
 import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
-import { isExecutableScript } from '../types/executable.ts';
+import { isExecutableConsole, isExecutableScript } from '../types/executable.ts';
 import { isExecutionPending } from '../types/execution.ts';
 import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
 import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
@@ -131,7 +131,9 @@ const ExecutionView = () => {
                       <ExecutableIdValue id={execution.executable.id} />
                     </div>
                   </Field>
-                  <LabeledValue label="ID" value={execution.executable.id} />
+                  {!isExecutableConsole(execution.executable.id) && (
+                    <LabeledValue label="ID" value={execution.executable.id} />
+                  )}
                 </InfoCard>
                 <InfoCard>
                   <ExecutableMetadata metadata={execution.executable.metadata} />

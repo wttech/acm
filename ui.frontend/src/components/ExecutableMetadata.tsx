@@ -30,7 +30,7 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
                   {`/**
  * Explain purpose here
  *
- * @author Your Name <your.email@example.com>
+ * @author <john.doe@acme.com>
  * @version 1.0
  */`}
                 </small></pre>
