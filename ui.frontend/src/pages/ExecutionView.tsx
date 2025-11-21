@@ -1,20 +1,20 @@
-import { Badge, Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, Switch, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
+import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, Switch, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
-import InfoOutline from '@spectrum-icons/workflow/InfoOutline';
 import Print from '@spectrum-icons/workflow/Print';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor.tsx';
-import CodeTextarea from '../components/CodeTextarea';
 import ExecutableIdValue from '../components/ExecutableIdValue';
 import ExecutableMetadata from '../components/ExecutableMetadata';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
+import ExecutionInputs from '../components/ExecutionInputs';
+import ExecutionOutputs from '../components/ExecutionOutputs';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsButton.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
@@ -29,7 +29,6 @@ import { isExecutableScript } from '../types/executable.ts';
 import { isExecutionPending } from '../types/execution.ts';
 import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
 import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
-import { Objects } from '../utils/objects';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
 const ExecutionView = () => {
@@ -141,32 +140,10 @@ const ExecutionView = () => {
               {/* Row 3: I/O */}
               <Flex direction="row" gap="size-200" alignItems="stretch">
                 <InfoCard>
-                  <Field label={Objects.isEmpty(execution.inputs) ? 'Inputs' : `Inputs (${Object.keys(execution.inputs).length})`} width="100%">
-                    <div style={{ width: '100%' }}>
-                      {Objects.isEmpty(execution.inputs) ? (
-                        <Badge variant="neutral">
-                          <InfoOutline />
-                          <Text>Not described</Text>
-                        </Badge>
-                      ) : (
-                        <CodeTextarea language="json" value={JSON.stringify(execution.inputs, null, 2)} options={{ readOnly: true }} />
-                      )}
-                    </div>
-                  </Field>
+                  <ExecutionInputs inputs={execution.inputs} />
                 </InfoCard>
                 <InfoCard>
-                  <Field label={Objects.isEmpty(execution.outputs) ? 'Outputs' : `Outputs (${Object.keys(execution.outputs).length})`} width="100%">
-                    <div style={{ width: '100%' }}>
-                      {Objects.isEmpty(execution.outputs) ? (
-                        <Badge variant="neutral">
-                          <InfoOutline />
-                          <Text>Not generated</Text>
-                        </Badge>
-                      ) : (
-                        <CodeTextarea language="json" value={JSON.stringify(execution.outputs, null, 2)} options={{ readOnly: true }} />
-                      )}
-                    </div>
-                  </Field>
+                  <ExecutionOutputs outputs={execution.outputs} />
                 </InfoCard>
               </Flex>
             </Flex>

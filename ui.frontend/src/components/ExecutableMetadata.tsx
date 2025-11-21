@@ -1,6 +1,6 @@
 import { Badge, Content, ContextualHelp, Flex, Heading, LabeledValue, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
-import InfoOutline from '@spectrum-icons/workflow/InfoOutline';
+import DataUnavailable from '@spectrum-icons/workflow/DataUnavailable';
 import { Text } from '@adobe/react-spectrum';
 import React from 'react';
 import { ExecutableMetadata as ExecutableMetadataType } from '../types/executable';
@@ -17,23 +17,23 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
         <div>
           <Flex alignItems="center" gap="size-100">
             <Badge variant="neutral">
-              <InfoOutline />
+              <DataUnavailable />
               <Text>Not available</Text>
             </Badge>
             <ContextualHelp variant="info">
               <Heading>Defining metadata</Heading>
               <Content>
                 <View marginBottom="size-100">
-                  <Text>Add a JavaDoc or GroovyDoc comment block at the top of your script file:</Text>
+                  <Text>Use a JavaDoc or GroovyDoc comment block at the top of your script file:</Text>
                 </View>
-                <pre>
+                <pre><small>
                   {`/**
  * Explain purpose here
  *
  * @author Your Name <your.email@example.com>
  * @version 1.0
  */`}
-                </pre>
+                </small></pre>
                 <View marginTop="size-100">
                   <Text>The comment must be followed by a blank line. Description is extracted from text before any @tags.</Text>
                 </View>
