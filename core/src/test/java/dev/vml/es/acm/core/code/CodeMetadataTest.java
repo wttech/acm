@@ -51,8 +51,7 @@ class CodeMetadataTest {
         String description = (String) metadata.getValues().get("description");
         assertNotNull(description);
         assertTrue(description.contains("Prints animal information to the console based on user input"));
-        assertTrue(description.contains("This is an example of AEM Content Manager script with inputs"));
-        assertEquals("<krystian.panek@vml.com>", metadata.getValues().get("author"));
+        assertEquals("<john.doe@acme.com>", metadata.getValues().get("author"));
     }
 
     @Test
@@ -64,7 +63,7 @@ class CodeMetadataTest {
         assertNotNull(description);
         assertTrue(description.contains("Updates the thumbnail"));
         assertTrue(description.contains("File must be a JPEG image"));
-        assertEquals("<krystian.panek@vml.com>", metadata.getValues().get("author"));
+        assertEquals("<john.doe@acme.com>", metadata.getValues().get("author"));
     }
 
     @Test
