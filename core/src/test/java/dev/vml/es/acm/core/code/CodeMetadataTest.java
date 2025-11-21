@@ -3,6 +3,7 @@ package dev.vml.es.acm.core.code;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,7 +17,7 @@ class CodeMetadataTest {
 
     private String readScript(String relativePath) throws IOException {
         Path scriptPath = SCRIPTS_BASE_PATH.resolve(relativePath);
-        return Files.readString(scriptPath);
+        return new String(Files.readAllBytes(scriptPath), StandardCharsets.UTF_8);
     }
 
     @Test
@@ -83,7 +84,7 @@ class CodeMetadataTest {
             " * @author Jane Smith\n" +
             " */\n" +
             "\n" +
-            "void run() {\n" +
+            "void doRun() {\n" +
             "    println \"Hello\"\n" +
             "}";
         CodeMetadata metadata = CodeMetadata.parse(code);
@@ -106,7 +107,7 @@ class CodeMetadataTest {
             " * @category migration\n" +
             " */\n" +
             "\n" +
-            "void run() {\n" +
+            "void doRun() {\n" +
             "    println \"Hello\"\n" +
             "}";
         

@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.script;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.code.CodeMetadata;
 import dev.vml.es.acm.core.code.Executable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,6 +73,10 @@ public class Script implements Executable, Comparable<Script> {
 
     protected Resource getResource() {
         return resource;
+    }
+
+    public CodeMetadata getMetadata() {
+        return CodeMetadata.of(this);
     }
 
     @Override

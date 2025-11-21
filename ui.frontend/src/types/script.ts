@@ -14,7 +14,10 @@ export type Script = {
   path: string;
   name: string;
   content: string;
+  metadata: ScriptMetadata;
 };
+
+export type ScriptMetadata = Record<string, string | string[]>
 
 export type ScriptStats = {
   path: string;

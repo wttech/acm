@@ -5,7 +5,6 @@
  *
  * @author Krystian Panek <krystian.panek@vml.com>
  */
-
 void describeRun() {
     inputs.path("pagePath") { rootPathExclusive = '/' }
     inputs.file("pageThumbnailFile") { mimeTypes = ["image/jpeg"] }
