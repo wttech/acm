@@ -1,8 +1,9 @@
 /**
- * @description Prints animal information to the console based on user input. This is an example of AEM Content Manager script with inputs.
+ * Prints animal information to the console based on user input. 
+ * This is an example of AEM Content Manager script with inputs.
+ * 
  * @author Krystian Panek <krystian.panek@vml.com>
  */
- 
 void describeRun() {
     inputs.string("animalName") { value = "Whiskers";
         validator = "(v, a) => a.animalType === 'cat' ? (v && v.startsWith('W') || 'Cat name must start with W!') : true" }

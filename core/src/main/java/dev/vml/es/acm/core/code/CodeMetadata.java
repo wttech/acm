@@ -52,30 +52,45 @@ class CodeMetadata implements Serializable {
     private static String findFirstDocComment(String code) {
         Matcher matcher = DOC_COMMENT_PATTERN.matcher(code);
         
-        // Find first doc comment that's not attached to a method/class
-        // (i.e., appears before any method definition)
+        // Find first doc comment that's properly separated with newlines
         while (matcher.find()) {
             String comment = matcher.group();
+            int commentStart = matcher.start();
             int commentEnd = matcher.end();
             
-            // Check if this comment is followed by typical method/class keywords
-            String afterComment = code.substring(commentEnd).trim();
+            // Get text after comment (until next non-whitespace or end of line)
+            String afterComment = code.substring(commentEnd);
             
-            // If it's followed by a method signature (contains parentheses before opening brace)
-            // or class/interface keyword, skip it
-            if (afterComment.matches("^(public|private|protected|static|final|abstract|void|boolean|int|long|String|class|interface)\\s+.*")) {
-                // Check if it's actually a method (has parentheses)
-                int firstBrace = afterComment.indexOf('{');
-                int firstParen = afterComment.indexOf('(');
-                
-                if (firstParen > 0 && (firstBrace < 0 || firstParen < firstBrace)) {
-                    // This is a method/constructor, skip it
-                    continue;
-                }
+            // Must have at least one newline after the comment
+            if (!afterComment.matches("^\\s*\\n[\\s\\S]*")) {
+                continue;
             }
             
-            // This is a top-level comment
-            return comment;
+            // Check what follows after the newline(s)
+            String trimmedAfter = afterComment.trim();
+            
+            // Skip if directly followed by describeRun (it's OK to be attached)
+            if (trimmedAfter.startsWith("void describeRun()")) {
+                return comment;
+            }
+            
+            // Must have blank line after (double newline) for other cases
+            if (!afterComment.matches("^\\s*\\n\\s*\\n[\\s\\S]*")) {
+                continue;
+            }
+            
+            // If there's code before the comment, check for blank line before
+            if (commentStart > 0) {
+                String beforeComment = code.substring(0, commentStart);
+                // Should have imports or package, followed by blank line
+                if (beforeComment.trim().isEmpty() || 
+                    beforeComment.matches("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$")) {
+                    return comment;
+                }
+            } else {
+                // Comment at the very start is OK
+                return comment;
+            }
         }
         
         return null;

@@ -1,6 +1,5 @@
 /**
- * @description Prints "Hello World!" to the console. 
- * @author Krystian Panek <krystian.panek@vml.com>
+ * Prints "Hello World!" to the console. 
  */
 
 boolean canRun() {
