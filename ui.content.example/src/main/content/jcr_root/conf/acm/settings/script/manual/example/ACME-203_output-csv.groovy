@@ -3,7 +3,7 @@ import java.util.Random
 
 /**
  * @description Generates a CSV report of users with random names and birth dates.
- * @author Krystian Panek <krystian.panek@vml.com>
+ * @author <krystian.panek@vml.com>
  */
 void describeRun() {
   inputs.integerNumber("count") { label = "Users to generate"; min = 1; value = 10000 }

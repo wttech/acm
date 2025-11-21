@@ -1,5 +1,6 @@
-import { Flex, LabeledValue, Text, View } from '@adobe/react-spectrum';
+import { Flex, LabeledValue, View } from '@adobe/react-spectrum';
 import { ScriptMetadata as ScriptMetadataType } from '../types/script';
+import Markdown from './Markdown';
 
 type ScriptMetadataProps = {
   metadata: ScriptMetadataType;
@@ -24,7 +25,7 @@ const ScriptMetadata = ({ metadata }: ScriptMetadataProps) => {
             <LabeledValue 
               key={`${key}-${result.length}`}
               label={label}
-              value={<Text UNSAFE_style={{ whiteSpace: 'pre-wrap' }}>{item}</Text>}
+              value={<Markdown code={item}/>}
             />
           );
         });
@@ -33,7 +34,7 @@ const ScriptMetadata = ({ metadata }: ScriptMetadataProps) => {
           <LabeledValue 
             key={key}
             label={label}
-            value={<Text UNSAFE_style={{ whiteSpace: 'pre-wrap' }}>{value}</Text>}
+            value={<Markdown code={value} />}
           />
         );
       }

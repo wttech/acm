@@ -3,7 +3,7 @@ package dev.vml.es.acm.core.code;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
 public class CodeMetadata implements Serializable {
 
-    public static final CodeMetadata EMPTY = new CodeMetadata(new HashMap<>());
+    public static final CodeMetadata EMPTY = new CodeMetadata(new LinkedHashMap<>());
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeMetadata.class);
 
@@ -108,7 +108,7 @@ public class CodeMetadata implements Serializable {
      * Parses the doc comment to extract description and tags.
      */
     private static Map<String, Object> parseDocComment(String docComment) {
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new LinkedHashMap<>();
 
         // Remove /** and */ markers and leading comment decorations
         String content = docComment.replaceAll("^/\\*\\*", "").replaceAll("\\*/$", "");
