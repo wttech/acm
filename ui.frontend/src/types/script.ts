@@ -1,5 +1,5 @@
-import { ExecutionStatus } from './execution';
 import { Executable } from './executable';
+import { ExecutionStatus } from './execution';
 import { ExecutionSummary } from './main';
 
 export enum ScriptType {

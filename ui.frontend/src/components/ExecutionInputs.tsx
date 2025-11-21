@@ -1,10 +1,9 @@
-import { Badge, Content, ContextualHelp, Flex, Heading, View } from '@adobe/react-spectrum';
+import { Badge, Content, ContextualHelp, Flex, Heading, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import Download from '@spectrum-icons/workflow/Download';
-import { Text } from '@adobe/react-spectrum';
 import React from 'react';
-import CodeTextarea from './CodeTextarea';
 import { Objects } from '../utils/objects';
+import CodeTextarea from './CodeTextarea';
 
 type ExecutionInputsProps = {
   inputs: Record<string, unknown> | null | undefined;
@@ -27,10 +26,13 @@ const ExecutionInputs: React.FC<ExecutionInputsProps> = ({ inputs }) => {
               <Heading>Defining inputs</Heading>
               <Content>
                 <View marginBottom="size-100">
-                  <Text>Use <code>describeRun()</code> method to collect values from users before execution:</Text>
+                  <Text>
+                    Use <code>describeRun()</code> method to collect values from users before execution:
+                  </Text>
                 </View>
-                <pre><small>
-                  {`void describeRun() {
+                <pre>
+                  <small>
+                    {`void describeRun() {
   inputs.path("pagePath") { 
     rootPathExclusive = '/' 
   }
@@ -43,9 +45,12 @@ const ExecutionInputs: React.FC<ExecutionInputsProps> = ({ inputs }) => {
     value = 10000 
   }
 }`}
-                </small></pre>
+                  </small>
+                </pre>
                 <View marginTop="size-100">
-                  <Text>Access input values in <code>doRun()</code> using <code>inputs.value("name")</code>. Supports various types: string, integerNumber, decimalNumber, bool, date, time, path, file, and more.</Text>
+                  <Text>
+                    Access input values in <code>doRun()</code> using <code>inputs.value("name")</code>. Supports various types: string, integerNumber, decimalNumber, bool, date, time, path, file, and more.
+                  </Text>
                 </View>
               </Content>
             </ContextualHelp>

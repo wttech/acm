@@ -131,9 +131,7 @@ const ExecutionView = () => {
                       <ExecutableIdValue id={execution.executable.id} />
                     </div>
                   </Field>
-                  {!isExecutableConsole(execution.executable.id) && (
-                    <LabeledValue label="ID" value={execution.executable.id} />
-                  )}
+                  {!isExecutableConsole(execution.executable.id) && <LabeledValue label="ID" value={execution.executable.id} />}
                 </InfoCard>
                 <InfoCard>
                   <ExecutableMetadata metadata={execution.executable.metadata} />

@@ -6,7 +6,7 @@ export type Executable = {
   metadata: ExecutableMetadata;
 };
 
-export type ExecutableMetadata = Record<string, string | string[]>
+export type ExecutableMetadata = Record<string, string | string[]>;
 
 export const ExecutableIdConsole = 'console';
 
@@ -17,4 +17,3 @@ export function isExecutableConsole(id: string): boolean {
 export function isExecutableScript(id: string): boolean {
   return id.startsWith(ScriptRoot);
 }
-

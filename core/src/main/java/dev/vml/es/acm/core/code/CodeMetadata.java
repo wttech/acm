@@ -23,7 +23,8 @@ public class CodeMetadata implements Serializable {
             Pattern.compile("(?m)^\\s*\\*?\\s*@(\\w+)\\s+(.+?)(?=(?m)^\\s*\\*?\\s*@\\w+|\\*/|$)", Pattern.DOTALL);
     private static final Pattern NEWLINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n[\\s\\S]*");
     private static final Pattern BLANK_LINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n\\s*\\n[\\s\\S]*");
-    private static final Pattern IMPORT_OR_PACKAGE_BEFORE = Pattern.compile("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$");
+    private static final Pattern IMPORT_OR_PACKAGE_BEFORE =
+            Pattern.compile("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$");
     private static final Pattern FIRST_TAG_PATTERN = Pattern.compile("(?m)^\\s*\\*?\\s*@\\w+");
     private static final Pattern LEADING_ASTERISK = Pattern.compile("(?m)^\\s*\\*\\s?");
     private static final Pattern DOC_MARKERS = Pattern.compile("^/\\*\\*|\\*/$");
@@ -109,14 +110,16 @@ public class CodeMetadata implements Serializable {
 
         if (firstTagMatcher.find()) {
             int firstTagIndex = firstTagMatcher.start();
-            String description = LEADING_ASTERISK.matcher(content.substring(0, firstTagIndex))
+            String description = LEADING_ASTERISK
+                    .matcher(content.substring(0, firstTagIndex))
                     .replaceAll("")
                     .trim();
             if (!description.isEmpty()) {
                 result.put("description", description);
             }
         } else {
-            String description = LEADING_ASTERISK.matcher(content).replaceAll("").trim();
+            String description =
+                    LEADING_ASTERISK.matcher(content).replaceAll("").trim();
             if (!description.isEmpty()) {
                 result.put("description", description);
             }

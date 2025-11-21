@@ -1,7 +1,6 @@
-import { Badge, Content, ContextualHelp, Flex, Heading, LabeledValue, View } from '@adobe/react-spectrum';
+import { Badge, Content, ContextualHelp, Flex, Heading, LabeledValue, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import DataUnavailable from '@spectrum-icons/workflow/DataUnavailable';
-import { Text } from '@adobe/react-spectrum';
 import React from 'react';
 import { ExecutableMetadata as ExecutableMetadataType } from '../types/executable';
 import Markdown from './Markdown';
@@ -26,14 +25,16 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
                 <View marginBottom="size-100">
                   <Text>Use a JavaDoc or GroovyDoc comment block at the top of your script file:</Text>
                 </View>
-                <pre><small>
-                  {`/**
+                <pre>
+                  <small>
+                    {`/**
  * Explain purpose here
  *
  * @author <john.doe@acme.com>
  * @version 1.0
  */`}
-                </small></pre>
+                  </small>
+                </pre>
                 <View marginTop="size-100">
                   <Text>The comment must be followed by a blank line. Description is extracted from text before any @tags.</Text>
                 </View>
@@ -46,19 +47,17 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
   }
 
   return (
-    <>
+    <Flex direction="column" gap="size-200">
       {Object.entries(metadata).map(([key, value]) => {
         const label = key.charAt(0).toUpperCase() + key.slice(1);
 
         if (Array.isArray(value)) {
-          return value.map((item, index) => (
-            <LabeledValue key={`${key}-${index}`} label={label} value={<Markdown code={item} />} />
-          ));
+          return value.map((item, index) => <LabeledValue key={`${key}-${index}`} label={label} value={<Markdown code={item} />} />);
         }
 
         return <LabeledValue key={key} label={label} value={<Markdown code={value} />} />;
       })}
-    </>
+    </Flex>
   );
 };
 

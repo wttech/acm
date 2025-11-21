@@ -1,10 +1,9 @@
-import { Badge, Content, ContextualHelp, Flex, Heading, View } from '@adobe/react-spectrum';
+import { Badge, Content, ContextualHelp, Flex, Heading, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import Upload from '@spectrum-icons/workflow/UploadToCloud';
-import { Text } from '@adobe/react-spectrum';
 import React from 'react';
-import CodeTextarea from './CodeTextarea';
 import { Objects } from '../utils/objects';
+import CodeTextarea from './CodeTextarea';
 
 type ExecutionOutputsProps = {
   outputs: Record<string, unknown> | null | undefined;
@@ -27,10 +26,13 @@ const ExecutionOutputs: React.FC<ExecutionOutputsProps> = ({ outputs }) => {
               <Heading>Generating outputs</Heading>
               <Content>
                 <View marginBottom="size-100">
-                  <Text>Use <code>doRun()</code> method to return structured data, files, or summaries:</Text>
+                  <Text>
+                    Use <code>doRun()</code> method to return structured data, files, or summaries:
+                  </Text>
                 </View>
-                <pre><small>
-                  {`void doRun() {
+                <pre>
+                  <small>
+                    {`void doRun() {
   def report = outputs.file("report") {
     label = "Report"
     description = "Users report as CSV"
@@ -43,9 +45,12 @@ const ExecutionOutputs: React.FC<ExecutionOutputsProps> = ({ outputs }) => {
     value = "Processed \${count} users"
   }
 }`}
-                </small></pre>
+                  </small>
+                </pre>
                 <View marginTop="size-100">
-                  <Text>Use <code>outputs.file()</code> for downloadable assets, reports or <code>outputs.text()</code> for summaries and documentation.</Text>
+                  <Text>
+                    Use <code>outputs.file()</code> for downloadable assets, reports or <code>outputs.text()</code> for summaries and documentation.
+                  </Text>
                 </View>
               </Content>
             </ContextualHelp>

@@ -7,7 +7,7 @@ import java.util.Random
 
 /**
   * @description Generates an XLS report of users with random names and birth dates.
-  * @author <krystian.panek@vml.com>
+  * @author <john.doe@acme.com>
   */
 void describeRun() {
   inputs.integerNumber("count") { label = "Users to generate"; min = 1; value = 100000 }

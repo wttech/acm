@@ -1,8 +1,7 @@
 /**
- * Prints animal information to the console based on user input. 
- * This is an example of AEM Content Manager script with inputs.
+ * Prints animal information to the console based on user input.
  * 
- * @author <krystian.panek@vml.com>
+ * @author <john.doe@acme.com>
  */
 void describeRun() {
     inputs.string("animalName") { value = "Whiskers";

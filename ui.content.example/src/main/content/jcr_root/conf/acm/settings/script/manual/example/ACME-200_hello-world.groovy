@@ -1,5 +1,7 @@
 /**
  * Prints "Hello World!" to the console. 
+ *
+ * @author <john.doe@acme.com>
  */
 
 boolean canRun() {

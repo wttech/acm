@@ -3,7 +3,7 @@
  * Deletes the existing thumbnails and saves a new one.
  * File must be a JPEG image.
  *
- * @author <krystian.panek@vml.com>
+ * @author <john.doe@acme.com>
  */
 void describeRun() {
     inputs.path("pagePath") { rootPathExclusive = '/' }
