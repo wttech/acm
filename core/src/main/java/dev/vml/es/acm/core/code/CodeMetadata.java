@@ -19,9 +19,14 @@ public class CodeMetadata implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(CodeMetadata.class);
 
     private static final Pattern DOC_COMMENT_PATTERN = Pattern.compile("/\\*\\*([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
-
     private static final Pattern TAG_PATTERN =
             Pattern.compile("(?m)^\\s*\\*?\\s*@(\\w+)\\s+(.+?)(?=(?m)^\\s*\\*?\\s*@\\w+|\\*/|$)", Pattern.DOTALL);
+    private static final Pattern NEWLINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n[\\s\\S]*");
+    private static final Pattern BLANK_LINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n\\s*\\n[\\s\\S]*");
+    private static final Pattern IMPORT_OR_PACKAGE_BEFORE = Pattern.compile("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$");
+    private static final Pattern FIRST_TAG_PATTERN = Pattern.compile("(?m)^\\s*\\*?\\s*@\\w+");
+    private static final Pattern LEADING_ASTERISK = Pattern.compile("(?m)^\\s*\\*\\s?");
+    private static final Pattern DOC_MARKERS = Pattern.compile("^/\\*\\*|\\*/$");
 
     private Map<String, Object> values;
 
@@ -64,7 +69,7 @@ public class CodeMetadata implements Serializable {
             String afterComment = code.substring(commentEnd);
 
             // Must have at least one newline after the comment
-            if (!afterComment.matches("^\\s*\\n[\\s\\S]*")) {
+            if (!NEWLINE_AFTER_COMMENT.matcher(afterComment).matches()) {
                 continue;
             }
 
@@ -77,7 +82,7 @@ public class CodeMetadata implements Serializable {
             }
 
             // Must have blank line after (double newline) for other cases
-            if (!afterComment.matches("^\\s*\\n\\s*\\n[\\s\\S]*")) {
+            if (!BLANK_LINE_AFTER_COMMENT.matcher(afterComment).matches()) {
                 continue;
             }
 
@@ -86,7 +91,7 @@ public class CodeMetadata implements Serializable {
                 String beforeComment = code.substring(0, commentStart);
                 // Should have imports or package, followed by blank line
                 if (beforeComment.trim().isEmpty()
-                        || beforeComment.matches("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$")) {
+                        || IMPORT_OR_PACKAGE_BEFORE.matcher(beforeComment).matches()) {
                     return comment;
                 }
             } else {
@@ -105,25 +110,24 @@ public class CodeMetadata implements Serializable {
         Map<String, Object> result = new LinkedHashMap<>();
 
         // Remove /** and */ markers and leading comment decorations
-        String content = docComment.replaceAll("^/\\*\\*", "").replaceAll("\\*/$", "");
+        String content = DOC_MARKERS.matcher(docComment).replaceAll("");
 
         // Extract general description (text before first @tag)
         // Look for @tag pattern (@ at start of word boundary, not in middle of text
         // like email)
-        Pattern firstTagPattern = Pattern.compile("(?m)^\\s*\\*?\\s*@\\w+");
-        Matcher firstTagMatcher = firstTagPattern.matcher(content);
+        Matcher firstTagMatcher = FIRST_TAG_PATTERN.matcher(content);
 
         if (firstTagMatcher.find()) {
             int firstTagIndex = firstTagMatcher.start();
-            String description = content.substring(0, firstTagIndex)
-                    .replaceAll("(?m)^\\s*\\*\\s?", "")
+            String description = LEADING_ASTERISK.matcher(content.substring(0, firstTagIndex))
+                    .replaceAll("")
                     .trim();
             if (!description.isEmpty()) {
                 result.put("description", description);
             }
         } else {
             // No tags, just description
-            String description = content.replaceAll("(?m)^\\s*\\*\\s?", "").trim();
+            String description = LEADING_ASTERISK.matcher(content).replaceAll("").trim();
             if (!description.isEmpty()) {
                 result.put("description", description);
             }
@@ -137,7 +141,7 @@ public class CodeMetadata implements Serializable {
             String tagValue = tagMatcher.group(2);
 
             if (tagValue != null) {
-                tagValue = tagValue.replaceAll("(?m)^\\s*\\*\\s?", "") // Remove leading * from each line
+                tagValue = LEADING_ASTERISK.matcher(tagValue).replaceAll("") // Remove leading * from each line
                         .trim();
 
                 if (!tagValue.isEmpty()) {
