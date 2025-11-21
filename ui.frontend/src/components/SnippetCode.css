@@ -3,16 +3,24 @@
   max-width: 100%;
 }
 
-.snippet-code-groovy {
+.snippet-code {
   display: inline-block;
   min-width: 100%;
   color: #d4d4d4;
   font-family: Menlo, Monaco, 'Courier New', monospace;
   font-weight: normal;
-  font-size: 12px;
-  line-height: 18px;
   unicode-bidi: isolate;
   white-space: pre;
   padding: var(--spectrum-global-dimension-size-100);
   border-radius: var(--spectrum-global-dimension-size-50);
+}
+
+.snippet-code-small {
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.snippet-code-medium {
+  font-size: 12px;
+  line-height: 18px;
 }

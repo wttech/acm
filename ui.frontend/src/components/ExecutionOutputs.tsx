@@ -32,6 +32,8 @@ const ExecutionOutputs: React.FC<ExecutionOutputsProps> = ({ outputs }) => {
                   </Text>
                 </View>
                 <SnippetCode
+                  language="groovy"
+                  fontSize="small"
                   content={`void doRun() {
   def report = outputs.file("report") {
     label = "Report"

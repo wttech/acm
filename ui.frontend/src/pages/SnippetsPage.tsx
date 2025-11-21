@@ -85,7 +85,7 @@ const SnippetsPage = () => {
                       </Content>
                       <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" marginY="size-100">
                         <View margin="size-125">
-                          <SnippetCode content={snippet.content} />
+                          <SnippetCode language="groovy" content={snippet.content} />
                         </View>
                       </View>
                     </View>

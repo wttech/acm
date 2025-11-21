@@ -28,7 +28,7 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
                     Use a GroovyDoc comment block at the top of your script file. <Link href="https://github.github.com/gfm/" target="_blank">GFM</Link> is supported for formatting.
                   </Text>
                 </View>
-                <SnippetCode content={`/**
+                <SnippetCode language="groovy" fontSize="small" content={`/**
  * Explain purpose here
  *
  * @author <john.doe@acme.com>

@@ -1,10 +1,27 @@
 import hljs from 'highlight.js';
+import bash from 'highlight.js/lib/languages/bash';
 import groovy from 'highlight.js/lib/languages/groovy';
+import java from 'highlight.js/lib/languages/java';
+import javascript from 'highlight.js/lib/languages/javascript';
+import json from 'highlight.js/lib/languages/json';
+import typescript from 'highlight.js/lib/languages/typescript';
+import xml from 'highlight.js/lib/languages/xml';
+import yaml from 'highlight.js/lib/languages/yaml';
 import 'highlight.js/styles/vs2015.min.css';
 import React, { useEffect, useRef } from 'react';
 import './SnippetCode.css';
 
-hljs.registerLanguage('snippet-code-groovy', function (hljs) {
+// Register standard languages
+hljs.registerLanguage('bash', bash);
+hljs.registerLanguage('java', java);
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('json', json);
+hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('xml', xml);
+hljs.registerLanguage('yaml', yaml);
+
+// Register custom groovy variant with placeholder support
+hljs.registerLanguage('groovy', function (hljs) {
   const groovyLang = groovy(hljs);
   const placeholder = {
     className: 'variable',
@@ -40,9 +57,11 @@ hljs.registerLanguage('snippet-code-groovy', function (hljs) {
 
 interface SnippetCodeProps {
   content: string;
+  language: 'groovy' | 'java' | 'javascript' | 'typescript' | 'json' | 'xml' | 'yaml' | 'bash';
+  fontSize?: 'small' | 'medium';
 }
 
-const SnippetCode: React.FC<SnippetCodeProps> = ({ content }) => {
+const SnippetCode: React.FC<SnippetCodeProps> = ({ content, language, fontSize = 'medium' }) => {
   const codeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,16 +71,16 @@ const SnippetCode: React.FC<SnippetCodeProps> = ({ content }) => {
         // Clear previous highlighting by resetting content and removing data attribute
         codeElement.textContent = content;
         delete codeElement.dataset.highlighted;
-        codeElement.className = 'snippet-code-groovy';
+        codeElement.className = `snippet-code snippet-code-${language} snippet-code-${fontSize}`;
         // Then highlight
         hljs.highlightElement(codeElement);
       }
     }
-  }, [content]);
+  }, [content, language, fontSize]);
 
   return (
     <div ref={codeRef} className="snippet-code-wrapper">
-      <code className="snippet-code-groovy">{content}</code>
+      <code className={`snippet-code snippet-code-${language} snippet-code-${fontSize}`}>{content}</code>
     </div>
   );
 };

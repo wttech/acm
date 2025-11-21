@@ -32,6 +32,8 @@ const ExecutionInputs: React.FC<ExecutionInputsProps> = ({ inputs }) => {
                   </Text>
                 </View>
                 <SnippetCode
+                  language="groovy"
+                  fontSize="small"
                   content={`void describeRun() {
   inputs.path("pagePath") { 
     rootPathExclusive = '/content' 
