@@ -1,9 +1,10 @@
-import { Badge, Content, ContextualHelp, Flex, Heading, LabeledValue, Text, View } from '@adobe/react-spectrum';
+import { Badge, Content, ContextualHelp, Flex, Heading, LabeledValue, Link, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import DataUnavailable from '@spectrum-icons/workflow/DataUnavailable';
 import React from 'react';
 import { ExecutableMetadata as ExecutableMetadataType } from '../types/executable';
 import Markdown from './Markdown';
+import SnippetCode from './SnippetCode';
 
 type ExecutableMetadataProps = {
   metadata: ExecutableMetadataType | null | undefined;
@@ -17,24 +18,22 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
           <Flex alignItems="center" gap="size-100">
             <Badge variant="neutral">
               <DataUnavailable />
-              <Text>Not available</Text>
+              <Text>Not defined</Text>
             </Badge>
             <ContextualHelp variant="info">
               <Heading>Defining metadata</Heading>
               <Content>
                 <View marginBottom="size-100">
-                  <Text>Use a JavaDoc or GroovyDoc comment block at the top of your script file:</Text>
+                  <Text>
+                    Use a GroovyDoc comment block at the top of your script file. <Link href="https://github.github.com/gfm/" target="_blank">GFM</Link> is supported for formatting.
+                  </Text>
                 </View>
-                <pre>
-                  <small>
-                    {`/**
+                <SnippetCode content={`/**
  * Explain purpose here
  *
  * @author <john.doe@acme.com>
  * @version 1.0
- */`}
-                  </small>
-                </pre>
+ */`} />
                 <View marginTop="size-100">
                   <Text>The comment must be followed by a blank line. Description is extracted from text before any @tags.</Text>
                 </View>

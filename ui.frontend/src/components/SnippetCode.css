@@ -1,5 +1,11 @@
+.snippet-code-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
 .snippet-code-groovy {
-  display: block;
+  display: inline-block;
+  min-width: 100%;
   color: #d4d4d4;
   font-family: Menlo, Monaco, 'Courier New', monospace;
   font-weight: normal;
@@ -7,5 +13,6 @@
   line-height: 18px;
   unicode-bidi: isolate;
   white-space: pre;
-  margin: var(--spectrum-global-dimension-size-125);
+  padding: var(--spectrum-global-dimension-size-100);
+  border-radius: var(--spectrum-global-dimension-size-50);
 }

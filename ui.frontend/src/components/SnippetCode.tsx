@@ -60,7 +60,7 @@ const SnippetCode: React.FC<SnippetCodeProps> = ({ content }) => {
   }, [content]);
 
   return (
-    <div ref={codeRef}>
+    <div ref={codeRef} className="snippet-code-wrapper">
       <code className="snippet-code-groovy">{content}</code>
     </div>
   );

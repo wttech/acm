@@ -4,6 +4,7 @@ import Download from '@spectrum-icons/workflow/Download';
 import React from 'react';
 import { Objects } from '../utils/objects';
 import CodeTextarea from './CodeTextarea';
+import SnippetCode from './SnippetCode';
 
 type ExecutionInputsProps = {
   inputs: Record<string, unknown> | null | undefined;
@@ -30,11 +31,10 @@ const ExecutionInputs: React.FC<ExecutionInputsProps> = ({ inputs }) => {
                     Use <code>describeRun()</code> method to collect values from users before execution:
                   </Text>
                 </View>
-                <pre>
-                  <small>
-                    {`void describeRun() {
+                <SnippetCode
+                  content={`void describeRun() {
   inputs.path("pagePath") { 
-    rootPathExclusive = '/' 
+    rootPathExclusive = '/content' 
   }
   inputs.file("pageThumbnailFile") { 
     mimeTypes = ["image/jpeg"] 
@@ -45,8 +45,7 @@ const ExecutionInputs: React.FC<ExecutionInputsProps> = ({ inputs }) => {
     value = 10000 
   }
 }`}
-                  </small>
-                </pre>
+                />
                 <View marginTop="size-100">
                   <Text>
                     Access input values in <code>doRun()</code> using <code>inputs.value("name")</code>. Supports various types: string, integerNumber, decimalNumber, bool, date, time, path, file, and more.

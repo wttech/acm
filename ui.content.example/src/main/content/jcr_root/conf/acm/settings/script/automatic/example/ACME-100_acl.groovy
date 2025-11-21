@@ -14,7 +14,11 @@ boolean canRun() {
 } 
 
 void doRun() {
+  out.info "ACL setup started"
+  
   def tenantPaths = ["/content/acme", "/content/wknd", "/content/we-retail"]
+  def groupsCreated = 0
+  
   for (def tenantRoot : tenantPaths.collect { repo.get(it) }.findAll { it.exists() }) {
     def tenant = tenantRoot.name
     for (def countryRoot : tenantRoot.children().findAll { isRoot(it) }) {
@@ -27,9 +31,12 @@ void doRun() {
           allow { path = "/content/${tenant}/${country}/${language}"; permissions = ["jcr:read", "rep:write", "crx:replicate"] }
           allow { path = "/content/dam/${tenant}/${country}/${language}"; permissions = ["jcr:read", "rep:write", "crx:replicate"] }
         }
+        groupsCreated++
       }
     }
   }
+  
+  out.success "ACL setup completed. Processed ${groupsCreated} content author group(s)."
 }
 
 def isRoot(root) {
