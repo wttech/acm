@@ -6,7 +6,7 @@
  * - print the list (for debugging purposes),
  * - save it directly in the repository in expected path.
  *
- * @author Krystian Panek <krystian.panek@vml.com>
+ * @author <john.doe@acme.com>
  */
 
 import dev.vml.es.acm.core.assist.JavaDictionary

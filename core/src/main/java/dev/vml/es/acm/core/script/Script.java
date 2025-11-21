@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.script;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.code.CodeMetadata;
 import dev.vml.es.acm.core.code.Executable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +54,11 @@ public class Script implements Executable, Comparable<Script> {
         } catch (IOException e) {
             throw new ScriptException(String.format("Cannot read script as string '%s'!", getPath()), e);
         }
+    }
+
+    @Override
+    public CodeMetadata getMetadata() {
+        return CodeMetadata.of(this);
     }
 
     @JsonIgnore

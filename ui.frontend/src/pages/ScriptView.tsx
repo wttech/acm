@@ -1,5 +1,4 @@
 import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
-import { Field } from '@react-spectrum/label';
 import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Copy from '@spectrum-icons/workflow/Copy';
@@ -9,6 +8,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor';
 import CodeExecuteButton from '../components/CodeExecuteButton';
+import ExecutableMetadata from '../components/ExecutableMetadata';
+import InfoCard from '../components/InfoCard';
 import { useFeatureEnabled } from '../hooks/app.ts';
 import { NavigationSearchParams, useNavigationTab } from '../hooks/navigation';
 import { InputValues } from '../types/input.ts';
@@ -150,16 +151,15 @@ const ScriptView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                <Flex direction="row" justifyContent="space-between" gap="size-200">
-                  <Field label="Name" width="100%">
-                    <div>
-                      <Text>{script.name}</Text>
-                    </div>
-                  </Field>
+              <Flex direction="row" gap="size-200" alignItems="stretch">
+                <InfoCard>
+                  <LabeledValue label="Name" value={script.name} />
                   <LabeledValue label="ID" value={script.id} />
-                </Flex>
-              </View>
+                </InfoCard>
+                <InfoCard>
+                  <ExecutableMetadata metadata={script.metadata} />
+                </InfoCard>
+              </Flex>
             </Flex>
           </Item>
           <Item key="code" aria-label="Code">

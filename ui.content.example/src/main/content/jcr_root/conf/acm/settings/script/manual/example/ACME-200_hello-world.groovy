@@ -1,9 +1,7 @@
 /**
- * Prints "Hello World!" to the console.
+ * Prints "Hello World!" to the console. 
  *
- * This is a minimal example of AEM Content Manager script.
- *
- * @author Krystian Panek <krystian.panek@vml.com>
+ * @author <john.doe@acme.com>
  */
 
 boolean canRun() {

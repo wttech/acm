@@ -8,7 +8,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.sling.event.jobs.Job;
 
 /**
- * Represents a code that can be executed.
+ * Represents any code (e.g text from interactive console) that can be executed.
  */
 public class Code implements Executable {
 
@@ -59,6 +59,11 @@ public class Code implements Executable {
     @Override
     public String getContent() {
         return content;
+    }
+
+    @Override
+    public CodeMetadata getMetadata() {
+        return CodeMetadata.of(this);
     }
 
     public String toString() {

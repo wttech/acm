@@ -1,3 +1,4 @@
+import { Executable } from './executable';
 import { ExecutionStatus } from './execution';
 import { ExecutionSummary } from './main';
 
@@ -8,12 +9,10 @@ export enum ScriptType {
   MOCK = 'MOCK',
 }
 
-export type Script = {
-  id: string;
+export type Script = Executable & {
   type: ScriptType;
   path: string;
   name: string;
-  content: string;
 };
 
 export type ScriptStats = {

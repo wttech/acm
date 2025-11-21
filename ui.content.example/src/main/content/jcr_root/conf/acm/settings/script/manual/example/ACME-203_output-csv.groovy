@@ -1,14 +1,18 @@
 import java.time.LocalDate
 import java.util.Random
 
-boolean canRun() {
-  return conditions.always()
-}
-
+/**
+ * @description Generates a CSV report of users with random names and birth dates.
+ * @author <john.doe@acme.com>
+ */
 void describeRun() {
   inputs.integerNumber("count") { label = "Users to generate"; min = 1; value = 10000 }
   inputs.text("firstNames") { label = "First names"; description = "One first name per line"; value = "John\nJane\nJack\nAlice\nBob"}
   inputs.text("lastNames") { label = "Last names"; description = "One last name per line"; value = "Doe\nSmith\nBrown\nJohnson\nWhite" }
+}
+
+boolean canRun() {
+  return conditions.always()
 }
 
 void doRun() {

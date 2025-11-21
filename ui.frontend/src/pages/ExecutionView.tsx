@@ -1,32 +1,34 @@
-import { Badge, Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, Switch, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
-import { Editor } from '@monaco-editor/react';
+import { Button, ButtonGroup, Content, Flex, IllustratedMessage, Item, LabeledValue, ProgressBar, Switch, TabList, TabPanels, Tabs, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import { ToastQueue } from '@react-spectrum/toast';
 import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
-import InfoOutline from '@spectrum-icons/workflow/InfoOutline';
 import Print from '@spectrum-icons/workflow/Print';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor.tsx';
 import ExecutableIdValue from '../components/ExecutableIdValue';
+import ExecutableMetadata from '../components/ExecutableMetadata';
 import ExecutionAbortButton from '../components/ExecutionAbortButton';
 import ExecutionCopyOutputButton from '../components/ExecutionCopyOutputButton';
+import ExecutionInputs from '../components/ExecutionInputs';
+import ExecutionOutputs from '../components/ExecutionOutputs';
 import ExecutionProgressBar from '../components/ExecutionProgressBar';
 import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsButton.tsx';
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
+import InfoCard from '../components/InfoCard';
 import Toggle from '../components/Toggle.tsx';
+import UserInfo from '../components/UserInfo';
 import { useAppState } from '../hooks/app.ts';
 import { useExecutionPolling } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
-import { isExecutableScript } from '../types/executable.ts';
+import { isExecutableConsole, isExecutableScript } from '../types/executable.ts';
 import { isExecutionPending } from '../types/execution.ts';
 import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
 import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
-import { Objects } from '../utils/objects';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
 
 const ExecutionView = () => {
@@ -100,49 +102,50 @@ const ExecutionView = () => {
                   </Toggle>
                 </Flex>
               </View>
-              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                <Flex direction="row" justifyContent="space-between" gap="size-200">
-                  <LabeledValue label="ID" value={execution.id} flex="1" />
-                  <LabeledValue label="User" value={execution.userId} flex="1" />
-                  <Flex justifyContent="end">
-                    <Field label="Status" flex="1">
-                      <div>
-                        <ExecutionStatusBadge value={execution.status} />
-                      </div>
-                    </Field>
-                  </Flex>
-                </Flex>
-              </View>
-              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                <Flex direction="row" justifyContent="space-between" gap="size-200">
+              {/* Row 1: Execution Info */}
+              <Flex direction="row" gap="size-200" alignItems="stretch">
+                <InfoCard>
+                  <LabeledValue label="ID" value={execution.id} />
+                  <Field label="User">
+                    <div>
+                      <UserInfo id={execution.userId} />
+                    </div>
+                  </Field>
+                  <Field label="Status">
+                    <div>
+                      <ExecutionStatusBadge value={execution.status} />
+                    </div>
+                  </Field>
+                </InfoCard>
+                <InfoCard>
                   <LabeledValue label="Started At" value={execution.startDate ? formatter.dateExplained(execution.startDate) : '—'} />
                   <LabeledValue label="Duration" value={formatter.durationExplained(execution.duration)} />
                   <LabeledValue label="Ended At" value={execution.endDate ? formatter.dateExplained(execution.endDate) : '—'} />
-                </Flex>
-              </View>
-              <View backgroundColor="gray-50" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin">
-                <Flex direction="row" justifyContent="space-between" gap="size-200">
-                  <Field label="Executable" flex="1" minWidth="50%">
-                    <div>
+                </InfoCard>
+              </Flex>
+              {/* Row 2: Executable Info */}
+              <Flex direction="row" gap="size-200" alignItems="stretch">
+                <InfoCard>
+                  <Field label="Executable" width="100%">
+                    <div style={{ width: '100%' }}>
                       <ExecutableIdValue id={execution.executable.id} />
                     </div>
                   </Field>
-                  <Field label="Inputs" flex="1" minWidth="50%">
-                    <div>
-                      {Objects.isEmpty(execution.inputs) ? (
-                        <Badge variant="neutral">
-                          <InfoOutline />
-                          <Text>Not described</Text>
-                        </Badge>
-                      ) : (
-                        <View width="100%" backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" height="100%" borderRadius="medium" padding="size-50">
-                          <Editor width="100%" language="json" theme="vs-dark" height="200px" options={{ readOnly: true, scrollBeyondLastLine: false }} value={JSON.stringify(execution.inputs, null, 2)} />
-                        </View>
-                      )}
-                    </div>
-                  </Field>
-                </Flex>
-              </View>
+                  {!isExecutableConsole(execution.executable.id) && <LabeledValue label="ID" value={execution.executable.id} />}
+                </InfoCard>
+                <InfoCard>
+                  <ExecutableMetadata metadata={execution.executable.metadata} />
+                </InfoCard>
+              </Flex>
+              {/* Row 3: I/O */}
+              <Flex direction="row" gap="size-200" alignItems="stretch">
+                <InfoCard>
+                  <ExecutionInputs inputs={execution.inputs} />
+                </InfoCard>
+                <InfoCard>
+                  <ExecutionOutputs outputs={execution.outputs} />
+                </InfoCard>
+              </Flex>
             </Flex>
           </Item>
           <Item key="code" aria-label="Code">
