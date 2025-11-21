@@ -1,0 +1,149 @@
+
+package dev.vml.es.acm.core.code;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+
+class CodeMetadata implements Serializable {
+
+    private static final Pattern DOC_COMMENT_PATTERN = Pattern.compile(
+        "/\\*\\*([^*]|\\*(?!/))*\\*/",
+        Pattern.DOTALL
+    );
+    
+    private static final Pattern TAG_PATTERN = Pattern.compile(
+        "(?m)^\\s*\\*?\\s*@(\\w+)\\s+(.+?)(?=(?m)^\\s*\\*?\\s*@\\w+|\\*/|$)",
+        Pattern.DOTALL
+    );
+
+    private Map<String, Object> values;
+
+    public CodeMetadata(Map<String, Object> values) {
+        this.values = values;
+    }
+
+    public static CodeMetadata of(Executable executable) {
+        return parse(executable.getContent());
+    }
+
+    public static CodeMetadata parse(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            return new CodeMetadata(Map.of());
+        }
+
+        Map<String, Object> metadata = new HashMap<>();
+        
+        // Find the first doc comment (either at the top or after imports)
+        String docComment = findFirstDocComment(code);
+        if (docComment != null) {
+            parseDocComment(docComment, metadata);
+        }
+
+        return new CodeMetadata(metadata);
+    }
+
+    private static String findFirstDocComment(String code) {
+        Matcher matcher = DOC_COMMENT_PATTERN.matcher(code);
+        
+        // Find first doc comment that's not attached to a method/class
+        // (i.e., appears before any method definition)
+        while (matcher.find()) {
+            String comment = matcher.group();
+            int commentEnd = matcher.end();
+            
+            // Check if this comment is followed by typical method/class keywords
+            String afterComment = code.substring(commentEnd).trim();
+            
+            // If it's followed by a method signature (contains parentheses before opening brace)
+            // or class/interface keyword, skip it
+            if (afterComment.matches("^(public|private|protected|static|final|abstract|void|boolean|int|long|String|class|interface)\\s+.*")) {
+                // Check if it's actually a method (has parentheses)
+                int firstBrace = afterComment.indexOf('{');
+                int firstParen = afterComment.indexOf('(');
+                
+                if (firstParen > 0 && (firstBrace < 0 || firstParen < firstBrace)) {
+                    // This is a method/constructor, skip it
+                    continue;
+                }
+            }
+            
+            // This is a top-level comment
+            return comment;
+        }
+        
+        return null;
+    }
+
+    private static void parseDocComment(String docComment, Map<String, Object> metadata) {
+        // Remove /** and */ markers and leading comment decorations
+        String content = docComment.replaceAll("^/\\*\\*", "").replaceAll("\\*/$", "");
+        
+        // Extract general description (text before first @tag)
+        // Look for @tag pattern (@ at start of word boundary, not in middle of text like email)
+        Pattern firstTagPattern = Pattern.compile("(?m)^\\s*\\*?\\s*@\\w+");
+        Matcher firstTagMatcher = firstTagPattern.matcher(content);
+        
+        if (firstTagMatcher.find()) {
+            int firstTagIndex = firstTagMatcher.start();
+            String description = content.substring(0, firstTagIndex)
+                .replaceAll("(?m)^\\s*\\*\\s?", "")
+                .trim();
+            if (!description.isEmpty()) {
+                metadata.put("description", description);
+            }
+        } else {
+            // No tags, just description
+            String description = content
+                .replaceAll("(?m)^\\s*\\*\\s?", "")
+                .trim();
+            if (!description.isEmpty()) {
+                metadata.put("description", description);
+            }
+        }
+        
+        // Parse tags
+        Matcher tagMatcher = TAG_PATTERN.matcher(content);
+        
+        while (tagMatcher.find()) {
+            String tagName = tagMatcher.group(1);
+            String tagValue = tagMatcher.group(2);
+            
+            if (tagValue != null) {
+                tagValue = tagValue
+                    .replaceAll("(?m)^\\s*\\*\\s?", "") // Remove leading * from each line
+                    .trim();
+                
+                if (!tagValue.isEmpty()) {
+                    // Store tag value, use list for potential multiple values
+                    Object existing = metadata.get(tagName);
+                    
+                    if (existing == null) {
+                        metadata.put(tagName, tagValue);
+                    } else if (existing instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<String> list = (List<String>) existing;
+                        list.add(tagValue);
+                    } else {
+                        // Convert to list if we have multiple values
+                        List<String> list = new ArrayList<>();
+                        list.add((String) existing);
+                        list.add(tagValue);
+                        metadata.put(tagName, list);
+                    }
+                }
+            }
+        }
+    }
+
+    @JsonAnyGetter
+    public Map<String, Object> getValues() {
+        return values;
+    }
+}

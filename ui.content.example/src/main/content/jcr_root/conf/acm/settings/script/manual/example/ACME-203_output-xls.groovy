@@ -5,14 +5,19 @@ import java.time.ZoneId
 import java.util.Date
 import java.util.Random
 
-boolean canRun() {
-  return conditions.always()
-}
+/**
+  * @description Generates an XLS report of users with random names and birth dates.
+  * @author Krystian Panek <krystian.panek@vml.com>
+  */
 
 void describeRun() {
   inputs.integerNumber("count") { label = "Users to generate"; min = 1; value = 100000 }
   inputs.text("firstNames") { label = "First names"; description = "One first name per line"; value = "John\nJane\nJack\nAlice\nBob"}
   inputs.text("lastNames") { label = "Last names"; description = "One last name per line"; value = "Doe\nSmith\nBrown\nJohnson\nWhite" }
+}
+
+boolean canRun() {
+  return conditions.always()
 }
 
 void doRun() {
