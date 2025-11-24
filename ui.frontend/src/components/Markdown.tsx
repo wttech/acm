@@ -12,7 +12,7 @@ interface MarkdownProps {
 }
 
 const Markdown: React.FC<MarkdownProps> = ({ code, trimIndent = true }) => {
-  const processedCode = trimIndent ? Strings.dedent(code || '') : (code || '');
+  const processedCode = trimIndent ? Strings.dedent(code || '') : code || '';
 
   return (
     <div className={styles.markdown}>

@@ -25,10 +25,17 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
               <Content>
                 <View marginBottom="size-100">
                   <Text>
-                    Use a block comment with YAML frontmatter at the top of your script file. <Link href="https://github.github.com/gfm/" target="_blank">GitHub Flavored Markdown</Link> is supported in all metadata values.
+                    Use a block comment with YAML frontmatter at the top of your script file.{' '}
+                    <Link href="https://github.github.com/gfm/" target="_blank">
+                      GitHub Flavored Markdown
+                    </Link>{' '}
+                    is supported in all metadata values.
                   </Text>
                 </View>
-                <SnippetCode language="groovy" fontSize="small" content={`/*
+                <SnippetCode
+                  language="groovy"
+                  fontSize="small"
+                  content={`/*
 ---
 version: 1.0
 author: john.doe@acme.com
@@ -43,7 +50,8 @@ You can use **bold**, *italic*, [links](https://example.com), and other GFM form
 
 void doRun() {
     // Script code
-}`} />
+}`}
+                />
                 <View marginTop="size-100">
                   <Text>The comment must be followed by a blank line. Can appear at file start or after imports.</Text>
                 </View>

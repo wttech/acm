@@ -64,8 +64,6 @@ export class Strings {
   }
 
   static dedent(text: string): string {
-    //eslint-disable-next-line no-console
-    console.log('Dedenting text:', text);
     const lines = text.split('\n');
     // Find minimum indentation (ignoring empty lines)
     const minIndent = lines

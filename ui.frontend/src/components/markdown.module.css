@@ -2,10 +2,14 @@
   font-size: 12px;
 }
 
-.markdown p:first-child, .markdown ol:first-child, .markdown ul:first-child {
+.markdown p:first-child,
+.markdown ol:first-child,
+.markdown ul:first-child {
   margin-block-start: 0;
 }
 
-.markdown p:last-child, .markdown ol:last-child, .markdown ul:last-child {
+.markdown p:last-child,
+.markdown ol:last-child,
+.markdown ul:last-child {
   margin-block-end: 0;
 }
