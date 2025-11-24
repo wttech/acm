@@ -5,6 +5,11 @@ author: <john.doe@acme.com>
 Prints animal information to the console based on user input.
 
 ```mermaid
+---
+config:
+  theme: base
+  look: handDrawn
+---
 graph TD
     A[User Fills Input Form] --> B[Validate Inputs]
     B --> C{Allergic Check}
@@ -20,7 +25,7 @@ graph TD
 ```
 */
 
-void describeRun() {
+void describeRun() {        
     inputs.string("animalName") { value = "Whiskers";
         validator = "(v, a) => a.animalType === 'cat' ? (v && v.startsWith('W') || 'Cat name must start with W!') : true" }
     inputs.select("animalType") { value = "cat";
