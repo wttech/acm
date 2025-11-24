@@ -5,10 +5,13 @@ import java.time.ZoneId
 import java.util.Date
 import java.util.Random
 
-/**
-  * @description Generates an XLS report of users with random names and birth dates.
-  * @author <john.doe@acme.com>
-  */
+/*
+---
+author: <john.doe@acme.com>
+---
+Generates an XLS report of users with random names and birth dates.
+*/
+
 void describeRun() {
   inputs.integerNumber("count") { label = "Users to generate"; min = 1; value = 100000 }
   inputs.text("firstNames") { label = "First names"; description = "One first name per line"; value = "John\nJane\nJack\nAlice\nBob"}

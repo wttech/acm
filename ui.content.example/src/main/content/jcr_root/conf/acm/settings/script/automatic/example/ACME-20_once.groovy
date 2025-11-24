@@ -1,9 +1,9 @@
-/**
- * A simple demonstration script that executes only once.
- * 
- * This script uses `conditions.once()` to ensure it runs exactly one time in the instance's lifetime.
- * Useful for one-time initialization tasks that should never be repeated even if failed.
- */
+/*
+ A simple demonstration script that executes only once.
+ 
+ This script uses `conditions.once()` to ensure it runs exactly one time in the instance's lifetime.
+ Useful for one-time initialization tasks that should never be repeated even if failed.
+*/
 
 boolean canRun() {
     return conditions.once()

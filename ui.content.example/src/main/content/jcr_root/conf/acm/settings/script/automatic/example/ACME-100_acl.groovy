@@ -1,9 +1,9 @@
-/**
-  * This script creates content author groups for each tenant-country-language combination.
-  * 
-  * The groups are named in the format: `{tenant}-{country}-{language}-content-authors`.
-  * Each group is granted read, write, and replicate permissions on the corresponding content and DAM paths.
-  */
+/*
+This script creates content author groups for each tenant-country-language combination.
+ 
+The groups are named in the format: `{tenant}-{country}-{language}-content-authors`.
+Each group is granted read, write, and replicate permissions on the corresponding content and DAM paths.
+*/
 
 def scheduleRun() {
   return schedules.cron("0 10 * ? * * *") // every hour at minute 10

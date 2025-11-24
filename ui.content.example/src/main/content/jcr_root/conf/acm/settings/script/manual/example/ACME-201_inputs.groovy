@@ -1,8 +1,10 @@
-/**
- * Prints animal information to the console based on user input.
- * 
- * @author <john.doe@acme.com>
- */
+/*
+---
+author: <john.doe@acme.com>
+---
+Prints animal information to the console based on user input.
+*/
+
 void describeRun() {
     inputs.string("animalName") { value = "Whiskers";
         validator = "(v, a) => a.animalType === 'cat' ? (v && v.startsWith('W') || 'Cat name must start with W!') : true" }

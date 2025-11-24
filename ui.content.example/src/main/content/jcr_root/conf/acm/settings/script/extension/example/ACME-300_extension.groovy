@@ -1,6 +1,10 @@
 import dev.vml.es.acm.core.code.ExecutionContext
 import dev.vml.es.acm.core.code.Execution
 
+/*
+Provides binding variable 'acme' and logs error on execution failure.
+*/
+
 void prepareRun(ExecutionContext context) {
     context.variable("acme", new AcmeFacade())
 }
