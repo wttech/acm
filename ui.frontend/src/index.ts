@@ -38,4 +38,7 @@ mermaid.initialize({
   startOnLoad: false,
   theme: 'neutral',
   securityLevel: 'loose',
+  themeVariables: {
+    fontSize: 'var(--spectrum-global-dimension-font-size-75)',
+  },
 });
