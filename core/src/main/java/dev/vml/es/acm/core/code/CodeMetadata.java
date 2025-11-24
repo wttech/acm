@@ -18,7 +18,8 @@ public class CodeMetadata implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeMetadata.class);
 
-    private static final Pattern BLOCK_COMMENT_PATTERN = Pattern.compile("/\\*(?!\\*)([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
+    private static final Pattern BLOCK_COMMENT_PATTERN =
+            Pattern.compile("/\\*(?!\\*)([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
     private static final Pattern FRONTMATTER_PATTERN =
             Pattern.compile("^---\\s*\\n(.+?)^---\\s*\\n", Pattern.DOTALL | Pattern.MULTILINE);
     private static final Pattern NEWLINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n[\\s\\S]*");
@@ -95,6 +96,9 @@ public class CodeMetadata implements Serializable {
      */
     private static Map<String, Object> parseBlockComment(String blockComment) {
         Map<String, Object> result = new LinkedHashMap<>();
+        if (StringUtils.isBlank(blockComment)) {
+            return result;
+        }
 
         String content = COMMENT_MARKERS.matcher(blockComment).replaceAll("").trim();
 
@@ -103,7 +107,9 @@ public class CodeMetadata implements Serializable {
 
         if (frontmatterMatcher.find()) {
             String frontmatter = frontmatterMatcher.group(1);
-            result.putAll(parseFrontmatter(frontmatter));
+            if (frontmatter != null) {
+                result.putAll(parseFrontmatter(frontmatter));
+            }
             description = content.substring(frontmatterMatcher.end());
         }
 
@@ -120,7 +126,7 @@ public class CodeMetadata implements Serializable {
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> yamlData = YamlUtils.readFromString(frontmatter, Map.class);
-            return yamlData;
+            return yamlData != null ? yamlData : new LinkedHashMap<>();
         } catch (Exception e) {
             throw new AcmException(String.format("Cannot parse frontmatter!\n%s\n", frontmatter), e);
         }
