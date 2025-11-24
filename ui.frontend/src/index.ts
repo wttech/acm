@@ -1,5 +1,6 @@
 import { loader as monacoLoader } from '@monaco-editor/react';
 import axios from 'axios';
+import mermaid from 'mermaid';
 import { devServerPort, isProduction } from './utils/node.ts';
 
 // Integrate with AEM's CSRF Protection
@@ -30,4 +31,11 @@ monacoLoader.config({
   paths: {
     vs: isProduction() ? `${window.origin}/apps/acm/gui/spa/build/js/monaco-editor/vs` : `http://localhost:${devServerPort}/acm/js/monaco-editor/vs`,
   },
+});
+
+// Initialize Mermaid for diagram rendering in Markdown component
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'neutral',
+  securityLevel: 'loose',
 });

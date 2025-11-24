@@ -10,6 +10,18 @@ import java.util.Random
 author: <john.doe@acme.com>
 ---
 Generates an XLS report of users with random names and birth dates.
+
+```mermaid
+graph TD
+    A[Get Input Parameters] --> B[Create Workbook]
+    B --> C[Create Sheet]
+    C --> D[Write Header]
+    D --> E{More Users?}
+    E -->|Yes| F[Generate Random User]
+    F --> G[Add Row to Sheet]
+    G --> E
+    E -->|No| H[Write Complete File]
+```
 */
 
 void describeRun() {

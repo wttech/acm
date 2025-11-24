@@ -6,6 +6,17 @@ import java.util.Random
 author: <john.doe@acme.com>
 ---
 Generates a CSV report of users with random names and birth dates.
+
+```mermaid
+graph TD
+    A[Get Input Parameters] --> B[Open CSV Stream]
+    B --> C[Write Header]
+    C --> D{More Users?}
+    D -->|Yes| E[Generate Random User]
+    E --> F[Write User to Stream]
+    F --> D
+    D -->|No| G[Close Stream]
+```
 */
 
 void describeRun() {

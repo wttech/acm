@@ -60,11 +60,29 @@ void doRun() {
       {Object.entries(metadata).map(([key, value]) => {
         const label = key.charAt(0).toUpperCase() + key.slice(1);
 
-        if (Array.isArray(value)) {
-          return value.map((item, index) => <LabeledValue key={`${key}-${index}`} label={label} value={<Markdown code={item} />} />);
+        if (key === 'tags' && Array.isArray(value)) {
+          return (
+            <LabeledValue
+              key={key}
+              label={label}
+              value={
+                <Flex gap="size-100" wrap>
+                  {value.map((tag, index) => (
+                    <Badge key={index} variant="neutral">
+                      {String(tag)}
+                    </Badge>
+                  ))}
+                </Flex>
+              }
+            />
+          );
         }
 
-        return <LabeledValue key={key} label={label} value={<Markdown code={value} />} />;
+        if (Array.isArray(value)) {
+          return value.map((item, index) => <LabeledValue key={`${key}-${index}`} label={label} value={<Markdown code={String(item)} />} />);
+        }
+
+        return <LabeledValue key={key} label={label} value={<Markdown code={String(value)} />} />;
       })}
     </Flex>
   );

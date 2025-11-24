@@ -1,8 +1,20 @@
 /*
-This script creates content author groups for each tenant-country-language combination.
- 
+---
+tags: ['security', 'acl']
+schedule: Every hour at 10 minutes past the hour
+---
+Creates content author groups for each tenant-country-language combination.
+
 The groups are named in the format: `{tenant}-{country}-{language}-content-authors`.
 Each group is granted read, write, and replicate permissions on the corresponding content and DAM paths.
+
+```mermaid
+graph LR
+    A[Scan Tenants] --> B[Find Countries]
+    B --> C[Find Languages]
+    C --> D[Create Author Groups]
+    D --> E[Grant Permissions]
+```
 */
 
 def scheduleRun() {

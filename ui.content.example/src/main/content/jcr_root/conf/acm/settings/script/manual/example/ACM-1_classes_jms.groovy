@@ -14,6 +14,14 @@ This version of the script is designed to be run in the context of AEM running o
 Inputs allow to:
 - print the list (for debugging purposes),
 - save it directly in the repository in expected path.
+
+```mermaid
+graph LR
+    A[Scan JVM Modules] --> B[Extract Classes]
+    B --> C{Mode?}
+    C -->|Print| D[Display in Console]
+    C -->|Save| E[Store in Repository]
+```
 */
 
 void describeRun() {

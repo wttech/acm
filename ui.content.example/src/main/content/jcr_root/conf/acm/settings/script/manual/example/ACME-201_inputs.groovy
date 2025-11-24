@@ -3,6 +3,21 @@
 author: <john.doe@acme.com>
 ---
 Prints animal information to the console based on user input.
+
+```mermaid
+graph TD
+    A[User Fills Input Form] --> B[Validate Inputs]
+    B --> C{Allergic Check}
+    C -->|Allergic + Dog| D[Show Warning]
+    C -->|OK| E{Activity?}
+    E -->|Sleep| F[Take Nap]
+    E -->|Play| G[Play with Toy]
+    E -->|Eat| H[Eat Favorite Food]
+    D --> I[Print Summary]
+    F --> I
+    G --> I
+    H --> I
+```
 */
 
 void describeRun() {

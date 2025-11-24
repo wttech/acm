@@ -68,11 +68,9 @@ const SnippetCode: React.FC<SnippetCodeProps> = ({ content, language, fontSize =
     if (codeRef.current) {
       const codeElement = codeRef.current.querySelector('code');
       if (codeElement) {
-        // Clear previous highlighting by resetting content and removing data attribute
         codeElement.textContent = content;
         delete codeElement.dataset.highlighted;
-        codeElement.className = `snippet-code snippet-code-${language} snippet-code-${fontSize}`;
-        // Then highlight
+        codeElement.className = `snippet-code language-${language} snippet-code-${fontSize}`;
         hljs.highlightElement(codeElement);
       }
     }
@@ -80,7 +78,7 @@ const SnippetCode: React.FC<SnippetCodeProps> = ({ content, language, fontSize =
 
   return (
     <div ref={codeRef} className="snippet-code-wrapper">
-      <code className={`snippet-code snippet-code-${language} snippet-code-${fontSize}`}>{content}</code>
+      <code className={`snippet-code language-${language} snippet-code-${fontSize}`}>{content}</code>
     </div>
   );
 };
