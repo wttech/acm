@@ -669,6 +669,9 @@ Additional visual features:
 
 For complete examples, see the [example scripts directory](ui.content.example/src/main/content/jcr_root/conf/acm/settings/script/manual/example).
 
+<img src="docs/screenshot-metadata.png" width="720" alt="ACM Script Metadata">
+
+
 ### History
 
 All code executions are logged in the history. You can see the status of each execution, including whether it was successful or failed. The history also provides detailed logs for each execution, including any errors that occurred.
