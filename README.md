@@ -654,6 +654,8 @@ void doRun() {
 }
 ```
 
+> **Note:** In actual Groovy scripts, use regular triple backticks for Mermaid blocks without escaping. The backslashes above are only needed for README rendering.
+
 **Metadata and visual features:**
 
 Any custom fields can be defined in the YAML frontmatter. Common examples include:
