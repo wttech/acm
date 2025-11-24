@@ -18,14 +18,13 @@ public class CodeMetadata implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeMetadata.class);
 
-    private static final Pattern BLOCK_COMMENT_PATTERN = Pattern.compile("/\\*([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
+    private static final Pattern BLOCK_COMMENT_PATTERN = Pattern.compile("/\\*(?!\\*)([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
     private static final Pattern FRONTMATTER_PATTERN =
             Pattern.compile("^---\\s*\\n(.+?)^---\\s*\\n", Pattern.DOTALL | Pattern.MULTILINE);
     private static final Pattern NEWLINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n[\\s\\S]*");
     private static final Pattern BLANK_LINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n\\s*\\n[\\s\\S]*");
     private static final Pattern IMPORT_OR_PACKAGE_BEFORE =
             Pattern.compile("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$");
-    private static final Pattern LEADING_ASTERISK = Pattern.compile("(?m)^\\s*\\*\\s?");
     private static final Pattern COMMENT_MARKERS = Pattern.compile("^/\\*|\\*/$");
 
     private Map<String, Object> values;
@@ -108,7 +107,7 @@ public class CodeMetadata implements Serializable {
             description = content.substring(frontmatterMatcher.end());
         }
 
-        description = LEADING_ASTERISK.matcher(description).replaceAll("").trim();
+        description = description.trim();
 
         if (!description.isEmpty()) {
             result.put("description", description);
