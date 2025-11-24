@@ -1,3 +1,9 @@
+import dev.vml.es.acm.core.assist.JavaDictionary
+
+import java.lang.module.ModuleFinder
+import java.lang.module.ModuleReference
+import java.util.function.Consumer
+
 /*
 ---
 author: <john.doe@acme.com>
@@ -9,12 +15,6 @@ Inputs allow to:
 - print the list (for debugging purposes),
 - save it directly in the repository in expected path.
 */
-
-import dev.vml.es.acm.core.assist.JavaDictionary
-
-import java.lang.module.ModuleFinder
-import java.lang.module.ModuleReference
-import java.util.function.Consumer
 
 void describeRun() {
     inputs.select("mode") { options = ["print", "save"]; value = "print" }

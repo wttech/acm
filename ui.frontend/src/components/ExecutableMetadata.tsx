@@ -25,17 +25,24 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
               <Content>
                 <View marginBottom="size-100">
                   <Text>
-                    Use a GroovyDoc comment block at the top of your script file. <Link href="https://github.github.com/gfm/" target="_blank">GFM</Link> is supported for formatting.
+                    Use a block comment with YAML frontmatter at the top of your script file. <Link href="https://github.github.com/gfm/" target="_blank">GFM</Link> is supported in the description.
                   </Text>
                 </View>
-                <SnippetCode language="groovy" fontSize="small" content={`/**
- * Explain purpose here
- *
- * @author <john.doe@acme.com>
- * @version 1.0
- */`} />
+                <SnippetCode language="groovy" fontSize="small" content={`/*
+---
+version: 1.0
+author: john.doe@acme.com
+---
+Explain the script purpose here.
+
+You can use multiple lines and **Markdown** formatting.
+*/
+
+void doRun() {
+    // Script code
+}`} />
                 <View marginTop="size-100">
-                  <Text>The comment must be followed by a blank line. Description is extracted from text before any @tags.</Text>
+                  <Text>The comment must be followed by a blank line. Can appear at file start or after imports.</Text>
                 </View>
               </Content>
             </ContextualHelp>

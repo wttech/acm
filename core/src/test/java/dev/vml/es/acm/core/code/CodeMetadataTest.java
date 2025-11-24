@@ -67,18 +67,25 @@ class CodeMetadataTest {
     }
 
     @Test
-    void shouldParseScriptWithoutDocComment() throws IOException {
+    void shouldParseScriptWithoutFrontmatter() throws IOException {
         String code = readScript("automatic/example/ACME-20_once.groovy");
         CodeMetadata metadata = CodeMetadata.parse(code);
 
-        assertTrue(metadata.getValues().isEmpty());
+        assertFalse(metadata.getValues().isEmpty());
+        assertNotNull(metadata.getValues().get("description"));
+        String description = (String) metadata.getValues().get("description");
+        assertTrue(description.contains("conditions.once()"));
     }
 
     @Test
     void shouldParseMultipleAuthors() {
-        String code = "/**\n" + " * @author John Doe\n"
-                + " * @author Jane Smith\n"
-                + " */\n"
+        String code = "/*\n" + "---\n"
+                + "author:\n"
+                + "  - John Doe\n"
+                + "  - Jane Smith\n"
+                + "---\n"
+                + "Multi-author script\n"
+                + "*/\n"
                 + "\n"
                 + "void doRun() {\n"
                 + "    println \"Hello\"\n"
@@ -96,11 +103,13 @@ class CodeMetadataTest {
 
     @Test
     void shouldParseCustomTags() {
-        String code = "/**\n" + " * @description Custom script with metadata\n"
-                + " * @version 1.0.0\n"
-                + " * @since 2025-01-01\n"
-                + " * @category migration\n"
-                + " */\n"
+        String code = "/*\n" + "---\n"
+                + "version: 1.0.0\n"
+                + "since: 2025-01-01\n"
+                + "category: migration\n"
+                + "---\n"
+                + "Custom script with metadata\n"
+                + "*/\n"
                 + "\n"
                 + "void doRun() {\n"
                 + "    println \"Hello\"\n"
