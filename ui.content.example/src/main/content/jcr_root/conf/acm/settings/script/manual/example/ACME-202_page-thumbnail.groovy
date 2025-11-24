@@ -1,10 +1,12 @@
-/**
- * Updates the thumbnail of a page in the repository.
- * Deletes the existing thumbnails and saves a new one.
- * File must be a JPEG image.
- *
- * @author <john.doe@acme.com>
- */
+/*
+---
+author: <john.doe@acme.com>
+---
+Updates the thumbnail of a page in the repository.
+Deletes the existing thumbnails and saves a new one.
+File must be a JPEG image.
+*/
+
 void describeRun() {
     inputs.path("pagePath") { rootPathExclusive = '/' }
     inputs.file("pageThumbnailFile") { mimeTypes = ["image/jpeg"] }

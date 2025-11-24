@@ -59,6 +59,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
     - [Console](#console)
     - [Content scripts](#content-scripts)
       - [Minimal example](#minimal-example)
+      - [Conditions](#conditions)
       - [Inputs example](#inputs-example)
       - [Outputs example](#outputs-example)
       - [Console \& logging](#console--logging)
@@ -302,6 +303,43 @@ The `doRun()` method contains the actual code to be executed.
 
 Notice that the script on their own decide when to run without a need to specify any additional metadata. In that way the-sky-is-the-limit. You can run the script once, periodically, or at an exact date and time.
 There are many built-in, ready-to-use conditions available in the `conditions` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Conditions.java).
+
+#### Conditions
+
+Conditions determine when automatic scripts should execute. The `conditions` [service](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Conditions.java) provides many useful methods:
+
+- `conditions.always()` - Always execute on every trigger. Most commonly used in console and manual scripts where execution is triggered directly by users.
+- `conditions.never()` - Never execute. Useful for temporarily disabling scripts.
+- `conditions.changed()` - Execute when script content changed or when instance changed after a failure. Automatically retries failed executions after deployments, making it more suitable for production scenarios than `once()`.
+- `conditions.contentChanged()` - Execute when script content changed or when never executed before. Does not consider instance state changes.
+- `conditions.instanceChanged()` - Execute when instance state changed (OSGi bundle checksums changed or ACM bundle restarted). Useful for detecting deployments or restarts.
+- `conditions.retryIfInstanceChanged()` - Execute when instance state changed and previous execution failed. Combines instance change detection with failure retry logic.
+- `conditions.once()` - Execute only once, when never executed before. Does not automatically retry after failures. Works well for initialization scripts that should not be repeated.
+- `conditions.notSucceeded()` - Execute if previous execution wasn't successful. Retries execution until it succeeds, ignoring script content and instance state changes.
+- `conditions.isInstanceAuthor()` / `conditions.isInstancePublish()` - Execute only on specific instance types (author or publish).
+- `conditions.isInstanceRunMode("dev")` - Execute only when instance has specific run mode.
+- `conditions.isInstanceOnPrem()` - Execute only on on-premise AEM instances.
+- `conditions.isInstanceCloud()` - Execute only on cloud-based AEM instances (AEMaaCS).
+- `conditions.isInstanceCloudSdk()` - Execute only on AEM Cloud SDK (local development environment).
+- `conditions.isInstanceCloudContainer()` - Execute only on AEM Cloud Service containers (non-SDK cloud instances).
+
+**Example usage:**
+
+```groovy
+boolean canRun() {
+    return conditions.once()
+}
+
+void doRun() {
+    out.info "Removing deprecated properties from pages..."
+    repo.get("/content/acme").query("n.[sling:resourceType=acme/component/page]").each { page ->
+        page.removeProperty("deprecatedProperty")
+    }
+    out.success "Removed deprecated properties successfully."
+}
+```
+
+For the complete list of available conditions and their behavior, see the [Conditions.java source code](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Conditions.java).
 
 #### Inputs example
 

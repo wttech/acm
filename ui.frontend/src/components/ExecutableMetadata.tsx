@@ -1,9 +1,10 @@
-import { Badge, Content, ContextualHelp, Flex, Heading, LabeledValue, Text, View } from '@adobe/react-spectrum';
+import { Badge, Content, ContextualHelp, Flex, Heading, LabeledValue, Link, Text, View } from '@adobe/react-spectrum';
 import { Field } from '@react-spectrum/label';
 import DataUnavailable from '@spectrum-icons/workflow/DataUnavailable';
 import React from 'react';
 import { ExecutableMetadata as ExecutableMetadataType } from '../types/executable';
 import Markdown from './Markdown';
+import SnippetCode from './SnippetCode';
 
 type ExecutableMetadataProps = {
   metadata: ExecutableMetadataType | null | undefined;
@@ -17,26 +18,42 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
           <Flex alignItems="center" gap="size-100">
             <Badge variant="neutral">
               <DataUnavailable />
-              <Text>Not available</Text>
+              <Text>Not defined</Text>
             </Badge>
             <ContextualHelp variant="info">
               <Heading>Defining metadata</Heading>
               <Content>
                 <View marginBottom="size-100">
-                  <Text>Use a JavaDoc or GroovyDoc comment block at the top of your script file:</Text>
+                  <Text>
+                    Use a block comment with YAML frontmatter at the top of your script file.{' '}
+                    <Link href="https://github.github.com/gfm/" target="_blank">
+                      GitHub Flavored Markdown
+                    </Link>{' '}
+                    is supported in all metadata values.
+                  </Text>
                 </View>
-                <pre>
-                  <small>
-                    {`/**
- * Explain purpose here
- *
- * @author <john.doe@acme.com>
- * @version 1.0
- */`}
-                  </small>
-                </pre>
+                <SnippetCode
+                  language="groovy"
+                  fontSize="small"
+                  content={`/*
+---
+version: 1.0
+author: john.doe@acme.com
+tags:
+  - content
+  - migration
+---
+Explain the script purpose here.
+
+You can use **bold**, *italic*, [links](https://example.com), and other GFM formatting.
+*/
+
+void doRun() {
+    // Script code
+}`}
+                />
                 <View marginTop="size-100">
-                  <Text>The comment must be followed by a blank line. Description is extracted from text before any @tags.</Text>
+                  <Text>The comment must be followed by a blank line. Can appear at file start or after imports.</Text>
                 </View>
               </Content>
             </ContextualHelp>
@@ -51,11 +68,29 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
       {Object.entries(metadata).map(([key, value]) => {
         const label = key.charAt(0).toUpperCase() + key.slice(1);
 
-        if (Array.isArray(value)) {
-          return value.map((item, index) => <LabeledValue key={`${key}-${index}`} label={label} value={<Markdown code={item} />} />);
+        if (key === 'tags' && Array.isArray(value)) {
+          return (
+            <LabeledValue
+              key={key}
+              label={label}
+              value={
+                <Flex gap="size-100" wrap>
+                  {value.map((tag, index) => (
+                    <Badge key={index} variant="neutral">
+                      {String(tag)}
+                    </Badge>
+                  ))}
+                </Flex>
+              }
+            />
+          );
         }
 
-        return <LabeledValue key={key} label={label} value={<Markdown code={value} />} />;
+        if (Array.isArray(value)) {
+          return value.map((item, index) => <LabeledValue key={`${key}-${index}`} label={label} value={<Markdown code={String(item)} />} />);
+        }
+
+        return <LabeledValue key={key} label={label} value={<Markdown code={String(value)} />} />;
       })}
     </Flex>
   );

@@ -1,10 +1,10 @@
 package dev.vml.es.acm.core.code;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.util.YamlUtils;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,16 +18,15 @@ public class CodeMetadata implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeMetadata.class);
 
-    private static final Pattern DOC_COMMENT_PATTERN = Pattern.compile("/\\*\\*([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
-    private static final Pattern TAG_PATTERN =
-            Pattern.compile("(?m)^\\s*\\*?\\s*@(\\w+)\\s+(.+?)(?=(?m)^\\s*\\*?\\s*@\\w+|\\*/|$)", Pattern.DOTALL);
+    private static final Pattern BLOCK_COMMENT_PATTERN =
+            Pattern.compile("/\\*(?!\\*)([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
+    private static final Pattern FRONTMATTER_PATTERN =
+            Pattern.compile("^---\\s*\\n(.+?)^---\\s*\\n", Pattern.DOTALL | Pattern.MULTILINE);
     private static final Pattern NEWLINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n[\\s\\S]*");
     private static final Pattern BLANK_LINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n\\s*\\n[\\s\\S]*");
     private static final Pattern IMPORT_OR_PACKAGE_BEFORE =
             Pattern.compile("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$");
-    private static final Pattern FIRST_TAG_PATTERN = Pattern.compile("(?m)^\\s*\\*?\\s*@\\w+");
-    private static final Pattern LEADING_ASTERISK = Pattern.compile("(?m)^\\s*\\*\\s?");
-    private static final Pattern DOC_MARKERS = Pattern.compile("^/\\*\\*|\\*/$");
+    private static final Pattern COMMENT_MARKERS = Pattern.compile("^/\\*|\\*/$");
 
     private Map<String, Object> values;
 
@@ -46,20 +45,21 @@ public class CodeMetadata implements Serializable {
 
     public static CodeMetadata parse(String code) {
         if (StringUtils.isNotBlank(code)) {
-            String docComment = findFirstDocComment(code);
-            if (docComment != null) {
-                return new CodeMetadata(parseDocComment(docComment));
+            String blockComment = findFirstBlockComment(code);
+            if (blockComment != null) {
+                return new CodeMetadata(parseBlockComment(blockComment));
             }
         }
         return EMPTY;
     }
 
     /**
-     * Finds first JavaDoc/GroovyDoc comment that's properly separated with blank lines,
-     * or directly attached to describeRun() method.
+     * Finds first block comment that's properly separated with blank lines.
+     * Must be followed by a blank line (not directly attached to code).
+     * Can appear at the start of the file or after import/package statements.
      */
-    private static String findFirstDocComment(String code) {
-        Matcher matcher = DOC_COMMENT_PATTERN.matcher(code);
+    private static String findFirstBlockComment(String code) {
+        Matcher matcher = BLOCK_COMMENT_PATTERN.matcher(code);
 
         while (matcher.find()) {
             String comment = matcher.group();
@@ -70,12 +70,6 @@ public class CodeMetadata implements Serializable {
 
             if (!NEWLINE_AFTER_COMMENT.matcher(afterComment).matches()) {
                 continue;
-            }
-
-            String trimmedAfter = afterComment.trim();
-
-            if (trimmedAfter.startsWith("void describeRun()")) {
-                return comment;
             }
 
             if (!BLANK_LINE_AFTER_COMMENT.matcher(afterComment).matches()) {
@@ -98,61 +92,44 @@ public class CodeMetadata implements Serializable {
     }
 
     /**
-     * Extracts description and @tags from doc comment. Supports multiple values per tag.
+     * Extracts frontmatter (YAML between triple dashes) and description from block comment.
      */
-    private static Map<String, Object> parseDocComment(String docComment) {
+    private static Map<String, Object> parseBlockComment(String blockComment) {
         Map<String, Object> result = new LinkedHashMap<>();
-
-        String content = DOC_MARKERS.matcher(docComment).replaceAll("");
-
-        // @ at line start (not in email addresses)
-        Matcher firstTagMatcher = FIRST_TAG_PATTERN.matcher(content);
-
-        if (firstTagMatcher.find()) {
-            int firstTagIndex = firstTagMatcher.start();
-            String description = LEADING_ASTERISK
-                    .matcher(content.substring(0, firstTagIndex))
-                    .replaceAll("")
-                    .trim();
-            if (!description.isEmpty()) {
-                result.put("description", description);
-            }
-        } else {
-            String description =
-                    LEADING_ASTERISK.matcher(content).replaceAll("").trim();
-            if (!description.isEmpty()) {
-                result.put("description", description);
-            }
+        if (StringUtils.isBlank(blockComment)) {
+            return result;
         }
 
-        Matcher tagMatcher = TAG_PATTERN.matcher(content);
+        String content = COMMENT_MARKERS.matcher(blockComment).replaceAll("").trim();
 
-        while (tagMatcher.find()) {
-            String tagName = tagMatcher.group(1);
-            String tagValue = tagMatcher.group(2);
+        Matcher frontmatterMatcher = FRONTMATTER_PATTERN.matcher(content);
+        String description = content;
 
-            if (tagValue != null && !tagValue.isEmpty()) {
-                tagValue = LEADING_ASTERISK.matcher(tagValue).replaceAll("").trim();
-
-                if (!tagValue.isEmpty()) {
-                    Object existing = result.get(tagName);
-
-                    if (existing == null) {
-                        result.put(tagName, tagValue);
-                    } else if (existing instanceof List) {
-                        @SuppressWarnings("unchecked")
-                        List<String> list = (List<String>) existing;
-                        list.add(tagValue);
-                    } else {
-                        List<String> list = new ArrayList<>();
-                        list.add((String) existing);
-                        list.add(tagValue);
-                        result.put(tagName, list);
-                    }
-                }
+        if (frontmatterMatcher.find()) {
+            String frontmatter = frontmatterMatcher.group(1);
+            if (frontmatter != null) {
+                result.putAll(parseFrontmatter(frontmatter));
             }
+            description = content.substring(frontmatterMatcher.end());
         }
+
+        description = description.trim();
+
+        if (!description.isEmpty()) {
+            result.put("description", description);
+        }
+
         return result;
+    }
+
+    private static Map<String, Object> parseFrontmatter(String frontmatter) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> yamlData = YamlUtils.readFromString(frontmatter, Map.class);
+            return yamlData != null ? yamlData : new LinkedHashMap<>();
+        } catch (Exception e) {
+            throw new AcmException(String.format("Cannot parse frontmatter!\n%s\n", frontmatter), e);
+        }
     }
 
     @JsonAnyGetter

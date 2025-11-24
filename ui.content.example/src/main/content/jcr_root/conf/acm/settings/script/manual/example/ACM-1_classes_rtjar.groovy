@@ -1,18 +1,27 @@
-/**
- * Generate a list of all system classes in the current JVM.
- * This version of the script is designed to be run in the context of AEM running on Java 8.
- *
- * Inputs allow to:
- * - print the list (for debugging purposes),
- * - save it directly in the repository in expected path.
- *
- * @author <john.doe@acme.com>
- */
-
 import dev.vml.es.acm.core.assist.JavaDictionary
 import java.util.function.Consumer
 import java.util.jar.JarFile
 import java.io.File
+
+/*
+---
+author: <john.doe@acme.com>
+---
+Generate a list of all system classes in the current JVM.
+This version of the script is designed to be run in the context of AEM running on Java 8.
+
+Inputs allow to:
+- print the list (for debugging purposes),
+- save it directly in the repository in expected path.
+
+```mermaid
+graph LR
+    A[Scan rt.jar] --> B[Extract Classes]
+    B --> C{Mode?}
+    C -->|Print| D[Display in Console]
+    C -->|Save| E[Store in Repository]
+```
+*/
 
 void describeRun() {
     inputs.select("mode") { options = ["print", "save"]; value = "print" }

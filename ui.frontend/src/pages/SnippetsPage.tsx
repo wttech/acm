@@ -84,7 +84,9 @@ const SnippetsPage = () => {
                         <Markdown code={snippet.documentation} />
                       </Content>
                       <View backgroundColor="gray-800" borderWidth="thin" position="relative" borderColor="dark" borderRadius="medium" marginY="size-100">
-                        <SnippetCode content={snippet.content} />
+                        <View margin="size-125">
+                          <SnippetCode language="groovy" content={snippet.content} />
+                        </View>
                       </View>
                     </View>
                   ))}

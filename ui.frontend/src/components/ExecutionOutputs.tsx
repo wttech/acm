@@ -4,6 +4,7 @@ import Upload from '@spectrum-icons/workflow/UploadToCloud';
 import React from 'react';
 import { Objects } from '../utils/objects';
 import CodeTextarea from './CodeTextarea';
+import SnippetCode from './SnippetCode';
 
 type ExecutionOutputsProps = {
   outputs: Record<string, unknown> | null | undefined;
@@ -30,9 +31,10 @@ const ExecutionOutputs: React.FC<ExecutionOutputsProps> = ({ outputs }) => {
                     Use <code>doRun()</code> method to return structured data, files, or summaries:
                   </Text>
                 </View>
-                <pre>
-                  <small>
-                    {`void doRun() {
+                <SnippetCode
+                  language="groovy"
+                  fontSize="small"
+                  content={`void doRun() {
   def report = outputs.file("report") {
     label = "Report"
     description = "Users report as CSV"
@@ -45,8 +47,7 @@ const ExecutionOutputs: React.FC<ExecutionOutputsProps> = ({ outputs }) => {
     value = "Processed \${count} users"
   }
 }`}
-                  </small>
-                </pre>
+                />
                 <View marginTop="size-100">
                   <Text>
                     Use <code>outputs.file()</code> for downloadable assets, reports or <code>outputs.text()</code> for summaries and documentation.

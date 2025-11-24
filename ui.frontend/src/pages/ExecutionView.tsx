@@ -123,7 +123,16 @@ const ExecutionView = () => {
                   <LabeledValue label="Ended At" value={execution.endDate ? formatter.dateExplained(execution.endDate) : '—'} />
                 </InfoCard>
               </Flex>
-              {/* Row 2: Executable Info */}
+              {/* Row 2: I/O */}
+              <Flex direction="row" gap="size-200" alignItems="stretch">
+                <InfoCard>
+                  <ExecutionInputs inputs={execution.inputs} />
+                </InfoCard>
+                <InfoCard>
+                  <ExecutionOutputs outputs={execution.outputs} />
+                </InfoCard>
+              </Flex>
+              {/* Row 3: Executable Info */}
               <Flex direction="row" gap="size-200" alignItems="stretch">
                 <InfoCard>
                   <Field label="Executable" width="100%">
@@ -135,15 +144,6 @@ const ExecutionView = () => {
                 </InfoCard>
                 <InfoCard>
                   <ExecutableMetadata metadata={execution.executable.metadata} />
-                </InfoCard>
-              </Flex>
-              {/* Row 3: I/O */}
-              <Flex direction="row" gap="size-200" alignItems="stretch">
-                <InfoCard>
-                  <ExecutionInputs inputs={execution.inputs} />
-                </InfoCard>
-                <InfoCard>
-                  <ExecutionOutputs outputs={execution.outputs} />
                 </InfoCard>
               </Flex>
             </Flex>

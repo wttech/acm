@@ -1,10 +1,24 @@
 import java.time.LocalDate
 import java.util.Random
 
-/**
- * @description Generates a CSV report of users with random names and birth dates.
- * @author <john.doe@acme.com>
- */
+/*
+---
+author: <john.doe@acme.com>
+---
+Generates a CSV report of users with random names and birth dates.
+
+```mermaid
+graph TD
+    A[Get Input Parameters] --> B[Open CSV Stream]
+    B --> C[Write Header]
+    C --> D{More Users?}
+    D -->|Yes| E[Generate Random User]
+    E --> F[Write User to Stream]
+    F --> D
+    D -->|No| G[Close Stream]
+```
+*/
+
 void describeRun() {
   inputs.integerNumber("count") { label = "Users to generate"; min = 1; value = 10000 }
   inputs.text("firstNames") { label = "First names"; description = "One first name per line"; value = "John\nJane\nJack\nAlice\nBob"}
