@@ -69,6 +69,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
       - [ACL example](#acl-example)
       - [Repo example](#repo-example)
       - [Abortable example](#abortable-example)
+      - [Script documentation](#script-documentation)
     - [History](#history)
     - [Extension scripts](#extension-scripts)
       - [Example extension script](#example-extension-script)
@@ -604,6 +605,69 @@ void doRun() {
     context.checkAborted()
 }
 ```
+
+#### Script documentation
+
+Scripts can include metadata and documentation using block comments with YAML frontmatter. This metadata is displayed in the ACM UI to help users understand the script's purpose and configuration.
+
+**Prerequisites:**
+- Use regular block comments `/* */` (not JavaDoc `/** */`)
+- Place the comment at the top of the file OR after import/package statements
+- Must be followed by a blank line to separate from code
+
+**Example with metadata:**
+
+```groovy
+/*
+---
+version: '1.0'
+author: john.doe@acme.com
+schedule: Every hour at 10 minutes past the hour
+category: security
+tags: ['content', 'migration', 'security']
+---
+Creates content author groups for each tenant-country-language combination.
+
+The groups are named in the format: `{tenant}-{country}-{language}-content-authors`.
+Each group is granted read, write, and replicate permissions on the corresponding content and DAM paths.
+
+\```mermaid
+---
+config:
+  look: handDrawn
+  theme: base
+---
+graph LR
+    A[Scan Tenants] --> B[Find Countries]
+    B --> C[Find Languages]
+    C --> D[Create Author Groups]
+    D --> E[Grant Permissions]
+\```
+*/
+
+boolean canRun() {
+    return conditions.changed()
+}
+
+void doRun() {
+    // implementation
+}
+```
+
+**Metadata and visual features:**
+
+Any custom fields can be defined in the YAML frontmatter. Common examples include:
+- `version` - Script version number
+- `author` - Script author email  
+- `schedule` - Human-readable schedule description
+- `category` - Script category for organization
+- `tags` - Array of tags, rendered as neutral badges in the UI for easy categorization
+
+Additional visual features:
+- **Markdown formatting** ([GitHub Flavored Markdown](https://github.github.com/gfm/)) is supported throughout all the metadata custom fields and description.
+- **Mermaid diagrams** can be embedded to visualize script logic (supports [Mermaid syntax](https://mermaid.js.org/intro/syntax-reference.html))
+
+For complete examples, see the [example scripts directory](ui.content.example/src/main/content/jcr_root/conf/acm/settings/script/manual/example).
 
 ### History
 
