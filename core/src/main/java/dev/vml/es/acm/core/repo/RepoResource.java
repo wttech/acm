@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import org.apache.commons.io.IOUtils;
@@ -401,6 +402,50 @@ public class RepoResource {
                     String.format("Cannot move resource in place from '%s' to '%s'!", path, target.getPath()), e);
         }
         return target;
+    }
+
+    // AEM 6.5.0 has no 'resourceResolver.orderBefore' so adding own based on:
+    // https://github.com/apache/sling-org-apache-sling-jcr-resource/commit/3b8f01d226124417bdfdba4ca2086114a73a7c5d
+    public boolean orderBefore(String siblingName) {
+        Node parentNode = parent().requireNode();
+        String name = getName();
+        try {
+            long existingNodePosition = -1;
+            long siblingNodePosition = -1;
+            long index = 0;
+
+            NodeIterator nodeIterator = parentNode.getNodes();
+            while (nodeIterator.hasNext()) {
+                Node childNode = nodeIterator.nextNode();
+                String childName = childNode.getName();
+
+                if (childName.equals(name)) {
+                    existingNodePosition = index;
+                }
+                if (siblingName != null && childName.equals(siblingName)) {
+                    siblingNodePosition = index;
+                } else if (siblingName == null && childName.equals(name)) {
+                    if (existingNodePosition == nodeIterator.getSize() - 1) {
+                        return false;
+                    }
+                }
+                index++;
+            }
+
+            if (siblingName != null
+                    && existingNodePosition >= 0
+                    && siblingNodePosition >= 0
+                    && existingNodePosition == siblingNodePosition - 1) {
+                return false;
+            }
+
+            parentNode.orderBefore(name, siblingName);
+            repo.commit(String.format("reordering resource '%s' before '%s'", path, siblingName));
+            repo.getLogger().info("Reordered resource '{}' before '{}'", path, siblingName);
+            return true;
+        } catch (RepositoryException e) {
+            throw new RepoException(String.format("Cannot reorder resource '%s' before '%s'", path, siblingName), e);
+        }
     }
 
     public RepoResource parent() {
