@@ -501,19 +501,15 @@ boolean canRun() {
 void doRun() {
     log.info "ACL setup started"
 
-    def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }
-    acmeService.with {
+    def acmeService = acl.createUser { id = "acme.service"; systemUser(); skipIfExists() }.tap {
         // purge()
         allow { path = "/content"; permissions = ["jcr:read", "jcr:write"] }
     }
-
-    def johnDoe = acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }
-    johnDoe.with {
+    def johnDoe = acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }.tap {
         // purge()
         allow("/content", ["jcr:read"])
     }
-
-    acl.createGroup { id = "test.group" }.with {
+    acl.createGroup { id = "test.group" }.tap {
         // removeAllMembers()
         addMember(acmeService)
         addMember(johnDoe)
