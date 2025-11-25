@@ -3,7 +3,6 @@ package dev.vml.es.acm.core.repo;
 import dev.vml.es.acm.core.util.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -34,6 +33,8 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
  * within AEM and Sling-based applications.
  */
 public class RepoResource {
+
+    public static final String FILE_MIME_TYPE_DEFAULT = "application/octet-stream";
 
     private final Repo repo;
 
@@ -534,28 +535,37 @@ public class RepoResource {
         return new RepoResourceState(path, true, resource.getValueMap());
     }
 
+    public RepoResource saveFile(InputStream data) {
+        return saveFile(FILE_MIME_TYPE_DEFAULT, data);
+    }
+
+    public RepoResource saveFile(String mimeType, InputStream data) {
+        return saveFile(Collections.singletonMap(JcrConstants.JCR_MIMETYPE, mimeType), data);
+    }
+
+    public RepoResource saveFile(Map<String, Object> properties, InputStream data) {
+        saveFileInternal(properties, data, null);
+        return this;
+    }
+
+    public RepoResource saveFile(Consumer<OutputStream> dataWriter) {
+        return saveFile(FILE_MIME_TYPE_DEFAULT, dataWriter);
+    }
+
     public RepoResource saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
-        saveFileInternal(mimeType, null, dataWriter);
+        return saveFile(Collections.singletonMap(JcrConstants.JCR_MIMETYPE, mimeType), dataWriter);
+    }
+
+    public RepoResource saveFile(Map<String, Object> properties, Consumer<OutputStream> dataWriter) {
+        saveFileInternal(properties, null, dataWriter);
         return this;
     }
 
-    public RepoResource saveFile(String mimeType, File file) {
-        saveFile(mimeType, (OutputStream os) -> {
-            try (InputStream is = Files.newInputStream(file.toPath())) {
-                IOUtils.copy(is, os);
-            } catch (IOException e) {
-                throw new RepoException(String.format("Cannot write file '%s' to path '%s'!", file.getPath(), path), e);
-            }
-        });
-        return this;
-    }
+    private void saveFileInternal(Map<String, Object> properties, InputStream data, Consumer<OutputStream> dataWriter) {
+        if (properties == null || !properties.containsKey(JcrConstants.JCR_MIMETYPE)) {
+            properties = Collections.singletonMap(JcrConstants.JCR_MIMETYPE, FILE_MIME_TYPE_DEFAULT);
+        }
 
-    public RepoResource saveFile(String mimeType, Object data) {
-        saveFileInternal(mimeType, data, null);
-        return this;
-    }
-
-    private void saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
         Resource mainResource = resolve();
         try {
             if (mainResource != null) {
@@ -573,7 +583,7 @@ public class RepoResource {
             mainResource = repo.getResourceResolver().create(parent, name, mainValues);
 
             Map<String, Object> contentValues = new HashMap<>();
-            setFileContent(contentValues, mimeType, data, dataWriter);
+            setFileContent(contentValues, properties, data, dataWriter);
             repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
 
             repo.commit(String.format("saving file at path '%s'", path));
@@ -584,35 +594,27 @@ public class RepoResource {
     }
 
     private void setFileContent(
-            Map<String, Object> contentValues, String mimeType, Object data, Consumer<OutputStream> dataWriter) {
+            Map<String, Object> contentValues,
+            Map<String, Object> props,
+            InputStream data,
+            Consumer<OutputStream> dataWriter) {
+        contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
+        contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
+        contentValues.putAll(props);
+
         if (dataWriter != null) {
-            setFileContent(contentValues, mimeType, dataWriter);
+            final PipedInputStream pis = new PipedInputStream();
+            Executors.newSingleThreadExecutor().submit(() -> {
+                try (PipedOutputStream pos = new PipedOutputStream(pis)) {
+                    dataWriter.accept(pos);
+                } catch (Exception e) {
+                    throw new RepoException(String.format("Cannot write data to file at path '%s'!", path), e);
+                }
+            });
+            contentValues.put(JcrConstants.JCR_DATA, pis);
         } else {
-            setFileContent(contentValues, mimeType, data);
+            contentValues.put(JcrConstants.JCR_DATA, data);
         }
-    }
-
-    private void setFileContent(Map<String, Object> contentValues, String mimeType, Object data) {
-        contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
-        contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
-        contentValues.put(JcrConstants.JCR_MIMETYPE, mimeType);
-        contentValues.put(JcrConstants.JCR_DATA, data);
-    }
-
-    // https://stackoverflow.com/a/27172165
-    private void setFileContent(Map<String, Object> contentValues, String mimeType, Consumer<OutputStream> dataWriter) {
-        contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
-        contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
-        contentValues.put(JcrConstants.JCR_MIMETYPE, mimeType);
-        final PipedInputStream pis = new PipedInputStream();
-        Executors.newSingleThreadExecutor().submit(() -> {
-            try (PipedOutputStream pos = new PipedOutputStream(pis)) {
-                dataWriter.accept(pos);
-            } catch (Exception e) {
-                throw new RepoException(String.format("Cannot write data to file at path '%s'!", path), e);
-            }
-        });
-        contentValues.put(JcrConstants.JCR_DATA, pis);
     }
 
     public InputStream readFileAsStream() {

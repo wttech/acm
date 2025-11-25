@@ -3,9 +3,9 @@ import { Field } from '@react-spectrum/label';
 import DataUnavailable from '@spectrum-icons/workflow/DataUnavailable';
 import React from 'react';
 import { ExecutableMetadata as ExecutableMetadataType } from '../types/executable';
+import { Strings } from '../utils/strings';
 import Markdown from './Markdown';
 import SnippetCode from './SnippetCode';
-import { Strings } from '../utils/strings';
 
 type ExecutableMetadataProps = {
   metadata: ExecutableMetadataType | null | undefined;

@@ -7,6 +7,10 @@ import dev.vml.es.acm.core.code.script.ScriptUtils;
 import dev.vml.es.acm.core.repo.RepoException;
 import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -55,10 +59,10 @@ public class ScriptRepository {
     }
 
     public Script save(Code code) {
-        return save(code.getId(), code.getContent());
+        return save(code.getId(), new ByteArrayInputStream(code.getContent().getBytes(StandardCharsets.UTF_8)));
     }
 
-    public Script save(String id, Object data) throws AcmException {
+    public Script save(String id, InputStream data) throws AcmException {
         if (!ScriptType.byPath(id).isPresent()) {
             throw new AcmException(String.format("Cannot save script '%s' at unsupported path!", id));
         }
