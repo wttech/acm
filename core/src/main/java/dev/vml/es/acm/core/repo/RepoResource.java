@@ -599,7 +599,6 @@ public class RepoResource {
             InputStream data,
             Consumer<OutputStream> dataWriter) {
         contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
-        contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
         contentValues.putAll(props);
 
         if (dataWriter != null) {
