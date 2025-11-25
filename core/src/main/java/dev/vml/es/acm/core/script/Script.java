@@ -2,7 +2,7 @@ package dev.vml.es.acm.core.script;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vml.es.acm.core.AcmException;
-import dev.vml.es.acm.core.code.CodeMetadata;
+import dev.vml.es.acm.core.code.ExecutableMetadata;
 import dev.vml.es.acm.core.code.Executable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,8 +57,8 @@ public class Script implements Executable, Comparable<Script> {
     }
 
     @Override
-    public CodeMetadata getMetadata() {
-        return CodeMetadata.of(this);
+    public ExecutableMetadata getMetadata() {
+        return ExecutableMetadata.of(this);
     }
 
     @JsonIgnore

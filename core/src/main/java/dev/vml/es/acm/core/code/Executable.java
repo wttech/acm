@@ -12,5 +12,5 @@ public interface Executable extends Serializable {
 
     String getContent();
 
-    CodeMetadata getMetadata();
+    ExecutableMetadata getMetadata();
 }

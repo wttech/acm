@@ -5,6 +5,7 @@ import React from 'react';
 import { ExecutableMetadata as ExecutableMetadataType } from '../types/executable';
 import Markdown from './Markdown';
 import SnippetCode from './SnippetCode';
+import { Strings } from '../utils/strings';
 
 type ExecutableMetadataProps = {
   metadata: ExecutableMetadataType | null | undefined;
@@ -25,11 +26,15 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
               <Content>
                 <View marginBottom="size-100">
                   <Text>
-                    Use a block comment with YAML frontmatter at the top of your script file.{' '}
+                    Use YAML frontmatter in a block comment. Supports{' '}
                     <Link href="https://github.github.com/gfm/" target="_blank">
-                      GitHub Flavored Markdown
+                      GFM
                     </Link>{' '}
-                    is supported in all metadata values.
+                    and{' '}
+                    <Link href="https://mermaid.js.org/intro/syntax-reference.html" target="_blank">
+                      Mermaid
+                    </Link>
+                    .
                   </Text>
                 </View>
                 <SnippetCode
@@ -37,23 +42,24 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
                   fontSize="small"
                   content={`/*
 ---
-version: 1.0
+version: '1.0'
 author: john.doe@acme.com
-tags:
-  - content
-  - migration
+tags: [content, migration]
 ---
-Explain the script purpose here.
+This script demonstrates metadata parsing.
 
-You can use **bold**, *italic*, [links](https://example.com), and other GFM formatting.
+\`\`\`mermaid
+graph LR
+  A-->B-->C
+\`\`\`
 */
 
 void doRun() {
-    // Script code
+  // code
 }`}
                 />
                 <View marginTop="size-100">
-                  <Text>The comment must be followed by a blank line. Can appear at file start or after imports.</Text>
+                  <Text>Notice that comment must be followed by a blank line.</Text>
                 </View>
               </Content>
             </ContextualHelp>
@@ -66,7 +72,7 @@ void doRun() {
   return (
     <Flex direction="column" gap="size-200">
       {Object.entries(metadata).map(([key, value]) => {
-        const label = key.charAt(0).toUpperCase() + key.slice(1);
+        const label = Strings.capitalizeWords(key);
 
         if (key === 'tags' && Array.isArray(value)) {
           return (

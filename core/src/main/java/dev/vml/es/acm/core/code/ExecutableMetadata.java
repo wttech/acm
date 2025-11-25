@@ -12,11 +12,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CodeMetadata implements Serializable {
+public class ExecutableMetadata implements Serializable {
 
-    public static final CodeMetadata EMPTY = new CodeMetadata(new LinkedHashMap<>());
+    public static final ExecutableMetadata EMPTY = new ExecutableMetadata(new LinkedHashMap<>());
 
-    private static final Logger LOG = LoggerFactory.getLogger(CodeMetadata.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExecutableMetadata.class);
 
     private static final Pattern BLOCK_COMMENT_PATTERN =
             Pattern.compile("/\\*(?!\\*)([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
@@ -30,11 +30,11 @@ public class CodeMetadata implements Serializable {
 
     private Map<String, Object> values;
 
-    public CodeMetadata(Map<String, Object> values) {
+    public ExecutableMetadata(Map<String, Object> values) {
         this.values = values;
     }
 
-    public static CodeMetadata of(Executable executable) {
+    public static ExecutableMetadata of(Executable executable) {
         try {
             return parse(executable.getContent());
         } catch (Exception e) {
@@ -43,11 +43,11 @@ public class CodeMetadata implements Serializable {
         }
     }
 
-    public static CodeMetadata parse(String code) {
+    public static ExecutableMetadata parse(String code) {
         if (StringUtils.isNotBlank(code)) {
             String blockComment = findFirstBlockComment(code);
             if (blockComment != null) {
-                return new CodeMetadata(parseBlockComment(blockComment));
+                return new ExecutableMetadata(parseBlockComment(blockComment));
             }
         }
         return EMPTY;

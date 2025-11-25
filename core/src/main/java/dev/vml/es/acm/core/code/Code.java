@@ -62,8 +62,8 @@ public class Code implements Executable {
     }
 
     @Override
-    public CodeMetadata getMetadata() {
-        return CodeMetadata.of(this);
+    public ExecutableMetadata getMetadata() {
+        return ExecutableMetadata.of(this);
     }
 
     public String toString() {

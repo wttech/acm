@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class CodeMetadataTest {
+class ExecutableMetadataTest {
 
     private static final Path SCRIPTS_BASE_PATH =
             Paths.get("../ui.content.example/src/main/content/jcr_root/conf/acm/settings/script");
@@ -22,14 +22,14 @@ class CodeMetadataTest {
 
     @Test
     void shouldParseEmptyCode() {
-        CodeMetadata metadata = CodeMetadata.parse("");
+        ExecutableMetadata metadata = ExecutableMetadata.parse("");
 
         assertTrue(metadata.getValues().isEmpty());
     }
 
     @Test
     void shouldParseNullCode() {
-        CodeMetadata metadata = CodeMetadata.parse(null);
+        ExecutableMetadata metadata = ExecutableMetadata.parse(null);
 
         assertTrue(metadata.getValues().isEmpty());
     }
@@ -37,7 +37,7 @@ class CodeMetadataTest {
     @Test
     void shouldParseHelloWorldScript() throws IOException {
         String code = readScript("manual/example/ACME-200_hello-world.groovy");
-        CodeMetadata metadata = CodeMetadata.parse(code);
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
 
         assertEquals(
                 "Prints \"Hello World!\" to the console.", metadata.getValues().get("description"));
@@ -46,7 +46,7 @@ class CodeMetadataTest {
     @Test
     void shouldParseInputsScript() throws IOException {
         String code = readScript("manual/example/ACME-201_inputs.groovy");
-        CodeMetadata metadata = CodeMetadata.parse(code);
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
 
         String description = (String) metadata.getValues().get("description");
         assertNotNull(description);
@@ -57,7 +57,7 @@ class CodeMetadataTest {
     @Test
     void shouldParsePageThumbnailScript() throws IOException {
         String code = readScript("manual/example/ACME-202_page-thumbnail.groovy");
-        CodeMetadata metadata = CodeMetadata.parse(code);
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
         String description = (String) metadata.getValues().get("description");
 
         assertNotNull(description);
@@ -69,7 +69,7 @@ class CodeMetadataTest {
     @Test
     void shouldParseScriptWithoutFrontmatter() throws IOException {
         String code = readScript("automatic/example/ACME-20_once.groovy");
-        CodeMetadata metadata = CodeMetadata.parse(code);
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
 
         assertFalse(metadata.getValues().isEmpty());
         assertNotNull(metadata.getValues().get("description"));
@@ -90,7 +90,7 @@ class CodeMetadataTest {
                 + "void doRun() {\n"
                 + "    println \"Hello\"\n"
                 + "}";
-        CodeMetadata metadata = CodeMetadata.parse(code);
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
         Object authors = metadata.getValues().get("author");
         assertTrue(authors instanceof List);
         @SuppressWarnings("unchecked")
@@ -115,7 +115,7 @@ class CodeMetadataTest {
                 + "    println \"Hello\"\n"
                 + "}";
 
-        CodeMetadata metadata = CodeMetadata.parse(code);
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
 
         assertEquals("Custom script with metadata", metadata.getValues().get("description"));
         assertEquals("1.0.0", metadata.getValues().get("version"));
