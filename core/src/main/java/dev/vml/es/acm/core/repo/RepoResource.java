@@ -566,9 +566,9 @@ public class RepoResource {
             properties = new HashMap<>();
         }
         if (!properties.containsKey(JcrConstants.JCR_MIMETYPE)) {
-            Map<String, Object> mutableProps = new HashMap<>(properties);
-            mutableProps.put(JcrConstants.JCR_MIMETYPE, FILE_MIME_TYPE_DEFAULT);
-            properties = mutableProps;
+            Map<String, Object> propertiesMutable = new HashMap<>(properties);
+            propertiesMutable.put(JcrConstants.JCR_MIMETYPE, FILE_MIME_TYPE_DEFAULT);
+            properties = propertiesMutable;
         }
 
         Resource mainResource = resolve();
