@@ -70,8 +70,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        // fixes cannot install package '*.zip'; unexpected status: javax.jcr.RepositoryException: OakName0001: Invalid namespace prefix([,  basePickBy-CjSbM3k 
-        inlineDynamicImports: true
+        chunkFileNames: (chunkInfo) => `chunks/${chunkInfo.name.replace(/[:[\]@]/g, '-')}-[hash].js`,
       },
     },
   },
