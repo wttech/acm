@@ -13,10 +13,12 @@ export async function newAemContext(
     },
   });
   
+  const page = await context.newPage();
+  
   try {
-    const page = await context.newPage();
     await callback(page);
   } finally {
+    await page.close();
     await context.close();
   }
 }
