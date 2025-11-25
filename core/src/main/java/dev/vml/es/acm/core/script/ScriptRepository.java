@@ -7,7 +7,6 @@ import dev.vml.es.acm.core.code.script.ScriptUtils;
 import dev.vml.es.acm.core.repo.RepoException;
 import dev.vml.es.acm.core.repo.RepoResource;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
