@@ -17,7 +17,7 @@ test.describe('History', () => {
     await expect(firstRow.locator('[role="rowheader"]')).toContainText('Console');
     await firstRow.click();
     await page.getByRole('tab', { name: 'Output' }).click();
-    const firstOutput = await readFromCodeEditor(page);
+    const firstOutput = await readFromCodeEditor(page, 'Execution Output');
     expect(firstOutput).toContain('Setup complete!');
 
     await page.goto('/acm#/history');
@@ -27,7 +27,7 @@ test.describe('History', () => {
     await expect(secondRow.locator('[role="rowheader"]')).toContainText('Console');
     await secondRow.click();
     await page.getByRole('tab', { name: 'Output' }).click();
-    const secondOutput = await readFromCodeEditor(page);
+    const secondOutput = await readFromCodeEditor(page, 'Execution Output');
     expect(secondOutput).toContain('Hello World!');
   });
 });

@@ -58,7 +58,7 @@ const ExecutionOutputs: React.FC<ExecutionOutputsProps> = ({ outputs }) => {
             </ContextualHelp>
           </Flex>
         ) : (
-          <CodeTextarea language="json" value={JSON.stringify(outputs, null, 2)} options={{ readOnly: true }} />
+          <CodeTextarea language="json" value={JSON.stringify(outputs, null, 2)} options={{ readOnly: true, ariaLabel: 'Execution Outputs JSON' }} />
         )}
       </div>
     </Field>

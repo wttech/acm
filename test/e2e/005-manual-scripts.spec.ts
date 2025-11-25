@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { expectExecutionProgressBarSucceeded } from './utils/expect';
-import { readFromCodeEditor } from './utils/editor';
+import { expectExecutionProgressBarSucceeded, expectToMatchTimestamp } from './utils/expect';
+import { readFromCodeEditor, readFromCodeEditorAsJson } from './utils/editor';
+import { getLabeledValueText } from './utils/labeledValue';
 
 test.describe('Manual Scripts', () => {
   test('Execute CSV Generation With I/O', async ({ page }) => {
@@ -16,7 +17,7 @@ test.describe('Manual Scripts', () => {
     await page.getByRole('button', { name: 'Start' }).click();
     await expectExecutionProgressBarSucceeded(page);
 
-    const output = await readFromCodeEditor(page);
+    const output = await readFromCodeEditor(page, 'Execution Output');
     expect(output).toContain('[SUCCESS] Users CSV report generation ended successfully');
 
     await page.getByRole('button', { name: 'Review' }).click();
@@ -41,5 +42,48 @@ test.describe('Manual Scripts', () => {
     await page.getByRole('button', { name: 'Download Report' }).click();
     const downloadReport = await downloadReportPromise;
     expect(downloadReport.suggestedFilename()).toMatch(/\.csv$/);
+
+  
+    await page.getByRole('tab', { name: 'Details' }).click();
+    
+    const executionStatus = page.locator('#execution-status');
+    const executionId = await getLabeledValueText(page, 'ID', executionStatus);
+    expect(executionId).toMatch(/^2025\/\d+\/\d+\/\d+\/\d+\//);
+    
+    await expect(page.getByText('admin')).toBeVisible();
+    await expect(page.getByText('succeeded', { exact: false })).toBeVisible();
+    
+    const executionTiming = page.locator('#execution-timing');
+    const startedAt = await getLabeledValueText(page, 'Started At', executionTiming);
+    expectToMatchTimestamp(startedAt);
+    
+    const duration = await getLabeledValueText(page, 'Duration', executionTiming);
+    expect(duration).toMatch(/\d+ ms \(\d+ seconds?\)/);
+    
+    const endedAt = await getLabeledValueText(page, 'Ended At', executionTiming);
+    expectToMatchTimestamp(endedAt);
+
+    const inputs = await readFromCodeEditorAsJson<Record<string, any>>(page, 'Execution Inputs JSON');
+    expect(inputs).toEqual({
+      count: 5000,
+      firstNames: 'John\nJane\nJack\nAlice\nBob\nRobert',
+      lastNames: 'Doe\nSmith\nBrown\nJohnson\nWhite\nJordan',
+    });
+
+    const outputs = await readFromCodeEditorAsJson<Array<any>>(page, 'Execution Outputs JSON');
+    expect(outputs).toHaveLength(2);
+    expect(outputs[0]).toMatchObject({
+      type: 'FILE',
+      name: 'report',
+      label: 'Report',
+      downloadName: 'report.csv',
+    });
+    expect(outputs[1]).toMatchObject({
+      type: 'TEXT',
+      name: 'summary',
+      value: 'Processed 5000 user(s)',
+    });
+
+    await page.getByRole('button', { name: 'Close' }).click();
   });
 });

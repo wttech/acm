@@ -152,7 +152,7 @@ const ConsolePage = () => {
                   <KeyboardShortcutsButton />
                 </Flex>
               </Flex>
-              <CodeEditor id="code-editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language={GROOVY_LANGUAGE_ID} />
+              <CodeEditor id="code-editor" ariaLabel="Console Code Editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language={GROOVY_LANGUAGE_ID} />
             </Flex>
           </Item>
           <Item key="output" aria-label="Output">
@@ -179,7 +179,7 @@ const ConsolePage = () => {
                   <ConsoleHelpButton />
                 </Flex>
               </Flex>
-              <CodeEditor id="output-preview" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} language={LOG_LANGUAGE_ID} />
+              <CodeEditor id="output-preview" ariaLabel="Console Output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} language={LOG_LANGUAGE_ID} />
             </Flex>
           </Item>
         </TabPanels>

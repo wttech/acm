@@ -29,3 +29,7 @@ export function expectToHaveMultilineText(actual: string, expected: string) {
     expect(actual).toContain(line);
   }
 }
+
+export function expectToMatchTimestamp(actual: string) {
+  expect(actual).toMatch(/\d+ \w+ \d{4} at \d+:\d+( \(.+\))?/);
+}
