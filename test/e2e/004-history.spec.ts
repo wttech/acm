@@ -30,4 +30,23 @@ test.describe('History', () => {
     const secondOutput = await readFromCodeEditor(page, 'Execution Output');
     expect(secondOutput).toContain('Hello World!');
   });
+
+  test('Shows automatic script executions', async ({ page }) => {
+    await page.goto('/acm');
+    await page.getByRole('button', { name: 'History' }).click();
+    
+    const grid = page.locator('[role="grid"][aria-label="Executions table"]');
+    await expect(grid).toBeVisible();
+    const rows = grid.locator('[role="row"]');
+  
+    // Search for first automatic script
+    await page.getByRole('searchbox', { name: 'Executable' }).fill('example/ACME-20_once');
+    await expect(rows.nth(1)).toContainText('Script \'example/ACME-20_once\'');
+    await expect(rows.nth(1)).toContainText('succeeded');
+    
+    // Search for second automatic script
+    await page.getByRole('searchbox', { name: 'Executable' }).fill('example/ACME-21_changed');
+    await expect(rows.nth(1)).toContainText('Script \'example/ACME-21_changed\'');
+    await expect(rows.nth(1)).toContainText('succeeded');
+  });
 });
