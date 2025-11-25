@@ -562,8 +562,13 @@ public class RepoResource {
     }
 
     private void saveFileInternal(Map<String, Object> properties, InputStream data, Consumer<OutputStream> dataWriter) {
-        if (properties == null || !properties.containsKey(JcrConstants.JCR_MIMETYPE)) {
-            properties = Collections.singletonMap(JcrConstants.JCR_MIMETYPE, FILE_MIME_TYPE_DEFAULT);
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
+        if (!properties.containsKey(JcrConstants.JCR_MIMETYPE)) {
+            Map<String, Object> mutableProps = new HashMap<>(properties);
+            mutableProps.put(JcrConstants.JCR_MIMETYPE, FILE_MIME_TYPE_DEFAULT);
+            properties = mutableProps;
         }
 
         Resource mainResource = resolve();
