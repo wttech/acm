@@ -21,7 +21,6 @@ void doRun() {
     def page = repo.get(inputs.value("pagePath"))
     try {
         def pageImage = page.child("jcr:content/image").ensure("nt:unstructured")
-        pageImage.child("file/jcr:content/dam:thumbnails").delete()
         pageImage.child("file").saveFile("image/jpeg", pageThumnail.readFileAsStream())
     } finally {
         pageThumnail.delete()

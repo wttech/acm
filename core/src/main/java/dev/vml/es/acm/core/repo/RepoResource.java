@@ -558,39 +558,26 @@ public class RepoResource {
     private void saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
         Resource mainResource = resolve();
         try {
-            if (mainResource == null) {
-                String parentPath = StringUtils.substringBeforeLast(path, "/");
-                Resource parent = repo.getResourceResolver().getResource(parentPath);
-                if (parent == null) {
-                    throw new RepoException(
-                            String.format("Cannot save file as parent path '%s' does not exist!", parentPath));
-                }
-                String name = StringUtils.substringAfterLast(path, "/");
-                Map<String, Object> mainValues = new HashMap<>();
-                mainValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_FILE);
-                mainResource = repo.getResourceResolver().create(parent, name, mainValues);
-
-                Map<String, Object> contentValues = new HashMap<>();
-                setFileContent(contentValues, mimeType, data, dataWriter);
-                repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
-
-                repo.commit(String.format("creating file at path '%s'", path));
-                repo.getLogger().info("Created file at path '{}'", path);
-            } else {
-                Resource contentResource = mainResource.getChild(JcrConstants.JCR_CONTENT);
-                if (contentResource == null) {
-                    Map<String, Object> contentValues = new HashMap<>();
-                    setFileContent(contentValues, mimeType, data, dataWriter);
-                    repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
-                } else {
-                    ModifiableValueMap contentValues =
-                            Objects.requireNonNull(contentResource.adaptTo(ModifiableValueMap.class));
-                    setFileContent(contentValues, mimeType, data, dataWriter);
-                }
-
-                repo.commit(String.format("updating file at path '%s'", path));
-                repo.getLogger().info("Updated file at path '{}'", path);
+            if (mainResource != null) {
+                repo.getResourceResolver().delete(mainResource);
             }
+
+            Resource parent = parent().resolve();
+            if (parent == null) {
+                throw new RepoException(
+                        String.format("Cannot save file as parent path '%s' does not exist!", parentPath()));
+            }
+            String name = getName();
+            Map<String, Object> mainValues = new HashMap<>();
+            mainValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_FILE);
+            mainResource = repo.getResourceResolver().create(parent, name, mainValues);
+
+            Map<String, Object> contentValues = new HashMap<>();
+            setFileContent(contentValues, mimeType, data, dataWriter);
+            repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
+
+            repo.commit(String.format("saving file at path '%s'", path));
+            repo.getLogger().info("Saved file at path '{}'", path);
         } catch (PersistenceException e) {
             throw new RepoException(String.format("Cannot save file at path '%s'!", path), e);
         }
