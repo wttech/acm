@@ -34,6 +34,7 @@ const ExecutionInputs: React.FC<ExecutionInputsProps> = ({ inputs }) => {
                 <SnippetCode
                   language="groovy"
                   fontSize="small"
+                  scrollable
                   content={`void describeRun() {
   inputs.path("pagePath") { 
     rootPathExclusive = '/content' 
@@ -57,7 +58,7 @@ const ExecutionInputs: React.FC<ExecutionInputsProps> = ({ inputs }) => {
             </ContextualHelp>
           </Flex>
         ) : (
-          <CodeTextarea language="json" value={JSON.stringify(inputs, null, 2)} options={{ readOnly: true }} />
+          <CodeTextarea language="json" value={JSON.stringify(inputs, null, 2)} options={{ readOnly: true, ariaLabel: 'Execution Inputs JSON' }} />
         )}
       </div>
     </Field>

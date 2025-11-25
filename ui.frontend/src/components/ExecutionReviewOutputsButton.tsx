@@ -125,7 +125,7 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                               <Text UNSAFE_style={{ fontWeight: 'bold' }}>Archive</Text>
                               <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Console and generated outputs bundled as ZIP archive</Text>
                             </Flex>
-                            <Button variant="cta" onPress={handleDownloadAll}>
+                            <Button variant="cta" onPress={handleDownloadAll} aria-label="Download Archive">
                               <FolderArchive />
                               <Text>Download</Text>
                             </Button>
@@ -138,7 +138,7 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                               <Text UNSAFE_style={{ fontWeight: 'bold' }}>Console</Text>
                               <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>Execution logs and errors as text file</Text>
                             </Flex>
-                            <Button variant="primary" onPress={handleDownloadConsole}>
+                            <Button variant="primary" onPress={handleDownloadConsole} aria-label="Download Console">
                               <Print />
                               <Text>Download</Text>
                             </Button>
@@ -151,7 +151,7 @@ const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> 
                                 <Text UNSAFE_style={{ fontWeight: 'bold' }}>{outputFile.label || Strings.capitalizeWords(outputFile.name)}</Text>
                                 {outputFile.description && <Text UNSAFE_style={{ fontSize: 'smaller', color: 'var(--spectrum-global-color-gray-600)' }}>{outputFile.description}</Text>}
                               </Flex>
-                              <Button variant="primary" onPress={() => handleDownloadSingle(outputFile)}>
+                              <Button variant="primary" onPress={() => handleDownloadSingle(outputFile)} aria-label={`Download ${outputFile.label || Strings.capitalizeWords(outputFile.name)}`}>
                                 <Download />
                                 <Text>Download</Text>
                               </Button>

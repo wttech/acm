@@ -59,9 +59,10 @@ interface SnippetCodeProps {
   content: string;
   language: 'groovy' | 'java' | 'javascript' | 'typescript' | 'json' | 'xml' | 'yaml' | 'bash';
   fontSize?: 'small' | 'medium';
+  scrollable?: boolean;
 }
 
-const SnippetCode: React.FC<SnippetCodeProps> = ({ content, language, fontSize = 'medium' }) => {
+const SnippetCode: React.FC<SnippetCodeProps> = ({ content, language, fontSize = 'medium', scrollable = false }) => {
   const codeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -77,7 +78,7 @@ const SnippetCode: React.FC<SnippetCodeProps> = ({ content, language, fontSize =
   }, [content, language, fontSize]);
 
   return (
-    <div ref={codeRef} className="snippet-code-wrapper">
+    <div ref={codeRef} className={scrollable ? 'snippet-code-wrapper-scrollable' : 'snippet-code-wrapper'}>
       <code className={`snippet-code language-${language} snippet-code-${fontSize}`}>{content}</code>
     </div>
   );

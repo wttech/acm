@@ -3,13 +3,13 @@ package dev.vml.es.acm.core.repo;
 import dev.vml.es.acm.core.util.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import org.apache.commons.io.IOUtils;
@@ -34,6 +34,8 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
  * within AEM and Sling-based applications.
  */
 public class RepoResource {
+
+    public static final String FILE_MIME_TYPE_DEFAULT = "application/octet-stream";
 
     private final Repo repo;
 
@@ -402,6 +404,50 @@ public class RepoResource {
         return target;
     }
 
+    // AEM 6.5.0 has no 'resourceResolver.orderBefore' so adding own based on:
+    // https://github.com/apache/sling-org-apache-sling-jcr-resource/commit/3b8f01d226124417bdfdba4ca2086114a73a7c5d
+    public boolean orderBefore(String siblingName) {
+        Node parentNode = parent().requireNode();
+        String name = getName();
+        try {
+            long existingNodePosition = -1;
+            long siblingNodePosition = -1;
+            long index = 0;
+
+            NodeIterator nodeIterator = parentNode.getNodes();
+            while (nodeIterator.hasNext()) {
+                Node childNode = nodeIterator.nextNode();
+                String childName = childNode.getName();
+
+                if (childName.equals(name)) {
+                    existingNodePosition = index;
+                }
+                if (siblingName != null && childName.equals(siblingName)) {
+                    siblingNodePosition = index;
+                } else if (siblingName == null && childName.equals(name)) {
+                    if (existingNodePosition == nodeIterator.getSize() - 1) {
+                        return false;
+                    }
+                }
+                index++;
+            }
+
+            if (siblingName != null
+                    && existingNodePosition >= 0
+                    && siblingNodePosition >= 0
+                    && existingNodePosition == siblingNodePosition - 1) {
+                return false;
+            }
+
+            parentNode.orderBefore(name, siblingName);
+            repo.commit(String.format("reordering resource '%s' before '%s'", path, siblingName));
+            repo.getLogger().info("Reordered resource '{}' before '{}'", path, siblingName);
+            return true;
+        } catch (RepositoryException e) {
+            throw new RepoException(String.format("Cannot reorder resource '%s' before '%s'", path, siblingName), e);
+        }
+    }
+
     public RepoResource parent() {
         String parentPath = parentPath();
         if (parentPath == null) {
@@ -534,98 +580,90 @@ public class RepoResource {
         return new RepoResourceState(path, true, resource.getValueMap());
     }
 
+    public RepoResource saveFile(InputStream data) {
+        return saveFile(FILE_MIME_TYPE_DEFAULT, data);
+    }
+
+    public RepoResource saveFile(String mimeType, InputStream data) {
+        return saveFile(Collections.singletonMap(JcrConstants.JCR_MIMETYPE, mimeType), data);
+    }
+
+    public RepoResource saveFile(Map<String, Object> properties, InputStream data) {
+        saveFileInternal(properties, data, null);
+        return this;
+    }
+
+    public RepoResource saveFile(Consumer<OutputStream> dataWriter) {
+        return saveFile(FILE_MIME_TYPE_DEFAULT, dataWriter);
+    }
+
     public RepoResource saveFile(String mimeType, Consumer<OutputStream> dataWriter) {
-        saveFileInternal(mimeType, null, dataWriter);
+        return saveFile(Collections.singletonMap(JcrConstants.JCR_MIMETYPE, mimeType), dataWriter);
+    }
+
+    public RepoResource saveFile(Map<String, Object> properties, Consumer<OutputStream> dataWriter) {
+        saveFileInternal(properties, null, dataWriter);
         return this;
     }
 
-    public RepoResource saveFile(String mimeType, File file) {
-        saveFile(mimeType, (OutputStream os) -> {
-            try (InputStream is = Files.newInputStream(file.toPath())) {
-                IOUtils.copy(is, os);
-            } catch (IOException e) {
-                throw new RepoException(String.format("Cannot write file '%s' to path '%s'!", file.getPath(), path), e);
-            }
-        });
-        return this;
-    }
+    private void saveFileInternal(Map<String, Object> properties, InputStream data, Consumer<OutputStream> dataWriter) {
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
+        if (!properties.containsKey(JcrConstants.JCR_MIMETYPE)) {
+            Map<String, Object> propertiesMutable = new HashMap<>(properties);
+            propertiesMutable.put(JcrConstants.JCR_MIMETYPE, FILE_MIME_TYPE_DEFAULT);
+            properties = propertiesMutable;
+        }
 
-    public RepoResource saveFile(String mimeType, Object data) {
-        saveFileInternal(mimeType, data, null);
-        return this;
-    }
-
-    private void saveFileInternal(String mimeType, Object data, Consumer<OutputStream> dataWriter) {
         Resource mainResource = resolve();
         try {
-            if (mainResource == null) {
-                String parentPath = StringUtils.substringBeforeLast(path, "/");
-                Resource parent = repo.getResourceResolver().getResource(parentPath);
-                if (parent == null) {
-                    throw new RepoException(
-                            String.format("Cannot save file as parent path '%s' does not exist!", parentPath));
-                }
-                String name = StringUtils.substringAfterLast(path, "/");
-                Map<String, Object> mainValues = new HashMap<>();
-                mainValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_FILE);
-                mainResource = repo.getResourceResolver().create(parent, name, mainValues);
-
-                Map<String, Object> contentValues = new HashMap<>();
-                setFileContent(contentValues, mimeType, data, dataWriter);
-                repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
-
-                repo.commit(String.format("creating file at path '%s'", path));
-                repo.getLogger().info("Created file at path '{}'", path);
-            } else {
-                Resource contentResource = mainResource.getChild(JcrConstants.JCR_CONTENT);
-                if (contentResource == null) {
-                    Map<String, Object> contentValues = new HashMap<>();
-                    setFileContent(contentValues, mimeType, data, dataWriter);
-                    repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
-                } else {
-                    ModifiableValueMap contentValues =
-                            Objects.requireNonNull(contentResource.adaptTo(ModifiableValueMap.class));
-                    setFileContent(contentValues, mimeType, data, dataWriter);
-                }
-
-                repo.commit(String.format("updating file at path '%s'", path));
-                repo.getLogger().info("Updated file at path '{}'", path);
+            if (mainResource != null) {
+                repo.getResourceResolver().delete(mainResource);
             }
+
+            Resource parent = parent().resolve();
+            if (parent == null) {
+                throw new RepoException(
+                        String.format("Cannot save file as parent path '%s' does not exist!", parentPath()));
+            }
+            String name = getName();
+            Map<String, Object> mainValues = new HashMap<>();
+            mainValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_FILE);
+            mainResource = repo.getResourceResolver().create(parent, name, mainValues);
+
+            Map<String, Object> contentValues = new HashMap<>();
+            setFileContent(contentValues, properties, data, dataWriter);
+            repo.getResourceResolver().create(mainResource, JcrConstants.JCR_CONTENT, contentValues);
+
+            repo.commit(String.format("saving file at path '%s'", path));
+            repo.getLogger().info("Saved file at path '{}'", path);
         } catch (PersistenceException e) {
             throw new RepoException(String.format("Cannot save file at path '%s'!", path), e);
         }
     }
 
     private void setFileContent(
-            Map<String, Object> contentValues, String mimeType, Object data, Consumer<OutputStream> dataWriter) {
+            Map<String, Object> contentValues,
+            Map<String, Object> props,
+            InputStream data,
+            Consumer<OutputStream> dataWriter) {
+        contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
+        contentValues.putAll(props);
+
         if (dataWriter != null) {
-            setFileContent(contentValues, mimeType, dataWriter);
+            final PipedInputStream pis = new PipedInputStream();
+            Executors.newSingleThreadExecutor().submit(() -> {
+                try (PipedOutputStream pos = new PipedOutputStream(pis)) {
+                    dataWriter.accept(pos);
+                } catch (Exception e) {
+                    throw new RepoException(String.format("Cannot write data to file at path '%s'!", path), e);
+                }
+            });
+            contentValues.put(JcrConstants.JCR_DATA, pis);
         } else {
-            setFileContent(contentValues, mimeType, data);
+            contentValues.put(JcrConstants.JCR_DATA, data);
         }
-    }
-
-    private void setFileContent(Map<String, Object> contentValues, String mimeType, Object data) {
-        contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
-        contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
-        contentValues.put(JcrConstants.JCR_MIMETYPE, mimeType);
-        contentValues.put(JcrConstants.JCR_DATA, data);
-    }
-
-    // https://stackoverflow.com/a/27172165
-    private void setFileContent(Map<String, Object> contentValues, String mimeType, Consumer<OutputStream> dataWriter) {
-        contentValues.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
-        contentValues.put(JcrConstants.JCR_ENCODING, "utf-8");
-        contentValues.put(JcrConstants.JCR_MIMETYPE, mimeType);
-        final PipedInputStream pis = new PipedInputStream();
-        Executors.newSingleThreadExecutor().submit(() -> {
-            try (PipedOutputStream pos = new PipedOutputStream(pis)) {
-                dataWriter.accept(pos);
-            } catch (Exception e) {
-                throw new RepoException(String.format("Cannot write data to file at path '%s'!", path), e);
-            }
-        });
-        contentValues.put(JcrConstants.JCR_DATA, pis);
     }
 
     public InputStream readFileAsStream() {

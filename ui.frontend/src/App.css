@@ -7,6 +7,15 @@ input[type='search'] {
   box-sizing: border-box !important;
 }
 
+/* Disable Coral UI 3 tooltips (native HTML5 validation) */
+.coral3-Tooltip,
+coral-tooltip {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 .coral3-Shell-header {
   z-index: 1;
 }

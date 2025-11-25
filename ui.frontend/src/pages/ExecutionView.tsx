@@ -102,9 +102,8 @@ const ExecutionView = () => {
                   </Toggle>
                 </Flex>
               </View>
-              {/* Row 1: Execution Info */}
               <Flex direction="row" gap="size-200" alignItems="stretch">
-                <InfoCard>
+                <InfoCard id="execution-status">
                   <LabeledValue label="ID" value={execution.id} />
                   <Field label="User">
                     <div>
@@ -117,24 +116,22 @@ const ExecutionView = () => {
                     </div>
                   </Field>
                 </InfoCard>
-                <InfoCard>
+                <InfoCard id="execution-timing">
                   <LabeledValue label="Started At" value={execution.startDate ? formatter.dateExplained(execution.startDate) : '—'} />
                   <LabeledValue label="Duration" value={formatter.durationExplained(execution.duration)} />
                   <LabeledValue label="Ended At" value={execution.endDate ? formatter.dateExplained(execution.endDate) : '—'} />
                 </InfoCard>
               </Flex>
-              {/* Row 2: I/O */}
               <Flex direction="row" gap="size-200" alignItems="stretch">
-                <InfoCard>
+                <InfoCard id="execution-inputs">
                   <ExecutionInputs inputs={execution.inputs} />
                 </InfoCard>
-                <InfoCard>
+                <InfoCard id="execution-outputs">
                   <ExecutionOutputs outputs={execution.outputs} />
                 </InfoCard>
               </Flex>
-              {/* Row 3: Executable Info */}
               <Flex direction="row" gap="size-200" alignItems="stretch">
-                <InfoCard>
+                <InfoCard id="executable-details">
                   <Field label="Executable" width="100%">
                     <div style={{ width: '100%' }}>
                       <ExecutableIdValue id={execution.executable.id} />
@@ -142,7 +139,7 @@ const ExecutionView = () => {
                   </Field>
                   {!isExecutableConsole(execution.executable.id) && <LabeledValue label="ID" value={execution.executable.id} />}
                 </InfoCard>
-                <InfoCard>
+                <InfoCard id="executable-metadata">
                   <ExecutableMetadata metadata={execution.executable.metadata} />
                 </InfoCard>
               </Flex>
@@ -160,7 +157,7 @@ const ExecutionView = () => {
                   </ButtonGroup>
                 </Flex>
               </View>
-              <CodeEditor id="execution-view" value={execution.executable.content} language={GROOVY_LANGUAGE_ID} readOnly />
+              <CodeEditor id="execution-view" ariaLabel="Execution Script Code" value={execution.executable.content} language={GROOVY_LANGUAGE_ID} readOnly />
             </Flex>
           </Item>
           <Item key="output" aria-label="Output">
@@ -186,7 +183,7 @@ const ExecutionView = () => {
                   </Switch>
                 </Flex>
               </Flex>
-              <CodeEditor id="execution-output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} language={LOG_LANGUAGE_ID} />
+              <CodeEditor id="execution-output" ariaLabel="Execution Output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} language={LOG_LANGUAGE_ID} />
             </Flex>
           </Item>
         </TabPanels>

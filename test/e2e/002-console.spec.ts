@@ -25,7 +25,7 @@ test.describe('Console', () => {
     await page.getByRole('tab', { name: 'Output' }).click();
     await expectExecutionProgressBarSucceeded(page);
     
-    const output = await readFromCodeEditor(page);
+    const output = await readFromCodeEditor(page, 'Console Output');
     expectToHaveMultilineText(output, `
         Hello World!
     `);

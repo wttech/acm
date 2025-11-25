@@ -68,5 +68,10 @@ export default defineConfig({
   build: {
     outDir: `../ui.apps/src/main/content/jcr_root${buildPath}`,
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        chunkFileNames: (chunkInfo) => `chunks/${chunkInfo.name.replace(/[:[\]@]/g, '-')}-[hash].js`,
+      },
+    },
   },
 });

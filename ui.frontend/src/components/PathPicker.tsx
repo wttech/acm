@@ -338,7 +338,7 @@ const PathField = forwardRef<TextFieldRef, PathPickerFieldProps>(({ root, onSele
 
   return (
     <Flex gap="size-100">
-      <TextField ref={ref} flexGrow={1} value={value} {...props} />
+      <TextField ref={ref} flexGrow={1} value={value} onChange={onSelect} {...props} />
       <Button variant="secondary" style="outline" onPress={() => setPathPickerOpened(true)} aria-label="Pick a path" marginTop="size-300">
         <FolderSearch />
       </Button>

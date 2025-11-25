@@ -63,7 +63,7 @@ test.describe('Tool Access', () => {
     await page.getByRole('tab', { name: 'Output' }).click();
     await expectExecutionProgressBarSucceeded(page);
     
-    const output = await readFromCodeEditor(page);
+    const output = await readFromCodeEditor(page, 'Console Output');
     expect(output).toContain('Setup complete!');
 
     await newAemContext(browser, 'acm-test-user', 'test1234', async (testUserPage) => {

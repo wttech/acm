@@ -3,11 +3,12 @@ import { ReactNode } from 'react';
 
 type InfoCardProps = {
   children: ReactNode;
+  id?: string;
 };
 
-const InfoCard = ({ children }: InfoCardProps) => {
+const InfoCard = ({ children, id }: InfoCardProps) => {
   return (
-    <View backgroundColor="static-white" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin" flex="1">
+    <View id={id} backgroundColor="static-white" padding="size-200" borderRadius="medium" borderColor="dark" borderWidth="thin" flex="1">
       <Flex direction="column" gap="size-200">
         {children}
       </Flex>
