@@ -51,7 +51,7 @@ test.describe('Manual Scripts', () => {
     expect(executionId).toMatch(/^2025\/\d+\/\d+\/\d+\/\d+\//);
     
     await expect(page.getByText('admin')).toBeVisible();
-    await expect(page.getByText('succeeded', { exact: false })).toBeVisible();
+    await expect(executionStatus.getByRole('presentation').filter({ hasText: 'succeeded' })).toBeVisible();
     
     const executionTiming = page.locator('#execution-timing');
     const startedAt = await getLabeledValueText(page, 'Started At', executionTiming);
@@ -83,7 +83,5 @@ test.describe('Manual Scripts', () => {
       name: 'summary',
       value: 'Processed 5000 user(s)',
     });
-
-    await page.getByRole('button', { name: 'Close' }).click();
   });
 });

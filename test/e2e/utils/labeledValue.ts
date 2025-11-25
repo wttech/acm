@@ -5,9 +5,7 @@ import { Locator, Page } from '@playwright/test';
  */
 export async function getLabeledValueText(page: Page, label: string, scope?: Locator): Promise<string> {
   const container = scope || page;
-  const labeledValue = container.locator('div[class*="LabeledValue"]').filter({
-    has: container.locator('span[class*="FieldLabel"]:text-is("' + label + '")')
-  });
-  const valueSpan = labeledValue.locator('span[class*="Field-field"]').first();
+  const labelSpan = container.locator('span[class*="FieldLabel"]:text-is("' + label + '")');
+  const valueSpan = labelSpan.locator('..').locator('span[class*="Field-field"]');
   return await valueSpan.textContent() || '';
 }
