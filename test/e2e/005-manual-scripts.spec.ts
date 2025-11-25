@@ -1,7 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { expectExecutionProgressBarSucceeded, expectToMatchTimestamp } from './utils/expect';
-import { readFromCodeEditor, readFromCodeEditorAsJson } from './utils/editor';
-import { getLabeledValueText } from './utils/labeledValue';
+import {
+  expectExecutionProgressBarSucceeded,
+  expectExecutionDetails,
+  expectExecutionTimings,
+  expectExecutionInputs,
+  expectExecutionOutputs,
+  expectOutputTexts,
+  expectOutputFileDownload,
+} from './utils/expect';
+import { readFromCodeEditor } from './utils/editor';
 
 test.describe('Manual Scripts', () => {
   test('Execute CSV Generation With I/O', async ({ page }) => {
@@ -10,9 +17,9 @@ test.describe('Manual Scripts', () => {
     await page.getByText('example/ACME-203_output-csv').click();
     await page.getByRole('button', { name: 'Execute' }).click();
 
-    await page.getByRole('textbox', { name: 'Input \'count\' Users to' }).fill('5000');
-    await page.getByRole('textbox', { name: 'Input \'firstNames\' First names' }).fill('John\nJane\nJack\nAlice\nBob\nRobert');
-    await page.getByRole('textbox', { name: 'Input \'lastNames\' Last names' }).fill('Doe\nSmith\nBrown\nJohnson\nWhite\nJordan');
+    await page.getByRole('textbox', { name: 'Users to' }).fill('5000');
+    await page.getByRole('textbox', { name: 'First names' }).fill('John\nJane\nJack\nAlice\nBob\nRobert');
+    await page.getByRole('textbox', { name: 'Last names' }).fill('Doe\nSmith\nBrown\nJohnson\nWhite\nJordan');
 
     await page.getByRole('button', { name: 'Start' }).click();
     await expectExecutionProgressBarSucceeded(page);
@@ -21,67 +28,50 @@ test.describe('Manual Scripts', () => {
     expect(output).toContain('[SUCCESS] Users CSV report generation ended successfully');
 
     await page.getByRole('tab', { name: 'Details' }).click();
-    
-    const executionStatus = page.locator('#execution-status');
-    const executionId = await getLabeledValueText(page, 'ID', executionStatus);
-    expect(executionId).toMatch(/^2025\/\d+\/\d+\/\d+\/\d+\//);
-    
-    await expect(page.getByText('admin')).toBeVisible();
-    await expect(executionStatus.getByRole('presentation').filter({ hasText: 'succeeded' })).toBeVisible();
-    
-    const executionTiming = page.locator('#execution-timing');
-    const startedAt = await getLabeledValueText(page, 'Started At', executionTiming);
-    expectToMatchTimestamp(startedAt);
-    
-    const duration = await getLabeledValueText(page, 'Duration', executionTiming);
-    expect(duration).toMatch(/\d+ ms \(\d+ seconds?\)/);
-    
-    const endedAt = await getLabeledValueText(page, 'Ended At', executionTiming);
-    expectToMatchTimestamp(endedAt);
 
-    const inputs = await readFromCodeEditorAsJson<Record<string, any>>(page, 'Execution Inputs JSON');
-    expect(inputs).toEqual({
+    await page.waitForTimeout(1000);
+    await page.screenshot();
+    
+    await expectExecutionDetails(page);
+    await expectExecutionTimings(page);
+
+    await expectExecutionInputs(page, {
       count: 5000,
       firstNames: 'John\nJane\nJack\nAlice\nBob\nRobert',
       lastNames: 'Doe\nSmith\nBrown\nJohnson\nWhite\nJordan',
     });
 
-    const outputs = await readFromCodeEditorAsJson<Array<any>>(page, 'Execution Outputs JSON');
-    expect(outputs).toHaveLength(2);
-    expect(outputs[0]).toMatchObject({
-      type: 'FILE',
-      name: 'report',
-      label: 'Report',
-      downloadName: 'report.csv',
-    });
-    expect(outputs[1]).toMatchObject({
-      type: 'TEXT',
-      name: 'summary',
-      value: 'Processed 5000 user(s)',
-    });
+    await expectExecutionOutputs(page, [
+      {
+        type: 'FILE',
+        name: 'report',
+        label: 'Report',
+        downloadName: 'report.csv',
+      },
+      {
+        type: 'TEXT',
+        name: 'summary',
+        value: 'Processed 5000 user(s)',
+      },
+    ]);
 
     await page.getByRole('tab', { name: 'Output' }).click();
-    await page.getByRole('button', { name: 'Review' }).click();
-    await expect(page.getByText('Processed 5000 user(s)')).toBeVisible();
-    await page.getByRole('tab', { name: 'Files' }).click();
-
-    const downloadArchivePromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Download Archive' }).click();
-    const downloadArchive = await downloadArchivePromise;
-    expect(downloadArchive.suggestedFilename()).toMatch(/\.(zip)$/);
 
     await page.getByRole('button', { name: 'Review' }).click();
+    await page.getByRole('tab', { name: 'Texts' }).click();
+    await expectOutputTexts(page, ['Processed 5000 user(s)']);
+    await page.getByTestId('modal').getByRole('button', { name: 'Close' }).click();
+    
+    await page.getByRole('button', { name: 'Review' }).click();
     await page.getByRole('tab', { name: 'Files' }).click();
-    const downloadConsolePromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Download Console' }).click();
-    const downloadConsole = await downloadConsolePromise;
-    expect(downloadConsole.suggestedFilename()).toMatch(/\.console\.log$/);
+    await expectOutputFileDownload(page, 'Download Archive', /\.(zip)$/);
 
     await page.getByRole('button', { name: 'Review' }).click();
     await page.getByRole('tab', { name: 'Files' }).click();
-    const downloadReportPromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Download Report' }).click();
-    const downloadReport = await downloadReportPromise;
-    expect(downloadReport.suggestedFilename()).toMatch(/\.csv$/);
+    await expectOutputFileDownload(page, 'Download Console', /\.console\.log$/);
+
+    await page.getByRole('button', { name: 'Review' }).click();
+    await page.getByRole('tab', { name: 'Files' }).click();
+    await expectOutputFileDownload(page, 'Download Report', /\.csv$/);
   });
 });
