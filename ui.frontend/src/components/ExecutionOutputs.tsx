@@ -34,6 +34,7 @@ const ExecutionOutputs: React.FC<ExecutionOutputsProps> = ({ outputs }) => {
                 <SnippetCode
                   language="groovy"
                   fontSize="small"
+                  scrollable
                   content={`void doRun() {
   def report = outputs.file("report") {
     label = "Report"

@@ -34,6 +34,7 @@ const ExecutionInputs: React.FC<ExecutionInputsProps> = ({ inputs }) => {
                 <SnippetCode
                   language="groovy"
                   fontSize="small"
+                  scrollable
                   content={`void describeRun() {
   inputs.path("pagePath") { 
     rootPathExclusive = '/content' 

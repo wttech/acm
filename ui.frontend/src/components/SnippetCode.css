@@ -1,6 +1,10 @@
 .snippet-code-wrapper {
-  overflow-x: auto;
   max-width: 100%;
+}
+
+.snippet-code-wrapper-scrollable {
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .snippet-code {
@@ -11,7 +15,6 @@
   font-weight: normal;
   unicode-bidi: isolate;
   white-space: pre;
-  padding: var(--spectrum-global-dimension-size-100);
   border-radius: var(--spectrum-global-dimension-size-50);
 }
 

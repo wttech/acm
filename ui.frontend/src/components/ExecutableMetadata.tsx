@@ -40,6 +40,7 @@ const ExecutableMetadata: React.FC<ExecutableMetadataProps> = ({ metadata }) => 
                 <SnippetCode
                   language="groovy"
                   fontSize="small"
+                  scrollable
                   content={`/*
 ---
 version: '1.0'
