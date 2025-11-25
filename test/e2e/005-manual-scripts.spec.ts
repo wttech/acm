@@ -20,30 +20,6 @@ test.describe('Manual Scripts', () => {
     const output = await readFromCodeEditor(page, 'Execution Output');
     expect(output).toContain('[SUCCESS] Users CSV report generation ended successfully');
 
-    await page.getByRole('button', { name: 'Review' }).click();
-    await expect(page.getByText('Processed 5000 user(s)')).toBeVisible();
-    await page.getByRole('tab', { name: 'Files' }).click();
-
-    const downloadArchivePromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Download Archive' }).click();
-    const downloadArchive = await downloadArchivePromise;
-    expect(downloadArchive.suggestedFilename()).toMatch(/\.(zip)$/);
-
-    await page.getByRole('button', { name: 'Review' }).click();
-    await page.getByRole('tab', { name: 'Files' }).click();
-    const downloadConsolePromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Download Console' }).click();
-    const downloadConsole = await downloadConsolePromise;
-    expect(downloadConsole.suggestedFilename()).toMatch(/\.console\.log$/);
-
-    await page.getByRole('button', { name: 'Review' }).click();
-    await page.getByRole('tab', { name: 'Files' }).click();
-    const downloadReportPromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Download Report' }).click();
-    const downloadReport = await downloadReportPromise;
-    expect(downloadReport.suggestedFilename()).toMatch(/\.csv$/);
-
-  
     await page.getByRole('tab', { name: 'Details' }).click();
     
     const executionStatus = page.locator('#execution-status');
@@ -83,5 +59,29 @@ test.describe('Manual Scripts', () => {
       name: 'summary',
       value: 'Processed 5000 user(s)',
     });
+
+    await page.getByRole('tab', { name: 'Output' }).click();
+    await page.getByRole('button', { name: 'Review' }).click();
+    await expect(page.getByText('Processed 5000 user(s)')).toBeVisible();
+    await page.getByRole('tab', { name: 'Files' }).click();
+
+    const downloadArchivePromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download Archive' }).click();
+    const downloadArchive = await downloadArchivePromise;
+    expect(downloadArchive.suggestedFilename()).toMatch(/\.(zip)$/);
+
+    await page.getByRole('button', { name: 'Review' }).click();
+    await page.getByRole('tab', { name: 'Files' }).click();
+    const downloadConsolePromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download Console' }).click();
+    const downloadConsole = await downloadConsolePromise;
+    expect(downloadConsole.suggestedFilename()).toMatch(/\.console\.log$/);
+
+    await page.getByRole('button', { name: 'Review' }).click();
+    await page.getByRole('tab', { name: 'Files' }).click();
+    const downloadReportPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download Report' }).click();
+    const downloadReport = await downloadReportPromise;
+    expect(downloadReport.suggestedFilename()).toMatch(/\.csv$/);
   });
 });
