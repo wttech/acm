@@ -39,12 +39,10 @@ test.describe('History', () => {
     await expect(grid).toBeVisible();
     const rows = grid.locator('[role="row"]');
   
-    // Search for first automatic script
     await page.getByRole('searchbox', { name: 'Executable' }).fill('example/ACME-20_once');
     await expect(rows.nth(1)).toContainText('Script \'example/ACME-20_once\'');
     await expect(rows.nth(1)).toContainText('succeeded');
     
-    // Search for second automatic script
     await page.getByRole('searchbox', { name: 'Executable' }).fill('example/ACME-21_changed');
     await expect(rows.nth(1)).toContainText('Script \'example/ACME-21_changed\'');
     await expect(rows.nth(1)).toContainText('succeeded');
