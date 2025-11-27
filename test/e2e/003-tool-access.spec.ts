@@ -2,9 +2,10 @@ import { test, expect } from '@playwright/test';
 import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded } from './utils/expect';
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
 import { newAemContext } from './utils/context';
+import { attachScreenshot } from './utils/page';
 
 test.describe('Tool Access', () => {
-  test('Admin user has full access', async ({ page }) => {
+  test('Admin user has full access', async ({ page }, testInfo) => {
     await page.goto('/acm');
 
     await expect(page.getByRole('button', { name: 'Console' })).toBeVisible();
@@ -19,10 +20,10 @@ test.describe('Tool Access', () => {
     await expectCompilationSucceeded(page);
     await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
 
-    await page.screenshot();
+    await attachScreenshot(page, testInfo, 'Admin Full Access');
   });
 
-  test('Setup test user and verify limited access', async ({ page, browser }) => {
+  test('Setup test user and verify limited access', async ({ page, browser }, testInfo) => {
     await page.goto('/acm#/console');
 
     await expectCompilationSucceeded(page);
@@ -79,7 +80,7 @@ test.describe('Tool Access', () => {
       await expect(testUserPage.getByRole('button', { name: 'History' })).not.toBeVisible();
       await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
       
-      await testUserPage.screenshot();
+      await attachScreenshot(testUserPage, testInfo, 'Test User Access - Dashboard');
 
       await testUserPage.getByRole('button', { name: 'Scripts' }).click();
       await expect(testUserPage).toHaveURL(/\/acm#\/scripts/);
@@ -99,7 +100,7 @@ test.describe('Tool Access', () => {
       await testUserPage.goto('/acm#/maintenance');
       await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
 
-      await testUserPage.screenshot();
+      await attachScreenshot(testUserPage, testInfo, 'Test User Access - Script List');
     });
   });
 });

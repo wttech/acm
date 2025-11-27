@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded, expectToHaveMultilineText } from './utils/expect'
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
+import { attachScreenshot } from './utils/page';
   
 test.describe('Console', () => {
-  test('Executes script', async ({ page }) => {
+  test('Executes script', async ({ page }, testInfo) => {
     await page.goto('/acm#/console');
 
     await expectCompilationSucceeded(page);
@@ -29,7 +30,7 @@ test.describe('Console', () => {
     expectToHaveMultilineText(output, `
         Hello World!
     `);
-    await page.screenshot();
+    await attachScreenshot(page, testInfo, 'Console Output');
   });
 });
 
