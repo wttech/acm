@@ -327,11 +327,24 @@ tasks:
 
   test:e2e:
     dir: test/e2e
-    desc: Test tool using end-to-end tests using Playwright
+    desc: Test tool using end-to-end tests
     cmd: |
       set -e
       sh nw npm install
       sh nw npx playwright {{.CLI_ARGS | default "test"}}
+
+  test:e2e:codegen:
+    dir: test/e2e
+    desc: Generate end-to-end test code from recording
+    cmd: |
+      sh nw npm install
+      sh nw npx playwright codegen --target=ts {{.AEM_AUTHOR_HTTP_URL}}
+
+  test:e2e:report:
+    dir: test/e2e
+    desc: Show end-to-end test report
+    cmd: |
+      sh nw npx playwright show-report
 
   rde:setup:
     desc: setup access to RDE

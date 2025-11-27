@@ -2,9 +2,10 @@ import { test, expect } from '@playwright/test';
 import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded } from './utils/expect';
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
 import { newAemContext } from './utils/context';
+import { attachScreenshot } from './utils/page';
 
 test.describe('Tool Access', () => {
-  test('Admin user has full access', async ({ page }) => {
+  test('Admin user has full access', async ({ page }, testInfo) => {
     await page.goto('/acm');
 
     await expect(page.getByRole('button', { name: 'Console' })).toBeVisible();
@@ -18,9 +19,11 @@ test.describe('Tool Access', () => {
     await page.goto('/acm#/console');
     await expectCompilationSucceeded(page);
     await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
+
+    await attachScreenshot(page, testInfo, 'Admin Full Access');
   });
 
-  test('Setup test user and verify limited access', async ({ page, browser }) => {
+  test('Setup test user and verify limited access', async ({ page, browser }, testInfo) => {
     await page.goto('/acm#/console');
 
     await expectCompilationSucceeded(page);
@@ -59,8 +62,7 @@ test.describe('Tool Access', () => {
     
     await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
     await page.getByRole('button', { name: 'Execute' }).click();
-
-    await page.getByRole('tab', { name: 'Output' }).click();
+    await expect(page.getByRole('tab', { name: 'Output' })).toHaveAttribute('aria-selected', 'true');
     await expectExecutionProgressBarSucceeded(page);
     
     const output = await readFromCodeEditor(page, 'Console Output');
@@ -77,6 +79,8 @@ test.describe('Tool Access', () => {
       await expect(testUserPage.getByRole('button', { name: 'Snippets' })).not.toBeVisible();
       await expect(testUserPage.getByRole('button', { name: 'History' })).not.toBeVisible();
       await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
+      
+      await attachScreenshot(testUserPage, testInfo, 'Test User Access - Dashboard');
 
       await testUserPage.getByRole('button', { name: 'Scripts' }).click();
       await expect(testUserPage).toHaveURL(/\/acm#\/scripts/);
@@ -90,6 +94,9 @@ test.describe('Tool Access', () => {
       const scriptRow = rows.nth(1);
       await expect(scriptRow.locator('[role="rowheader"]')).toContainText('example/ACME-200_hello-world');
 
+      await attachScreenshot(testUserPage, testInfo, 'Test User Access - Script List');
+
+      // Check if routing blocks access to other tools
       await testUserPage.goto('/acm#/console');
       await expect(testUserPage.getByRole('button', { name: 'Console' })).not.toBeVisible();
 

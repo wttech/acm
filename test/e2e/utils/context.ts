@@ -1,4 +1,5 @@
 import { Browser, Page } from '@playwright/test';
+import { authHeader, BASE_URL } from './env';
 
 export async function newAemContext(
   browser: Browser, 
@@ -7,10 +8,8 @@ export async function newAemContext(
   callback: (page: Page) => Promise<void>
 ): Promise<void> {
   const context = await browser.newContext({
-    baseURL: 'http://localhost:5502',
-    extraHTTPHeaders: {
-      'Authorization': 'Basic ' + btoa(`${user}:${password}`),
-    },
+    baseURL: BASE_URL,
+    extraHTTPHeaders: authHeader(user, password),
   });
   
   const page = await context.newPage();
