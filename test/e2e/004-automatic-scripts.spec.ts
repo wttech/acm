@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { readFromCodeEditor } from './utils/editor';
 import { attachScreenshot } from './utils/page';
 
 test.describe('Automatic Scripts', () => {
