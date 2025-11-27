@@ -14,18 +14,23 @@ test.describe('Manual Scripts', () => {
   test('Execute CSV Generation With I/O', async ({ page }) => {
     await page.goto('/acm');
     await page.getByRole('button', { name: 'Scripts' }).click();
+    await page.screenshot({ path: 'test-results/screenshots/005-scripts-list.png' });
     await page.getByText('example/ACME-203_output-csv').click();
+    await page.screenshot({ path: 'test-results/screenshots/005-script-details.png' });
     await page.getByRole('button', { name: 'Execute' }).click();
 
     await page.getByRole('textbox', { name: 'Users to' }).fill('5000');
     await page.getByRole('textbox', { name: 'First names' }).fill('John\nJane\nJack\nAlice\nBob\nRobert');
     await page.getByRole('textbox', { name: 'Last names' }).fill('Doe\nSmith\nBrown\nJohnson\nWhite\nJordan');
+    await page.screenshot({ path: 'test-results/screenshots/005-execution-inputs-filled.png' });
 
     await page.getByRole('button', { name: 'Start' }).click();
     await expectExecutionProgressBarSucceeded(page);
+    await page.screenshot();
 
     const output = await readFromCodeEditor(page, 'Execution Output');
     expect(output).toContain('[SUCCESS] Users CSV report generation ended successfully');
+    await page.screenshot({ path: 'test-results/screenshots/005-execution-output.png' });
 
     await page.getByRole('tab', { name: 'Details' }).click();
 
@@ -54,16 +59,19 @@ test.describe('Manual Scripts', () => {
         value: 'Processed 5000 user(s)',
       },
     ]);
+    await page.screenshot({ path: 'test-results/screenshots/005-execution-outputs.png' });
 
     await page.getByRole('tab', { name: 'Output' }).click();
 
     await page.getByRole('button', { name: 'Review' }).click();
     await page.getByRole('tab', { name: 'Texts' }).click();
     await expectOutputTexts(page, ['Processed 5000 user(s)']);
+    await page.screenshot({ path: 'test-results/screenshots/005-output-review-texts.png' });
     await page.getByTestId('modal').getByRole('button', { name: 'Close' }).click();
     
     await page.getByRole('button', { name: 'Review' }).click();
     await page.getByRole('tab', { name: 'Files' }).click();
+    await page.screenshot({ path: 'test-results/screenshots/005-output-review-files.png' });
     await expectOutputFileDownload(page, 'Download Archive', /\.(zip)$/);
 
     await page.getByRole('button', { name: 'Review' }).click();

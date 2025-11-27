@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { authHeader, BASE_URL } from './utils/env';
 
 /**
  * Read environment variables from file.
@@ -26,14 +27,15 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: 'http://localhost:5502',
+    baseURL: BASE_URL,
 
     /* Action timeout (e.g. toBeEnabled, toBeVisible) */
     actionTimeout: 10000,
 
     /* Basic Auth for AEM */
     extraHTTPHeaders: {
-      'Authorization': 'Basic ' + Buffer.from('admin:admin').toString('base64'),
+      ...authHeader(),
+      'Origin': BASE_URL,
     },
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */

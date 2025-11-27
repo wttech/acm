@@ -22,13 +22,14 @@ test.describe('Console', () => {
     await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
     await page.getByRole('button', { name: 'Execute' }).click();
 
-    await page.getByRole('tab', { name: 'Output' }).click();
+    await expect(page.getByRole('tab', { name: 'Output' })).toHaveAttribute('aria-selected', 'true');
     await expectExecutionProgressBarSucceeded(page);
     
     const output = await readFromCodeEditor(page, 'Console Output');
     expectToHaveMultilineText(output, `
         Hello World!
     `);
+    await page.screenshot();
   });
 });
 

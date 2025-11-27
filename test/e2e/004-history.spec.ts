@@ -15,10 +15,12 @@ test.describe('History', () => {
     
     const firstRow = rows.nth(1);
     await expect(firstRow.locator('[role="rowheader"]')).toContainText('Console');
+    await page.screenshot();
     await firstRow.click();
     await page.getByRole('tab', { name: 'Output' }).click();
     const firstOutput = await readFromCodeEditor(page, 'Execution Output');
     expect(firstOutput).toContain('Setup complete!');
+    await page.screenshot();
 
     await page.goto('/acm#/history');
     await expect(grid).toBeVisible();
@@ -29,6 +31,7 @@ test.describe('History', () => {
     await page.getByRole('tab', { name: 'Output' }).click();
     const secondOutput = await readFromCodeEditor(page, 'Execution Output');
     expect(secondOutput).toContain('Hello World!');
+    await page.screenshot();
   });
 
   test('Shows automatic script executions', async ({ page }) => {
@@ -42,9 +45,11 @@ test.describe('History', () => {
     await page.getByRole('searchbox', { name: 'Executable' }).fill('example/ACME-20_once');
     await expect(rows.nth(1)).toContainText('Script \'example/ACME-20_once\'');
     await expect(rows.nth(1)).toContainText('succeeded');
+    await page.screenshot();
     
     await page.getByRole('searchbox', { name: 'Executable' }).fill('example/ACME-21_changed');
     await expect(rows.nth(1)).toContainText('Script \'example/ACME-21_changed\'');
     await expect(rows.nth(1)).toContainText('succeeded');
+    await page.screenshot();
   });
 });

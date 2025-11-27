@@ -177,6 +177,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     public void bootOnDemand() {
         LOG.info("Automatic scripts booting on demand - job scheduling");
+        bootedScripts.clear();
         unscheduleBoot();
         scheduleBoot();
         LOG.info("Automatic scripts booting on demand - job scheduled");
@@ -319,8 +320,10 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
                 bootedScripts.put(script.getId(), checksum);
                 LOG.info("Boot script '{}' queued", script.getId());
             } else {
-                LOG.info("Boot script '{}' not eligible for queueing!", script.getId());
+                LOG.info("Boot script '{}' not queued - check failed", script.getId());
             }
+        } else {
+            LOG.info("Boot script '{}' not queued - checksum unchanged", script.getId());
         }
     }
 

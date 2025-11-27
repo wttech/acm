@@ -18,6 +18,8 @@ test.describe('Tool Access', () => {
     await page.goto('/acm#/console');
     await expectCompilationSucceeded(page);
     await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
+
+    await page.screenshot();
   });
 
   test('Setup test user and verify limited access', async ({ page, browser }) => {
@@ -59,8 +61,7 @@ test.describe('Tool Access', () => {
     
     await expect(page.getByRole('button', { name: 'Execute' })).toBeEnabled();
     await page.getByRole('button', { name: 'Execute' }).click();
-
-    await page.getByRole('tab', { name: 'Output' }).click();
+    await expect(page.getByRole('tab', { name: 'Output' })).toHaveAttribute('aria-selected', 'true');
     await expectExecutionProgressBarSucceeded(page);
     
     const output = await readFromCodeEditor(page, 'Console Output');
@@ -77,6 +78,8 @@ test.describe('Tool Access', () => {
       await expect(testUserPage.getByRole('button', { name: 'Snippets' })).not.toBeVisible();
       await expect(testUserPage.getByRole('button', { name: 'History' })).not.toBeVisible();
       await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
+      
+      await testUserPage.screenshot();
 
       await testUserPage.getByRole('button', { name: 'Scripts' }).click();
       await expect(testUserPage).toHaveURL(/\/acm#\/scripts/);
@@ -95,6 +98,8 @@ test.describe('Tool Access', () => {
 
       await testUserPage.goto('/acm#/maintenance');
       await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
+
+      await testUserPage.screenshot();
     });
   });
 });
