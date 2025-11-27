@@ -94,13 +94,14 @@ test.describe('Tool Access', () => {
       const scriptRow = rows.nth(1);
       await expect(scriptRow.locator('[role="rowheader"]')).toContainText('example/ACME-200_hello-world');
 
+      await attachScreenshot(testUserPage, testInfo, 'Test User Access - Script List');
+
+      // Check if routing blocks access to other tools
       await testUserPage.goto('/acm#/console');
       await expect(testUserPage.getByRole('button', { name: 'Console' })).not.toBeVisible();
 
       await testUserPage.goto('/acm#/maintenance');
       await expect(testUserPage.getByRole('button', { name: 'Maintenance' })).not.toBeVisible();
-
-      await attachScreenshot(testUserPage, testInfo, 'Test User Access - Script List');
     });
   });
 });

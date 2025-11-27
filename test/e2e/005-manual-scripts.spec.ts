@@ -12,9 +12,11 @@ import { readFromCodeEditor } from './utils/editor';
 import { attachScreenshot } from './utils/page';
 
 test.describe('Manual Scripts', () => {
-  test('Execute CSV Generation With I/O', async ({ page }, testInfo) => {
+  test('Execute CSV Generation', async ({ page }, testInfo) => {
     await page.goto('/acm');
     await page.getByRole('button', { name: 'Scripts' }).click();
+    await expect(page.locator('[role="grid"][aria-label="Script list (manual)"]')).toBeVisible();
+
     await attachScreenshot(page, testInfo, 'Scripts list');
     await page.getByText('example/ACME-203_output-csv').click();
     await attachScreenshot(page, testInfo, 'Script details');
