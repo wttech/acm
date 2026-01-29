@@ -35,6 +35,8 @@ public class ExecutionContext implements AutoCloseable {
 
     private boolean history = true;
 
+    private boolean notifications = true;
+
     private boolean debug = false;
 
     private boolean skipped = false;
@@ -136,6 +138,14 @@ public class ExecutionContext implements AutoCloseable {
 
     public void setHistory(boolean history) {
         this.history = history;
+    }
+
+    public boolean isNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(boolean notifications) {
+        this.notifications = notifications;
     }
 
     public boolean isDebug() {
