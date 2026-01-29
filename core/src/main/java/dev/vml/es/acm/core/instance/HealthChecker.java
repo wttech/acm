@@ -259,6 +259,7 @@ public class HealthChecker implements EventHandler {
                 resourceResolver,
                 new CodeOutputMemory())) {
             context.setHistory(false);
+            context.setNotifications(false);
 
             Execution execution = executor.execute(context);
             if (execution.getStatus() != ExecutionStatus.SUCCEEDED) {

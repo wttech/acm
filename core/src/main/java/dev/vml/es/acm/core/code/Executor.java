@@ -298,7 +298,8 @@ public class Executor implements EventListener {
 
     private void handleNotifications(ContextualExecution execution) {
         String executableId = execution.getExecutable().getId();
-        if (!config.notificationEnabled()
+        if (!execution.getContext().isNotifications()
+                || !config.notificationEnabled()
                 || !notifier.isConfigured(config.notificationNotifierId())
                 || Arrays.stream(config.notificationExecutableIds())
                         .noneMatch(regex -> Pattern.matches(regex, executableId))) {
