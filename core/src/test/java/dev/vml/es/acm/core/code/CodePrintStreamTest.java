@@ -2,21 +2,15 @@ package dev.vml.es.acm.core.code;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import ch.qos.logback.classic.LoggerContext;
 import java.io.ByteArrayOutputStream;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
 
 class CodePrintStreamTest {
 
     @Test
     void shouldPrintInfoWithTimestamp() {
-        if (!(LoggerFactory.getILoggerFactory() instanceof LoggerContext)) {
-            return;
-        }
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id", null)) {
             out.info("Test info message");
         }
 
@@ -26,12 +20,8 @@ class CodePrintStreamTest {
 
     @Test
     void shouldPrintErrorWithTimestamp() {
-        if (!(LoggerFactory.getILoggerFactory() instanceof LoggerContext)) {
-            return;
-        }
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id", null)) {
             out.error("Test error message");
         }
 
@@ -41,12 +31,8 @@ class CodePrintStreamTest {
 
     @Test
     void shouldPrintWarnWithTimestamp() {
-        if (!(LoggerFactory.getILoggerFactory() instanceof LoggerContext)) {
-            return;
-        }
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id", null)) {
             out.warn("Test warn message");
         }
 
@@ -56,12 +42,8 @@ class CodePrintStreamTest {
 
     @Test
     void shouldPrintSuccessWithTimestamp() {
-        if (!(LoggerFactory.getILoggerFactory() instanceof LoggerContext)) {
-            return;
-        }
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id", null)) {
             out.success("Test success message");
         }
 
@@ -71,12 +53,8 @@ class CodePrintStreamTest {
 
     @Test
     void shouldPrintDebugWithTimestamp() {
-        if (!(LoggerFactory.getILoggerFactory() instanceof LoggerContext)) {
-            return;
-        }
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id", null)) {
             out.debug("Test debug message");
         }
 
@@ -86,12 +64,8 @@ class CodePrintStreamTest {
 
     @Test
     void shouldPrintMultipleMessagesWithDifferentLevels() {
-        if (!(LoggerFactory.getILoggerFactory() instanceof LoggerContext)) {
-            return;
-        }
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id")) {
+        try (CodePrintStream out = new CodePrintStream(outputStream, "test-id", null)) {
             out.info("Info message");
             out.error("Error message");
             out.warn("Warn message");

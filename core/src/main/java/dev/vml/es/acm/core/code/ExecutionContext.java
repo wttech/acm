@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmConstants;
+import dev.vml.es.acm.core.code.log.LogInterceptorManager;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import groovy.lang.Binding;
@@ -70,7 +71,13 @@ public class ExecutionContext implements AutoCloseable {
         this.inputValues = inputValues;
         this.codeContext = codeContext;
         this.codeOutput = codeOutput;
-        this.printStream = new CodePrintStream(codeOutput.write(), String.format("%s|%s", executable.getId(), id));
+        this.printStream = new CodePrintStream(
+                codeOutput.write(),
+                String.format("%s|%s", executable.getId(), id),
+                codeContext
+                        .getOsgiContext()
+                        .findService(LogInterceptorManager.class)
+                        .orElse(null));
         this.schedules = new Schedules();
         this.conditions = new Conditions(this);
         this.inputs = new Inputs();

@@ -47,7 +47,9 @@
                         <configuration>
                             <bnd><![CDATA[
 Export-Package dev.vml.es.acm.core.*
-Import-Package: javax.annotation;version=0.0.0,*
+Import-Package: javax.annotation;version=0.0.0,\
+    org.osgi.service.log;version="[1.4,2)";resolution:=optional,\
+    *
 Private-Package: com.fasterxml.jackson.core.*,com.fasterxml.jackson.annotation.*,com.fasterxml.jackson.dataformat.*,com.fasterxml.jackson.databind.*,com.fasterxml.jackson.datatype.*,org.yaml.snakeyaml.*
 DynamicImport-Package: *
                                 ]]></bnd>
@@ -172,12 +174,10 @@ DynamicImport-Package: *
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.commons.classloader</artifactId>
+            <version>1.4.4</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.jcr</groupId>
