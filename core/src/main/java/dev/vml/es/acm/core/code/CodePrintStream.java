@@ -42,6 +42,10 @@ public class CodePrintStream extends PrintStream {
 
     private boolean printerTimestamps;
 
+    public CodePrintStream(OutputStream output, String id) {
+        this(output, id, null);
+    }
+
     public CodePrintStream(OutputStream output, String id, LogInterceptorManager logInterceptorManager) {
         super(output);
 
