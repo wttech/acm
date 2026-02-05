@@ -48,7 +48,6 @@
                             <bnd><![CDATA[
 Export-Package dev.vml.es.acm.core.*
 Import-Package: javax.annotation;version=0.0.0,\
-    org.osgi.service.log;version="[1.4,2)";resolution:=optional,\
     *
 Private-Package: com.fasterxml.jackson.core.*,com.fasterxml.jackson.annotation.*,com.fasterxml.jackson.dataformat.*,com.fasterxml.jackson.databind.*,com.fasterxml.jackson.datatype.*,org.yaml.snakeyaml.*
 DynamicImport-Package: *
@@ -151,10 +150,6 @@ DynamicImport-Package: *
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.service.event</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.service.log</artifactId>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>

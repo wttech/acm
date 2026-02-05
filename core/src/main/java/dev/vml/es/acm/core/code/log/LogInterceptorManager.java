@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Manages log interceptors, selecting the best available implementation.
- * Priority: OSGi Log Service 1.4 (clean API) > Logback reflection (fallback).
+ * Designed for extensibility - allows adding alternative implementations in the future.
  */
 @Component(service = LogInterceptorManager.class)
 public class LogInterceptorManager {
@@ -31,25 +31,19 @@ public class LogInterceptorManager {
     }
 
     public LogInterceptor.Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
-        LogInterceptor nativeInterceptor = findInterceptor(LogInterceptor.TYPE_NATIVE);
-        if (nativeInterceptor != null && nativeInterceptor.isAvailable()) {
-            LOG.debug("Using native log interception (OSGi Log Service)");
-            return nativeInterceptor.attach(listener, loggerNames);
-        }
-
-        LogInterceptor fallbackInterceptor = findInterceptor(LogInterceptor.TYPE_FALLBACK);
-        if (fallbackInterceptor != null && fallbackInterceptor.isAvailable()) {
-            LOG.debug("Using fallback log interception (Logback reflection)");
-            return fallbackInterceptor.attach(listener, loggerNames);
+        LogInterceptor interceptor = findAvailableInterceptor();
+        if (interceptor != null) {
+            LOG.debug("Using log interceptor: {}", interceptor.getClass().getSimpleName());
+            return interceptor.attach(listener, loggerNames);
         }
 
         LOG.warn("No log interceptor available on this AEM instance");
         return () -> {};
     }
 
-    private LogInterceptor findInterceptor(String type) {
+    private LogInterceptor findAvailableInterceptor() {
         return interceptors.stream()
-                .filter(i -> i.getClass().getSimpleName().toLowerCase().contains(type))
+                .filter(LogInterceptor::isAvailable)
                 .findFirst()
                 .orElse(null);
     }

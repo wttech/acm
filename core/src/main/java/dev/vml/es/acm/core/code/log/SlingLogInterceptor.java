@@ -16,16 +16,29 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Log interceptor using Sling Commons Log AppenderTracker mechanism.
- * Registers an Appender as OSGi service with "loggers" property.
- * Sling Commons Log automatically attaches it to specified loggers.
- * Available on AEM 6.5+ where Sling Commons Log >= 5.0.0 is present.
+ *
+ * <p>This interceptor registers a Logback Appender as an OSGi service with a "loggers" property.
+ * Sling Commons Log automatically discovers and attaches it to the specified loggers via its
+ * internal AppenderTracker. This is the same mechanism used by the Sling Log Support console
+ * available at /system/console/slinglog.</p>
+ *
+ * <p>The implementation uses reflection to create the Appender proxy, avoiding compile-time
+ * dependencies on Logback internal classes (ch.qos.logback.*). This ensures compatibility
+ * with Adobe Cloud Manager code quality scanners.</p>
+ *
+ * <p>Available on AEM 6.5+ where Sling Commons Log >= 5.0.0 is present.</p>
+ *
+ * @see <a href="https://sling.apache.org/documentation/development/logging.html">
+ *     Sling Logging Documentation</a>
+ * @see <a href="https://github.com/apache/sling-org-apache-sling-commons-log/blob/master/src/main/java/org/apache/sling/commons/log/logback/internal/AppenderTracker.java">
+ *     Sling AppenderTracker Implementation</a>
  */
-@Component(service = LogInterceptor.class, property = "type=" + LogInterceptor.TYPE_NATIVE)
-public class NativeLogInterceptor implements LogInterceptor {
+@Component(service = LogInterceptor.class)
+public class SlingLogInterceptor implements LogInterceptor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NativeLogInterceptor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SlingLogInterceptor.class);
 
-    private static final String APPENDER_NAME = "ACM-NativeLogInterceptor";
+    private static final String APPENDER_NAME = "ACM-SlingLogInterceptor";
     private static final String PROP_LOGGERS = "loggers";
 
     @Reference
@@ -55,7 +68,7 @@ public class NativeLogInterceptor implements LogInterceptor {
         } catch (ClassNotFoundException e) {
             return false;
         } catch (Exception e) {
-            LOG.debug("Unexpected error checking native log interceptor availability", e);
+            LOG.debug("Unexpected error checking Sling log interceptor availability", e);
             return false;
         }
     }
@@ -63,19 +76,19 @@ public class NativeLogInterceptor implements LogInterceptor {
     @Override
     public Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
         if (listener == null || loggerNames == null || loggerNames.length == 0) {
-            LOG.warn("Native log interceptor cannot attach - invalid parameters: listener={}, loggerNames={}",
+            LOG.warn("Sling log interceptor cannot attach - invalid parameters: listener={}, loggerNames={}",
                     listener, loggerNames);
             return () -> {};
         }
         if (!isAvailable()) {
-            LOG.warn("Native log interceptor is not available - Logback/Sling Commons Log not found");
+            LOG.warn("Sling log interceptor is not available - Logback/Sling Commons Log not found");
             return () -> {};
         }
 
         try {
             return doAttach(listener, loggerNames);
         } catch (Exception e) {
-            LOG.error("Failed to attach native log interceptor", e);
+            LOG.error("Failed to attach Sling log interceptor", e);
             return () -> {};
         }
     }
@@ -100,15 +113,15 @@ public class NativeLogInterceptor implements LogInterceptor {
         ServiceRegistration registration = bundleContext.registerService(
                 LogbackAppenderFactory.LOGBACK_APPENDER, appender, props);
 
-        LOG.debug("Native log interceptor registered as OSGi service for loggers: {}", loggerNameList);
+        LOG.debug("Sling log interceptor registered as OSGi service for loggers: {}", loggerNameList);
 
         return () -> {
             try {
                 registration.unregister();
                 factory.stop(appender);
-                LOG.debug("Native log interceptor unregistered");
+                LOG.debug("Sling log interceptor unregistered");
             } catch (Exception e) {
-                LOG.warn("Failed to unregister native log interceptor", e);
+                LOG.warn("Failed to unregister Sling log interceptor", e);
             }
         };
     }
