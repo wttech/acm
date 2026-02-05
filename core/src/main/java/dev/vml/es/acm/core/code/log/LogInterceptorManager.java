@@ -9,7 +9,18 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Manages log interceptors, selecting the best available implementation.
- * Designed for extensibility - allows adding alternative implementations in the future.
+ *
+ * <p>This manager is designed for extensibility, allowing alternative log interception
+ * implementations to be registered as OSGi services. Currently, the primary implementation
+ * is {@link SlingLogInterceptor} which uses the Sling Commons Log AppenderTracker mechanism.</p>
+ *
+ * <p><strong>Why not OSGi Log Service 1.4?</strong></p>
+ * <p>While OSGi Log Service 1.4 provides a {@code LogReaderService} for tracking log entries,
+ * it only captures logs sent directly to the OSGi Log Service. SLF4J/Logback logs are bridged
+ * <em>to</em> the OSGi Log Service (SLF4J → OSGi), but not the other way around.
+ * The {@code LogReaderService} does not receive logs from SLF4J/Logback loggers, which is
+ * what AEM applications typically use. Therefore, we use the Sling AppenderTracker mechanism
+ * instead, which directly hooks into Logback.</p>
  */
 @Component(service = LogInterceptorManager.class)
 public class LogInterceptorManager {
