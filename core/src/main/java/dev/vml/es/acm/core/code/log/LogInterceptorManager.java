@@ -31,16 +31,16 @@ public class LogInterceptorManager {
     }
 
     public LogInterceptor.Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
-        LogInterceptor osgiInterceptor = findInterceptor(LogInterceptor.TYPE_OSGI);
-        if (osgiInterceptor != null && osgiInterceptor.isAvailable()) {
-            LOG.debug("Using OSGi Log Service for log interception");
-            return osgiInterceptor.attach(listener, loggerNames);
+        LogInterceptor nativeInterceptor = findInterceptor(LogInterceptor.TYPE_NATIVE);
+        if (nativeInterceptor != null && nativeInterceptor.isAvailable()) {
+            LOG.debug("Using native log interception (OSGi Log Service)");
+            return nativeInterceptor.attach(listener, loggerNames);
         }
 
-        LogInterceptor logbackInterceptor = findInterceptor(LogInterceptor.TYPE_LOGBACK);
-        if (logbackInterceptor != null && logbackInterceptor.isAvailable()) {
-            LOG.debug("Using Logback reflection for log interception");
-            return logbackInterceptor.attach(listener, loggerNames);
+        LogInterceptor fallbackInterceptor = findInterceptor(LogInterceptor.TYPE_FALLBACK);
+        if (fallbackInterceptor != null && fallbackInterceptor.isAvailable()) {
+            LOG.debug("Using fallback log interception (Logback reflection)");
+            return fallbackInterceptor.attach(listener, loggerNames);
         }
 
         LOG.warn("No log interceptor available on this AEM instance");

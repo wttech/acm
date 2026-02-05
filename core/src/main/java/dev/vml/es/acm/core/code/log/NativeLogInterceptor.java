@@ -13,8 +13,8 @@ import org.osgi.service.log.LogReaderService;
  * Log interceptor using OSGi Log Service 1.4 API.
  * Available on AEM 6.6+ and AEMaaCS where LogEntry.getLoggerName() exists.
  */
-@Component(service = LogInterceptor.class, property = "type=" + LogInterceptor.TYPE_OSGI)
-public class OsgiLogInterceptor implements LogInterceptor {
+@Component(service = LogInterceptor.class, property = "type=" + LogInterceptor.TYPE_NATIVE)
+public class NativeLogInterceptor implements LogInterceptor {
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
     private volatile LogReaderService logReaderService;

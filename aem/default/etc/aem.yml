@@ -101,7 +101,7 @@ instance:
           - 'org.apache.sling.installer.hc.*'
           - 'org.apache.sling.installer.core.impl.console.*'
           - 'dev.vml.es.acm.core.notification.*.*Factory'
-          - 'dev.vml.es.acm.core.code.log.OsgiLogInterceptor'
+          - 'dev.vml.es.acm.core.code.log.NativeLogInterceptor'
         match:
           "disabled": []
           "no config": []

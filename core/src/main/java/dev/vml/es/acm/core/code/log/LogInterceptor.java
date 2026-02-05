@@ -8,8 +8,8 @@ import java.util.function.Consumer;
  */
 public interface LogInterceptor {
 
-    String TYPE_OSGI = "osgi";
-    String TYPE_LOGBACK = "logback";
+    String TYPE_NATIVE = "native";
+    String TYPE_FALLBACK = "fallback";
 
     /**
      * Checks if this interceptor is available on the current AEM instance.

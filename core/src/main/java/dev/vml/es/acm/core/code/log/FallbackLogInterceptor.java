@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
  * Log interceptor using Logback API via reflection.
  * Fallback for AEM 6.5.x where OSGi Log Service 1.4 is not available.
  */
-@Component(service = LogInterceptor.class, property = "type=" + LogInterceptor.TYPE_LOGBACK)
-public class LogbackLogInterceptor implements LogInterceptor {
+@Component(service = LogInterceptor.class, property = "type=" + LogInterceptor.TYPE_FALLBACK)
+public class FallbackLogInterceptor implements LogInterceptor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LogbackLogInterceptor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FallbackLogInterceptor.class);
 
     private static final String APPENDER_NAME = "ACM-LogInterceptor";
 
