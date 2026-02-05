@@ -905,12 +905,6 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>commons-collections</groupId>
-                <artifactId>commons-collections</artifactId>
-                <version>3.2.2</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
                 <groupId>uk.org.lidalia</groupId>
                 <artifactId>slf4j-test</artifactId>
                 <version>1.0.1</version>

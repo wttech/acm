@@ -1,10 +1,9 @@
 package dev.vml.es.acm.core.code;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.AppenderBase;
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.code.log.LogInterceptor;
+import dev.vml.es.acm.core.code.log.LogInterceptorManager;
+import dev.vml.es.acm.core.code.log.LogMessage;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.time.Instant;
@@ -15,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -32,84 +32,72 @@ public class CodePrintStream extends PrintStream {
 
     private final Logger logger;
 
-    private final LoggerContext loggerContext;
+    private final LogInterceptorManager logInterceptorManager;
 
     private final Set<String> loggerNames;
 
     private boolean loggerTimestamps;
 
-    private final LogAppender logAppender;
+    private LogInterceptor.Handle interceptorHandle;
 
     private boolean printerTimestamps;
 
-    public CodePrintStream(OutputStream output, String id) {
+    public CodePrintStream(OutputStream output, String id, LogInterceptorManager logInterceptorManager) {
         super(output);
 
-        this.loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        this.logInterceptorManager = logInterceptorManager;
         this.loggerNames = new HashSet<>();
         this.loggerTimestamps = true;
-        this.logger = loggerContext.getLogger(id);
-        this.logAppender = new LogAppender();
-
+        this.logger = LoggerFactory.getLogger(id);
         this.printerTimestamps = true;
-    }
-
-    private class LogAppender extends AppenderBase<ILoggingEvent> {
-        @Override
-        protected void append(ILoggingEvent event) {
-            String loggerName = event.getLoggerName();
-            for (String loggerPrefix : loggerNames) {
-                if (StringUtils.startsWith(loggerName, loggerPrefix)) {
-                    String level = event.getLevel().toString();
-                    if (loggerTimestamps) {
-                        LocalDateTime eventTime = LocalDateTime.ofInstant(
-                                Instant.ofEpochMilli(event.getTimeStamp()), ZoneId.systemDefault());
-                        String timestamp = eventTime.format(TIMESTAMP_FORMATTER);
-                        println(timestamp + " [" + level + "] " + event.getFormattedMessage());
-                    } else {
-                        println('[' + level + "] " + event.getFormattedMessage());
-                    }
-                    break;
-                }
-            }
-        }
     }
 
     public void fromLogger(String loggerName) {
         if (StringUtils.isBlank(loggerName)) {
             throw new AcmException("Logger name cannot be blank!");
         }
-        enableAppender();
         loggerNames.add(loggerName);
+        updateInterceptor();
     }
 
     @Override
     public void close() {
-        disableAppender();
+        detachInterceptor();
         super.close();
     }
 
-    private void enableAppender() {
-        if (logAppender.isStarted()) {
-            return;
+    private void updateInterceptor() {
+        detachInterceptor();
+        if (!loggerNames.isEmpty() && logInterceptorManager != null) {
+            interceptorHandle =
+                    logInterceptorManager.attach(this::handleLogMessage, loggerNames.toArray(new String[0]));
         }
-        Logger rootLogger = getRootLogger();
-        rootLogger.addAppender(logAppender);
-        logAppender.setContext(loggerContext);
-        logAppender.start();
     }
 
-    private void disableAppender() {
-        if (!logAppender.isStarted()) {
-            return;
+    private void detachInterceptor() {
+        LogInterceptor.Handle handle = interceptorHandle;
+        if (handle != null) {
+            interceptorHandle = null;
+            handle.detach();
         }
-        logAppender.stop();
-        Logger rootLogger = getRootLogger();
-        rootLogger.detachAppender(logAppender);
     }
 
-    private Logger getRootLogger() {
-        return loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
+    private void handleLogMessage(LogMessage event) {
+        String loggerName = event.getLoggerName();
+        for (String loggerPrefix : loggerNames) {
+            if (StringUtils.startsWith(loggerName, loggerPrefix)) {
+                String level = event.getLevel();
+                if (loggerTimestamps) {
+                    LocalDateTime eventTime =
+                            LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneId.systemDefault());
+                    String timestamp = eventTime.format(TIMESTAMP_FORMATTER);
+                    println(timestamp + " [" + level + "] " + event.getMessage());
+                } else {
+                    println('[' + level + "] " + event.getMessage());
+                }
+                break;
+            }
+        }
     }
 
     public Logger getLogger() {
