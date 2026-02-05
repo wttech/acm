@@ -108,14 +108,17 @@ class LogbackAppenderFactory {
 
         private void processEvent(Object event) {
             try {
-                String loggerName = (String) eventClass.getMethod("getLoggerName").invoke(event);
+                String loggerName =
+                        (String) eventClass.getMethod("getLoggerName").invoke(event);
                 if (!matchesPrefix(loggerName)) {
                     return;
                 }
-                String message = (String) eventClass.getMethod("getFormattedMessage").invoke(event);
+                String message =
+                        (String) eventClass.getMethod("getFormattedMessage").invoke(event);
                 String level = String.valueOf(eventClass.getMethod("getLevel").invoke(event));
                 Long ts = (Long) eventClass.getMethod("getTimeStamp").invoke(event);
-                listener.accept(new LogMessage(loggerName, level, message, ts != null ? ts : System.currentTimeMillis()));
+                listener.accept(
+                        new LogMessage(loggerName, level, message, ts != null ? ts : System.currentTimeMillis()));
             } catch (Exception ignored) {
                 // Never disrupt logging
             }

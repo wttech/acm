@@ -75,9 +75,10 @@ public class CodePrintStream extends PrintStream {
     }
 
     private void detachInterceptor() {
-        if (interceptorHandle != null) {
-            interceptorHandle.detach();
+        LogInterceptor.Handle handle = interceptorHandle;
+        if (handle != null) {
             interceptorHandle = null;
+            handle.detach();
         }
     }
 

@@ -94,13 +94,18 @@ public class SlingLogInterceptor implements LogInterceptor {
         props.put(PROP_LOGGERS, loggerNames);
 
         @SuppressWarnings("rawtypes")
-        ServiceRegistration reg = bundleContext.registerService(LogbackAppenderFactory.LOGBACK_APPENDER, appender, props);
+        ServiceRegistration reg =
+                bundleContext.registerService(LogbackAppenderFactory.LOGBACK_APPENDER, appender, props);
         LOG.debug("Registered for loggers: {}", loggerList);
 
         return () -> {
             try {
-                reg.unregister();
+                if (reg.getReference() != null) {
+                    reg.unregister();
+                }
                 factory.stop(appender);
+            } catch (IllegalStateException e) {
+                LOG.debug("Already unregistered", e);
             } catch (Exception e) {
                 LOG.warn("Failed to unregister", e);
             }
