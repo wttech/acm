@@ -1,38 +1,61 @@
 package dev.vml.es.acm.core.code.log;
 
 import java.util.Arrays;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
 import java.util.function.Consumer;
+import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.log.LogEntry;
-import org.osgi.service.log.LogListener;
-import org.osgi.service.log.LogReaderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Log interceptor using OSGi Log Service 1.4 API.
- * Available on AEM 6.6+ and AEMaaCS where LogEntry.getLoggerName() exists.
+ * Log interceptor using Sling Commons Log AppenderTracker mechanism.
+ * Registers an Appender as OSGi service with "loggers" property.
+ * Sling Commons Log automatically attaches it to specified loggers.
+ * Available on AEM 6.5+ where Sling Commons Log >= 5.0.0 is present.
  */
 @Component(service = LogInterceptor.class, property = "type=" + LogInterceptor.TYPE_NATIVE)
 public class NativeLogInterceptor implements LogInterceptor {
 
     private static final Logger LOG = LoggerFactory.getLogger(NativeLogInterceptor.class);
 
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
-    private volatile LogReaderService logReaderService;
+    private static final String APPENDER_NAME = "ACM-NativeLogInterceptor";
+    private static final String PROP_LOGGERS = "loggers";
+
+    @Reference
+    private DynamicClassLoaderManager classLoaderManager;
+
+    private BundleContext bundleContext;
+
+    @Activate
+    protected void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
 
     @Override
     public boolean isAvailable() {
-        if (logReaderService == null) {
+        if (classLoaderManager == null || bundleContext == null) {
             return false;
         }
         try {
-            LogEntry.class.getMethod("getLoggerName");
+            ClassLoader cl = classLoaderManager.getDynamicClassLoader();
+            if (cl == null) {
+                return false;
+            }
+            // Check if Logback classes are available
+            cl.loadClass(LogbackAppenderFactory.LOGBACK_LOGGER_CONTEXT);
+            cl.loadClass(LogbackAppenderFactory.LOGBACK_APPENDER);
             return true;
-        } catch (NoSuchMethodException e) {
+        } catch (ClassNotFoundException e) {
+            return false;
+        } catch (Exception e) {
+            LOG.debug("Unexpected error checking native log interceptor availability", e);
             return false;
         }
     }
@@ -40,54 +63,53 @@ public class NativeLogInterceptor implements LogInterceptor {
     @Override
     public Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
         if (listener == null || loggerNames == null || loggerNames.length == 0) {
-            LOG.warn("Native log interceptor cannot attach - invalid parameters: listener={}, loggerNames={}", listener, loggerNames);
+            LOG.warn("Native log interceptor cannot attach - invalid parameters: listener={}, loggerNames={}",
+                    listener, loggerNames);
             return () -> {};
         }
         if (!isAvailable()) {
-            LOG.warn("Native log interceptor is not available - OSGi Log Service (>= 1.4) not found");
+            LOG.warn("Native log interceptor is not available - Logback/Sling Commons Log not found");
             return () -> {};
         }
 
-        LogListener logListener = entry -> {
-            try {
-                String loggerName = entry.getLoggerName();
-                if (loggerName != null && matchesAny(loggerName, loggerNames)) {
-                    LogMessage message = new LogMessage(
-                            loggerName, levelToString(entry.getLogLevel()), entry.getMessage(), entry.getTime());
-                    listener.accept(message);
-                }
-            } catch (Exception e) {
-                // Silently ignore - we don't want to disrupt logging
-            }
-        };
-
         try {
-            logReaderService.addLogListener(logListener);
-            LOG.debug("Native log interceptor attached for loggers: {}", Arrays.asList(loggerNames));
+            return doAttach(listener, loggerNames);
         } catch (Exception e) {
             LOG.error("Failed to attach native log interceptor", e);
             return () -> {};
         }
+    }
+
+    private Handle doAttach(Consumer<LogMessage> listener, String[] loggerNames) throws Exception {
+        ClassLoader cl = classLoaderManager.getDynamicClassLoader();
+        LogbackAppenderFactory factory = new LogbackAppenderFactory(cl);
+
+        List<String> loggerNameList = Arrays.asList(loggerNames);
+        Object appender = factory.createAppender(APPENDER_NAME, listener, loggerNameList);
+
+        // Initialize the appender with LoggerContext
+        Object loggerContext = factory.getLoggerContext();
+        factory.setContext(appender, loggerContext);
+        factory.start(appender);
+
+        // Register as OSGi service - Sling AppenderTracker will pick it up
+        Dictionary<String, Object> props = new Hashtable<>();
+        props.put(PROP_LOGGERS, loggerNames);
+
+        @SuppressWarnings("rawtypes")
+        ServiceRegistration registration = bundleContext.registerService(
+                LogbackAppenderFactory.LOGBACK_APPENDER, appender, props);
+
+        LOG.debug("Native log interceptor registered as OSGi service for loggers: {}", loggerNameList);
 
         return () -> {
             try {
-                logReaderService.removeLogListener(logListener);
+                registration.unregister();
+                factory.stop(appender);
+                LOG.debug("Native log interceptor unregistered");
             } catch (Exception e) {
-                LOG.warn("Failed to detach native log listener", e);
+                LOG.warn("Failed to unregister native log interceptor", e);
             }
         };
-    }
-
-    private boolean matchesAny(String loggerName, String[] prefixes) {
-        for (String prefix : prefixes) {
-            if (loggerName.startsWith(prefix)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private String levelToString(org.osgi.service.log.LogLevel level) {
-        return level != null ? level.name() : "INFO";
     }
 }
