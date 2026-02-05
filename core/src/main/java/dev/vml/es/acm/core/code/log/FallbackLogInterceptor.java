@@ -57,18 +57,18 @@ public class FallbackLogInterceptor implements LogInterceptor {
     @Override
     public Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
         if (listener == null || loggerNames == null || loggerNames.length == 0) {
-            LOG.debug("Invalid parameters for attach: listener={}, loggerNames={}", listener, loggerNames);
+            LOG.warn("Fallback log interceptor cannot attach - invalid parameters: listener={}, loggerNames={}", listener, loggerNames);
             return () -> {};
         }
         if (!isAvailable()) {
-            LOG.debug("Logback is not available");
+            LOG.warn("Fallback log interceptor is not available - Logback classes not found");
             return () -> {};
         }
 
         try {
             return doAttach(listener, loggerNames);
         } catch (Exception e) {
-            LOG.warn("Failed to attach Logback interceptor", e);
+            LOG.error("Failed to attach fallback log interceptor", e);
             return () -> {};
         }
     }
@@ -103,12 +103,14 @@ public class FallbackLogInterceptor implements LogInterceptor {
         invokeMethod(appender, "start");
         addAppender.invoke(rootLogger, appender);
 
+        LOG.debug("Fallback log interceptor attached for loggers: {}", loggerNameList);
+
         return () -> {
             try {
                 invokeMethod(appender, "stop");
                 detachAppender.invoke(rootLogger, appender);
             } catch (Exception e) {
-                LOG.debug("Failed to detach Logback appender", e);
+                LOG.warn("Failed to detach fallback log appender", e);
             }
         };
     }

@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code.log;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -8,6 +9,8 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.log.LogEntry;
 import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogReaderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Log interceptor using OSGi Log Service 1.4 API.
@@ -15,6 +18,8 @@ import org.osgi.service.log.LogReaderService;
  */
 @Component(service = LogInterceptor.class, property = "type=" + LogInterceptor.TYPE_NATIVE)
 public class NativeLogInterceptor implements LogInterceptor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NativeLogInterceptor.class);
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
     private volatile LogReaderService logReaderService;
@@ -34,21 +39,43 @@ public class NativeLogInterceptor implements LogInterceptor {
 
     @Override
     public Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
+        if (listener == null || loggerNames == null || loggerNames.length == 0) {
+            LOG.warn("Native log interceptor cannot attach - invalid parameters: listener={}, loggerNames={}", listener, loggerNames);
+            return () -> {};
+        }
         if (!isAvailable()) {
+            LOG.warn("Native log interceptor is not available - OSGi Log Service (>= 1.4) not found");
             return () -> {};
         }
 
         LogListener logListener = entry -> {
-            String loggerName = entry.getLoggerName();
-            if (loggerName != null && matchesAny(loggerName, loggerNames)) {
-                LogMessage message = new LogMessage(
-                        loggerName, levelToString(entry.getLogLevel()), entry.getMessage(), entry.getTime());
-                listener.accept(message);
+            try {
+                String loggerName = entry.getLoggerName();
+                if (loggerName != null && matchesAny(loggerName, loggerNames)) {
+                    LogMessage message = new LogMessage(
+                            loggerName, levelToString(entry.getLogLevel()), entry.getMessage(), entry.getTime());
+                    listener.accept(message);
+                }
+            } catch (Exception e) {
+                // Silently ignore - we don't want to disrupt logging
             }
         };
 
-        logReaderService.addLogListener(logListener);
-        return () -> logReaderService.removeLogListener(logListener);
+        try {
+            logReaderService.addLogListener(logListener);
+            LOG.debug("Native log interceptor attached for loggers: {}", Arrays.asList(loggerNames));
+        } catch (Exception e) {
+            LOG.error("Failed to attach native log interceptor", e);
+            return () -> {};
+        }
+
+        return () -> {
+            try {
+                logReaderService.removeLogListener(logListener);
+            } catch (Exception e) {
+                LOG.warn("Failed to detach native log listener", e);
+            }
+        };
     }
 
     private boolean matchesAny(String loggerName, String[] prefixes) {
