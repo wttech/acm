@@ -11,15 +11,15 @@ import org.osgi.service.component.annotations.Component;
 public class ResourceScanner {
 
     /**
-     * Suggest the node and children examples:
-     * <p>
-     * / => root node suggestion (with node type etc), and its children /apps, /content, etc (exception)
-     * /content => only content node suggestion
-     * /content/ => only content node children
-     * /content/mysite => only mysite node suggestion
-     * /content/mysite/ => only mysite node children
-     * /content/mys => suggestion on /content/ children whose names start with "mys"
-     * etc.
+     * Suggest the node and children based on pattern.
+     * <pre>
+     * /                 - root node suggestion + children /apps, /content, etc
+     * /content          - only content node suggestion
+     * /content/         - only content node children
+     * /content/mysite   - only mysite node suggestion
+     * /content/mysite/  - only mysite node children
+     * /content/mys      - children of /content/ starting with "mys"
+     * </pre>
      */
     public Stream<Resource> forPattern(ResourceResolver resolver, String pattern) {
         if (StringUtils.isBlank(pattern) || !StringUtils.startsWith(pattern, "/")) {

@@ -398,6 +398,7 @@ DynamicImport-Package: *
                         <version>3.4.1</version>
                         <configuration>
                             <failOnError>false</failOnError>
+                            <doclint>none</doclint>
                         </configuration>
                         <executions>
                             <execution>
