@@ -8,19 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages log interceptors, selecting the best available implementation.
+ * Selects the best available {@link LogInterceptor} implementation.
  *
- * <p>This manager is designed for extensibility, allowing alternative log interception
- * implementations to be registered as OSGi services. Currently, the primary implementation
- * is {@link SlingLogInterceptor} which uses the Sling Commons Log AppenderTracker mechanism.</p>
+ * <p><strong>Why not OSGi Log Service 1.4?</strong> Its {@code LogReaderService} only captures
+ * logs sent directly to OSGi Log Service. SLF4J/Logback logs are bridged one-way (SLF4J → OSGi),
+ * so {@code LogReaderService} doesn't receive them. We use Sling AppenderTracker instead.</p>
  *
- * <p><strong>Why not OSGi Log Service 1.4?</strong></p>
- * <p>While OSGi Log Service 1.4 provides a {@code LogReaderService} for tracking log entries,
- * it only captures logs sent directly to the OSGi Log Service. SLF4J/Logback logs are bridged
- * <em>to</em> the OSGi Log Service (SLF4J → OSGi), but not the other way around.
- * The {@code LogReaderService} does not receive logs from SLF4J/Logback loggers, which is
- * what AEM applications typically use. Therefore, we use the Sling AppenderTracker mechanism
- * instead, which directly hooks into Logback.</p>
+ * @see SlingLogInterceptor
  */
 @Component(service = LogInterceptorManager.class)
 public class LogInterceptorManager {
@@ -42,21 +36,17 @@ public class LogInterceptorManager {
     }
 
     public LogInterceptor.Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
-        LogInterceptor interceptor = findAvailableInterceptor();
-        if (interceptor != null) {
-            LOG.debug("Using log interceptor: {}", interceptor.getClass().getSimpleName());
-            return interceptor.attach(listener, loggerNames);
-        }
-
-        LOG.warn("No log interceptor available on this AEM instance");
-        return () -> {};
-    }
-
-    private LogInterceptor findAvailableInterceptor() {
         return interceptors.stream()
                 .filter(LogInterceptor::isAvailable)
                 .findFirst()
-                .orElse(null);
+                .map(i -> {
+                    LOG.debug("Using log interceptor: {}", i.getClass().getSimpleName());
+                    return i.attach(listener, loggerNames);
+                })
+                .orElseGet(() -> {
+                    LOG.warn("No log interceptor available");
+                    return () -> {};
+                });
     }
 
     public boolean isAvailable() {

@@ -7,17 +7,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Factory for creating Logback Appender proxies via reflection.
- * Avoids compile-time dependency on ch.qos.logback.* classes.
+ * Creates Logback Appender proxies via reflection, avoiding compile-time dependency on ch.qos.logback.*.
  */
 class LogbackAppenderFactory {
 
     static final String LOGBACK_LOGGER_CONTEXT = "ch.qos.logback.classic.LoggerContext";
-    static final String LOGBACK_LOGGER = "ch.qos.logback.classic.Logger";
     static final String LOGBACK_APPENDER = "ch.qos.logback.core.Appender";
-    static final String LOGBACK_CONTEXT = "ch.qos.logback.core.Context";
-    static final String LOGBACK_LOGGING_EVENT = "ch.qos.logback.classic.spi.ILoggingEvent";
-    static final String LOGBACK_ROOT_LOGGER = "ROOT";
+    private static final String LOGBACK_CONTEXT = "ch.qos.logback.core.Context";
+    private static final String LOGBACK_LOGGING_EVENT = "ch.qos.logback.classic.spi.ILoggingEvent";
 
     private final ClassLoader classLoader;
 
@@ -25,222 +22,122 @@ class LogbackAppenderFactory {
         this.classLoader = classLoader;
     }
 
-    /**
-     * Creates a proxy Appender that forwards log events to the provided listener.
-     *
-     * @param appenderName unique name for the appender
-     * @param listener consumer receiving log messages
-     * @param loggerNames logger name prefixes to match
-     * @return proxy implementing Appender interface
-     */
-    Object createAppender(String appenderName, Consumer<LogMessage> listener, List<String> loggerNames)
+    Object createAppender(String name, Consumer<LogMessage> listener, List<String> loggerNames)
             throws ClassNotFoundException {
         Class<?> appenderClass = classLoader.loadClass(LOGBACK_APPENDER);
-        Class<?> loggingEventClass = classLoader.loadClass(LOGBACK_LOGGING_EVENT);
-
-        InvocationHandler handler = new AppenderInvocationHandler(appenderName, loggingEventClass, listener, loggerNames);
-        return Proxy.newProxyInstance(classLoader, new Class<?>[] {appenderClass}, handler);
+        Class<?> eventClass = classLoader.loadClass(LOGBACK_LOGGING_EVENT);
+        return Proxy.newProxyInstance(
+                classLoader,
+                new Class<?>[] {appenderClass},
+                new AppenderHandler(name, eventClass, listener, loggerNames));
     }
 
-    /**
-     * Gets the Logback LoggerContext from SLF4J.
-     */
     Object getLoggerContext() throws ClassNotFoundException {
-        Class<?> loggerContextClass = classLoader.loadClass(LOGBACK_LOGGER_CONTEXT);
-        Object loggerContext = org.slf4j.LoggerFactory.getILoggerFactory();
-        if (loggerContext == null || !loggerContextClass.isInstance(loggerContext)) {
-            throw new IllegalStateException("SLF4J is not configured to use Logback as logging backend");
+        Class<?> ctxClass = classLoader.loadClass(LOGBACK_LOGGER_CONTEXT);
+        Object ctx = org.slf4j.LoggerFactory.getILoggerFactory();
+        if (ctx == null || !ctxClass.isInstance(ctx)) {
+            throw new IllegalStateException("SLF4J is not using Logback");
         }
-        return loggerContext;
+        return ctx;
     }
 
-    /**
-     * Gets a logger from the LoggerContext.
-     */
-    Object getLogger(Object loggerContext, String loggerName) throws Exception {
-        Class<?> loggerContextClass = classLoader.loadClass(LOGBACK_LOGGER_CONTEXT);
-        Method getLogger = loggerContextClass.getMethod("getLogger", String.class);
-        return getLogger.invoke(loggerContext, loggerName);
+    void setContext(Object appender, Object context) throws ReflectiveOperationException {
+        Class<?> ctxClass = classLoader.loadClass(LOGBACK_CONTEXT);
+        appender.getClass().getMethod("setContext", ctxClass).invoke(appender, context);
     }
 
-    /**
-     * Sets context on an appender.
-     */
-    void setContext(Object appender, Object context) throws Exception {
-        Class<?> contextClass = classLoader.loadClass(LOGBACK_CONTEXT);
-        Method setContext = appender.getClass().getMethod("setContext", contextClass);
-        setContext.invoke(appender, context);
+    void start(Object appender) throws ReflectiveOperationException {
+        appender.getClass().getMethod("start").invoke(appender);
     }
 
-    /**
-     * Starts the appender.
-     */
-    void start(Object appender) throws Exception {
-        Method start = appender.getClass().getMethod("start");
-        start.invoke(appender);
+    void stop(Object appender) throws ReflectiveOperationException {
+        appender.getClass().getMethod("stop").invoke(appender);
     }
 
-    /**
-     * Stops the appender.
-     */
-    void stop(Object appender) throws Exception {
-        Method stop = appender.getClass().getMethod("stop");
-        stop.invoke(appender);
-    }
-
-    /**
-     * Adds an appender to a logger.
-     */
-    void addAppender(Object logger, Object appender) throws Exception {
-        Class<?> appenderClass = classLoader.loadClass(LOGBACK_APPENDER);
-        Method addAppender = logger.getClass().getMethod("addAppender", appenderClass);
-        addAppender.invoke(logger, appender);
-    }
-
-    /**
-     * Detaches an appender from a logger.
-     */
-    void detachAppender(Object logger, Object appender) throws Exception {
-        Class<?> appenderClass = classLoader.loadClass(LOGBACK_APPENDER);
-        Method detachAppender = logger.getClass().getMethod("detachAppender", appenderClass);
-        detachAppender.invoke(logger, appender);
-    }
-
-    /**
-     * InvocationHandler that implements Appender interface via reflection.
-     */
-    private static class AppenderInvocationHandler implements InvocationHandler {
-
-        private static final String METHOD_EQUALS = "equals";
-        private static final String METHOD_HASH_CODE = "hashCode";
-        private static final String METHOD_TO_STRING = "toString";
-        private static final String METHOD_DO_APPEND = "doAppend";
-        private static final String METHOD_GET_NAME = "getName";
-        private static final String METHOD_SET_NAME = "setName";
-        private static final String METHOD_SET_CONTEXT = "setContext";
-        private static final String METHOD_GET_CONTEXT = "getContext";
-        private static final String METHOD_START = "start";
-        private static final String METHOD_STOP = "stop";
-        private static final String METHOD_IS_STARTED = "isStarted";
+    private static class AppenderHandler implements InvocationHandler {
 
         private final String appenderName;
-        private final Class<?> loggingEventClass;
+        private final Class<?> eventClass;
         private final Consumer<LogMessage> listener;
-        private final List<String> loggerNames;
-
+        private final List<String> loggerPrefixes;
         private String name;
-        private boolean started = false;
+        private boolean started;
 
-        AppenderInvocationHandler(
-                String appenderName,
-                Class<?> loggingEventClass,
-                Consumer<LogMessage> listener,
-                List<String> loggerNames) {
-            this.appenderName = appenderName;
-            this.name = appenderName;
-            this.loggingEventClass = loggingEventClass;
+        AppenderHandler(String name, Class<?> eventClass, Consumer<LogMessage> listener, List<String> loggerPrefixes) {
+            this.appenderName = name;
+            this.name = name;
+            this.eventClass = eventClass;
             this.listener = listener;
-            this.loggerNames = loggerNames;
+            this.loggerPrefixes = loggerPrefixes;
         }
 
         @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (method == null) {
-                return null;
-            }
-            String methodName = method.getName();
-            switch (methodName) {
-                case METHOD_EQUALS:
-                    return args != null && args.length > 0 && proxy == args[0];
-                case METHOD_HASH_CODE:
-                    return System.identityHashCode(proxy);
-                case METHOD_TO_STRING:
-                    return appenderName + "-Proxy@" + Integer.toHexString(System.identityHashCode(proxy));
-                case METHOD_DO_APPEND:
+        public Object invoke(Object proxy, Method method, Object[] args) {
+            String m = method.getName();
+            switch (m) {
+                case "doAppend":
                     if (args != null && args.length > 0 && args[0] != null) {
-                        handleLogEventSafe(args[0]);
+                        processEvent(args[0]);
                     }
                     return null;
-                case METHOD_GET_NAME:
+                case "getName":
                     return name;
-                case METHOD_SET_NAME:
+                case "setName":
                     if (args != null && args.length > 0 && args[0] instanceof String) {
                         name = (String) args[0];
                     }
                     return null;
-                case METHOD_SET_CONTEXT:
-                case METHOD_GET_CONTEXT:
-                    return null;
-                case METHOD_START:
+                case "start":
                     started = true;
                     return null;
-                case METHOD_STOP:
+                case "stop":
                     started = false;
                     return null;
-                case METHOD_IS_STARTED:
+                case "isStarted":
                     return started;
+                case "equals":
+                    return proxy == (args != null && args.length > 0 ? args[0] : null);
+                case "hashCode":
+                    return System.identityHashCode(proxy);
+                case "toString":
+                    return appenderName + "@" + Integer.toHexString(System.identityHashCode(proxy));
                 default:
-                    return getDefaultReturnValue(method.getReturnType());
+                    return defaultValue(method.getReturnType());
             }
         }
 
-        private Object getDefaultReturnValue(Class<?> returnType) {
-            if (returnType == null || returnType == void.class || returnType == Void.class) {
-                return null;
-            }
-            if (returnType == boolean.class || returnType == Boolean.class) {
-                return false;
-            }
-            if (returnType == int.class || returnType == Integer.class) {
-                return 0;
-            }
-            if (returnType == long.class || returnType == Long.class) {
-                return 0L;
-            }
-            return null;
-        }
-
-        private void handleLogEventSafe(Object event) {
+        private void processEvent(Object event) {
             try {
-                handleLogEvent(event);
-            } catch (Exception e) {
-                // Silently ignore - we don't want to disrupt logging
+                String loggerName = (String) eventClass.getMethod("getLoggerName").invoke(event);
+                if (!matchesPrefix(loggerName)) {
+                    return;
+                }
+                String message = (String) eventClass.getMethod("getFormattedMessage").invoke(event);
+                String level = String.valueOf(eventClass.getMethod("getLevel").invoke(event));
+                Long ts = (Long) eventClass.getMethod("getTimeStamp").invoke(event);
+                listener.accept(new LogMessage(loggerName, level, message, ts != null ? ts : System.currentTimeMillis()));
+            } catch (Exception ignored) {
+                // Never disrupt logging
             }
         }
 
-        private void handleLogEvent(Object event) throws Exception {
-            Method getLoggerName = loggingEventClass.getMethod("getLoggerName");
-            String loggerName = (String) getLoggerName.invoke(event);
-
-            if (!matchesAny(loggerName)) {
-                return;
-            }
-
-            Method getFormattedMessage = loggingEventClass.getMethod("getFormattedMessage");
-            Method getLevel = loggingEventClass.getMethod("getLevel");
-            Method getTimeStamp = loggingEventClass.getMethod("getTimeStamp");
-
-            String message = (String) getFormattedMessage.invoke(event);
-            Object level = getLevel.invoke(event);
-            Long timestamp = (Long) getTimeStamp.invoke(event);
-
-            String levelStr = level != null ? level.toString() : "UNKNOWN";
-            long ts = timestamp != null ? timestamp : System.currentTimeMillis();
-
-            LogMessage logMessage = new LogMessage(loggerName, levelStr, message, ts);
-            listener.accept(logMessage);
-        }
-
-        private boolean matchesAny(String loggerName) {
-            if (loggerName == null || loggerNames == null) {
+        private boolean matchesPrefix(String loggerName) {
+            if (loggerName == null) {
                 return false;
             }
-            for (String prefix : loggerNames) {
+            for (String prefix : loggerPrefixes) {
                 if (prefix != null && loggerName.startsWith(prefix)) {
                     return true;
                 }
             }
             return false;
+        }
+
+        private Object defaultValue(Class<?> type) {
+            if (type == boolean.class) return false;
+            if (type == int.class) return 0;
+            if (type == long.class) return 0L;
+            return null;
         }
     }
 }

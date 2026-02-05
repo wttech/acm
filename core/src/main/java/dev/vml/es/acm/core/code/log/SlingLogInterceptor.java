@@ -15,23 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Log interceptor using Sling Commons Log AppenderTracker mechanism.
+ * Hooks into Sling Commons Log via AppenderTracker — registers Appender as OSGi service.
  *
- * <p>This interceptor registers a Logback Appender as an OSGi service with a "loggers" property.
- * Sling Commons Log automatically discovers and attaches it to the specified loggers via its
- * internal AppenderTracker. This is the same mechanism used by the Sling Log Support console
- * available at /system/console/slinglog.</p>
+ * <p>Uses reflection to avoid compile-time Logback dependencies (Cloud Manager scanner compatible).
+ * Relies on internal Sling API, but stable since AEM 6.5.0 — the most pragmatic solution for
+ * log interception across all supported AEM versions.</p>
  *
- * <p>The implementation uses reflection to create the Appender proxy, avoiding compile-time
- * dependencies on Logback internal classes (ch.qos.logback.*). This ensures compatibility
- * with Adobe Cloud Manager code quality scanners.</p>
- *
- * <p>Available on AEM 6.5+ where Sling Commons Log >= 5.0.0 is present.</p>
- *
- * @see <a href="https://sling.apache.org/documentation/development/logging.html">
- *     Sling Logging Documentation</a>
- * @see <a href="https://github.com/apache/sling-org-apache-sling-commons-log/blob/master/src/main/java/org/apache/sling/commons/log/logback/internal/AppenderTracker.java">
- *     Sling AppenderTracker Implementation</a>
+ * @see <a href="https://sling.apache.org/documentation/development/logging.html">Sling Logging</a>
+ * @see <a href="https://github.com/apache/sling-org-apache-sling-commons-log/blob/master/src/main/java/org/apache/sling/commons/log/logback/internal/AppenderTracker.java">AppenderTracker</a>
  */
 @Component(service = LogInterceptor.class)
 public class SlingLogInterceptor implements LogInterceptor {
@@ -39,6 +30,7 @@ public class SlingLogInterceptor implements LogInterceptor {
     private static final Logger LOG = LoggerFactory.getLogger(SlingLogInterceptor.class);
 
     private static final String APPENDER_NAME = "ACM-SlingLogInterceptor";
+
     private static final String PROP_LOGGERS = "loggers";
 
     @Reference
@@ -61,14 +53,13 @@ public class SlingLogInterceptor implements LogInterceptor {
             if (cl == null) {
                 return false;
             }
-            // Check if Logback classes are available
             cl.loadClass(LogbackAppenderFactory.LOGBACK_LOGGER_CONTEXT);
             cl.loadClass(LogbackAppenderFactory.LOGBACK_APPENDER);
             return true;
         } catch (ClassNotFoundException e) {
             return false;
         } catch (Exception e) {
-            LOG.debug("Unexpected error checking Sling log interceptor availability", e);
+            LOG.debug("Cannot check Sling log interceptor availability", e);
             return false;
         }
     }
@@ -76,15 +67,13 @@ public class SlingLogInterceptor implements LogInterceptor {
     @Override
     public Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
         if (listener == null || loggerNames == null || loggerNames.length == 0) {
-            LOG.warn("Sling log interceptor cannot attach - invalid parameters: listener={}, loggerNames={}",
-                    listener, loggerNames);
+            LOG.warn("Cannot attach - invalid parameters");
             return () -> {};
         }
         if (!isAvailable()) {
-            LOG.warn("Sling log interceptor is not available - Logback/Sling Commons Log not found");
+            LOG.warn("Sling log interceptor not available");
             return () -> {};
         }
-
         try {
             return doAttach(listener, loggerNames);
         } catch (Exception e) {
@@ -94,34 +83,26 @@ public class SlingLogInterceptor implements LogInterceptor {
     }
 
     private Handle doAttach(Consumer<LogMessage> listener, String[] loggerNames) throws Exception {
-        ClassLoader cl = classLoaderManager.getDynamicClassLoader();
-        LogbackAppenderFactory factory = new LogbackAppenderFactory(cl);
+        LogbackAppenderFactory factory = new LogbackAppenderFactory(classLoaderManager.getDynamicClassLoader());
+        List<String> loggerList = Arrays.asList(loggerNames);
+        Object appender = factory.createAppender(APPENDER_NAME, listener, loggerList);
 
-        List<String> loggerNameList = Arrays.asList(loggerNames);
-        Object appender = factory.createAppender(APPENDER_NAME, listener, loggerNameList);
-
-        // Initialize the appender with LoggerContext
-        Object loggerContext = factory.getLoggerContext();
-        factory.setContext(appender, loggerContext);
+        factory.setContext(appender, factory.getLoggerContext());
         factory.start(appender);
 
-        // Register as OSGi service - Sling AppenderTracker will pick it up
         Dictionary<String, Object> props = new Hashtable<>();
         props.put(PROP_LOGGERS, loggerNames);
 
         @SuppressWarnings("rawtypes")
-        ServiceRegistration registration = bundleContext.registerService(
-                LogbackAppenderFactory.LOGBACK_APPENDER, appender, props);
-
-        LOG.debug("Sling log interceptor registered as OSGi service for loggers: {}", loggerNameList);
+        ServiceRegistration reg = bundleContext.registerService(LogbackAppenderFactory.LOGBACK_APPENDER, appender, props);
+        LOG.debug("Registered for loggers: {}", loggerList);
 
         return () -> {
             try {
-                registration.unregister();
+                reg.unregister();
                 factory.stop(appender);
-                LOG.debug("Sling log interceptor unregistered");
             } catch (Exception e) {
-                LOG.warn("Failed to unregister Sling log interceptor", e);
+                LOG.warn("Failed to unregister", e);
             }
         };
     }
