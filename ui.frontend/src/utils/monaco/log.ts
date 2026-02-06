@@ -1,5 +1,5 @@
 import { Monaco } from '@monaco-editor/react';
-import { DEFAULT_THEME_ID } from './theme';
+import { BASE_THEME_ID } from './theme';
 
 export const LOG_LANGUAGE_ID = 'acmLog';
 export const LOG_THEME_ID = 'acmLog';
@@ -26,7 +26,7 @@ export function registerLogLanguage(instance: Monaco) {
   });
 
   instance.editor.defineTheme(LOG_THEME_ID, {
-    base: DEFAULT_THEME_ID,
+    base: BASE_THEME_ID,
     inherit: true,
     rules: [
       { token: 'log-error', foreground: 'f14c4c', fontStyle: 'bold' },
