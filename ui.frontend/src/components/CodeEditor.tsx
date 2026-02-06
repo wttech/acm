@@ -9,7 +9,7 @@ import { debounce } from '../utils/debounce';
 import { modelStorage } from '../utils/modelStorage';
 import { GROOVY_LANGUAGE_ID, registerGroovyLanguage } from '../utils/monaco/groovy';
 import { LOG_LANGUAGE_ID, LOG_THEME_ID, registerLogLanguage } from '../utils/monaco/log';
-import { DEFAULT_THEME_ID } from '../utils/monaco/theme';
+import { DEFAULT_THEME_ID, registerTheme } from '../utils/monaco/theme';
 
 type CodeEditorProps<C extends ColorVersion> = editor.IStandaloneEditorConstructionOptions & {
   id: string;
@@ -46,6 +46,8 @@ const CodeEditor = <C extends ColorVersion>({ containerProps, syntaxError, onCha
     if (!containerRef.current || !monacoRef) {
       return;
     }
+
+    registerTheme(monacoRef);
 
     if (language === GROOVY_LANGUAGE_ID) {
       registerGroovyLanguage(monacoRef);
