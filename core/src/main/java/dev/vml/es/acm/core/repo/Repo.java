@@ -3,8 +3,11 @@ package dev.vml.es.acm.core.repo;
 import dev.vml.es.acm.core.util.StreamUtils;
 import java.util.stream.Stream;
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.*;
@@ -169,8 +172,23 @@ public class Repo {
     }
 
     public Stream<RepoResource> queryRaw(String sql) {
-        return StreamUtils.asStream(resourceResolver.findResources(sql, Query.JCR_SQL2))
-                .map(r -> new RepoResource(this, r.getPath()));
+        try {
+            QueryManager queryManager = session.getWorkspace().getQueryManager();
+            Query query = queryManager.createQuery(sql, Query.JCR_SQL2);
+            QueryResult result = query.execute();
+
+            return StreamUtils.asNodeStream(result.getNodes()).map(n -> {
+                try {
+                    return new RepoResource(this, n.getPath());
+                } catch (RepositoryException e) {
+                    throw new RepoException("Cannot read node path from query result!", e);
+                }
+            });
+        } catch (RepoException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RepoException(String.format("Cannot execute raw query '%s'!", sql), e);
+        }
     }
 
     public boolean isCompositeNodeStore() {

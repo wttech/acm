@@ -4,6 +4,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 
 public class StreamUtils {
 
@@ -29,6 +31,23 @@ public class StreamUtils {
             @Override
             public T next() {
                 return enumeration.nextElement();
+            }
+        });
+    }
+
+    public static Stream<Node> asNodeStream(NodeIterator nodeIterator) {
+        if (nodeIterator == null) {
+            return Stream.empty();
+        }
+        return asStream(new Iterator<Node>() {
+            @Override
+            public boolean hasNext() {
+                return nodeIterator.hasNext();
+            }
+
+            @Override
+            public Node next() {
+                return nodeIterator.nextNode();
             }
         });
     }
