@@ -1,6 +1,6 @@
 package dev.vml.es.acm.core.repo;
 
-import dev.vml.es.acm.core.util.StreamUtils;
+import dev.vml.es.acm.core.util.JcrUtils;
 import java.util.stream.Stream;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -177,15 +177,13 @@ public class Repo {
             Query query = queryManager.createQuery(sql, Query.JCR_SQL2);
             QueryResult result = query.execute();
 
-            return StreamUtils.asNodeStream(result.getNodes()).map(n -> {
+            return JcrUtils.asNodeStream(result.getNodes()).map(n -> {
                 try {
                     return new RepoResource(this, n.getPath());
                 } catch (RepositoryException e) {
                     throw new RepoException("Cannot read node path from query result!", e);
                 }
             });
-        } catch (RepoException e) {
-            throw e;
         } catch (Exception e) {
             throw new RepoException(String.format("Cannot execute raw query '%s'!", sql), e);
         }
