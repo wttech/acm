@@ -12,6 +12,9 @@ public class StreamUtils {
     }
 
     public static <T> Stream<T> asStream(Iterator<T> sourceIterator, boolean parallel) {
+        if (sourceIterator == null) {
+            return Stream.empty();
+        }
         Iterable<T> iterable = () -> sourceIterator;
         return StreamSupport.stream(iterable.spliterator(), parallel);
     }
