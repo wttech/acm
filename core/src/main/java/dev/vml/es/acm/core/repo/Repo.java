@@ -181,7 +181,7 @@ public class Repo {
                 try {
                     return new RepoResource(this, n.getPath());
                 } catch (RepositoryException e) {
-                    throw new RepoException("Cannot read node path from query result!", e);
+                    throw new RepoException(String.format("Cannot read node path from query result '%s'!", sql), e);
                 }
             });
         } catch (Exception e) {
