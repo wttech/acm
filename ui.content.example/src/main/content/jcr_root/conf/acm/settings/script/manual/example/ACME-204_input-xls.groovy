@@ -44,6 +44,14 @@ void doRun() {
         Workbook workbook = new XSSFWorkbook(xlsFile.readFileAsStream())
         Sheet sheet = workbook.getSheetAt(0)
 
+        // Build column name -> index map from header row
+        Row headerRow = sheet.getRow(0)
+        def columns = [:]
+        for (Cell cell : headerRow) {
+            columns[cell.getStringCellValue()] = cell.getColumnIndex()
+        }
+        out.info "Found columns: ${columns.keySet().join(', ')}"
+
         def rowCount = 0
         def names = [] as Set
         def surnames = [] as Set
@@ -56,17 +64,24 @@ void doRun() {
             context.checkAborted()
             rowCount++
 
-            def nameCell = row.getCell(0)
-            def surnameCell = row.getCell(1)
-            def dateCell = row.getCell(2)
+            def nameCell = row.getCell(columns["Name"])
+            def surnameCell = row.getCell(columns["Surname"])
+            def dateCell = row.getCell(columns["Birth Date"])
 
             if (nameCell) names.add(nameCell.getStringCellValue())
             if (surnameCell) surnames.add(surnameCell.getStringCellValue())
 
-            if (dateCell && dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
-                def date = dateCell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-                if (oldestDate == null || date.isBefore(oldestDate)) oldestDate = date
-                if (youngestDate == null || date.isAfter(youngestDate)) youngestDate = date
+            if (dateCell) {
+                def date = null
+                if (DateUtil.isCellDateFormatted(dateCell)) {
+                    date = dateCell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+                } else if (dateCell.getCellType() == CellType.STRING) {
+                    date = LocalDate.parse(dateCell.getStringCellValue())
+                }
+                if (date != null) {
+                    if (oldestDate == null || date.isBefore(oldestDate)) oldestDate = date
+                    if (youngestDate == null || date.isAfter(youngestDate)) youngestDate = date
+                }
             }
 
             if (rowCount % 1000 == 0) out.info("Processed ${rowCount} rows...")
@@ -76,13 +91,13 @@ void doRun() {
 
         outputs.text("summary") {
             label = "Summary"
-            value = """
-                |**Rows processed:** ${rowCount}
-                |**Unique names:** ${names.size()}
-                |**Unique surnames:** ${surnames.size()}
-                |**Oldest birth date:** ${oldestDate ?: 'N/A'}
-                |**Youngest birth date:** ${youngestDate ?: 'N/A'}
-            """.stripMargin().trim()
+            value = lines([
+                "Rows processed": rowCount,
+                "Unique names": names.size(),
+                "Unique surnames": surnames.size(),
+                "Oldest birth date": oldestDate ?: 'N/A',
+                "Youngest birth date": youngestDate ?: 'N/A'
+            ])
         }
 
         out.success "XLS file analysis completed"
