@@ -6,13 +6,10 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * Creates Logback Appender proxies via reflection, avoiding compile-time dependency on ch.qos.logback.*.
- */
 class LogbackAppenderFactory {
 
-    static final String LOGBACK_LOGGER_CONTEXT = "ch.qos.logback.classic.LoggerContext";
-    static final String LOGBACK_APPENDER = "ch.qos.logback.core.Appender";
+    private static final String LOGBACK_LOGGER_CONTEXT = "ch.qos.logback.classic.LoggerContext";
+    private static final String LOGBACK_APPENDER = "ch.qos.logback.core.Appender";
     private static final String LOGBACK_CONTEXT = "ch.qos.logback.core.Context";
     private static final String LOGBACK_LOGGING_EVENT = "ch.qos.logback.classic.spi.ILoggingEvent";
 
@@ -22,7 +19,34 @@ class LogbackAppenderFactory {
         this.classLoader = classLoader;
     }
 
-    Object createAppender(String name, Consumer<LogMessage> listener, List<String> loggerNames)
+    boolean isAvailable() {
+        try {
+            classLoader.loadClass(LOGBACK_LOGGER_CONTEXT);
+            classLoader.loadClass(LOGBACK_APPENDER);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    Object attach(String name, Consumer<LogMessage> listener, List<String> loggerNames)
+            throws ReflectiveOperationException {
+        Object appender = createAppender(name, listener, loggerNames);
+        initAppender(appender);
+        for (String loggerName : loggerNames) {
+            addAppenderToLogger(appender, loggerName);
+        }
+        return appender;
+    }
+
+    void detach(Object appender, List<String> loggerNames) throws ReflectiveOperationException {
+        for (String loggerName : loggerNames) {
+            detachAppenderFromLogger(appender, loggerName);
+        }
+        stopAppender(appender);
+    }
+
+    private Object createAppender(String name, Consumer<LogMessage> listener, List<String> loggerNames)
             throws ClassNotFoundException {
         Class<?> appenderClass = classLoader.loadClass(LOGBACK_APPENDER);
         Class<?> eventClass = classLoader.loadClass(LOGBACK_LOGGING_EVENT);
@@ -32,7 +56,18 @@ class LogbackAppenderFactory {
                 new AppenderHandler(name, eventClass, listener, loggerNames));
     }
 
-    Object getLoggerContext() throws ClassNotFoundException {
+    private void initAppender(Object appender) throws ReflectiveOperationException {
+        Object loggerContext = getLoggerContext();
+        Class<?> ctxClass = classLoader.loadClass(LOGBACK_CONTEXT);
+        appender.getClass().getMethod("setContext", ctxClass).invoke(appender, loggerContext);
+        appender.getClass().getMethod("start").invoke(appender);
+    }
+
+    private void stopAppender(Object appender) throws ReflectiveOperationException {
+        appender.getClass().getMethod("stop").invoke(appender);
+    }
+
+    private Object getLoggerContext() throws ClassNotFoundException {
         Class<?> ctxClass = classLoader.loadClass(LOGBACK_LOGGER_CONTEXT);
         Object ctx = org.slf4j.LoggerFactory.getILoggerFactory();
         if (ctx == null || !ctxClass.isInstance(ctx)) {
@@ -41,17 +76,20 @@ class LogbackAppenderFactory {
         return ctx;
     }
 
-    void setContext(Object appender, Object context) throws ReflectiveOperationException {
-        Class<?> ctxClass = classLoader.loadClass(LOGBACK_CONTEXT);
-        appender.getClass().getMethod("setContext", ctxClass).invoke(appender, context);
+    private void addAppenderToLogger(Object appender, String loggerName) throws ReflectiveOperationException {
+        Object loggerContext = getLoggerContext();
+        Class<?> loggerContextClass = classLoader.loadClass(LOGBACK_LOGGER_CONTEXT);
+        Object logger = loggerContextClass.getMethod("getLogger", String.class).invoke(loggerContext, loggerName);
+        Class<?> appenderClass = classLoader.loadClass(LOGBACK_APPENDER);
+        logger.getClass().getMethod("addAppender", appenderClass).invoke(logger, appender);
     }
 
-    void start(Object appender) throws ReflectiveOperationException {
-        appender.getClass().getMethod("start").invoke(appender);
-    }
-
-    void stop(Object appender) throws ReflectiveOperationException {
-        appender.getClass().getMethod("stop").invoke(appender);
+    private void detachAppenderFromLogger(Object appender, String loggerName) throws ReflectiveOperationException {
+        Object loggerContext = getLoggerContext();
+        Class<?> loggerContextClass = classLoader.loadClass(LOGBACK_LOGGER_CONTEXT);
+        Object logger = loggerContextClass.getMethod("getLogger", String.class).invoke(loggerContext, loggerName);
+        Class<?> appenderClass = classLoader.loadClass(LOGBACK_APPENDER);
+        logger.getClass().getMethod("detachAppender", appenderClass).invoke(logger, appender);
     }
 
     private static class AppenderHandler implements InvocationHandler {
