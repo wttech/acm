@@ -139,10 +139,6 @@ export type FileOutput = {
   files: string[];
 };
 
-export const FileRoot = '/var/acm/file';
-
-export const isFileManaged = (path: string): boolean => path.startsWith(FileRoot + '/');
-
 export enum EventType {
   EXECUTOR_RESET = 'executor_reset',
   HISTORY_CLEAR = 'history_clear',
