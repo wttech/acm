@@ -2,7 +2,7 @@ import { Button, FileTrigger, Flex, Item, ListView, ProgressCircle, Text } from 
 import Delete from '@spectrum-icons/workflow/Delete';
 import FileAdd from '@spectrum-icons/workflow/FileAdd';
 import { useState } from 'react';
-import { FileOutput } from '../types/main.ts';
+import { FileOutput, isFileManaged } from '../types/main.ts';
 import { toastRequest } from '../utils/api';
 
 interface FileFieldProps {
@@ -133,11 +133,11 @@ const FileUploader: React.FC<FileFieldProps> = ({ value, onChange, mimeTypes, al
                   <ProgressCircle isIndeterminate size="M" aria-label="Uploading" />
                 ) : file.deleting ? (
                   <ProgressCircle isIndeterminate size="M" aria-label="Deleting" />
-                ) : (
+                ) : isFileManaged(file.path) ? (
                   <Button variant="negative" isPending={file.deleting} onPress={() => handleDelete(file)} aria-label="Delete file" isDisabled={file.uploading}>
                     <Delete />
                   </Button>
-                )}
+                ) : null}
                 <Text>{file.name}</Text>
               </Flex>
             </Item>

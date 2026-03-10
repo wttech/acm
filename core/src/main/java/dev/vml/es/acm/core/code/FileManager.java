@@ -17,13 +17,15 @@ import org.apache.sling.api.resource.ResourceResolver;
 
 public class FileManager {
 
+    private static final String ROOT = AcmConstants.VAR_ROOT + "/file";
+
     private Repo repo;
 
     private RepoResource root;
 
     public FileManager(ResourceResolver resolver) {
         this.repo = Repo.quiet(resolver);
-        this.root = repo.get(AcmConstants.VAR_ROOT + "/file");
+        this.root = repo.get(ROOT);
     }
 
     public Optional<String> find(String path) {
@@ -67,6 +69,9 @@ public class FileManager {
         RepoResource resource = findResource(path);
         if (resource == null) {
             throw new AcmException(String.format("File to be deleted does not exist '%s'!", path));
+        }
+        if (!StringUtils.startsWith(resource.getPath(), root.getPath() + "/")) {
+            throw new AcmException(String.format("File is outside managed root and cannot be deleted '%s'!", path));
         }
         resource.delete();
         return resource.getPath();

@@ -667,15 +667,11 @@ public class RepoResource {
     }
 
     public InputStream readFileAsStream() {
-        Resource resource = require();
-        Resource contentResource = resource.getChild(JcrConstants.JCR_CONTENT);
-        if (contentResource == null) {
-            throw new RepoException(String.format("Cannot read file at path '%s' as it does not have content!", path));
-        }
-        InputStream inputStream = contentResource.adaptTo(InputStream.class);
+        RepoResource fileResource = requireFile();
+        InputStream inputStream = fileResource.resolve().adaptTo(InputStream.class);
         if (inputStream == null) {
             throw new RepoException(
-                    String.format("Cannot read file at path '%s' as it does not have content stream!", path));
+                    String.format("Cannot read file at path '%s' as it does not have binary data!", path));
         }
         return inputStream;
     }
@@ -688,8 +684,40 @@ public class RepoResource {
         }
     }
 
+    public RepoResource resolveFile() {
+        return file().orElse(null);
+    }
+
+    public RepoResource requireFile() {
+        return file().orElseThrow(() ->
+                new RepoException(String.format("Resource at path '%s' does not have file content!", path)));
+    }
+
+    private Optional<RepoResource> file() {
+        Resource resource = resolve();
+        if (resource == null) {
+            return Optional.empty();
+        }
+        Resource contentResource = resource.getChild(JcrConstants.JCR_CONTENT);
+        if (contentResource == null) {
+            return Optional.empty();
+        }
+        if (path.startsWith(AemConstants.DAM_ROOT + "/")) {
+            String damOriginalPath = AemConstants.DAM_RENDITION_FOLDER + "/" + AemConstants.DAM_RENDITION_ORIGINAL + "/"
+                    + JcrConstants.JCR_CONTENT;
+            Resource damContent = contentResource.getChild(damOriginalPath);
+            if (damContent != null && JcrUtils.hasBinaryData(damContent.adaptTo(Node.class))) {
+                return Optional.of(new RepoResource(repo, damContent.getPath()));
+            }
+        }
+        if (JcrUtils.hasBinaryData(contentResource.adaptTo(Node.class))) {
+            return Optional.of(new RepoResource(repo, contentResource.getPath()));
+        }
+        return Optional.empty();
+    }
+
     public boolean isFile() {
-        return isType(JcrConstants.NT_FILE);
+        return file().isPresent();
     }
 
     public String type() {
