@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,20 @@ public class TextOutput extends Output {
     public String links(Map<String, String> links) {
         return links.entrySet().stream()
                 .map(entry -> "- [" + entry.getKey() + "](" + entry.getValue() + ")")
+                .collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    public String lines(String[] lines) {
+        return String.join(System.lineSeparator(), lines);
+    }
+
+    public String lines(Collection<String> lines) {
+        return String.join(System.lineSeparator(), lines);
+    }
+
+    public String lines(Map<String, ?> values) {
+        return values.entrySet().stream()
+                .map(entry -> "- **" + entry.getKey() + ":** " + entry.getValue())
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 }

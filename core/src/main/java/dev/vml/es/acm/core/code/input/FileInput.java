@@ -7,4 +7,10 @@ public class FileInput extends AbstractFileInput<String> {
     public FileInput(String name) {
         super(name, InputType.FILE, String.class);
     }
+
+    @Override
+    public void setValue(String value) {
+        validatePath(value);
+        super.setValue(value);
+    }
 }

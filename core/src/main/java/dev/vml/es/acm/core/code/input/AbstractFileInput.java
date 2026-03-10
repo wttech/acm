@@ -1,10 +1,13 @@
 package dev.vml.es.acm.core.code.input;
 
+import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.code.FileManager;
 import dev.vml.es.acm.core.code.Input;
 import dev.vml.es.acm.core.code.InputType;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 abstract class AbstractFileInput<V> extends Input<V> {
 
@@ -12,6 +15,15 @@ abstract class AbstractFileInput<V> extends Input<V> {
 
     public AbstractFileInput(String name, InputType type, Class<?> valueType) {
         super(name, type, valueType);
+    }
+
+    protected void validatePath(String path) {
+        if (StringUtils.isNotBlank(path) && !path.startsWith(FileManager.ROOT + "/")) {
+            throw new AcmException(String.format(
+                    "File input '%s' cannot have a value '%s' pointing outside ACM file storage '%s'. "
+                            + "For selecting files from DAM or other repository locations, use path input instead.",
+                    getName(), path, FileManager.ROOT));
+        }
     }
 
     public List<String> getMimeTypes() {

@@ -248,7 +248,7 @@ public class Executor implements EventListener {
                     useLocker(resolverFactory, l -> l.lock(lockName));
                 }
                 context.notifyStatus(ExecutionStatus.RUNNING);
-                if (config.logPrintingEnabled()) {
+                if (!healthChecking && config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
                     context.getOut().fromLoggers(config.logPrintingNames());
                     context.getOut().setLoggerTimestamps(config.logPrintingTimestamps());

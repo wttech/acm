@@ -12,6 +12,16 @@ public class MultiFileInput extends AbstractFileInput<String[]> {
         super(name, InputType.MULTIFILE, String[].class);
     }
 
+    @Override
+    public void setValue(String[] values) {
+        if (values != null) {
+            for (String value : values) {
+                validatePath(value);
+            }
+        }
+        super.setValue(values);
+    }
+
     public Integer getMin() {
         return min;
     }
