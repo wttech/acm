@@ -35,7 +35,7 @@ public class LogInterceptorManager {
                     return i.attach(listener, loggerNames);
                 })
                 .orElseGet(() -> {
-                    LOG.warn("No log interceptor available");
+                    LOG.debug("No log interceptor available");
                     return () -> {};
                 });
     }

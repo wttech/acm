@@ -21,19 +21,7 @@ public class LogbackLogInterceptor implements LogInterceptor {
 
     @Override
     public boolean isAvailable() {
-        if (classLoaderManager == null) {
-            return false;
-        }
-        try {
-            ClassLoader cl = classLoaderManager.getDynamicClassLoader();
-            if (cl == null) {
-                return false;
-            }
-            return new LogbackAppenderFactory(cl).isAvailable();
-        } catch (Exception e) {
-            LOG.debug("Cannot check log interceptor availability", e);
-            return false;
-        }
+        return getFactory() != null;
     }
 
     @Override
@@ -42,26 +30,34 @@ public class LogbackLogInterceptor implements LogInterceptor {
             LOG.warn("Cannot attach - invalid parameters");
             return () -> {};
         }
-        if (!isAvailable()) {
-            LOG.warn("Log interceptor not available");
+        LogbackAppenderFactory factory = getFactory();
+        if (factory == null) {
             return () -> {};
         }
         try {
-            LogbackAppenderFactory factory = new LogbackAppenderFactory(classLoaderManager.getDynamicClassLoader());
             List<String> loggerList = Arrays.asList(loggerNames);
             Object appender = factory.attach(APPENDER_NAME, listener, loggerList);
             LOG.debug("Attached appender to loggers: {}", loggerList);
-
-            return () -> {
-                try {
-                    factory.detach(appender, loggerList);
-                } catch (Exception e) {
-                    LOG.debug("Failed to detach appender", e);
-                }
-            };
+            return () -> factory.detach(appender, loggerList);
         } catch (Exception e) {
             LOG.error("Failed to attach log interceptor", e);
             return () -> {};
+        }
+    }
+
+    private LogbackAppenderFactory getFactory() {
+        if (classLoaderManager == null) {
+            return null;
+        }
+        try {
+            ClassLoader cl = classLoaderManager.getDynamicClassLoader();
+            if (cl == null) {
+                return null;
+            }
+            LogbackAppenderFactory factory = new LogbackAppenderFactory(cl);
+            return factory.isAvailable() ? factory : null;
+        } catch (Exception e) {
+            return null;
         }
     }
 }

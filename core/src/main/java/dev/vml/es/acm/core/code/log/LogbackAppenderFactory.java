@@ -3,10 +3,15 @@ package dev.vml.es.acm.core.code.log;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class LogbackAppenderFactory {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LogbackAppenderFactory.class);
 
     private static final String LOGBACK_LOGGER_CONTEXT = "ch.qos.logback.classic.LoggerContext";
     private static final String LOGBACK_APPENDER = "ch.qos.logback.core.Appender";
@@ -32,18 +37,41 @@ class LogbackAppenderFactory {
     Object attach(String name, Consumer<LogMessage> listener, List<String> loggerNames)
             throws ReflectiveOperationException {
         Object appender = createAppender(name, listener, loggerNames);
-        initAppender(appender);
-        for (String loggerName : loggerNames) {
-            addAppenderToLogger(appender, loggerName);
+        List<String> attached = new ArrayList<>();
+        try {
+            initAppender(appender);
+            for (String loggerName : loggerNames) {
+                addAppenderToLogger(appender, loggerName);
+                attached.add(loggerName);
+            }
+            return appender;
+        } catch (ReflectiveOperationException e) {
+            detach(appender, attached);
+            throw e;
         }
-        return appender;
     }
 
-    void detach(Object appender, List<String> loggerNames) throws ReflectiveOperationException {
-        for (String loggerName : loggerNames) {
-            detachAppenderFromLogger(appender, loggerName);
+    void detach(Object appender, List<String> loggerNames) {
+        if (appender == null) {
+            return;
         }
-        stopAppender(appender);
+        try {
+            if (loggerNames != null) {
+                for (String loggerName : loggerNames) {
+                    try {
+                        detachAppenderFromLogger(appender, loggerName);
+                    } catch (Exception e) {
+                        LOG.warn("Failed to detach appender from logger '{}'", loggerName, e);
+                    }
+                }
+            }
+        } finally {
+            try {
+                stopAppender(appender);
+            } catch (Exception e) {
+                LOG.warn("Failed to stop appender", e);
+            }
+        }
     }
 
     private Object createAppender(String name, Consumer<LogMessage> listener, List<String> loggerNames)
