@@ -17,7 +17,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 
 public class FileManager {
 
-    private static final String ROOT = AcmConstants.VAR_ROOT + "/file";
+    public static final String ROOT = AcmConstants.VAR_ROOT + "/file";
 
     private Repo repo;
 
