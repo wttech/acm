@@ -7,15 +7,6 @@ import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Selects the best available {@link LogInterceptor} implementation.
- *
- * <p><strong>Why not OSGi Log Service 1.4?</strong> Its {@code LogReaderService} only captures
- * logs sent directly to OSGi Log Service. SLF4J/Logback logs are bridged one-way (SLF4J → OSGi),
- * so {@code LogReaderService} doesn't receive them. We use Sling AppenderTracker instead.</p>
- *
- * @see SlingLogInterceptor
- */
 @Component(service = LogInterceptorManager.class)
 public class LogInterceptorManager {
 
