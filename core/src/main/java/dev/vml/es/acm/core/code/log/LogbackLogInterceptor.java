@@ -54,8 +54,7 @@ public class LogbackLogInterceptor implements LogInterceptor {
             if (cl == null) {
                 return null;
             }
-            LogbackAppenderFactory factory = new LogbackAppenderFactory(cl);
-            return factory.isAvailable() ? factory : null;
+            return new LogbackAppenderFactory(cl);
         } catch (Exception e) {
             return null;
         }
