@@ -37,8 +37,8 @@ class LogbackAppenderFactory {
         Object appender = createAppender(name, listener, loggerNames);
         List<String> attached = new ArrayList<>();
         try {
-            initAppender(appender);
             Object loggerContext = getLoggerContext();
+            initAppender(appender, loggerContext);
             for (String loggerName : loggerNames) {
                 addAppenderToLogger(loggerContext, appender, loggerName);
                 attached.add(loggerName);
@@ -83,8 +83,7 @@ class LogbackAppenderFactory {
                 new AppenderHandler(name, eventClass, listener, loggerNames));
     }
 
-    private void initAppender(Object appender) throws ReflectiveOperationException {
-        Object loggerContext = getLoggerContext();
+    private void initAppender(Object appender, Object loggerContext) throws ReflectiveOperationException {
         appender.getClass().getMethod("setContext", contextClass).invoke(appender, loggerContext);
         appender.getClass().getMethod("start").invoke(appender);
     }
