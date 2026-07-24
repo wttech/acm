@@ -507,7 +507,7 @@ void doRun() {
     }
     def johnDoe = acl.createUser { id = "john.doe"; fullName = "John Doe"; password = "ilovekittens"; skipIfExists() }.tap {
         // purge()
-        allow("/content", ["jcr:read"])
+        allow { path = "/content", permissions = ["jcr:read"] }
     }
     acl.createGroup { id = "test.group" }.tap {
         // removeAllMembers()
