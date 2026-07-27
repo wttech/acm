@@ -42,7 +42,7 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
           } else if (queuedExecution.status === ExecutionStatus.SKIPPED) {
             ToastQueue.neutral('Code execution skipped — conditions not met.', { timeout: ToastTimeoutQuick });
           } else if (queuedExecution.status === ExecutionStatus.LOCKED) {
-            ToastQueue.neutral('Code execution locked — already running or stale lock.', { timeout: ToastTimeoutQuick });
+            ToastQueue.neutral('Code execution locked — already running or stale.', { timeout: ToastTimeoutQuick });
           }  else if (queuedExecution.status === ExecutionStatus.SUCCEEDED) {
             ToastQueue.positive('Code execution succeeded!', { timeout: ToastTimeoutQuick });
           }

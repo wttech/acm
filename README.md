@@ -342,6 +342,31 @@ void doRun() {
 
 For the complete list of available conditions and their behavior, see the [Conditions.java source code](https://github.com/wttech/acm/blob/main/core/src/main/java/dev/vml/es/acm/core/code/Conditions.java).
 
+#### Lock timeout
+
+While a script runs, it holds a lock preventing concurrent runs of the same script. The lock has an expiration time that protects against stale locks left behind when an instance is killed abruptly (e.g. pod recycling). By default the expiration comes from the global `Lock Timeout` OSGi configuration of the *Code Executor* (24 hours), but a script can override it for its own long- or short-running workloads by setting `context.lockTimeout` in `describeRun()`:
+
+```groovy
+import java.time.Duration
+
+void describeRun() {
+    context.lockTimeout = "2h"                 // human-readable: 'ms', 's', 'm', 'h', 'd' (e.g. '2h30m', '500ms')
+    // context.lockTimeout = "PT2H30M"         // ISO-8601 duration
+    // context.lockTimeout = Duration.ofHours(2)
+    // context.lockTimeout = 7_200_000         // milliseconds (0 or negative disables lock expiration)
+}
+
+boolean canRun() {
+    return conditions.always()
+}
+
+void doRun() {
+    // long-running work protected by the extended lock timeout
+}
+```
+
+The timeout must exceed the maximum expected execution time. The precedence is: value set in the script's `describeRun()` → value set by an extension's `prepareRun()` → global OSGi `Lock Timeout` configuration.
+
 #### Inputs example
 
 Scripts could accept inputs, which are passed to the script when it is executed.

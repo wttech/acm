@@ -17,6 +17,7 @@ import dev.vml.es.acm.core.repo.Locker;
 import dev.vml.es.acm.core.script.ScriptRepository;
 import dev.vml.es.acm.core.state.Permissions;
 import dev.vml.es.acm.core.util.DateUtils;
+import dev.vml.es.acm.core.util.DurationUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StringUtil;
 import java.time.Duration;
@@ -263,7 +264,7 @@ public class Executor implements EventListener {
 
             try {
                 if (locking) {
-                    useLocker(resolverFactory, l -> l.lock(lockName, lockTimeout()));
+                    useLocker(resolverFactory, l -> l.lock(lockName, lockTimeout(context)));
                 }
                 context.notifyStatus(ExecutionStatus.RUNNING);
                 if (!healthChecking && config.logPrintingEnabled()) {
@@ -307,9 +308,11 @@ public class Executor implements EventListener {
                 LOCK_DIR, StringUtils.removeStart(context.getExecutable().getId(), AcmConstants.SETTINGS_ROOT + "/"));
     }
 
-    private Duration lockTimeout() {
-        long timeout = config.lockTimeout();
-        return timeout < 0 ? null : Duration.ofMillis(timeout);
+    private Duration lockTimeout(ExecutionContext context) {
+        if (context.getLockTimeout() != null) {
+            return context.getLockTimeout();
+        }
+        return DurationUtils.toDuration(config.lockTimeout());
     }
 
     private String formatLockTime(Calendar calendar) {
