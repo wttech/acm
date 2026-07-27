@@ -672,7 +672,7 @@ For complete examples, see the [example scripts directory](ui.content.example/sr
 
 #### Locking
 
-While a script runs, ACM holds a repository lock scoped to that script, so the same script cannot run twice at the same time (e.g. an automatic run overlapping a manual one, or two cluster nodes firing together). A second attempt while the lock is held ends with the `LOCKED` status instead of running the code again.
+While a script runs, ACM holds a repository lock scoped to that script, so the same script cannot run twice at the same time (e.g. a scheduled run starting before the previous one finished, two cluster nodes firing together, or the script triggered manually twice). A second attempt while the lock is held ends with the `LOCKED` status instead of running the code again.
 
 To avoid a lock being held forever when an instance is killed abruptly (e.g. pod recycling, `kill -9`, a crash) — leaving a *stale lock* that would block every future run — the lock carries an expiration time. Once it expires, the next run recreates it and proceeds normally. The default expiration comes from the global `Lock Timeout` OSGi configuration of the *Code Executor* (24 hours).
 
