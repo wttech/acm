@@ -209,24 +209,4 @@ public class Locker {
     public boolean anyLocked() {
         return locks().findAny().isPresent();
     }
-
-    public static class LockInfo {
-
-        private final Calendar lockedAt;
-
-        private final Calendar lockedUntil;
-
-        public LockInfo(Calendar lockedAt, Calendar lockedUntil) {
-            this.lockedAt = lockedAt;
-            this.lockedUntil = lockedUntil;
-        }
-
-        public Calendar getLockedAt() {
-            return lockedAt;
-        }
-
-        public Calendar getLockedUntil() {
-            return lockedUntil;
-        }
-    }
 }

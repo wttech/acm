@@ -12,6 +12,7 @@ import dev.vml.es.acm.core.instance.InstanceSettings;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
+import dev.vml.es.acm.core.repo.LockInfo;
 import dev.vml.es.acm.core.repo.Locker;
 import dev.vml.es.acm.core.script.ScriptRepository;
 import dev.vml.es.acm.core.state.Permissions;
@@ -248,9 +249,9 @@ public class Executor implements EventListener {
             boolean locking = !healthChecking;
             String lockName = executableLockName(context);
             if (locking) {
-                Locker.LockInfo lockInfo = queryLocker(resolverFactory, l -> l.readLock(lockName));
+                LockInfo lockInfo = queryLocker(resolverFactory, l -> l.readLock(lockName));
                 if (lockInfo != null) {
-                    LOG.info(
+                    LOG.warn(
                             "Execution locked '{}' by another run of '{}' since {} (expires {})",
                             context.getId(),
                             context.getExecutable().getId(),
