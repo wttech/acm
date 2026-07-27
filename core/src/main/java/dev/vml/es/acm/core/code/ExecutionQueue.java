@@ -277,15 +277,15 @@ public class ExecutionQueue implements JobExecutor, EventListener {
         try {
             Execution immediateExecution = future.get();
 
-            if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
-                LOG.debug("Execution skipped '{}'", immediateExecution);
-                return context.result()
-                        .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null).toJson())
-                        .cancelled();
-            } else if (immediateExecution.getStatus() == ExecutionStatus.LOCKED) {
+            if (immediateExecution.getStatus() == ExecutionStatus.LOCKED) {
                 LOG.debug("Execution locked '{}'", immediateExecution);
                 return context.result()
                         .message(QueuedMessage.of(ExecutionStatus.LOCKED, null).toJson())
+                        .cancelled();
+             } else if (immediateExecution.getStatus() == ExecutionStatus.SKIPPED) {
+                LOG.debug("Execution skipped '{}'", immediateExecution);
+                return context.result()
+                        .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null).toJson())
                         .cancelled();
             } else {
                 LOG.debug("Execution succeeded '{}'", immediateExecution);
