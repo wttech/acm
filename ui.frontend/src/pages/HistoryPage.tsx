@@ -5,6 +5,7 @@ import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Alert from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
+import LockClosed from '@spectrum-icons/workflow/LockClosed';
 import Pause from '@spectrum-icons/workflow/Pause';
 import Search from '@spectrum-icons/workflow/Search';
 import Star from '@spectrum-icons/workflow/Star';
@@ -118,6 +119,10 @@ const HistoryPage = () => {
             <Item textValue="Skipped" key={ExecutionStatus.SKIPPED}>
               <Pause size="S" />
               <Text>Skipped</Text>
+            </Item>
+            <Item textValue="Locked" key={ExecutionStatus.LOCKED}>
+              <LockClosed size="S" />
+              <Text>Locked</Text>
             </Item>
             <Item textValue="Aborted" key={ExecutionStatus.ABORTED}>
               <Cancel size="S" />

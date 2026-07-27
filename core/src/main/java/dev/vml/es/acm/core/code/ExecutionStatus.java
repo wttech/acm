@@ -17,6 +17,7 @@ public enum ExecutionStatus {
     STOPPING,
     // queued & immediate execution statuses
     SKIPPED,
+    LOCKED,
     STOPPED,
     ABORTED,
     FAILED,

@@ -6,6 +6,7 @@ import Close from '@spectrum-icons/workflow/Close';
 import Code from '@spectrum-icons/workflow/Code';
 import Heart from '@spectrum-icons/workflow/Heart';
 import Help from '@spectrum-icons/workflow/Help';
+import LockClosed from '@spectrum-icons/workflow/LockClosed';
 import Replay from '@spectrum-icons/workflow/Replay';
 import React from 'react';
 
@@ -29,6 +30,10 @@ const ScriptsAutomaticHelpButton: React.FC = () => (
           </p>
           <p>
             <Cancel size="XS" /> Scripts that cannot run are skipped. Skipped executions are saved in the history only if debug mode is enabled. All other script executions are always saved for auditing purposes.
+          </p>
+          <p>
+            <LockClosed size="XS" /> While a script runs, it is locked so the same script is not executed concurrently on another instance; such attempts are marked as <code>locked</code>. Locks expire automatically (configurable via the code executor
+            settings) to recover from instances killed abruptly, e.g. pod recycling.
           </p>
           <p>
             <Heart size="XS" /> Script executor is active only when the instance is healthy, meaning all OSGi bundles are active, and no recent core OSGi events have occurred. Some bundles may be ignored, which may be useful to address

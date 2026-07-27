@@ -3,6 +3,7 @@ import Alert from '@spectrum-icons/workflow/Alert';
 import Cancel from '@spectrum-icons/workflow/Cancel';
 import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import Clock from '@spectrum-icons/workflow/Clock';
+import LockClosed from '@spectrum-icons/workflow/LockClosed';
 import Pause from '@spectrum-icons/workflow/Pause';
 import React from 'react';
 import { ExecutionStatus } from '../types/execution';
@@ -28,6 +29,8 @@ const getVariant = (status: ExecutionStatus): 'positive' | 'negative' | 'neutral
     case ExecutionStatus.STOPPED:
     case ExecutionStatus.SKIPPED:
       return 'neutral';
+    case ExecutionStatus.LOCKED:
+      return 'yellow';
     case ExecutionStatus.ABORTED:
       return 'negative';
     default:
@@ -53,6 +56,8 @@ const getIcon = (status: ExecutionStatus) => {
       return <Pause />;
     case ExecutionStatus.SKIPPED:
       return <Pause />;
+    case ExecutionStatus.LOCKED:
+      return <LockClosed />;
     case ExecutionStatus.ABORTED:
       return <Cancel />;
     default:

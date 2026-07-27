@@ -282,6 +282,11 @@ public class ExecutionQueue implements JobExecutor, EventListener {
                 return context.result()
                         .message(QueuedMessage.of(ExecutionStatus.SKIPPED, null).toJson())
                         .cancelled();
+            } else if (immediateExecution.getStatus() == ExecutionStatus.LOCKED) {
+                LOG.debug("Execution locked '{}'", immediateExecution);
+                return context.result()
+                        .message(QueuedMessage.of(ExecutionStatus.LOCKED, null).toJson())
+                        .cancelled();
             } else {
                 LOG.debug("Execution succeeded '{}'", immediateExecution);
                 return context.result().succeeded();

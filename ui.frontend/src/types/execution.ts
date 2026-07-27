@@ -25,6 +25,7 @@ export enum ExecutionStatus {
   STOPPED = 'STOPPED',
   FAILED = 'FAILED',
   SKIPPED = 'SKIPPED',
+  LOCKED = 'LOCKED',
   ABORTED = 'ABORTED',
   SUCCEEDED = 'SUCCEEDED',
 }
