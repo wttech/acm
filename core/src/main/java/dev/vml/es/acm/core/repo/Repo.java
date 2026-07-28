@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.NOPLogger;
 
-public class Repo {
+public class Repo implements CommitPolicy {
 
     private static final Logger LOG = LoggerFactory.getLogger(Repo.class);
 
@@ -32,7 +32,7 @@ public class Repo {
     public Repo(ResourceResolver resourceResolver) {
         this.resourceResolver = resourceResolver;
         this.session = resourceResolver.adaptTo(Session.class);
-        this.locker = new Locker(resourceResolver, this::isAutoCommit);
+        this.locker = new Locker(resourceResolver, this);
     }
 
     public static Repo quiet(ResourceResolver resourceResolver) {

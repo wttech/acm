@@ -5,9 +5,9 @@ import dev.vml.es.acm.core.acl.authorizable.AclGroup;
 import dev.vml.es.acm.core.acl.authorizable.AclUser;
 import dev.vml.es.acm.core.acl.utils.AuthorizableManager;
 import dev.vml.es.acm.core.acl.utils.PermissionsManager;
+import dev.vml.es.acm.core.repo.CommitPolicy;
 import dev.vml.es.acm.core.repo.Repo;
 import java.util.Optional;
-import java.util.function.Supplier;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.ValueFactory;
@@ -32,10 +32,10 @@ public class AclContext {
     private final PermissionsManager permissionsManager;
 
     public AclContext(ResourceResolver resourceResolver) {
-        this(resourceResolver, () -> true);
+        this(resourceResolver, new Repo(resourceResolver));
     }
 
-    public AclContext(ResourceResolver resourceResolver, Supplier<Boolean> autoCommit) {
+    public AclContext(ResourceResolver resourceResolver, CommitPolicy commitPolicy) {
         try {
             this.logger = LoggerFactory.getLogger(AclContext.class);
             JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
@@ -43,8 +43,8 @@ public class AclContext {
             AccessControlManager accessControlManager = session.getAccessControlManager();
             ValueFactory valueFactory = session.getValueFactory();
             this.resourceResolver = resourceResolver;
-            this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory, autoCommit);
-            this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory, autoCommit);
+            this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory, commitPolicy);
+            this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory, commitPolicy);
         } catch (RepositoryException e) {
             throw new AclException("Cannot access repository while obtaining ACL context!", e);
         }
