@@ -79,7 +79,7 @@ public class Locker {
                 Resource lockCurrent = getLock(name);
                 if (lockCurrent != null) {
                     if (readLock(lockCurrent).isExpired()) {
-                        LOG.warn("Cannot create lock as '{}' is stale - removing.", name);
+                        LOG.warn("Cannot create lock '{}' as it is stale - removing.", name);
                         resolver.delete(lockCurrent);
                     } else {
                         LOG.warn("Cannot create lock '{}' as it already exists!", name);
