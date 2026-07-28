@@ -209,6 +209,6 @@ public class Locker {
     }
 
     public boolean anyLocked() {
-        return locks().anyMatch(this::isLockActive);
+        return locks().anyMatch(lock -> !readLock(lock).isExpired());
     }
 }
