@@ -1,0 +1,30 @@
+group: Repo
+name: repo_batch
+content: |
+  repo.batch {
+    // operations
+  }
+documentation: |
+  Group multiple repository operations into a single commit.
+
+  By default every operation commits on its own (`autoCommit` is enabled).
+  Within a batch, auto-committing is turned off and all changes are committed once, at the end of the block.
+  This is useful for bulk changes, where a single save is more efficient than many individual commits.
+
+  Batches cannot be nested and cannot be used inside a dry run - doing so throws an exception,
+  so that the "commit at the end" guarantee always holds.
+
+  The `autoCommit` control applies only to operations performed via the `repo` and `acl` services.
+  Since everything shares the same session, calling vanilla Sling/AEM/JCR APIs directly (e.g. `session.save()`)
+  may trigger an accidental commit of the pending changes and break the "commit at the end" guarantee.
+
+  For example:
+  ```groovy
+  void doRun() {
+    repo.batch {
+      acl.createUser("alice.doe")
+      acl.allow(userId: "alice.doe", path: "/content/acme", permissions: ["jcr:read"])
+      repo.get("/content/acme").ensureRegularFolder()
+    }
+  }
+  ```
