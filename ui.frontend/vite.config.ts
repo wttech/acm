@@ -70,7 +70,17 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        chunkFileNames: (chunkInfo) => `chunks/${chunkInfo.name.replace(/[:[\]@]/g, '-')}-[hash].js`,
+        // Use hex hashes so generated names never contain '_' or '-' that FileVault could
+        // misread. FileVault decodes on-disk names like '_prefix_local' back into the JCR
+        // name 'prefix:local', so a chunk such as '_basePickBy-BqxqY_hh.js' would be imported
+        // as an invalid namespaced node and break AEM package installation (OakName0001).
+        hashCharacters: 'hex',
+        chunkFileNames: (chunkInfo) => {
+          // Strip leading underscores (e.g. lodash internals like '_basePickBy') and replace
+          // characters that are not safe for JCR/FileVault node names.
+          const name = chunkInfo.name.replace(/[:[\]@]/g, '-').replace(/^_+/, '');
+          return `chunks/${name}-[hash].js`;
+        },
       },
     },
   },
