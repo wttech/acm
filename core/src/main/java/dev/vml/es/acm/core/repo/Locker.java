@@ -36,7 +36,7 @@ public class Locker {
     private final CommitPolicy commitPolicy;
 
     public Locker(ResourceResolver resolver) {
-        this(resolver, new Repo(resolver));
+        this(resolver, CommitPolicy.of(resolver, true));
     }
 
     public Locker(ResourceResolver resolver, CommitPolicy commitPolicy) {

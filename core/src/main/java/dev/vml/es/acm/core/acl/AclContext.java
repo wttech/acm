@@ -32,7 +32,7 @@ public class AclContext {
     private final PermissionsManager permissionsManager;
 
     public AclContext(ResourceResolver resourceResolver) {
-        this(resourceResolver, new Repo(resourceResolver));
+        this(resourceResolver, CommitPolicy.of(resourceResolver, true));
     }
 
     public AclContext(ResourceResolver resourceResolver, CommitPolicy commitPolicy) {
