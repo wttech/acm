@@ -131,17 +131,17 @@ public class Repo implements CommitPolicy {
     }
 
     public void batch(Runnable operation) {
-        boolean autoCommitInitial = this.autoCommit;
-        if (autoCommitInitial) {
-            this.autoCommit = false;
-            getLogger().info("Batch started. Changes will be committed once at the end.");
+        if (!autoCommit) {
+            throw new RepoException("Cannot start a batch: already inside a batch or dry run scope.");
         }
+        this.autoCommit = false;
+        getLogger().info("Batch started. Changes will be committed once at the end.");
         try {
             operation.run();
             commit();
             getLogger().info("Batch completed. Changes committed.");
         } finally {
-            this.autoCommit = autoCommitInitial;
+            this.autoCommit = true;
         }
     }
 
