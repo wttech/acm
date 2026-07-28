@@ -67,4 +67,12 @@ public enum ExecutionStatus {
     public static List<ExecutionStatus> completed() {
         return Arrays.asList(ExecutionStatus.SUCCEEDED, ExecutionStatus.FAILED);
     }
+
+    /**
+     * Statuses indicating the executable code was never actually run (conditions not met or lock held),
+     * so there is no meaningful output/input to persist - such executions are kept out of history by default.
+     */
+    public static List<ExecutionStatus> notRun() {
+        return Arrays.asList(ExecutionStatus.SKIPPED, ExecutionStatus.LOCKED);
+    }
 }

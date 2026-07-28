@@ -48,15 +48,19 @@ public class Locker {
     public boolean isLocked(String lockName) {
         String name = normalizeName(lockName);
         Resource lock = getLock(name);
-        return isLock(lock);
+        return isLockActive(lock);
     }
 
     public LockInfo readLock(String lockName) {
         String name = normalizeName(lockName);
         Resource lock = getLock(name);
-        if (!isLock(lock)) {
+        if (!isLockPresent(lock)) {
             return null;
         }
+        return readLock(lock);
+    }
+
+    private LockInfo readLock(Resource lock) {
         return new LockInfo(
                 lock.getValueMap().get(LOCKED_PROP, Calendar.class),
                 lock.getValueMap().get(LOCKED_UNTIL_PROP, Calendar.class));
@@ -74,7 +78,7 @@ public class Locker {
             try {
                 Resource lockCurrent = getLock(name);
                 if (lockCurrent != null) {
-                    if (isExpired(lockCurrent)) {
+                    if (readLock(lockCurrent).isExpired()) {
                         LOG.warn("Cannot create lock as '{}' is stale - removing.", name);
                         resolver.delete(lockCurrent);
                     } else {
@@ -191,22 +195,20 @@ public class Locker {
         if (resource == null) {
             return Stream.empty();
         }
-        return ResourceSpliterator.stream(resource).skip(1).filter(this::isLock);
+        return ResourceSpliterator.stream(resource).skip(1).filter(this::isLockPresent);
     }
 
-    private boolean isLock(Resource lock) {
+    private boolean isLockActive(Resource lock) {
+        return isLockPresent(lock) && !readLock(lock).isExpired();
+    }
+
+    private boolean isLockPresent(Resource lock) {
         return lock != null
                 && lock.isResourceType(RESOURCE_TYPE)
-                && lock.getValueMap().containsKey(LOCKED_PROP)
-                && !isExpired(lock);
-    }
-
-    private boolean isExpired(Resource lock) {
-        Calendar lockedUntil = lock.getValueMap().get(LOCKED_UNTIL_PROP, Calendar.class);
-        return lockedUntil != null && Calendar.getInstance().after(lockedUntil);
+                && lock.getValueMap().containsKey(LOCKED_PROP);
     }
 
     public boolean anyLocked() {
-        return locks().findAny().isPresent();
+        return locks().anyMatch(this::isLockActive);
     }
 }

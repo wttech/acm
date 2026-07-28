@@ -20,4 +20,8 @@ public class LockInfo {
     public Calendar getLockedUntil() {
         return lockedUntil;
     }
+
+    public boolean isExpired() {
+        return lockedUntil != null && Calendar.getInstance().after(lockedUntil);
+    }
 }

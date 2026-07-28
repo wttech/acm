@@ -251,7 +251,7 @@ public class Executor implements EventListener {
             String lockName = executableLockName(context);
             if (locking) {
                 LockInfo lockInfo = queryLocker(resolverFactory, l -> l.readLock(lockName));
-                if (lockInfo != null) {
+                if (lockInfo != null && !lockInfo.isExpired()) {
                     LOG.warn(
                             "Execution locked '{}' by another run of '{}' since {} (expires {})",
                             context.getId(),
@@ -321,7 +321,8 @@ public class Executor implements EventListener {
 
     private void handleHistory(ContextualExecution execution) {
         if (execution.getContext().isHistory()
-                && (execution.getContext().isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
+                && (execution.getContext().isDebug()
+                        || !ExecutionStatus.notRun().contains(execution.getStatus()))) {
             useHistory(resolverFactory, h -> h.save(execution));
         }
     }
