@@ -5,6 +5,7 @@ import dev.vml.es.acm.core.acl.authorizable.AclGroup;
 import dev.vml.es.acm.core.acl.authorizable.AclUser;
 import dev.vml.es.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
+import java.util.function.Supplier;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.User;
@@ -17,7 +18,11 @@ public class Acl {
     private final AclChecker checker;
 
     public Acl(ResourceResolver resourceResolver) {
-        this.context = new AclContext(resourceResolver);
+        this(resourceResolver, () -> true);
+    }
+
+    public Acl(ResourceResolver resourceResolver, Supplier<Boolean> autoCommit) {
+        this.context = new AclContext(resourceResolver, autoCommit);
         this.checker = new AclChecker(context);
     }
 

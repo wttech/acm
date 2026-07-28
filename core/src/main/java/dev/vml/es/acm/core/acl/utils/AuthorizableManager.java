@@ -5,6 +5,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import javax.jcr.Credentials;
 import javax.jcr.LoginException;
 import javax.jcr.Repository;
@@ -27,10 +28,17 @@ public class AuthorizableManager {
 
     private final ValueFactory valueFactory;
 
-    public AuthorizableManager(JackrabbitSession session, UserManager userManager, ValueFactory valueFactory) {
+    private final Supplier<Boolean> autoCommit;
+
+    public AuthorizableManager(
+            JackrabbitSession session,
+            UserManager userManager,
+            ValueFactory valueFactory,
+            Supplier<Boolean> autoCommit) {
         this.session = session;
         this.userManager = userManager;
         this.valueFactory = valueFactory;
+        this.autoCommit = autoCommit;
     }
 
     public User createUser(String id, String password, String path) {
@@ -229,6 +237,8 @@ public class AuthorizableManager {
     }
 
     private void save() throws RepositoryException {
-        session.save();
+        if (autoCommit.get()) {
+            session.save();
+        }
     }
 }

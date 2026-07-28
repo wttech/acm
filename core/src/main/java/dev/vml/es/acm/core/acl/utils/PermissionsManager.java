@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -46,11 +47,23 @@ public class PermissionsManager {
 
     private final ValueFactory valueFactory;
 
+    private final Supplier<Boolean> autoCommit;
+
     public PermissionsManager(
-            JackrabbitSession session, AccessControlManager accessControlManager, ValueFactory valueFactory) {
+            JackrabbitSession session,
+            AccessControlManager accessControlManager,
+            ValueFactory valueFactory,
+            Supplier<Boolean> autoCommit) {
         this.session = session;
         this.accessControlManager = accessControlManager;
         this.valueFactory = valueFactory;
+        this.autoCommit = autoCommit;
+    }
+
+    private void save() throws RepositoryException {
+        if (autoCommit.get()) {
+            session.save();
+        }
     }
 
     public void apply(
@@ -71,7 +84,7 @@ public class PermissionsManager {
                 updateAccessControlList(
                         authorizable.getPrincipal(), path, modifyPermissions, modifyRestrictions, allow);
             }
-            session.save();
+            save();
         } catch (RepositoryException e) {
             throw new AclException(
                     String.format("Failed to apply permissions for authorizable '%s' at path '%s'", id, path), e);
@@ -215,7 +228,7 @@ public class PermissionsManager {
             }
             if (result) {
                 accessControlManager.setPolicy(path, jackrabbitAcl);
-                session.save();
+                save();
             }
             return result;
         } catch (RepositoryException e) {

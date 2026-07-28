@@ -46,7 +46,7 @@ public class CodeContext {
 
         this.log = LoggerFactory.getLogger(getClass());
         this.repo = new Repo(resourceResolver);
-        this.acl = new Acl(resourceResolver);
+        this.acl = new Acl(resourceResolver, repo::isAutoCommit);
         this.activator = new Activator(resourceResolver, osgiContext);
         this.formatter = new Formatter();
         this.notifier = osgiContext.getService(NotificationManager.class);
