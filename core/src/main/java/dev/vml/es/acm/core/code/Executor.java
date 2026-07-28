@@ -110,7 +110,7 @@ public class Executor implements EventListener {
         @AttributeDefinition(
                 name = "Lock Timeout",
                 description =
-                        "Expiration time (in milliseconds) of executable locks, protecting against stale locks left behind when an instance is killed abruptly (e.g. pod recycling). Must exceed the max expected execution time. Use a negative value to disable expiration.")
+                        "Expiration time (in milliseconds) of executable locks, protecting against stale locks left behind when an instance is killed abruptly (e.g. pod recycling). Must exceed the max expected execution time. Use a zero or negative value to disable expiration.")
         long lockTimeout() default 24L * 60L * 60L * 1000L;
     }
 
