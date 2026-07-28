@@ -179,15 +179,7 @@ public class ExecutionContext implements AutoCloseable {
         return lockTimeout;
     }
 
-    public void setLockTimeout(Duration lockTimeout) {
-        this.lockTimeout = lockTimeout;
-    }
-
-    public void setLockTimeout(long lockTimeoutMillis) {
-        this.lockTimeout = DurationUtils.toDuration(lockTimeoutMillis);
-    }
-
-    public void setLockTimeout(String lockTimeout) {
+    public void setLockTimeout(Object lockTimeout) {
         this.lockTimeout = DurationUtils.toDuration(lockTimeout);
     }
 

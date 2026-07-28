@@ -88,4 +88,21 @@ public final class DurationUtils {
     public static Long toMillis(Duration duration) {
         return duration == null ? null : duration.toMillis();
     }
+
+    public static Duration toDuration(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Duration) {
+            return (Duration) value;
+        }
+        if (value instanceof Number) {
+            return toDuration(((Number) value).longValue());
+        }
+        if (value instanceof String) {
+            return toDuration((String) value);
+        }
+        throw new IllegalArgumentException(
+                String.format("Cannot convert value of type '%s' to duration!", value.getClass().getName()));
+    }
 }
