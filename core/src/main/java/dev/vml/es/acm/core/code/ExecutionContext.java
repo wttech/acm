@@ -3,8 +3,10 @@ package dev.vml.es.acm.core.code;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.code.log.LogInterceptorManager;
 import dev.vml.es.acm.core.repo.Repo;
+import dev.vml.es.acm.core.util.DurationUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import groovy.lang.Binding;
+import java.time.Duration;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -41,6 +43,8 @@ public class ExecutionContext implements AutoCloseable {
     private boolean debug = false;
 
     private boolean skipped = false;
+
+    private Duration lockTimeout = null;
 
     private final Inputs inputs;
 
@@ -169,6 +173,14 @@ public class ExecutionContext implements AutoCloseable {
 
     public void setSkipped(boolean skipped) {
         this.skipped = skipped;
+    }
+
+    public Duration getLockTimeout() {
+        return lockTimeout;
+    }
+
+    public void setLockTimeout(Object lockTimeout) {
+        this.lockTimeout = DurationUtils.toDuration(lockTimeout);
     }
 
     public boolean isAborted() {

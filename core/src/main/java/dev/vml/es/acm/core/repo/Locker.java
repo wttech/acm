@@ -3,6 +3,7 @@ package dev.vml.es.acm.core.repo;
 import dev.vml.es.acm.core.AcmConstants;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
+import java.time.Duration;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,8 @@ public class Locker {
 
     private static final String LOCKED_PROP = "locked";
 
+    private static final String LOCKED_UNTIL_PROP = "lockedUntil";
+
     private static final int RETRY_COUNT = 5;
 
     private final ResourceResolver resolver;
@@ -45,10 +48,29 @@ public class Locker {
     public boolean isLocked(String lockName) {
         String name = normalizeName(lockName);
         Resource lock = getLock(name);
-        return isLock(lock);
+        return isLockActive(lock);
+    }
+
+    public LockInfo readLock(String lockName) {
+        String name = normalizeName(lockName);
+        Resource lock = getLock(name);
+        if (!isLockPresent(lock)) {
+            return null;
+        }
+        return readLock(lock);
+    }
+
+    private LockInfo readLock(Resource lock) {
+        return new LockInfo(
+                lock.getValueMap().get(LOCKED_PROP, Calendar.class),
+                lock.getValueMap().get(LOCKED_UNTIL_PROP, Calendar.class));
     }
 
     public void lock(String lockName) {
+        lock(lockName, null);
+    }
+
+    public void lock(String lockName, Duration ttl) {
         String name = normalizeName(lockName);
 
         PersistenceException exceptionLast = null;
@@ -56,8 +78,13 @@ public class Locker {
             try {
                 Resource lockCurrent = getLock(name);
                 if (lockCurrent != null) {
-                    LOG.warn("Cannot create lock '{}' as it already exists!", name);
-                    return;
+                    if (readLock(lockCurrent).isExpired()) {
+                        LOG.warn("Cannot create lock '{}' as it is stale - removing.", name);
+                        resolver.delete(lockCurrent);
+                    } else {
+                        LOG.warn("Cannot create lock '{}' as it already exists!", name);
+                        return;
+                    }
                 }
 
                 Resource dirResource;
@@ -73,6 +100,11 @@ public class Locker {
                 Map<String, Object> props = new HashMap<>();
                 props.put(JcrConstants.JCR_PRIMARYTYPE, RESOURCE_TYPE);
                 props.put(LOCKED_PROP, Calendar.getInstance());
+                if (ttl != null && !ttl.isNegative() && !ttl.isZero()) {
+                    Calendar lockedUntil = Calendar.getInstance();
+                    lockedUntil.setTimeInMillis(lockedUntil.getTimeInMillis() + ttl.toMillis());
+                    props.put(LOCKED_UNTIL_PROP, lockedUntil);
+                }
                 resolver.create(dirResource, nodeName, props);
                 if (autoCommit.get()) {
                     resolver.commit();
@@ -163,16 +195,20 @@ public class Locker {
         if (resource == null) {
             return Stream.empty();
         }
-        return ResourceSpliterator.stream(resource).skip(1).filter(this::isLock);
+        return ResourceSpliterator.stream(resource).skip(1).filter(this::isLockPresent);
     }
 
-    private boolean isLock(Resource lock) {
+    private boolean isLockActive(Resource lock) {
+        return isLockPresent(lock) && !readLock(lock).isExpired();
+    }
+
+    private boolean isLockPresent(Resource lock) {
         return lock != null
                 && lock.isResourceType(RESOURCE_TYPE)
                 && lock.getValueMap().containsKey(LOCKED_PROP);
     }
 
     public boolean anyLocked() {
-        return locks().findAny().isPresent();
+        return locks().anyMatch(lock -> !readLock(lock).isExpired());
     }
 }

@@ -70,6 +70,7 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
       - [Repo example](#repo-example)
       - [Abortable example](#abortable-example)
       - [Script documentation](#script-documentation)
+      - [Locking](#locking)
     - [History](#history)
     - [Extension scripts](#extension-scripts)
       - [Example extension script](#example-extension-script)
@@ -669,6 +670,38 @@ For complete examples, see the [example scripts directory](ui.content.example/sr
 
 <img src="docs/screenshot-metadata.png" width="720" alt="ACM Script Metadata">
 
+#### Locking
+
+While a script runs, ACM holds a repository lock scoped to that script, so the same script cannot run twice at the same time (e.g. a scheduled run starting before the previous one finished, two cluster nodes firing together, or the script triggered manually twice). A second attempt while the lock is held ends with the `LOCKED` status instead of running the code again.
+
+To avoid a lock being held forever when an instance is killed abruptly (e.g. pod recycling, `kill -9`, a crash) — leaving a *stale lock* that would block every future run — the lock carries an expiration time. Once it expires, the next run recreates it and proceeds normally. The default expiration comes from the global `Lock Timeout` OSGi configuration of the *Code Executor* (24 hours).
+
+A single global value rarely fits every script, so it can be overridden per script by setting `context.lockTimeout` in `describeRun()`. This is handy when:
+
+- **The script runs longer than the global default** — the timeout must always exceed the maximum expected execution time, otherwise the lock could expire mid-run and let a second run start concurrently. Long-running migrations or reports should raise it.
+- **The script is short and should recover fast** — lowering it means a stale lock left by a crash is cleared sooner, so the script becomes runnable again quickly.
+- **Expiration should be disabled entirely** — for a critical singleton where accidental concurrency is worse than a stuck lock, set `0` or a negative value (the lock then only clears on a normal finish or a manual reset).
+
+```groovy
+import java.time.Duration
+
+void describeRun() {
+    context.lockTimeout = "2h"                 // human-readable: 'ms', 's', 'm', 'h', 'd' (e.g. '2h30m', '500ms')
+    // context.lockTimeout = "PT2H30M"         // ISO-8601 duration
+    // context.lockTimeout = Duration.ofHours(2)
+    // context.lockTimeout = 7_200_000         // milliseconds (0 or negative disables lock expiration)
+}
+
+boolean canRun() {
+    return conditions.always()
+}
+
+void doRun() {
+    // long-running work protected by the extended lock timeout
+}
+```
+
+The effective timeout is resolved by precedence: value set in the script's `describeRun()` → value set by an extension's `prepareRun()` → global OSGi `Lock Timeout` configuration.
 
 ### History
 

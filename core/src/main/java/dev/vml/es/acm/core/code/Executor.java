@@ -12,13 +12,17 @@ import dev.vml.es.acm.core.instance.InstanceSettings;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
+import dev.vml.es.acm.core.repo.LockInfo;
 import dev.vml.es.acm.core.repo.Locker;
 import dev.vml.es.acm.core.script.ScriptRepository;
 import dev.vml.es.acm.core.state.Permissions;
 import dev.vml.es.acm.core.util.DateUtils;
+import dev.vml.es.acm.core.util.DurationUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StringUtil;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -102,6 +106,12 @@ public class Executor implements EventListener {
                 name = "Notification Details Length",
                 description = "Max length of the output and error. Use negative value to skip abbreviation.")
         int notificationDetailsLength() default 512;
+
+        @AttributeDefinition(
+                name = "Lock Timeout",
+                description =
+                        "Expiration time (in milliseconds) of executable locks, protecting against stale locks left behind when an instance is killed abruptly (e.g. pod recycling). Must exceed the max expected execution time. Use a zero or negative value to disable expiration.")
+        long lockTimeout() default 24L * 60L * 60L * 1000L;
     }
 
     @Reference
@@ -239,13 +249,22 @@ public class Executor implements EventListener {
 
             boolean locking = !healthChecking;
             String lockName = executableLockName(context);
-            if (locking && queryLocker(resolverFactory, l -> l.isLocked(lockName))) {
-                return execution.end(ExecutionStatus.SKIPPED);
+            if (locking) {
+                LockInfo lockInfo = queryLocker(resolverFactory, l -> l.readLock(lockName));
+                if (lockInfo != null && !lockInfo.isExpired()) {
+                    LOG.warn(
+                            "Execution locked '{}' by another run of '{}' since {} (expires {})",
+                            context.getId(),
+                            context.getExecutable().getId(),
+                            formatLockTime(lockInfo.getLockedAt()),
+                            formatLockTime(lockInfo.getLockedUntil()));
+                    return execution.end(ExecutionStatus.LOCKED);
+                }
             }
 
             try {
                 if (locking) {
-                    useLocker(resolverFactory, l -> l.lock(lockName));
+                    useLocker(resolverFactory, l -> l.lock(lockName, lockTimeout(context)));
                 }
                 context.notifyStatus(ExecutionStatus.RUNNING);
                 if (!healthChecking && config.logPrintingEnabled()) {
@@ -289,9 +308,21 @@ public class Executor implements EventListener {
                 LOCK_DIR, StringUtils.removeStart(context.getExecutable().getId(), AcmConstants.SETTINGS_ROOT + "/"));
     }
 
+    private Duration lockTimeout(ExecutionContext context) {
+        if (context.getLockTimeout() != null) {
+            return context.getLockTimeout();
+        }
+        return DurationUtils.toDuration(config.lockTimeout());
+    }
+
+    private String formatLockTime(Calendar calendar) {
+        return calendar != null ? DateUtils.humanFormat().format(calendar.getTime()) : "never";
+    }
+
     private void handleHistory(ContextualExecution execution) {
         if (execution.getContext().isHistory()
-                && (execution.getContext().isDebug() || (execution.getStatus() != ExecutionStatus.SKIPPED))) {
+                && (execution.getContext().isDebug()
+                        || !ExecutionStatus.notRun().contains(execution.getStatus()))) {
             useHistory(resolverFactory, h -> h.save(execution));
         }
     }

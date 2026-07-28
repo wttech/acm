@@ -86,6 +86,8 @@ const ExecutionProgressBar: React.FC<ExecutionProgressBarProps> = ({ execution, 
         return 'positive';
       case ExecutionStatus.SKIPPED:
         return 'warning';
+      case ExecutionStatus.LOCKED:
+        return 'warning';
       case ExecutionStatus.ABORTED:
       case ExecutionStatus.FAILED:
         return 'critical';
