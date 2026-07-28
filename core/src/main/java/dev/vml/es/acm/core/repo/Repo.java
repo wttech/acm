@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.NOPLogger;
 
-public class Repo {
+public class Repo implements CommitPolicy {
 
     private static final Logger LOG = LoggerFactory.getLogger(Repo.class);
 
@@ -32,7 +32,7 @@ public class Repo {
     public Repo(ResourceResolver resourceResolver) {
         this.resourceResolver = resourceResolver;
         this.session = resourceResolver.adaptTo(Session.class);
-        this.locker = new Locker(resourceResolver, this::isAutoCommit);
+        this.locker = new Locker(resourceResolver, this);
     }
 
     public static Repo quiet(ResourceResolver resourceResolver) {
@@ -127,6 +127,21 @@ public class Repo {
                 revert();
                 getLogger().info("Dry run completed. Changes reverted.");
             }
+        }
+    }
+
+    public void batch(Runnable operation) {
+        if (!autoCommit) {
+            throw new RepoException("Cannot start a batch: already inside a batch or dry run scope.");
+        }
+        this.autoCommit = false;
+        getLogger().info("Batch started. Changes will be committed once at the end.");
+        try {
+            operation.run();
+            commit();
+            getLogger().info("Batch completed. Changes committed.");
+        } finally {
+            this.autoCommit = true;
         }
     }
 

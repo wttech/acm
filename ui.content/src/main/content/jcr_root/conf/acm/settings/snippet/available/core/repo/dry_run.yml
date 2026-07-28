@@ -11,6 +11,10 @@ documentation: |
   
   When exception is thrown during dry run, the revert operation is performed, so no changes are made to the repository.
   Useful especially when combined with `inputs.bool("dryRun")` to allow user to choose whether to perform dry run or not.
+
+  The `autoCommit` control applies only to operations performed via the `repo` and `acl` services.
+  Since everything shares the same session, calling vanilla Sling/AEM/JCR APIs directly (e.g. `session.save()`)
+  may trigger an accidental commit of the pending changes and defeat the dry run.
   
   For example:
   ```groovy

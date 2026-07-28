@@ -3,6 +3,7 @@ package dev.vml.es.acm.core.acl;
 import dev.vml.es.acm.core.acl.authorizable.AclAuthorizable;
 import dev.vml.es.acm.core.acl.authorizable.AclGroup;
 import dev.vml.es.acm.core.acl.authorizable.AclUser;
+import dev.vml.es.acm.core.repo.CommitPolicy;
 import dev.vml.es.acm.core.util.GroovyUtils;
 import groovy.lang.Closure;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -17,7 +18,11 @@ public class Acl {
     private final AclChecker checker;
 
     public Acl(ResourceResolver resourceResolver) {
-        this.context = new AclContext(resourceResolver);
+        this(resourceResolver, CommitPolicy.of(resourceResolver, true));
+    }
+
+    public Acl(ResourceResolver resourceResolver, CommitPolicy commitPolicy) {
+        this.context = new AclContext(resourceResolver, commitPolicy);
         this.checker = new AclChecker(context);
     }
 

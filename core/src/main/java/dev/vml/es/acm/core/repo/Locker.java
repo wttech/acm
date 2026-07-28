@@ -7,7 +7,6 @@ import java.time.Duration;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
@@ -34,15 +33,15 @@ public class Locker {
 
     private final ResourceResolver resolver;
 
-    private final Supplier<Boolean> autoCommit;
+    private final CommitPolicy commitPolicy;
 
     public Locker(ResourceResolver resolver) {
-        this(resolver, () -> true);
+        this(resolver, CommitPolicy.of(resolver, true));
     }
 
-    public Locker(ResourceResolver resolver, Supplier<Boolean> autoCommit) {
+    public Locker(ResourceResolver resolver, CommitPolicy commitPolicy) {
         this.resolver = resolver;
-        this.autoCommit = autoCommit;
+        this.commitPolicy = commitPolicy;
     }
 
     public boolean isLocked(String lockName) {
@@ -106,13 +105,13 @@ public class Locker {
                     props.put(LOCKED_UNTIL_PROP, lockedUntil);
                 }
                 resolver.create(dirResource, nodeName, props);
-                if (autoCommit.get()) {
+                if (commitPolicy.isAutoCommit()) {
                     resolver.commit();
                 }
                 LOG.debug("Created lock '{}'", name);
                 return;
             } catch (PersistenceException e) {
-                if (autoCommit.get()) {
+                if (commitPolicy.isAutoCommit()) {
                     resolver.revert();
                     resolver.refresh();
                     exceptionLast = e;
@@ -142,13 +141,13 @@ public class Locker {
                     return;
                 }
                 resolver.delete(lockCurrent);
-                if (autoCommit.get()) {
+                if (commitPolicy.isAutoCommit()) {
                     resolver.commit();
                 }
                 LOG.debug("Deleted lock '{}'", name);
                 return;
             } catch (PersistenceException e) {
-                if (autoCommit.get()) {
+                if (commitPolicy.isAutoCommit()) {
                     resolver.revert();
                     resolver.refresh();
                     exceptionLast = e;
@@ -169,7 +168,7 @@ public class Locker {
         }
         try {
             resolver.delete(root);
-            if (autoCommit.get()) {
+            if (commitPolicy.isAutoCommit()) {
                 resolver.commit();
             }
             LOG.debug("Deleted all locks");

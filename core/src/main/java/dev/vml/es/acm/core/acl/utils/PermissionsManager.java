@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.acl.utils;
 
 import dev.vml.es.acm.core.acl.AclException;
+import dev.vml.es.acm.core.repo.CommitPolicy;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,11 +47,21 @@ public class PermissionsManager {
 
     private final ValueFactory valueFactory;
 
+    private final CommitPolicy commitPolicy;
+
     public PermissionsManager(
-            JackrabbitSession session, AccessControlManager accessControlManager, ValueFactory valueFactory) {
+            JackrabbitSession session,
+            AccessControlManager accessControlManager,
+            ValueFactory valueFactory,
+            CommitPolicy commitPolicy) {
         this.session = session;
         this.accessControlManager = accessControlManager;
         this.valueFactory = valueFactory;
+        this.commitPolicy = commitPolicy;
+    }
+
+    private void save(String context) {
+        commitPolicy.commit(context);
     }
 
     public void apply(
@@ -71,7 +82,9 @@ public class PermissionsManager {
                 updateAccessControlList(
                         authorizable.getPrincipal(), path, modifyPermissions, modifyRestrictions, allow);
             }
-            session.save();
+            save(String.format(
+                    "applying permissions for authorizable '%s' at path '%s' with permissions '%s' and restrictions '%s'",
+                    id, path, permissions, restrictions));
         } catch (RepositoryException e) {
             throw new AclException(
                     String.format("Failed to apply permissions for authorizable '%s' at path '%s'", id, path), e);
@@ -215,7 +228,7 @@ public class PermissionsManager {
             }
             if (result) {
                 accessControlManager.setPolicy(path, jackrabbitAcl);
-                session.save();
+                save(String.format("removing all permissions for authorizable '%s' at path '%s'", id, path));
             }
             return result;
         } catch (RepositoryException e) {
