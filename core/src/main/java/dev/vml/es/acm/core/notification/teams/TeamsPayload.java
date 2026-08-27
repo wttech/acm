@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.notification.teams;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import dev.vml.es.acm.core.util.StringUtil;
 import java.io.Serializable;
 import java.util.*;
@@ -55,11 +56,15 @@ public final class TeamsPayload implements Serializable {
             return this;
         }
 
-        public Builder text(String text) {
+        public Builder text(String text, boolean wrap) {
             if (StringUtils.isNotBlank(text)) {
-                body.add(TextBlock.create(text));
+                body.add(TextBlock.create(text).wrap(wrap));
             }
             return this;
+        }
+
+        public Builder text(String text) {
+            return this.text(text, true);
         }
 
         public Builder title(String title) {
@@ -110,6 +115,13 @@ public final class TeamsPayload implements Serializable {
             return this;
         }
 
+        public Builder cardElement(CardElement cardElement) {
+            if (cardElement != null) {
+                body.add(cardElement);
+            }
+            return this;
+        }
+
         public Builder openUrlAction(String title, String url) {
             if (StringUtils.isNotBlank(title) && StringUtils.isNotBlank(url)) {
                 actions.add(Action.openUrl(title, url));
@@ -149,6 +161,7 @@ public final class TeamsPayload implements Serializable {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonPropertyOrder({"type", "$schema", "version", "msteams", "body", "actions"})
     public static final class AdaptiveCard implements Serializable {
 
         private final String type = "AdaptiveCard";
@@ -157,6 +170,8 @@ public final class TeamsPayload implements Serializable {
         private final String schema = "http://adaptivecards.io/schemas/adaptive-card.json";
 
         private final String version = "1.2";
+
+        private final Map<String, String> msteams = Collections.singletonMap("width", "full");
 
         private final List<CardElement> body;
 
@@ -183,6 +198,10 @@ public final class TeamsPayload implements Serializable {
             return version;
         }
 
+        public Map<String, String> getMsteams() {
+            return msteams;
+        }
+
         public List<CardElement> getBody() {
             return body;
         }
@@ -203,7 +222,7 @@ public final class TeamsPayload implements Serializable {
 
         private String weight;
 
-        private Boolean wrap;
+        private Boolean wrap = true;
 
         private TextBlock(String text) {
             this.text = StringUtils.defaultString(text);
