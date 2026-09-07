@@ -51,7 +51,43 @@ public final class TeamsPayload implements Serializable {
                 this.text(text);
             }
             if (fields != null && !fields.isEmpty()) {
-                this.facts(fields);
+                Map<String, Object> facts = new LinkedHashMap<>();
+                Map<String, Object> sections = new LinkedHashMap<>();
+                for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                    String value = StringUtil.toStringOrEmpty(entry.getValue());
+                    if (isSectionValue(value)) {
+                        sections.put(entry.getKey(), entry.getValue());
+                    } else {
+                        facts.put(entry.getKey(), entry.getValue());
+                    }
+                }
+                this.facts(facts);
+                this.sections(sections);
+            }
+            return this;
+        }
+
+        /**
+         * Multiline values (like code output or error stack traces) are not rendered properly in a fact set.
+         * Teams shrinks the fact title column to a single character wide to fit the long value, making labels unreadable.
+         * Such values are rendered as a separate section instead.
+         */
+        private static boolean isSectionValue(String value) {
+            return StringUtils.contains(value, '\n');
+        }
+
+        public Builder section(String title, String text) {
+            if (StringUtils.isNotBlank(title)) {
+                body.add(TextBlock.create(title).size("Large").weight("Bolder"));
+            }
+            return this.text(text);
+        }
+
+        public Builder sections(Map<String, Object> sections) {
+            if (sections != null && !sections.isEmpty()) {
+                for (Map.Entry<String, Object> entry : sections.entrySet()) {
+                    this.section(entry.getKey(), StringUtil.toStringOrEmpty(entry.getValue()));
+                }
             }
             return this;
         }
