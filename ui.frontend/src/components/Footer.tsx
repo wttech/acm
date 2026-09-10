@@ -18,11 +18,7 @@ const Footer = () => {
           }
           center={
             <Text>
-              <small>
-              Copyright {yearText} &copy;
-              <br />
-              Licensed under the Apache License, Version 2.0.
-              </small>
+              Copyright {yearText} &copy; Licensed under the Apache License, Version 2.0.
             </Text>
           }
           right={
