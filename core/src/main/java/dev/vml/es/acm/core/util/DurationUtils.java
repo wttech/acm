@@ -74,7 +74,9 @@ public final class DurationUtils {
     }
 
     private static String formatError(String text) {
-        return String.format("Cannot parse duration '%s'! Expected ISO-8601 (e.g. 'PT10M') or human-readable format (e.g. '10m', '2h30m', '1d', '500ms').", text);
+        return String.format(
+                "Cannot parse duration '%s'! Expected ISO-8601 (e.g. 'PT10M') or human-readable format (e.g. '10m', '2h30m', '1d', '500ms').",
+                text);
     }
 
     /**
@@ -102,7 +104,8 @@ public final class DurationUtils {
         if (value instanceof String) {
             return toDuration((String) value);
         }
-        throw new IllegalArgumentException(
-                String.format("Cannot convert value of type '%s' to duration!", value.getClass().getName()));
+        throw new IllegalArgumentException(String.format(
+                "Cannot convert value of type '%s' to duration!",
+                value.getClass().getName()));
     }
 }

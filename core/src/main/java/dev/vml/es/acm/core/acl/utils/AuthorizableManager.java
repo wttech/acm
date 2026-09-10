@@ -31,10 +31,7 @@ public class AuthorizableManager {
     private final CommitPolicy commitPolicy;
 
     public AuthorizableManager(
-            JackrabbitSession session,
-            UserManager userManager,
-            ValueFactory valueFactory,
-            CommitPolicy commitPolicy) {
+            JackrabbitSession session, UserManager userManager, ValueFactory valueFactory, CommitPolicy commitPolicy) {
         this.session = session;
         this.userManager = userManager;
         this.valueFactory = valueFactory;
