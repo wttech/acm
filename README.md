@@ -1,27 +1,34 @@
-<a href="https://enterprisesolutions.wpp.com/" target="_blank">
-<picture>
-<source srcset="docs/wpp-es-primary-white.svg" media="(prefers-color-scheme: dark)">
-<img src="docs/wpp-es-primary-navy.svg" alt="WPP Enterprise Solutions" height="48">
-</picture>
-</a>
-
-<br>
-
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/acm)](https://github.com/wttech/acm/releases)
-[![GitHub All Releases](https://img.shields.io/github/downloads/wttech/acm/total)](https://github.com/wttech/acm/releases)
-[![Check](https://github.com/wttech/acm/workflows/Check/badge.svg)](https://github.com/wttech/acm/actions/workflows/check.yml)
-[![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
-
-# AEM Content Manager (ACM)
-
-<p>
+<p align="center">
 <picture>
 <source srcset="docs/acm-logo-white.svg" media="(prefers-color-scheme: dark)">
 <img src="docs/acm-logo-black.svg" alt="AEM Content Manager" height="140">
 </picture>
 </p>
 
-**Manage permissions & content updates as code.**
+<p align="center">
+<strong>Manage permissions & content updates as code.</strong><br>
+AEM Tool · Permissions-as-Code · Content Migration · IDE-like Console
+</p>
+
+<p align="center">
+
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/acm)](https://github.com/wttech/acm/releases)
+[![GitHub All Releases](https://img.shields.io/github/downloads/wttech/acm/total)](https://github.com/wttech/acm/releases)
+[![Check](https://github.com/wttech/acm/workflows/Check/badge.svg)](https://github.com/wttech/acm/actions/workflows/check.yml)
+[![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
+<br>
+<sub>Proudly sponsored by:</sub>
+<br><br>
+<a href="https://enterprisesolutions.wpp.com/" target="_blank">
+<picture>
+<source srcset="docs/wpp-es-primary-white.svg" media="(prefers-color-scheme: dark)">
+<img src="docs/wpp-es-primary-navy.svg" alt="WPP Enterprise Solutions" height="20">
+</picture>
+</a>
+
+</p>
+
+# AEM Content Manager (ACM)
 
 ACM for Adobe Experience Manager (AEM) streamlines workflows and boosts productivity with an intuitive interface and robust features. It automates bulk content and permission changes, making it ideal for content migration and large-scale permission management. ACM offers an IDE-like experience with code completion, auto-import, and on-the-fly compilation.
 
