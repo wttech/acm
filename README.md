@@ -1,5 +1,8 @@
 <a href="https://enterprisesolutions.wpp.com/" target="_blank">
-<img src="docs/wpp-es-primary-navy.svg" alt="WPP Enterprise Solutions" height="100">
+<picture>
+<source srcset="docs/wpp-es-primary-white.svg" media="(prefers-color-scheme: dark)">
+<img src="docs/wpp-es-primary-navy.svg" alt="WPP Enterprise Solutions" height="48">
+</picture>
 </a>
 
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/acm)](https://github.com/wttech/acm/releases)
@@ -10,7 +13,10 @@
 # AEM Content Manager (ACM)
 
 <p>
+<picture>
+<source srcset="docs/acm-logo-white.svg" media="(prefers-color-scheme: dark)">
 <img src="docs/acm-logo-black.svg" alt="AEM Content Manager" height="140">
+</picture>
 </p>
 
 **Manage permissions & content updates as code.**
