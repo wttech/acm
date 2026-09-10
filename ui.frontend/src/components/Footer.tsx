@@ -1,6 +1,5 @@
 import { Divider, Flex, Link, Footer as SpectrumFooter, View } from '@adobe/react-spectrum';
 import githubMark from '/github-mark.svg';
-import vmlLogo from '/vml-logo.svg';
 
 const Footer = () => {
   return (
@@ -9,11 +8,11 @@ const Footer = () => {
       <SpectrumFooter>
         <Flex alignItems="center" gap="size-150" justifyContent="space-between">
           <Flex alignItems="center" gap="size-150">
-            <Link href="https://www.vml.com" target="_blank">
-              <img src={vmlLogo} alt="VML Logo" width="85" />
+            <Link href="https://enterprisesolutions.wpp.com/" target="_blank">
+              <img src="/wpp-es-double-stack-navy.svg" alt="WPP Enterprise Solutions" width="85" />
             </Link>
             <View>
-              <Link href="https://www.vml.com/expertise/enterprise-solutions" target="_blank">
+              <Link href="https://enterprisesolutions.wpp.com/" target="_blank">
                 Enterprise Solutions
               </Link>
               <View marginTop="size-50">Copyright {new Date().getFullYear() === 2024 ? '2024' : `2024 - ${new Date().getFullYear()}`} &copy; Licensed under the Apache License, Version 2.0.</View>

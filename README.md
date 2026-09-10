@@ -1,8 +1,5 @@
-<a href="https://www.vml.com/expertise/enterprise-solutions" target="_blank">
-  <picture>
-    <source srcset="docs/vml-logo-white.svg" media="(prefers-color-scheme: dark)">
-    <img src="docs/vml-logo-black.svg" alt="VML Logo" height="100">
-  </picture>
+<a href="https://enterprisesolutions.wpp.com/" target="_blank">
+<img src="docs/wpp-es-primary-navy.svg" alt="WPP Enterprise Solutions" height="100">
 </a>
 
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/acm)](https://github.com/wttech/acm/releases)
@@ -13,10 +10,7 @@
 # AEM Content Manager (ACM)
 
 <p>
-<picture>
-    <source srcset="docs/acm-logo-white.svg" media="(prefers-color-scheme: dark)">
-    <img src="docs/acm-logo-black.svg" alt="VML Logo" height="140">
-</picture>
+<img src="docs/acm-logo-black.svg" alt="AEM Content Manager" height="140">
 </p>
 
 **Manage permissions & content updates as code.**
