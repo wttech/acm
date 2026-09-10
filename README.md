@@ -1,7 +1,7 @@
 <p align="center">
 <picture>
-<source srcset="docs/acm-logo-white.svg" media="(prefers-color-scheme: dark)">
-<img src="docs/acm-logo-black.svg" alt="AEM Content Manager" height="140">
+<source srcset="docs/acm-logo-with-text-white.svg" media="(prefers-color-scheme: dark)">
+<img src="docs/acm-logo-with-text-black.svg" alt="AEM Content Manager" height="138">
 </picture>
 </p>
 
