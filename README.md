@@ -11,11 +11,10 @@ AEM Tool · Permissions-as-Code · Content Migration · IDE-like Console
 </p>
 
 <p align="center">
-
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/wttech/acm)](https://github.com/wttech/acm/releases)
-[![GitHub All Releases](https://img.shields.io/github/downloads/wttech/acm/total)](https://github.com/wttech/acm/releases)
-[![Check](https://github.com/wttech/acm/workflows/Check/badge.svg)](https://github.com/wttech/acm/actions/workflows/check.yml)
-[![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
+<a href="https://github.com/wttech/acm/releases"><img src="https://img.shields.io/github/v/tag/wttech/acm" alt="GitHub tag (latest SemVer)"></a>
+<a href="https://github.com/wttech/acm/releases"><img src="https://img.shields.io/github/downloads/wttech/acm/total" alt="GitHub All Releases"></a>
+<a href="https://github.com/wttech/acm/actions/workflows/check.yml"><img src="https://github.com/wttech/acm/workflows/Check/badge.svg" alt="Check"></a>
+<a href="http://www.apache.org/licenses/"><img src="docs/apache-license-badge.svg" alt="Apache License, Version 2.0, January 2004"></a>
 <br>
 <sub>Proudly sponsored by:</sub>
 <br><br>
@@ -25,8 +24,9 @@ AEM Tool · Permissions-as-Code · Content Migration · IDE-like Console
 <img src="docs/wpp-es-primary-navy.svg" alt="WPP Enterprise Solutions" height="20">
 </picture>
 </a>
-
 </p>
+
+---
 
 # AEM Content Manager (ACM)
 
