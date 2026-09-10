@@ -22,6 +22,7 @@ import ExecutableIdValue from './ExecutableIdValue';
 import ExecutionsAbortButton from './ExecutionsAbortButton';
 import ExecutionStatusBadge from './ExecutionStatusBadge';
 import ExecutorResetButton from './ExecutorResetButton';
+import ThreeColumnBar from './ThreeColumnBar';
 import UserInfo from './UserInfo';
 
 const CodeExecutor = () => {
@@ -77,18 +78,14 @@ const CodeExecutor = () => {
   return (
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View>
-        <Flex direction="row" justifyContent="space-between" alignItems="center">
-          <Flex flex="1" alignItems="center">
+        <ThreeColumnBar
+          left={
             <ButtonGroup>
               <ExecutionsAbortButton selectedKeys={selectedIds(selectedKeys)} />
             </ButtonGroup>
-          </Flex>
-          <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight id="code-executor-status" variant={executions.length === 0 ? 'positive' : 'notice'}>
-              {executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}
-            </StatusLight>
-          </Flex>
-          <Flex flex="1" justifyContent="end" alignItems="center">
+          }
+          center={<StatusLight id="code-executor-status" variant={executions.length === 0 ? 'positive' : 'notice'}>{executions.length === 0 ? <>Idle</> : <>Busy &mdash; {executions.length} execution(s)</>}</StatusLight>}
+          right={
             <ButtonGroup>
               <MenuTrigger>
                 <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER}>
@@ -141,8 +138,8 @@ const CodeExecutor = () => {
                 )}
               </DialogTrigger>
             </ButtonGroup>
-          </Flex>
-        </Flex>
+          }
+        />
       </View>
       <TableView
         flex="1"

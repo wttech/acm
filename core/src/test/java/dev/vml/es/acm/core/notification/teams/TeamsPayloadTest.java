@@ -64,13 +64,17 @@ class TeamsPayloadTest {
         List<TeamsPayload.CardElement> body = body(fields);
 
         assertEquals(7, body.size());
-        assertEquals(1, assertInstanceOf(TeamsPayload.FactSet.class, body.get(2))
-                .getFacts()
-                .size());
         assertEquals(
-                "Output", assertInstanceOf(TeamsPayload.TextBlock.class, body.get(3)).getText());
+                1,
+                assertInstanceOf(TeamsPayload.FactSet.class, body.get(2))
+                        .getFacts()
+                        .size());
         assertEquals(
-                "Error", assertInstanceOf(TeamsPayload.TextBlock.class, body.get(5)).getText());
+                "Output",
+                assertInstanceOf(TeamsPayload.TextBlock.class, body.get(3)).getText());
+        assertEquals(
+                "Error",
+                assertInstanceOf(TeamsPayload.TextBlock.class, body.get(5)).getText());
         assertEquals(
                 "Bolder",
                 assertInstanceOf(TeamsPayload.TextBlock.class, body.get(5)).getWeight());
@@ -85,8 +89,10 @@ class TeamsPayloadTest {
         List<TeamsPayload.CardElement> body = body(fields);
 
         assertEquals(3, body.size());
-        assertEquals(2, assertInstanceOf(TeamsPayload.FactSet.class, body.get(2))
-                .getFacts()
-                .size());
+        assertEquals(
+                2,
+                assertInstanceOf(TeamsPayload.FactSet.class, body.get(2))
+                        .getFacts()
+                        .size());
     }
 }

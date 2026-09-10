@@ -1,31 +1,39 @@
-import { Divider, Flex, Link, Footer as SpectrumFooter, View } from '@adobe/react-spectrum';
-import githubMark from '/github-mark.svg';
-import vmlLogo from '/vml-logo.svg';
+import { Divider, Flex, Link, Footer as SpectrumFooter, Text, View } from '@adobe/react-spectrum';
+import { Urls } from '../utils/url';
+import ThreeColumnBar from './ThreeColumnBar';
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
+  const yearText = currentYear === 2024 ? '2024' : `2024 - ${currentYear}`;
+
   return (
     <View>
       <Divider size="S" marginY="size-200" />
       <SpectrumFooter>
-        <Flex alignItems="center" gap="size-150" justifyContent="space-between">
-          <Flex alignItems="center" gap="size-150">
-            <Link href="https://www.vml.com" target="_blank">
-              <img src={vmlLogo} alt="VML Logo" width="85" />
+        <ThreeColumnBar
+          left={
+            <Link href="https://enterprisesolutions.wpp.com/" target="_blank">
+              <img src={Urls.asset('wpp-es-primary-navy.svg')} alt="WPP Enterprise Solutions" width="220" />
             </Link>
-            <View>
-              <Link href="https://www.vml.com/expertise/enterprise-solutions" target="_blank">
-                Enterprise Solutions
-              </Link>
-              <View marginTop="size-50">Copyright {new Date().getFullYear() === 2024 ? '2024' : `2024 - ${new Date().getFullYear()}`} &copy; Licensed under the Apache License, Version 2.0.</View>
-            </View>
-          </Flex>
-          <Link href="https://github.com/wttech/acm" target="_blank">
-            <Flex alignItems="center" gap="size-75">
-              <img src={githubMark} alt="GitHub" width="16" height="16" style={{ color: 'var(--spectrum-global-color-gray-800)' }} />
-              <View>View &apos;Content Manager&apos; on GitHub</View>
-            </Flex>
-          </Link>
-        </Flex>
+          }
+          center={
+            <Text>
+              <small>
+              Copyright {yearText} &copy;
+              <br />
+              Licensed under the Apache License, Version 2.0.
+              </small>
+            </Text>
+          }
+          right={
+            <Link href="https://github.com/wttech/acm" target="_blank">
+              <Flex alignItems="center" gap="size-75">
+                <img src={Urls.asset('github-mark.svg')} alt="GitHub" width="16" height="16" style={{ color: 'var(--spectrum-global-color-gray-800)' }} />
+                <View>View &apos;Content Manager&apos; on GitHub</View>
+              </Flex>
+            </Link>
+          }
+        />
       </SpectrumFooter>
     </View>
   );

@@ -48,16 +48,16 @@
         </license>
     </licenses>
     <organization>
-        <name>VML Enterprise Solutions</name>
-        <url>https://www.vml.com/expertise/enterprise-solutions</url>
+        <name>WPP Enterprise Solutions</name>
+        <url>https://enterprisesolutions.wpp.com/</url>
     </organization>
     <developers>
         <developer>
             <id>krystian.panek</id>
             <name>Krystian Panek</name>
             <email>krystian.panek@vml.com</email>
-            <organization>VML Enterprise Solutions</organization>
-            <organizationUrl>https://www.vml.com/expertise/enterprise-solutions</organizationUrl>
+            <organization>WPP Enterprise Solutions</organization>
+            <organizationUrl>https://enterprisesolutions.wpp.com/</organizationUrl>
         </developer>
     </developers>
     <properties>

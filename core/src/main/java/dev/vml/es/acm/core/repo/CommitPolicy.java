@@ -24,8 +24,7 @@ public interface CommitPolicy {
                 try {
                     resourceResolver.commit();
                 } catch (PersistenceException e) {
-                    throw new RepoException(
-                            String.format("Cannot commit changes to repository while %s!", context), e);
+                    throw new RepoException(String.format("Cannot commit changes to repository while %s!", context), e);
                 }
             }
         };
