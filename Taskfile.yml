@@ -133,8 +133,11 @@ tasks:
     sources:
       - pom.xml
       - package.json
+      - index.html
+      - vite.config.ts
       - '*.json'
       - '*.js'
+      - public/**/*
       - src/**/*
 
   build:apps:structure:

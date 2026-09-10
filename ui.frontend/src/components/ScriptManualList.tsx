@@ -14,6 +14,7 @@ import ExecutionStatsBadge from './ExecutionStatsBadge';
 import ScriptExecutorStatusLight from './ExecutorStatusLight';
 import ScriptsDeleteButton from './ScriptsDeleteButton';
 import ScriptsManualHelpButton from './ScriptsManualHelpButton';
+import ThreeColumnBar from './ThreeColumnBar';
 import { Toggle } from './Toggle';
 import UserInfo from './UserInfo';
 
@@ -55,21 +56,17 @@ const ScriptManualList: React.FC = () => {
   return (
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View>
-        <Flex direction="row" justifyContent="space-between" alignItems="center">
-          <Flex flex="1" alignItems="center">
+        <ThreeColumnBar
+          left={
             <Toggle when={managementEnabled}>
               <ButtonGroup>
                 <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={handleLoadScripts} />
               </ButtonGroup>
             </Toggle>
-          </Flex>
-          <Flex flex="1" justifyContent="center" alignItems="center">
-            <ScriptExecutorStatusLight />
-          </Flex>
-          <Flex flex="1" justifyContent="end" alignItems="center">
-            <ScriptsManualHelpButton />
-          </Flex>
-        </Flex>
+          }
+          center={<ScriptExecutorStatusLight />}
+          right={<ScriptsManualHelpButton />}
+        />
       </View>
       <TableView
         flex="1"

@@ -20,6 +20,7 @@ import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsBu
 import ExecutionStatusBadge from '../components/ExecutionStatusBadge';
 import InfoCard from '../components/InfoCard';
 import Toggle from '../components/Toggle.tsx';
+import ThreeColumnBar from '../components/ThreeColumnBar';
 import UserInfo from '../components/UserInfo';
 import { useAppState } from '../hooks/app.ts';
 import { useExecutionPolling } from '../hooks/execution';
@@ -162,8 +163,8 @@ const ExecutionView = () => {
           </Item>
           <Item key="output" aria-label="Output">
             <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
-              <Flex direction="row" justifyContent="space-between" alignItems="center">
-                <Flex flex="1" alignItems="center">
+              <ThreeColumnBar
+                left={
                   <ButtonGroup>
                     <Toggle when={isExecutionPending(execution.status)}>
                       <ExecutionAbortButton execution={execution} onComplete={setExecution} />
@@ -173,16 +174,10 @@ const ExecutionView = () => {
                     </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>
-                </Flex>
-                <Flex flex="1" justifyContent="center" alignItems="center">
-                  <ExecutionProgressBar execution={execution} />
-                </Flex>
-                <Flex flex="1" justifyContent="end" alignItems="center">
-                  <Switch isSelected={autoscrollOutput} isDisabled={!isExecutionPending(execution.status)} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}>
-                    <Text>Autoscroll</Text>
-                  </Switch>
-                </Flex>
-              </Flex>
+                }
+                center={<ExecutionProgressBar execution={execution} />}
+                right={<Switch isSelected={autoscrollOutput} isDisabled={!isExecutionPending(execution.status)} marginStart={20} onChange={() => setAutoscrollOutput((prev) => !prev)}><Text>Autoscroll</Text></Switch>}
+              />
               <CodeEditor id="execution-output" ariaLabel="Execution Output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscrollOutput} language={LOG_LANGUAGE_ID} />
             </Flex>
           </Item>

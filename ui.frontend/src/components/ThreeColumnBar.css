@@ -1,0 +1,26 @@
+.three-column-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--spectrum-global-dimension-size-200);
+}
+
+.three-column-bar__left,
+.three-column-bar__center,
+.three-column-bar__right {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.three-column-bar__left {
+  justify-content: flex-start;
+}
+
+.three-column-bar__center {
+  justify-content: center;
+}
+
+.three-column-bar__right {
+  justify-content: flex-end;
+}

@@ -18,6 +18,7 @@ import ScriptExecutorStatusLight from './ExecutorStatusLight';
 import ScriptsAutomaticHelpButton from './ScriptsAutomaticHelpButton';
 import ScriptsDeleteButton from './ScriptsDeleteButton';
 import ScriptsSyncButton from './ScriptsSyncButton';
+import ThreeColumnBar from './ThreeColumnBar';
 import Toggle from './Toggle';
 
 const ScriptAutomaticList: React.FC = () => {
@@ -60,19 +61,17 @@ const ScriptAutomaticList: React.FC = () => {
   return (
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View>
-        <Flex direction="row" justifyContent="space-between" alignItems="center">
-          <Flex flex="1" alignItems="center">
+        <ThreeColumnBar
+          left={
             <ButtonGroup>
               <Toggle when={managementEnabled}>
                 <ScriptsDeleteButton selectedKeys={selectedIds(selectedKeys)} onDelete={handleLoadScripts} />
                 <ScriptsSyncButton selectedKeys={selectedIds(selectedKeys)} onSync={handleLoadScripts} />
               </Toggle>
             </ButtonGroup>
-          </Flex>
-          <Flex flex="1" justifyContent="center" alignItems="center">
-            <ScriptExecutorStatusLight />
-          </Flex>
-          <Flex flex="1" justifyContent="end" alignItems="center">
+          }
+          center={<ScriptExecutorStatusLight />}
+          right={
             <ButtonGroup>
               <Button variant="negative" isDisabled={appState.instanceSettings.type === InstanceType.CLOUD_CONTAINER} onPress={() => window.open(instanceOsgiServiceConfigUrl(InstanceOsgiServicePid.SCRIPT_SCHEDULER), '_blank')}>
                 <Settings />
@@ -81,8 +80,8 @@ const ScriptAutomaticList: React.FC = () => {
               <ExecutorBootButton />
               <ScriptsAutomaticHelpButton />
             </ButtonGroup>
-          </Flex>
-        </Flex>
+          }
+        />
       </View>
       <TableView
         flex="1"

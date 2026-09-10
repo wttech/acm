@@ -15,6 +15,7 @@ import ExecutionReviewOutputsButton from '../components/ExecutionReviewOutputsBu
 import ExecutorStatusLight from '../components/ExecutorStatusLight.tsx';
 import KeyboardShortcutsButton from '../components/KeyboardShortcutsButton';
 import Toggle from '../components/Toggle';
+import ThreeColumnBar from '../components/ThreeColumnBar';
 import { useAppState, useFeatureEnabled } from '../hooks/app';
 import { useCompilation } from '../hooks/code';
 import { useExecutionPolling } from '../hooks/execution';
@@ -136,29 +137,25 @@ const ConsolePage = () => {
         <TabPanels flex="1" UNSAFE_style={{ display: 'flex' }}>
           <Item key="code" aria-label="Code">
             <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
-              <Flex direction="row" justifyContent="space-between" alignItems="center">
-                <Flex flex="1" alignItems="center">
+              <ThreeColumnBar
+                left={
                   <ButtonGroup>
                     <CodeExecuteButton code={code || ''} onDescribeFailed={onDescribeFailed} onExecute={onExecute} isPending={executing || compiling} isDisabled={!executeEnabled || executableNotReady} />
                     <Toggle when={scriptsManageEnabled}>
                       <CodeSaveButton code={code || ''} variant="secondary" isDisabled={executableNotReady} />
                     </Toggle>
                   </ButtonGroup>
-                </Flex>
-                <Flex flex="1" justifyContent="center" alignItems="center">
-                  {pausedExecution ? <ExecutorStatusLight /> : <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />}
-                </Flex>
-                <Flex flex="1" justifyContent="end" alignItems="center">
-                  <KeyboardShortcutsButton />
-                </Flex>
-              </Flex>
+                }
+                center={pausedExecution ? <ExecutorStatusLight /> : <CompilationStatus onErrorClick={() => setSelectedTab('output')} compiling={compiling} syntaxError={syntaxError} compileError={compileError} />}
+                right={<KeyboardShortcutsButton />}
+              />
               <CodeEditor id="code-editor" ariaLabel="Console Code Editor" initialValue={code} readOnly={executing} onChange={setCode} syntaxError={syntaxError} language={GROOVY_LANGUAGE_ID} />
             </Flex>
           </Item>
           <Item key="output" aria-label="Output">
             <Flex direction="column" gap="size-200" marginY="size-100" flex={1}>
-              <Flex direction="row" justifyContent="space-between" alignItems="center">
-                <Flex flex="1" alignItems="center">
+              <ThreeColumnBar
+                left={
                   <ButtonGroup>
                     <Toggle when={executing}>
                       <ExecutionAbortButton execution={execution} onComplete={setExecution} />
@@ -168,17 +165,17 @@ const ConsolePage = () => {
                     </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>
-                </Flex>
-                <Flex flex="1" justifyContent="center" alignItems="center">
-                  <ExecutionProgressBar execution={execution} active={executing} />
-                </Flex>
-                <Flex flex="1" justifyContent="end" alignItems="center">
-                  <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
-                    <Text>Autoscroll</Text>
-                  </Switch>
-                  <ConsoleHelpButton />
-                </Flex>
-              </Flex>
+                }
+                center={<ExecutionProgressBar execution={execution} active={executing} />}
+                right={
+                  <>
+                    <Switch isSelected={autoscroll} isDisabled={!isExecutionPending(execution?.status)} marginStart={20} onChange={() => setAutoscroll((prev) => !prev)}>
+                      <Text>Autoscroll</Text>
+                    </Switch>
+                    <ConsoleHelpButton />
+                  </>
+                }
+              />
               <CodeEditor id="output-preview" ariaLabel="Console Output" value={executionOutput} readOnly scrollToBottomOnUpdate={autoscroll} language={LOG_LANGUAGE_ID} />
             </Flex>
           </Item>

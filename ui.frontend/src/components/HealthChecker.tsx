@@ -17,6 +17,7 @@ import { instancePrefix, InstanceType } from '../types/aem.ts';
 import { HealthIssueSeverity } from '../types/health.ts';
 import { Strings } from '../utils/strings.ts';
 import CodeEditor from './CodeEditor';
+import ThreeColumnBar from './ThreeColumnBar';
 
 const HealthChecker = () => {
   const appState = useAppState();
@@ -90,16 +91,9 @@ const HealthChecker = () => {
   return (
     <Flex direction="column" flex="1" gap="size-200" marginY="size-100">
       <View>
-        <Flex direction="row" justifyContent="space-between" alignItems="center">
-          <Flex flex="1" alignItems="center">
-            &nbsp;
-          </Flex>
-          <Flex flex="1" justifyContent="center" alignItems="center">
-            <StatusLight id="health-checker-status" variant={healthIssues.length === 0 ? 'positive' : 'negative'}>
-              {healthIssues.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}
-            </StatusLight>
-          </Flex>
-          <Flex flex="1" justifyContent="end" alignItems="center">
+        <ThreeColumnBar
+          center={<StatusLight id="health-checker-status" variant={healthIssues.length === 0 ? 'positive' : 'negative'}>{healthIssues.length === 0 ? <>Healthy</> : <>Unhealthy &mdash; {healthIssues.length} issue(s)</>}</StatusLight>}
+          right={
             <ButtonGroup>
               <Button
                 variant="negative"
@@ -139,8 +133,8 @@ const HealthChecker = () => {
                 )}
               </DialogTrigger>
             </ButtonGroup>
-          </Flex>
-        </Flex>
+          }
+        />
       </View>
 
       <TableView flex="1" aria-label="Health Issues" renderEmptyState={renderEmptyState} selectionMode="none" marginY="size-200" minHeight="size-3400">
