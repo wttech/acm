@@ -148,6 +148,79 @@ class ExecutableMetadataTest {
     }
 
     @Test
+    void shouldParseWhitespaceOnlyCode() {
+        ExecutableMetadata metadata = ExecutableMetadata.parse("   \n\t\n  ");
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenOnlyLineCommentsPresent() {
+        String code = "// a line comment\nvoid doRun() {\n    // another one\n}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyForUnterminatedBlockComment() {
+        String code = "/* never closed\n\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyForBlockCommentAttachedDirectlyToCode() {
+        String code = "/* description */\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenCommentIsOnlyFollowedByOneNewline() {
+        String code = "/* description */\n";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyForEmptyBlockComment() {
+        String code = "/**/\n\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldSkipJavadocStyleCommentEvenWhenFollowedByBlankLine() {
+        // A leading "/**" comment is skipped (javadoc-style), but the comment after it is not at
+        // the start of the file nor preceded by import/package, so it's correctly rejected too.
+        String code = "/** javadoc style, ignored */\n\n/* real description */\n\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldSkipJavadocStyleCommentAndFindLaterValidOneAfterImport() {
+        String code =
+                "import foo.Bar;\n\n/** javadoc style, ignored */\n\n/* real description */\n\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertEquals("real description", metadata.getValues().get("description"));
+    }
+
+    @Test
     void shouldParseLargeBlockComment() {
         StringBuilder description = new StringBuilder();
         for (int index = 0; index < 10_000; index++) {
