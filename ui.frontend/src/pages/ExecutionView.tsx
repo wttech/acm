@@ -6,7 +6,7 @@ import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
 import Print from '@spectrum-icons/workflow/Print';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor.tsx';
 import ExecutableIdValue from '../components/ExecutableIdValue';
@@ -23,7 +23,7 @@ import Toggle from '../components/Toggle.tsx';
 import ThreeColumnBar from '../components/ThreeColumnBar';
 import UserInfo from '../components/UserInfo';
 import { useAppState } from '../hooks/app.ts';
-import { useExecutionPolling } from '../hooks/execution';
+import { useExecutionPolling, useExecutionReviewAutoOpen } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
 import { isExecutableConsole, isExecutableScript } from '../types/executable.ts';
@@ -40,7 +40,7 @@ const ExecutionView = () => {
   const { execution, setExecution, loading, justCompleted } = useExecutionPolling(executionId, appState.spaSettings.executionPollInterval);
   const [selectedTab, handleTabChange] = useNavigationTab('details');
   const navigate = useNavigate();
-  const autoOpenedOutputsIdRef = useRef<string | null>(null);
+  const autoOpenReview = useExecutionReviewAutoOpen(execution, justCompleted);
 
   if (loading) {
     return (
@@ -62,18 +62,6 @@ const ExecutionView = () => {
   }
 
   const executionOutput = ((execution.output ?? '') + '\n' + (execution.error ?? '')).trim();
-
-  // Auto-open review dialog only once per execution - guards against remounts on tab switching re-triggering it
-  const autoOpenReview =
-    appState.spaSettings.executionReviewOutputsPolicy === 'auto' &&
-    isExecutableScript(execution.executable.id) &&
-    execution.status === ExecutionStatus.SUCCEEDED &&
-    justCompleted &&
-    autoOpenedOutputsIdRef.current !== execution.id;
-
-  if (autoOpenReview) {
-    autoOpenedOutputsIdRef.current = execution.id;
-  }
 
   const onCopyExecutableCode = () => {
     navigator.clipboard

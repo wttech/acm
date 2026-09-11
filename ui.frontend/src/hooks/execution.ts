@@ -1,6 +1,7 @@
 import { ToastQueue } from '@react-spectrum/toast';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useInterval } from 'react-use';
+import { isExecutableScript } from '../types/executable';
 import { Execution, ExecutionStatus, isExecutionPending } from '../types/execution';
 import { QueueOutput } from '../types/main';
 import { apiRequest } from '../utils/api';
@@ -66,6 +67,28 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
   );
 
   return { execution, setExecution, executing, setExecuting, loading, justCompleted };
+};
+
+// Signals a script execution just succeeded with a 'auto' review policy, exactly once per execution id
+export const useExecutionReviewAutoOpen = (execution: Execution | null, justCompleted: boolean): boolean => {
+  const appState = useAppState();
+  const autoOpenedIdRef = useRef<string | null>(null);
+
+  const autoOpen =
+    !!execution &&
+    appState.spaSettings.executionReviewOutputsPolicy === 'auto' &&
+    isExecutableScript(execution.executable.id) &&
+    execution.status === ExecutionStatus.SUCCEEDED &&
+    justCompleted &&
+    autoOpenedIdRef.current !== execution.id;
+
+  useEffect(() => {
+    if (autoOpen && execution) {
+      autoOpenedIdRef.current = execution.id;
+    }
+  }, [autoOpen, execution]);
+
+  return autoOpen;
 };
 
 export const pollExecutionPending = async (executionId: string, pollInterval: number): Promise<Execution> => {
