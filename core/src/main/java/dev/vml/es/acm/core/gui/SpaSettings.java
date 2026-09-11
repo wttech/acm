@@ -7,6 +7,7 @@ import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.Option;
 
 @Component(service = SpaSettings.class, immediate = true)
 @Designate(ocd = SpaSettings.Config.class)
@@ -18,6 +19,8 @@ public class SpaSettings implements Serializable {
 
     private int executionCodeOutputChunkSize;
 
+    private String executionReviewOutputsPolicy;
+
     private long scriptStatsLimit;
 
     @Activate
@@ -26,6 +29,7 @@ public class SpaSettings implements Serializable {
         this.appStateInterval = config.appStateInterval();
         this.executionPollInterval = config.executionPollInterval();
         this.executionCodeOutputChunkSize = config.executionCodeOutputChunkSize();
+        this.executionReviewOutputsPolicy = config.executionReviewOutputsPolicy();
         this.scriptStatsLimit = config.scriptStatsLimit();
     }
 
@@ -45,6 +49,10 @@ public class SpaSettings implements Serializable {
         return scriptStatsLimit;
     }
 
+    public String getExecutionReviewOutputsPolicy() {
+        return executionReviewOutputsPolicy;
+    }
+
     @ObjectClassDefinition(name = "AEM Content Manager - SPA Settings")
     public @interface Config {
 
@@ -60,6 +68,15 @@ public class SpaSettings implements Serializable {
 
         @AttributeDefinition(name = "Execution Code Output Chunk Size", description = "In bytes. Default is 2 MB.")
         int executionCodeOutputChunkSize() default 2 * 1024 * 1024;
+
+        @AttributeDefinition(
+                name = "Execution Review Outputs Policy",
+                description =
+                        "Controls if the review outputs dialog opens automatically after a script execution succeeds with generated outputs. "
+                                + "Manual: user opens it explicitly via the 'Review' button. Auto: it opens by itself once outputs are ready. "
+                                + "Applies to script executions only; console executions always stay manual.",
+                options = {@Option(label = "Manual", value = "manual"), @Option(label = "Auto", value = "auto")})
+        String executionReviewOutputsPolicy() default "auto";
 
         @AttributeDefinition(
                 name = "Script Stats Limit",

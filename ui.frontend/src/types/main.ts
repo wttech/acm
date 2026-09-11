@@ -53,6 +53,7 @@ export const StateDefault: State = {
     appStateInterval: 3000,
     executionPollInterval: 1400,
     scriptStatsLimit: 20,
+    executionReviewOutputsPolicy: 'manual',
   },
   healthStatus: {
     healthy: true,
@@ -88,6 +89,7 @@ export type SpaSettings = {
   appStateInterval: number;
   executionPollInterval: number;
   scriptStatsLimit: number;
+  executionReviewOutputsPolicy: 'manual' | 'auto';
 };
 
 export type InstanceSettings = {

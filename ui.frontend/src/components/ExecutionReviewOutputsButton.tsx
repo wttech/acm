@@ -8,7 +8,7 @@ import Help from '@spectrum-icons/workflow/Help';
 import Info from '@spectrum-icons/workflow/Info';
 import Preview from '@spectrum-icons/workflow/Preview';
 import Print from '@spectrum-icons/workflow/Print';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Execution } from '../types/execution.ts';
 import { FileOutput, Output, OutputNames, TextOutput } from '../types/output.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
@@ -18,15 +18,25 @@ import Markdown from './Markdown.tsx';
 
 interface ExecutionReviewOutputsButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onPress'> {
   execution: Execution;
+  autoOpen?: boolean;
 }
 
-const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> = ({ execution, ...buttonProps }) => {
+const ExecutionReviewOutputsButton: React.FC<ExecutionReviewOutputsButtonProps> = ({ execution, autoOpen = false, ...buttonProps }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const autoOpenedRef = useRef(false);
 
   const outputs = execution.outputs || {};
   const outputValues = Object.values(outputs);
   const outputFiles = outputValues.filter((output) => output.type === 'FILE') as FileOutput[];
   const outputTexts = outputValues.filter((output) => output.type === 'TEXT') as TextOutput[];
+
+  // Opens the dialog once per execution when it just completed with outputs to review
+  useEffect(() => {
+    if (autoOpen && outputValues.length > 0 && !autoOpenedRef.current) {
+      autoOpenedRef.current = true;
+      setDialogOpen(true);
+    }
+  }, [autoOpen, outputValues.length]);
 
   const handleOpenDialog = () => {
     setDialogOpen(true);

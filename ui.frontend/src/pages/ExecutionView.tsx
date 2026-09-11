@@ -23,11 +23,11 @@ import Toggle from '../components/Toggle.tsx';
 import ThreeColumnBar from '../components/ThreeColumnBar';
 import UserInfo from '../components/UserInfo';
 import { useAppState } from '../hooks/app.ts';
-import { useExecutionPolling } from '../hooks/execution';
+import { useExecutionPolling, useExecutionReviewAutoOpen } from '../hooks/execution';
 import { useFormatter } from '../hooks/formatter';
 import { useNavigationTab } from '../hooks/navigation';
 import { isExecutableConsole, isExecutableScript } from '../types/executable.ts';
-import { isExecutionPending } from '../types/execution.ts';
+import { ExecutionStatus, isExecutionPending } from '../types/execution.ts';
 import { GROOVY_LANGUAGE_ID } from '../utils/monaco/groovy.ts';
 import { LOG_LANGUAGE_ID } from '../utils/monaco/log.ts';
 import { ToastTimeoutQuick } from '../utils/spectrum.ts';
@@ -37,9 +37,10 @@ const ExecutionView = () => {
   const { executionId } = useParams<{ executionId: string }>();
   const formatter = useFormatter();
   const [autoscrollOutput, setAutoscrollOutput] = useState<boolean>(true);
-  const { execution, setExecution, loading } = useExecutionPolling(executionId, appState.spaSettings.executionPollInterval);
+  const { execution, setExecution, loading, justCompleted } = useExecutionPolling(executionId, appState.spaSettings.executionPollInterval);
   const [selectedTab, handleTabChange] = useNavigationTab('details');
   const navigate = useNavigate();
+  const autoOpenReview = useExecutionReviewAutoOpen(execution, justCompleted);
 
   if (loading) {
     return (
@@ -170,7 +171,7 @@ const ExecutionView = () => {
                       <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     </Toggle>
                     <Toggle when={!isExecutionPending(execution.status)}>
-                      <ExecutionReviewOutputsButton variant="cta" execution={execution} />
+                      <ExecutionReviewOutputsButton variant="cta" execution={execution} autoOpen={autoOpenReview} />
                     </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>
