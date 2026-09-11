@@ -49,40 +49,32 @@ public class ExecutableMetadata implements Serializable {
     private static String findFirstBlockComment(String code) {
         int commentStart = code.indexOf("/*");
         while (commentStart >= 0) {
-            if (commentStart + 2 < code.length() && code.charAt(commentStart + 2) == '*') {
-                commentStart = code.indexOf("/*", commentStart + 2);
-                continue;
-            }
-
             int closingMarker = code.indexOf("*/", commentStart + 2);
             if (closingMarker < 0) {
                 break;
             }
 
+            // Resume the next search after this comment's closing marker (not just past its
+            // opening marker) so that text already consumed as part of this comment's body
+            // (e.g. a literal "/*" sequence inside it) is never re-considered as a separate,
+            // independent comment.
             int commentEnd = closingMarker + 2;
-            String comment = code.substring(commentStart, commentEnd);
+            boolean isJavadoc = commentStart + 2 < code.length() && code.charAt(commentStart + 2) == '*';
 
-            String afterComment = code.substring(commentEnd);
-
-            if (!hasWhitespaceLines(afterComment, 1)) {
-                continue;
-            }
-
-            if (!hasWhitespaceLines(afterComment, 2)) {
-                continue;
-            }
-
-            if (commentStart > 0) {
-                String beforeComment = code.substring(0, commentStart);
-                String trimmedBefore = beforeComment.trim();
-                if (trimmedBefore.isEmpty() || isAfterImportOrPackage(beforeComment)) {
-                    return comment;
+            if (!isJavadoc) {
+                String afterComment = code.substring(commentEnd);
+                if (hasWhitespaceLines(afterComment, 2)) {
+                    if (commentStart == 0) {
+                        return code.substring(commentStart, commentEnd);
+                    }
+                    String beforeComment = code.substring(0, commentStart);
+                    if (beforeComment.trim().isEmpty() || isAfterImportOrPackage(beforeComment)) {
+                        return code.substring(commentStart, commentEnd);
+                    }
                 }
-            } else {
-                return comment;
             }
 
-            commentStart = code.indexOf("/*", commentStart + 2);
+            commentStart = code.indexOf("/*", commentEnd);
         }
 
         return null;
@@ -137,12 +129,12 @@ public class ExecutableMetadata implements Serializable {
 
         String description = content;
         int frontmatterStart = content.startsWith("---") ? content.indexOf('\n') : -1;
-        int frontmatterEnd = findFrontmatterEnd(content, frontmatterStart);
+        int[] closingDelimiter = findClosingDelimiter(content, frontmatterStart);
 
-        if (frontmatterEnd >= 0) {
-            String frontmatter = content.substring(frontmatterStart + 1, frontmatterEnd);
+        if (closingDelimiter != null) {
+            String frontmatter = content.substring(frontmatterStart + 1, closingDelimiter[0]);
             result.putAll(parseFrontmatter(frontmatter));
-            description = content.substring(frontmatterEnd);
+            description = content.substring(closingDelimiter[1]);
         }
 
         description = description.trim();
@@ -154,25 +146,30 @@ public class ExecutableMetadata implements Serializable {
         return result;
     }
 
-    private static int findFrontmatterEnd(String content, int openingLineEnd) {
+    /**
+     * Finds the closing "---" delimiter line, returning its start offset (exclusive end of the
+     * frontmatter body) and the offset right after it (start of the description), or {@code null}
+     * if no closing delimiter exists.
+     */
+    private static int[] findClosingDelimiter(String content, int openingLineEnd) {
         if (openingLineEnd < 0 || !isWhitespace(content, 3, openingLineEnd)) {
-            return -1;
+            return null;
         }
 
         int lineStart = openingLineEnd + 1;
         while (lineStart < content.length()) {
             int lineEnd = content.indexOf('\n', lineStart);
             if (lineEnd < 0) {
-                return -1;
+                return null;
             }
             if (lineStart > openingLineEnd + 1
                     && content.startsWith("---", lineStart)
                     && isWhitespace(content, lineStart + 3, lineEnd)) {
-                return lineEnd + 1;
+                return new int[] {lineStart, lineEnd + 1};
             }
             lineStart = lineEnd + 1;
         }
-        return -1;
+        return null;
     }
 
     private static boolean isWhitespace(String value, int start, int end) {

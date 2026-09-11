@@ -124,6 +124,30 @@ class ExecutableMetadataTest {
     }
 
     @Test
+    void shouldNotTreatTextInsideRejectedCommentAsSeparateComment() {
+        // The first "/*" opens a single (non-nested) comment ending at the first "*/".
+        // It is rejected because it is not at the start of the file and not preceded by
+        // import/package. The "/*" inside its body must not be re-considered as its own comment.
+        String code = "xxx /* comment mentions import foo;\n\n/* real */\n\nvoid f(){}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldParseFrontmatterWithoutLeakingClosingDelimiter() {
+        String code = "/*\n" + "---\n" + "version: 1.0.0\n" + "---\n" + "Description text\n" + "*/\n" + "\n"
+                + "void doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertEquals("1.0.0", metadata.getValues().get("version"));
+        assertEquals("Description text", metadata.getValues().get("description"));
+        assertEquals(2, metadata.getValues().size());
+    }
+
+    @Test
     void shouldParseLargeBlockComment() {
         StringBuilder description = new StringBuilder();
         for (int index = 0; index < 10_000; index++) {
