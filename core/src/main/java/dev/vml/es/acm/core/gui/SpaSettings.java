@@ -73,7 +73,8 @@ public class SpaSettings implements Serializable {
                 name = "Execution Review Outputs Policy",
                 description =
                         "Controls if the review outputs dialog opens automatically after a script execution succeeds with generated outputs. "
-                                + "Manual: user opens it explicitly via the 'Review' button. Auto: it opens by itself once outputs are ready.",
+                                + "Manual: user opens it explicitly via the 'Review' button. Auto: it opens by itself once outputs are ready. "
+                                + "Applies to script executions only; console executions always stay manual.",
                 options = {@Option(label = "Manual", value = "manual"), @Option(label = "Auto", value = "auto")})
         String executionReviewOutputsPolicy() default "auto";
 
