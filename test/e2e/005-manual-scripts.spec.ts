@@ -37,6 +37,9 @@ test.describe('Manual Scripts', () => {
     expect(output).toContain('[SUCCESS] Users CSV report generation ended successfully');
     await attachScreenshot(page, testInfo, 'Execution Console Output');
 
+    // Review outputs dialog auto-opens by default once the execution succeeds
+    await page.getByTestId('modal').getByRole('button', { name: 'Close' }).click();
+
     await page.getByRole('tab', { name: 'Details' }).click();
 
     await page.waitForTimeout(1000);
