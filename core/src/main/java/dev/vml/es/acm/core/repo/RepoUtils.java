@@ -2,6 +2,7 @@ package dev.vml.es.acm.core.repo;
 
 import java.util.*;
 import javax.jcr.*;
+import javax.jcr.nodetype.NodeType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.*;
 
@@ -184,6 +185,10 @@ public final class RepoUtils {
     private static void copyInternal(Node sourceNode, Node targetParent, String targetName) throws RepositoryException {
         Node targetNode =
                 targetParent.addNode(targetName, sourceNode.getPrimaryNodeType().getName());
+
+        for (NodeType mixinType : sourceNode.getMixinNodeTypes()) {
+            targetNode.addMixin(mixinType.getName());
+        }
 
         // Copy properties
         PropertyIterator properties = sourceNode.getProperties();
