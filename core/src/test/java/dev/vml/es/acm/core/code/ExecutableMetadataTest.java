@@ -122,4 +122,32 @@ class ExecutableMetadataTest {
         assertEquals("2025-01-01", metadata.getValues().get("since"));
         assertEquals("migration", metadata.getValues().get("category"));
     }
+
+    @Test
+    void shouldParseLargeBlockComment() {
+        StringBuilder description = new StringBuilder();
+        for (int index = 0; index < 10_000; index++) {
+            description.append("11111111112222222222333333333344444444445555555555666666666677777777778888888888\n");
+        }
+
+        String code = "/*\n" + description + "*/\n\n" + "void doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertEquals(description.toString().trim(), metadata.getValues().get("description"));
+    }
+
+    @Test
+    void shouldParseLargeDescriptionWithoutClosingFrontmatterMarker() {
+        StringBuilder description = new StringBuilder("---\n");
+        for (int index = 0; index < 10_000; index++) {
+            description.append("11111111112222222222333333333344444444445555555555666666666677777777778888888888\n");
+        }
+
+        String code = "/*\n" + description + "*/\n\n" + "void doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertEquals(description.toString().trim(), metadata.getValues().get("description"));
+    }
 }

@@ -6,8 +6,6 @@ import dev.vml.es.acm.core.util.YamlUtils;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +15,6 @@ public class ExecutableMetadata implements Serializable {
     public static final ExecutableMetadata EMPTY = new ExecutableMetadata(new LinkedHashMap<>());
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutableMetadata.class);
-
-    private static final Pattern BLOCK_COMMENT_PATTERN =
-            Pattern.compile("/\\*(?!\\*)([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
-    private static final Pattern FRONTMATTER_PATTERN =
-            Pattern.compile("^---\\s*\\n(.+?)^---\\s*\\n", Pattern.DOTALL | Pattern.MULTILINE);
-    private static final Pattern NEWLINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n[\\s\\S]*");
-    private static final Pattern BLANK_LINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n\\s*\\n[\\s\\S]*");
-    private static final Pattern IMPORT_OR_PACKAGE_BEFORE =
-            Pattern.compile("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$");
-    private static final Pattern COMMENT_MARKERS = Pattern.compile("^/\\*|\\*/$");
 
     private Map<String, Object> values;
 
@@ -59,36 +47,81 @@ public class ExecutableMetadata implements Serializable {
      * Can appear at the start of the file or after import/package statements.
      */
     private static String findFirstBlockComment(String code) {
-        Matcher matcher = BLOCK_COMMENT_PATTERN.matcher(code);
-
-        while (matcher.find()) {
-            String comment = matcher.group();
-            int commentStart = matcher.start();
-            int commentEnd = matcher.end();
-
-            String afterComment = code.substring(commentEnd);
-
-            if (!NEWLINE_AFTER_COMMENT.matcher(afterComment).matches()) {
+        int commentStart = code.indexOf("/*");
+        while (commentStart >= 0) {
+            if (commentStart + 2 < code.length() && code.charAt(commentStart + 2) == '*') {
+                commentStart = code.indexOf("/*", commentStart + 2);
                 continue;
             }
 
-            if (!BLANK_LINE_AFTER_COMMENT.matcher(afterComment).matches()) {
+            int closingMarker = code.indexOf("*/", commentStart + 2);
+            if (closingMarker < 0) {
+                break;
+            }
+
+            int commentEnd = closingMarker + 2;
+            String comment = code.substring(commentStart, commentEnd);
+
+            String afterComment = code.substring(commentEnd);
+
+            if (!hasWhitespaceLines(afterComment, 1)) {
+                continue;
+            }
+
+            if (!hasWhitespaceLines(afterComment, 2)) {
                 continue;
             }
 
             if (commentStart > 0) {
                 String beforeComment = code.substring(0, commentStart);
                 String trimmedBefore = beforeComment.trim();
-                if (trimmedBefore.isEmpty()
-                        || IMPORT_OR_PACKAGE_BEFORE.matcher(beforeComment).matches()) {
+                if (trimmedBefore.isEmpty() || isAfterImportOrPackage(beforeComment)) {
                     return comment;
                 }
             } else {
                 return comment;
             }
+
+            commentStart = code.indexOf("/*", commentStart + 2);
         }
 
         return null;
+    }
+
+    private static boolean hasWhitespaceLines(String value, int requiredLines) {
+        int lineCount = 0;
+        for (int index = 0; index < value.length(); index++) {
+            char character = value.charAt(index);
+            if (character == '\n') {
+                lineCount++;
+                if (lineCount >= requiredLines) {
+                    return true;
+                }
+            } else if (!Character.isWhitespace(character)) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isAfterImportOrPackage(String value) {
+        return endsWithWhitespaceLines(value, 2) && (value.contains("import") || value.contains("package"));
+    }
+
+    private static boolean endsWithWhitespaceLines(String value, int requiredLines) {
+        int lineCount = 0;
+        for (int index = value.length() - 1; index >= 0; index--) {
+            char character = value.charAt(index);
+            if (character == '\n') {
+                lineCount++;
+                if (lineCount >= requiredLines) {
+                    return true;
+                }
+            } else if (!Character.isWhitespace(character)) {
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
@@ -100,17 +133,16 @@ public class ExecutableMetadata implements Serializable {
             return result;
         }
 
-        String content = COMMENT_MARKERS.matcher(blockComment).replaceAll("").trim();
+        String content = blockComment.substring(2, blockComment.length() - 2).trim();
 
-        Matcher frontmatterMatcher = FRONTMATTER_PATTERN.matcher(content);
         String description = content;
+        int frontmatterStart = content.startsWith("---") ? content.indexOf('\n') : -1;
+        int frontmatterEnd = findFrontmatterEnd(content, frontmatterStart);
 
-        if (frontmatterMatcher.find()) {
-            String frontmatter = frontmatterMatcher.group(1);
-            if (frontmatter != null) {
-                result.putAll(parseFrontmatter(frontmatter));
-            }
-            description = content.substring(frontmatterMatcher.end());
+        if (frontmatterEnd >= 0) {
+            String frontmatter = content.substring(frontmatterStart + 1, frontmatterEnd);
+            result.putAll(parseFrontmatter(frontmatter));
+            description = content.substring(frontmatterEnd);
         }
 
         description = description.trim();
@@ -120,6 +152,36 @@ public class ExecutableMetadata implements Serializable {
         }
 
         return result;
+    }
+
+    private static int findFrontmatterEnd(String content, int openingLineEnd) {
+        if (openingLineEnd < 0 || !isWhitespace(content, 3, openingLineEnd)) {
+            return -1;
+        }
+
+        int lineStart = openingLineEnd + 1;
+        while (lineStart < content.length()) {
+            int lineEnd = content.indexOf('\n', lineStart);
+            if (lineEnd < 0) {
+                return -1;
+            }
+            if (lineStart > openingLineEnd + 1
+                    && content.startsWith("---", lineStart)
+                    && isWhitespace(content, lineStart + 3, lineEnd)) {
+                return lineEnd + 1;
+            }
+            lineStart = lineEnd + 1;
+        }
+        return -1;
+    }
+
+    private static boolean isWhitespace(String value, int start, int end) {
+        for (int index = start; index < end; index++) {
+            if (!Character.isWhitespace(value.charAt(index))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static Map<String, Object> parseFrontmatter(String frontmatter) {
