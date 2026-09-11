@@ -212,8 +212,7 @@ class ExecutableMetadataTest {
 
     @Test
     void shouldSkipJavadocStyleCommentAndFindLaterValidOneAfterImport() {
-        String code =
-                "import foo.Bar;\n\n/** javadoc style, ignored */\n\n/* real description */\n\nvoid doRun() {}";
+        String code = "import foo.Bar;\n\n/** javadoc style, ignored */\n\n/* real description */\n\nvoid doRun() {}";
 
         ExecutableMetadata metadata = ExecutableMetadata.parse(code);
 
