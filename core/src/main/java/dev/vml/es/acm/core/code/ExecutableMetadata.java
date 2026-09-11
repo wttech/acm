@@ -16,6 +16,14 @@ public class ExecutableMetadata implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutableMetadata.class);
 
+    private static final String COMMENT_START = "/*";
+
+    private static final String COMMENT_END = "*/";
+
+    private static final String JAVADOC_COMMENT_START = "/**";
+
+    private static final String FRONTMATTER_DELIMITER = "---";
+
     private Map<String, Object> values;
 
     public ExecutableMetadata(Map<String, Object> values) {
@@ -47,9 +55,9 @@ public class ExecutableMetadata implements Serializable {
      * Can appear at the start of the file or after import/package statements.
      */
     private static String findFirstBlockComment(String code) {
-        int commentStart = code.indexOf("/*");
+        int commentStart = code.indexOf(COMMENT_START);
         while (commentStart >= 0) {
-            int closingMarker = code.indexOf("*/", commentStart + 2);
+            int closingMarker = code.indexOf(COMMENT_END, commentStart + COMMENT_START.length());
             if (closingMarker < 0) {
                 break;
             }
@@ -58,8 +66,8 @@ public class ExecutableMetadata implements Serializable {
             // opening marker) so that text already consumed as part of this comment's body
             // (e.g. a literal "/*" sequence inside it) is never re-considered as a separate,
             // independent comment.
-            int commentEnd = closingMarker + 2;
-            boolean isJavadoc = commentStart + 2 < code.length() && code.charAt(commentStart + 2) == '*';
+            int commentEnd = closingMarker + COMMENT_END.length();
+            boolean isJavadoc = code.startsWith(JAVADOC_COMMENT_START, commentStart);
 
             if (!isJavadoc) {
                 String afterComment = code.substring(commentEnd);
@@ -74,7 +82,7 @@ public class ExecutableMetadata implements Serializable {
                 }
             }
 
-            commentStart = code.indexOf("/*", commentEnd);
+            commentStart = code.indexOf(COMMENT_START, commentEnd);
         }
 
         return null;
@@ -125,10 +133,12 @@ public class ExecutableMetadata implements Serializable {
             return result;
         }
 
-        String content = blockComment.substring(2, blockComment.length() - 2).trim();
+        String content = blockComment
+                .substring(COMMENT_START.length(), blockComment.length() - COMMENT_END.length())
+                .trim();
 
         String description = content;
-        int frontmatterStart = content.startsWith("---") ? content.indexOf('\n') : -1;
+        int frontmatterStart = content.startsWith(FRONTMATTER_DELIMITER) ? content.indexOf('\n') : -1;
         int[] closingDelimiter = findClosingDelimiter(content, frontmatterStart);
 
         if (closingDelimiter != null) {
@@ -152,7 +162,7 @@ public class ExecutableMetadata implements Serializable {
      * if no closing delimiter exists.
      */
     private static int[] findClosingDelimiter(String content, int openingLineEnd) {
-        if (openingLineEnd < 0 || !isWhitespace(content, 3, openingLineEnd)) {
+        if (openingLineEnd < 0 || !isWhitespace(content, FRONTMATTER_DELIMITER.length(), openingLineEnd)) {
             return null;
         }
 
@@ -163,8 +173,8 @@ public class ExecutableMetadata implements Serializable {
                 return null;
             }
             if (lineStart > openingLineEnd + 1
-                    && content.startsWith("---", lineStart)
-                    && isWhitespace(content, lineStart + 3, lineEnd)) {
+                    && content.startsWith(FRONTMATTER_DELIMITER, lineStart)
+                    && isWhitespace(content, lineStart + FRONTMATTER_DELIMITER.length(), lineEnd)) {
                 return new int[] {lineStart, lineEnd + 1};
             }
             lineStart = lineEnd + 1;
