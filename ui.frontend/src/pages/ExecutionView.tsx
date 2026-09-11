@@ -6,7 +6,7 @@ import Copy from '@spectrum-icons/workflow/Copy';
 import FileCode from '@spectrum-icons/workflow/FileCode';
 import History from '@spectrum-icons/workflow/History';
 import Print from '@spectrum-icons/workflow/Print';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor.tsx';
 import ExecutableIdValue from '../components/ExecutableIdValue';
@@ -40,6 +40,7 @@ const ExecutionView = () => {
   const { execution, setExecution, loading, justCompleted } = useExecutionPolling(executionId, appState.spaSettings.executionPollInterval);
   const [selectedTab, handleTabChange] = useNavigationTab('details');
   const navigate = useNavigate();
+  const autoOpenedOutputsIdRef = useRef<string | null>(null);
 
   if (loading) {
     return (
@@ -62,12 +63,17 @@ const ExecutionView = () => {
 
   const executionOutput = ((execution.output ?? '') + '\n' + (execution.error ?? '')).trim();
 
-  // Auto-open review dialog only for a script (not raw console) execution just finished successfully
-  const autoOpenReviewOutputs =
+  // Auto-open review dialog only once per execution - guards against remounts on tab switching re-triggering it
+  const autoOpenReview =
     appState.spaSettings.executionReviewOutputsPolicy === 'auto' &&
     isExecutableScript(execution.executable.id) &&
     execution.status === ExecutionStatus.SUCCEEDED &&
-    justCompleted;
+    justCompleted &&
+    autoOpenedOutputsIdRef.current !== execution.id;
+
+  if (autoOpenReview) {
+    autoOpenedOutputsIdRef.current = execution.id;
+  }
 
   const onCopyExecutableCode = () => {
     navigator.clipboard
@@ -177,7 +183,7 @@ const ExecutionView = () => {
                       <ExecutionAbortButton execution={execution} onComplete={setExecution} />
                     </Toggle>
                     <Toggle when={!isExecutionPending(execution.status)}>
-                      <ExecutionReviewOutputsButton variant="cta" execution={execution} autoOpen={autoOpenReviewOutputs} />
+                      <ExecutionReviewOutputsButton variant="cta" execution={execution} autoOpen={autoOpenReview} />
                     </Toggle>
                     <ExecutionCopyOutputButton output={executionOutput} />
                   </ButtonGroup>
