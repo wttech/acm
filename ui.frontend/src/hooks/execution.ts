@@ -14,6 +14,7 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
   const [executing, setExecuting] = useState<boolean>(!!executionId);
   const [loading, setLoading] = useState<boolean>(true);
   const [wasPending, setWasPending] = useState<boolean>(false);
+  const [justCompleted, setJustCompleted] = useState<boolean>(false);
   const formatter = useFormatter();
 
   const pollExecutionState = async (executionId: string) => {
@@ -37,6 +38,7 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
 
         const recentlyCompleted = formatter.isRecent(queuedExecution.endDate, 2 * pollInterval);
         if (recentlyCompleted || wasPending) {
+          setJustCompleted(true);
           if (queuedExecution.status === ExecutionStatus.FAILED) {
             ToastQueue.negative('Code execution failed!', { timeout: ToastTimeoutQuick });
           } else if (queuedExecution.status === ExecutionStatus.SKIPPED) {
@@ -63,7 +65,7 @@ export const useExecutionPolling = (executionId: string | undefined | null, poll
     executing && executionId ? appState.spaSettings.executionPollInterval : null,
   );
 
-  return { execution, setExecution, executing, setExecuting, loading };
+  return { execution, setExecution, executing, setExecuting, loading, justCompleted };
 };
 
 export const pollExecutionPending = async (executionId: string, pollInterval: number): Promise<Execution> => {
