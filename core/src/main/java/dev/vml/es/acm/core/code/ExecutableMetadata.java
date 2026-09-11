@@ -6,8 +6,6 @@ import dev.vml.es.acm.core.util.YamlUtils;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +16,13 @@ public class ExecutableMetadata implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutableMetadata.class);
 
-    private static final Pattern BLOCK_COMMENT_PATTERN =
-            Pattern.compile("/\\*(?!\\*)([^*]|\\*(?!/))*\\*/", Pattern.DOTALL);
-    private static final Pattern FRONTMATTER_PATTERN =
-            Pattern.compile("^---\\s*\\n(.+?)^---\\s*\\n", Pattern.DOTALL | Pattern.MULTILINE);
-    private static final Pattern NEWLINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n[\\s\\S]*");
-    private static final Pattern BLANK_LINE_AFTER_COMMENT = Pattern.compile("^\\s*\\n\\s*\\n[\\s\\S]*");
-    private static final Pattern IMPORT_OR_PACKAGE_BEFORE =
-            Pattern.compile("[\\s\\S]*(import|package)[\\s\\S]*\\n\\s*\\n\\s*$");
-    private static final Pattern COMMENT_MARKERS = Pattern.compile("^/\\*|\\*/$");
+    private static final String COMMENT_START = "/*";
+
+    private static final String COMMENT_END = "*/";
+
+    private static final String JAVADOC_COMMENT_START = "/**";
+
+    private static final String FRONTMATTER_DELIMITER = "---";
 
     private Map<String, Object> values;
 
@@ -59,36 +55,73 @@ public class ExecutableMetadata implements Serializable {
      * Can appear at the start of the file or after import/package statements.
      */
     private static String findFirstBlockComment(String code) {
-        Matcher matcher = BLOCK_COMMENT_PATTERN.matcher(code);
-
-        while (matcher.find()) {
-            String comment = matcher.group();
-            int commentStart = matcher.start();
-            int commentEnd = matcher.end();
-
-            String afterComment = code.substring(commentEnd);
-
-            if (!NEWLINE_AFTER_COMMENT.matcher(afterComment).matches()) {
-                continue;
+        int commentStart = code.indexOf(COMMENT_START);
+        while (commentStart >= 0) {
+            int closingMarker = code.indexOf(COMMENT_END, commentStart + COMMENT_START.length());
+            if (closingMarker < 0) {
+                break;
             }
 
-            if (!BLANK_LINE_AFTER_COMMENT.matcher(afterComment).matches()) {
-                continue;
-            }
+            // Resume the next search after this comment's closing marker (not just past its
+            // opening marker) so that text already consumed as part of this comment's body
+            // (e.g. a literal "/*" sequence inside it) is never re-considered as a separate,
+            // independent comment.
+            int commentEnd = closingMarker + COMMENT_END.length();
+            boolean isJavadoc = code.startsWith(JAVADOC_COMMENT_START, commentStart);
 
-            if (commentStart > 0) {
-                String beforeComment = code.substring(0, commentStart);
-                String trimmedBefore = beforeComment.trim();
-                if (trimmedBefore.isEmpty()
-                        || IMPORT_OR_PACKAGE_BEFORE.matcher(beforeComment).matches()) {
-                    return comment;
+            if (!isJavadoc) {
+                String afterComment = code.substring(commentEnd);
+                if (hasWhitespaceLines(afterComment, 2)) {
+                    if (commentStart == 0) {
+                        return code.substring(commentStart, commentEnd);
+                    }
+                    String beforeComment = code.substring(0, commentStart);
+                    if (beforeComment.trim().isEmpty() || isAfterImportOrPackage(beforeComment)) {
+                        return code.substring(commentStart, commentEnd);
+                    }
                 }
-            } else {
-                return comment;
             }
+
+            commentStart = code.indexOf(COMMENT_START, commentEnd);
         }
 
         return null;
+    }
+
+    private static boolean hasWhitespaceLines(String value, int requiredLines) {
+        int lineCount = 0;
+        for (int index = 0; index < value.length(); index++) {
+            char character = value.charAt(index);
+            if (character == '\n') {
+                lineCount++;
+                if (lineCount >= requiredLines) {
+                    return true;
+                }
+            } else if (!Character.isWhitespace(character)) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isAfterImportOrPackage(String value) {
+        return endsWithWhitespaceLines(value, 2) && (value.contains("import") || value.contains("package"));
+    }
+
+    private static boolean endsWithWhitespaceLines(String value, int requiredLines) {
+        int lineCount = 0;
+        for (int index = value.length() - 1; index >= 0; index--) {
+            char character = value.charAt(index);
+            if (character == '\n') {
+                lineCount++;
+                if (lineCount >= requiredLines) {
+                    return true;
+                }
+            } else if (!Character.isWhitespace(character)) {
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
@@ -100,17 +133,18 @@ public class ExecutableMetadata implements Serializable {
             return result;
         }
 
-        String content = COMMENT_MARKERS.matcher(blockComment).replaceAll("").trim();
+        String content = blockComment
+                .substring(COMMENT_START.length(), blockComment.length() - COMMENT_END.length())
+                .trim();
 
-        Matcher frontmatterMatcher = FRONTMATTER_PATTERN.matcher(content);
         String description = content;
+        int frontmatterStart = content.startsWith(FRONTMATTER_DELIMITER) ? content.indexOf('\n') : -1;
+        int[] closingDelimiter = findClosingDelimiter(content, frontmatterStart);
 
-        if (frontmatterMatcher.find()) {
-            String frontmatter = frontmatterMatcher.group(1);
-            if (frontmatter != null) {
-                result.putAll(parseFrontmatter(frontmatter));
-            }
-            description = content.substring(frontmatterMatcher.end());
+        if (closingDelimiter != null) {
+            String frontmatter = content.substring(frontmatterStart + 1, closingDelimiter[0]);
+            result.putAll(parseFrontmatter(frontmatter));
+            description = content.substring(closingDelimiter[1]);
         }
 
         description = description.trim();
@@ -120,6 +154,41 @@ public class ExecutableMetadata implements Serializable {
         }
 
         return result;
+    }
+
+    /**
+     * Finds the closing "---" delimiter line, returning its start offset (exclusive end of the
+     * frontmatter body) and the offset right after it (start of the description), or {@code null}
+     * if no closing delimiter exists.
+     */
+    private static int[] findClosingDelimiter(String content, int openingLineEnd) {
+        if (openingLineEnd < 0 || !isWhitespace(content, FRONTMATTER_DELIMITER.length(), openingLineEnd)) {
+            return null;
+        }
+
+        int lineStart = openingLineEnd + 1;
+        while (lineStart < content.length()) {
+            int lineEnd = content.indexOf('\n', lineStart);
+            if (lineEnd < 0) {
+                return null;
+            }
+            if (lineStart > openingLineEnd + 1
+                    && content.startsWith(FRONTMATTER_DELIMITER, lineStart)
+                    && isWhitespace(content, lineStart + FRONTMATTER_DELIMITER.length(), lineEnd)) {
+                return new int[] {lineStart, lineEnd + 1};
+            }
+            lineStart = lineEnd + 1;
+        }
+        return null;
+    }
+
+    private static boolean isWhitespace(String value, int start, int end) {
+        for (int index = start; index < end; index++) {
+            if (!Character.isWhitespace(value.charAt(index))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static Map<String, Object> parseFrontmatter(String frontmatter) {

@@ -122,4 +122,128 @@ class ExecutableMetadataTest {
         assertEquals("2025-01-01", metadata.getValues().get("since"));
         assertEquals("migration", metadata.getValues().get("category"));
     }
+
+    @Test
+    void shouldNotTreatTextInsideRejectedCommentAsSeparateComment() {
+        // The first "/*" opens a single (non-nested) comment ending at the first "*/".
+        // It is rejected because it is not at the start of the file and not preceded by
+        // import/package. The "/*" inside its body must not be re-considered as its own comment.
+        String code = "xxx /* comment mentions import foo;\n\n/* real */\n\nvoid f(){}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldParseFrontmatterWithoutLeakingClosingDelimiter() {
+        String code = "/*\n" + "---\n" + "version: 1.0.0\n" + "---\n" + "Description text\n" + "*/\n" + "\n"
+                + "void doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertEquals("1.0.0", metadata.getValues().get("version"));
+        assertEquals("Description text", metadata.getValues().get("description"));
+        assertEquals(2, metadata.getValues().size());
+    }
+
+    @Test
+    void shouldParseWhitespaceOnlyCode() {
+        ExecutableMetadata metadata = ExecutableMetadata.parse("   \n\t\n  ");
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenOnlyLineCommentsPresent() {
+        String code = "// a line comment\nvoid doRun() {\n    // another one\n}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyForUnterminatedBlockComment() {
+        String code = "/* never closed\n\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyForBlockCommentAttachedDirectlyToCode() {
+        String code = "/* description */\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenCommentIsOnlyFollowedByOneNewline() {
+        String code = "/* description */\n";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyForEmptyBlockComment() {
+        String code = "/**/\n\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldSkipJavadocStyleCommentEvenWhenFollowedByBlankLine() {
+        // A leading "/**" comment is skipped (javadoc-style), but the comment after it is not at
+        // the start of the file nor preceded by import/package, so it's correctly rejected too.
+        String code = "/** javadoc style, ignored */\n\n/* real description */\n\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertTrue(metadata.getValues().isEmpty());
+    }
+
+    @Test
+    void shouldSkipJavadocStyleCommentAndFindLaterValidOneAfterImport() {
+        String code = "import foo.Bar;\n\n/** javadoc style, ignored */\n\n/* real description */\n\nvoid doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertEquals("real description", metadata.getValues().get("description"));
+    }
+
+    @Test
+    void shouldParseLargeBlockComment() {
+        StringBuilder description = new StringBuilder();
+        for (int index = 0; index < 10_000; index++) {
+            description.append("11111111112222222222333333333344444444445555555555666666666677777777778888888888\n");
+        }
+
+        String code = "/*\n" + description + "*/\n\n" + "void doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertEquals(description.toString().trim(), metadata.getValues().get("description"));
+    }
+
+    @Test
+    void shouldParseLargeDescriptionWithoutClosingFrontmatterMarker() {
+        StringBuilder description = new StringBuilder("---\n");
+        for (int index = 0; index < 10_000; index++) {
+            description.append("11111111112222222222333333333344444444445555555555666666666677777777778888888888\n");
+        }
+
+        String code = "/*\n" + description + "*/\n\n" + "void doRun() {}";
+
+        ExecutableMetadata metadata = ExecutableMetadata.parse(code);
+
+        assertEquals(description.toString().trim(), metadata.getValues().get("description"));
+    }
 }
