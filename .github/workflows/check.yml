@@ -3,10 +3,10 @@ name: Check
 on:
   push:
     branches: [ main ]
-    paths-ignore: ['**.md', 'docs/**']
+    paths-ignore: ['**.md', 'docs/**', 'mcp-server/**', '.github/workflows/mcp-server.yml']
   pull_request:
     branches: [ main ]
-    paths-ignore: ['**.md', 'docs/**']
+    paths-ignore: ['**.md', 'docs/**', 'mcp-server/**', '.github/workflows/mcp-server.yml']
 
 jobs:
   build:
