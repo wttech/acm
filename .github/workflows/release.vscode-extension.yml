@@ -1,4 +1,4 @@
-name: VS Code Extension
+name: Release - VS Code Extension
 
 # PR/main checks live in check.yml.
 on:

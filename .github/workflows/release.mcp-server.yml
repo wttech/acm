@@ -1,4 +1,4 @@
-name: MCP Server
+name: Release - MCP Server
 
 # PR/main checks live in check.yml. Keep this file name: npm trusted publishing is bound to it.
 on:
