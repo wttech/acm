@@ -44,9 +44,17 @@
       { "command": "acm.setCredentials", "title": "Set Credentials", "category": "ACM" },
       { "command": "acm.checkConnection", "title": "Check Connection", "category": "ACM" },
       { "command": "acm.refreshExecutions", "title": "Refresh Executions", "category": "ACM", "icon": "$(refresh)" },
-      { "command": "acm.refreshScripts", "title": "Refresh Scripts", "category": "ACM", "icon": "$(refresh)" }
+      { "command": "acm.refreshScripts", "title": "Refresh Scripts", "category": "ACM", "icon": "$(refresh)" },
+      { "command": "acm.compareScript", "title": "Compare with Local File", "category": "ACM", "icon": "$(diff)" }
     ],
     "menus": {
+      "commandPalette": [
+        { "command": "acm.compareScript", "when": "false" }
+      ],
+      "view/item/context": [
+        { "command": "acm.abort", "when": "view == acm.executions && viewItem == execution.pending", "group": "inline" },
+        { "command": "acm.compareScript", "when": "view == acm.scripts && viewItem == script", "group": "inline" }
+      ],
       "editor/title": [
         { "command": "acm.run", "when": "editorLangId == groovy", "group": "navigation" }
       ],
@@ -72,15 +80,15 @@
               "name": { "type": "string", "description": "Display name, e.g. local, dev, prod." },
               "url": { "type": "string", "description": "AEM author URL, e.g. http://localhost:4502." },
               "authMode": { "type": "string", "enum": ["bearer", "cookie", "basic"] },
-              "user": { "type": "string", "description": "User for basic auth." },
-              "readonly": { "type": "boolean", "default": false, "description": "Block running code on this instance." }
+              "user": { "type": "string", "description": "User for basic auth (required for basic)." },
+              "readonly": { "type": "boolean", "default": false, "description": "Block running code on this instance. Non-local instances ask for confirmation before running." }
             }
           }
         },
         "acm.activeInstance": {
           "type": "string",
           "default": "",
-          "description": "Name of the instance used by commands."
+          "description": "Name of the instance used by commands. Defaults to the only instance when just one is configured."
         },
         "acm.validateOnSave": {
           "type": "boolean",
@@ -103,7 +111,13 @@
     "viewsWelcome": [
       {
         "view": "acm.executions",
-        "contents": "No ACM instance selected.\n[Select Instance](command:acm.selectInstance)"
+        "contents": "No ACM instance selected.\n[Select Instance](command:acm.selectInstance)",
+        "when": "!acm.hasInstance"
+      },
+      {
+        "view": "acm.scripts",
+        "contents": "No ACM instance selected.\n[Select Instance](command:acm.selectInstance)",
+        "when": "!acm.hasInstance"
       }
     ],
     "chatSkills": [
