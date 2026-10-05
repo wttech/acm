@@ -234,6 +234,9 @@ const skillUri = (path: string) => `acm://skill/${path}`;
 const server = new McpServer(
   {
     name: "acm-mcp-server",
+    title: "AEM Content Manager (ACM)",
+    description: "Validate and run Groovy scripts on Adobe Experience Manager through AEM Content Manager (ACM).",
+    websiteUrl: "https://github.com/wttech/acm/tree/main/tools/mcp-server",
     version,
   },
   {
