@@ -1,0 +1,54 @@
+{
+  "name": "@wppes/acm-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for AEM Content Manager (ACM): lets AI agents validate and run Groovy scripts on AEM.",
+  "mcpName": "io.github.wttech/acm-mcp-server",
+  "type": "module",
+  "bin": {
+    "acm-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run build",
+    "test": "node test/run-tests.mjs",
+    "smoke": "npm run build && node test/smoke.mjs",
+    "prepack": "npm run build && node -e \"require('node:fs').copyFileSync('../LICENSE', 'LICENSE')\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.20",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "aem",
+    "adobe-experience-manager",
+    "acm",
+    "groovy"
+  ],
+  "author": "WPP Enterprise Solutions",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/wttech/acm/tree/main/mcp-server#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wttech/acm.git",
+    "directory": "mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/wttech/acm/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

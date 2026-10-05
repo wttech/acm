@@ -279,7 +279,7 @@ tasks:
         VERSION="{{.CLI_ARGS | default ""}}"
         VERSION_TAG="v$VERSION"
 
-        VERSION_CURRENT_TAG=$(git describe --tags --abbrev=0 || echo "v0.0.0")
+        VERSION_CURRENT_TAG=$(git describe --tags --abbrev=0 --match 'v*' || echo "v0.0.0")
         VERSION_CURRENT_TAG="${VERSION_CURRENT_TAG#v}" # remove leading 'v', preserve leading zeros
 
         if [ -z "$VERSION" ]; then

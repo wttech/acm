@@ -1,0 +1,64 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.wttech/acm-mcp-server",
+  "title": "AEM Content Manager (ACM)",
+  "description": "Validate and run Groovy scripts on Adobe Experience Manager through AEM Content Manager (ACM).",
+  "repository": {
+    "url": "https://github.com/wttech/acm",
+    "source": "github",
+    "subfolder": "mcp-server"
+  },
+  "websiteUrl": "https://github.com/wttech/acm/tree/main/mcp-server",
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@wppes/acm-mcp-server",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "AEM_BASE_URL",
+          "description": "AEM author URL, e.g. https://author-pXXXX-eYYYY.adobeaemcloud.com or http://localhost:4502",
+          "isRequired": true,
+          "format": "string"
+        },
+        {
+          "name": "AEM_TOKEN",
+          "description": "Bearer token, e.g. an AEMaaCS local development token from the Developer Console",
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "AEM_COOKIE",
+          "description": "Value of the AEM login-token cookie from a browser session",
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "AEM_COOKIE_FILE",
+          "description": "Path to a file holding the login-token value, re-read on every request",
+          "format": "filepath"
+        },
+        {
+          "name": "AEM_USER",
+          "description": "Basic auth user, for a local AEM SDK",
+          "format": "string"
+        },
+        {
+          "name": "AEM_PASSWORD",
+          "description": "Basic auth password, for a local AEM SDK",
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "ACM_READONLY",
+          "description": "Set to true to block the tools that run code. A guardrail against accidental runs, not a security boundary",
+          "format": "boolean"
+        }
+      ]
+    }
+  ]
+}

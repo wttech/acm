@@ -1,0 +1,95 @@
+name: MCP Server
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mcp-server/**', '.github/workflows/mcp-server.yml' ]
+    tags: [ 'mcp-server-v*' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'mcp-server/**', '.github/workflows/mcp-server.yml' ]
+
+defaults:
+  run:
+    working-directory: mcp-server
+
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ 22, 24 ]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: mcp-server/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build & Test
+        run: npm test
+
+  publish:
+    name: Publish
+    if: startsWith(github.ref, 'refs/tags/mcp-server-v')
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (with provenance) and MCP Registry login
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Trusted publishing needs npm 11.5.1+, which ships with Node 24.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Check Versions Match Tag
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/mcp-server-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          SERVER_VERSION=$(node -p "require('./server.json').version")
+          SERVER_PKG_VERSION=$(node -p "require('./server.json').packages[0].version")
+          LOCK_VERSION=$(node -p "require('./package-lock.json').version")
+          echo "tag=$TAG_VERSION package.json=$PKG_VERSION package-lock.json=$LOCK_VERSION server.json=$SERVER_VERSION/$SERVER_PKG_VERSION"
+          test "$TAG_VERSION" = "$PKG_VERSION"
+          test "$TAG_VERSION" = "$SERVER_VERSION"
+          test "$TAG_VERSION" = "$SERVER_PKG_VERSION"
+          test "$TAG_VERSION" = "$LOCK_VERSION"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      # Skipped when the version is already on npm, so a failed registry step can be re-run.
+      - name: Publish to npm
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "$NAME@$VERSION is already published, skipping."
+          else
+            npm publish
+          fi
+
+      - name: Publish to MCP Registry
+        env:
+          MCP_PUBLISHER_VERSION: 1.8.1
+          MCP_PUBLISHER_SHA256: a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc
+        run: |
+          curl -fsSL -o mcp-publisher.tar.gz "https://github.com/modelcontextprotocol/registry/releases/download/v${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
