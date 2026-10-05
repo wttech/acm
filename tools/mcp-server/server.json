@@ -6,9 +6,9 @@
   "repository": {
     "url": "https://github.com/wttech/acm",
     "source": "github",
-    "subfolder": "mcp-server"
+    "subfolder": "tools/mcp-server"
   },
-  "websiteUrl": "https://github.com/wttech/acm/tree/main/mcp-server",
+  "websiteUrl": "https://github.com/wttech/acm/tree/main/tools/mcp-server",
   "version": "0.1.0",
   "packages": [
     {

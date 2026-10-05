@@ -1,0 +1,57 @@
+name: VS Code Extension
+
+# PR/main checks live in check.yml.
+on:
+  push:
+    tags: [ 'vscode-extension-v*' ]
+
+defaults:
+  run:
+    working-directory: tools/vscode-extension
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/vscode-extension/package-lock.json
+
+      - name: Check Versions Match Tag
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/vscode-extension-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          LOCK_VERSION=$(node -p "require('./package-lock.json').version")
+          echo "tag=$TAG_VERSION package.json=$PKG_VERSION package-lock.json=$LOCK_VERSION"
+          test "$TAG_VERSION" = "$PKG_VERSION"
+          test "$TAG_VERSION" = "$LOCK_VERSION"
+          echo "VERSION=$TAG_VERSION" >> "$GITHUB_ENV"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Package
+        run: npm run package
+
+      # Not marked as latest, so the ACM release stays the repository's latest release.
+      - name: Create GitHub Release
+        run: |
+          gh release create "vscode-extension-v${VERSION}" \
+            --title "VS Code Extension ${VERSION}" \
+            --notes "Install: download the .vsix below, then run 'Extensions: Install from VSIX...' in VS Code." \
+            --latest=false \
+            "acm-${VERSION}.vsix"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

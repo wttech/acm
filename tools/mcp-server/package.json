@@ -11,12 +11,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --noEmit && node esbuild.mjs",
     "typecheck": "tsc --noEmit",
     "pretest": "npm run build",
     "test": "node test/run-tests.mjs",
     "smoke": "npm run build && node test/smoke.mjs",
-    "prepack": "npm run build && node -e \"require('node:fs').copyFileSync('../LICENSE', 'LICENSE')\""
+    "prepack": "npm run build && node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.19.20",
+    "esbuild": "^0.25.12",
     "typescript": "^5.9.3"
   },
   "engines": {
@@ -39,11 +40,11 @@
   ],
   "author": "WPP Enterprise Solutions",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/wttech/acm/tree/main/mcp-server#readme",
+  "homepage": "https://github.com/wttech/acm/tree/main/tools/mcp-server#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wttech/acm.git",
-    "directory": "mcp-server"
+    "directory": "tools/mcp-server"
   },
   "bugs": {
     "url": "https://github.com/wttech/acm/issues"

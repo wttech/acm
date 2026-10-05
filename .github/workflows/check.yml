@@ -3,14 +3,45 @@ name: Check
 on:
   push:
     branches: [ main ]
-    paths-ignore: ['**.md', 'docs/**', 'mcp-server/**', '.github/workflows/mcp-server.yml']
+    paths-ignore: ['**.md', 'docs/**']
   pull_request:
     branches: [ main ]
-    paths-ignore: ['**.md', 'docs/**', 'mcp-server/**', '.github/workflows/mcp-server.yml']
+    paths-ignore: ['**.md', 'docs/**']
 
 jobs:
-  build:
-    name: Check
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      acm: ${{ steps.filter.outputs.acm }}
+      mcp-server: ${{ steps.filter.outputs.mcp-server }}
+      vscode-extension: ${{ steps.filter.outputs.vscode-extension }}
+      workflow: ${{ steps.filter.outputs.workflow }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Filter Paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          # Every pattern of a filter must match, so each filter has a single positive pattern.
+          predicate-quantifier: every
+          filters: |
+            acm:
+              - '**'
+              - '!tools/**'
+            mcp-server: 'tools/{mcp-server,shared}/**'
+            vscode-extension: 'tools/{vscode-extension,shared}/**'
+            workflow: '.github/workflows/check.yml'
+
+  acm:
+    name: ACM
+    needs: changes
+    if: needs.changes.outputs.acm == 'true' || needs.changes.outputs.workflow == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -35,3 +66,66 @@ jobs:
 
       - name: Build Code
         run: mvn -B clean package verify
+
+  mcp-server:
+    name: MCP Server (Node ${{ matrix.node }})
+    needs: changes
+    if: needs.changes.outputs.mcp-server == 'true' || needs.changes.outputs.workflow == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ 22, 24 ]
+    defaults:
+      run:
+        working-directory: tools/mcp-server
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: tools/mcp-server/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build & Test
+        run: npm test
+
+  vscode-extension:
+    name: VS Code Extension
+    needs: changes
+    if: needs.changes.outputs.vscode-extension == 'true' || needs.changes.outputs.workflow == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/vscode-extension
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/vscode-extension/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Package
+        run: npm run package
+
+      - name: Upload VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: acm-vscode-extension
+          path: tools/vscode-extension/*.vsix
+          retention-days: 14

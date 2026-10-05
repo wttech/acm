@@ -3,7 +3,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      # Digit after 'v' so tool tags such as 'vscode-extension-v*' do not trigger an ACM release.
+      - 'v[0-9]*'
 
 jobs:
   test:

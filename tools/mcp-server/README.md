@@ -178,7 +178,7 @@ By default only administrators have access. See [Tools Access Configuration](htt
 ## Development
 
 ```bash
-cd mcp-server
+cd tools/mcp-server
 npm install
 npm test          # builds, then runs the end-to-end tests
 ```
@@ -195,7 +195,7 @@ cp .env.example .env     # set AEM_BASE_URL and ONE auth option
 npm run smoke
 ```
 
-To run a local build from an MCP client, point it at `node /path/to/acm/mcp-server/dist/index.js` instead of `npx`.
+To run a local build from an MCP client, point it at `node /path/to/acm/tools/mcp-server/dist/index.js` instead of `npx`.
 
 ## Releasing
 
@@ -221,7 +221,7 @@ The [MCP Server workflow](https://github.com/wttech/acm/blob/main/.github/workfl
 
 npm trusted publishing can only be configured for a package that already exists, so the first version is published by hand:
 
-1. Log in with an account that can publish to the `@wppes` scope, then run `npm ci && npm publish` in `mcp-server/`.
+1. Log in with an account that can publish to the `@wppes` scope, then run `npm ci && npm publish` in `tools/mcp-server/`.
 2. On npmjs.com, open the package's settings and add a trusted publisher: GitHub Actions, organization `wttech`, repository `acm`, workflow `mcp-server.yml`.
 3. Optionally, set publishing access to require two-factor authentication and disallow tokens, so only the workflow can publish.
 4. Push the `mcp-server-v<version>` tag for that version. The workflow skips the npm step and publishes to the MCP Registry.

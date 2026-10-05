@@ -78,6 +78,22 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
+import {
+  type AcmAuth,
+  AcmClient,
+  CONSOLE_CODE_ID,
+  type Execution,
+  type ExecutionListOutput,
+  type QueueOutput,
+  fetchConsoleOutput,
+  fetchExecutionById,
+  isFailed,
+  isPending,
+  normalizeCookie,
+  normalizeGroovy,
+  summarizeExecution,
+} from "@acm/shared";
+
 /* ============================================================================
  * Configuration
  * ========================================================================== */
@@ -96,13 +112,6 @@ interface Config {
   runTimeoutMs: number;
   pollIntervalMs: number;
   httpTimeoutMs: number;
-}
-
-/** Accepts either a bare `login-token` value or a full `name=value` pair. */
-function normalizeCookie(raw: string | undefined): string | undefined {
-  const value = raw?.trim();
-  if (!value) return undefined;
-  return value.includes("=") ? value : `login-token=${value}`;
 }
 
 function loadConfig(): Config {
@@ -151,333 +160,59 @@ function loadConfig(): Config {
 const config = loadConfig();
 
 /* ============================================================================
- * ACM types (mirroring dev.vml.es.acm.core servlet contracts)
+ * ACM client (shared with other ACM tools, see tools/shared)
  * ========================================================================== */
 
-/** Standard ACM API envelope: { status, message, data } */
-interface ApiResponse<T = unknown> {
-  status: number;
-  message: string;
-  data: T;
-}
-
-interface Execution {
-  id: string;
-  userId?: string;
-  status: ExecutionStatus | string;
-  startDate?: string;
-  endDate?: string;
-  duration?: number;
-  output?: string;
-  error?: string | null;
-  executable?: { id: string; content?: string };
-  instance?: unknown;
-  [key: string]: unknown;
-}
-
-type ExecutionStatus =
-  | "QUEUED"
-  | "ACTIVE"
-  | "PARSING"
-  | "CHECKING"
-  | "RUNNING"
-  | "STOPPED"
-  | "ABORTED"
-  | "SKIPPED"
-  | "LOCKED"
-  | "FAILED"
-  | "SUCCEEDED";
-
-const PENDING_STATUSES = new Set(["QUEUED", "ACTIVE", "PARSING", "CHECKING", "RUNNING"]);
-
-function isPending(status: string | undefined): boolean {
-  return !!status && PENDING_STATUSES.has(status.toUpperCase());
-}
-
-const FAILED_STATUSES = new Set(["FAILED", "ABORTED", "LOCKED"]);
-
-function isFailed(status: string | undefined): boolean {
-  return !!status && FAILED_STATUSES.has(status.toUpperCase());
-}
-
-interface QueueOutput {
-  executions: Execution[];
-}
-
-interface ExecutionListOutput {
-  list: Execution[];
-  [key: string]: unknown;
-}
-
-/* ============================================================================
- * HTTP client with bearer / cookie(+CSRF) / basic auth
- * ========================================================================== */
-
-class AcmHttpError extends Error {
-  constructor(
-    public readonly httpStatus: number,
-    message: string,
-    public readonly body?: string
-  ) {
-    super(message);
-  }
-}
-
-class AcmClient {
-  private csrfToken: string | null = null;
-  private csrfTokenCookie: string | undefined;
-
-  constructor(private readonly cfg: Config) {}
-
-  get baseUrl(): string {
-    return this.cfg.baseUrl;
-  }
-
-  get authDescription(): string {
-    switch (this.cfg.authMode) {
-      case "bearer":
-        return "Bearer token (IMS user token)";
-      case "cookie":
-        return "Browser login-token cookie (+ CSRF token)";
-      case "basic":
-        return `Basic auth (user: ${this.cfg.user})`;
-    }
-  }
-
-  private baseHeaders(): Record<string, string> {
-    const h: Record<string, string> = {
-      Accept: "application/json",
-      // Some environments enable the Sling referrer filter for non-GET
-      // requests; sending a same-origin Referer is the standard workaround.
-      Referer: this.cfg.baseUrl + "/",
-    };
-    switch (this.cfg.authMode) {
-      case "bearer":
-        h["Authorization"] = `Bearer ${this.cfg.token}`;
-        break;
-      case "cookie": {
-        const cookie = this.currentCookie();
-        if (!cookie) {
-          throw new AcmHttpError(
-            401,
-            this.cfg.cookieFile
-              ? `No login-token in ${this.cfg.cookieFile}. Write a fresh login-token value to it, or set AEM_COOKIE.`
-              : "No login-token. Set AEM_COOKIE, or AEM_COOKIE_FILE pointing at a file holding the value."
-          );
-        }
-        h["Cookie"] = cookie;
-        break;
-      }
-      case "basic":
-        h["Authorization"] =
-          "Basic " + Buffer.from(`${this.cfg.user}:${this.cfg.password}`).toString("base64");
-        break;
-    }
-    return h;
-  }
-
-  /**
-   * The cookie in use right now. AEM_COOKIE_FILE is re-read on every call, so a
-   * token refreshed on disk is picked up without restarting the server.
-   */
-  private currentCookie(): string | undefined {
-    if (this.cfg.cookieFile) {
-      try {
-        const fromFile = normalizeCookie(readFileSync(this.cfg.cookieFile, "utf8"));
-        if (fromFile) return fromFile;
-      } catch {
-        // unreadable or not written yet — fall back to AEM_COOKIE below
-      }
-    }
-    return this.cfg.cookie;
-  }
-
-  /** Cookie-authenticated POST/DELETE on AEM require a Granite CSRF token. */
-  private async ensureCsrfToken(force = false, timeoutMs?: number): Promise<string | null> {
-    if (this.cfg.authMode !== "cookie") return null;
-    const cookie = this.currentCookie();
-    // A CSRF token belongs to one session, so a refreshed cookie invalidates it.
-    if (cookie !== this.csrfTokenCookie) this.csrfToken = null;
-    if (this.csrfToken && !force) return this.csrfToken;
-    const res = await this.rawFetch(
-      "/libs/granite/csrf/token.json",
-      { method: "GET", headers: this.baseHeaders() },
-      timeoutMs
-    );
-    if (!res.ok) {
-      throw new AcmHttpError(
-        res.status,
-        `Failed to obtain CSRF token (HTTP ${res.status}). The login-token cookie may have expired — copy a fresh one from the browser.`
-      );
-    }
-    const json = (await res.json()) as { token?: string };
-    this.csrfToken = json.token || null;
-    this.csrfTokenCookie = cookie;
-    return this.csrfToken;
-  }
-
-  private async rawFetch(path: string, init: RequestInit, timeoutMs = this.cfg.httpTimeoutMs): Promise<Response> {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+/**
+ * The cookie in use right now. AEM_COOKIE_FILE is re-read on every call, so a
+ * token refreshed on disk is picked up without restarting the server.
+ */
+function currentCookie(cfg: Config): string | undefined {
+  if (cfg.cookieFile) {
     try {
-      return await fetch(this.cfg.baseUrl + path, { ...init, signal: controller.signal });
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
-  /**
-   * Perform a request against an ACM endpoint and unwrap the
-   * { status, message, data } envelope. Throws AcmHttpError with a
-   * human-actionable message on auth failures.
-   */
-  async request<T>(
-    method: "GET" | "POST" | "DELETE",
-    path: string,
-    body?: unknown,
-    retryOnCsrf = true,
-    timeoutMs?: number
-  ): Promise<ApiResponse<T>> {
-    // A timeout bounds the whole call, CSRF fetch and retry included.
-    const deadline = timeoutMs !== undefined ? Date.now() + timeoutMs : undefined;
-    const remaining = () => (deadline !== undefined ? Math.max(1, deadline - Date.now()) : undefined);
-    const headers = this.baseHeaders();
-    if (method !== "GET") {
-      const csrf = await this.ensureCsrfToken(false, remaining());
-      if (csrf) headers["CSRF-Token"] = csrf;
-      if (body !== undefined) headers["Content-Type"] = "application/json";
-    }
-
-    const res = await this.rawFetch(path, {
-      method,
-      headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-    }, remaining());
-
-    const text = await res.text();
-
-    if (res.status === 401) {
-      throw new AcmHttpError(
-        401,
-        this.cfg.authMode === "bearer"
-          ? "401 Unauthorized — the bearer token is invalid or expired. AEMaaCS local development tokens expire after 24h: fetch a fresh one from Cloud Manager → Developer Console → Integrations → Local token, and update AEM_TOKEN."
-          : this.cfg.authMode === "cookie"
-            ? "401 Unauthorized — the login-token cookie is invalid or expired. Log into AEM author in the browser and copy a fresh cookie into AEM_COOKIE."
-            : "401 Unauthorized — check AEM_USER / AEM_PASSWORD.",
-        text
-      );
-    }
-    if (res.status === 403) {
-      // Could be missing ACM permissions (3-level: api node, feature node,
-      // script path) — or, in cookie mode, a stale CSRF token.
-      if (this.cfg.authMode === "cookie" && retryOnCsrf && method !== "GET") {
-        await this.ensureCsrfToken(true, remaining());
-        return this.request<T>(method, path, body, false, remaining());
-      }
-      throw new AcmHttpError(
-        403,
-        `403 Forbidden for ${path}. The user behind the credentials likely lacks ACM permissions. ACM authorizes at three levels (jcr:read required on each): the API node under /apps/acm/api, the feature node under /apps/acm/feature, and the script path under /conf/acm/settings/script. By default only administrators have access.`,
-        text
-      );
-    }
-
-    let json: ApiResponse<T>;
-    try {
-      json = JSON.parse(text) as ApiResponse<T>;
+      const fromFile = normalizeCookie(readFileSync(cfg.cookieFile, "utf8"));
+      if (fromFile) return fromFile;
     } catch {
-      throw new AcmHttpError(
-        res.status,
-        `Non-JSON response (HTTP ${res.status}) from ${path}. Is ACM installed on this instance? First 500 chars:\n${text.slice(0, 500)}`,
-        text
-      );
+      // unreadable or not written yet — fall back to AEM_COOKIE below
     }
-
-    if (!res.ok) {
-      throw new AcmHttpError(res.status, json.message || `HTTP ${res.status} from ${path}`, text);
-    }
-    return json;
   }
+  return cfg.cookie;
+}
 
-  /** GET that returns the raw body as text (for execution output download). */
-  async requestRaw(path: string): Promise<{ status: number; contentType: string; text: string }> {
-    const res = await this.rawFetch(path, { method: "GET", headers: this.baseHeaders() });
-    const text = await res.text();
-    if (res.status === 401 || res.status === 403) {
-      throw new AcmHttpError(res.status, `HTTP ${res.status} fetching ${path}`, text);
-    }
-    return { status: res.status, contentType: res.headers.get("content-type") || "", text };
+function createAuth(cfg: Config): AcmAuth {
+  switch (cfg.authMode) {
+    case "bearer":
+      return { mode: "bearer", token: cfg.token ?? "" };
+    case "cookie":
+      return { mode: "cookie", cookie: () => currentCookie(cfg) };
+    case "basic":
+      return { mode: "basic", user: cfg.user ?? "", password: cfg.password ?? "" };
   }
 }
 
-const client = new AcmClient(config);
+const UNAUTHORIZED_MESSAGES: Record<AuthMode, string> = {
+  bearer:
+    "401 Unauthorized — the bearer token is invalid or expired. AEMaaCS local development tokens expire after 24h: fetch a fresh one from Cloud Manager → Developer Console → Integrations → Local token, and update AEM_TOKEN.",
+  cookie:
+    "401 Unauthorized — the login-token cookie is invalid or expired. Log into AEM author in the browser and copy a fresh cookie into AEM_COOKIE.",
+  basic: "401 Unauthorized — check AEM_USER / AEM_PASSWORD.",
+};
+
+const client = new AcmClient({
+  baseUrl: config.baseUrl,
+  auth: createAuth(config),
+  timeoutMs: config.httpTimeoutMs,
+  messages: {
+    unauthorized: UNAUTHORIZED_MESSAGES[config.authMode],
+    missingCookie: config.cookieFile
+      ? `No login-token in ${config.cookieFile}. Write a fresh login-token value to it, or set AEM_COOKIE.`
+      : "No login-token. Set AEM_COOKIE, or AEM_COOKIE_FILE pointing at a file holding the value.",
+  },
+});
 
 /* ============================================================================
  * ACM operations
  * ========================================================================== */
-
-const CONSOLE_CODE_ID = "console";
-
-/** Wrap bare Groovy in the canRun/doRun contract if the user didn't. */
-function normalizeGroovy(code: string): string {
-  if (/\bvoid\s+doRun\s*\(/.test(code)) return code;
-  const indented = code
-    .split("\n")
-    .map((l) => (l.trim() ? "    " + l : l))
-    .join("\n");
-  return `boolean canRun() {\n    return conditions.always()\n}\n\nvoid doRun() {\n${indented}\n}`;
-}
-
-async function fetchExecutionById(executionId: string): Promise<Execution | null> {
-  // 1) Try the queue (covers QUEUED/RUNNING and just-finished jobs).
-  try {
-    const q = await client.request<QueueOutput>(
-      "GET",
-      `/apps/acm/api/queue-code.json?executionId=${encodeURIComponent(executionId)}`
-    );
-    const found = q.data?.executions?.find((e) => e.id === executionId);
-    if (found) return found;
-  } catch (e) {
-    if (!(e instanceof AcmHttpError && e.httpStatus === 404)) throw e;
-  }
-  // 2) Fall back to execution history.
-  try {
-    const h = await client.request<ExecutionListOutput>(
-      "GET",
-      `/apps/acm/api/execution.json?id=${encodeURIComponent(executionId)}&format=full`
-    );
-    const list = h.data?.list || [];
-    return list.find((e) => e.id === executionId) || list[0] || null;
-  } catch (e) {
-    if (e instanceof AcmHttpError && e.httpStatus === 404) return null;
-    throw e;
-  }
-}
-
-async function fetchConsoleOutput(executionId: string): Promise<string | null> {
-  try {
-    const r = await client.requestRaw(
-      `/apps/acm/api/execution-output.json?executionId=${encodeURIComponent(executionId)}&name=console`
-    );
-    return r.status === 200 ? r.text : null;
-  } catch {
-    return null;
-  }
-}
-
-function summarizeExecution(e: Execution, consoleOutput?: string | null): string {
-  const lines: string[] = [];
-  lines.push(`Execution ID: ${e.id}`);
-  lines.push(`Status:       ${e.status}`);
-  if (e.executable?.id) lines.push(`Executable:   ${e.executable.id}`);
-  if (e.userId) lines.push(`User:         ${e.userId}`);
-  if (e.startDate) lines.push(`Started:      ${e.startDate}`);
-  if (e.endDate) lines.push(`Ended:        ${e.endDate}`);
-  if (e.duration !== undefined) lines.push(`Duration:     ${e.duration} ms`);
-  if (e.error) lines.push(`\n--- ERROR ---\n${e.error}`);
-  const out = consoleOutput ?? e.output;
-  if (out && out.trim()) lines.push(`\n--- OUTPUT ---\n${out}`);
-  return lines.join("\n");
-}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
@@ -620,7 +355,7 @@ server.registerTool(
       const deadline = Date.now() + (waitMs ?? config.runTimeoutMs);
       while (isPending(execution.status) && Date.now() < deadline) {
         await sleep(config.pollIntervalMs);
-        const polled = await fetchExecutionById(execution.id);
+        const polled = await fetchExecutionById(client, execution.id);
         if (polled) execution = polled;
       }
 
@@ -630,7 +365,7 @@ server.registerTool(
         );
       }
 
-      const consoleOut = await fetchConsoleOutput(execution.id);
+      const consoleOut = await fetchConsoleOutput(client, execution.id);
       return textResult(summarizeExecution(execution, consoleOut), isFailed(execution.status));
     } catch (e) {
       return errorResult(e);
@@ -683,9 +418,9 @@ server.registerTool(
   },
   async ({ executionId }) => {
     try {
-      const execution = await fetchExecutionById(executionId);
+      const execution = await fetchExecutionById(client, executionId);
       if (!execution) return textResult(`Execution '${executionId}' not found (queue or history).`, true);
-      const consoleOut = isPending(execution.status) ? null : await fetchConsoleOutput(executionId);
+      const consoleOut = isPending(execution.status) ? null : await fetchConsoleOutput(client, executionId);
       return textResult(summarizeExecution(execution, consoleOut));
     } catch (e) {
       return errorResult(e);

@@ -809,7 +809,7 @@ notifier.sendMessage("ACME Project Notifications", "Let's start the day with a c
 
 ## MCP Server
 
-The [ACM MCP server](mcp-server/README.md) connects AI agents such as Claude Code, Claude Desktop, VS Code and Cursor to ACM through the [Model Context Protocol](https://modelcontextprotocol.io). An agent can validate and run Groovy scripts, follow executions, and read history, console output and stored scripts, all as the user whose credentials you configure.
+The [ACM MCP server](tools/mcp-server/README.md) connects AI agents such as Claude Code, Claude Desktop, VS Code and Cursor to ACM through the [Model Context Protocol](https://modelcontextprotocol.io). An agent can validate and run Groovy scripts, follow executions, and read history, console output and stored scripts, all as the user whose credentials you configure.
 
 ```shell
 claude mcp add acm \
@@ -818,7 +818,7 @@ claude mcp add acm \
   -- npx -y @wppes/acm-mcp-server
 ```
 
-See the [MCP server documentation](mcp-server/README.md) for other clients, authentication options and security recommendations.
+See the [MCP server documentation](tools/mcp-server/README.md) for other clients, authentication options and security recommendations.
 
 ## Development
 

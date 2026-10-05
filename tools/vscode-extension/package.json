@@ -1,0 +1,124 @@
+{
+  "name": "acm",
+  "displayName": "AEM Content Manager (ACM)",
+  "description": "Write, validate and run AEM Content Manager (ACM) Groovy scripts from VS Code.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "wttech",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/wttech/acm/tree/main/tools/vscode-extension#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wttech/acm.git",
+    "directory": "tools/vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/wttech/acm/issues"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Other"
+  ],
+  "keywords": [
+    "aem",
+    "adobe-experience-manager",
+    "acm",
+    "groovy"
+  ],
+  "activationEvents": [
+    "onLanguage:groovy"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "acm.run", "title": "Run Script", "category": "ACM", "icon": "$(play)" },
+      { "command": "acm.runSelection", "title": "Run Selection", "category": "ACM" },
+      { "command": "acm.validate", "title": "Validate Script", "category": "ACM", "icon": "$(check)" },
+      { "command": "acm.describe", "title": "Describe Inputs", "category": "ACM" },
+      { "command": "acm.abort", "title": "Abort Execution", "category": "ACM", "icon": "$(debug-stop)" },
+      { "command": "acm.selectInstance", "title": "Select Instance", "category": "ACM" },
+      { "command": "acm.setCredentials", "title": "Set Credentials", "category": "ACM" },
+      { "command": "acm.checkConnection", "title": "Check Connection", "category": "ACM" },
+      { "command": "acm.refreshExecutions", "title": "Refresh Executions", "category": "ACM", "icon": "$(refresh)" },
+      { "command": "acm.refreshScripts", "title": "Refresh Scripts", "category": "ACM", "icon": "$(refresh)" }
+    ],
+    "menus": {
+      "editor/title": [
+        { "command": "acm.run", "when": "editorLangId == groovy", "group": "navigation" }
+      ],
+      "editor/context": [
+        { "command": "acm.runSelection", "when": "editorLangId == groovy && editorHasSelection", "group": "acm" }
+      ],
+      "view/title": [
+        { "command": "acm.refreshExecutions", "when": "view == acm.executions", "group": "navigation" },
+        { "command": "acm.refreshScripts", "when": "view == acm.scripts", "group": "navigation" }
+      ]
+    },
+    "configuration": {
+      "title": "ACM",
+      "properties": {
+        "acm.instances": {
+          "type": "array",
+          "default": [],
+          "markdownDescription": "AEM instances with ACM installed. Secrets are not stored here; use `ACM: Set Credentials`.",
+          "items": {
+            "type": "object",
+            "required": ["name", "url", "authMode"],
+            "properties": {
+              "name": { "type": "string", "description": "Display name, e.g. local, dev, prod." },
+              "url": { "type": "string", "description": "AEM author URL, e.g. http://localhost:4502." },
+              "authMode": { "type": "string", "enum": ["bearer", "cookie", "basic"] },
+              "user": { "type": "string", "description": "User for basic auth." },
+              "readonly": { "type": "boolean", "default": false, "description": "Block running code on this instance." }
+            }
+          }
+        },
+        "acm.activeInstance": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the instance used by commands."
+        },
+        "acm.validateOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Compile-check Groovy scripts on the active instance when saved."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        { "id": "acm", "title": "ACM", "icon": "media/acm.svg" }
+      ]
+    },
+    "views": {
+      "acm": [
+        { "id": "acm.executions", "name": "Executions" },
+        { "id": "acm.scripts", "name": "Scripts" }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "acm.executions",
+        "contents": "No ACM instance selected.\n[Select Instance](command:acm.selectInstance)"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "vscode:prepublish": "node esbuild.mjs --production",
+    "package": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\" && vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.20",
+    "@types/vscode": "^1.95.0",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.3"
+  }
+}
