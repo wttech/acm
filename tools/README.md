@@ -13,7 +13,8 @@ ACM itself is tagged `v<version>`.
 
 ```
 tools/
-  shared/             # ACM domain in TypeScript: API paths, types, client, DSL catalog. Not a package.
+  shared/             # ACM domain in TypeScript: API paths, types, client, script API catalog. Not a package.
+  skills/             # Agent Skills (agentskills.io), bundled into the tools
   mcp-server/         # own package.json, lock file and version
   vscode-extension/   # own package.json, lock file and version
 ```
@@ -28,15 +29,40 @@ Rules for `shared/`:
 
 - No runtime dependencies and no Node- or VS Code-specific APIs; use globals available in both (`fetch`, `URL`, `AbortController`).
 - No configuration loading. Tools pass configuration in (environment variables in the MCP server, settings and secret storage in VS Code).
-- Keep `catalog/` in sync with the Groovy API in `core/` (`ContentScriptSyntax`, `Inputs`, `Outputs`, `CodeContext`, `ExecutionContext`).
+
+## Generated script API
+
+[codegen.mjs](shared/codegen.mjs) reads the Java sources in `core/` and writes the API available to Groovy scripts (variables, script methods, inputs, outputs and the public methods of the related classes):
+
+- [shared/src/catalog/api.json](shared/src/catalog/api.json), used for completion and hover in the VS Code extension;
+- [skills/acm-groovy-script/references/api.md](skills/acm-groovy-script/references/api.md), the API reference agents read.
+
+It is a dependency-free Node script that runs on every `ui.frontend` build, so a regular Maven build keeps both files current. To run it alone:
+
+```shell
+node tools/shared/codegen.mjs
+```
+
+Commit the regenerated files together with the Java change. Prose (docs and snippets for script methods and variables) lives in [entries.ts](shared/src/catalog/entries.ts) and the skill.
+
+## Skills
+
+[acm-groovy-script](skills/acm-groovy-script/SKILL.md) is the single source of guidance for agents writing ACM scripts. It is distributed through:
+
+- the MCP server: its essentials as server instructions, the full guide as the `acm-groovy-script` prompt, and all documents as `acm://skill/...` resources;
+- the VS Code extension: contributed to Copilot with `chatSkills`;
+- a plain copy of the folder into `.github/skills/`, `.claude/skills/` or `.agents/skills/` for other agents.
+
+`evals/` holds prompts and expected results for checking the skill with an agent; it is not shipped.
 
 ## CI
 
 [Check](../.github/workflows/check.yml) runs on every pull request and push to `main`. It detects changed paths and runs only the affected jobs, so one pull request can touch ACM and any tool:
 
 - `ACM`: Maven build, for changes outside `tools/`.
-- `MCP Server`: tests on Node 22 and 24, for `tools/mcp-server/**` and `tools/shared/**`.
-- `VS Code Extension`: type check and packaging, for `tools/vscode-extension/**` and `tools/shared/**`. The `.vsix` is uploaded as a build artifact.
+- `Codegen`: regenerates the script API and fails if the committed files are outdated. Always runs.
+- `MCP Server`: tests on Node 22 and 24, for `tools/mcp-server/**`, `tools/shared/**` and `tools/skills/**`.
+- `VS Code Extension`: type check and packaging, for `tools/vscode-extension/**`, `tools/shared/**` and `tools/skills/**`. The `.vsix` is uploaded as a build artifact.
 
 ## Releasing
 

@@ -91,6 +91,9 @@ import {
   isPending,
   normalizeCookie,
   normalizeGroovy,
+  SKILL_DOCUMENTS,
+  SKILL_ESSENTIALS,
+  SKILL_NAME,
   summarizeExecution,
 } from "@acm/shared";
 
@@ -226,10 +229,21 @@ const { version } = JSON.parse(readFileSync(new URL("../package.json", import.me
   version: string;
 };
 
-const server = new McpServer({
-  name: "acm-mcp-server",
-  version,
-});
+const skillUri = (path: string) => `acm://skill/${path}`;
+
+const server = new McpServer(
+  {
+    name: "acm-mcp-server",
+    version,
+  },
+  {
+    instructions: [
+      "Tools for running Groovy code on AEM through AEM Content Manager (ACM). Follow these rules when writing ACM code:",
+      SKILL_ESSENTIALS,
+      `The full guide is the '${SKILL_NAME}' prompt. Its references, including the generated API reference, are resources: ${SKILL_DOCUMENTS.map((d) => skillUri(d.path)).join(", ")}.`,
+    ].join("\n\n"),
+  }
+);
 
 function textResult(text: string, isError = false) {
   return { content: [{ type: "text" as const, text }], isError };
@@ -609,14 +623,14 @@ server.registerTool(
 );
 
 /* ============================================================================
- * Prompt: ACM Groovy conventions (helps the model write valid scripts)
+ * Skill: ACM Groovy scripting guide (tools/skills), as a prompt and resources
  * ========================================================================== */
 
 server.registerPrompt(
-  "acm-scripting-guide",
+  SKILL_NAME,
   {
-    title: "ACM Groovy scripting conventions",
-    description: "Cheat sheet for writing ACM-compatible Groovy scripts.",
+    title: "ACM Groovy scripting guide",
+    description: "How to write, validate and run ACM Groovy scripts safely.",
   },
   () => ({
     messages: [
@@ -624,21 +638,21 @@ server.registerPrompt(
         role: "user" as const,
         content: {
           type: "text" as const,
-          text: [
-            "When writing Groovy for ACM (AEM Content Manager, wttech/acm), follow these conventions:",
-            "",
-            "Structure: scripts define `boolean canRun()` (use `conditions.always()` for ad-hoc runs) and `void doRun()`; optional `void describeRun()` declares inputs via the `inputs` service.",
-            "Output: `println` for plain text; `out.info/success/warn/error` for timestamped console messages; `log.*` also writes to AEM logs. Generated files: `outputs.file(name){...}` / `outputs.text(name){...}`.",
-            "Repository: prefer the `repo` service (`repo.get(path)`, `.ensureFolder()`, `.save(props)`, `.query(...)`, `repo.dryRun(boolean){...}`) over raw JCR APIs.",
-            "Permissions: use the idempotent `acl` service (`acl.createUser{...}`, `acl.createGroup{...}`, `allow(path, perms)`).",
-            "Long loops: call `context.checkAborted()` periodically so executions can be aborted gracefully.",
-            "Safety: for destructive changes default to a `dryRun` boolean input set to true, wrap mutations in `repo.dryRun(...)`, and print a summary of what would change.",
-          ].join("\n"),
+          text: `${SKILL_DOCUMENTS[0].text}\n\nReferences are available as MCP resources under ${skillUri("")}.`,
         },
       },
     ],
   })
 );
+
+for (const doc of SKILL_DOCUMENTS) {
+  server.registerResource(
+    doc.path,
+    skillUri(doc.path),
+    { title: doc.title, description: doc.description, mimeType: "text/markdown" },
+    (uri) => ({ contents: [{ uri: uri.href, mimeType: "text/markdown", text: doc.text }] })
+  );
+}
 
 /* ============================================================================
  * Bootstrap

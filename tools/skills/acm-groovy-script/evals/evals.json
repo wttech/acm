@@ -1,0 +1,29 @@
+{
+  "skill_name": "acm-groovy-script",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write an ACM script to remove the legacyProp property from all product pages under /content/acme.",
+      "expected_output": "Manual script with rootPath and dryRun inputs (dryRun true by default), canRun returning conditions.always(), writes wrapped in repo.dryRun, a query by node type and sling:resourceType condition, deleteProperty (not removeProperty), context.checkAborted() in the loop, start and summary log lines.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Give the editors group read access to /content/dam/acme, applied automatically on deployment.",
+      "expected_output": "Automatic script with conditions.changed() (optionally && isInstanceAuthor()), acl.createGroup with skipIfExists() or acl.getGroup, permissions set via allow { path = ...; permissions = ['jcr:read'] }, no purge(), logging.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Create a nightly ACM job that deletes workflow instances older than 30 days.",
+      "expected_output": "Automatic script with scheduleRun returning schedules.cron(...) with seconds field, a suitable canRun, a query or Java API call limited to completed instances older than the cutoff, context.checkAborted() in loops, a dryRun option or an explicit note about it, progress and summary logging. Uses only methods present in the API reference.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Export a CSV of all pages under /content/acme/en with their template and last modified date.",
+      "expected_output": "Manual script with an outputs.file report (label, downloadName, report.out.println), CSV values escaped, context.checkAborted(), a text summary output, read-only (no dryRun needed).",
+      "files": []
+    }
+  ]
+}

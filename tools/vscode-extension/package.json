@@ -105,6 +105,9 @@
         "view": "acm.executions",
         "contents": "No ACM instance selected.\n[Select Instance](command:acm.selectInstance)"
       }
+    ],
+    "chatSkills": [
+      { "path": "./skills/acm-groovy-script/SKILL.md" }
     ]
   },
   "scripts": {

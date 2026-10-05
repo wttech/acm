@@ -34,9 +34,29 @@ jobs:
             acm:
               - '**'
               - '!tools/**'
-            mcp-server: 'tools/{mcp-server,shared}/**'
-            vscode-extension: 'tools/{vscode-extension,shared}/**'
+            mcp-server: 'tools/{mcp-server,shared,skills}/**'
+            vscode-extension: 'tools/{vscode-extension,shared,skills}/**'
             workflow: '.github/workflows/check.yml'
+
+  codegen:
+    name: Codegen
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check Generated Script API Is Up To Date
+        run: |
+          node tools/shared/codegen.mjs
+          git diff --exit-code -- tools || {
+            echo "::error::The ACM script API changed. Run 'node tools/shared/codegen.mjs' (or build ui.frontend) and commit the result."
+            exit 1
+          }
 
   acm:
     name: ACM

@@ -87,7 +87,10 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
       - [Example snippet](#example-snippet)
     - [Mocks](#mocks)
     - [Notifications](#notifications)
-  - [MCP Server](#mcp-server)
+  - [AI and IDE tools](#ai-and-ide-tools)
+    - [MCP server](#mcp-server)
+    - [VS Code extension](#vs-code-extension)
+    - [Agent skill](#agent-skill)
   - [Development](#development)
   - [Releasing](#releasing)
   - [Authors](#authors)
@@ -344,8 +347,8 @@ boolean canRun() {
 
 void doRun() {
     out.info "Removing deprecated properties from pages..."
-    repo.get("/content/acme").query("n.[sling:resourceType=acme/component/page]").each { page ->
-        page.removeProperty("deprecatedProperty")
+    repo.get("/content/acme").query("cq:PageContent", "n.[sling:resourceType] = 'acme/component/page'").forEach { page ->
+        page.deleteProperty("deprecatedProperty")
     }
     out.success "Removed deprecated properties successfully."
 }
@@ -807,9 +810,13 @@ notifier.sendMessageTo("acme", "ACME Project Notifications", "An important event
 notifier.sendMessage("ACME Project Notifications", "Let's start the day with a coffee!") // uses the 'default' notifier
 ```
 
-## MCP Server
+## AI and IDE tools
 
-The [ACM MCP server](tools/mcp-server/README.md) connects AI agents such as Claude Code, Claude Desktop, VS Code and Cursor to ACM through the [Model Context Protocol](https://modelcontextprotocol.io). An agent can validate and run Groovy scripts, follow executions, and read history, console output and stored scripts, all as the user whose credentials you configure.
+ACM comes with [tools](tools/README.md) that bring script development into your editor and AI agent. They are versioned and released separately from ACM.
+
+### MCP server
+
+The [ACM MCP server](tools/mcp-server/README.md) connects AI agents such as Claude Code, Claude Desktop, VS Code (Copilot) and Cursor to ACM through the [Model Context Protocol](https://modelcontextprotocol.io). An agent can validate and run Groovy scripts, follow executions, and read history, console output and stored scripts, all as the user whose credentials you configure. It also gives the agent the [ACM scripting skill](#agent-skill).
 
 ```shell
 claude mcp add acm \
@@ -818,7 +825,15 @@ claude mcp add acm \
   -- npx -y @wppes/acm-mcp-server
 ```
 
-See the [MCP server documentation](tools/mcp-server/README.md) for other clients, authentication options and security recommendations.
+See the [MCP server documentation](tools/mcp-server/README.md) for VS Code, Cursor and other clients, authentication options and security recommendations.
+
+### VS Code extension
+
+The [ACM extension for VS Code](tools/vscode-extension/README.md) (preview) adds code completion and inline docs for the ACM script API, and contributes the [ACM scripting skill](#agent-skill) to Copilot. Download the `.vsix` from the [releases](https://github.com/wttech/acm/releases?q=vscode-extension) and install it with *Extensions: Install from VSIX...*.
+
+### Agent skill
+
+The [ACM Groovy scripting skill](tools/skills/acm-groovy-script/SKILL.md) teaches AI agents to write correct and safe ACM scripts: script types, dry runs, abortable loops, logging, and a complete [API reference](tools/skills/acm-groovy-script/references/api.md) generated from the ACM source code. The MCP server and the VS Code extension include it. For other agents, copy the [skill folder](tools/skills/acm-groovy-script) into your project's `.github/skills/`, `.claude/skills/` or `.agents/skills/` directory, or into `~/.claude/skills/` to use it everywhere.
 
 ## Development
 

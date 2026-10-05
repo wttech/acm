@@ -20,8 +20,8 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 
 ### Editing
 
-- [~] **Completion.** Lifecycle methods (`describeRun`, `canRun`, `doRun`, `scheduleRun`) as snippets, script variables, `inputs.*` and `outputs.*` from the shared catalog. Next: options inside input and output closures; dynamic suggestions from `assist-code` (Java classes, variables, snippets, JCR paths in strings).
-- [~] **Inline docs.** Hover for lifecycle methods and variables. Next: `inputs.*`/`outputs.*` by receiver, Java classes from `assist-code`, links to ACM docs.
+- [~] **Completion.** Lifecycle methods as snippets, script variables, and the methods of each variable (`repo.`, `acl.`, `inputs.`, …) from the API generated from the ACM source. Next: chained calls (`repo.get(…).`), options inside input and output closures; dynamic suggestions from `assist-code` (Java classes, variables, snippets, JCR paths in strings).
+- [~] **Inline docs.** Hover for lifecycle methods, variables and their methods. Next: Java classes from `assist-code`, links to ACM docs.
 - [ ] **Validation.** On save, compile-check on the active instance (`execute-code`, `mode=parse`) and show errors as diagnostics with line and column. Locally, warn about missing required methods (`canRun`, `doRun`) and misspelled lifecycle methods.
 - [~] **CodeLens.** `Run | Validate` above `doRun`, `Describe inputs` above `describeRun`.
 - [ ] **Snippets.** Static snippets plus snippets from the instance (`snippet`).
@@ -35,6 +35,7 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 
 ### AI
 
+- [x] **Scripting skill.** The ACM Groovy scripting skill from `tools/skills` is contributed to Copilot with `chatSkills`.
 - [ ] **MCP server provider.** Register the ACM MCP server for the active instance with `vscode.lm.registerMcpServerDefinitionProvider`, so Copilot agent mode gets ACM tools without manual setup. Needs VS Code 1.101+; feature-detect to keep older editors working.
 
 ### Onboarding

@@ -9,5 +9,6 @@ await esbuild.build({
   target: 'node22',
   outfile: 'dist/index.js',
   external: ['@modelcontextprotocol/sdk', 'zod'],
+  loader: { '.md': 'text' },
   logLevel: 'info',
 });

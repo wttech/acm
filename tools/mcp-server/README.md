@@ -91,6 +91,8 @@ claude mcp add acm \
 }
 ```
 
+Then click **Start** above the server in `mcp.json` (or run **MCP: List Servers** → `acm` → **Start Server**), switch Copilot Chat to **Agent** mode, and make sure the `acm_*` tools are enabled in the tools picker.
+
 ### 3. Check the connection
 
 Ask the agent to call `acm_health`. It reports the target instance, the auth mode, and the ACM instance state.
@@ -120,8 +122,6 @@ Ask the agent to call `acm_health`. It reports the target instance, the auth mod
 | `acm_describe_inputs` | Resolve the inputs a script declares in `describeRun()`: names, types and defaults. ACM runs `describeRun()` to do this, so it counts as running code. |
 | `acm_get_output_file` | Download a named execution output: `console`, or an output created with `outputs.file(...)` / `outputs.text(...)`. |
 
-The server also provides an `acm-scripting-guide` MCP prompt. It is a short summary of ACM Groovy conventions (`canRun()`/`doRun()`, `repo`, `acl`, `out`, `conditions`, `context.checkAborted()`, dry runs) that helps the model write valid scripts.
-
 Bare Groovy snippets are wrapped in the `canRun()`/`doRun()` structure automatically, so `println "hello"` is valid input for `acm_validate_code` and `acm_run_code`.
 
 ### Runs without history
@@ -132,6 +132,14 @@ Every queued run is stored in ACM execution history, so iterating on a script qu
 - is cut off on the client side after `waitMs`, while the script may keep running on AEM.
 
 Use it for short read-only runs or dry runs while you develop a script. Run the final version, and anything that changes content, with the default `history: true` so the change stays auditable.
+
+## Scripting guide
+
+The server ships the [ACM Groovy scripting skill](../skills/acm-groovy-script/SKILL.md), so agents write valid, safe scripts without extra setup:
+
+- **Instructions.** The skill's essentials (never invent API, dry runs, abort checks, validate before running) are sent to the client when it connects. Clients add them to the model's context.
+- **Prompt.** `acm-groovy-script` returns the full guide.
+- **Resources.** The guide and its references are available as `acm://skill/SKILL.md`, `acm://skill/references/api.md` (every ACM variable, class and method, generated from the ACM source), `acm://skill/references/scripts.md` and `acm://skill/references/patterns.md`.
 
 ## Example
 

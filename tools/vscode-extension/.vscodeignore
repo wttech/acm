@@ -1,6 +1,7 @@
 **
 !dist/extension.js
 !media/**
+!skills/**
 !package.json
 !README.md
 !LICENSE

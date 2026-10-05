@@ -3,7 +3,9 @@
 Write, validate and run [AEM Content Manager (ACM)](https://github.com/wttech/acm) Groovy scripts from VS Code.
 
 > [!NOTE]
-> Early preview. Most commands are stubs; see the [roadmap](ROADMAP.md).
+> Early preview. Code completion and inline docs for the ACM script API work offline; most commands are stubs. See the [roadmap](ROADMAP.md).
+
+The extension also contributes the [ACM Groovy scripting skill](../skills/acm-groovy-script/SKILL.md) to Copilot, so agent mode writes ACM scripts with the real API and safe defaults.
 
 ## Installation
 
