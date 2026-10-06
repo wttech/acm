@@ -3,12 +3,15 @@ package dev.vml.es.acm.core.servlet;
 import static dev.vml.es.acm.core.util.ServletResult.*;
 import static dev.vml.es.acm.core.util.ServletUtils.respondJson;
 
+import dev.vml.es.acm.core.code.ExecutionHistoryManager;
 import dev.vml.es.acm.core.event.EventManager;
 import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.state.Permissions;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 import javax.servlet.Servlet;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.ServletResolverConstants;
@@ -52,7 +55,7 @@ public class EventServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            eventManager.triggerEvent(event.name().toLowerCase(), Collections.emptyMap());
+            eventManager.triggerEvent(event.name().toLowerCase(), eventProperties(event, request));
             respondJson(response, ok(String.format("Event '%s' dispatched successfully!", name)));
         } catch (Exception e) {
             LOG.error("Event '{}' cannot be dispatched!", name, e);
@@ -61,5 +64,16 @@ public class EventServlet extends SlingAllMethodsServlet {
                     badRequest(String.format("Event '%s' cannot be dispatched! %s", name, e.getMessage())
                             .trim()));
         }
+    }
+
+    // Only known, per-event params are forwarded; unrecognized request params are never persisted as event properties.
+    private Map<String, Object> eventProperties(EventType event, SlingHttpServletRequest request) {
+        if (event == EventType.HISTORY_CLEAR) {
+            String executableId = request.getParameter(ExecutionHistoryManager.EXECUTABLE_ID_PROP);
+            if (StringUtils.isNotBlank(executableId)) {
+                return Collections.singletonMap(ExecutionHistoryManager.EXECUTABLE_ID_PROP, executableId);
+            }
+        }
+        return Collections.emptyMap();
     }
 }
