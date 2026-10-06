@@ -1,5 +1,6 @@
 import * as esbuild from 'esbuild';
 import { cpSync, rmSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -27,9 +28,26 @@ const ctx = await esbuild.context({
   logLevel: 'info',
 });
 
+// The MCP server registered by the extension, with its npm dependencies bundled in (resolved from this package).
+const mcpCtx = await esbuild.context({
+  entryPoints: ['../mcp-server/src/index.ts'],
+  tsconfig: '../mcp-server/tsconfig.json',
+  bundle: true,
+  format: 'esm',
+  platform: 'node',
+  target: 'node20',
+  outfile: 'dist/mcp-server.mjs',
+  nodePaths: [resolve('node_modules')],
+  loader: { '.md': 'text' },
+  // Bundled CommonJS dependencies may call require().
+  banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
+  minify: production,
+  logLevel: 'info',
+});
+
 if (watch) {
-  await ctx.watch();
+  await Promise.all([ctx.watch(), mcpCtx.watch()]);
 } else {
-  await ctx.rebuild();
-  await ctx.dispose();
+  await Promise.all([ctx.rebuild(), mcpCtx.rebuild()]);
+  await Promise.all([ctx.dispose(), mcpCtx.dispose()]);
 }

@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -150,6 +151,23 @@ public class Executor implements EventListener {
 
     public boolean authorize(Executable executable, ResourceResolver resolver) {
         return isFeatureEnabled(executable, resolver) && isExecutableAvailable(executable, resolver);
+    }
+
+    /** Stored scripts run with their repository content, so script rights never allow running other code. */
+    public Optional<Code> authorizeCode(Code requested, ResourceResolver resolver) {
+        if (requested == null || requested.getId() == null) {
+            return Optional.empty();
+        }
+        Optional<Code> code = Executable.CONSOLE_ID.equals(requested.getId())
+                ? Optional.of(requested)
+                : new ScriptRepository(resolver)
+                        .read(requested.getId())
+                        .map(script -> new Code(script.getId(), script.getContent()));
+        return code.filter(c -> authorize(c, resolver));
+    }
+
+    public boolean authorizeNoHistory(ResourceResolver resolver) {
+        return Permissions.check(Permissions.Feature.CONSOLE_EXECUTE_NOHISTORY, resolver);
     }
 
     private boolean isFeatureEnabled(Executable executable, ResourceResolver resolver) {

@@ -5,7 +5,7 @@ Developer tools for [AEM Content Manager (ACM)](../README.md), released separate
 | Tool | Path | Distribution | Tag |
 |---|---|---|---|
 | MCP server | [mcp-server](mcp-server/README.md) | npm `@wppes/acm-mcp-server` + MCP Registry | `mcp-server-v<version>` |
-| VS Code extension | [vscode-extension](vscode-extension/README.md) | VS Code Marketplace and Open VSX (`wppes.acm`), `.vsix` on GitHub Releases | `vscode-extension-v<version>` |
+| VS Code extension | [vscode-extension](vscode-extension/README.md) | VS Code Marketplace and Open VSX (`wppes.acm`), `.vsix` on GitHub Releases; bundles the MCP server | `vscode-extension-v<version>` |
 
 ACM itself is tagged `v<version>`.
 
@@ -62,7 +62,7 @@ Commit the regenerated files together with the Java change. Prose (docs and snip
 - `ACM`: Maven build, for changes outside `tools/`.
 - `Codegen`: regenerates the script API and fails if the committed files are outdated. Always runs.
 - `MCP Server`: tests on Node 22 and 24, for `tools/mcp-server/**`, `tools/shared/**` and `tools/skills/**`.
-- `VS Code Extension`: type check, lint, smoke test in VS Code (under `xvfb-run`) and packaging, for `tools/vscode-extension/**`, `tools/shared/**` and `tools/skills/**`. The `.vsix` is uploaded as a build artifact.
+- `VS Code Extension`: type check, lint, smoke test in VS Code (under `xvfb-run`) and packaging, for `tools/vscode-extension/**`, `tools/mcp-server/**` (bundled), `tools/shared/**` and `tools/skills/**`. The `.vsix` is uploaded as a build artifact.
 
 ## Releasing
 

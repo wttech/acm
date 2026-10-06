@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { ACM_API, CONSOLE_CODE_ID, type AcmClient } from '@acm/shared';
 
@@ -21,7 +22,7 @@ export async function promptInputs(client: AcmClient, content: string): Promise<
   const inputs = Object.values(res.data?.inputs ?? {});
   const values: Record<string, unknown> = {};
   for (const [index, input] of inputs.entries()) {
-    const value = await promptInput(input, `${input.label || input.name} (${index + 1}/${inputs.length})`);
+    const value = await promptInput(client, input, `${input.label || input.name} (${index + 1}/${inputs.length})`);
     if (value === CANCELLED) {
       return undefined;
     }
@@ -30,7 +31,7 @@ export async function promptInputs(client: AcmClient, content: string): Promise<
   return values;
 }
 
-async function promptInput(input: InputDefinition, title: string): Promise<unknown> {
+async function promptInput(client: AcmClient, input: InputDefinition, title: string): Promise<unknown> {
   const prompt = input.description || undefined;
   switch (input.type) {
     case 'BOOL': {
@@ -73,9 +74,15 @@ async function promptInput(input: InputDefinition, title: string): Promise<unkno
       return text === undefined ? CANCELLED : text;
     }
     case 'FILE':
-    case 'MULTIFILE':
-      // File upload is not supported here, so the declared default is sent.
-      return input.value ?? null;
+    case 'MULTIFILE': {
+      const multiple = input.type === 'MULTIFILE';
+      const files = await vscode.window.showOpenDialog({ title, canSelectMany: multiple, openLabel: 'Upload' });
+      if (!files) {
+        return input.required ? CANCELLED : multiple ? [] : null;
+      }
+      const paths = await uploadFiles(client, files);
+      return multiple ? paths : paths[0];
+    }
     default: {
       const text = await showInput(input, `${title} (JSON)`, (value) => {
         try {
@@ -112,4 +119,15 @@ function showInput(
     validateInput: (text) =>
       input.required && text.trim() === '' ? 'Value is required.' : validate?.(text),
   });
+}
+
+/** Uploads files to ACM's temporary storage; file inputs take the returned repository paths. */
+async function uploadFiles(client: AcmClient, files: vscode.Uri[]): Promise<string[]> {
+  const form = new FormData();
+  for (const file of files) {
+    const name = path.basename(file.fsPath);
+    form.append(name, new Blob([new Uint8Array(await vscode.workspace.fs.readFile(file))]), name);
+  }
+  const res = await client.request<{ files?: string[] }>('POST', ACM_API.file, form);
+  return res.data?.files ?? [];
 }

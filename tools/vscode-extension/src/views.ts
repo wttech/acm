@@ -2,6 +2,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import {
   ACM_API,
+  AcmHttpError,
   fetchConsoleOutput,
   fetchExecutionById,
   isFailed,
@@ -11,12 +12,11 @@ import {
   type Execution,
   type ExecutionListOutput,
 } from '@acm/shared';
-import { getActiveInstance, getClient, getInstances, type AcmInstance } from './instances';
+import { getActiveInstance, getClient, getInstances, getSettings, type AcmInstance } from './instances';
 
 export const SCHEME = 'acm';
 const SCRIPT_ROOT = '/conf/acm/settings/script/';
 const SCRIPT_TYPES = ['MANUAL', 'AUTOMATIC', 'EXTENSION', 'MOCK'];
-const HISTORY_LIMIT = 50;
 
 interface Script {
   id: string;
@@ -89,7 +89,15 @@ abstract class AcmTreeProvider implements vscode.TreeDataProvider<Node> {
     try {
       return await this.fetch(instance, client, node);
     } catch (e) {
-      return [{ kind: 'message', label: e instanceof Error ? e.message : String(e), icon: 'error' }];
+      const unauthorized = e instanceof AcmHttpError && e.httpStatus === 401;
+      return [
+        {
+          kind: 'message',
+          label: e instanceof Error ? e.message : String(e),
+          icon: unauthorized ? 'key' : 'error',
+          command: unauthorized ? { title: 'Set Credentials', command: 'acm.setCredentials' } : undefined,
+        },
+      ];
     }
   }
 
@@ -110,7 +118,7 @@ class ExecutionsProvider extends AcmTreeProvider {
       (await client.request<ExecutionListOutput>('GET', `${ACM_API.execution}?${query}`)).data?.list ?? [];
     const [queued, history] = await Promise.all([
       list('format=summary&queued=true'),
-      list(`format=summary&limit=${HISTORY_LIMIT}`),
+      list(`format=summary&limit=${getSettings().executionsLimit}`),
     ]);
     const executions = [...queued, ...history.filter((e) => !queued.some((q) => q.id === e.id))];
     if (executions.length === 0) {

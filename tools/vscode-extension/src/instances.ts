@@ -21,7 +21,27 @@ const SECRET_LABELS: Record<AcmInstance['authMode'], string> = {
 };
 
 let secrets: vscode.SecretStorage;
-const clients = new Map<string, { secret: string; client: AcmClient }>();
+const clients = new Map<string, { secret: string; timeout: number; client: AcmClient }>();
+
+/** Timings and limits from settings, in milliseconds; defaults are declared in package.json. */
+export interface AcmSettings {
+  httpTimeout: number;
+  runTimeout: number;
+  runPollInterval: number;
+  healthInterval: number;
+  executionsLimit: number;
+}
+
+export function getSettings(): AcmSettings {
+  const config = vscode.workspace.getConfiguration('acm');
+  return {
+    httpTimeout: config.get<number>('http.timeout', 30000),
+    runTimeout: config.get<number>('run.timeout', 120000),
+    runPollInterval: config.get<number>('run.pollInterval', 1000),
+    healthInterval: config.get<number>('health.interval', 60000),
+    executionsLimit: config.get<number>('executions.limit', 50),
+  };
+}
 
 export function initInstances(context: vscode.ExtensionContext): void {
   secrets = context.secrets;
@@ -91,28 +111,36 @@ export async function setCredentials(instance: AcmInstance): Promise<boolean> {
   return true;
 }
 
+/** The token, cookie or password of the instance; with `interactive`, asks for it when missing. */
+export async function getSecret(instance: AcmInstance, interactive = true): Promise<string | undefined> {
+  const secret = (await secrets.get(secretKey(instance))) ?? defaultSecret(instance);
+  if (!secret && interactive && (await setCredentials(instance))) {
+    return secrets.get(secretKey(instance));
+  }
+  return secret;
+}
+
 /** Builds a client for the instance; with `interactive`, asks for missing credentials. */
 export async function getClient(instance: AcmInstance, interactive = true): Promise<AcmClient | undefined> {
-  let secret = (await secrets.get(secretKey(instance))) ?? defaultSecret(instance);
-  if (!secret && interactive && (await setCredentials(instance))) {
-    secret = await secrets.get(secretKey(instance));
-  }
+  const secret = await getSecret(instance, interactive);
   if (!secret) {
     return undefined;
   }
   const key = secretKey(instance);
+  const timeout = getSettings().httpTimeout;
   const cached = clients.get(key);
-  if (cached?.secret === secret) {
+  if (cached?.secret === secret && cached.timeout === timeout) {
     return cached.client;
   }
   const client = new AcmClient({
     baseUrl: instance.url,
     auth: toAuth(instance, secret),
+    timeoutMs: timeout,
     messages: {
       unauthorized: `401 Unauthorized on "${instance.name}": the ${SECRET_LABELS[instance.authMode]} is invalid or expired. Run "ACM: Set Credentials".`,
     },
   });
-  clients.set(key, { secret, client });
+  clients.set(key, { secret, timeout, client });
   return client;
 }
 

@@ -17,6 +17,9 @@ An agent can validate and run Groovy scripts on AEM through ACM, follow long-run
 > [!WARNING]
 > This server lets an AI agent run arbitrary Groovy code on AEM with your permissions. Read [Security](#security) before pointing it at a shared or production instance.
 
+> [!TIP]
+> Using VS Code? The [ACM extension](../vscode-extension/README.md) bundles this server and registers it for the active instance, with credentials from VS Code's secret storage. No setup below is needed.
+
 ## Requirements
 
 - Node.js 22 or later.
@@ -106,6 +109,7 @@ Ask the agent to call `acm_health`. It reports the target instance, the auth mod
 | `ACM_RUN_TIMEOUT_MS` | How long `acm_run_code` waits before returning the execution ID for later polling. Default `120000`. |
 | `ACM_POLL_INTERVAL_MS` | Queue polling interval. Default `1500`. |
 | `AEM_HTTP_TIMEOUT_MS` | Timeout for each HTTP request. Default `30000`. |
+| `AEM_UNAUTHORIZED_MESSAGE` | Replaces the hint returned on `401 Unauthorized`, for tools that manage the credentials themselves (e.g. the VS Code extension). |
 
 ## Tools
 
@@ -132,6 +136,8 @@ Every queued run is stored in ACM execution history, so iterating on a script qu
 - is cut off on the client side after `waitMs`, while the script may keep running on AEM.
 
 Use it for short read-only runs or dry runs while you develop a script. Run the final version, and anything that changes content, with the default `history: true` so the change stays auditable.
+
+Running without history needs the `console/execute/nohistory` ACM feature (administrators only by default); without it the call fails with `403`. Such runs still appear in ACM's [audit log](https://github.com/wttech/acm#audit-log).
 
 ## Scripting guide
 
@@ -179,6 +185,8 @@ By default only administrators have access. See [Tools Access Configuration](htt
 
 - **The agent acts as you.** Every script runs with the permissions of the configured user. A model can make mistakes, and content it reads (pages, scripts, execution output) can try to steer it. Use the least-privileged user that can do the job.
 - **Use `ACM_READONLY=true` for production.** Health, validation, history and script-reading tools keep working; running, describing and aborting code are blocked. This only stops the agent from calling those tools. It is not a security boundary: validation still compiles the submitted Groovy on AEM, and Groovy compile-time transforms can run code. The real control is the AEM permissions of the configured user.
+- **Runs are traceable.** Queued runs are kept in ACM history; runs that leave no history (without history, or not queued by `canRun()`) are written to ACM's [audit log](https://github.com/wttech/acm#audit-log) with the user and a checksum of the code. Grant `console/execute/nohistory` only to users who need it.
+- **Grant agents only what they need.** A user with the `script/execute` feature but without `console/execute` can only run the stored scripts as they are.
 - **Review scripts before they run** against shared instances. Don't auto-approve `acm_run_code` in your MCP client for those instances.
 - **Prefer dry runs for destructive changes.** Use ACM's `repo.dryRun(...)` pattern; the bundled scripting guide steers the model towards it.
 - **Credentials stay local.** The server runs on your machine and only talks to `AEM_BASE_URL`. Keep tokens in your MCP client's secret storage or environment, not in files you commit.

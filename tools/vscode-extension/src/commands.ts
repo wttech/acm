@@ -1,7 +1,9 @@
+import * as os from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import {
   ACM_API,
+  AcmHttpError,
   CONSOLE_CODE_ID,
   fetchConsoleOutput,
   fetchExecutionById,
@@ -10,6 +12,7 @@ import {
   normalizeGroovy,
   SCRIPT_TEMPLATES,
   type Execution,
+  type ExecutionListOutput,
   type QueueOutput,
 } from '@acm/shared';
 import { promptInputs } from './inputs';
@@ -17,6 +20,7 @@ import {
   confirmRun,
   getActiveInstance,
   getClient,
+  getSettings,
   getTarget,
   pickInstance,
   setActiveInstance,
@@ -25,10 +29,20 @@ import {
   type AcmTarget,
 } from './instances';
 import { validateDocument } from './providers/diagnostics';
-import { setRunning } from './status';
+import { refreshHealth, setRunning } from './status';
 import { executionUri, type Views } from './views';
 
-const POLL_INTERVAL_MS = 1000;
+interface ExecutionNode {
+  instance: AcmInstance;
+  execution: Execution;
+}
+
+interface OutputInfo {
+  name: string;
+  type?: string;
+  label?: string;
+  downloadName?: string;
+}
 
 let output: vscode.OutputChannel;
 let running: (AcmTarget & { executionId: string }) | undefined;
@@ -41,9 +55,11 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
     output,
     register('acm.run', () => run(false, views)),
     register('acm.runSelection', () => run(true, views)),
+    register('acm.runWithoutHistory', () => run(true, views, false)),
     register('acm.validate', validate),
     register('acm.describe', describe),
-    register('acm.abort', (node?: { instance: AcmInstance; execution: Execution }) => abort(views, node)),
+    register('acm.abort', (node?: ExecutionNode) => abort(views, node)),
+    register('acm.downloadOutputs', (node?: ExecutionNode) => downloadOutputs(node)),
     register('acm.selectInstance', selectInstance),
     register('acm.setCredentials', setCredentialsCommand),
     register('acm.checkConnection', checkConnection),
@@ -62,7 +78,7 @@ async function newScript(): Promise<void> {
   }
 }
 
-async function run(selectionOnly: boolean, views: Views): Promise<void> {
+async function run(selectionOnly: boolean, views: Views, history = true): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     vscode.window.showWarningMessage('ACM: Open a Groovy script to run.');
@@ -86,10 +102,40 @@ async function run(selectionOnly: boolean, views: Views): Promise<void> {
   const label = path.basename(editor.document.fileName);
 
   output.show(true);
-  output.appendLine(`Running ${label}${selection ? ' (selection)' : ''} on ${instance.name} (${instance.url})`);
+  output.appendLine(
+    `Running ${label}${selection ? ' (selection)' : ''} on ${instance.name} (${instance.url})${history ? '' : ' without history'}`,
+  );
+  const inputValues = Object.keys(inputs).length > 0 ? inputs : undefined;
+  if (!history) {
+    const timeout = getSettings().runTimeout;
+    // A run without history is one synchronous request, so it is bounded by acm.run.timeout.
+    const res = await vscode.window
+      .withProgress(
+        { location: vscode.ProgressLocation.Notification, title: `ACM: Script ${label} on ${instance.name} (no history)` },
+        () =>
+          client.request<Execution>(
+            'POST',
+            ACM_API.executeCode,
+            { mode: 'RUN', history: false, code: { id: CONSOLE_CODE_ID, content }, inputs: inputValues },
+            true,
+            timeout,
+          ),
+      )
+      .then(undefined, (e: unknown) => {
+        if (e instanceof Error && e.name === 'AbortError') {
+          throw new Error(
+            `No response within ${timeout / 1000} s (acm.run.timeout). A run without history cannot be followed or aborted and may still be running on AEM; run longer scripts with history.`,
+          );
+        }
+        throw e;
+      });
+    append(res.data.output, 0);
+    report(label, res.data, instance, false);
+    return;
+  }
   const res = await client.request<QueueOutput>('POST', ACM_API.queueCode, {
     code: { id: CONSOLE_CODE_ID, content },
-    inputs: Object.keys(inputs).length > 0 ? inputs : undefined,
+    inputs: inputValues,
   });
   let execution = res.data?.executions?.[0];
   if (!execution) {
@@ -108,7 +154,7 @@ async function run(selectionOnly: boolean, views: Views): Promise<void> {
         token.onCancellationRequested(() => abort(views).catch(showError));
         while (isPending(execution!.status)) {
           progress.report({ message: execution!.status.toLowerCase() });
-          await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+          await new Promise((resolve) => setTimeout(resolve, getSettings().runPollInterval));
           execution = (await fetchExecutionById(client, executionId)) ?? execution;
           printed = append(execution!.output, printed);
         }
@@ -131,17 +177,18 @@ function append(text: string | null | undefined, printed: number): number {
   return text.length;
 }
 
-function report(label: string, execution: Execution, instance: AcmInstance): void {
+function report(label: string, execution: Execution, instance: AcmInstance, recorded = true): void {
   if (execution.error) {
     output.appendLine(`\n${execution.error}`);
   }
   const status = execution.status.toUpperCase();
   output.appendLine(
-    `\n${status}${execution.duration !== undefined ? ` in ${execution.duration} ms` : ''} (execution ${execution.id})\n`,
+    `\n${status}${execution.duration !== undefined ? ` in ${execution.duration} ms` : ''}${recorded ? ` (execution ${execution.id})` : ' (not recorded in history)'}\n`,
   );
   const open = () => vscode.commands.executeCommand('vscode.open', executionUri(instance, execution.id));
   if (isFailed(status)) {
-    vscode.window.showErrorMessage(`ACM: ${label} ${status}.`, 'Show Output', 'Open Execution').then((action) => {
+    const actions = recorded ? ['Show Output', 'Open Execution'] : ['Show Output'];
+    vscode.window.showErrorMessage(`ACM: ${label} ${status}.`, ...actions).then((action) => {
       if (action === 'Show Output') output.show();
       if (action === 'Open Execution') open();
     });
@@ -149,6 +196,55 @@ function report(label: string, execution: Execution, instance: AcmInstance): voi
     vscode.window.showInformationMessage(`ACM: ${label} SKIPPED, canRun() returned false.`);
   } else {
     vscode.window.setStatusBarMessage(`$(pass) ACM: ${label} ${status}`, 5000);
+  }
+}
+
+async function downloadOutputs(node?: ExecutionNode): Promise<void> {
+  if (!node) {
+    return;
+  }
+  const { instance, execution } = node;
+  const client = await getClient(instance);
+  if (!client) {
+    return;
+  }
+  const id = encodeURIComponent(execution.id);
+  const res = await client.request<ExecutionListOutput>('GET', `${ACM_API.execution}?id=${id}&format=full`);
+  const outputs = (res.data?.list?.[0]?.outputs ?? []) as OutputInfo[];
+  const picked = await vscode.window.showQuickPick(
+    [
+      ...outputs.map((o) => {
+        const fileName = o.type === 'TEXT' ? `${o.name}.md` : o.downloadName || o.name;
+        return { label: o.label || o.name, description: fileName, name: o.name, fileName };
+      }),
+      { label: 'Console', description: 'console.log', name: 'console', fileName: 'console.log' },
+      {
+        label: 'All outputs',
+        description: 'ZIP archive with the console and all outputs',
+        name: 'archive',
+        fileName: `execution-${execution.id.replace(/\//g, '-')}.outputs.zip`,
+      },
+    ],
+    { placeHolder: 'Select output to download' },
+  );
+  if (!picked) {
+    return;
+  }
+  const folder = vscode.workspace.workspaceFolders?.[0]?.uri ?? vscode.Uri.file(os.homedir());
+  const target = await vscode.window.showSaveDialog({ defaultUri: vscode.Uri.joinPath(folder, picked.fileName) });
+  if (!target) {
+    return;
+  }
+  const file = await client.requestBytes(
+    `${ACM_API.executionOutput}?executionId=${id}&name=${encodeURIComponent(picked.name)}`,
+  );
+  if (file.status !== 200) {
+    throw new Error(`Output '${picked.label}' is not available (HTTP ${file.status}).`);
+  }
+  await vscode.workspace.fs.writeFile(target, file.bytes);
+  const action = await vscode.window.showInformationMessage(`ACM: Saved ${path.basename(target.fsPath)}.`, 'Open');
+  if (action) {
+    await vscode.commands.executeCommand('vscode.open', target);
   }
 }
 
@@ -221,11 +317,19 @@ async function checkConnection(): Promise<void> {
     return;
   }
   await target.client.request('GET', ACM_API.state);
+  void refreshHealth();
   vscode.window.showInformationMessage(
     `ACM: Connected to "${target.instance.name}" (${target.instance.url}) using ${target.client.authDescription}.`,
   );
 }
 
 function showError(error: unknown): void {
-  vscode.window.showErrorMessage(`ACM: ${error instanceof Error ? error.message : String(error)}`);
+  const message = `ACM: ${error instanceof Error ? error.message : String(error)}`;
+  if (error instanceof AcmHttpError && error.httpStatus === 401) {
+    vscode.window.showErrorMessage(message, 'Set Credentials').then((action) => {
+      if (action) vscode.commands.executeCommand('acm.setCredentials');
+    });
+  } else {
+    vscode.window.showErrorMessage(message);
+  }
 }

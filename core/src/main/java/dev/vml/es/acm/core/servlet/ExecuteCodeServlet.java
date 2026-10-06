@@ -49,15 +49,26 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
             return;
         }
 
-        Code code = input.getCode();
-        if (!executor.authorize(code, request.getResourceResolver())) {
-            respondJson(response, forbidden(String.format("Code from '%s' is not authorized!", code.getId())));
+        Code code = executor.authorizeCode(input.getCode(), request.getResourceResolver())
+                .orElse(null);
+        if (code == null) {
+            respondJson(response, forbidden(String.format("Code from '%s' is not authorized!", codeId(input))));
             return;
         }
 
         ExecutionMode mode = ExecutionMode.of(input.getMode()).orElse(null);
         if (mode == null) {
             respondJson(response, badRequest(String.format("Execution mode '%s' is not supported!", input.getMode())));
+            return;
+        }
+
+        if (mode == ExecutionMode.RUN
+                && Boolean.FALSE.equals(input.getHistory())
+                && !executor.authorizeNoHistory(request.getResourceResolver())) {
+            respondJson(
+                    response,
+                    forbidden(String.format(
+                            "Code from '%s' is not authorized to run without history!", code.getId())));
             return;
         }
 
@@ -75,6 +86,11 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
 
             try {
                 Execution execution = executor.execute(context);
+                if (mode == ExecutionMode.RUN && !context.isHistory()) {
+                    ExecutionAudit.log("Code executed without history", context, execution);
+                } else {
+                    ExecutionAudit.trace("Code executed", context, execution);
+                }
 
                 respondJson(
                         response, ok(String.format("Code from '%s' executed successfully", code.getId()), execution));
@@ -86,5 +102,9 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
                                 "Code from '%s' cannot be executed. Error: %s", code.getId(), e.getMessage())));
             }
         }
+    }
+
+    private String codeId(ExecuteCodeInput input) {
+        return input.getCode() != null ? input.getCode().getId() : null;
     }
 }

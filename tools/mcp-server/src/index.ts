@@ -206,7 +206,7 @@ const client = new AcmClient({
   auth: createAuth(config),
   timeoutMs: config.httpTimeoutMs,
   messages: {
-    unauthorized: UNAUTHORIZED_MESSAGES[config.authMode],
+    unauthorized: process.env.AEM_UNAUTHORIZED_MESSAGE || UNAUTHORIZED_MESSAGES[config.authMode],
     missingCookie: config.cookieFile
       ? `No login-token in ${config.cookieFile}. Write a fresh login-token value to it, or set AEM_COOKIE.`
       : "No login-token. Set AEM_COOKIE, or AEM_COOKIE_FILE pointing at a file holding the value.",

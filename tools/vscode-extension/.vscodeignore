@@ -1,5 +1,6 @@
 **
 !dist/extension.js
+!dist/mcp-server.mjs
 !media/**
 !skills/**
 !snippets/**

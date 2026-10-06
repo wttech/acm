@@ -18,7 +18,7 @@ This skill covers writing those scripts and running them safely.
 - **Idempotent.** Re-running must be safe: use `repo` `ensure*`/`save*` methods, `acl` with `skipIfExists()`, and a fitting `conditions.*` in `canRun()`.
 - **Logging.** `log.*` for anything worth keeping (start, summary, errors), `out.*` for console-only progress, `println` only for throwaway output.
 - **Prefer ACM services** (`repo`, `acl`, `formatter`, `notifier`) over raw JCR, Sling or Jackrabbit APIs.
-- **With ACM MCP tools:** validate with `acm_validate_code` before every run, run with `dryRun` left on first, read the output, and only then run for real. Use `history=false` for read-only iterations while developing.
+- **With ACM MCP tools:** validate with `acm_validate_code` before every run, run with `dryRun` left on first, read the output, and only then run for real. Use `history=false` for read-only iterations while developing; it needs ACM's `console/execute/nohistory` permission, so on `403` run with history instead.
 - **Do exactly what was asked.** If paths, scope, run frequency or instance type are unclear, ask before writing code.
 
 ## Workflow

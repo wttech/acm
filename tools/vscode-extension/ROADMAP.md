@@ -14,8 +14,8 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 
 ### Running
 
-- [~] **Ad-hoc execution.** `ACM: Run Script` / `Run Selection` queues code (`queue-code`), polls until done and streams console output to an output channel. Status bar shows the running execution; `ACM: Abort Execution` or cancelling the progress aborts it. Next: option to run without history (`execute-code`, `mode=run`).
-- [~] **Inputs form.** Before running a script with `describeRun()`, inputs are resolved (`describe-code`) and asked for with quick picks and input boxes. Next: file inputs, a webview form.
+- [x] **Ad-hoc execution.** `ACM: Run Script` / `Run Selection` queues code (`queue-code`), polls until done and streams console output to an output channel. Status bar shows the running execution; `ACM: Abort Execution` or cancelling the progress aborts it. `ACM: Run Without History` (`execute-code`, `history: false`) is offered only with ACM's `console/execute/nohistory` feature.
+- [~] **Inputs form.** Before running a script with `describeRun()`, inputs are resolved (`describe-code`) and asked for with quick picks, input boxes and file pickers (uploaded via `file`). Next: a webview form.
 - [x] **Instance guardrails.** `readonly` instances block running; any non-local instance asks for confirmation before running.
 
 ### Editing
@@ -30,18 +30,18 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 
 ### Browsing
 
-- [~] **Executions view.** History and queue (`execution`), console output as a read-only document, abort. Next: download of file outputs (`execution-output`).
+- [x] **Executions view.** History and queue (`execution`), console output as a read-only document, abort, download of outputs and the ZIP archive (`execution-output`).
 - [x] **Scripts view.** Scripts stored on the instance (`script`), open read-only, diff with the local file.
-- [~] **Instances.** Status bar switcher for the active instance; `ACM: Check Connection` (`state`). Next: health in the status bar.
+- [x] **Instances.** Status bar switcher for the active instance with its health (`state`, every minute); `ACM: Check Connection`.
 
 ### AI
 
 - [x] **Scripting skill.** The ACM Groovy scripting skill from `tools/skills` is contributed to Copilot with `chatSkills`.
-- [ ] **MCP server provider.** Register the ACM MCP server for the active instance with `vscode.lm.registerMcpServerDefinitionProvider`, so Copilot agent mode gets ACM tools without manual setup. Needs VS Code 1.101+; feature-detect to keep older editors working.
+- [x] **MCP server provider.** The MCP server is bundled (`dist/mcp-server.mjs`, run by the editor's Node.js) and registered for the active instance with `vscode.lm.registerMcpServerDefinitionProvider`; secrets are added only when it starts. Requires VS Code 1.101+.
 
 ### Onboarding
 
-- [ ] **Walkthrough.** Add an instance, set credentials, run a first script.
+- [x] **Walkthrough.** Connect to AEM, write a documented script, run it, let an agent help.
 
 ## Distribution
 

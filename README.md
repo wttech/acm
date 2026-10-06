@@ -234,6 +234,23 @@ set ACL for acm-automation-user
 end
 ```
 
+Stored scripts always run with their content from the repository: the `script/execute` feature allows running the scripts as they are, never other code. Running any code requires `console/execute`.
+
+#### Running without history
+
+Every execution is recorded in the [history](#history), unless the caller asks otherwise (e.g. AI agents iterating on read-only code through the [MCP server](tools/mcp-server/README.md)). That requires the `console/execute/nohistory` feature, which by default only administrators have. To deny it to a group that otherwise has all features:
+
+```ini
+set ACL for acm-automation-user
+    allow jcr:read on /apps/acm/feature
+    deny jcr:read on /apps/acm/feature/console/execute/nohistory
+end
+```
+
+#### Audit log
+
+Code run through the ACM API that leaves no execution in the history (run without history, or not queued because `canRun()` returned false or failed) is logged by the `dev.vml.es.acm.audit` logger at `INFO`, with the user, executable, mode, status, execution ID and a checksum of the code. Everything else the API runs (compile checks, describing inputs, runs recorded in the history) is logged at `DEBUG` only, so editors and AI agents do not flood the logs. Set the logger to `DEBUG` with a Sling logging configuration for a full trail; on AEM as a Cloud Service it is available like any other log, e.g. through log forwarding.
+
 ## Compatibility
 
 | AEM Content Manager | AEM           | Java      | Groovy  |

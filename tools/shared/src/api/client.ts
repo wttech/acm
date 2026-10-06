@@ -160,15 +160,17 @@ export class AcmClient {
     const deadline = timeoutMs !== undefined ? Date.now() + timeoutMs : undefined;
     const remaining = () => (deadline !== undefined ? Math.max(1, deadline - Date.now()) : undefined);
     const headers = this.baseHeaders();
+    // Multipart bodies (file uploads) are sent as they are; fetch sets their content type.
+    const multipart = body instanceof FormData;
     if (method !== 'GET') {
       const csrf = await this.ensureCsrfToken(false, remaining());
       if (csrf) headers['CSRF-Token'] = csrf;
-      if (body !== undefined) headers['Content-Type'] = 'application/json';
+      if (body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
     }
 
     const res = await this.rawFetch(
       path,
-      { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined },
+      { method, headers, body: multipart ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined },
       remaining(),
     );
 
@@ -216,5 +218,15 @@ export class AcmClient {
       throw new AcmHttpError(res.status, `HTTP ${res.status} fetching ${path}`, text);
     }
     return { status: res.status, contentType: res.headers.get('content-type') || '', text };
+  }
+
+  /** GET that returns the raw body as bytes (for binary execution outputs). */
+  async requestBytes(path: string): Promise<{ status: number; contentType: string; bytes: Uint8Array }> {
+    const res = await this.rawFetch(path, { method: 'GET', headers: this.baseHeaders() });
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    if (res.status === 401 || res.status === 403) {
+      throw new AcmHttpError(res.status, `HTTP ${res.status} fetching ${path}`);
+    }
+    return { status: res.status, contentType: res.headers.get('content-type') || '', bytes };
   }
 }

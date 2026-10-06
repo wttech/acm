@@ -35,7 +35,7 @@ jobs:
               - '**'
               - '!tools/**'
             mcp-server: 'tools/{mcp-server,shared,skills}/**'
-            vscode-extension: 'tools/{vscode-extension,shared,skills}/**'
+            vscode-extension: 'tools/{vscode-extension,mcp-server,shared,skills}/**'
             workflow: '.github/workflows/check.yml'
 
   codegen:

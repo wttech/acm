@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { registerCommands } from './commands';
 import { initInstances } from './instances';
+import { registerMcp } from './mcp';
 import { registerCodeLens } from './providers/codelens';
 import { registerCompletion } from './providers/completion';
 import { registerDiagnostics } from './providers/diagnostics';
@@ -17,6 +18,7 @@ export function activate(context: vscode.ExtensionContext): void {
   registerHover(context);
   registerCodeLens(context);
   registerDiagnostics(context);
+  registerMcp(context);
 }
 
 export function deactivate(): void {}

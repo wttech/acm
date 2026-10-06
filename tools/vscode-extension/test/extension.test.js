@@ -1,9 +1,22 @@
 const assert = require('node:assert');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
 const vscode = require('vscode');
 
 suite('Extension', () => {
   suiteSetup(async () => {
     await vscode.extensions.getExtension('wppes.acm').activate();
+  });
+
+  test('bundles a runnable MCP server', () => {
+    const server = path.join(vscode.extensions.getExtension('wppes.acm').extensionPath, 'dist', 'mcp-server.mjs');
+    const result = spawnSync(process.execPath, [server], {
+      env: { ELECTRON_RUN_AS_NODE: '1' },
+      encoding: 'utf8',
+      timeout: 20000,
+    });
+    // Without configuration the server stops right after loading all its modules.
+    assert.match(result.stderr, /AEM_BASE_URL is required/);
   });
 
   test('registers commands', async () => {
