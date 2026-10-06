@@ -2,6 +2,32 @@
 
 Complete, working templates. Adapt names, paths and resource types; keep the safety parts (dry run, abort checks, logging).
 
+## Minimal script
+
+Documented starting point for any manual or automatic script.
+
+```groovy
+/*
+---
+version: '1.0'
+author: jane.doe@acme.com
+category: general
+tags: []
+---
+Describe what the script does, where and why.
+*/
+
+boolean canRun() {
+    return conditions.always()
+}
+
+void doRun() {
+    log.info "Started"
+    // work
+    log.info "Finished"
+}
+```
+
 ## Content migration: update a property
 
 Manual script with inputs, dry run on by default.
@@ -100,6 +126,15 @@ void doRun() {
 Manual script producing a downloadable file and a summary.
 
 ```groovy
+/*
+---
+version: '1.0'
+category: report
+tags: ['assets']
+---
+Exports path, title and format of all assets below a root path as CSV.
+*/
+
 void describeRun() {
     inputs.path('rootPath') { value = '/content/dam/acme'; description = 'Assets root' }
 }
@@ -177,8 +212,39 @@ Children are collected with `toList()` first, so deleting does not change the se
 
 ## Console: quick read-only check
 
+Bare statements for the ACM console, not stored as a script.
+
 ```groovy
 def pages = repo.get('/content/acme/en').query('cq:Page').toList()
 println "Pages: ${pages.size()}"
 pages.take(10).each { println it.path }
+```
+
+## Mock: HTTP endpoint
+
+Mock script answering `GET /mock/acme/products` with JSON; needs the mock filter enabled.
+
+```groovy
+/*
+---
+version: '1.0'
+category: mock
+---
+Simulates the ACME product API for test environments.
+*/
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+boolean request(HttpServletRequest request) {
+    return request.method == 'GET' && request.requestURI == '/mock/acme/products'
+}
+
+void respond(HttpServletRequest request, HttpServletResponse response) {
+    response.contentType = 'application/json'
+    formatter.json.write(response.outputStream, [
+        [id: 1, name: 'Product A'],
+        [id: 2, name: 'Product B'],
+    ])
+}
 ```

@@ -3,3 +3,5 @@ LICENSE
 *.vsix
 # Copied from tools/skills by the build.
 skills/
+# VS Code downloaded by `npm test`.
+.vscode-test/

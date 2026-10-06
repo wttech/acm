@@ -1,0 +1,19 @@
+{
+  "ACM script documentation": {
+    "prefix": "acmdoc",
+    "description": "ACM script documentation: YAML frontmatter and Markdown description, shown in the ACM UI.",
+    "body": [
+      "/*",
+      "---",
+      "version: '${1:1.0}'",
+      "author: ${2:jane.doe@acme.com}",
+      "category: ${3|general,migration,security,report,maintenance,setup|}",
+      "tags: [${4}]",
+      "---",
+      "${5:Describe what the script does, where and why.}",
+      "*/",
+      "",
+      "$0"
+    ]
+  }
+}

@@ -93,7 +93,7 @@ export async function setCredentials(instance: AcmInstance): Promise<boolean> {
 
 /** Builds a client for the instance; with `interactive`, asks for missing credentials. */
 export async function getClient(instance: AcmInstance, interactive = true): Promise<AcmClient | undefined> {
-  let secret = await secrets.get(secretKey(instance));
+  let secret = (await secrets.get(secretKey(instance))) ?? defaultSecret(instance);
   if (!secret && interactive && (await setCredentials(instance))) {
     secret = await secrets.get(secretKey(instance));
   }
@@ -164,4 +164,9 @@ function isLocal(url: string): boolean {
   } catch {
     return false;
   }
+}
+
+// AEM SDK out of the box: admin/admin, only ever for local instances.
+function defaultSecret(instance: AcmInstance): string | undefined {
+  return instance.authMode === 'basic' && instance.user === 'admin' && isLocal(instance.url) ? 'admin' : undefined;
 }

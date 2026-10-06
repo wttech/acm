@@ -12,6 +12,7 @@ This skill covers writing those scripts and running them safely.
 
 - **Never invent API.** Every call on an ACM variable (`repo`, `acl`, `inputs`, `outputs`, `conditions`, `context`, …) must exist in [the API reference](references/api.md), which is generated from the ACM source. Search it for the class you need instead of guessing.
 - **Script shape.** `boolean canRun()` and `void doRun()` are required; `void describeRun()` declares inputs; `def scheduleRun()` schedules automatic scripts. Console code may be bare statements.
+- **Document stored scripts.** Start every manual, automatic and extension script with a `/* */` block (not `/** */`) holding YAML frontmatter (`version`, `author`, `category`, `tags`, and `schedule` for scheduled scripts) and a Markdown description of what the script does and why, followed by a blank line. ACM shows it in the UI; Mermaid diagrams are rendered too.
 - **Safe changes.** A script that changes content declares `inputs.bool('dryRun') { value = true; switcher() }` and wraps writes in `repo.dryRun(inputs.value('dryRun')) { … }`.
 - **Abortable loops.** Call `context.checkAborted()` inside every loop over content.
 - **Idempotent.** Re-running must be safe: use `repo` `ensure*`/`save*` methods, `acl` with `skipIfExists()`, and a fitting `conditions.*` in `canRun()`.
@@ -36,9 +37,10 @@ This skill covers writing those scripts and running them safely.
 | Manual | `/conf/acm/settings/script/manual/{project}/` | from the Scripts page, as the current user, usually with inputs | `conditions.always()` |
 | Automatic | `/conf/acm/settings/script/automatic/{project}/` | on instance boot or by `scheduleRun()`, as a service or impersonated user | `conditions.changed()`, `conditions.once()` |
 | Extension | `/conf/acm/settings/script/extension/{project}/main.groovy` | hooks: `prepareRun`, `completeRun` | none |
+| Mock | `/conf/acm/settings/script/mock/{project}/` | on HTTP requests to `/mock/*`, when the mock filter is enabled | none (`request()` matches) |
 
 In an AEM project, scripts live in a content package, e.g. `ui.content/src/main/content/jcr_root/conf/acm/settings/script/manual/acme/ACME-123_update-teasers.groovy`. Prefix file names with a ticket or ordering number.
-See [scripts](references/scripts.md) for conditions, schedules, inputs, outputs, locking, documentation metadata and extension scripts.
+See [scripts](references/scripts.md) for conditions, schedules, inputs, outputs, locking, documentation, extension and mock scripts, and snippets.
 
 ## Skeletons
 
@@ -88,6 +90,16 @@ void doRun() {
 Automatic script that runs after each deployment that changed it:
 
 ```groovy
+/*
+---
+version: '1.0'
+author: jane.doe@acme.com
+category: setup
+tags: ['config']
+---
+Creates the folder structure the ACME project expects. Re-applied whenever this script changes.
+*/
+
 boolean canRun() {
     return conditions.changed() && conditions.isInstanceAuthor()
 }
@@ -117,6 +129,6 @@ println repo.get('/content/acme/en').property('jcr:content/jcr:title', String)
 ## References
 
 - [API reference](references/api.md): every ACM variable, class and method available to scripts, generated from the ACM source. Search it before using any ACM method.
-- [Scripts](references/scripts.md): script types, conditions, schedules, inputs, outputs, logging, aborting, locking, documentation metadata, extension scripts, notifications.
-- [Patterns](references/patterns.md): complete templates for content migration, ACL setup, CSV reports and scheduled cleanup.
+- [Scripts](references/scripts.md): script types, conditions, schedules, inputs, outputs, logging, aborting, locking, documentation, extension and mock scripts, snippets, notifications.
+- [Patterns](references/patterns.md): complete templates for a minimal script, content migration, ACL setup, CSV reports, scheduled cleanup and HTTP mocks.
 - [ACM documentation](https://github.com/wttech/acm#documentation) and [example scripts](https://github.com/wttech/acm/tree/main/ui.content.example/src/main/content/jcr_root/conf/acm/settings/script).

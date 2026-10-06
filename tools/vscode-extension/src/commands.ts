@@ -8,6 +8,7 @@ import {
   isFailed,
   isPending,
   normalizeGroovy,
+  SCRIPT_TEMPLATES,
   type Execution,
   type QueueOutput,
 } from '@acm/shared';
@@ -34,8 +35,8 @@ let running: (AcmTarget & { executionId: string }) | undefined;
 
 export function registerCommands(context: vscode.ExtensionContext, views: Views): void {
   output = vscode.window.createOutputChannel('ACM');
-  const register = (command: string, handler: (...args: any[]) => Promise<unknown>) =>
-    vscode.commands.registerCommand(command, (...args: unknown[]) => handler(...args).catch(showError));
+  const register = (command: string, handler: (...args: never[]) => Promise<unknown>) =>
+    vscode.commands.registerCommand(command, (...args: unknown[]) => handler(...(args as never[])).catch(showError));
   context.subscriptions.push(
     output,
     register('acm.run', () => run(false, views)),
@@ -46,7 +47,19 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
     register('acm.selectInstance', selectInstance),
     register('acm.setCredentials', setCredentialsCommand),
     register('acm.checkConnection', checkConnection),
+    register('acm.newScript', newScript),
   );
+}
+
+async function newScript(): Promise<void> {
+  const picked = await vscode.window.showQuickPick(
+    SCRIPT_TEMPLATES.map((template) => ({ label: template.name, detail: template.description, template })),
+    { placeHolder: 'Select ACM script template', matchOnDetail: true },
+  );
+  if (picked) {
+    const document = await vscode.workspace.openTextDocument({ language: 'groovy', content: picked.template.code });
+    await vscode.window.showTextDocument(document);
+  }
 }
 
 async function run(selectionOnly: boolean, views: Views): Promise<void> {
@@ -73,7 +86,7 @@ async function run(selectionOnly: boolean, views: Views): Promise<void> {
   const label = path.basename(editor.document.fileName);
 
   output.show(true);
-  output.appendLine(`[${time()}] Running ${label}${selection ? ' (selection)' : ''} on ${instance.name} (${instance.url})`);
+  output.appendLine(`Running ${label}${selection ? ' (selection)' : ''} on ${instance.name} (${instance.url})`);
   const res = await client.request<QueueOutput>('POST', ACM_API.queueCode, {
     code: { id: CONSOLE_CODE_ID, content },
     inputs: Object.keys(inputs).length > 0 ? inputs : undefined,
@@ -90,7 +103,7 @@ async function run(selectionOnly: boolean, views: Views): Promise<void> {
   try {
     let printed = 0;
     await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: `ACM: Running ${label} on ${instance.name}`, cancellable: true },
+      { location: vscode.ProgressLocation.Notification, title: `ACM: Script ${label} on ${instance.name}`, cancellable: true },
       async (progress, token) => {
         token.onCancellationRequested(() => abort(views).catch(showError));
         while (isPending(execution!.status)) {
@@ -124,7 +137,7 @@ function report(label: string, execution: Execution, instance: AcmInstance): voi
   }
   const status = execution.status.toUpperCase();
   output.appendLine(
-    `\n[${time()}] ${status}${execution.duration !== undefined ? ` in ${execution.duration} ms` : ''} (execution ${execution.id})\n`,
+    `\n${status}${execution.duration !== undefined ? ` in ${execution.duration} ms` : ''} (execution ${execution.id})\n`,
   );
   const open = () => vscode.commands.executeCommand('vscode.open', executionUri(instance, execution.id));
   if (isFailed(status)) {
@@ -163,7 +176,7 @@ async function describe(): Promise<void> {
   const res = await target.client.request<{ inputs?: unknown }>('POST', ACM_API.describeCode, {
     code: { id: CONSOLE_CODE_ID, content: normalizeGroovy(editor.document.getText()) },
   });
-  output.appendLine(`[${time()}] Inputs of ${path.basename(editor.document.fileName)} on ${target.instance.name}:`);
+  output.appendLine(`Inputs of ${path.basename(editor.document.fileName)} on ${target.instance.name}:`);
   output.appendLine(JSON.stringify(res.data?.inputs ?? {}, null, 2));
   output.show(true);
 }
@@ -215,8 +228,4 @@ async function checkConnection(): Promise<void> {
 
 function showError(error: unknown): void {
   vscode.window.showErrorMessage(`ACM: ${error instanceof Error ? error.message : String(error)}`);
-}
-
-function time(): string {
-  return new Date().toLocaleTimeString();
 }

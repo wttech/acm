@@ -120,9 +120,38 @@ void describeRun() {
 }
 ```
 
-## Documentation metadata
+## Documentation
 
-A block comment `/* */` (not `/** */`) at the top of the file, or after imports, followed by a blank line, is shown in the ACM UI. YAML frontmatter fields are free-form; common ones are `version`, `author`, `schedule`, `category` and `tags`. The description supports Markdown and Mermaid diagrams.
+ACM shows a script's documentation in the UI. Write it as a regular block comment `/* */` (not JavaDoc `/** */`) at the top of the file, or right after the imports, and follow it with a blank line:
+
+````groovy
+/*
+---
+version: '1.0'
+author: jane.doe@acme.com
+schedule: Every hour at 10 minutes past the hour
+category: security
+tags: ['acl', 'authors']
+---
+Creates content author groups for each tenant, country and language.
+
+Groups are named `{tenant}-{country}-{language}-content-authors` and may read, write and replicate
+the matching content and DAM paths.
+
+```mermaid
+graph LR
+    A[Scan tenants] --> B[Find countries] --> C[Find languages] --> D[Create groups]
+```
+*/
+
+boolean canRun() {
+    return conditions.changed()
+}
+````
+
+- Frontmatter fields are free-form and shown as metadata; common ones are `version`, `author`, `schedule` (human-readable, for scheduled scripts), `category` and `tags` (rendered as badges).
+- The description and field values support GitHub Flavored Markdown and Mermaid diagrams.
+- Describe what the script changes, where, and how to run it safely (e.g. keep `dryRun` on first). Keep `version` in step with meaningful changes.
 
 ## Repository (`repo`)
 
@@ -169,3 +198,40 @@ void completeRun(Execution execution) {
 
 class AcmeHelper {}
 ```
+
+`void prepareMock(MockContext context)` can also add variables to mock scripts.
+
+## Mock scripts
+
+Mock scripts simulate third-party HTTP services, e.g. when an integration's base URL points at AEM in a test environment. They live under `/conf/acm/settings/script/mock/{project}/` and only run when the *AEM Content Manager - Mock HTTP Filter* OSGi configuration is enabled, for requests matching its regex (`/mock/.*` by default). The first script whose `request()` returns `true` responds:
+
+```groovy
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+boolean request(HttpServletRequest request) {
+    return request.requestURI == '/mock/acme/products'
+}
+
+void respond(HttpServletRequest request, HttpServletResponse response) {
+    response.contentType = 'application/json'
+    formatter.json.write(response.outputStream, [[id: 1, name: 'Product']])
+}
+```
+
+The `mock` variable gives access to the script's own resource, e.g. `mock.resource.sibling('data.json')` for a file stored next to it. Special scripts `core/missing.groovy` (no mock matched, `respond()`) and `core/fail.groovy` (a mock threw, `fail(request, response, exception)`) handle the remaining cases.
+
+## Snippets
+
+Teams can share code snippets, offered in the ACM console editor, as YAML files under `/conf/acm/settings/snippet/available/{project}/`:
+
+```yaml
+group: Acme
+name: acme_page_title
+content: |
+  repo.get('${1:/content/acme/en}').property('jcr:content/jcr:title', String)
+documentation: |
+  Reads the title of a page. Supports **Markdown**.
+```
+
+`content` may use `${1:placeholder}` tab stops.

@@ -40,16 +40,34 @@ export const SKILL_DOCUMENTS: SkillDocument[] = [
   {
     path: 'references/scripts.md',
     title: 'ACM scripts',
-    description: 'Script types, conditions, schedules, inputs, outputs, logging, aborting, locking and extension scripts.',
+    description: 'Script types, conditions, schedules, inputs, outputs, logging, aborting, locking, documentation, extension and mock scripts, snippets.',
     text: scripts,
   },
   {
     path: 'references/patterns.md',
     title: 'ACM script patterns',
-    description: 'Templates for content migration, ACL setup, CSV reports and scheduled cleanup.',
+    description: 'Templates for a minimal script, content migration, ACL setup, CSV reports, scheduled cleanup and HTTP mocks.',
     text: patterns,
   },
 ];
 
 /** The skill's core rules, short enough to send to an agent up front. */
 export const SKILL_ESSENTIALS = section(skill, 'Essentials');
+
+export interface ScriptTemplate {
+  name: string;
+  description: string;
+  code: string;
+}
+
+/** One template per `## ` section of the patterns: its first paragraph and first Groovy block. */
+export const SCRIPT_TEMPLATES: ScriptTemplate[] = patterns
+  .split('\n## ')
+  .slice(1)
+  .flatMap((part) => {
+    const [name = '', ...rest] = part.split('\n');
+    const body = rest.join('\n');
+    const code = /```groovy\n([\s\S]*?)\n```/.exec(body)?.[1];
+    const description = body.split('```')[0]?.trim().split('\n\n')[0]?.replace(/\n/g, ' ') ?? '';
+    return code ? [{ name: name.trim(), description, code: `${code}\n` }] : [];
+  });

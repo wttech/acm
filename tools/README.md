@@ -5,7 +5,7 @@ Developer tools for [AEM Content Manager (ACM)](../README.md), released separate
 | Tool | Path | Distribution | Tag |
 |---|---|---|---|
 | MCP server | [mcp-server](mcp-server/README.md) | npm `@wppes/acm-mcp-server` + MCP Registry | `mcp-server-v<version>` |
-| VS Code extension | [vscode-extension](vscode-extension/README.md) | `.vsix` on GitHub Releases | `vscode-extension-v<version>` |
+| VS Code extension | [vscode-extension](vscode-extension/README.md) | VS Code Marketplace and Open VSX (`wppes.acm`), `.vsix` on GitHub Releases | `vscode-extension-v<version>` |
 
 ACM itself is tagged `v<version>`.
 
@@ -62,7 +62,7 @@ Commit the regenerated files together with the Java change. Prose (docs and snip
 - `ACM`: Maven build, for changes outside `tools/`.
 - `Codegen`: regenerates the script API and fails if the committed files are outdated. Always runs.
 - `MCP Server`: tests on Node 22 and 24, for `tools/mcp-server/**`, `tools/shared/**` and `tools/skills/**`.
-- `VS Code Extension`: type check and packaging, for `tools/vscode-extension/**`, `tools/shared/**` and `tools/skills/**`. The `.vsix` is uploaded as a build artifact.
+- `VS Code Extension`: type check, lint, smoke test in VS Code (under `xvfb-run`) and packaging, for `tools/vscode-extension/**`, `tools/shared/**` and `tools/skills/**`. The `.vsix` is uploaded as a build artifact.
 
 ## Releasing
 
@@ -73,5 +73,5 @@ git tag vscode-extension-v<version>
 git push origin vscode-extension-v<version>
 ```
 
-- [MCP Server workflow](../.github/workflows/mcp-server.yml): publishes to npm and the MCP Registry. See the [MCP server release notes](mcp-server/README.md#releasing).
-- [VS Code Extension workflow](../.github/workflows/vscode-extension.yml): creates a GitHub release with the `.vsix`, not marked as the latest release.
+- [MCP Server workflow](../.github/workflows/release.mcp-server.yml): publishes to npm and the MCP Registry. See the [MCP server release notes](mcp-server/README.md#releasing).
+- [VS Code Extension workflow](../.github/workflows/release.vscode-extension.yml): creates a GitHub release with the `.vsix`, not marked as the latest release, then publishes it to the VS Code Marketplace and Open VSX under the `wppes` publisher. Each publish step runs only when its token is set as a repository secret: `VSCE_PAT` (Azure DevOps token with the *Marketplace: Manage* scope, for the `wppes` publisher) and `OVSX_PAT` (Open VSX token of a member of the `wppes` namespace). Add release notes to [CHANGELOG.md](vscode-extension/CHANGELOG.md) before tagging.

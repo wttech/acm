@@ -4,25 +4,31 @@
     {
       "id": 1,
       "prompt": "Write an ACM script to remove the legacyProp property from all product pages under /content/acme.",
-      "expected_output": "Manual script with rootPath and dryRun inputs (dryRun true by default), canRun returning conditions.always(), writes wrapped in repo.dryRun, a query by node type and sling:resourceType condition, deleteProperty (not removeProperty), context.checkAborted() in the loop, start and summary log lines.",
+      "expected_output": "Manual script with rootPath and dryRun inputs (dryRun true by default), canRun returning conditions.always(), writes wrapped in repo.dryRun, a query by node type and sling:resourceType condition, deleteProperty (not removeProperty), context.checkAborted() in the loop, start and summary log lines, a /* */ documentation header with YAML frontmatter and a description.",
       "files": []
     },
     {
       "id": 2,
       "prompt": "Give the editors group read access to /content/dam/acme, applied automatically on deployment.",
-      "expected_output": "Automatic script with conditions.changed() (optionally && isInstanceAuthor()), acl.createGroup with skipIfExists() or acl.getGroup, permissions set via allow { path = ...; permissions = ['jcr:read'] }, no purge(), logging.",
+      "expected_output": "Automatic script with conditions.changed() (optionally && isInstanceAuthor()), acl.createGroup with skipIfExists() or acl.getGroup, permissions set via allow { path = ...; permissions = ['jcr:read'] }, no purge(), logging, a /* */ documentation header with YAML frontmatter and a description.",
       "files": []
     },
     {
       "id": 3,
       "prompt": "Create a nightly ACM job that deletes workflow instances older than 30 days.",
-      "expected_output": "Automatic script with scheduleRun returning schedules.cron(...) with seconds field, a suitable canRun, a query or Java API call limited to completed instances older than the cutoff, context.checkAborted() in loops, a dryRun option or an explicit note about it, progress and summary logging. Uses only methods present in the API reference.",
+      "expected_output": "Automatic script with scheduleRun returning schedules.cron(...) with seconds field, a suitable canRun, a query or Java API call limited to completed instances older than the cutoff, context.checkAborted() in loops, a dryRun option or an explicit note about it, progress and summary logging, a documentation header with a human-readable schedule field. Uses only methods present in the API reference.",
       "files": []
     },
     {
       "id": 4,
       "prompt": "Export a CSV of all pages under /content/acme/en with their template and last modified date.",
-      "expected_output": "Manual script with an outputs.file report (label, downloadName, report.out.println), CSV values escaped, context.checkAborted(), a text summary output, read-only (no dryRun needed).",
+      "expected_output": "Manual script with an outputs.file report (label, downloadName, report.out.println), CSV values escaped, context.checkAborted(), a text summary output, read-only (no dryRun needed), a documentation header.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Mock the ACME weather API so GET /mock/weather?city=X returns a fixed JSON forecast on our test instance.",
+      "expected_output": "Mock script under /conf/acm/settings/script/mock/{project}/ with boolean request(HttpServletRequest) matching method and URI, void respond(request, response) setting the content type and writing JSON (e.g. formatter.json.write), reading the city parameter; notes that the Mock HTTP Filter OSGi config must be enabled.",
       "files": []
     }
   ]

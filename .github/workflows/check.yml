@@ -140,6 +140,12 @@ jobs:
       - name: Type Check
         run: npm run typecheck
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: xvfb-run -a npm test
+
       - name: Package
         run: npm run package
 

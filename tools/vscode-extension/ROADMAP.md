@@ -7,8 +7,8 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 - [x] Skeleton: commands, settings, views, esbuild bundle with `@acm/shared`, `.vsix` packaging, CI.
 - [x] Shared ACM client: `AcmClient` (bearer, cookie, basic auth, CSRF, 401/403 messages), execution helpers and `normalizeGroovy` live in `tools/shared`; the MCP server bundles them with esbuild.
 - [x] Credentials: `ACM: Set Credentials` stores the token, cookie or password in `context.secrets`, keyed by instance name and URL; `getClient()` builds an `AcmClient`.
-- [ ] Tests: `@vscode/test-cli` with a smoke test, run in CI under `xvfb-run`.
-- [ ] Lint: ESLint with `typescript-eslint`.
+- [x] Tests: `@vscode/test-cli` with a smoke test, run in CI under `xvfb-run`.
+- [x] Lint: ESLint with `typescript-eslint`.
 
 ## Features
 
@@ -23,8 +23,9 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 - [~] **Completion.** Lifecycle methods as snippets, script variables, and the methods of each variable (`repo.`, `acl.`, `inputs.`, …) from the API generated from the ACM source. Next: chained calls (`repo.get(…).`), options inside input and output closures; dynamic suggestions from `assist-code` (Java classes, variables, snippets, JCR paths in strings).
 - [~] **Inline docs.** Hover for lifecycle methods, variables and their methods. Next: Java classes from `assist-code`, links to ACM docs.
 - [~] **Validation.** On save of scripts declaring `doRun()`, compile-check on the active instance (`execute-code`, `mode=parse`) and show errors as diagnostics with line and column; missing or misspelled lifecycle methods are reported by ACM. Next: local checks without an instance.
-- [x] **CodeLens.** `Run | Validate` above `doRun`, `Describe inputs` above `describeRun`.
-- [ ] **Snippets.** Static snippets plus snippets from the instance (`snippet`).
+- [x] **CodeLens.** `Run` above `doRun`; validation runs on save and inputs are asked for on run, so no other lenses.
+- [~] **Snippets.** `acmdoc` inserts the script documentation header. Next: snippets from the instance (`snippet`).
+- [x] **New script.** `File > New File... > ACM Script` opens a documented script from the skill's patterns (minimal, migration, ACL, report, scheduled cleanup, console, mock).
 - [ ] **JCR path links.** Ctrl+click on `/content/...` or `/conf/...` opens CRXDE or Sites on the active instance.
 
 ### Browsing
@@ -45,5 +46,5 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 ## Distribution
 
 - [x] `.vsix` on GitHub Releases, installed with `Extensions: Install from VSIX...`.
-- [ ] VS Code Marketplace (`vsce publish`, publisher account and token).
-- [ ] Open VSX (`ovsx publish`) for Cursor, Windsurf and VSCodium.
+- [~] VS Code Marketplace (`vsce publish`) under the `wppes` publisher: workflow ready, needs the publisher and the `VSCE_PAT` secret.
+- [~] Open VSX (`ovsx publish`) for Cursor, Windsurf and VSCodium: workflow ready, needs the `wppes` namespace and the `OVSX_PAT` secret.

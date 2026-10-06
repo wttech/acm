@@ -4,7 +4,10 @@
   "description": "Write, validate and run AEM Content Manager (ACM) Groovy scripts from VS Code.",
   "version": "0.1.0",
   "private": true,
-  "publisher": "wttech",
+  "publisher": "wppes",
+  "author": "WPP Enterprise Solutions",
+  "preview": true,
+  "icon": "media/icon.png",
   "license": "Apache-2.0",
   "homepage": "https://github.com/wttech/acm/tree/main/tools/vscode-extension#readme",
   "repository": {
@@ -35,35 +38,129 @@
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
-      { "command": "acm.run", "title": "Run Script", "category": "ACM", "icon": "$(play)" },
-      { "command": "acm.runSelection", "title": "Run Selection", "category": "ACM" },
-      { "command": "acm.validate", "title": "Validate Script", "category": "ACM", "icon": "$(check)" },
-      { "command": "acm.describe", "title": "Describe Inputs", "category": "ACM" },
-      { "command": "acm.abort", "title": "Abort Execution", "category": "ACM", "icon": "$(debug-stop)" },
-      { "command": "acm.selectInstance", "title": "Select Instance", "category": "ACM" },
-      { "command": "acm.setCredentials", "title": "Set Credentials", "category": "ACM" },
-      { "command": "acm.checkConnection", "title": "Check Connection", "category": "ACM" },
-      { "command": "acm.refreshExecutions", "title": "Refresh Executions", "category": "ACM", "icon": "$(refresh)" },
-      { "command": "acm.refreshScripts", "title": "Refresh Scripts", "category": "ACM", "icon": "$(refresh)" },
-      { "command": "acm.compareScript", "title": "Compare with Local File", "category": "ACM", "icon": "$(diff)" }
+      {
+        "command": "acm.run",
+        "title": "Run Script",
+        "category": "ACM",
+        "icon": "$(play)"
+      },
+      {
+        "command": "acm.runSelection",
+        "title": "Run Selection",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.validate",
+        "title": "Validate Script",
+        "category": "ACM",
+        "icon": "$(check)"
+      },
+      {
+        "command": "acm.describe",
+        "title": "Describe Inputs",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.abort",
+        "title": "Abort Execution",
+        "category": "ACM",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "acm.selectInstance",
+        "title": "Select Instance",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.setCredentials",
+        "title": "Set Credentials",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.checkConnection",
+        "title": "Check Connection",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.refreshExecutions",
+        "title": "Refresh Executions",
+        "category": "ACM",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "acm.refreshScripts",
+        "title": "Refresh Scripts",
+        "category": "ACM",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "acm.compareScript",
+        "title": "Compare with Local File",
+        "category": "ACM",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "acm.newScript",
+        "title": "New Script...",
+        "shortTitle": "ACM Script",
+        "category": "ACM"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "groovy",
+        "path": "./snippets/groovy.json"
+      }
     ],
     "menus": {
+      "file/newFile": [
+        {
+          "command": "acm.newScript"
+        }
+      ],
       "commandPalette": [
-        { "command": "acm.compareScript", "when": "false" }
+        {
+          "command": "acm.compareScript",
+          "when": "false"
+        }
       ],
       "view/item/context": [
-        { "command": "acm.abort", "when": "view == acm.executions && viewItem == execution.pending", "group": "inline" },
-        { "command": "acm.compareScript", "when": "view == acm.scripts && viewItem == script", "group": "inline" }
+        {
+          "command": "acm.abort",
+          "when": "view == acm.executions && viewItem == execution.pending",
+          "group": "inline"
+        },
+        {
+          "command": "acm.compareScript",
+          "when": "view == acm.scripts && viewItem == script",
+          "group": "inline"
+        }
       ],
       "editor/title": [
-        { "command": "acm.run", "when": "editorLangId == groovy", "group": "navigation" }
+        {
+          "command": "acm.run",
+          "when": "editorLangId == groovy",
+          "group": "navigation"
+        }
       ],
       "editor/context": [
-        { "command": "acm.runSelection", "when": "editorLangId == groovy && editorHasSelection", "group": "acm" }
+        {
+          "command": "acm.runSelection",
+          "when": "editorLangId == groovy && editorHasSelection",
+          "group": "acm"
+        }
       ],
       "view/title": [
-        { "command": "acm.refreshExecutions", "when": "view == acm.executions", "group": "navigation" },
-        { "command": "acm.refreshScripts", "when": "view == acm.scripts", "group": "navigation" }
+        {
+          "command": "acm.refreshExecutions",
+          "when": "view == acm.executions",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.refreshScripts",
+          "when": "view == acm.scripts",
+          "group": "navigation"
+        }
       ]
     },
     "configuration": {
@@ -71,17 +168,48 @@
       "properties": {
         "acm.instances": {
           "type": "array",
-          "default": [],
-          "markdownDescription": "AEM instances with ACM installed. Secrets are not stored here; use `ACM: Set Credentials`.",
+          "default": [
+            {
+              "name": "author",
+              "url": "http://localhost:4502",
+              "authMode": "basic",
+              "user": "admin"
+            }
+          ],
+          "markdownDescription": "AEM instances with ACM installed. Secrets are not stored here; use `ACM: Set Credentials`. A local instance with basic auth and user `admin` uses password `admin` until other credentials are set.",
           "items": {
             "type": "object",
-            "required": ["name", "url", "authMode"],
+            "required": [
+              "name",
+              "url",
+              "authMode"
+            ],
             "properties": {
-              "name": { "type": "string", "description": "Display name, e.g. local, dev, prod." },
-              "url": { "type": "string", "description": "AEM author URL, e.g. http://localhost:4502." },
-              "authMode": { "type": "string", "enum": ["bearer", "cookie", "basic"] },
-              "user": { "type": "string", "description": "User for basic auth (required for basic)." },
-              "readonly": { "type": "boolean", "default": false, "description": "Block running code on this instance. Non-local instances ask for confirmation before running." }
+              "name": {
+                "type": "string",
+                "description": "Display name, e.g. local, dev, prod."
+              },
+              "url": {
+                "type": "string",
+                "description": "AEM author URL, e.g. http://localhost:4502."
+              },
+              "authMode": {
+                "type": "string",
+                "enum": [
+                  "bearer",
+                  "cookie",
+                  "basic"
+                ]
+              },
+              "user": {
+                "type": "string",
+                "description": "User for basic auth (required for basic)."
+              },
+              "readonly": {
+                "type": "boolean",
+                "default": false,
+                "description": "Block running code on this instance. Non-local instances ask for confirmation before running."
+              }
             }
           }
         },
@@ -99,13 +227,23 @@
     },
     "viewsContainers": {
       "activitybar": [
-        { "id": "acm", "title": "ACM", "icon": "media/acm.svg" }
+        {
+          "id": "acm",
+          "title": "ACM",
+          "icon": "media/acm.svg"
+        }
       ]
     },
     "views": {
       "acm": [
-        { "id": "acm.executions", "name": "Executions" },
-        { "id": "acm.scripts", "name": "Scripts" }
+        {
+          "id": "acm.executions",
+          "name": "Executions"
+        },
+        {
+          "id": "acm.scripts",
+          "name": "Scripts"
+        }
       ]
     },
     "viewsWelcome": [
@@ -121,21 +259,32 @@
       }
     ],
     "chatSkills": [
-      { "path": "./skills/acm-groovy-script/SKILL.md" }
+      {
+        "path": "./skills/acm-groovy-script/SKILL.md"
+      }
     ]
   },
   "scripts": {
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "pretest": "node esbuild.mjs",
+    "test": "vscode-test",
     "vscode:prepublish": "node esbuild.mjs --production",
     "package": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\" && vsce package --no-dependencies"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/node": "^22.19.20",
     "@types/vscode": "^1.95.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.6.0",
     "esbuild": "^0.25.0",
-    "typescript": "^5.9.3"
+    "eslint": "^9.39.5",
+    "ovsx": "^1.2.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.1"
   }
 }

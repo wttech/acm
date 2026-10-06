@@ -27,6 +27,8 @@ boolean canRun() {
 
 void doRun() {
   out.info "ACL setup started"
+
+  Thread.sleep(5000)
   
   def tenantPaths = ["/content/acme", "/content/wknd", "/content/we-retail"]
   def groupsCreated = 0
