@@ -747,6 +747,8 @@ All code executions are logged in the history. You can see the status of each ex
 Original code is stored in the history, so you can always refer back to it if needed.
 Complete output as well as input values are also included to achieve full traceability.
 
+The UI only clears the whole history at once. To let an external tool re-trigger a specific automatic script (e.g. for retests against `conditions.once()`/`conditions.changed()`), trigger the `HISTORY_CLEAR` event with an `executableId` (e.g. `POST /apps/acm/api/event.json?name=HISTORY_CLEAR&executableId=...`) with the `maintenance/manage` feature permission. Like the full clear, this is replicated to every instance, not just the one handling the request, and removes only the executions matching that executable ID.
+
 <img src="docs/screenshot-history.png" width="720" alt="ACM History - Executions">
 <img src="docs/screenshot-history-execution-code.png" width="720" alt="ACM History - Execution Code">
 <img src="docs/screenshot-history-execution-output.png" width="720" alt="ACM History - Execution Output">

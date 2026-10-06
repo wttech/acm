@@ -10,6 +10,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.jcr.query.Query;
 import org.apache.commons.lang3.StringUtils;
@@ -185,6 +186,21 @@ public class ExecutionHistory {
             return false;
         } catch (PersistenceException e) {
             throw new AcmException(String.format("Cannot clear execution history at root '%s'!", ROOT), e);
+        }
+    }
+
+    public boolean clear(ExecutionQuery query) {
+        try {
+            List<Resource> entries = executeSql(query.toSql()).collect(Collectors.toList());
+            for (Resource entry : entries) {
+                resourceResolver.delete(entry);
+            }
+            if (!entries.isEmpty()) {
+                resourceResolver.commit();
+            }
+            return !entries.isEmpty();
+        } catch (PersistenceException e) {
+            throw new AcmException(String.format("Cannot clear execution history matching query '%s'!", query), e);
         }
     }
 }
