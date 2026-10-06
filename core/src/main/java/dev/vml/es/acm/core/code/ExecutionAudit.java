@@ -5,8 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Trail of code run through the ACM API. Only runs that leave no execution in history are logged at INFO;
- * everything else (compile checks, describing inputs, recorded runs) at DEBUG, so busy clients do not flood logs.
+ * Trail of code run through the ACM API: INFO for runs that leave no execution in history,
+ * DEBUG for other runs, checks and input descriptions, TRACE for compile checks (sent by editors on every change).
  */
 public final class ExecutionAudit {
 
@@ -21,13 +21,19 @@ public final class ExecutionAudit {
         // intentionally empty
     }
 
-    public static void log(String action, ExecutionContext context, Execution execution) {
+    public static void info(String action, ExecutionContext context, Execution execution) {
         LOG.info(MESSAGE, args(action, context, execution));
     }
 
-    public static void trace(String action, ExecutionContext context, Execution execution) {
+    public static void debug(String action, ExecutionContext context, Execution execution) {
         if (LOG.isDebugEnabled()) {
             LOG.debug(MESSAGE, args(action, context, execution));
+        }
+    }
+
+    public static void trace(String action, ExecutionContext context, Execution execution) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(MESSAGE, args(action, context, execution));
         }
     }
 

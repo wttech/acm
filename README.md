@@ -249,7 +249,15 @@ end
 
 #### Audit log
 
-Code run through the ACM API that leaves no execution in the history (run without history, or not queued because `canRun()` returned false or failed) is logged by the `dev.vml.es.acm.audit` logger at `INFO`, with the user, executable, mode, status, execution ID and a checksum of the code. Everything else the API runs (compile checks, describing inputs, runs recorded in the history) is logged at `DEBUG` only, so editors and AI agents do not flood the logs. Set the logger to `DEBUG` with a Sling logging configuration for a full trail; on AEM as a Cloud Service it is available like any other log, e.g. through log forwarding.
+Code run through the ACM API is logged by the `dev.vml.es.acm.audit` logger, with the user, executable, mode, status, execution ID and a checksum of the code:
+
+| Level | Logged |
+|---|---|
+| `INFO` | Runs that leave no execution in the history: run without history, or not queued because `canRun()` returned false or failed. |
+| `DEBUG` | Runs recorded in the history, checks before queueing, describing inputs. |
+| `TRACE` | Compile checks, which editors and AI agents send on every change. |
+
+So by default only what the history cannot show is logged. Lower the logger level with a Sling logging configuration for a fuller trail; on AEM as a Cloud Service it is available like any other log, e.g. through log forwarding. Compile errors are returned to the caller and logged at `DEBUG` only, not as errors.
 
 ## Compatibility
 

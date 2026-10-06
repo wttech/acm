@@ -86,10 +86,12 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
 
             try {
                 Execution execution = executor.execute(context);
-                if (mode == ExecutionMode.RUN && !context.isHistory()) {
-                    ExecutionAudit.log("Code executed without history", context, execution);
+                if (mode == ExecutionMode.PARSE) {
+                    ExecutionAudit.trace("Code parsed", context, execution);
+                } else if (mode == ExecutionMode.RUN && !context.isHistory()) {
+                    ExecutionAudit.info("Code executed without history", context, execution);
                 } else {
-                    ExecutionAudit.trace("Code executed", context, execution);
+                    ExecutionAudit.debug("Code executed", context, execution);
                 }
 
                 respondJson(

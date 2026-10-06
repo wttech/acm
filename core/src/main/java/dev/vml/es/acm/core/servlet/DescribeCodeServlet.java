@@ -62,7 +62,7 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
                     request.getResourceResolver(),
                     new CodeOutputMemory())) {
                 Description description = executor.describe(context);
-                ExecutionAudit.trace("Code described", context, description.getExecution());
+                ExecutionAudit.debug("Code described", context, description.getExecution());
 
                 respondJson(
                         response,

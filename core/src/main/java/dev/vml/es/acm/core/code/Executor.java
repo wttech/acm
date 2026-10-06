@@ -311,7 +311,10 @@ public class Executor implements EventListener {
                 execution.error(e);
                 return execution.end(ExecutionStatus.ABORTED);
             } else {
-                if (!healthChecking) {
+                if (context.getMode() == ExecutionMode.PARSE) {
+                    // Compile errors go back to the caller; editors and agents check code on every change.
+                    LOG.debug("Execution parsing failed '{}': {}", context.getId(), e.getMessage());
+                } else if (!healthChecking) {
                     LOG.error("Execution failed '{}'", context.getId(), e);
                 }
                 execution.error(e);

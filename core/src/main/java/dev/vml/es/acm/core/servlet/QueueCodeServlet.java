@@ -72,9 +72,9 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                     new CodeOutputMemory())) {
                 Execution checkExecution = executor.execute(context);
                 if (checkExecution.getStatus() == ExecutionStatus.SUCCEEDED) {
-                    ExecutionAudit.trace("Code checked before queueing", context, checkExecution);
+                    ExecutionAudit.debug("Code checked before queueing", context, checkExecution);
                 } else {
-                    ExecutionAudit.log("Code not queued", context, checkExecution);
+                    ExecutionAudit.info("Code not queued", context, checkExecution);
                 }
                 if (checkExecution.getStatus() == ExecutionStatus.SKIPPED) {
                     QueueOutput output = new QueueOutput(Collections.singletonList(checkExecution));
