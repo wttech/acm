@@ -87,7 +87,10 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
       - [Example snippet](#example-snippet)
     - [Mocks](#mocks)
     - [Notifications](#notifications)
-  - [MCP Server](#mcp-server)
+  - [AI and IDE tools](#ai-and-ide-tools)
+    - [MCP server](#mcp-server)
+    - [VS Code extension](#vs-code-extension)
+    - [Agent skill](#agent-skill)
   - [Development](#development)
   - [Releasing](#releasing)
   - [Authors](#authors)
@@ -231,6 +234,31 @@ set ACL for acm-automation-user
 end
 ```
 
+Stored scripts always run with their content from the repository: the `script/execute` feature allows running the scripts as they are, never other code. Running any code requires `console/execute`.
+
+#### Running without history
+
+Every execution is recorded in the [history](#history), unless the caller asks otherwise (e.g. AI agents iterating on read-only code through the [MCP server](tools/mcp-server/README.md)). That requires the `console/execute/nohistory` feature, which by default only administrators have. To deny it to a group that otherwise has all features:
+
+```ini
+set ACL for acm-automation-user
+    allow jcr:read on /apps/acm/feature
+    deny jcr:read on /apps/acm/feature/console/execute/nohistory
+end
+```
+
+#### Audit log
+
+Code run through the ACM API is logged by the `dev.vml.es.acm.audit` logger, with the user, executable, mode, status, execution ID and a checksum of the code:
+
+| Level | Logged |
+|---|---|
+| `INFO` | Runs that leave no execution in the history: run without history, or not queued because `canRun()` returned false or failed. |
+| `DEBUG` | Runs recorded in the history, checks before queueing, describing inputs. |
+| `TRACE` | Compile checks, which editors and AI agents send on every change. |
+
+So by default only what the history cannot show is logged. Lower the logger level with a Sling logging configuration for a fuller trail; on AEM as a Cloud Service it is available like any other log, e.g. through log forwarding. Compile errors are returned to the caller and logged at `DEBUG` only, not as errors.
+
 ## Compatibility
 
 | AEM Content Manager | AEM           | Java      | Groovy  |
@@ -344,8 +372,8 @@ boolean canRun() {
 
 void doRun() {
     out.info "Removing deprecated properties from pages..."
-    repo.get("/content/acme").query("n.[sling:resourceType=acme/component/page]").each { page ->
-        page.removeProperty("deprecatedProperty")
+    repo.get("/content/acme").query("cq:PageContent", "n.[sling:resourceType] = 'acme/component/page'").forEach { page ->
+        page.deleteProperty("deprecatedProperty")
     }
     out.success "Removed deprecated properties successfully."
 }
@@ -807,18 +835,23 @@ notifier.sendMessageTo("acme", "ACME Project Notifications", "An important event
 notifier.sendMessage("ACME Project Notifications", "Let's start the day with a coffee!") // uses the 'default' notifier
 ```
 
-## MCP Server
+## AI and IDE tools
 
-The [ACM MCP server](tools/mcp-server/README.md) connects AI agents such as Claude Code, Claude Desktop, VS Code and Cursor to ACM through the [Model Context Protocol](https://modelcontextprotocol.io). An agent can validate and run Groovy scripts, follow executions, and read history, console output and stored scripts, all as the user whose credentials you configure.
+ACM comes with [tools](tools/README.md) that bring script development into your editor and AI agent. They are versioned and released separately from ACM.
 
-```shell
-claude mcp add acm \
-  --env AEM_BASE_URL=https://author-pXXXX-eYYYY.adobeaemcloud.com \
-  --env AEM_TOKEN=eyJhbGciOi... \
-  -- npx -y @wppes/acm-mcp-server
-```
+### MCP server
 
-See the [MCP server documentation](tools/mcp-server/README.md) for other clients, authentication options and security recommendations.
+The [ACM MCP server](tools/mcp-server/README.md) connects AI agents such as Claude Code, Claude Desktop, VS Code (Copilot), Cursor and Devin to ACM through the [Model Context Protocol](https://modelcontextprotocol.io). An agent can validate and run Groovy scripts, follow executions, and read history, console output and stored scripts, all as the user whose credentials you configure. It also gives the agent the [ACM scripting skill](#agent-skill).
+
+It runs as `npx -y @wppes/acm-mcp-server` (stdio) and is configured with environment variables. The simplest setup is to ask your agent to register it; the [MCP server documentation](tools/mcp-server/README.md#2-register-the-server-with-your-agent) has a ready-to-use prompt, authentication options and security recommendations.
+
+### VS Code extension
+
+The [ACM extension for VS Code](tools/vscode-extension/README.md) (preview, `wppes.acm` on the VS Code Marketplace and Open VSX) runs scripts on your AEM instances from the editor, with inputs, live console output, compile errors on save, code completion and docs for the ACM script API, documented script templates, and views of executions and stored scripts. It bundles the MCP server for the active instance and the [ACM scripting skill](#agent-skill), so Copilot agent mode works with ACM without any setup. A local AEM SDK at `http://localhost:4502` works out of the box.
+
+### Agent skill
+
+The [ACM Groovy scripting skill](tools/skills/acm-groovy-script/SKILL.md) teaches AI agents to write correct and safe ACM scripts: script types, dry runs, abortable loops, logging, and a complete [API reference](tools/skills/acm-groovy-script/references/api.md) generated from the ACM source code. The MCP server and the VS Code extension include it. For other agents, copy the [skill folder](tools/skills/acm-groovy-script) into your project's `.github/skills/`, `.claude/skills/` or `.agents/skills/` directory, or into `~/.claude/skills/` to use it everywhere.
 
 ## Development
 

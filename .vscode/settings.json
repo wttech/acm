@@ -3,5 +3,6 @@
         "**/aem/home": true,
         "**/node": true
     },
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "acm.activeInstance": "local"
 }

@@ -1,36 +1,91 @@
-# ACM for VS Code
+# AEM Content Manager (ACM) for VS Code
 
-Write, validate and run [AEM Content Manager (ACM)](https://github.com/wttech/acm) Groovy scripts from VS Code.
+Write, validate and run [AEM Content Manager (ACM)](https://github.com/wttech/acm) Groovy scripts on Adobe Experience Manager without leaving the editor, and let AI agents do the same safely.
 
-> [!NOTE]
-> Early preview. Most commands are stubs; see the [roadmap](ROADMAP.md).
+Works with AEM as a Cloud Service, AEM 6.5 and AMS, wherever ACM is installed.
 
-## Installation
+> **Preview.** Feedback and issues are welcome on [GitHub](https://github.com/wttech/acm/issues).
 
-1. Download `acm-<version>.vsix` from the [releases](https://github.com/wttech/acm/releases?q=vscode-extension) (or from the `acm-vscode-extension` artifact of a CI run).
-2. In VS Code, run `Extensions: Install from VSIX...` and pick the file.
+## Features
+
+- **Zero-config start.** A local AEM SDK at `http://localhost:4502` with `admin`/`admin` works right after installing. The *Get Started with ACM* walkthrough shows the rest.
+- **Run scripts and selections** on the active instance. Inputs declared in `describeRun()` are asked for (files are uploaded), console output streams into the `ACM` output channel, and a running script can be aborted.
+- **Run without history** while iterating on read-only code, for users with ACM's `console/execute/nohistory` permission. Such runs are still traced in ACM's [audit log](https://github.com/wttech/acm#audit-log).
+- **Compile errors on save.** Scripts are checked by ACM on the active instance and errors show up in Problems.
+- **Code completion and docs** for the whole ACM script API (`repo`, `acl`, `inputs`, `outputs`, `conditions`, …), generated from the ACM source.
+- **Documented templates.** `File > New File... > ACM Script` starts from a template: content migration, ACL setup, CSV report, scheduled cleanup, console code or HTTP mock. Type `acmdoc` to add the documentation header shown in the ACM UI.
+- **Executions and Scripts views.** Browse the execution history with logs and download outputs; open scripts stored on the instance and compare them with local files.
+- **Instance status** in the status bar: switch instances in one click, see at a glance when one is unreachable, unauthorized or unhealthy.
+- **AI agents.** Copilot gets the ACM scripting skill and the ACM MCP server for the active instance, with no setup (see below).
+
+## AI agents
+
+The extension contributes:
+
+- the [ACM Groovy scripting skill](https://github.com/wttech/acm/blob/main/tools/skills/acm-groovy-script/SKILL.md), so agents write scripts with the real ACM API, dry runs, abort checks and documentation;
+- the [ACM MCP server](https://github.com/wttech/acm/tree/main/tools/mcp-server) for the active instance, so agents in agent mode can validate and run scripts, follow executions and read outputs.
+
+The MCP server is bundled and runs on the editor's own Node.js; credentials come from VS Code secret storage, never from `mcp.json` or other files. Switching the instance in the status bar switches the server, and a `readonly` instance gets a read-only server. Turn it off with `acm.mcp.enabled`.
+
+For other tools (Claude Code, Cursor, Devin, …) run **ACM: Copy MCP Setup Prompt** and paste it into the agent. It describes what to register for the active instance, and the agent knows where its tool keeps MCP configuration. The prompt contains no secrets. It uses the standalone [`@wppes/acm-mcp-server`](https://www.npmjs.com/package/@wppes/acm-mcp-server) package, which needs Node.js 22 or later.
+
+> Agents run code with your AEM permissions. Prefer `readonly` instances or a user with limited ACM permissions outside local development, and review tool calls before approving them.
 
 ## Configuration
 
-Add instances in settings, then run `ACM: Select Instance` and `ACM: Set Credentials`:
+Instances live in settings, typically the workspace's `.vscode/settings.json`, so a project can share them:
 
 ```json
 "acm.instances": [
-  { "name": "local", "url": "http://localhost:4502", "authMode": "basic", "user": "admin" },
+  { "name": "author", "url": "http://localhost:4502", "authMode": "basic", "user": "admin" },
   { "name": "dev", "url": "https://author-pXXXX-eYYYY.adobeaemcloud.com", "authMode": "bearer", "readonly": true }
 ]
 ```
 
-Tokens, cookies and passwords are kept in VS Code secret storage, never in settings.
+Run `ACM: Select Instance` (or click the status bar) to switch, and `ACM: Set Credentials` to enter the secret:
+
+| `authMode` | Secret | Typical use |
+|---|---|---|
+| `basic` | password of `user` | local AEM SDK, on-premise |
+| `bearer` | access token, e.g. the local development token from the AEMaaCS Developer Console | AEM as a Cloud Service |
+| `cookie` | value of the `login-token` cookie from a browser session | any instance you can log into |
+
+Secrets are kept in VS Code secret storage and bound to the instance URL. When they expire, the status bar and error messages lead to `ACM: Set Credentials`.
+
+Guardrails: running on a `readonly` instance is blocked, and running on any non-local instance asks for confirmation. In untrusted workspaces, instances are read from user settings only.
+
+| Setting | Default | Description |
+|---|---|---|
+| `acm.instances` | local `author` | AEM instances with ACM installed. |
+| `acm.activeInstance` | | Instance used by commands; the only instance when just one is configured. |
+| `acm.validateOnSave` | `true` | Compile-check scripts declaring `doRun()` when saved. |
+| `acm.mcp.enabled` | `true` | Offer the bundled ACM MCP server to agents. |
+| `acm.http.timeout` | `30000` | Timeout of each HTTP request to AEM, in ms. |
+| `acm.run.timeout` | `120000` | Wait for a run, in ms: the limit of a run without history, and how long the MCP server waits before returning the execution ID. Runs from the editor with history are followed until they finish. |
+| `acm.run.pollInterval` | `1000` | How often a queued run is checked, in ms. |
+| `acm.health.interval` | `60000` | How often the status bar checks the instance, in ms; `0` only on changes. |
+| `acm.executions.limit` | `50` | Past executions shown in the Executions view. |
+
+Timings apply to the bundled MCP server too.
+
+## Requirements
+
+- VS Code 1.101 or later (or a compatible editor).
+- ACM installed on the instance, and a user with access to the ACM API and the console feature. See [ACM permissions](https://github.com/wttech/acm#tools-access-configuration).
 
 ## Development
 
 ```shell
 cd tools/vscode-extension
 npm install
-npm run watch       # then press F5 in VS Code with this folder open
-npm run typecheck
-npm run package     # builds acm-<version>.vsix
+npm run watch                                      # rebuild on change
+code --extensionDevelopmentPath="$PWD" ../..       # editor with the extension loaded
+npm run typecheck && npm run lint && npm test
+npm run package                                    # builds acm-<version>.vsix
 ```
 
-Shared ACM domain code lives in [tools/shared](../shared) and is bundled in as `@acm/shared`; see [tools/README.md](../README.md).
+Shared ACM code lives in [tools/shared](https://github.com/wttech/acm/tree/main/tools/shared) and is bundled in as `@acm/shared`; see the [tools overview](https://github.com/wttech/acm/blob/main/tools/README.md) and the [roadmap](https://github.com/wttech/acm/blob/main/tools/vscode-extension/ROADMAP.md).
+
+## License
+
+[Apache License 2.0](https://github.com/wttech/acm/blob/main/LICENSE)

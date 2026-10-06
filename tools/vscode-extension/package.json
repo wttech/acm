@@ -4,7 +4,10 @@
   "description": "Write, validate and run AEM Content Manager (ACM) Groovy scripts from VS Code.",
   "version": "0.1.0",
   "private": true,
-  "publisher": "wttech",
+  "publisher": "wppes",
+  "author": "WPP Enterprise Solutions",
+  "preview": true,
+  "icon": "media/icon.png",
   "license": "Apache-2.0",
   "homepage": "https://github.com/wttech/acm/tree/main/tools/vscode-extension#readme",
   "repository": {
@@ -16,7 +19,7 @@
     "url": "https://github.com/wttech/acm/issues"
   },
   "engines": {
-    "vscode": "^1.95.0"
+    "vscode": "^1.101.0"
   },
   "categories": [
     "Programming Languages",
@@ -30,32 +33,223 @@
     "groovy"
   ],
   "activationEvents": [
-    "onLanguage:groovy"
+    "onLanguage:groovy",
+    "onMcpServerDefinitionProvider:acm"
   ],
   "main": "./dist/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "In untrusted workspaces, instances are read from user settings only.",
+      "restrictedConfigurations": [
+        "acm.instances",
+        "acm.activeInstance"
+      ]
+    }
+  },
   "contributes": {
     "commands": [
-      { "command": "acm.run", "title": "Run Script", "category": "ACM", "icon": "$(play)" },
-      { "command": "acm.runSelection", "title": "Run Selection", "category": "ACM" },
-      { "command": "acm.validate", "title": "Validate Script", "category": "ACM", "icon": "$(check)" },
-      { "command": "acm.describe", "title": "Describe Inputs", "category": "ACM" },
-      { "command": "acm.abort", "title": "Abort Execution", "category": "ACM", "icon": "$(debug-stop)" },
-      { "command": "acm.selectInstance", "title": "Select Instance", "category": "ACM" },
-      { "command": "acm.setCredentials", "title": "Set Credentials", "category": "ACM" },
-      { "command": "acm.checkConnection", "title": "Check Connection", "category": "ACM" },
-      { "command": "acm.refreshExecutions", "title": "Refresh Executions", "category": "ACM", "icon": "$(refresh)" },
-      { "command": "acm.refreshScripts", "title": "Refresh Scripts", "category": "ACM", "icon": "$(refresh)" }
+      {
+        "command": "acm.run",
+        "title": "Run Script",
+        "category": "ACM",
+        "icon": "$(play)"
+      },
+      {
+        "command": "acm.runSelection",
+        "title": "Run Selection",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.runWithoutHistory",
+        "title": "Run Without History",
+        "category": "ACM",
+        "enablement": "acm.canRunWithoutHistory"
+      },
+      {
+        "command": "acm.validate",
+        "title": "Validate Script",
+        "category": "ACM",
+        "icon": "$(check)"
+      },
+      {
+        "command": "acm.describe",
+        "title": "Describe Inputs",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.abort",
+        "title": "Abort Execution",
+        "category": "ACM",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "acm.selectInstance",
+        "title": "Select Instance",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.setCredentials",
+        "title": "Set Credentials",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.checkConnection",
+        "title": "Check Connection",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.refreshExecutions",
+        "title": "Refresh Executions",
+        "category": "ACM",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "acm.refreshScripts",
+        "title": "Refresh Scripts",
+        "category": "ACM",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "acm.compareScript",
+        "title": "Compare with Local File",
+        "category": "ACM",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "acm.newScript",
+        "title": "New Script...",
+        "shortTitle": "ACM Script",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.downloadOutputs",
+        "title": "Download Outputs...",
+        "category": "ACM",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "acm.copyMcpSetup",
+        "title": "Copy MCP Setup Prompt",
+        "category": "ACM"
+      }
+    ],
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "acm",
+        "label": "AEM Content Manager (ACM)"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "acm.start",
+        "title": "Get Started with ACM",
+        "description": "Connect to AEM, write a documented script, run it, and let an agent help.",
+        "steps": [
+          {
+            "id": "connect",
+            "title": "Connect to AEM",
+            "description": "A local AEM SDK at http://localhost:4502 with admin/admin works out of the box. For other instances, add them to the acm.instances setting and set their credentials.\n[Check Connection](command:acm.checkConnection)\n[Add Instance](command:workbench.action.openSettings?%5B%22acm.instances%22%5D)\n[Set Credentials](command:acm.setCredentials)",
+            "media": { "markdown": "media/walkthrough/connect.md" },
+            "completionEvents": ["onCommand:acm.checkConnection"]
+          },
+          {
+            "id": "write",
+            "title": "Write a script",
+            "description": "Start from a documented template: content migration, ACL setup, report, scheduled cleanup and more. Completion and docs cover the whole ACM script API.\n[New ACM Script](command:acm.newScript)",
+            "media": { "markdown": "media/walkthrough/write.md" },
+            "completionEvents": ["onCommand:acm.newScript"]
+          },
+          {
+            "id": "run",
+            "title": "Run it",
+            "description": "Run the script on the active instance. Inputs are asked for, the console output streams into the ACM output channel, and the run lands in the Executions view.\n[Run Script](command:acm.run)",
+            "media": { "markdown": "media/walkthrough/run.md" },
+            "completionEvents": ["onCommand:acm.run"]
+          },
+          {
+            "id": "agent",
+            "title": "Let an agent help",
+            "description": "In agent mode, Copilot knows how to write ACM scripts and can validate and run them on the active instance through the bundled ACM MCP server. You approve each run.\n[Open Chat](command:workbench.action.chat.open)",
+            "media": { "markdown": "media/walkthrough/agent.md" },
+            "completionEvents": ["onCommand:workbench.action.chat.open"]
+          }
+        ]
+      }
+    ],
+    "snippets": [
+      {
+        "language": "groovy",
+        "path": "./snippets/groovy.json"
+      }
     ],
     "menus": {
+      "file/newFile": [
+        {
+          "command": "acm.newScript"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "acm.runWithoutHistory",
+          "when": "acm.canRunWithoutHistory"
+        },
+        {
+          "command": "acm.compareScript",
+          "when": "false"
+        },
+        {
+          "command": "acm.downloadOutputs",
+          "when": "false"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "acm.downloadOutputs",
+          "when": "view == acm.executions && viewItem == execution",
+          "group": "inline"
+        },
+        {
+          "command": "acm.abort",
+          "when": "view == acm.executions && viewItem == execution.pending",
+          "group": "inline"
+        },
+        {
+          "command": "acm.compareScript",
+          "when": "view == acm.scripts && viewItem == script",
+          "group": "inline"
+        }
+      ],
       "editor/title": [
-        { "command": "acm.run", "when": "editorLangId == groovy", "group": "navigation" }
+        {
+          "command": "acm.run",
+          "when": "editorLangId == groovy",
+          "group": "navigation"
+        }
       ],
       "editor/context": [
-        { "command": "acm.runSelection", "when": "editorLangId == groovy && editorHasSelection", "group": "acm" }
+        {
+          "command": "acm.runSelection",
+          "when": "editorLangId == groovy && editorHasSelection",
+          "group": "acm"
+        },
+        {
+          "command": "acm.runWithoutHistory",
+          "when": "editorLangId == groovy && acm.canRunWithoutHistory",
+          "group": "acm"
+        }
       ],
       "view/title": [
-        { "command": "acm.refreshExecutions", "when": "view == acm.executions", "group": "navigation" },
-        { "command": "acm.refreshScripts", "when": "view == acm.scripts", "group": "navigation" }
+        {
+          "command": "acm.refreshExecutions",
+          "when": "view == acm.executions",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.refreshScripts",
+          "when": "view == acm.scripts",
+          "group": "navigation"
+        }
       ]
     },
     "configuration": {
@@ -63,47 +257,135 @@
       "properties": {
         "acm.instances": {
           "type": "array",
-          "default": [],
-          "markdownDescription": "AEM instances with ACM installed. Secrets are not stored here; use `ACM: Set Credentials`.",
+          "default": [
+            {
+              "name": "author",
+              "url": "http://localhost:4502",
+              "authMode": "basic",
+              "user": "admin"
+            }
+          ],
+          "markdownDescription": "AEM instances with ACM installed. Secrets are not stored here; use `ACM: Set Credentials`. A local instance with basic auth and user `admin` uses password `admin` until other credentials are set.",
           "items": {
             "type": "object",
-            "required": ["name", "url", "authMode"],
+            "required": [
+              "name",
+              "url",
+              "authMode"
+            ],
             "properties": {
-              "name": { "type": "string", "description": "Display name, e.g. local, dev, prod." },
-              "url": { "type": "string", "description": "AEM author URL, e.g. http://localhost:4502." },
-              "authMode": { "type": "string", "enum": ["bearer", "cookie", "basic"] },
-              "user": { "type": "string", "description": "User for basic auth." },
-              "readonly": { "type": "boolean", "default": false, "description": "Block running code on this instance." }
+              "name": {
+                "type": "string",
+                "description": "Display name, e.g. local, dev, prod."
+              },
+              "url": {
+                "type": "string",
+                "description": "AEM author URL, e.g. http://localhost:4502."
+              },
+              "authMode": {
+                "type": "string",
+                "enum": [
+                  "bearer",
+                  "cookie",
+                  "basic"
+                ]
+              },
+              "user": {
+                "type": "string",
+                "description": "User for basic auth (required for basic)."
+              },
+              "readonly": {
+                "type": "boolean",
+                "default": false,
+                "description": "Block running code on this instance. Non-local instances ask for confirmation before running."
+              }
             }
           }
         },
         "acm.activeInstance": {
           "type": "string",
           "default": "",
-          "description": "Name of the instance used by commands."
+          "description": "Name of the instance used by commands. Defaults to the only instance when just one is configured."
         },
         "acm.validateOnSave": {
           "type": "boolean",
           "default": true,
           "description": "Compile-check Groovy scripts on the active instance when saved."
+        },
+        "acm.mcp.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Offer the bundled ACM MCP server for the active instance to agents (e.g. Copilot agent mode). Credentials come from secret storage; `readonly` instances get a read-only server."
+        },
+        "acm.http.timeout": {
+          "type": "integer",
+          "default": 30000,
+          "minimum": 1000,
+          "markdownDescription": "Timeout of each HTTP request to AEM, in milliseconds. Also used by the bundled MCP server."
+        },
+        "acm.run.timeout": {
+          "type": "integer",
+          "default": 120000,
+          "minimum": 1000,
+          "markdownDescription": "How long to wait for a run, in milliseconds. A run without history is a single request and fails after this time (the script may keep running on AEM). The MCP server waits this long for a queued run before returning its execution ID. Runs started from the editor with history are followed until they finish."
+        },
+        "acm.run.pollInterval": {
+          "type": "integer",
+          "default": 1000,
+          "minimum": 100,
+          "markdownDescription": "How often a queued run is checked for status and new console output, in milliseconds. Also used by the bundled MCP server."
+        },
+        "acm.health.interval": {
+          "type": "integer",
+          "default": 60000,
+          "minimum": 0,
+          "markdownDescription": "How often the active instance's health is checked for the status bar, in milliseconds. `0` checks only on start, on changes and on `ACM: Check Connection`."
+        },
+        "acm.executions.limit": {
+          "type": "integer",
+          "default": 50,
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Number of past executions shown in the Executions view."
         }
       }
     },
     "viewsContainers": {
       "activitybar": [
-        { "id": "acm", "title": "ACM", "icon": "media/acm.svg" }
+        {
+          "id": "acm",
+          "title": "ACM",
+          "icon": "media/acm.svg"
+        }
       ]
     },
     "views": {
       "acm": [
-        { "id": "acm.executions", "name": "Executions" },
-        { "id": "acm.scripts", "name": "Scripts" }
+        {
+          "id": "acm.executions",
+          "name": "Executions"
+        },
+        {
+          "id": "acm.scripts",
+          "name": "Scripts"
+        }
       ]
     },
     "viewsWelcome": [
       {
         "view": "acm.executions",
-        "contents": "No ACM instance selected.\n[Select Instance](command:acm.selectInstance)"
+        "contents": "No ACM instance selected.\n[Select Instance](command:acm.selectInstance)",
+        "when": "!acm.hasInstance"
+      },
+      {
+        "view": "acm.scripts",
+        "contents": "No ACM instance selected.\n[Select Instance](command:acm.selectInstance)",
+        "when": "!acm.hasInstance"
+      }
+    ],
+    "chatSkills": [
+      {
+        "path": "./skills/acm-groovy-script/SKILL.md"
       }
     ]
   },
@@ -111,14 +393,25 @@
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "pretest": "node esbuild.mjs",
+    "test": "vscode-test",
     "vscode:prepublish": "node esbuild.mjs --production",
     "package": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\" && vsce package --no-dependencies"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@types/node": "^22.19.20",
-    "@types/vscode": "^1.95.0",
+    "@types/vscode": "~1.101.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.6.0",
     "esbuild": "^0.25.0",
-    "typescript": "^5.9.3"
+    "eslint": "^9.39.5",
+    "ovsx": "^1.2.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.1",
+    "zod": "^3.25.76"
   }
 }

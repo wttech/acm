@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node ../tools/shared/codegen.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint . --fix",
     "preview": "vite preview",

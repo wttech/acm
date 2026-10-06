@@ -98,13 +98,28 @@ async function main() {
 
     const prompts = await client.listPrompts();
     check(
-      "prompts/list returns acm-scripting-guide",
-      prompts.prompts.some((p) => p.name === "acm-scripting-guide")
+      "prompts/list returns acm-groovy-script",
+      prompts.prompts.some((p) => p.name === "acm-groovy-script")
     );
-    const prompt = await client.getPrompt({ name: "acm-scripting-guide" });
+    const prompt = await client.getPrompt({ name: "acm-groovy-script" });
     check(
-      "prompts/get returns scripting conventions",
+      "prompts/get returns the scripting guide",
       prompt.messages?.[0]?.content?.text?.includes("canRun()")
+    );
+
+    const resources = await client.listResources();
+    check(
+      "resources/list returns the generated API reference",
+      resources.resources.some((res) => res.uri === "acm://skill/references/api.md")
+    );
+    const apiReference = await client.readResource({ uri: "acm://skill/references/api.md" });
+    check(
+      "resources/read returns the API reference",
+      apiReference.contents?.[0]?.text?.includes("### Repo")
+    );
+    check(
+      "initialize returns the essentials as instructions",
+      client.getInstructions()?.includes("context.checkAborted()")
     );
 
     console.log("\n— acm_health");

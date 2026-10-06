@@ -45,7 +45,13 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            Code code = input.getCode();
+            Code code = executor.authorizeCode(input.getCode(), request.getResourceResolver())
+                    .orElse(null);
+            if (code == null) {
+                String codeId = input.getCode() != null ? input.getCode().getId() : null;
+                respondJson(response, forbidden(String.format("Code from '%s' is not authorized!", codeId)));
+                return;
+            }
 
             try (ExecutionContext context = executor.createContext(
                     ExecutionId.generate(),
@@ -56,6 +62,7 @@ public class DescribeCodeServlet extends SlingAllMethodsServlet {
                     request.getResourceResolver(),
                     new CodeOutputMemory())) {
                 Description description = executor.describe(context);
+                ExecutionAudit.debug("Code described", context, description.getExecution());
 
                 respondJson(
                         response,

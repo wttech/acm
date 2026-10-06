@@ -54,9 +54,11 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            Code code = input.getCode();
-            if (!executor.authorize(code, request.getResourceResolver())) {
-                respondJson(response, forbidden(String.format("Code from '%s' is not authorized!", code.getId())));
+            Code code = executor.authorizeCode(input.getCode(), request.getResourceResolver())
+                    .orElse(null);
+            if (code == null) {
+                String codeId = input.getCode() != null ? input.getCode().getId() : null;
+                respondJson(response, forbidden(String.format("Code from '%s' is not authorized!", codeId)));
                 return;
             }
 
@@ -64,11 +66,16 @@ public class QueueCodeServlet extends SlingAllMethodsServlet {
                     ExecutionId.generate(),
                     request.getResourceResolver().getUserID(),
                     ExecutionMode.CHECK,
-                    input.getCode(),
+                    code,
                     input.getInputs(),
                     request.getResourceResolver(),
                     new CodeOutputMemory())) {
                 Execution checkExecution = executor.execute(context);
+                if (checkExecution.getStatus() == ExecutionStatus.SUCCEEDED) {
+                    ExecutionAudit.debug("Code checked before queueing", context, checkExecution);
+                } else {
+                    ExecutionAudit.info("Code not queued", context, checkExecution);
+                }
                 if (checkExecution.getStatus() == ExecutionStatus.SKIPPED) {
                     QueueOutput output = new QueueOutput(Collections.singletonList(checkExecution));
                     respondJson(response, ok(String.format("Code from '%s' skipped execution", code.getId()), output));

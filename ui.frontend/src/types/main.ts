@@ -71,6 +71,7 @@ export const StateDefault: State = {
   permissions: {
     features: {
       'console.execute': true,
+      'console.execute.nohistory': true,
       'console.view': true,
       'execution.list': true,
       'execution.view': true,
@@ -111,6 +112,7 @@ export type Permissions = {
 export type FeatureId =
   | 'console.view'
   | 'console.execute'
+  | 'console.execute.nohistory'
   | 'execution.list'
   | 'execution.view'
   | 'snippet.list'

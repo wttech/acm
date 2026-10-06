@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -55,3 +58,12 @@ jobs:
             "acm-${VERSION}.vsix"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Skipped until the publisher tokens are configured as repository secrets.
+      - name: Publish to VS Code Marketplace
+        if: env.VSCE_PAT != ''
+        run: npx vsce publish --packagePath "acm-${VERSION}.vsix"
+
+      - name: Publish to Open VSX
+        if: env.OVSX_PAT != ''
+        run: npx ovsx publish "acm-${VERSION}.vsix"
