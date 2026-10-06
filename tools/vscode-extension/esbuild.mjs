@@ -9,7 +9,7 @@ const watch = process.argv.includes('--watch');
 rmSync('skills', { recursive: true, force: true });
 cpSync('../skills/acm-groovy-script', 'skills/acm-groovy-script', {
   recursive: true,
-  filter: (source) => !source.includes('/evals'),
+  filter: (source) => !source.split(/[\\/]/).includes('evals'),
 });
 
 // '@acm/shared' is resolved from tsconfig.json paths and bundled in.

@@ -4,6 +4,7 @@ export type ExecutionStatus =
   | 'PARSING'
   | 'CHECKING'
   | 'RUNNING'
+  | 'STOPPING'
   | 'STOPPED'
   | 'ABORTED'
   | 'SKIPPED'
@@ -37,7 +38,7 @@ export interface ExecutionListOutput {
   [key: string]: unknown;
 }
 
-const PENDING_STATUSES = new Set(['QUEUED', 'ACTIVE', 'PARSING', 'CHECKING', 'RUNNING']);
+const PENDING_STATUSES = new Set(['QUEUED', 'ACTIVE', 'PARSING', 'CHECKING', 'RUNNING', 'STOPPING']);
 
 export function isPending(status: string | undefined): boolean {
   return !!status && PENDING_STATUSES.has(status.toUpperCase());

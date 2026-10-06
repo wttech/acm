@@ -88,9 +88,9 @@ export async function pickInstance(placeHolder = 'Select ACM instance'): Promise
   return picked?.instance;
 }
 
-// Keyed by URL too, so a secret is never sent to a host it was not entered for.
+// Keyed by URL, auth mode and user too, so a secret is never sent to a host or as a principal it was not entered for.
 function secretKey(instance: AcmInstance): string {
-  return `acm.secret.${instance.name}@${instance.url}`;
+  return `acm.secret.${instance.name}@${instance.url}#${instance.authMode}:${instance.user ?? ''}`;
 }
 
 export async function setCredentials(instance: AcmInstance): Promise<boolean> {

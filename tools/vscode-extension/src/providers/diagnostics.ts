@@ -17,6 +17,7 @@ export function registerDiagnostics(context: vscode.ExtensionContext): void {
       const config = vscode.workspace.getConfiguration('acm');
       // Only ACM scripts: other Groovy files (e.g. build.gradle) are left alone.
       if (document.languageId !== 'groovy' || !config.get('validateOnSave') || !ACM_SCRIPT.test(document.getText())) {
+        diagnostics.delete(document.uri);
         return;
       }
       const instance = getActiveInstance();
@@ -31,6 +32,7 @@ export function registerDiagnostics(context: vscode.ExtensionContext): void {
 
 /** Compile-checks the document on the instance and publishes diagnostics; returns the compile error, if any. */
 export async function validateDocument(document: vscode.TextDocument, client: AcmClient): Promise<string | undefined> {
+  const version = document.version;
   const text = document.getText();
   const content = normalizeGroovy(text);
   const offset = content === text ? { line: 0, column: 0 } : WRAP_OFFSET;
@@ -39,7 +41,10 @@ export async function validateDocument(document: vscode.TextDocument, client: Ac
     code: { id: CONSOLE_CODE_ID, content },
   });
   const error = res.data?.error ?? undefined;
-  diagnostics.set(document.uri, error ? toDiagnostics(document, error, offset) : []);
+  // Skip stale results for text edited during the request.
+  if (document.version === version) {
+    diagnostics.set(document.uri, error ? toDiagnostics(document, error, offset) : []);
+  }
   return error;
 }
 
