@@ -27,7 +27,7 @@ The extension contributes:
 
 The MCP server is bundled and runs on the editor's own Node.js; credentials come from VS Code secret storage, never from `mcp.json` or other files. Switching the instance in the status bar switches the server, and a `readonly` instance gets a read-only server. Turn it off with `acm.mcp.enabled`.
 
-For other agents (Claude Code, Cursor, …) use the standalone [`@wppes/acm-mcp-server`](https://www.npmjs.com/package/@wppes/acm-mcp-server) package.
+For other tools (Claude Code, Cursor, Devin, …) run **ACM: Copy MCP Setup Prompt** and paste it into the agent. It describes what to register for the active instance, and the agent knows where its tool keeps MCP configuration. The prompt contains no secrets. It uses the standalone [`@wppes/acm-mcp-server`](https://www.npmjs.com/package/@wppes/acm-mcp-server) package, which needs Node.js 22 or later.
 
 > Agents run code with your AEM permissions. Prefer `readonly` instances or a user with limited ACM permissions outside local development, and review tool calls before approving them.
 

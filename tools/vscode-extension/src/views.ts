@@ -132,7 +132,7 @@ class ExecutionsProvider extends AcmTreeProvider {
       return this.messageItem(node as Extract<Node, { kind: 'message' }>);
     }
     const { execution, instance } = node;
-    const item = new vscode.TreeItem(executableLabel(execution.executable?.id));
+    const item = new vscode.TreeItem(executableLabel(execution.executable?.id ?? execution.executableId));
     const started = execution.startDate ? new Date(execution.startDate) : undefined;
     item.description = [
       execution.status,

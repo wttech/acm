@@ -499,7 +499,7 @@ server.registerTool(
       if (list.length === 0) return textResult("No executions found.");
       const rows = list.map(
         (e) =>
-          `${e.id} | ${e.status} | ${e.executable?.id ?? "?"} | user=${e.userId ?? "?"} | start=${e.startDate ?? "?"} | ${e.duration ?? "?"} ms${e.error ? " | ERROR" : ""}`
+          `${e.id} | ${e.status} | ${e.executable?.id ?? e.executableId ?? "?"} | user=${e.userId ?? "?"} | start=${e.startDate ?? "?"} | ${e.duration ?? "?"} ms${e.error ? " | ERROR" : ""}`
       );
       return textResult(`Executions (${list.length}):\n` + rows.join("\n"));
     } catch (e) {

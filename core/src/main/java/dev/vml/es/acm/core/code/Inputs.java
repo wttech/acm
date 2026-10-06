@@ -222,7 +222,7 @@ public class Inputs implements Serializable {
     }
 
     public void path(String name) {
-        text(name, null);
+        path(name, null);
     }
 
     public void path(String name, Closure<PathInput> options) {

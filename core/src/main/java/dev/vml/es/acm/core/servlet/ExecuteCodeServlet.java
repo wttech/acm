@@ -67,8 +67,7 @@ public class ExecuteCodeServlet extends SlingAllMethodsServlet {
                 && !executor.authorizeNoHistory(request.getResourceResolver())) {
             respondJson(
                     response,
-                    forbidden(String.format(
-                            "Code from '%s' is not authorized to run without history!", code.getId())));
+                    forbidden(String.format("Code from '%s' is not authorized to run without history!", code.getId())));
             return;
         }
 

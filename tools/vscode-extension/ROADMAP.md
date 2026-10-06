@@ -38,6 +38,7 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 
 - [x] **Scripting skill.** The ACM Groovy scripting skill from `tools/skills` is contributed to Copilot with `chatSkills`.
 - [x] **MCP server provider.** The MCP server is bundled (`dist/mcp-server.mjs`, run by the editor's Node.js) and registered for the active instance with `vscode.lm.registerMcpServerDefinitionProvider`; secrets are added only when it starts. Requires VS Code 1.101+.
+- [x] **MCP for other tools.** `ACM: Copy MCP Setup Prompt` copies a prompt for the active instance (no secrets) that any AI agent follows to register the standalone MCP server; no per-tool config formats are documented or generated, so nothing goes stale.
 
 ### Onboarding
 

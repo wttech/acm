@@ -841,20 +841,13 @@ ACM comes with [tools](tools/README.md) that bring script development into your 
 
 ### MCP server
 
-The [ACM MCP server](tools/mcp-server/README.md) connects AI agents such as Claude Code, Claude Desktop, VS Code (Copilot) and Cursor to ACM through the [Model Context Protocol](https://modelcontextprotocol.io). An agent can validate and run Groovy scripts, follow executions, and read history, console output and stored scripts, all as the user whose credentials you configure. It also gives the agent the [ACM scripting skill](#agent-skill).
+The [ACM MCP server](tools/mcp-server/README.md) connects AI agents such as Claude Code, Claude Desktop, VS Code (Copilot), Cursor and Devin to ACM through the [Model Context Protocol](https://modelcontextprotocol.io). An agent can validate and run Groovy scripts, follow executions, and read history, console output and stored scripts, all as the user whose credentials you configure. It also gives the agent the [ACM scripting skill](#agent-skill).
 
-```shell
-claude mcp add acm \
-  --env AEM_BASE_URL=https://author-pXXXX-eYYYY.adobeaemcloud.com \
-  --env AEM_TOKEN=eyJhbGciOi... \
-  -- npx -y @wppes/acm-mcp-server
-```
-
-See the [MCP server documentation](tools/mcp-server/README.md) for VS Code, Cursor and other clients, authentication options and security recommendations.
+It runs as `npx -y @wppes/acm-mcp-server` (stdio) and is configured with environment variables. The simplest setup is to ask your agent to register it; the [MCP server documentation](tools/mcp-server/README.md#2-register-the-server-with-your-agent) has a ready-to-use prompt, authentication options and security recommendations.
 
 ### VS Code extension
 
-The [ACM extension for VS Code](tools/vscode-extension/README.md) (preview) adds code completion and inline docs for the ACM script API, and contributes the [ACM scripting skill](#agent-skill) to Copilot. Download the `.vsix` from the [releases](https://github.com/wttech/acm/releases?q=vscode-extension) and install it with *Extensions: Install from VSIX...*.
+The [ACM extension for VS Code](tools/vscode-extension/README.md) (preview, `wppes.acm` on the VS Code Marketplace and Open VSX) runs scripts on your AEM instances from the editor, with inputs, live console output, compile errors on save, code completion and docs for the ACM script API, documented script templates, and views of executions and stored scripts. It bundles the MCP server for the active instance and the [ACM scripting skill](#agent-skill), so Copilot agent mode works with ACM without any setup. A local AEM SDK at `http://localhost:4502` works out of the box.
 
 ### Agent skill
 

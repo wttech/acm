@@ -127,6 +127,11 @@
         "title": "Download Outputs...",
         "category": "ACM",
         "icon": "$(cloud-download)"
+      },
+      {
+        "command": "acm.copyMcpSetup",
+        "title": "Copy MCP Setup Prompt",
+        "category": "ACM"
       }
     ],
     "mcpServerDefinitionProviders": [

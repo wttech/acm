@@ -919,6 +919,8 @@ Values: `QUEUED`, `ACTIVE`, `PARSING`, `CHECKING`, `RUNNING`, `STOPPING`, `SKIPP
 void onEvent(Event event)
 boolean authorize(Executable executable, String userId)
 boolean authorize(Executable executable, ResourceResolver resolver)
+Optional<Code> authorizeCode(Code requested, ResourceResolver resolver) // Stored scripts run with their repository content, so script rights never allow running other code.
+boolean authorizeNoHistory(ResourceResolver resolver)
 ExecutionContext createContext(String id, String userId, ExecutionMode mode, Executable executable, InputValues inputs, ResourceResolver resourceResolver, CodeOutput codeOutput)
 Execution execute(Executable executable, ExecutionContextOptions contextOptions)
 Execution execute(ExecutionContext context)

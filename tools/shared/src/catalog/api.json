@@ -5131,6 +5131,31 @@
           ]
         },
         {
+          "name": "authorizeCode",
+          "returns": "Optional<Code>",
+          "params": [
+            {
+              "type": "Code",
+              "name": "requested"
+            },
+            {
+              "type": "ResourceResolver",
+              "name": "resolver"
+            }
+          ],
+          "doc": "Stored scripts run with their repository content, so script rights never allow running other code."
+        },
+        {
+          "name": "authorizeNoHistory",
+          "returns": "boolean",
+          "params": [
+            {
+              "type": "ResourceResolver",
+              "name": "resolver"
+            }
+          ]
+        },
+        {
           "name": "createContext",
           "returns": "ExecutionContext",
           "params": [
