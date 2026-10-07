@@ -141,6 +141,29 @@
         "icon": "$(diff)"
       },
       {
+        "command": "acm.compareProjectScript",
+        "title": "Compare with Instance",
+        "category": "ACM",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "acm.runProjectScript",
+        "title": "Run Project Script",
+        "category": "ACM",
+        "icon": "$(play)"
+      },
+      {
+        "command": "acm.newProjectScript",
+        "title": "New Project Script...",
+        "category": "ACM",
+        "icon": "$(add)"
+      },
+      {
+        "command": "acm.selectScriptsRoot",
+        "title": "Select Scripts Folder",
+        "category": "ACM"
+      },
+      {
         "command": "acm.newScript",
         "title": "New Script...",
         "shortTitle": "ACM Script",
@@ -265,6 +288,14 @@
           "when": "false"
         },
         {
+          "command": "acm.compareProjectScript",
+          "when": "false"
+        },
+        {
+          "command": "acm.runProjectScript",
+          "when": "false"
+        },
+        {
           "command": "acm.downloadOutputs",
           "when": "false"
         }
@@ -293,6 +324,21 @@
         {
           "command": "acm.compareScript",
           "when": "view == acm.scripts && viewItem =~ /^script\\./",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.runProjectScript",
+          "when": "view == acm.projectScripts && viewItem == projectScript.manual",
+          "group": "inline"
+        },
+        {
+          "command": "acm.compareProjectScript",
+          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.newProjectScript",
+          "when": "view == acm.projectScripts && viewItem == projectType",
           "group": "navigation"
         }
       ],
@@ -334,6 +380,11 @@
         {
           "command": "acm.refreshScripts",
           "when": "view == acm.scripts",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.newProjectScript",
+          "when": "view == acm.projectScripts",
           "group": "navigation"
         }
       ]
@@ -433,6 +484,11 @@
           "minimum": 1,
           "maximum": 1000,
           "description": "Number of past executions shown in the Executions view."
+        },
+        "acm.scripts.root": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Folder with the project's ACM scripts, usually a content package's `jcr_root/conf/acm/settings/script`, relative to the workspace folder (or absolute). Project Scripts and `New Project Script...` use it. Empty finds it from the scripts already in the workspace and asks when there are several."
         }
       }
     },
@@ -448,8 +504,14 @@
     "views": {
       "acm": [
         {
+          "id": "acm.projectScripts",
+          "name": "Project Scripts",
+          "icon": "$(folder-library)",
+          "when": "acm.hasScriptsRoot"
+        },
+        {
           "id": "acm.scripts",
-          "name": "Scripts",
+          "name": "Instance Scripts",
           "icon": "$(file-code)"
         },
         {

@@ -6,6 +6,7 @@ import { registerCodeLens } from './providers/codelens';
 import { registerCompletion } from './providers/completion';
 import { registerDiagnostics } from './providers/diagnostics';
 import { registerHover } from './providers/hover';
+import { registerProjectScripts } from './projectScripts';
 import { registerStatus } from './status';
 import { registerViews } from './views';
 
@@ -13,6 +14,7 @@ export function activate(context: vscode.ExtensionContext): void {
   initInstances(context);
   registerStatus(context);
   const views = registerViews(context);
+  registerProjectScripts(context);
   registerCommands(context, views);
   registerCompletion(context);
   registerHover(context);

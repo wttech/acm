@@ -1,4 +1,3 @@
-import * as path from 'node:path';
 import * as vscode from 'vscode';
 import {
   ACM_API,
@@ -11,19 +10,21 @@ import {
   isExecutionFiltered,
   isFailed,
   isPending,
+  SCRIPT_ROOT,
+  SCRIPT_TYPES,
+  scriptLabel,
   summarizeExecution,
   type AcmClient,
   type Execution,
   type ExecutionFilter,
+  type ScriptType,
 } from '@acm/shared';
 import { registerCommand } from './errors';
 import { getActiveInstance, getClient, getInstances, getSettings, type AcmInstance } from './instances';
 
 export const SCHEME = 'acm';
-const SCRIPT_ROOT = '/conf/acm/settings/script/';
-const SCRIPT_TYPES = ['MANUAL', 'AUTOMATIC', 'EXTENSION', 'MOCK'];
 
-interface Script {
+export interface Script {
   id: string;
   path?: string;
   content?: string;
@@ -32,8 +33,8 @@ interface Script {
 type Node =
   | { kind: 'message'; label: string; icon: string; command?: vscode.Command }
   | { kind: 'execution'; instance: AcmInstance; execution: Execution }
-  | { kind: 'scriptType'; instance: AcmInstance; type: string }
-  | { kind: 'script'; instance: AcmInstance; script: Script; type: string };
+  | { kind: 'scriptType'; type: ScriptType; scripts: Script[] }
+  | { kind: 'script'; instance: AcmInstance; script: Script; type: ScriptType };
 
 export function executionUri(instance: AcmInstance, executionId: string): vscode.Uri {
   return vscode.Uri.from({ scheme: SCHEME, authority: 'execution', path: `/${executionId}.acmlog`, query: instance.name });
@@ -162,18 +163,30 @@ class ExecutionsProvider extends AcmTreeProvider {
 
 class ScriptsProvider extends AcmTreeProvider {
   protected async fetch(instance: AcmInstance, client: AcmClient, node?: Node): Promise<Node[]> {
-    if (!node) {
-      return SCRIPT_TYPES.map((type) => ({ kind: 'scriptType', instance, type }));
+    if (node?.kind === 'scriptType') {
+      return node.scripts
+        .map((script) => ({ kind: 'script' as const, instance, script, type: node.type }))
+        .sort((a, b) => scriptLabel(a.script.id).localeCompare(scriptLabel(b.script.id)));
     }
-    if (node.kind !== 'scriptType') {
+    if (node) {
       return [];
     }
-    const res = await client.request<{ list?: Script[] }>('GET', `${ACM_API.script}?type=${node.type}`);
-    const scripts = res.data?.list ?? [];
-    if (scripts.length === 0) {
-      return [{ kind: 'message', label: 'No scripts', icon: 'info' }];
+    const results = await Promise.allSettled(
+      SCRIPT_TYPES.map(async (type) => ({
+        type,
+        scripts: (await client.request<{ list?: Script[] }>('GET', `${ACM_API.script}?type=${type}`)).data?.list ?? [],
+      })),
+    );
+    const failed = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+    if (failed && results.every((result) => result.status === 'rejected')) {
+      throw failed.reason;
     }
-    return scripts.map((script) => ({ kind: 'script', instance, script, type: node.type }));
+    const groups = results.flatMap((result) =>
+      result.status === 'fulfilled' && result.value.scripts.length > 0
+        ? [{ kind: 'scriptType' as const, type: result.value.type, scripts: result.value.scripts }]
+        : [],
+    );
+    return groups.length > 0 ? groups : [{ kind: 'message', label: 'No scripts', icon: 'info' }];
   }
 
   getTreeItem(node: Node): vscode.TreeItem {
@@ -181,15 +194,16 @@ class ScriptsProvider extends AcmTreeProvider {
       case 'scriptType': {
         const item = new vscode.TreeItem(
           node.type.charAt(0) + node.type.slice(1).toLowerCase(),
-          vscode.TreeItemCollapsibleState.Collapsed,
+          vscode.TreeItemCollapsibleState.Expanded,
         );
+        item.id = `scripts.${node.type}`;
+        item.description = String(node.scripts.length);
         item.iconPath = vscode.ThemeIcon.Folder;
         return item;
       }
       case 'script': {
         const uri = scriptUri(node.instance, node.script.id);
-        const item = new vscode.TreeItem(path.posix.basename(node.script.id));
-        item.description = path.posix.dirname(executableLabel(node.script.id)).replace(/^\.$/, '');
+        const item = new vscode.TreeItem(scriptLabel(node.script.id));
         item.tooltip = node.script.id;
         item.resourceUri = uri;
         item.contextValue = `script.${node.type.toLowerCase()}`;
@@ -230,6 +244,11 @@ export function registerViews(context: vscode.ExtensionContext): Views {
   const executions = new ExecutionsProvider();
   const scripts = new ScriptsProvider();
   const executionsView = vscode.window.createTreeView('acm.executions', { treeDataProvider: executions });
+  const scriptsView = vscode.window.createTreeView('acm.scripts', { treeDataProvider: scripts });
+  const describeScripts = () => {
+    scriptsView.description = getActiveInstance()?.name;
+  };
+  describeScripts();
   const applyFilter = (filter: ExecutionFilter) => {
     executions.filter = filter;
     executionsView.description = executions.describeFilter();
@@ -239,7 +258,7 @@ export function registerViews(context: vscode.ExtensionContext): Views {
   context.subscriptions.push(
     vscode.workspace.registerTextDocumentContentProvider(SCHEME, new ContentProvider()),
     executionsView,
-    vscode.window.registerTreeDataProvider('acm.scripts', scripts),
+    scriptsView,
     vscode.commands.registerCommand('acm.refreshExecutions', () => executions.refresh()),
     vscode.commands.registerCommand('acm.refreshScripts', () => scripts.refresh()),
     registerCommand('acm.filterExecutions', async () => {
@@ -255,12 +274,12 @@ export function registerViews(context: vscode.ExtensionContext): Views {
       }
     }),
     registerCommand('acm.clearExecutionsFilter', () => applyFilter({ statuses: [] })),
-    registerCommand('acm.compareScript', (node?: Node) => compareScript(node)),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('acm.activeInstance') && isExecutionFiltered(executions.filter)) {
         applyFilter({ statuses: [] });
       }
       if (event.affectsConfiguration('acm')) {
+        describeScripts();
         executions.refresh();
         scripts.refresh();
       }
@@ -309,32 +328,4 @@ async function pickExecutionFilter(current: ExecutionFilter): Promise<ExecutionF
     { title: 'Filter Executions by Script', placeHolder: 'Scripts from recent executions' },
   );
   return picked && { ...current, executableId: picked.id };
-}
-
-async function compareScript(node?: Node): Promise<void> {
-  if (node?.kind !== 'script') {
-    return;
-  }
-  const name = path.posix.basename(node.script.id);
-  const files = await vscode.workspace.findFiles(`**/${name}`, '**/{node_modules,target}/**', 50);
-  let local: vscode.Uri | undefined = files[0];
-  if (files.length > 1) {
-    local = (
-      await vscode.window.showQuickPick(
-        files.map((uri) => ({ label: vscode.workspace.asRelativePath(uri), uri })),
-        { placeHolder: `Local file to compare with ${name}` },
-      )
-    )?.uri;
-  } else if (files.length === 0) {
-    local = (await vscode.window.showOpenDialog({ canSelectMany: false, filters: { Groovy: ['groovy'] } }))?.[0];
-  }
-  if (!local) {
-    return;
-  }
-  await vscode.commands.executeCommand(
-    'vscode.diff',
-    scriptUri(node.instance, node.script.id),
-    local,
-    `${name} (${node.instance.name}) ↔ ${vscode.workspace.asRelativePath(local)}`,
-  );
 }
