@@ -25,19 +25,19 @@ This skill covers writing those scripts and running them safely.
 
 1. **Understand the task.** Identify what changes, where (paths, resource types), on which instances (author/publish), and how often (once, on deploy, on schedule, on demand).
 2. **Pick the script type** (table below). Ask if it is not obvious.
-3. **Write the script** from a skeleton below or a template in [patterns](references/patterns.md). Check every ACM call in [the API reference](references/api.md).
+3. **Write the script** from a skeleton below or a template listed in the table below. Check every ACM call in [the API reference](references/api.md).
 4. **Validate and try it** when ACM MCP tools are available: `acm_validate_code`, then `acm_run_code` with `dryRun` on, then inspect the console output and outputs.
 5. **Deliver** the script with its file path and a short summary of what it does and how to run it.
 
 ## Script types
 
-| Type | Location | Runs | Typical `canRun()` |
-|---|---|---|---|
-| Console | none, pasted into the ACM Console | on demand, as the current user | none needed |
-| Manual | `/conf/acm/settings/script/manual/{project}/` | from the Scripts page, as the current user, usually with inputs | `conditions.always()` |
-| Automatic | `/conf/acm/settings/script/automatic/{project}/` | on instance boot or by `scheduleRun()`, as a service or impersonated user | `conditions.changed()`, `conditions.once()` |
-| Extension | `/conf/acm/settings/script/extension/{project}/main.groovy` | hooks: `prepareRun`, `completeRun` | none |
-| Mock | `/conf/acm/settings/script/mock/{project}/` | on HTTP requests to `/mock/*`, when the mock filter is enabled | none (`request()` matches) |
+| Type | Location | Runs | Typical `canRun()` | Templates |
+|---|---|---|---|---|
+| Console | none, pasted into the ACM Console | on demand, as the current user | none needed | [quick check](templates/console/quick-check.groovy) |
+| Manual | `/conf/acm/settings/script/manual/{project}/` | from the Scripts page, as the current user, usually with inputs | `conditions.always()` | [minimal](templates/manual/minimal.groovy), [content migration](templates/manual/content-migration.groovy), [CSV report](templates/manual/report-csv.groovy) |
+| Automatic | `/conf/acm/settings/script/automatic/{project}/` | on instance boot or by `scheduleRun()`, as a service or impersonated user | `conditions.changed()`, `conditions.once()` | [minimal](templates/automatic/minimal.groovy), [permissions](templates/automatic/permissions.groovy), [scheduled cleanup](templates/automatic/scheduled-cleanup.groovy) |
+| Extension | `/conf/acm/settings/script/extension/{project}/main.groovy` | hooks: `prepareRun`, `completeRun` | none | [hooks](templates/extension/hooks.groovy) |
+| Mock | `/conf/acm/settings/script/mock/{project}/` | on HTTP requests to `/mock/*`, when the mock filter is enabled | none (`request()` matches) | [HTTP endpoint](templates/mock/http-endpoint.groovy) |
 
 In an AEM project, scripts live in a content package, e.g. `ui.content/src/main/content/jcr_root/conf/acm/settings/script/manual/acme/ACME-123_update-teasers.groovy`. Prefix file names with a ticket or ordering number.
 See [scripts](references/scripts.md) for conditions, schedules, inputs, outputs, locking, documentation, extension and mock scripts, and snippets.
@@ -130,5 +130,4 @@ println repo.get('/content/acme/en').property('jcr:content/jcr:title', String)
 
 - [API reference](references/api.md): every ACM variable, class and method available to scripts, generated from the ACM source. Search it before using any ACM method.
 - [Scripts](references/scripts.md): script types, conditions, schedules, inputs, outputs, logging, aborting, locking, documentation, extension and mock scripts, snippets, notifications.
-- [Patterns](references/patterns.md): complete templates for a minimal script, content migration, ACL setup, CSV reports, scheduled cleanup and HTTP mocks.
 - [ACM documentation](https://github.com/wttech/acm#documentation) and [example scripts](https://github.com/wttech/acm/tree/main/ui.content.example/src/main/content/jcr_root/conf/acm/settings/script).

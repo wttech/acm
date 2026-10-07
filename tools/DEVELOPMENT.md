@@ -43,7 +43,7 @@ Commit the regenerated files together with the Java change. Prose (docs and snip
 
 ## Skills
 
-[acm-groovy-script](skills/acm-groovy-script/SKILL.md) is the single source of guidance for agents writing ACM scripts. Its `## Essentials` section is sent as MCP server instructions, and the `## ` sections of `references/patterns.md` are the templates of the VS Code extension's script templates. `evals/` holds prompts and expected results for checking the skill with an agent; it is not shipped.
+[acm-groovy-script](skills/acm-groovy-script/SKILL.md) is the single source of guidance for agents writing ACM scripts. Its `## Essentials` section is sent as MCP server instructions, and the `templates/{target}/*.groovy` files (`manual`, `automatic`, `extension`, `mock`, `console` for bare code) are the VS Code extension's script templates and MCP resources, each starting with a documentation header and listed in `shared/src/skill.ts`; every target needs a template and `SKILL.md` links them. `evals/` holds prompts and expected results for checking the skill with an agent; it is not shipped.
 
 ## CI
 

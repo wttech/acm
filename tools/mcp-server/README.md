@@ -109,7 +109,7 @@ The server ships the [ACM Groovy scripting skill](../skills/acm-groovy-script/SK
 
 - **Instructions.** The skill's essentials (never invent API, dry runs, abort checks, validate before running) are sent to the client when it connects. Clients add them to the model's context.
 - **Prompt.** `acm-groovy-script` returns the full guide.
-- **Resources.** The guide and its references are available as `acm://skill/SKILL.md`, `acm://skill/references/api.md` (every ACM variable, class and method, generated from the ACM source), `acm://skill/references/scripts.md` and `acm://skill/references/patterns.md`.
+- **Resources.** The guide and its references are available as `acm://skill/SKILL.md`, `acm://skill/references/api.md` (every ACM variable, class and method, generated from the ACM source), `acm://skill/references/scripts.md` and the script templates under `acm://skill/templates/`.
 
 ## Example
 

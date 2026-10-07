@@ -5,12 +5,12 @@ import {
   AcmHttpError,
   PACKAGE_SCRIPT_ROOT,
   SCRIPT_ROOT,
-  SCRIPT_TEMPLATES,
   SCRIPT_TYPES,
   scriptIdOf,
   scriptLabel,
   scriptRootsOf,
   scriptTypeOf,
+  templatesFor,
   validateScriptName,
   type ScriptType,
 } from '@acm/shared';
@@ -228,7 +228,7 @@ async function newScript(node?: Node): Promise<void> {
     return;
   }
   const template = await vscode.window.showQuickPick(
-    SCRIPT_TEMPLATES.map((candidate) => ({ label: candidate.name, detail: candidate.description, candidate })),
+    templatesFor(type).map((candidate) => ({ label: candidate.name, detail: candidate.description, candidate })),
     { title: `New ${type.toLowerCase()} script`, placeHolder: 'Select ACM script template', matchOnDetail: true },
   );
   if (!template) {

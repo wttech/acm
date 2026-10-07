@@ -93,6 +93,7 @@ import {
   isPending,
   normalizeCookie,
   normalizeGroovy,
+  SCRIPT_TEMPLATES,
   SKILL_DOCUMENTS,
   SKILL_ESSENTIALS,
   SKILL_NAME,
@@ -652,6 +653,15 @@ for (const doc of SKILL_DOCUMENTS) {
     skillUri(doc.path),
     { title: doc.title, description: doc.description, mimeType: "text/markdown" },
     (uri) => ({ contents: [{ uri: uri.href, mimeType: "text/markdown", text: doc.text }] })
+  );
+}
+
+for (const template of SCRIPT_TEMPLATES) {
+  server.registerResource(
+    template.path,
+    skillUri(template.path),
+    { title: `${template.name} (${template.target.toLowerCase()} template)`, description: template.description, mimeType: "text/plain" },
+    (uri) => ({ contents: [{ uri: uri.href, mimeType: "text/plain", text: template.code }] })
   );
 }
 

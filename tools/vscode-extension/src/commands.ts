@@ -70,7 +70,12 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
 
 async function newScript(): Promise<void> {
   const picked = await vscode.window.showQuickPick(
-    SCRIPT_TEMPLATES.map((template) => ({ label: template.name, detail: template.description, template })),
+    SCRIPT_TEMPLATES.map((template) => ({
+      label: template.name,
+      description: template.target.toLowerCase(),
+      detail: template.description,
+      template,
+    })),
     { placeHolder: 'Select ACM script template', matchOnDetail: true },
   );
   if (picked) {
