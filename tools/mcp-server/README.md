@@ -181,19 +181,13 @@ To run a local build from an MCP client, point it at `node /path/to/acm/tools/mc
 
 The server is versioned and released separately from ACM, with tags prefixed `mcp-server-v`.
 
-1. Bump the version in `package.json` and `package-lock.json`:
+From the repository root, run:
 
-    ```shell
-    npm version <version> --no-git-tag-version
-    ```
+```shell
+sh taskw release:mcp-server -- <version>
+```
 
-2. Set the same version in both `version` fields of `server.json`, then merge to `main`.
-3. Tag the merge commit and push the tag:
-
-    ```shell
-    git tag mcp-server-v<version>
-    git push origin mcp-server-v<version>
-    ```
+This bumps the version in `package.json` and `package-lock.json` (`npm version <version> --no-git-tag-version`) and both `version` fields of `server.json`, then commits, pushes, tags the commit `mcp-server-v<version>` and pushes the tag.
 
 The [MCP Server workflow](https://github.com/wttech/acm/blob/main/.github/workflows/release.mcp-server.yml) runs the tests and checks that the tag matches all three files. It then publishes the package to npm with provenance and publishes `server.json` to the [MCP Registry](https://registry.modelcontextprotocol.io). If only the registry step fails, re-run the job. The npm step skips versions that are already published.
 

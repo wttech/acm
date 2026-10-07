@@ -66,12 +66,8 @@ Commit the regenerated files together with the Java change. Prose (docs and snip
 
 ## Releasing
 
-Each tool has its own version and release workflow triggered by its tag prefix. Bump the version in the tool's `package.json` and `package-lock.json` with `npm version <version> --no-git-tag-version`, merge to `main`, then tag the merge commit:
-
-```shell
-git tag vscode-extension-v<version>
-git push origin vscode-extension-v<version>
-```
+Each tool has its own version and release workflow triggered by its tag prefix. `sh taskw release:mcp-server -- <version>` / `sh taskw release:vscode-extension -- <version>` (run from the repository root) bump the version in the tool's `package.json` and `package-lock.json` with `npm version <version> --no-git-tag-version` (and, for the MCP server, both `version` fields in `server.json`), then commit, push, tag and push the tag.
 
 - [MCP Server workflow](../.github/workflows/release.mcp-server.yml): publishes to npm and the MCP Registry. See the [MCP server release notes](mcp-server/README.md#releasing).
-- [VS Code Extension workflow](../.github/workflows/release.vscode-extension.yml): creates a GitHub release with the `.vsix`, not marked as the latest release, then publishes it to the VS Code Marketplace and Open VSX under the `wppes` publisher. Each publish step runs only when its token is set as a repository secret: `VSCE_PAT` (Azure DevOps token with the *Marketplace: Manage* scope, for the `wppes` publisher) and `OVSX_PAT` (Open VSX token of a member of the `wppes` namespace). Add release notes to [CHANGELOG.md](vscode-extension/CHANGELOG.md) before tagging.
+- [VS Code Extension workflow](../.github/workflows/release.vscode-extension.yml): creates a GitHub release with the `.vsix`, not marked as the latest release, then publishes it to the VS Code Marketplace and Open VSX under the `wppes` publisher. Each publish step runs only when its token is set as a repository secret: `VSCE_PAT` (Azure DevOps token with the *Marketplace: Manage* scope, for the `wppes` publisher) and `OVSX_PAT` (Open VSX token of a member of the `wppes` namespace). Add release notes to [CHANGELOG.md](vscode-extension/CHANGELOG.md) before running the task.
+

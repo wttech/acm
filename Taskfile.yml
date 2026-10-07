@@ -322,6 +322,85 @@ tasks:
         git tag "$VERSION_TAG"
         git push origin "$VERSION_TAG" || echo "Tag already exists or cannot push"
 
+  release:mcp-server:
+    desc: release a new version of the MCP server tool (tools/mcp-server)
+    cmds:
+      - |
+        set -e
+
+        VERSION="{{.CLI_ARGS | default ""}}"
+        VERSION_TAG="mcp-server-v$VERSION"
+
+        if [ -z "$VERSION" ]; then
+            echo "Release version is not specified!"
+            exit 1
+        fi
+
+        GIT_STAT=$(git diff --stat || true)
+
+        if [ "$GIT_STAT" != '' ]; then
+            echo "Unable to release. Uncommitted changes detected!"
+            exit 1
+        fi
+
+        echo "Releasing $VERSION_TAG"
+
+        (cd tools/mcp-server && npm version "$VERSION" --no-git-tag-version)
+
+        node -e "
+          const fs = require('fs');
+          const path = 'tools/mcp-server/server.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+          data.version = '$VERSION';
+          data.packages[0].version = '$VERSION';
+          fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+        "
+
+        echo "Pushing version bump"
+        git add tools/mcp-server/package.json tools/mcp-server/package-lock.json tools/mcp-server/server.json
+        git commit -m "Release MCP Server $VERSION_TAG"
+        git push
+
+        echo "Pushing release tag '$VERSION_TAG'"
+        git tag "$VERSION_TAG"
+        git push origin "$VERSION_TAG" || echo "Tag already exists or cannot push"
+
+  release:vscode-extension:
+    desc: release a new version of the VS Code extension tool (tools/vscode-extension)
+    cmds:
+      - |
+        set -e
+
+        echo "Reminder: add release notes to tools/vscode-extension/CHANGELOG.md before running this task."
+
+        VERSION="{{.CLI_ARGS | default ""}}"
+        VERSION_TAG="vscode-extension-v$VERSION"
+
+        if [ -z "$VERSION" ]; then
+            echo "Release version is not specified!"
+            exit 1
+        fi
+
+        GIT_STAT=$(git diff --stat || true)
+
+        if [ "$GIT_STAT" != '' ]; then
+            echo "Unable to release. Uncommitted changes detected!"
+            exit 1
+        fi
+
+        echo "Releasing $VERSION_TAG"
+
+        (cd tools/vscode-extension && npm version "$VERSION" --no-git-tag-version)
+
+        echo "Pushing version bump"
+        git add tools/vscode-extension/package.json tools/vscode-extension/package-lock.json
+        git commit -m "Release VS Code Extension $VERSION_TAG"
+        git push
+
+        echo "Pushing release tag '$VERSION_TAG'"
+        git tag "$VERSION_TAG"
+        git push origin "$VERSION_TAG" || echo "Tag already exists or cannot push"
+
   test:project:
     desc: Test tool by setting it up and deploying on AEMaaCS
     dir: test/project
