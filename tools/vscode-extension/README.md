@@ -1,6 +1,8 @@
 # AEM Content Manager (ACM) for VS Code
 
-Write, validate and run [AEM Content Manager (ACM)](https://github.com/wttech/acm) Groovy scripts on Adobe Experience Manager without leaving the editor, and let AI agents do the same safely.
+Write, validate and run [AEM Content Manager (ACM)](https://github.com/wttech/acm) Groovy scripts on Adobe Experience Manager without leaving the editor. The ACM MCP server is registered automatically for the active instance, so AI agents can validate and run scripts, follow executions and read outputs on your AEM right after installing, with no configuration.
+
+Using another AI tool or editor? Run **ACM: Copy MCP Setup Prompt** and paste it into the agent: it sets up the same MCP server by itself.
 
 Works with AEM as a Cloud Service, AEM 6.5 and AMS, wherever ACM is installed.
 
@@ -8,7 +10,7 @@ Works with AEM as a Cloud Service, AEM 6.5 and AMS, wherever ACM is installed.
 
 ## Features
 
-- **Zero-config start.** A local AEM SDK at `http://localhost:4502` with `admin`/`admin` works right after installing. The *Get Started with ACM* walkthrough shows the rest.
+- **Zero-config start.** A local AEM SDK at `http://localhost:4502` with `admin`/`admin` works right after installing, together with the ACM MCP server for AI agents and the ACM scripting skill (see [AI agents](#ai-agents)). The *Get Started with ACM* walkthrough shows the rest.
 - **Run scripts and selections** on the active instance. Inputs declared in `describeRun()` are asked for (files are uploaded, multi-line text is edited in an editor), console output streams into the `ACM` output channel, and a running script can be aborted. Manual scripts run from the Scripts view, or from their opened editor, run by ID: the instance's stored version executes and its executions are listed under the script.
 - **Run without history** while iterating on read-only code, for users with ACM's `console/execute/nohistory` permission. Such runs are still traced in ACM's [audit log](https://github.com/wttech/acm#audit-log).
 - **Compile errors on save.** Scripts are checked by ACM on the active instance and errors show up in Problems.
@@ -16,7 +18,7 @@ Works with AEM as a Cloud Service, AEM 6.5 and AMS, wherever ACM is installed.
 - **Documented templates.** `File > New File... > ACM Script` starts from a template: content migration, ACL setup, CSV report, scheduled cleanup, console code or HTTP mock. Type `acmdoc` to add the documentation header shown in the ACM UI.
 - **Executions and Scripts views.** Browse the execution history with logs and download outputs, filter it by script or status (or jump to a script's executions from the Scripts view); open scripts stored on the instance and compare them with local files.
 - **Instance status** in the status bar: switch instances in one click, see at a glance when one is unreachable, unauthorized or unhealthy.
-- **AI agents.** Copilot gets the ACM scripting skill and the ACM MCP server for the active instance, with no setup (see below).
+- **AI agents.** Copilot gets the ACM scripting skill and the ACM MCP server for the active instance, registered automatically; other tools set up the same server from one copied prompt (see below).
 
 ## AI agents
 
@@ -27,7 +29,7 @@ The extension contributes:
 
 The MCP server is bundled and runs on the editor's own Node.js; credentials come from VS Code secret storage, never from `mcp.json` or other files. Switching the instance in the status bar switches the server, and a `readonly` instance gets a read-only server. Turn it off with `acm.mcp.enabled`.
 
-For other tools (Claude Code, Cursor, Devin, …) run **ACM: Copy MCP Setup Prompt** and paste it into the agent. It describes what to register for the active instance, and the agent knows where its tool keeps MCP configuration. The prompt contains no secrets. It uses the standalone [`@wppes/acm-mcp-server`](https://www.npmjs.com/package/@wppes/acm-mcp-server) package, which needs Node.js 22 or later.
+For tools that do not pick up MCP servers contributed by extensions (Claude Code, Cursor, Devin, …) run **ACM: Copy MCP Setup Prompt** and paste it into the agent. It describes what to register for the active instance, and the agent knows where its tool keeps MCP configuration. The prompt contains no secrets. It uses the standalone [`@wppes/acm-mcp-server`](https://www.npmjs.com/package/@wppes/acm-mcp-server) package, which needs Node.js 22 or later.
 
 > Agents run code with your AEM permissions. Prefer `readonly` instances or a user with limited ACM permissions outside local development, and review tool calls before approving them.
 

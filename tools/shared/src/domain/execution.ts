@@ -124,11 +124,12 @@ export function summarizeExecution(e: Execution, consoleOutput?: string | null, 
       : inputs.map(([name, value]) => `${name}: ${JSON.stringify(value)}`).join('\n');
     lines.push(`\n--- INPUTS ---\n${text}`);
   }
-  if (e.error) lines.push(`\n--- ERROR ---\n${e.error}`);
   const out = consoleOutput ?? e.output;
   if (out && out.trim()) {
     const json = pretty ? parseJsonContainer(out) : undefined;
-    lines.push(`\n--- OUTPUT ---\n${json ? JSON.stringify(json, null, 2) : out}`);
+    lines.push(`\n--- OUTPUT ---\n${json ? JSON.stringify(json, null, 2) : out.trimEnd()}`);
   }
+  // Last, as in the run itself: a failing script prints first and fails afterwards.
+  if (e.error) lines.push(`\n--- ERROR ---\n${e.error}`);
   return lines.join('\n');
 }

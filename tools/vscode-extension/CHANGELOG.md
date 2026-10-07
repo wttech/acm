@@ -8,6 +8,7 @@
 - Scripts view is shown above Executions.
 - Failures of view commands (filtering) are shown as errors instead of being lost.
 - Status bar names the issues ACM's health check found on an unhealthy instance (they were never listed) and warns that running scripts may be unsafe; the MCP `acm_health` tool warns the same way.
+- README and Marketplace description lead with the automatically registered MCP server and the setup prompt for other AI tools.
 - Execution logs have their own syntax highlighting (header, sections, log levels, quoted values) instead of the generic log one that mangled the execution ID and executable path.
 
 ## 0.1.0

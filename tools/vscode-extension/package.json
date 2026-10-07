@@ -1,7 +1,7 @@
 {
   "name": "acm",
   "displayName": "AEM Content Manager (ACM)",
-  "description": "Write, validate and run AEM Content Manager (ACM) Groovy scripts from VS Code.",
+  "description": "Write, validate and run AEM Content Manager (ACM) Groovy scripts from VS Code. The ACM MCP server for AI agents is registered automatically.",
   "version": "0.1.1",
   "private": true,
   "publisher": "wppes",
