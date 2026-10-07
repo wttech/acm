@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
-import { ACM_API, AcmHttpError } from '@acm/shared';
+import { ACM_API, ACM_FEATURE, AcmHttpError, describeUnhealthy, type HealthStatus } from '@acm/shared';
+import { openUiLink } from './browser';
+import { COMMANDS, CONTEXT, NAMESPACE } from './ids';
 import { getActiveInstance, getClient, getSettings } from './instances';
 
 interface State {
-  healthStatus?: { healthy: boolean; issues?: Array<{ message?: string }> };
+  healthStatus?: HealthStatus;
   permissions?: { features?: Record<string, boolean> };
 }
 
@@ -20,7 +22,7 @@ export function registerStatus(context: vscode.ExtensionContext): void {
     item,
     { dispose: () => clearInterval(healthTimer) },
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('acm')) {
+      if (event.affectsConfiguration(NAMESPACE)) {
         scheduleHealth();
         void refreshHealth();
       }
@@ -60,11 +62,8 @@ export async function refreshHealth(): Promise<void> {
       try {
         const res = await client.request<State>('GET', ACM_API.state);
         const health = res.data?.healthStatus;
-        noHistory = res.data?.permissions?.features?.['console.execute.nohistory'] === true;
-        if (health && !health.healthy) {
-          const issues = (health.issues ?? []).map((issue) => issue.message).filter(Boolean);
-          result = `ACM is not healthy${issues.length ? `: ${issues.join('; ')}` : ''}. Automatic scripts wait until it is.`;
-        }
+        noHistory = res.data?.permissions?.features?.[ACM_FEATURE.consoleExecuteNoHistory] === true;
+        result = describeUnhealthy(health);
       } catch (e) {
         result = e instanceof AcmHttpError ? e.message : 'Instance is not reachable.';
         noAccess = e instanceof AcmHttpError && e.httpStatus === 401;
@@ -74,33 +73,35 @@ export async function refreshHealth(): Promise<void> {
   if (check === healthCheck) {
     problem = result;
     unauthorized = noAccess;
-    vscode.commands.executeCommand('setContext', 'acm.canRunWithoutHistory', noHistory);
+    vscode.commands.executeCommand('setContext', CONTEXT.canRunWithoutHistory, noHistory);
     updateStatus();
   }
 }
 
 function updateStatus(): void {
   const instance = getActiveInstance();
-  vscode.commands.executeCommand('setContext', 'acm.hasInstance', !!instance);
+  vscode.commands.executeCommand('setContext', CONTEXT.hasInstance, !!instance);
   item.backgroundColor = undefined;
   if (running) {
     item.text = `$(sync~spin) ACM: ${instance?.name ?? ''}`;
     item.tooltip = `Running execution ${running}. Click to abort.`;
-    item.command = 'acm.abort';
+    item.command = COMMANDS.abort;
   } else if (!instance) {
     item.text = '$(server) ACM: no instance';
     item.tooltip = 'Select ACM instance';
-    item.command = 'acm.selectInstance';
+    item.command = COMMANDS.selectInstance;
   } else {
     item.text = `${problem ? '$(warning)' : '$(server)'} ACM: ${instance.name}`;
-    item.tooltip = [
-      `${instance.url}${instance.readonly ? ' (read-only)' : ''}`,
-      problem,
-      unauthorized ? 'Click to set credentials.' : 'Click to switch.',
-    ]
-      .filter(Boolean)
-      .join('\n');
+    const tooltip = new vscode.MarkdownString();
+    tooltip.isTrusted = { enabledCommands: [COMMANDS.openUi] };
+    tooltip.appendText(`${instance.url}${instance.readonly ? ' (read-only)' : ''}`);
+    if (problem) {
+      tooltip.appendMarkdown('\n\n').appendText(problem);
+    }
+    tooltip.appendMarkdown(`\n\n[Open ACM](${openUiLink('home')}) \u00b7 `);
+    tooltip.appendText(unauthorized ? 'Click to set credentials.' : 'Click to switch.');
+    item.tooltip = tooltip;
     item.backgroundColor = problem ? new vscode.ThemeColor('statusBarItem.warningBackground') : undefined;
-    item.command = unauthorized ? 'acm.setCredentials' : 'acm.selectInstance';
+    item.command = unauthorized ? COMMANDS.setCredentials : COMMANDS.selectInstance;
   }
 }

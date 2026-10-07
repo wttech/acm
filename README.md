@@ -91,8 +91,6 @@ It works seamlessly across AEM on-premise, AMS, and AEMaaCS environments.
     - [MCP server](#mcp-server)
     - [VS Code extension](#vs-code-extension)
     - [Agent skill](#agent-skill)
-  - [Development](#development)
-  - [Releasing](#releasing)
   - [Authors](#authors)
   - [Contributing](#contributing)
   - [License](#license)
@@ -855,52 +853,6 @@ The [ACM extension for VS Code](tools/vscode-extension/README.md) (preview, `wpp
 
 The [ACM Groovy scripting skill](tools/skills/acm-groovy-script/SKILL.md) teaches AI agents to write correct and safe ACM scripts: script types, dry runs, abortable loops, logging, and a complete [API reference](tools/skills/acm-groovy-script/references/api.md) generated from the ACM source code. The MCP server and the VS Code extension include it. For other agents, copy the [skill folder](tools/skills/acm-groovy-script) into your project's `.github/skills/`, `.claude/skills/` or `.agents/skills/` directory, or into `~/.claude/skills/` to use it everywhere.
 
-## Development
-
-1. All-in-one command (incremental building and deployment of 'all' distribution, both backend & frontend)
-
-    ```shell
-    sh taskw develop:all
-    ```
-
-2. Example contents
-
-    ```shell
-    sh taskw develop:content:example
-    ```
-
-3. Backend only
-
-    ```shell
-    sh taskw develop:core
-    ```
-
-4. Frontend only with production build mode
-
-    ```shell
-    sh taskw develop:frontend
-    ```
-
-5. Frontend only with dev build mode (live reloading)
-
-    ```shell
-    sh taskw develop:frontend:dev
-    ```
-
-## Releasing
-
-1. To check the last release version, run:
-
-    ```shell
-    sh taskw release
-    ```
- 
-2. To release a new version, run:
-
-    ```shell
-    sh taskw release -- <new-version>
-    ```
-
 ## Authors
 
 - Founder, owner, and maintainer: [Krystian Panek](mailto:krystian.panek@vml.com)
@@ -915,6 +867,8 @@ Issues reported or pull requests created will be very appreciated.
 1. Fork plugin source code using a dedicated GitHub button.
 2. Do code changes on a feature branch created from *main* branch.
 3. Create a pull request with a base of *main* branch.
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for building, running locally and releasing.
 
 ## License
 

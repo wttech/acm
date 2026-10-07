@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
-import { getActiveInstance, getSecret, getSettings, pickInstance, type AcmInstance } from './instances';
+import { MCP_ENV } from '@acm/shared';
+import { COMMANDS, MCP_PROVIDER_ID, NAMESPACE, SETTINGS } from './ids';
+import { getActiveInstance, getSecret, getSettings, pickInstance, readSetting, type AcmInstance } from './instances';
 
 const SECRET_ENV: Record<AcmInstance['authMode'], string> = {
-  bearer: 'AEM_TOKEN',
-  cookie: 'AEM_COOKIE',
-  basic: 'AEM_PASSWORD',
+  bearer: MCP_ENV.token,
+  cookie: MCP_ENV.cookie,
+  basic: MCP_ENV.password,
 };
 
 const README = 'https://github.com/wttech/acm/blob/main/tools/mcp-server/README.md';
@@ -12,10 +14,10 @@ const README = 'https://github.com/wttech/acm/blob/main/tools/mcp-server/README.
 /** Any AI tool knows where it keeps its MCP configuration, so the prompt describes what to register, not where. */
 function setupPrompt(instance: AcmInstance): string {
   const env = [
-    `AEM_BASE_URL=${instance.url}`,
-    `AEM_AUTH=${instance.authMode}`,
-    ...(instance.user ? [`AEM_USER=${instance.user}`] : []),
-    `ACM_READONLY=${instance.readonly ? 'true' : 'false'}`,
+    `${MCP_ENV.baseUrl}=${instance.url}`,
+    `${MCP_ENV.auth}=${instance.authMode}`,
+    ...(instance.user ? [`${MCP_ENV.user}=${instance.user}`] : []),
+    `${MCP_ENV.readonly}=${instance.readonly ? 'true' : 'false'}`,
   ];
   return [
     "Add the ACM (AEM Content Manager) MCP server to this tool's MCP configuration.",
@@ -40,7 +42,7 @@ export function registerMcp(context: vscode.ExtensionContext): void {
     provideMcpServerDefinitions() {
       servers.clear();
       const instance = getActiveInstance();
-      if (!instance || !vscode.workspace.getConfiguration('acm').get<boolean>('mcp.enabled', true)) {
+      if (!instance || !readSetting<boolean>(SETTINGS.mcpEnabled)) {
         return [];
       }
       const label = `ACM (${instance.name})`;
@@ -53,14 +55,14 @@ export function registerMcp(context: vscode.ExtensionContext): void {
           process.execPath,
           [context.asAbsolutePath('dist/mcp-server.mjs')],
           {
-            AEM_BASE_URL: instance.url,
-            AEM_AUTH: instance.authMode,
-            AEM_USER: instance.user ?? null,
-            ACM_READONLY: instance.readonly ? 'true' : 'false',
-            ACM_RUN_TIMEOUT_MS: settings.runTimeout,
-            ACM_POLL_INTERVAL_MS: settings.runPollInterval,
-            AEM_HTTP_TIMEOUT_MS: settings.httpTimeout,
-            AEM_UNAUTHORIZED_MESSAGE: `401 Unauthorized on ACM instance "${instance.name}": the credentials are invalid or expired. Ask the user to run "ACM: Set Credentials" in VS Code, then restart this MCP server.`,
+            [MCP_ENV.baseUrl]: instance.url,
+            [MCP_ENV.auth]: instance.authMode,
+            [MCP_ENV.user]: instance.user ?? null,
+            [MCP_ENV.readonly]: instance.readonly ? 'true' : 'false',
+            [MCP_ENV.runTimeout]: settings.runTimeout,
+            [MCP_ENV.pollInterval]: settings.runPollInterval,
+            [MCP_ENV.httpTimeout]: settings.httpTimeout,
+            [MCP_ENV.unauthorizedMessage]: `401 Unauthorized on ACM instance "${instance.name}": the credentials are invalid or expired. Ask the user to run "ACM: Set Credentials" in VS Code, then restart this MCP server.`,
           },
           `${version}+${instance.name}`,
         ),
@@ -80,8 +82,8 @@ export function registerMcp(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     changed,
-    vscode.lm.registerMcpServerDefinitionProvider('acm', provider),
-    vscode.commands.registerCommand('acm.copyMcpSetup', async () => {
+    vscode.lm.registerMcpServerDefinitionProvider(MCP_PROVIDER_ID, provider),
+    vscode.commands.registerCommand(COMMANDS.copyMcpSetup, async () => {
       const instance = getActiveInstance() ?? (await pickInstance());
       if (instance) {
         await vscode.env.clipboard.writeText(setupPrompt(instance));
@@ -91,7 +93,7 @@ export function registerMcp(context: vscode.ExtensionContext): void {
       }
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('acm')) {
+      if (event.affectsConfiguration(NAMESPACE)) {
         changed.fire();
       }
     }),

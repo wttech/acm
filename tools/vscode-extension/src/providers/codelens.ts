@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { GROOVY_SELECTOR } from '../groovy';
+import { COMMANDS } from '../ids';
 
 const METHOD_PATTERN = /^\s*void\s+doRun\s*\(/;
 
@@ -10,7 +11,7 @@ export function registerCodeLens(context: vscode.ExtensionContext): void {
       provideCodeLenses(document) {
         for (let line = 0; line < document.lineCount; line++) {
           if (METHOD_PATTERN.test(document.lineAt(line).text)) {
-            return [new vscode.CodeLens(document.lineAt(line).range, { title: '$(play) Run', command: 'acm.run' })];
+            return [new vscode.CodeLens(document.lineAt(line).range, { title: '$(play) Run', command: COMMANDS.run })];
           }
         }
         return [];

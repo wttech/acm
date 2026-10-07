@@ -21,7 +21,7 @@ const ctx = await esbuild.context({
   target: 'node20',
   outfile: 'dist/extension.js',
   external: ['vscode'],
-  loader: { '.md': 'text' },
+  loader: { '.md': 'text', '.groovy': 'text' },
   minify: production,
   sourcemap: !production,
   sourcesContent: false,
@@ -38,7 +38,7 @@ const mcpCtx = await esbuild.context({
   target: 'node20',
   outfile: 'dist/mcp-server.mjs',
   nodePaths: [resolve('node_modules')],
-  loader: { '.md': 'text' },
+  loader: { '.md': 'text', '.groovy': 'text' },
   // Bundled CommonJS dependencies may call require().
   banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
   minify: production,

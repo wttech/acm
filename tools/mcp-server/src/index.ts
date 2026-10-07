@@ -79,9 +79,11 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 
 import {
+  ACM_API,
   type AcmAuth,
   AcmClient,
   CONSOLE_CODE_ID,
+  MCP_ENV,
   type Execution,
   type ExecutionListOutput,
   type QueueOutput,
@@ -91,10 +93,14 @@ import {
   isPending,
   normalizeCookie,
   normalizeGroovy,
+  SCRIPT_TEMPLATES,
   SKILL_DOCUMENTS,
   SKILL_ESSENTIALS,
   SKILL_NAME,
   summarizeExecution,
+  describeUnhealthy,
+  type HealthStatus,
+  waitForExecution,
 } from "@acm/shared";
 
 /* ============================================================================
@@ -118,19 +124,19 @@ interface Config {
 }
 
 function loadConfig(): Config {
-  const baseUrl = (process.env.AEM_BASE_URL || "").replace(/\/+$/, "");
+  const baseUrl = (process.env[MCP_ENV.baseUrl] || "").replace(/\/+$/, "");
   if (!baseUrl) {
-    console.error("[acm-mcp] AEM_BASE_URL is required.");
+    console.error(`[acm-mcp] ${MCP_ENV.baseUrl} is required.`);
     process.exit(1);
   }
 
-  const token = process.env.AEM_TOKEN?.trim() || undefined;
-  const cookieFile = process.env.AEM_COOKIE_FILE?.trim() || undefined;
-  const cookie = normalizeCookie(process.env.AEM_COOKIE);
-  const user = process.env.AEM_USER || undefined;
-  const password = process.env.AEM_PASSWORD || undefined;
+  const token = process.env[MCP_ENV.token]?.trim() || undefined;
+  const cookieFile = process.env[MCP_ENV.cookieFile]?.trim() || undefined;
+  const cookie = normalizeCookie(process.env[MCP_ENV.cookie]);
+  const user = process.env[MCP_ENV.user] || undefined;
+  const password = process.env[MCP_ENV.password] || undefined;
 
-  let authMode = (process.env.AEM_AUTH?.toLowerCase() as AuthMode) || undefined;
+  let authMode = (process.env[MCP_ENV.auth]?.toLowerCase() as AuthMode) || undefined;
   if (!authMode) {
     if (token) authMode = "bearer";
     else if (cookie || cookieFile) authMode = "cookie";
@@ -153,10 +159,10 @@ function loadConfig(): Config {
     cookieFile,
     user,
     password,
-    readonly: /^(1|true|yes)$/i.test(process.env.ACM_READONLY || ""),
-    runTimeoutMs: parseInt(process.env.ACM_RUN_TIMEOUT_MS || "120000", 10),
-    pollIntervalMs: parseInt(process.env.ACM_POLL_INTERVAL_MS || "1500", 10),
-    httpTimeoutMs: parseInt(process.env.AEM_HTTP_TIMEOUT_MS || "30000", 10),
+    readonly: /^(1|true|yes)$/i.test(process.env[MCP_ENV.readonly] || ""),
+    runTimeoutMs: parseInt(process.env[MCP_ENV.runTimeout] || "120000", 10),
+    pollIntervalMs: parseInt(process.env[MCP_ENV.pollInterval] || "1500", 10),
+    httpTimeoutMs: parseInt(process.env[MCP_ENV.httpTimeout] || "30000", 10),
   };
 }
 
@@ -206,7 +212,7 @@ const client = new AcmClient({
   auth: createAuth(config),
   timeoutMs: config.httpTimeoutMs,
   messages: {
-    unauthorized: process.env.AEM_UNAUTHORIZED_MESSAGE || UNAUTHORIZED_MESSAGES[config.authMode],
+    unauthorized: process.env[MCP_ENV.unauthorizedMessage] || UNAUTHORIZED_MESSAGES[config.authMode],
     missingCookie: config.cookieFile
       ? `No login-token in ${config.cookieFile}. Write a fresh login-token value to it, or set AEM_COOKIE.`
       : "No login-token. Set AEM_COOKIE, or AEM_COOKIE_FILE pointing at a file holding the value.",
@@ -216,10 +222,6 @@ const client = new AcmClient({
 /* ============================================================================
  * ACM operations
  * ========================================================================== */
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
-}
 
 /* ============================================================================
  * MCP server & tools
@@ -266,14 +268,15 @@ server.registerTool(
   {
     title: "ACM health & state",
     description:
-      "Check connectivity, authentication and ACM instance state (health checks, queued executions, instance info). Call this first to verify the setup. Returns the raw state from /apps/acm/api/state.json.",
+      `Check connectivity, authentication and the state ACM reports for the instance (health check result, queued executions, instance info). Call this first to verify the setup; an unhealthy instance is flagged with a warning because running scripts on it may be unsafe. Returns the raw state from ${ACM_API.state}.`,
     inputSchema: {},
   },
   async () => {
     try {
-      const res = await client.request<unknown>("GET", "/apps/acm/api/state.json");
+      const res = await client.request<{ healthStatus?: HealthStatus }>("GET", ACM_API.state);
+      const warning = describeUnhealthy(res.data?.healthStatus);
       return textResult(
-        `${targetInfo()}\n\nACM state (healthy connection):\n${JSON.stringify(res.data, null, 2)}`
+        `${targetInfo()}\n\n${warning ? `WARNING: ${warning}\n\n` : ""}ACM state:\n${JSON.stringify(res.data, null, 2)}`
       );
     } catch (e) {
       return errorResult(e);
@@ -287,7 +290,7 @@ server.registerTool(
   {
     title: "Validate Groovy code (compile only)",
     description:
-      "Compile-check Groovy code with ACM without executing it (mode=parse on /apps/acm/api/execute-code.json). Returns compile errors with line/column if any. ALWAYS validate code before running it. Never recorded in ACM execution history. Code is auto-wrapped in canRun()/doRun() if not already structured that way.",
+      `Compile-check Groovy code with ACM without executing it (mode=parse on ${ACM_API.executeCode}). Returns compile errors with line/column if any. ALWAYS validate code before running it. Never recorded in ACM execution history. Code is auto-wrapped in canRun()/doRun() if not already structured that way.`,
     inputSchema: {
       code: z.string().describe("Groovy code. Either a full ACM script (canRun/doRun) or a bare snippet."),
     },
@@ -295,7 +298,7 @@ server.registerTool(
   async ({ code }) => {
     try {
       const content = normalizeGroovy(code);
-      const res = await client.request<Execution>("POST", "/apps/acm/api/execute-code.json", {
+      const res = await client.request<Execution>("POST", ACM_API.executeCode, {
         mode: "parse",
         code: { id: CONSOLE_CODE_ID, content },
       });
@@ -321,7 +324,7 @@ server.registerTool(
   {
     title: "Run Groovy code on AEM via ACM",
     description:
-      "Run Groovy code on the AEM instance on behalf of the authenticated user and return the final status with full console output. By default (history=true) the code is queued (POST /apps/acm/api/queue-code.json) and polled until it finishes; the execution is recorded in ACM history, and if it is still running when the timeout elapses the executionId is returned — use acm_get_execution to keep checking. With history=false the code runs synchronously (POST /apps/acm/api/execute-code.json) and is NOT recorded in ACM history: use it while developing or debugging a script, for short read-only or dry-run runs, so repeated attempts do not flood the history. A history=false run has no trackable executionId, cannot be aborted, keeps no output files, and is cut off client-side after waitMs while the script may keep running on AEM. Run anything that changes content with history=true, so the change stays auditable. Prefer dry-run patterns (repo.dryRun) for destructive operations. Code is auto-wrapped in canRun()/doRun() if needed.",
+      `Run Groovy code on the AEM instance on behalf of the authenticated user and return the final status with full console output. By default (history=true) the code is queued (POST ${ACM_API.queueCode}) and polled until it finishes; the execution is recorded in ACM history, and if it is still running when the timeout elapses the executionId is returned — use acm_get_execution to keep checking. With history=false the code runs synchronously (POST ${ACM_API.executeCode}) and is NOT recorded in ACM history: use it while developing or debugging a script, for short read-only or dry-run runs, so repeated attempts do not flood the history. A history=false run has no trackable executionId, cannot be aborted, keeps no output files, and is cut off client-side after waitMs while the script may keep running on AEM. Run anything that changes content with history=true, so the change stays auditable. Prefer dry-run patterns (repo.dryRun) for destructive operations. Code is auto-wrapped in canRun()/doRun() if needed.`,
     inputSchema: {
       code: z.string().describe("Groovy code to execute (full ACM script or bare snippet)."),
       inputs: z
@@ -354,7 +357,7 @@ server.registerTool(
     const inputValues = inputs && Object.keys(inputs).length > 0 ? inputs : undefined;
     if (history === false) return runWithoutHistory(content, inputValues, waitMs ?? config.runTimeoutMs);
     try {
-      const res = await client.request<QueueOutput>("POST", "/apps/acm/api/queue-code.json", {
+      const res = await client.request<QueueOutput>("POST", ACM_API.queueCode, {
         code: { id: CONSOLE_CODE_ID, content },
         inputs: inputValues,
       });
@@ -369,16 +372,12 @@ server.registerTool(
         );
       }
 
-      const deadline = Date.now() + (waitMs ?? config.runTimeoutMs);
-      while (isPending(execution.status) && Date.now() < deadline) {
-        await sleep(config.pollIntervalMs);
-        const polled = await fetchExecutionById(client, execution.id);
-        if (polled) execution = polled;
-      }
+      const wait = waitMs ?? config.runTimeoutMs;
+      execution = await waitForExecution(client, execution, { intervalMs: config.pollIntervalMs, timeoutMs: wait });
 
       if (isPending(execution.status)) {
         return textResult(
-          `Execution still ${execution.status} after ${waitMs ?? config.runTimeoutMs} ms.\nExecution ID: ${execution.id}\nUse acm_get_execution with this ID to check progress, or acm_abort_execution to stop it.`
+          `Execution still ${execution.status} after ${wait} ms.\nExecution ID: ${execution.id}\nUse acm_get_execution with this ID to check progress, or acm_abort_execution to stop it.`
         );
       }
 
@@ -398,7 +397,7 @@ async function runWithoutHistory(content: string, inputs: Record<string, unknown
   try {
     const res = await client.request<Execution>(
       "POST",
-      "/apps/acm/api/execute-code.json",
+      ACM_API.executeCode,
       { mode: "RUN", history: false, code: { id: CONSOLE_CODE_ID, content }, inputs },
       true,
       timeoutMs
@@ -451,7 +450,7 @@ server.registerTool(
   {
     title: "Abort a running execution",
     description:
-      "Abort a queued or running execution (DELETE /apps/acm/api/queue-code.json?executionId=...). Scripts honoring context.checkAborted() will stop gracefully.",
+      `Abort a queued or running execution (DELETE ${ACM_API.queueCode}?executionId=...). Scripts honoring context.checkAborted() will stop gracefully.`,
     inputSchema: {
       executionId: z.string().describe("ID of the execution to abort."),
     },
@@ -463,7 +462,7 @@ server.registerTool(
     try {
       const res = await client.request<unknown>(
         "DELETE",
-        `/apps/acm/api/queue-code.json?executionId=${encodeURIComponent(executionId)}`
+        `${ACM_API.queueCode}?executionId=${encodeURIComponent(executionId)}`
       );
       return textResult(`Abort requested. Server message: ${res.message}`);
     } catch (e) {
@@ -478,7 +477,7 @@ server.registerTool(
   {
     title: "List execution history",
     description:
-      "List past executions from ACM history (/apps/acm/api/execution.json), newest first, in summary format. Optionally filter to currently queued executions only.",
+      `List past executions from ACM history (${ACM_API.execution}), newest first, in summary format. Optionally filter to currently queued executions only.`,
     inputSchema: {
       limit: z.number().int().positive().max(200).optional().describe("Max results (default 20)."),
       offset: z.number().int().nonnegative().optional().describe("Pagination offset (default 0)."),
@@ -493,7 +492,7 @@ server.registerTool(
       if (queuedOnly) params.set("queued", "true");
       const res = await client.request<ExecutionListOutput>(
         "GET",
-        `/apps/acm/api/execution.json?${params.toString()}`
+        `${ACM_API.execution}?${params.toString()}`
       );
       const list = res.data?.list || [];
       if (list.length === 0) return textResult("No executions found.");
@@ -514,7 +513,7 @@ server.registerTool(
   {
     title: "List stored ACM scripts",
     description:
-      "List Groovy scripts stored on the instance under /conf/acm/settings/script (GET /apps/acm/api/script.json?type=...).",
+      `List Groovy scripts stored on the instance under /conf/acm/settings/script (GET ${ACM_API.script}?type=...).`,
     inputSchema: {
       type: z
         .enum(["MANUAL", "AUTOMATIC", "ENABLED", "DISABLED", "EXTENSION", "MOCK"])
@@ -526,7 +525,7 @@ server.registerTool(
     try {
       const res = await client.request<{ list?: Array<{ id: string; path?: string; [k: string]: unknown }> }>(
         "GET",
-        `/apps/acm/api/script.json?type=${encodeURIComponent(type ?? "MANUAL")}`
+        `${ACM_API.script}?type=${encodeURIComponent(type ?? "MANUAL")}`
       );
       const list = res.data?.list || [];
       if (list.length === 0) return textResult(`No ${type ?? "MANUAL"} scripts found.`);
@@ -554,7 +553,7 @@ server.registerTool(
     try {
       const res = await client.request<{ list?: Array<{ id: string; content?: string }> }>(
         "GET",
-        `/apps/acm/api/script.json?id=${encodeURIComponent(id)}`
+        `${ACM_API.script}?id=${encodeURIComponent(id)}`
       );
       const script = res.data?.list?.[0];
       if (!script) return textResult(`Script '${id}' not found.`, true);
@@ -571,7 +570,7 @@ server.registerTool(
   {
     title: "Describe code inputs",
     description:
-      "Resolve the inputs a script declares in describeRun() (POST /apps/acm/api/describe-code.json). Use this before acm_run_code for scripts with inputs, to learn names, types and defaults.",
+      `Resolve the inputs a script declares in describeRun() (POST ${ACM_API.describeCode}). Use this before acm_run_code for scripts with inputs, to learn names, types and defaults.`,
     inputSchema: {
       code: z.string().describe("Groovy code (full ACM script) whose inputs should be described."),
     },
@@ -585,7 +584,7 @@ server.registerTool(
       );
     }
     try {
-      const res = await client.request<unknown>("POST", "/apps/acm/api/describe-code.json", {
+      const res = await client.request<unknown>("POST", ACM_API.describeCode, {
         code: { id: CONSOLE_CODE_ID, content: code },
       });
       return textResult(`Description:\n${JSON.stringify(res.data, null, 2)}`);
@@ -601,7 +600,7 @@ server.registerTool(
   {
     title: "Download an execution output",
     description:
-      "Fetch a named output of an execution from /apps/acm/api/execution-output.json — 'console' for console text, or the name given to outputs.file(...)/outputs.text(...) in the script (e.g. 'report'). Returns text content; binary outputs are returned base64-encoded.",
+      `Fetch a named output of an execution from ${ACM_API.executionOutput} — 'console' for console text, or the name given to outputs.file(...)/outputs.text(...) in the script (e.g. 'report'). Returns text content; binary outputs are returned base64-encoded.`,
     inputSchema: {
       executionId: z.string().describe("Execution ID."),
       name: z.string().describe("Output name: 'console', 'archive', or a script-defined output name."),
@@ -610,7 +609,7 @@ server.registerTool(
   async ({ executionId, name }) => {
     try {
       const r = await client.requestRaw(
-        `/apps/acm/api/execution-output.json?executionId=${encodeURIComponent(executionId)}&name=${encodeURIComponent(name)}`
+        `${ACM_API.executionOutput}?executionId=${encodeURIComponent(executionId)}&name=${encodeURIComponent(name)}`
       );
       if (r.status === 404) return textResult(`Output '${name}' not found for execution '${executionId}'.`, true);
       if (r.status !== 200) return textResult(`HTTP ${r.status} fetching output:\n${r.text.slice(0, 1000)}`, true);
@@ -654,6 +653,15 @@ for (const doc of SKILL_DOCUMENTS) {
     skillUri(doc.path),
     { title: doc.title, description: doc.description, mimeType: "text/markdown" },
     (uri) => ({ contents: [{ uri: uri.href, mimeType: "text/markdown", text: doc.text }] })
+  );
+}
+
+for (const template of SCRIPT_TEMPLATES) {
+  server.registerResource(
+    template.path,
+    skillUri(template.path),
+    { title: `${template.name} (${template.target.toLowerCase()} template)`, description: template.description, mimeType: "text/plain" },
+    (uri) => ({ contents: [{ uri: uri.href, mimeType: "text/plain", text: template.code }] })
   );
 }
 

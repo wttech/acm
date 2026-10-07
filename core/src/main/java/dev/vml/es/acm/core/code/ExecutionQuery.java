@@ -109,28 +109,33 @@ public class ExecutionQuery {
         this.duration = duration;
     }
 
+    /** JCR-SQL2 string literals are escaped by doubling the single quote. */
+    private static String literal(String value) {
+        return StringUtils.replace(value, "'", "''");
+    }
+
     protected String toSql() {
         List<String> filters = new ArrayList<>();
         filters.add(String.format(
                 "s.[%s] = '%s'", JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, HistoricalExecution.RESOURCE_TYPE));
         if (path != null) {
-            filters.add(String.format("ISDESCENDANTNODE(s, '%s')", path));
+            filters.add(String.format("ISDESCENDANTNODE(s, '%s')", literal(path)));
         }
         if (id != null) {
-            filters.add(String.format("s.[id] = '%s'", id));
+            filters.add(String.format("s.[id] = '%s'", literal(id)));
         }
         if (executableId != null) {
             if (ExecutableUtils.isIdExplicit(executableId)) {
-                filters.add(String.format("s.[executableId] = '%s'", executableId));
+                filters.add(String.format("s.[executableId] = '%s'", literal(executableId)));
             } else {
-                filters.add(String.format("s.[executableId] LIKE '%%%s%%'", executableId));
+                filters.add(String.format("s.[executableId] LIKE '%%%s%%'", literal(executableId)));
             }
         }
         if (userId != null) {
             if (ExecutableUtils.isUserExplicit(userId)) {
-                filters.add(String.format("s.[userId] = '%s'", userId));
+                filters.add(String.format("s.[userId] = '%s'", literal(userId)));
             } else {
-                filters.add(String.format("s.[userId] LIKE '%%%s%%'", userId));
+                filters.add(String.format("s.[userId] LIKE '%%%s%%'", literal(userId)));
             }
         }
         if (statuses != null && !statuses.isEmpty()) {

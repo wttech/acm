@@ -13,6 +13,7 @@
   "scripts": {
     "build": "tsc --noEmit && node esbuild.mjs",
     "typecheck": "tsc --noEmit",
+    "check": "npm test",
     "pretest": "npm run build",
     "test": "node test/run-tests.mjs",
     "smoke": "npm run build && node test/smoke.mjs",

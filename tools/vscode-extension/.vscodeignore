@@ -4,6 +4,7 @@
 !media/**
 !skills/**
 !snippets/**
+!syntaxes/**
 !package.json
 !README.md
 !CHANGELOG.md

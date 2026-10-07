@@ -124,7 +124,7 @@ async function main() {
 
     console.log("\n— acm_health");
     let r = await client.callTool({ name: "acm_health", arguments: {} });
-    check("health reports healthy connection", !r.isError && text(r).includes("healthy connection"), text(r));
+    check("health returns the ACM state without a warning when healthy", !r.isError && text(r).includes("ACM state:") && !text(r).includes("WARNING"), text(r));
     check("health includes target info", text(r).includes(BASE_URL));
 
     console.log("\n— acm_validate_code");

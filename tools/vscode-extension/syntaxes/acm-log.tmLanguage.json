@@ -1,0 +1,50 @@
+{
+  "scopeName": "source.acm-log",
+  "name": "ACM Log",
+  "patterns": [
+    {
+      "match": "^(Execution ID|Status|Executable|User|Started|Ended|Duration):\\s+(.*)$",
+      "captures": {
+        "1": { "name": "keyword.other.acm-log" },
+        "2": {
+          "patterns": [
+            { "match": "\\b(?:SUCCEEDED)\\b", "name": "token.info-token" },
+            { "match": "\\b(?:FAILED|ABORTED|LOCKED)\\b", "name": "token.error-token" },
+            { "match": "\\b(?:QUEUED|ACTIVE|PARSING|CHECKING|RUNNING|STOPPING)\\b", "name": "token.warn-token" },
+            { "match": ".+", "name": "string.unquoted.acm-log" }
+          ]
+        }
+      }
+    },
+    {
+      "match": "^--- (?:INPUTS|ERROR|OUTPUT) ---$",
+      "name": "markup.heading.acm-log"
+    },
+    {
+      "begin": "^(?=[{\\[])",
+      "end": "^(?=\\s*$)",
+      "patterns": [
+        { "include": "source.json" }
+      ]
+    },
+    {
+      "begin": "^(\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+(\\[(?:ERROR|FATAL)\\]|\\[WARN(?:ING)?\\]|\\[INFO\\]|\\[(?:DEBUG|TRACE)\\])",
+      "end": "$",
+      "beginCaptures": {
+        "1": { "name": "comment.acm-log" },
+        "2": {
+          "patterns": [
+            { "match": "ERROR|FATAL", "name": "token.error-token" },
+            { "match": "WARN", "name": "token.warn-token" },
+            { "match": "INFO", "name": "token.info-token" },
+            { "match": "DEBUG|TRACE", "name": "token.debug-token" }
+          ]
+        }
+      },
+      "patterns": [
+        { "match": "'[^']*'", "name": "string.quoted.single.acm-log" },
+        { "match": "\"[^\"]*\"", "name": "string.quoted.double.acm-log" }
+      ]
+    }
+  ]
+}

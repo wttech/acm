@@ -62,7 +62,7 @@ Keep the credential out of files that are committed. Most clients can reference 
 
 ### 3. Check the connection
 
-Ask the agent to call `acm_health`. It reports the target instance, the auth mode, and the ACM instance state.
+Ask the agent to call `acm_health`. It reports the target instance, the auth mode, and the instance state as ACM reports it.
 
 ### Optional environment variables
 
@@ -79,7 +79,7 @@ Ask the agent to call `acm_health`. It reports the target instance, the auth mod
 
 | Tool | Description |
 |---|---|
-| `acm_health` | Check connectivity, auth and ACM instance state (`/apps/acm/api/state.json`). Call it first. |
+| `acm_health` | Check connectivity, auth and the instance state ACM reports (`/apps/acm/api/state.json`), with a warning when ACM's health check finds the instance unhealthy. Call it first. |
 | `acm_validate_code` | Compile-check Groovy without running it (`mode=parse`). Returns compile errors with line and column. Never recorded in execution history. |
 | `acm_run_code` | Queue Groovy for execution, poll until it finishes or times out, and return the status and full console output. Supports `inputs` for scripts with `describeRun()`. With `history: false` it runs synchronously and is not recorded in history (see below). |
 | `acm_get_execution` | Get the status, inputs, error and console output of an execution by ID, whether queued, running or archived. |
@@ -109,7 +109,7 @@ The server ships the [ACM Groovy scripting skill](../skills/acm-groovy-script/SK
 
 - **Instructions.** The skill's essentials (never invent API, dry runs, abort checks, validate before running) are sent to the client when it connects. Clients add them to the model's context.
 - **Prompt.** `acm-groovy-script` returns the full guide.
-- **Resources.** The guide and its references are available as `acm://skill/SKILL.md`, `acm://skill/references/api.md` (every ACM variable, class and method, generated from the ACM source), `acm://skill/references/scripts.md` and `acm://skill/references/patterns.md`.
+- **Resources.** The guide and its references are available as `acm://skill/SKILL.md`, `acm://skill/references/api.md` (every ACM variable, class and method, generated from the ACM source), `acm://skill/references/scripts.md` and the script templates under `acm://skill/templates/`.
 
 ## Example
 
@@ -155,50 +155,9 @@ By default only administrators have access. See [Tools Access Configuration](htt
 - **Prefer dry runs for destructive changes.** Use ACM's `repo.dryRun(...)` pattern; the bundled scripting guide steers the model towards it.
 - **Credentials stay local.** The server runs on your machine and only talks to `AEM_BASE_URL`. Keep tokens in your MCP client's secret storage or environment, not in files you commit.
 
-## Development
+## Contributing
 
-```bash
-cd tools/mcp-server
-npm install
-npm test          # builds, then runs the end-to-end tests
-```
-
-`npm test` starts the built server over stdio against a mock ACM backend and calls every tool:
-
-- `test/mock-acm.mjs` emulates the ACM servlets under `/apps/acm/api/*`: the response envelope, all three auth modes, Granite CSRF, and a QUEUED → RUNNING → SUCCEEDED lifecycle, so the polling loop is really exercised.
-- `test/run-tests.mjs` drives the server with the MCP SDK client: handshake, tool listing and every tool call.
-
-To try the server against a real instance, run `test/smoke.mjs`. It calls `acm_health` and runs one harmless `println`. It reads connection settings from a `.env` file, which is git-ignored. The server itself never reads `.env`.
-
-```bash
-cp .env.example .env     # set AEM_BASE_URL and ONE auth option
-npm run smoke
-```
-
-To run a local build from an MCP client, point it at `node /path/to/acm/tools/mcp-server/dist/index.js` instead of `npx`.
-
-## Releasing
-
-The server is versioned and released separately from ACM, with tags prefixed `mcp-server-v`.
-
-From the repository root, run:
-
-```shell
-sh taskw release:mcp-server -- <version>
-```
-
-This bumps the version in `package.json` and `package-lock.json` (`npm version <version> --no-git-tag-version`) and both `version` fields of `server.json`, then commits, pushes, tags the commit `mcp-server-v<version>` and pushes the tag.
-
-The [MCP Server workflow](https://github.com/wttech/acm/blob/main/.github/workflows/release.mcp-server.yml) runs the tests and checks that the tag matches all three files. It then publishes the package to npm with provenance and publishes `server.json` to the [MCP Registry](https://registry.modelcontextprotocol.io). If only the registry step fails, re-run the job. The npm step skips versions that are already published.
-
-### One-time setup
-
-npm trusted publishing can only be configured for a package that already exists, so the first version is published by hand:
-
-1. Log in with an account that can publish to the `@wppes` scope, then run `npm ci && npm publish` in `tools/mcp-server/`.
-2. On npmjs.com, open the package's settings and add a trusted publisher: GitHub Actions, organization `wttech`, repository `acm`, workflow `release.mcp-server.yml`.
-3. Optionally, set publishing access to require two-factor authentication and disallow tokens, so only the workflow can publish.
-4. Push the `mcp-server-v<version>` tag for that version. The workflow skips the npm step and publishes to the MCP Registry.
+To build, test and release the server, see the [development guide](https://github.com/wttech/acm/blob/main/tools/mcp-server/DEVELOPMENT.md).
 
 ## License
 

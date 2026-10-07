@@ -14,4 +14,9 @@ export const ACM_API = {
 
 export const GRANITE_CSRF_TOKEN = '/libs/granite/csrf/token.json';
 
+/** ACM features that users need `jcr:read` on, as reported in the state permissions. */
+export const ACM_FEATURE = {
+  consoleExecuteNoHistory: 'console.execute.nohistory',
+} as const;
+
 export const CONSOLE_CODE_ID = 'console';

@@ -55,15 +55,15 @@ jobs:
             --title "VS Code Extension ${VERSION}" \
             --notes "Install: download the .vsix below, then run 'Extensions: Install from VSIX...' in VS Code." \
             --latest=false \
-            "acm-${VERSION}.vsix"
+            "dist/acm-${VERSION}.vsix"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Skipped until the publisher tokens are configured as repository secrets.
       - name: Publish to VS Code Marketplace
         if: env.VSCE_PAT != ''
-        run: npx vsce publish --packagePath "acm-${VERSION}.vsix"
+        run: npx vsce publish --packagePath "dist/acm-${VERSION}.vsix"
 
       - name: Publish to Open VSX
         if: env.OVSX_PAT != ''
-        run: npx ovsx publish "acm-${VERSION}.vsix"
+        run: npx ovsx publish "dist/acm-${VERSION}.vsix"
