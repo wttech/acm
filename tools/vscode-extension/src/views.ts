@@ -43,8 +43,8 @@ export function scriptUri(instance: AcmInstance, scriptId: string): vscode.Uri {
   return vscode.Uri.from({ scheme: SCHEME, authority: 'script', path: scriptId, query: instance.name });
 }
 
-export function storedScriptId(uri: vscode.Uri): string | undefined {
-  return uri.scheme === SCHEME && uri.authority === 'script' ? uri.path : undefined;
+export function storedScript(uri: vscode.Uri): { id: string; instance: string } | undefined {
+  return uri.scheme === SCHEME && uri.authority === 'script' ? { id: uri.path, instance: uri.query } : undefined;
 }
 
 /** Read-only documents for execution logs and stored scripts, fetched from the instance named in the query. */

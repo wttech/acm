@@ -29,7 +29,7 @@ import {
 } from './instances';
 import { validateDocument } from './providers/diagnostics';
 import { refreshHealth, setRunning } from './status';
-import { executionUri, storedScriptId, type Views } from './views';
+import { executionUri, storedScript, type Views } from './views';
 
 interface ExecutionNode {
   instance: AcmInstance;
@@ -51,7 +51,9 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
   context.subscriptions.push(
     output,
     register('acm.run', () => run(false, views)),
-    register('acm.runScript', (node?: { script?: { id: string } }) => runStored(node?.script?.id, views)),
+    register('acm.runScript', (node?: { instance?: AcmInstance; script?: { id: string } }) =>
+      runStored(node?.script && node.instance && { id: node.script.id, instance: node.instance.name }, views),
+    ),
     register('acm.runSelection', () => run(true, views)),
     register('acm.runWithoutHistory', () => run(true, views, false)),
     register('acm.validate', validate),
@@ -76,10 +78,15 @@ async function newScript(): Promise<void> {
   }
 }
 
-async function runStored(scriptId: string | undefined, views: Views): Promise<void> {
-  if (scriptId) {
-    await run(false, views, true, scriptId);
+async function runStored(script: StoredScript | undefined, views: Views): Promise<void> {
+  if (script) {
+    await run(false, views, true, script);
   }
+}
+
+interface StoredScript {
+  id: string;
+  instance: string;
 }
 
 interface RunSource {
@@ -87,25 +94,33 @@ interface RunSource {
   label: string;
   selection: boolean;
   hasInputs: boolean;
+  /** Instance the stored script was read from; it must be the one that runs it. */
+  instance?: string;
 }
 
-function storedSource(scriptId: string): RunSource {
-  return { code: { id: scriptId }, label: path.posix.basename(scriptId), selection: false, hasInputs: true };
+function storedSource(script: StoredScript): RunSource {
+  return {
+    code: { id: script.id },
+    label: path.posix.basename(script.id),
+    selection: false,
+    hasInputs: true,
+    instance: script.instance,
+  };
 }
 
 /** Stored scripts run by ID so their executions are recorded under the script; other editors run as console code. */
-function runSource(selectionOnly: boolean, scriptId?: string): RunSource | undefined {
-  if (scriptId) {
-    return storedSource(scriptId);
+function runSource(selectionOnly: boolean, script?: StoredScript): RunSource | undefined {
+  if (script) {
+    return storedSource(script);
   }
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     return undefined;
   }
   const selection = selectionOnly && !editor.selection.isEmpty ? editor.selection : undefined;
-  const storedId = selection ? undefined : storedScriptId(editor.document.uri);
-  if (storedId) {
-    return storedSource(storedId);
+  const stored = selection ? undefined : storedScript(editor.document.uri);
+  if (stored) {
+    return storedSource(stored);
   }
   const content = normalizeGroovy(editor.document.getText(selection));
   return {
@@ -116,8 +131,8 @@ function runSource(selectionOnly: boolean, scriptId?: string): RunSource | undef
   };
 }
 
-async function run(selectionOnly: boolean, views: Views, history = true, scriptId?: string): Promise<void> {
-  const source = runSource(selectionOnly, scriptId);
+async function run(selectionOnly: boolean, views: Views, history = true, script?: StoredScript): Promise<void> {
+  const source = runSource(selectionOnly, script);
   if (!source) {
     vscode.window.showWarningMessage('ACM: Open a Groovy script to run.');
     return;
@@ -127,7 +142,15 @@ async function run(selectionOnly: boolean, views: Views, history = true, scriptI
     return;
   }
   const target = await getTarget();
-  if (!target || !(await confirmRun(target.instance, 'Run script'))) {
+  if (!target) {
+    return;
+  }
+  if (source.instance && source.instance !== target.instance.name) {
+    throw new Error(
+      `${source.label} was opened from instance "${source.instance}", but "${target.instance.name}" is active. Switch back or reopen the script.`,
+    );
+  }
+  if (!(await confirmRun(target.instance, 'Run script'))) {
     return;
   }
   const { instance, client } = target;
