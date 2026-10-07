@@ -8,6 +8,7 @@ import consoleQuickCheck from '../../skills/acm-groovy-script/templates/console/
 import extensionHooks from '../../skills/acm-groovy-script/templates/extension/hooks.groovy';
 import manualContentMigration from '../../skills/acm-groovy-script/templates/manual/content-migration.groovy';
 import manualMinimal from '../../skills/acm-groovy-script/templates/manual/minimal.groovy';
+import manualPermissions from '../../skills/acm-groovy-script/templates/manual/permissions.groovy';
 import manualReportCsv from '../../skills/acm-groovy-script/templates/manual/report-csv.groovy';
 import mockHttpEndpoint from '../../skills/acm-groovy-script/templates/mock/http-endpoint.groovy';
 import { SCRIPT_TYPES } from './domain/script';
@@ -75,6 +76,7 @@ export interface ScriptTemplate {
 const TEMPLATE_FILES: Record<string, string> = {
   'templates/manual/minimal.groovy': manualMinimal,
   'templates/manual/content-migration.groovy': manualContentMigration,
+  'templates/manual/permissions.groovy': manualPermissions,
   'templates/manual/report-csv.groovy': manualReportCsv,
   'templates/automatic/minimal.groovy': automaticMinimal,
   'templates/automatic/permissions.groovy': automaticPermissions,
