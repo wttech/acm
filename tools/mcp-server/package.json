@@ -1,6 +1,6 @@
 {
   "name": "@wppes/acm-mcp-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for AEM Content Manager (ACM): lets AI agents validate and run Groovy scripts on AEM.",
   "mcpName": "io.github.wttech/acm-mcp-server",
   "type": "module",
