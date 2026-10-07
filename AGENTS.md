@@ -17,6 +17,7 @@ Rules for AI agents (and humans) changing this repository. Keep them short; exte
 - Never use deprecated APIs; check the IDE diagnostics for deprecation warnings.
 - Comments state only what the code cannot show, in one short line.
 - Update the docs (README, tool READMEs, skill, CHANGELOG) in the same change as the behaviour.
+- Never bump versions by hand. `sh taskw release:mcp-server -- <version>` and `sh taskw release:vscode-extension -- <version>` bump `package.json`, `package-lock.json` (and `server.json`), then commit, tag and push. Only add the CHANGELOG section for the next version.
 - Do not commit, push or release unless asked.
 
 ## Configuration

@@ -10,7 +10,7 @@ npm install
 npm run check     # what CI runs: builds, then runs the end-to-end tests
 ```
 
-`npm test` starts the built server over stdio against a mock ACM backend and calls every tool:
+`npm test` first runs the unit tests of [tools/shared](../shared) (`../shared/test/*.test.ts`, Node's built-in test runner, `npm run test:unit`), then starts the built server over stdio against a mock ACM backend and calls every tool:
 
 - `test/mock-acm.mjs` emulates the ACM servlets under `/apps/acm/api/*`: the response envelope, all three auth modes, Granite CSRF, and a QUEUED → RUNNING → SUCCEEDED lifecycle, so the polling loop is really exercised.
 - `test/run-tests.mjs` drives the server with the MCP SDK client: handshake, tool listing and every tool call.

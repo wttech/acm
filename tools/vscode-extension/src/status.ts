@@ -3,10 +3,12 @@ import { ACM_API, ACM_FEATURE, AcmHttpError, describeUnhealthy, type HealthStatu
 import { openUiLink } from './browser';
 import { COMMANDS, CONTEXT, NAMESPACE } from './ids';
 import { getActiveInstance, getClient, getSettings } from './instances';
+import { reportInstanceMock } from './mock';
 
 interface State {
   healthStatus?: HealthStatus;
   permissions?: { features?: Record<string, boolean> };
+  mockStatus?: { enabled?: boolean };
 }
 
 let item: vscode.StatusBarItem;
@@ -53,6 +55,7 @@ export async function refreshHealth(): Promise<void> {
   let result: string | undefined;
   let noAccess = false;
   let noHistory = false;
+  let mock = false;
   if (instance) {
     const client = await getClient(instance, false);
     if (!client) {
@@ -63,6 +66,7 @@ export async function refreshHealth(): Promise<void> {
         const res = await client.request<State>('GET', ACM_API.state);
         const health = res.data?.healthStatus;
         noHistory = res.data?.permissions?.features?.[ACM_FEATURE.consoleExecuteNoHistory] === true;
+        mock = res.data?.mockStatus?.enabled === true;
         result = describeUnhealthy(health);
       } catch (e) {
         result = e instanceof AcmHttpError ? e.message : 'Instance is not reachable.';
@@ -74,6 +78,7 @@ export async function refreshHealth(): Promise<void> {
     problem = result;
     unauthorized = noAccess;
     vscode.commands.executeCommand('setContext', CONTEXT.canRunWithoutHistory, noHistory);
+    reportInstanceMock(mock);
     updateStatus();
   }
 }

@@ -16,6 +16,7 @@ export const COMMANDS = {
   checkConnection: 'acm.checkConnection',
   refreshExecutions: 'acm.refreshExecutions',
   refreshScripts: 'acm.refreshScripts',
+  refreshProjectScripts: 'acm.refreshProjectScripts',
   filterExecutions: 'acm.filterExecutions',
   clearExecutionsFilter: 'acm.clearExecutionsFilter',
   filterExecutionsByScript: 'acm.filterExecutionsByScript',
@@ -24,11 +25,11 @@ export const COMMANDS = {
   compareProjectScript: 'acm.compareProjectScript',
   runProjectScript: 'acm.runProjectScript',
   newProjectScript: 'acm.newProjectScript',
+  newProjectScriptOfType: 'acm.newProjectScriptOfType',
   renameProjectScript: 'acm.renameProjectScript',
   duplicateProjectScript: 'acm.duplicateProjectScript',
   deleteProjectScript: 'acm.deleteProjectScript',
   revealProjectScript: 'acm.revealProjectScript',
-  selectScriptsRoot: 'acm.selectScriptsRoot',
   newScript: 'acm.newScript',
   downloadOutputs: 'acm.downloadOutputs',
   copyMcpSetup: 'acm.copyMcpSetup',
@@ -62,7 +63,8 @@ export const SETTINGS = {
   runPollInterval: 'run.pollInterval',
   healthInterval: 'health.interval',
   executionsLimit: 'executions.limit',
-  scriptsRoot: 'scripts.root',
+  scriptsRoots: 'scripts.roots',
+  mockMode: 'mock.mode',
 } as const;
 
 export type SettingKey = (typeof SETTINGS)[keyof typeof SETTINGS];
@@ -75,17 +77,13 @@ export function settingId(key: SettingKey): string {
 export const ITEMS = {
   execution: 'execution',
   executionPending: 'execution.pending',
+  projectRoot: 'projectRoot',
   projectType: 'projectType',
   script: (type: string) => `script.${type.toLowerCase()}`,
   projectScript: (type: string) => `projectScript.${type.toLowerCase()}`,
 } as const;
 
 export const MCP_PROVIDER_ID = NAMESPACE;
-
-/** Keys of the per-workspace state the extension remembers. */
-export const STATE_KEYS = {
-  scriptsRoot: 'acm.scriptsRoot',
-} as const;
 
 /** Read-only documents of the `acm:` scheme: `acm://<authority>/...?<instance name>`. */
 export const DOCUMENTS = {

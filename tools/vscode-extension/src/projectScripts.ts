@@ -3,11 +3,14 @@ import * as vscode from 'vscode';
 import {
   ACM_API,
   AcmHttpError,
+  enabledScriptTypes,
   PACKAGE_SCRIPT_ROOT,
   SCRIPT_ROOT,
+  SCRIPT_TYPE_INFO,
   SCRIPT_TYPES,
   scriptIdOf,
   scriptLabel,
+  scriptRootLabels,
   scriptRootsOf,
   scriptTypeOf,
   templatesFor,
@@ -15,8 +18,9 @@ import {
   type ScriptType,
 } from '@acm/shared';
 import { registerCommand } from './errors';
-import { COMMANDS, CONTEXT, ITEMS, SETTINGS, STATE_KEYS, VIEWS, settingId } from './ids';
+import { COMMANDS, CONTEXT, ITEMS, SETTINGS, VIEWS, settingId } from './ids';
 import { getTarget, readSetting, type AcmInstance } from './instances';
+import { isMockEnabled, onDidChangeMock } from './mock';
 import { scriptUri } from './views';
 
 const ROOT_GLOB = `**${PACKAGE_SCRIPT_ROOT}/**`;
@@ -28,19 +32,14 @@ interface LocalScript {
   uri: vscode.Uri;
   id: string;
   type: ScriptType;
+  root: vscode.Uri;
 }
 
 type Node =
-  | { kind: 'message'; label: string; icon: string; command?: vscode.Command }
-  | { kind: 'type'; type: ScriptType; scripts: LocalScript[] }
+  | { kind: 'root'; root: vscode.Uri; label: string; scripts: LocalScript[] }
+  | { kind: 'type'; root: vscode.Uri; type: ScriptType; scripts: LocalScript[] }
   | { kind: 'script'; script: LocalScript };
 
-interface Roots {
-  root?: vscode.Uri;
-  candidates: vscode.Uri[];
-}
-
-let state: vscode.Memento;
 let provider: ProjectScriptsProvider;
 
 function workspaceFolder(): vscode.WorkspaceFolder | undefined {
@@ -54,13 +53,27 @@ function fileExists(uri: vscode.Uri): Thenable<boolean> {
   );
 }
 
-function configuredRoot(): vscode.Uri | undefined {
-  const value = readSetting<string>(SETTINGS.scriptsRoot).trim();
-  const folder = workspaceFolder();
-  if (!value || !folder) {
-    return undefined;
+async function firstExisting(uris: vscode.Uri[]): Promise<vscode.Uri | undefined> {
+  for (const uri of uris) {
+    if (await fileExists(uri)) {
+      return uri;
+    }
   }
-  return path.isAbsolute(value) ? vscode.Uri.file(value) : vscode.Uri.joinPath(folder.uri, value);
+  return undefined;
+}
+
+function configuredRoots(): vscode.Uri[] {
+  const folder = workspaceFolder();
+  if (!folder) {
+    return [];
+  }
+  return readSetting<string[]>(SETTINGS.scriptsRoots).map((value) =>
+    path.isAbsolute(value) ? vscode.Uri.file(value) : vscode.Uri.joinPath(folder.uri, value),
+  );
+}
+
+function rootDescription(root: vscode.Uri): string {
+  return vscode.workspace.asRelativePath(root).replace(new RegExp(`${PACKAGE_SCRIPT_ROOT}$`), '');
 }
 
 async function discoverRoots(): Promise<vscode.Uri[]> {
@@ -72,73 +85,104 @@ async function discoverRoots(): Promise<vscode.Uri[]> {
   return scriptRootsOf(files.map((file) => file.path)).map((root) => folder.uri.with({ path: root }));
 }
 
-/** The setting wins; otherwise the only discovered root, or the one the user picked among several. */
-async function resolveRoots(): Promise<Roots> {
-  const configured = configuredRoot();
-  if (configured) {
-    return { root: configured, candidates: [] };
-  }
-  const candidates = await discoverRoots();
-  const remembered = state.get<string>(STATE_KEYS.scriptsRoot);
-  const root = candidates.length === 1 ? candidates[0] : candidates.find((candidate) => candidate.toString() === remembered);
-  return { root, candidates };
+/** The configured roots, or else the ones discovered in the workspace. */
+async function resolveRoots(): Promise<vscode.Uri[]> {
+  const configured = configuredRoots();
+  return configured.length > 0 ? configured : discoverRoots();
 }
 
 async function listScripts(root: vscode.Uri): Promise<LocalScript[]> {
   const files = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/*.groovy'), IGNORED_GLOB);
-  return files.flatMap((uri) => {
-    const id = scriptIdOf(uri.path.slice(root.path.length));
-    const type = scriptTypeOf(id);
-    return type ? [{ uri, id, type }] : [];
+  const visible = enabledScriptTypes({ mock: isMockEnabled() });
+  return files
+    .flatMap((uri) => {
+      const id = scriptIdOf(uri.path.slice(root.path.length));
+      const type = scriptTypeOf(id);
+      return type && visible.includes(type) ? [{ uri, id, type, root }] : [];
+    })
+    .sort((a, b) => scriptLabel(a.id).localeCompare(scriptLabel(b.id)));
+}
+
+function typeNodes(root: vscode.Uri, scripts: LocalScript[]): Node[] {
+  return SCRIPT_TYPES.flatMap((type) => {
+    const ofType = scripts.filter((script) => script.type === type);
+    return ofType.length > 0 || ALWAYS_SHOWN.includes(type) ? [{ kind: 'type' as const, root, type, scripts: ofType }] : [];
   });
 }
 
 class ProjectScriptsProvider implements vscode.TreeDataProvider<Node> {
   private readonly changed = new vscode.EventEmitter<void>();
   readonly onDidChangeTreeData = this.changed.event;
-  roots: Roots = { candidates: [] };
+  roots: vscode.Uri[] = [];
   view?: vscode.TreeView<Node>;
 
   async refresh(): Promise<void> {
     this.roots = await resolveRoots();
-    const { root, candidates } = this.roots;
-    await vscode.commands.executeCommand('setContext', CONTEXT.hasScriptsRoot, !!root || candidates.length > 0);
+    await vscode.commands.executeCommand('setContext', CONTEXT.hasScriptsRoot, this.roots.length > 0);
     if (this.view) {
-      this.view.description = root && vscode.workspace.asRelativePath(root).replace(new RegExp(`${PACKAGE_SCRIPT_ROOT}$`), '');
+      this.view.description = this.roots.length === 1 ? rootDescription(this.roots[0]) : undefined;
     }
     this.changed.fire();
   }
 
   async getChildren(node?: Node): Promise<Node[]> {
     if (node) {
+      if (node.kind === 'root') {
+        return typeNodes(node.root, node.scripts);
+      }
       return node.kind === 'type' ? node.scripts.map((script) => ({ kind: 'script', script })) : [];
     }
-    const { root } = this.roots;
-    if (!root) {
-      return [
-        {
-          kind: 'message',
-          label: 'Select the scripts folder of the project',
-          icon: 'folder',
-          command: { title: 'Select Scripts Folder', command: COMMANDS.selectScriptsRoot },
-        },
-      ];
+    const { roots } = this;
+    const scripts = await Promise.all(roots.map(listScripts));
+    if (roots.length === 1) {
+      return typeNodes(roots[0], scripts[0]);
     }
-    const scripts = (await listScripts(root)).sort((a, b) => scriptLabel(a.id).localeCompare(scriptLabel(b.id)));
-    return SCRIPT_TYPES.flatMap((type) => {
-      const ofType = scripts.filter((script) => script.type === type);
-      return ofType.length > 0 || ALWAYS_SHOWN.includes(type) ? [{ kind: 'type' as const, type, scripts: ofType }] : [];
-    });
+    return roots.map((root, index) => this.rootNode(root, scripts[index]));
+  }
+
+  private rootNode(root: vscode.Uri, scripts: LocalScript[]): Node {
+    const labels = scriptRootLabels(this.roots.map((candidate) => candidate.path));
+    const index = this.roots.findIndex((candidate) => candidate.toString() === root.toString());
+    return { kind: 'root', root, label: labels[index], scripts };
+  }
+
+  async getParent(node: Node): Promise<Node | undefined> {
+    if (node.kind === 'root') {
+      return undefined;
+    }
+    const root = node.kind === 'type' ? node.root : node.script.root;
+    const scripts = await listScripts(root);
+    if (node.kind === 'type') {
+      return this.roots.length > 1 ? this.rootNode(root, scripts) : undefined;
+    }
+    const { type } = node.script;
+    return { kind: 'type', root, type, scripts: scripts.filter((script) => script.type === type) };
+  }
+
+  /** Selects a script in the tree, leaving the focus in the editor. */
+  async reveal(uri: vscode.Uri): Promise<void> {
+    const scripts = (await Promise.all(this.roots.map(listScripts))).flat();
+    const script = scripts.find((candidate) => candidate.uri.toString() === uri.toString());
+    if (script && this.view) {
+      await this.view.reveal({ kind: 'script', script }, { select: true });
+    }
   }
 
   getTreeItem(node: Node): vscode.TreeItem {
     switch (node.kind) {
+      case 'root': {
+        const item = new vscode.TreeItem(node.label, vscode.TreeItemCollapsibleState.Expanded);
+        item.id = `project.${node.root.toString()}`;
+        item.description = String(node.scripts.length);
+        item.tooltip = rootDescription(node.root);
+        item.iconPath = new vscode.ThemeIcon('root-folder');
+        item.contextValue = ITEMS.projectRoot;
+        return item;
+      }
       case 'type': {
-        const item = new vscode.TreeItem(
-          node.type.charAt(0) + node.type.slice(1).toLowerCase(),
-          vscode.TreeItemCollapsibleState.Expanded,
-        );
-        item.id = `project.${node.type}`;
+        const item = new vscode.TreeItem(SCRIPT_TYPE_INFO[node.type].label, vscode.TreeItemCollapsibleState.Expanded);
+        item.tooltip = SCRIPT_TYPE_INFO[node.type].description;
+        item.id = `project.${node.root.toString()}.${node.type}`;
         item.description = String(node.scripts.length);
         item.iconPath = vscode.ThemeIcon.Folder;
         item.contextValue = ITEMS.projectType;
@@ -146,54 +190,39 @@ class ProjectScriptsProvider implements vscode.TreeDataProvider<Node> {
       }
       case 'script': {
         const item = new vscode.TreeItem(scriptLabel(node.script.id));
+        item.id = `project.${node.script.uri.toString()}`;
         item.tooltip = vscode.workspace.asRelativePath(node.script.uri);
         item.resourceUri = node.script.uri;
         item.contextValue = ITEMS.projectScript(node.script.type);
         item.command = { title: 'Open', command: 'vscode.open', arguments: [node.script.uri] };
         return item;
       }
-      default: {
-        const item = new vscode.TreeItem(node.label);
-        item.iconPath = new vscode.ThemeIcon(node.icon);
-        item.command = node.command;
-        return item;
-      }
     }
   }
 }
 
-async function selectRoot(): Promise<void> {
-  if (configuredRoot()) {
-    vscode.window.showInformationMessage('ACM: The scripts folder is set by acm.scripts.root.');
-    return;
-  }
-  const candidates = await discoverRoots();
-  if (candidates.length === 0) {
+/** The only scripts folder, else the one the user picks; `undefined` when none or cancelled. */
+async function requireRoot(): Promise<vscode.Uri | undefined> {
+  const { roots } = provider;
+  if (roots.length === 0) {
     const action = await vscode.window.showWarningMessage(
-      `ACM: No scripts folder found in the workspace. Set ${settingId(SETTINGS.scriptsRoot)} to the project's jcr_root/conf/acm/settings/script.`,
+      `ACM: No scripts folder found in the workspace. Set ${settingId(SETTINGS.scriptsRoots)} to the project's jcr_root/conf/acm/settings/script.`,
       'Open Settings',
     );
     if (action) {
-      await vscode.commands.executeCommand('workbench.action.openSettings', settingId(SETTINGS.scriptsRoot));
+      await vscode.commands.executeCommand('workbench.action.openSettings', settingId(SETTINGS.scriptsRoots));
     }
-    return;
+    return undefined;
   }
+  if (roots.length === 1) {
+    return roots[0];
+  }
+  const labels = scriptRootLabels(roots.map((root) => root.path));
   const picked = await vscode.window.showQuickPick(
-    candidates.map((root) => ({ label: vscode.workspace.asRelativePath(root), root })),
-    { title: 'ACM Scripts Folder', placeHolder: 'Select the folder with the project\'s ACM scripts' },
+    roots.map((root, index) => ({ label: labels[index], description: rootDescription(root), root })),
+    { title: 'ACM Scripts Folder', placeHolder: "Select the project's folder with ACM scripts" },
   );
-  if (picked) {
-    await state.update(STATE_KEYS.scriptsRoot, picked.root.toString());
-    await provider.refresh();
-  }
-}
-
-/** The scripts folder, asking to pick one when several are found; `undefined` when none or cancelled. */
-async function requireRoot(): Promise<vscode.Uri | undefined> {
-  if (!provider.roots.root) {
-    await selectRoot();
-  }
-  return provider.roots.root;
+  return picked?.root;
 }
 
 /** A new file location for a script name under its type folder; fails when it escapes the folder or is taken. */
@@ -210,20 +239,34 @@ async function freeScriptFile(root: vscode.Uri, type: ScriptType, name: string):
   return file;
 }
 
-async function newScript(node?: Node): Promise<void> {
-  const root = await requireRoot();
+/** From the view title or the palette: VS Code passes the selected item there, so it is ignored and the folder and type are asked. */
+async function newScript(): Promise<void> {
+  await createScript();
+}
+
+async function newScriptOfType(node?: Node): Promise<void> {
+  if (node?.kind === 'type') {
+    await createScript(node.root, node.type);
+  }
+}
+
+async function createScript(knownRoot?: vscode.Uri, knownType?: ScriptType): Promise<void> {
+  const root = knownRoot ?? (await requireRoot());
   if (!root) {
     return;
   }
   const type =
-    node?.kind === 'type'
-      ? node.type
-      : (
-          await vscode.window.showQuickPick(
-            SCRIPT_TYPES.map((candidate) => ({ label: candidate, type: candidate })),
-            { title: 'New ACM Script', placeHolder: 'Script type' },
-          )
-        )?.type;
+    knownType ??
+    (
+      await vscode.window.showQuickPick(
+        enabledScriptTypes({ mock: isMockEnabled() }).map((candidate) => ({
+          label: SCRIPT_TYPE_INFO[candidate].label,
+          detail: SCRIPT_TYPE_INFO[candidate].description,
+          type: candidate,
+        })),
+        { title: 'New ACM Script', placeHolder: 'Script type', matchOnDetail: true },
+      )
+    )?.type;
   if (!type) {
     return;
   }
@@ -246,6 +289,7 @@ async function newScript(node?: Node): Promise<void> {
   await vscode.workspace.fs.writeFile(file, new TextEncoder().encode(template.candidate.code));
   await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(file));
   await provider.refresh();
+  await provider.reveal(file);
 }
 
 async function runScript(node?: Node): Promise<void> {
@@ -256,11 +300,10 @@ async function runScript(node?: Node): Promise<void> {
 }
 
 async function renameScript(node?: Node): Promise<void> {
-  const root = provider.roots.root;
-  if (node?.kind !== 'script' || !root) {
+  if (node?.kind !== 'script') {
     return;
   }
-  const { id, uri, type } = node.script;
+  const { id, uri, type, root } = node.script;
   const folder = vscode.Uri.joinPath(root, type.toLowerCase());
   const current = uri.path.slice(folder.path.length + 1).replace(/\.groovy$/, '');
   const name = await vscode.window.showInputBox({
@@ -279,14 +322,14 @@ async function renameScript(node?: Node): Promise<void> {
     throw new Error(`Cannot rename ${vscode.workspace.asRelativePath(uri)}.`);
   }
   await provider.refresh();
+  await provider.reveal(target);
 }
 
 async function duplicateScript(node?: Node): Promise<void> {
-  const root = provider.roots.root;
-  if (node?.kind !== 'script' || !root) {
+  if (node?.kind !== 'script') {
     return;
   }
-  const { id, uri, type } = node.script;
+  const { id, uri, type, root } = node.script;
   const folder = vscode.Uri.joinPath(root, type.toLowerCase());
   const current = uri.path.slice(folder.path.length + 1).replace(/\.groovy$/, '');
   const name = await vscode.window.showInputBox({
@@ -302,6 +345,7 @@ async function duplicateScript(node?: Node): Promise<void> {
   await vscode.workspace.fs.copy(uri, target);
   await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(target));
   await provider.refresh();
+  await provider.reveal(target);
 }
 
 async function deleteScript(node?: Node): Promise<void> {
@@ -340,9 +384,9 @@ async function compareInstanceScript(node?: { instance?: AcmInstance; script?: {
     return;
   }
   const { id } = node.script;
-  const { root } = provider.roots;
-  const mapped = root && id.startsWith(SCRIPT_ROOT) ? vscode.Uri.joinPath(root, id.slice(SCRIPT_ROOT.length)) : undefined;
-  let local = mapped && (await fileExists(mapped)) ? mapped : undefined;
+  const relative = id.startsWith(SCRIPT_ROOT) ? id.slice(SCRIPT_ROOT.length) : undefined;
+  let local =
+    relative === undefined ? undefined : await firstExisting(provider.roots.map((root) => vscode.Uri.joinPath(root, relative)));
   if (!local) {
     const name = path.posix.basename(id);
     const files = await vscode.workspace.findFiles(`**/${name}`, IGNORED_GLOB, 50);
@@ -392,7 +436,6 @@ async function compareProjectScript(node?: Node): Promise<void> {
 }
 
 export function registerProjectScripts(context: vscode.ExtensionContext): void {
-  state = context.workspaceState;
   provider = new ProjectScriptsProvider();
   provider.view = vscode.window.createTreeView(VIEWS.projectScripts, { treeDataProvider: provider });
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -401,8 +444,7 @@ export function registerProjectScripts(context: vscode.ExtensionContext): void {
     timer = setTimeout(() => void provider.refresh(), 300);
   };
   const onScriptFile = (uri: vscode.Uri) => {
-    const root = provider.roots.root;
-    if (uri.path.includes(`${PACKAGE_SCRIPT_ROOT}/`) || (root && uri.path.startsWith(`${root.path}/`))) {
+    if (uri.path.includes(`${PACKAGE_SCRIPT_ROOT}/`) || provider.roots.some((root) => uri.path.startsWith(`${root.path}/`))) {
       refreshSoon();
     }
   };
@@ -414,13 +456,15 @@ export function registerProjectScripts(context: vscode.ExtensionContext): void {
     watcher.onDidDelete(onScriptFile),
     { dispose: () => clearTimeout(timer) },
     vscode.workspace.onDidChangeWorkspaceFolders(refreshSoon),
+    onDidChangeMock(refreshSoon),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration(settingId(SETTINGS.scriptsRoot))) {
+      if (event.affectsConfiguration(settingId(SETTINGS.scriptsRoots))) {
         refreshSoon();
       }
     }),
-    registerCommand(COMMANDS.selectScriptsRoot, selectRoot),
     registerCommand(COMMANDS.newProjectScript, newScript),
+    registerCommand(COMMANDS.refreshProjectScripts, () => provider.refresh()),
+    registerCommand(COMMANDS.newProjectScriptOfType, newScriptOfType),
     registerCommand(COMMANDS.runProjectScript, runScript),
     registerCommand(COMMANDS.renameProjectScript, renameScript),
     registerCommand(COMMANDS.duplicateProjectScript, duplicateScript),

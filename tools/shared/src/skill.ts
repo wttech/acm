@@ -11,7 +11,7 @@ import manualMinimal from '../../skills/acm-groovy-script/templates/manual/minim
 import manualPermissions from '../../skills/acm-groovy-script/templates/manual/permissions.groovy';
 import manualReportCsv from '../../skills/acm-groovy-script/templates/manual/report-csv.groovy';
 import mockHttpEndpoint from '../../skills/acm-groovy-script/templates/mock/http-endpoint.groovy';
-import { SCRIPT_TYPES } from './domain/script';
+import { SCRIPT_TYPES, type ScriptFeatures } from './domain/script';
 
 export const SKILL_NAME = 'acm-groovy-script';
 
@@ -112,6 +112,10 @@ export const SCRIPT_TEMPLATES: ScriptTemplate[] = Object.entries(TEMPLATE_FILES)
 
 export function templatesFor(target: TemplateTarget): ScriptTemplate[] {
   return SCRIPT_TEMPLATES.filter((template) => template.target === target);
+}
+
+export function enabledTemplates(features: ScriptFeatures): ScriptTemplate[] {
+  return SCRIPT_TEMPLATES.filter((template) => template.target !== 'MOCK' || features.mock);
 }
 
 for (const target of TEMPLATE_TARGETS) {

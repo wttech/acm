@@ -4,6 +4,35 @@ export const SCRIPT_TYPES = ['MANUAL', 'AUTOMATIC', 'EXTENSION', 'MOCK'] as cons
 
 export type ScriptType = (typeof SCRIPT_TYPES)[number];
 
+/** What a user sees of a script type: its name and what scripts of it are for. */
+export const SCRIPT_TYPE_INFO: Record<ScriptType, { label: string; description: string }> = {
+  MANUAL: {
+    label: 'Manual',
+    description: 'Run on demand by a user, often with inputs. For migrations, reports and one-off fixes.',
+  },
+  AUTOMATIC: {
+    label: 'Automatic',
+    description: 'Run by ACM on instance boot or on a schedule. For setup after each deployment and maintenance.',
+  },
+  EXTENSION: {
+    label: 'Extension',
+    description: 'Hooks into every execution to add variables to scripts or react to their results.',
+  },
+  MOCK: {
+    label: 'Mock',
+    description: 'Answers HTTP requests to /mock/* to simulate a third-party service.',
+  },
+};
+
+/** Optional ACM features whose script types stay hidden while the feature is off. */
+export interface ScriptFeatures {
+  mock: boolean;
+}
+
+export function enabledScriptTypes(features: ScriptFeatures): ScriptType[] {
+  return SCRIPT_TYPES.filter((type) => type !== 'MOCK' || features.mock);
+}
+
 /** Where a content package keeps the scripts in the repository sources. */
 export const PACKAGE_SCRIPT_ROOT = '/jcr_root/conf/acm/settings/script';
 
@@ -35,6 +64,32 @@ export function scriptRootsOf(filePaths: string[]): string[] {
     }
   }
   return [...roots].sort();
+}
+
+/** Short labels telling several scripts roots apart: the path segments they do not share, at least one each. */
+export function scriptRootLabels(roots: string[]): string[] {
+  if (roots.length === 0) {
+    return [];
+  }
+  const parts = roots.map((root) => {
+    const normalized = root.replace(/\\/g, '/');
+    const base = normalized.endsWith(PACKAGE_SCRIPT_ROOT) ? normalized.slice(0, -PACKAGE_SCRIPT_ROOT.length) : normalized;
+    return base.split('/').filter(Boolean);
+  });
+  const shortest = Math.min(...parts.map((segments) => segments.length));
+  const [first] = parts;
+  let head = 0;
+  while (head < shortest - 1 && parts.every((segments) => segments[head] === first[head])) {
+    head++;
+  }
+  let tail = 0;
+  while (
+    head + tail < shortest - 1 &&
+    parts.every((segments) => segments[segments.length - 1 - tail] === first[first.length - 1 - tail])
+  ) {
+    tail++;
+  }
+  return parts.map((segments) => segments.slice(head, segments.length - tail).join('/'));
 }
 
 /** Checks a new script name given as a path under its type folder, e.g. `example/ACME-1_hello`; `undefined` when valid. */

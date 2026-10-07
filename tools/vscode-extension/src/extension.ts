@@ -8,11 +8,13 @@ import { registerCompletion } from './providers/completion';
 import { registerDiagnostics } from './providers/diagnostics';
 import { registerHover } from './providers/hover';
 import { registerProjectScripts } from './projectScripts';
+import { registerMock } from './mock';
 import { registerStatus } from './status';
 import { registerViews } from './views';
 
 export function activate(context: vscode.ExtensionContext): void {
   initInstances(context);
+  registerMock(context);
   registerStatus(context);
   const views = registerViews(context);
   registerProjectScripts(context);

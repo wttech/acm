@@ -4,10 +4,10 @@ import * as vscode from 'vscode';
 import {
   ACM_API,
   CONSOLE_CODE_ID,
+  enabledTemplates,
   fetchConsoleOutput,
   isFailed,
   normalizeGroovy,
-  SCRIPT_TEMPLATES,
   waitForExecution,
   type Execution,
   type ExecutionListOutput,
@@ -28,6 +28,7 @@ import {
   type AcmInstance,
   type AcmTarget,
 } from './instances';
+import { isMockEnabled } from './mock';
 import { validateDocument } from './providers/diagnostics';
 import { refreshHealth, setRunning } from './status';
 import { executionUri, storedScript, type Views } from './views';
@@ -70,7 +71,7 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
 
 async function newScript(): Promise<void> {
   const picked = await vscode.window.showQuickPick(
-    SCRIPT_TEMPLATES.map((template) => ({
+    enabledTemplates({ mock: isMockEnabled() }).map((template) => ({
       label: template.name,
       description: template.target.toLowerCase(),
       detail: template.description,

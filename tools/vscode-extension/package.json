@@ -111,6 +111,12 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "acm.refreshProjectScripts",
+        "title": "Refresh Project Scripts",
+        "category": "ACM",
+        "icon": "$(refresh)"
+      },
+      {
         "command": "acm.filterExecutions",
         "title": "Filter Executions...",
         "category": "ACM",
@@ -159,6 +165,11 @@
         "icon": "$(add)"
       },
       {
+        "command": "acm.newProjectScriptOfType",
+        "title": "New Script...",
+        "category": "ACM"
+      },
+      {
         "command": "acm.renameProjectScript",
         "title": "Rename...",
         "category": "ACM"
@@ -176,11 +187,6 @@
       {
         "command": "acm.revealProjectScript",
         "title": "Reveal in Explorer",
-        "category": "ACM"
-      },
-      {
-        "command": "acm.selectScriptsRoot",
-        "title": "Select Scripts Folder",
         "category": "ACM"
       },
       {
@@ -331,6 +337,10 @@
           "when": "false"
         },
         {
+          "command": "acm.newProjectScriptOfType",
+          "when": "false"
+        },
+        {
           "command": "acm.renameProjectScript",
           "when": "false"
         },
@@ -426,7 +436,7 @@
           "group": "modification@3"
         },
         {
-          "command": "acm.newProjectScript",
+          "command": "acm.newProjectScriptOfType",
           "when": "view == acm.projectScripts && viewItem == projectType",
           "group": "navigation"
         }
@@ -474,7 +484,12 @@
         {
           "command": "acm.newProjectScript",
           "when": "view == acm.projectScripts",
-          "group": "navigation"
+          "group": "navigation@1"
+        },
+        {
+          "command": "acm.refreshProjectScripts",
+          "when": "view == acm.projectScripts",
+          "group": "navigation@2"
         }
       ]
     },
@@ -574,10 +589,30 @@
           "maximum": 1000,
           "description": "Number of past executions shown in the Executions view."
         },
-        "acm.scripts.root": {
+        "acm.mock.mode": {
           "type": "string",
-          "default": "",
-          "markdownDescription": "Folder with the project's ACM scripts, usually a content package's `jcr_root/conf/acm/settings/script`, relative to the workspace folder (or absolute). Project Scripts and `New Project Script...` use it. Empty finds it from the scripts already in the workspace and asks when there are several."
+          "default": "auto",
+          "enum": [
+            "auto",
+            "enabled",
+            "disabled"
+          ],
+          "enumDescriptions": [
+            "Show Mock scripts when the active instance has its Mock HTTP Filter enabled. Hidden when the instance is not reachable.",
+            "Always show Mock scripts.",
+            "Never show Mock scripts."
+          ],
+          "markdownDescription": "Whether Mock scripts, which simulate third-party HTTP services, are shown in the views and offered when creating scripts. On an instance they only run when the *AEM Content Manager - Mock HTTP Filter* OSGi configuration is enabled, which it is not by default."
+        },
+        "acm.scripts.roots": {
+          "type": "array",
+          "default": [],
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "markdownDescription": "Folders with the project's ACM scripts, usually content packages' `jcr_root/conf/acm/settings/script`, relative to the workspace folder (or absolute). Project Scripts and `New Project Script...` use them. Empty finds them from the scripts already in the workspace."
         }
       }
     },

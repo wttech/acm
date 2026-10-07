@@ -16,7 +16,7 @@ Works with AEM as a Cloud Service, AEM 6.5 and AMS, wherever ACM is installed.
 - **Compile errors on save.** Scripts are checked by ACM on the active instance and errors show up in Problems.
 - **Code completion and docs** for the whole ACM script API (`repo`, `acl`, `inputs`, `outputs`, `conditions`, …), generated from the ACM source.
 - **Documented templates.** `File > New File... > ACM Script` starts from a template: content migration, ACL setup, CSV report, scheduled cleanup, console code or HTTP mock. Type `acmdoc` to add the documentation header shown in the ACM UI.
-- **Project, instance and execution views.** *Project Scripts* lists the scripts of the project's content package (found automatically or set in `acm.scripts.root`) and creates new ones from templates with a right click on a type, with duplicate, rename, delete and reveal in Explorer next to run and compare; *Instance Scripts* lists what is deployed, named and grouped like in the ACM UI; *Executions* browses the history with logs and downloadable outputs and filters it by script or status. Compare a script with its counterpart on the other side from the context menu.
+- **Project, instance and execution views.** *Project Scripts* lists the scripts of the project's content package (found automatically or set in `acm.scripts.roots`; several content packages are listed side by side) and creates new ones from templates with a right click on a type, with duplicate, rename, delete and reveal in Explorer next to run and compare; *Instance Scripts* lists what is deployed, named and grouped like in the ACM UI; *Executions* browses the history with logs and downloadable outputs and filters it by script or status. Compare a script with its counterpart on the other side from the context menu.
 - **Instance status** in the status bar: switch instances in one click, see at a glance when one is unreachable, unauthorized or unhealthy. Its tooltip opens the ACM web UI, and a script or execution opens in ACM from its context menu (`ACM: Open ACM in Browser` picks any page).
 - **AI agents.** Copilot gets the ACM scripting skill and the ACM MCP server for the active instance, registered automatically; other tools set up the same server from one copied prompt (see below).
 
@@ -62,6 +62,8 @@ Guardrails: running on a `readonly` instance is blocked, and running on any non-
 | `acm.activeInstance` | | Instance used by commands; the only instance when just one is configured. |
 | `acm.validateOnSave` | `true` | Compile-check scripts declaring `doRun()` when saved. |
 | `acm.mcp.enabled` | `true` | Offer the bundled ACM MCP server to agents. |
+| `acm.mock.mode` | `auto` | Show Mock scripts: `auto` when the active instance has its Mock HTTP Filter enabled (off by default in ACM), `enabled` always, `disabled` never. |
+| `acm.scripts.roots` | `[]` | Folders with the project's scripts for Project Scripts; empty finds them in the workspace. |
 | `acm.http.timeout` | `30000` | Timeout of each HTTP request to AEM, in ms. |
 | `acm.run.timeout` | `120000` | Wait for a run, in ms: the limit of a run without history, and how long the MCP server waits before returning the execution ID. Runs from the editor with history are followed until they finish. |
 | `acm.run.pollInterval` | `1000` | How often a queued run is checked, in ms. |
