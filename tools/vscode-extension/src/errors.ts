@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import { AcmHttpError } from '@acm/shared';
+import { COMMANDS } from './ids';
 
 export function showError(error: unknown): void {
   const message = `ACM: ${error instanceof Error ? error.message : String(error)}`;
   if (error instanceof AcmHttpError && error.httpStatus === 401) {
     vscode.window.showErrorMessage(message, 'Set Credentials').then((action) => {
-      if (action) vscode.commands.executeCommand('acm.setCredentials');
+      if (action) vscode.commands.executeCommand(COMMANDS.setCredentials);
     });
   } else {
     vscode.window.showErrorMessage(message);

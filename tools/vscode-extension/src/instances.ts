@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { AcmClient, normalizeCookie, type AcmAuth } from '@acm/shared';
+import { NAMESPACE, SETTINGS, settingId, type SettingKey } from './ids';
 
 export interface AcmInstance {
   name: string;
@@ -23,7 +24,12 @@ const SECRET_LABELS: Record<AcmInstance['authMode'], string> = {
 let secrets: vscode.SecretStorage;
 const clients = new Map<string, { secret: string; timeout: number; client: AcmClient }>();
 
-/** Timings and limits from settings, in milliseconds; defaults are declared in package.json. */
+/** Reads a setting; its default comes from package.json, so no fallback is repeated in code. */
+export function readSetting<T>(key: SettingKey): T {
+  return vscode.workspace.getConfiguration(NAMESPACE).get<T>(key) as T;
+}
+
+/** Timings and limits from settings, in milliseconds. */
 export interface AcmSettings {
   httpTimeout: number;
   runTimeout: number;
@@ -33,13 +39,12 @@ export interface AcmSettings {
 }
 
 export function getSettings(): AcmSettings {
-  const config = vscode.workspace.getConfiguration('acm');
   return {
-    httpTimeout: config.get<number>('http.timeout', 30000),
-    runTimeout: config.get<number>('run.timeout', 120000),
-    runPollInterval: config.get<number>('run.pollInterval', 1000),
-    healthInterval: config.get<number>('health.interval', 60000),
-    executionsLimit: config.get<number>('executions.limit', 50),
+    httpTimeout: readSetting<number>(SETTINGS.httpTimeout),
+    runTimeout: readSetting<number>(SETTINGS.runTimeout),
+    runPollInterval: readSetting<number>(SETTINGS.runPollInterval),
+    healthInterval: readSetting<number>(SETTINGS.healthInterval),
+    executionsLimit: readSetting<number>(SETTINGS.executionsLimit),
   };
 }
 
@@ -48,12 +53,12 @@ export function initInstances(context: vscode.ExtensionContext): void {
 }
 
 export function getInstances(): AcmInstance[] {
-  return vscode.workspace.getConfiguration('acm').get<AcmInstance[]>('instances', []);
+  return readSetting<AcmInstance[]>(SETTINGS.instances);
 }
 
 export function getActiveInstance(): AcmInstance | undefined {
   const instances = getInstances();
-  const name = vscode.workspace.getConfiguration('acm').get<string>('activeInstance');
+  const name = readSetting<string>(SETTINGS.activeInstance);
   return instances.find((instance) => instance.name === name) ?? (instances.length === 1 ? instances[0] : undefined);
 }
 
@@ -61,7 +66,7 @@ export async function setActiveInstance(name: string): Promise<void> {
   const target = vscode.workspace.workspaceFolders
     ? vscode.ConfigurationTarget.Workspace
     : vscode.ConfigurationTarget.Global;
-  await vscode.workspace.getConfiguration('acm').update('activeInstance', name, target);
+  await vscode.workspace.getConfiguration(NAMESPACE).update(SETTINGS.activeInstance, name, target);
 }
 
 export async function pickInstance(placeHolder = 'Select ACM instance'): Promise<AcmInstance | undefined> {
@@ -69,7 +74,7 @@ export async function pickInstance(placeHolder = 'Select ACM instance'): Promise
   if (instances.length === 0) {
     const action = await vscode.window.showWarningMessage('ACM: No instances configured.', 'Open Settings');
     if (action) {
-      await vscode.commands.executeCommand('workbench.action.openSettings', 'acm.instances');
+      await vscode.commands.executeCommand('workbench.action.openSettings', settingId(SETTINGS.instances));
     }
     return undefined;
   }
@@ -90,12 +95,12 @@ export async function pickInstance(placeHolder = 'Select ACM instance'): Promise
 
 // Keyed by URL, auth mode and user too, so a secret is never sent to a host or as a principal it was not entered for.
 function secretKey(instance: AcmInstance): string {
-  return `acm.secret.${instance.name}@${instance.url}#${instance.authMode}:${instance.user ?? ''}`;
+  return `${NAMESPACE}.secret.${instance.name}@${instance.url}#${instance.authMode}:${instance.user ?? ''}`;
 }
 
 export async function setCredentials(instance: AcmInstance): Promise<boolean> {
   if (instance.authMode === 'basic' && !instance.user) {
-    vscode.window.showErrorMessage(`ACM: Set "user" for instance "${instance.name}" in acm.instances.`);
+    vscode.window.showErrorMessage(`ACM: Set "user" for instance "${instance.name}" in ${settingId(SETTINGS.instances)}.`);
     return false;
   }
   const value = await vscode.window.showInputBox({

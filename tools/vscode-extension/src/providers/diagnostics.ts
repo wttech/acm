@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ACM_API, CONSOLE_CODE_ID, normalizeGroovy, type AcmClient, type Execution } from '@acm/shared';
-import { getActiveInstance, getClient } from '../instances';
+import { DISPLAY_NAME, NAMESPACE, SETTINGS } from '../ids';
+import { getActiveInstance, getClient, readSetting } from '../instances';
 
 const ACM_SCRIPT = /\bvoid\s+doRun\s*\(/;
 const COMPILE_ERROR = /^(?:\S+: \d+: )?(.*?)\s*@ line (\d+), column (\d+)\.?\s*$/gm;
@@ -10,13 +11,16 @@ const WRAP_OFFSET = { line: 5, column: 4 };
 let diagnostics: vscode.DiagnosticCollection;
 
 export function registerDiagnostics(context: vscode.ExtensionContext): void {
-  diagnostics = vscode.languages.createDiagnosticCollection('acm');
+  diagnostics = vscode.languages.createDiagnosticCollection(NAMESPACE);
   context.subscriptions.push(
     diagnostics,
     vscode.workspace.onDidSaveTextDocument(async (document) => {
-      const config = vscode.workspace.getConfiguration('acm');
       // Only ACM scripts: other Groovy files (e.g. build.gradle) are left alone.
-      if (document.languageId !== 'groovy' || !config.get('validateOnSave') || !ACM_SCRIPT.test(document.getText())) {
+      if (
+        document.languageId !== 'groovy' ||
+        !readSetting<boolean>(SETTINGS.validateOnSave) ||
+        !ACM_SCRIPT.test(document.getText())
+      ) {
         diagnostics.delete(document.uri);
         return;
       }
@@ -68,7 +72,7 @@ function toDiagnostics(
 
 function toDiagnostic(range: vscode.Range, message: string): vscode.Diagnostic {
   const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Error);
-  diagnostic.source = 'ACM';
+  diagnostic.source = DISPLAY_NAME;
   return diagnostic;
 }
 

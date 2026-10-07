@@ -599,6 +599,8 @@
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
+    "check:manifest": "node scripts/check-manifest.mjs",
+    "check": "npm run typecheck && npm run lint && npm run check:manifest && npm test && npm run package",
     "lint": "eslint src",
     "pretest": "node esbuild.mjs",
     "test": "vscode-test",

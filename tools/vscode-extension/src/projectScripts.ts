@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import {
   ACM_API,
   AcmHttpError,
+  PACKAGE_SCRIPT_ROOT,
   SCRIPT_ROOT,
   SCRIPT_TEMPLATES,
   SCRIPT_TYPES,
@@ -14,11 +15,11 @@ import {
   type ScriptType,
 } from '@acm/shared';
 import { registerCommand } from './errors';
-import { getTarget, type AcmInstance } from './instances';
+import { COMMANDS, CONTEXT, ITEMS, SETTINGS, STATE_KEYS, VIEWS, settingId } from './ids';
+import { getTarget, readSetting, type AcmInstance } from './instances';
 import { scriptUri } from './views';
 
-const ROOT_STATE_KEY = 'acm.scriptsRoot';
-const ROOT_GLOB = '**/jcr_root/conf/acm/settings/script/**';
+const ROOT_GLOB = `**${PACKAGE_SCRIPT_ROOT}/**`;
 const IGNORED_GLOB = '**/{node_modules,target,.git}/**';
 // Types that always show, so a new script can be added to an empty one.
 const ALWAYS_SHOWN: ScriptType[] = ['MANUAL', 'AUTOMATIC'];
@@ -54,7 +55,7 @@ function fileExists(uri: vscode.Uri): Thenable<boolean> {
 }
 
 function configuredRoot(): vscode.Uri | undefined {
-  const value = vscode.workspace.getConfiguration('acm').get<string>('scripts.root', '').trim();
+  const value = readSetting<string>(SETTINGS.scriptsRoot).trim();
   const folder = workspaceFolder();
   if (!value || !folder) {
     return undefined;
@@ -78,7 +79,7 @@ async function resolveRoots(): Promise<Roots> {
     return { root: configured, candidates: [] };
   }
   const candidates = await discoverRoots();
-  const remembered = state.get<string>(ROOT_STATE_KEY);
+  const remembered = state.get<string>(STATE_KEYS.scriptsRoot);
   const root = candidates.length === 1 ? candidates[0] : candidates.find((candidate) => candidate.toString() === remembered);
   return { root, candidates };
 }
@@ -101,9 +102,9 @@ class ProjectScriptsProvider implements vscode.TreeDataProvider<Node> {
   async refresh(): Promise<void> {
     this.roots = await resolveRoots();
     const { root, candidates } = this.roots;
-    await vscode.commands.executeCommand('setContext', 'acm.hasScriptsRoot', !!root || candidates.length > 0);
+    await vscode.commands.executeCommand('setContext', CONTEXT.hasScriptsRoot, !!root || candidates.length > 0);
     if (this.view) {
-      this.view.description = root && vscode.workspace.asRelativePath(root).replace(/\/jcr_root\/conf\/acm\/settings\/script$/, '');
+      this.view.description = root && vscode.workspace.asRelativePath(root).replace(new RegExp(`${PACKAGE_SCRIPT_ROOT}$`), '');
     }
     this.changed.fire();
   }
@@ -119,7 +120,7 @@ class ProjectScriptsProvider implements vscode.TreeDataProvider<Node> {
           kind: 'message',
           label: 'Select the scripts folder of the project',
           icon: 'folder',
-          command: { title: 'Select Scripts Folder', command: 'acm.selectScriptsRoot' },
+          command: { title: 'Select Scripts Folder', command: COMMANDS.selectScriptsRoot },
         },
       ];
     }
@@ -140,14 +141,14 @@ class ProjectScriptsProvider implements vscode.TreeDataProvider<Node> {
         item.id = `project.${node.type}`;
         item.description = String(node.scripts.length);
         item.iconPath = vscode.ThemeIcon.Folder;
-        item.contextValue = 'projectType';
+        item.contextValue = ITEMS.projectType;
         return item;
       }
       case 'script': {
         const item = new vscode.TreeItem(scriptLabel(node.script.id));
         item.tooltip = vscode.workspace.asRelativePath(node.script.uri);
         item.resourceUri = node.script.uri;
-        item.contextValue = `projectScript.${node.script.type.toLowerCase()}`;
+        item.contextValue = ITEMS.projectScript(node.script.type);
         item.command = { title: 'Open', command: 'vscode.open', arguments: [node.script.uri] };
         return item;
       }
@@ -169,11 +170,11 @@ async function selectRoot(): Promise<void> {
   const candidates = await discoverRoots();
   if (candidates.length === 0) {
     const action = await vscode.window.showWarningMessage(
-      'ACM: No scripts folder found in the workspace. Set acm.scripts.root to the project\'s jcr_root/conf/acm/settings/script.',
+      `ACM: No scripts folder found in the workspace. Set ${settingId(SETTINGS.scriptsRoot)} to the project's jcr_root/conf/acm/settings/script.`,
       'Open Settings',
     );
     if (action) {
-      await vscode.commands.executeCommand('workbench.action.openSettings', 'acm.scripts.root');
+      await vscode.commands.executeCommand('workbench.action.openSettings', settingId(SETTINGS.scriptsRoot));
     }
     return;
   }
@@ -182,7 +183,7 @@ async function selectRoot(): Promise<void> {
     { title: 'ACM Scripts Folder', placeHolder: 'Select the folder with the project\'s ACM scripts' },
   );
   if (picked) {
-    await state.update(ROOT_STATE_KEY, picked.root.toString());
+    await state.update(STATE_KEYS.scriptsRoot, picked.root.toString());
     await provider.refresh();
   }
 }
@@ -250,7 +251,7 @@ async function newScript(node?: Node): Promise<void> {
 async function runScript(node?: Node): Promise<void> {
   if (node?.kind === 'script') {
     await vscode.window.showTextDocument(node.script.uri);
-    await vscode.commands.executeCommand('acm.run');
+    await vscode.commands.executeCommand(COMMANDS.run);
   }
 }
 
@@ -393,7 +394,7 @@ async function compareProjectScript(node?: Node): Promise<void> {
 export function registerProjectScripts(context: vscode.ExtensionContext): void {
   state = context.workspaceState;
   provider = new ProjectScriptsProvider();
-  provider.view = vscode.window.createTreeView('acm.projectScripts', { treeDataProvider: provider });
+  provider.view = vscode.window.createTreeView(VIEWS.projectScripts, { treeDataProvider: provider });
   let timer: ReturnType<typeof setTimeout> | undefined;
   const refreshSoon = () => {
     clearTimeout(timer);
@@ -401,7 +402,7 @@ export function registerProjectScripts(context: vscode.ExtensionContext): void {
   };
   const onScriptFile = (uri: vscode.Uri) => {
     const root = provider.roots.root;
-    if (uri.path.includes('/jcr_root/conf/acm/settings/script/') || (root && uri.path.startsWith(`${root.path}/`))) {
+    if (uri.path.includes(`${PACKAGE_SCRIPT_ROOT}/`) || (root && uri.path.startsWith(`${root.path}/`))) {
       refreshSoon();
     }
   };
@@ -414,19 +415,19 @@ export function registerProjectScripts(context: vscode.ExtensionContext): void {
     { dispose: () => clearTimeout(timer) },
     vscode.workspace.onDidChangeWorkspaceFolders(refreshSoon),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('acm.scripts.root')) {
+      if (event.affectsConfiguration(settingId(SETTINGS.scriptsRoot))) {
         refreshSoon();
       }
     }),
-    registerCommand('acm.selectScriptsRoot', selectRoot),
-    registerCommand('acm.newProjectScript', newScript),
-    registerCommand('acm.runProjectScript', runScript),
-    registerCommand('acm.renameProjectScript', renameScript),
-    registerCommand('acm.duplicateProjectScript', duplicateScript),
-    registerCommand('acm.deleteProjectScript', deleteScript),
-    registerCommand('acm.revealProjectScript', revealScript),
-    registerCommand('acm.compareProjectScript', compareProjectScript),
-    registerCommand('acm.compareScript', compareInstanceScript),
+    registerCommand(COMMANDS.selectScriptsRoot, selectRoot),
+    registerCommand(COMMANDS.newProjectScript, newScript),
+    registerCommand(COMMANDS.runProjectScript, runScript),
+    registerCommand(COMMANDS.renameProjectScript, renameScript),
+    registerCommand(COMMANDS.duplicateProjectScript, duplicateScript),
+    registerCommand(COMMANDS.deleteProjectScript, deleteScript),
+    registerCommand(COMMANDS.revealProjectScript, revealScript),
+    registerCommand(COMMANDS.compareProjectScript, compareProjectScript),
+    registerCommand(COMMANDS.compareScript, compareInstanceScript),
   );
   void provider.refresh();
 }

@@ -82,7 +82,7 @@ cd tools/vscode-extension
 npm install
 npm run watch                                      # rebuild on change
 code --extensionDevelopmentPath="$PWD" ../..       # editor with the extension loaded
-npm run typecheck && npm run lint && npm test
+npm run check                                      # what CI runs: typecheck, lint, manifest, test, package
 npm run package                                    # builds dist/acm-<version>.vsix
 ```
 

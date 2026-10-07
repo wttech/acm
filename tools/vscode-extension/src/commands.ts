@@ -14,6 +14,7 @@ import {
   type QueueOutput,
 } from '@acm/shared';
 import { registerCommand as register, showError } from './errors';
+import { COMMANDS, DISPLAY_NAME, SETTINGS, settingId } from './ids';
 import { promptInputs } from './inputs';
 import {
   confirmRun,
@@ -47,23 +48,23 @@ let output: vscode.OutputChannel;
 let running: (AcmTarget & { executionId: string }) | undefined;
 
 export function registerCommands(context: vscode.ExtensionContext, views: Views): void {
-  output = vscode.window.createOutputChannel('ACM');
+  output = vscode.window.createOutputChannel(DISPLAY_NAME);
   context.subscriptions.push(
     output,
-    register('acm.run', () => run(false, views)),
-    register('acm.runScript', (node?: { instance?: AcmInstance; script?: { id: string } }) =>
+    register(COMMANDS.run, () => run(false, views)),
+    register(COMMANDS.runScript, (node?: { instance?: AcmInstance; script?: { id: string } }) =>
       runStored(node?.script && node.instance && { id: node.script.id, instance: node.instance.name }, views),
     ),
-    register('acm.runSelection', () => run(true, views)),
-    register('acm.runWithoutHistory', () => run(true, views, false)),
-    register('acm.validate', validate),
-    register('acm.describe', describe),
-    register('acm.abort', (node?: ExecutionNode) => abort(views, node)),
-    register('acm.downloadOutputs', (node?: ExecutionNode) => downloadOutputs(node)),
-    register('acm.selectInstance', selectInstance),
-    register('acm.setCredentials', setCredentialsCommand),
-    register('acm.checkConnection', checkConnection),
-    register('acm.newScript', newScript),
+    register(COMMANDS.runSelection, () => run(true, views)),
+    register(COMMANDS.runWithoutHistory, () => run(true, views, false)),
+    register(COMMANDS.validate, validate),
+    register(COMMANDS.describe, describe),
+    register(COMMANDS.abort, (node?: ExecutionNode) => abort(views, node)),
+    register(COMMANDS.downloadOutputs, (node?: ExecutionNode) => downloadOutputs(node)),
+    register(COMMANDS.selectInstance, selectInstance),
+    register(COMMANDS.setCredentials, setCredentialsCommand),
+    register(COMMANDS.checkConnection, checkConnection),
+    register(COMMANDS.newScript, newScript),
   );
 }
 
@@ -167,7 +168,7 @@ async function run(selectionOnly: boolean, views: Views, history = true, script?
   const inputValues = Object.keys(inputs).length > 0 ? inputs : undefined;
   if (!history) {
     const timeout = getSettings().runTimeout;
-    // A run without history is one synchronous request, so it is bounded by acm.run.timeout.
+    // A run without history is one synchronous request, so it is bounded by ${settingId(SETTINGS.runTimeout)}.
     const res = await vscode.window
       .withProgress(
         { location: vscode.ProgressLocation.Notification, title: `ACM: Script ${label} on ${instance.name} (no history)` },
@@ -183,7 +184,7 @@ async function run(selectionOnly: boolean, views: Views, history = true, script?
       .then(undefined, (e: unknown) => {
         if (e instanceof Error && e.name === 'AbortError') {
           throw new Error(
-            `No response within ${timeout / 1000} s (acm.run.timeout). A run without history cannot be followed or aborted and may still be running on AEM; run longer scripts with history.`,
+            `No response within ${timeout / 1000} s (${settingId(SETTINGS.runTimeout)}). A run without history cannot be followed or aborted and may still be running on AEM; run longer scripts with history.`,
           );
         }
         throw e;

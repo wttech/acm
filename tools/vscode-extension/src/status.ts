@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { ACM_API, AcmHttpError, describeUnhealthy, type HealthStatus } from '@acm/shared';
+import { ACM_API, ACM_FEATURE, AcmHttpError, describeUnhealthy, type HealthStatus } from '@acm/shared';
+import { COMMANDS, CONTEXT, NAMESPACE } from './ids';
 import { getActiveInstance, getClient, getSettings } from './instances';
 
 interface State {
@@ -20,7 +21,7 @@ export function registerStatus(context: vscode.ExtensionContext): void {
     item,
     { dispose: () => clearInterval(healthTimer) },
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('acm')) {
+      if (event.affectsConfiguration(NAMESPACE)) {
         scheduleHealth();
         void refreshHealth();
       }
@@ -60,7 +61,7 @@ export async function refreshHealth(): Promise<void> {
       try {
         const res = await client.request<State>('GET', ACM_API.state);
         const health = res.data?.healthStatus;
-        noHistory = res.data?.permissions?.features?.['console.execute.nohistory'] === true;
+        noHistory = res.data?.permissions?.features?.[ACM_FEATURE.consoleExecuteNoHistory] === true;
         result = describeUnhealthy(health);
       } catch (e) {
         result = e instanceof AcmHttpError ? e.message : 'Instance is not reachable.';
@@ -71,23 +72,23 @@ export async function refreshHealth(): Promise<void> {
   if (check === healthCheck) {
     problem = result;
     unauthorized = noAccess;
-    vscode.commands.executeCommand('setContext', 'acm.canRunWithoutHistory', noHistory);
+    vscode.commands.executeCommand('setContext', CONTEXT.canRunWithoutHistory, noHistory);
     updateStatus();
   }
 }
 
 function updateStatus(): void {
   const instance = getActiveInstance();
-  vscode.commands.executeCommand('setContext', 'acm.hasInstance', !!instance);
+  vscode.commands.executeCommand('setContext', CONTEXT.hasInstance, !!instance);
   item.backgroundColor = undefined;
   if (running) {
     item.text = `$(sync~spin) ACM: ${instance?.name ?? ''}`;
     item.tooltip = `Running execution ${running}. Click to abort.`;
-    item.command = 'acm.abort';
+    item.command = COMMANDS.abort;
   } else if (!instance) {
     item.text = '$(server) ACM: no instance';
     item.tooltip = 'Select ACM instance';
-    item.command = 'acm.selectInstance';
+    item.command = COMMANDS.selectInstance;
   } else {
     item.text = `${problem ? '$(warning)' : '$(server)'} ACM: ${instance.name}`;
     item.tooltip = [
@@ -98,6 +99,6 @@ function updateStatus(): void {
       .filter(Boolean)
       .join('\n');
     item.backgroundColor = problem ? new vscode.ThemeColor('statusBarItem.warningBackground') : undefined;
-    item.command = unauthorized ? 'acm.setCredentials' : 'acm.selectInstance';
+    item.command = unauthorized ? COMMANDS.setCredentials : COMMANDS.selectInstance;
   }
 }

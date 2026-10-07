@@ -1,4 +1,5 @@
 export * from './api/paths';
+export * from './api/env';
 export * from './api/response';
 export * from './api/client';
 export * from './api/operations';

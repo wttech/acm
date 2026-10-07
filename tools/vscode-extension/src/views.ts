@@ -20,9 +20,20 @@ import {
   type ScriptType,
 } from '@acm/shared';
 import { registerCommand } from './errors';
+import {
+  COMMANDS,
+  CONTEXT,
+  DOCUMENTS,
+  ITEMS,
+  NAMESPACE,
+  SETTINGS,
+  VIEWS,
+  focusCommand,
+  settingId,
+} from './ids';
 import { getActiveInstance, getClient, getInstances, getSettings, type AcmInstance } from './instances';
 
-export const SCHEME = 'acm';
+const SCHEME = DOCUMENTS.scheme;
 
 export interface Script {
   id: string;
@@ -37,15 +48,15 @@ type Node =
   | { kind: 'script'; instance: AcmInstance; script: Script; type: ScriptType };
 
 export function executionUri(instance: AcmInstance, executionId: string): vscode.Uri {
-  return vscode.Uri.from({ scheme: SCHEME, authority: 'execution', path: `/${executionId}.acmlog`, query: instance.name });
+  return vscode.Uri.from({ scheme: SCHEME, authority: DOCUMENTS.execution, path: `/${executionId}${DOCUMENTS.executionExtension}`, query: instance.name });
 }
 
 export function scriptUri(instance: AcmInstance, scriptId: string): vscode.Uri {
-  return vscode.Uri.from({ scheme: SCHEME, authority: 'script', path: scriptId, query: instance.name });
+  return vscode.Uri.from({ scheme: SCHEME, authority: DOCUMENTS.script, path: scriptId, query: instance.name });
 }
 
 export function storedScript(uri: vscode.Uri): { id: string; instance: string } | undefined {
-  return uri.scheme === SCHEME && uri.authority === 'script' ? { id: uri.path, instance: uri.query } : undefined;
+  return uri.scheme === SCHEME && uri.authority === DOCUMENTS.script ? { id: uri.path, instance: uri.query } : undefined;
 }
 
 /** Read-only documents for execution logs and stored scripts, fetched from the instance named in the query. */
@@ -56,8 +67,8 @@ class ContentProvider implements vscode.TextDocumentContentProvider {
     if (!client) {
       throw new Error(`ACM: No credentials for instance "${uri.query}".`);
     }
-    if (uri.authority === 'execution') {
-      const id = uri.path.slice(1).replace(/\.acmlog$/, '');
+    if (uri.authority === DOCUMENTS.execution) {
+      const id = uri.path.slice(1, -DOCUMENTS.executionExtension.length);
       const execution = await fetchExecutionById(client, id);
       if (!execution) {
         return `Execution '${id}' not found.`;
@@ -92,7 +103,7 @@ abstract class AcmTreeProvider implements vscode.TreeDataProvider<Node> {
           kind: 'message',
           label: `Set credentials for ${instance.name}`,
           icon: 'key',
-          command: { title: 'Set Credentials', command: 'acm.setCredentials' },
+          command: { title: 'Set Credentials', command: COMMANDS.setCredentials },
         },
       ];
     }
@@ -105,7 +116,7 @@ abstract class AcmTreeProvider implements vscode.TreeDataProvider<Node> {
           kind: 'message',
           label: e instanceof Error ? e.message : String(e),
           icon: unauthorized ? 'key' : 'error',
-          command: unauthorized ? { title: 'Set Credentials', command: 'acm.setCredentials' } : undefined,
+          command: unauthorized ? { title: 'Set Credentials', command: COMMANDS.setCredentials } : undefined,
         },
       ];
     }
@@ -155,7 +166,7 @@ class ExecutionsProvider extends AcmTreeProvider {
       .join(' · ');
     item.tooltip = `${execution.id}\n${item.description}${execution.duration !== undefined ? `\n${execution.duration} ms` : ''}`;
     item.iconPath = statusIcon(execution.status);
-    item.contextValue = isPending(execution.status) ? 'execution.pending' : 'execution';
+    item.contextValue = isPending(execution.status) ? ITEMS.executionPending : ITEMS.execution;
     item.command = { title: 'Open', command: 'vscode.open', arguments: [executionUri(instance, execution.id)] };
     return item;
   }
@@ -206,7 +217,7 @@ class ScriptsProvider extends AcmTreeProvider {
         const item = new vscode.TreeItem(scriptLabel(node.script.id));
         item.tooltip = node.script.id;
         item.resourceUri = uri;
-        item.contextValue = `script.${node.type.toLowerCase()}`;
+        item.contextValue = ITEMS.script(node.type);
         item.command = { title: 'Open', command: 'vscode.open', arguments: [uri] };
         return item;
       }
@@ -243,8 +254,8 @@ export interface Views {
 export function registerViews(context: vscode.ExtensionContext): Views {
   const executions = new ExecutionsProvider();
   const scripts = new ScriptsProvider();
-  const executionsView = vscode.window.createTreeView('acm.executions', { treeDataProvider: executions });
-  const scriptsView = vscode.window.createTreeView('acm.scripts', { treeDataProvider: scripts });
+  const executionsView = vscode.window.createTreeView(VIEWS.executions, { treeDataProvider: executions });
+  const scriptsView = vscode.window.createTreeView(VIEWS.scripts, { treeDataProvider: scripts });
   const describeScripts = () => {
     scriptsView.description = getActiveInstance()?.name;
   };
@@ -252,33 +263,33 @@ export function registerViews(context: vscode.ExtensionContext): Views {
   const applyFilter = (filter: ExecutionFilter) => {
     executions.filter = filter;
     executionsView.description = executions.describeFilter();
-    vscode.commands.executeCommand('setContext', 'acm.executionsFiltered', isExecutionFiltered(executions.filter));
+    vscode.commands.executeCommand('setContext', CONTEXT.executionsFiltered, isExecutionFiltered(executions.filter));
     executions.refresh();
   };
   context.subscriptions.push(
     vscode.workspace.registerTextDocumentContentProvider(SCHEME, new ContentProvider()),
     executionsView,
     scriptsView,
-    vscode.commands.registerCommand('acm.refreshExecutions', () => executions.refresh()),
-    vscode.commands.registerCommand('acm.refreshScripts', () => scripts.refresh()),
-    registerCommand('acm.filterExecutions', async () => {
+    vscode.commands.registerCommand(COMMANDS.refreshExecutions, () => executions.refresh()),
+    vscode.commands.registerCommand(COMMANDS.refreshScripts, () => scripts.refresh()),
+    registerCommand(COMMANDS.filterExecutions, async () => {
       const filter = await pickExecutionFilter(executions.filter);
       if (filter) {
         applyFilter(filter);
       }
     }),
-    registerCommand('acm.filterExecutionsByScript', async (node?: Node) => {
+    registerCommand(COMMANDS.filterExecutionsByScript, async (node?: Node) => {
       if (node?.kind === 'script') {
         applyFilter({ ...executions.filter, executableId: node.script.id });
-        await vscode.commands.executeCommand('acm.executions.focus');
+        await vscode.commands.executeCommand(focusCommand(VIEWS.executions));
       }
     }),
-    registerCommand('acm.clearExecutionsFilter', () => applyFilter({ statuses: [] })),
+    registerCommand(COMMANDS.clearExecutionsFilter, () => applyFilter({ statuses: [] })),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('acm.activeInstance') && isExecutionFiltered(executions.filter)) {
+      if (event.affectsConfiguration(settingId(SETTINGS.activeInstance)) && isExecutionFiltered(executions.filter)) {
         applyFilter({ statuses: [] });
       }
-      if (event.affectsConfiguration('acm')) {
+      if (event.affectsConfiguration(NAMESPACE)) {
         describeScripts();
         executions.refresh();
         scripts.refresh();

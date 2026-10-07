@@ -62,7 +62,9 @@ Commit the regenerated files together with the Java change. Prose (docs and snip
 - `ACM`: Maven build, for changes outside `tools/`.
 - `Codegen`: regenerates the script API and fails if the committed files are outdated. Always runs.
 - `MCP Server`: tests on Node 22 and 24, for `tools/mcp-server/**`, `tools/shared/**` and `tools/skills/**`.
-- `VS Code Extension`: type check, lint, smoke test in VS Code (under `xvfb-run`) and packaging, for `tools/vscode-extension/**`, `tools/mcp-server/**` (bundled), `tools/shared/**` and `tools/skills/**`. The `.vsix` is uploaded as a build artifact.
+- `VS Code Extension`: type check, lint, manifest check, smoke test in VS Code (under `xvfb-run`) and packaging, for `tools/vscode-extension/**`, `tools/mcp-server/**` (bundled), `tools/shared/**` and `tools/skills/**`. The `.vsix` is uploaded as a build artifact.
+
+Run `npm run check` in `tools/mcp-server` or `tools/vscode-extension` to run the same steps as the matching CI job before pushing (the extension's smoke test opens a VS Code window).
 
 ## Releasing
 

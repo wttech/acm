@@ -5,7 +5,7 @@ export const SCRIPT_TYPES = ['MANUAL', 'AUTOMATIC', 'EXTENSION', 'MOCK'] as cons
 export type ScriptType = (typeof SCRIPT_TYPES)[number];
 
 /** Where a content package keeps the scripts in the repository sources. */
-const PACKAGE_SCRIPT_ROOT = '/jcr_root/conf/acm/settings/script';
+export const PACKAGE_SCRIPT_ROOT = '/jcr_root/conf/acm/settings/script';
 
 export function scriptTypeOf(id: string): ScriptType | undefined {
   const type = (id.startsWith(SCRIPT_ROOT) ? id.slice(SCRIPT_ROOT.length) : id).split('/')[0]?.toUpperCase();

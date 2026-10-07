@@ -143,6 +143,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Check Manifest
+        run: npm run check:manifest
+
       - name: Test
         run: xvfb-run -a npm test
 
