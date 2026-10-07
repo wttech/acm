@@ -111,8 +111,8 @@
         "icon": "$(refresh)"
       },
       {
-        "command": "acm.refreshProjectScripts",
-        "title": "Refresh Project Scripts",
+        "command": "acm.refreshProjectContent",
+        "title": "Refresh Project Content",
         "category": "ACM",
         "icon": "$(refresh)"
       },
@@ -170,22 +170,27 @@
         "category": "ACM"
       },
       {
-        "command": "acm.renameProjectScript",
+        "command": "acm.newProjectSnippet",
+        "title": "New Snippet...",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.renameProjectFile",
         "title": "Rename...",
         "category": "ACM"
       },
       {
-        "command": "acm.duplicateProjectScript",
+        "command": "acm.duplicateProjectFile",
         "title": "Duplicate...",
         "category": "ACM"
       },
       {
-        "command": "acm.deleteProjectScript",
+        "command": "acm.deleteProjectFile",
         "title": "Delete",
         "category": "ACM"
       },
       {
-        "command": "acm.revealProjectScript",
+        "command": "acm.revealProjectFile",
         "title": "Reveal in Explorer",
         "category": "ACM"
       },
@@ -341,19 +346,23 @@
           "when": "false"
         },
         {
-          "command": "acm.renameProjectScript",
+          "command": "acm.newProjectSnippet",
           "when": "false"
         },
         {
-          "command": "acm.duplicateProjectScript",
+          "command": "acm.renameProjectFile",
           "when": "false"
         },
         {
-          "command": "acm.deleteProjectScript",
+          "command": "acm.duplicateProjectFile",
           "when": "false"
         },
         {
-          "command": "acm.revealProjectScript",
+          "command": "acm.deleteProjectFile",
+          "when": "false"
+        },
+        {
+          "command": "acm.revealProjectFile",
           "when": "false"
         },
         {
@@ -407,37 +416,42 @@
         },
         {
           "command": "acm.runProjectScript",
-          "when": "view == acm.projectScripts && viewItem == projectScript.manual",
+          "when": "view == acm.projectContent && viewItem == projectFile.script.manual",
           "group": "inline"
         },
         {
           "command": "acm.compareProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\.script\\./",
           "group": "navigation"
         },
         {
-          "command": "acm.revealProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "command": "acm.revealProjectFile",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./",
           "group": "navigation"
         },
         {
-          "command": "acm.duplicateProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "command": "acm.duplicateProjectFile",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./",
           "group": "modification@1"
         },
         {
-          "command": "acm.renameProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "command": "acm.renameProjectFile",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./",
           "group": "modification@2"
         },
         {
-          "command": "acm.deleteProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "command": "acm.deleteProjectFile",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./",
           "group": "modification@3"
         },
         {
           "command": "acm.newProjectScriptOfType",
-          "when": "view == acm.projectScripts && viewItem == projectType",
+          "when": "view == acm.projectContent && viewItem == projectGroup.scriptType",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.newProjectSnippet",
+          "when": "view == acm.projectContent && viewItem == projectGroup.snippets",
           "group": "navigation"
         }
       ],
@@ -483,12 +497,12 @@
         },
         {
           "command": "acm.newProjectScript",
-          "when": "view == acm.projectScripts",
+          "when": "view == acm.projectContent",
           "group": "navigation@1"
         },
         {
-          "command": "acm.refreshProjectScripts",
-          "when": "view == acm.projectScripts",
+          "command": "acm.refreshProjectContent",
+          "when": "view == acm.projectContent",
           "group": "navigation@2"
         }
       ]
@@ -612,7 +626,7 @@
             "type": "string",
             "minLength": 1
           },
-          "markdownDescription": "Folders with the project's ACM scripts, usually content packages' `jcr_root/conf/acm/settings/script`, relative to the workspace folder (or absolute). Project Scripts and `New Project Script...` use them. Empty finds them from the scripts already in the workspace."
+          "markdownDescription": "Folders with the project's ACM scripts, usually content packages' `jcr_root/conf/acm/settings/script`, relative to the workspace folder (or absolute). Project Content and `New Project Script...` use them. Empty finds them from the scripts already in the workspace."
         }
       }
     },
@@ -628,10 +642,10 @@
     "views": {
       "acm": [
         {
-          "id": "acm.projectScripts",
-          "name": "Project Scripts",
+          "id": "acm.projectContent",
+          "name": "Project Content",
           "icon": "$(folder-library)",
-          "when": "acm.hasScriptsRoot"
+          "when": "acm.hasProjectContent"
         },
         {
           "id": "acm.scripts",

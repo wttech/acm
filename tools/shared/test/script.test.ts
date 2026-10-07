@@ -7,8 +7,56 @@ import {
   scriptRootsOf,
   scriptTypeOfPath,
 } from '../src/domain/script.ts';
+import { stripExtension, validateRelativeName } from '../src/domain/name.ts';
+import { snippetTemplate } from '../src/domain/snippet.ts';
 
 const content = (module: string) => `/w/${module}/src/main/content${PACKAGE_SCRIPT_ROOT}`;
+
+describe('stripExtension', () => {
+  it('removes the extension only when the name ends with it', () => {
+    assert.equal(stripExtension('a/b.yml', '.yml'), 'a/b');
+    assert.equal(stripExtension('a/b.yml.txt', '.yml'), 'a/b.yml.txt');
+    assert.equal(stripExtension('a/b', '.yml'), 'a/b');
+  });
+});
+
+describe('validateRelativeName', () => {
+  it('accepts names and paths with or without the extension', () => {
+    assert.equal(validateRelativeName('example/ACME-1_hello', '.groovy'), undefined);
+    assert.equal(validateRelativeName('acme/hello.yml', '.yml'), undefined);
+  });
+
+  it('rejects empty names, absolute paths and escapes', () => {
+    assert.equal(validateRelativeName('  ', '.yml'), 'Enter a name.');
+    assert.equal(validateRelativeName('.yml', '.yml'), 'Enter a name.');
+    assert.ok(validateRelativeName('/a', '.yml'));
+    assert.ok(validateRelativeName('a/', '.yml'));
+    assert.ok(validateRelativeName('../a', '.yml'));
+    assert.ok(validateRelativeName('a//b', '.yml'));
+    assert.ok(validateRelativeName('a b', '.yml'));
+  });
+});
+
+describe('snippetTemplate', () => {
+  it('derives the group and the name from the path', () => {
+    const template = snippetTemplate('acme/hello');
+    assert.match(template, /^group: Acme$/m);
+    assert.match(template, /^name: acme_hello$/m);
+  });
+
+  it('ignores the extension and handles a name without a folder', () => {
+    const template = snippetTemplate('hello.yml');
+    assert.match(template, /^group: Hello$/m);
+    assert.match(template, /^name: hello$/m);
+  });
+
+  it('has the fields ACM reads', () => {
+    const template = snippetTemplate('acme/hello');
+    for (const field of ['group', 'name', 'content', 'documentation']) {
+      assert.match(template, new RegExp(`^${field}:`, 'm'));
+    }
+  });
+});
 
 describe('scriptTypeOfPath', () => {
   it('reads the type from a file in a content package', () => {

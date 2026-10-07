@@ -16,7 +16,7 @@
     "check": "npm test",
     "pretest": "npm run build",
     "test": "npm run test:unit && node test/run-tests.mjs",
-    "test:unit": "node --test \"../shared/test/*.test.ts\"",
+    "test:unit": "node --import ../shared/test/register.mjs --test \"../shared/test/*.test.ts\"",
     "smoke": "npm run build && node test/smoke.mjs",
     "prepack": "npm run build && node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\""
   },

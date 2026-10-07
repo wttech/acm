@@ -32,7 +32,7 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 
 - [x] **Executions view.** History and queue (`execution`), console output as a read-only document, abort, download of outputs and the ZIP archive (`execution-output`).
 - [x] **Scripts view.** Scripts stored on the instance (`script`), open read-only, diff with the local file.
-- [x] **Project Scripts view.** Scripts of the content package in the workspace, New Project Script from templates, run and diff with the instance.
+- [x] **Project Content view.** Scripts and snippets of the content packages in the workspace, New Project Script and New Snippet from templates, run and diff with the instance.
 - [x] **Instances.** Status bar switcher for the active instance with its health (`state`, every minute); `ACM: Check Connection`.
 
 ### AI

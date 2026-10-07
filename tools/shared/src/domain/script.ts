@@ -1,4 +1,8 @@
+import { stripExtension } from './name';
+
 export const SCRIPT_ROOT = '/conf/acm/settings/script/';
+
+export const SCRIPT_EXTENSION = '.groovy';
 
 export const SCRIPT_TYPES = ['MANUAL', 'AUTOMATIC', 'EXTENSION', 'MOCK'] as const;
 
@@ -52,7 +56,7 @@ export function scriptTypeOfPath(filePath: string): ScriptType | undefined {
 export function scriptLabel(id: string): string {
   const relative = id.startsWith(SCRIPT_ROOT) ? id.slice(SCRIPT_ROOT.length) : id;
   const withoutType = scriptTypeOf(id) ? relative.slice(relative.indexOf('/') + 1) : relative;
-  return withoutType.replace(/\.groovy$/, '');
+  return stripExtension(withoutType, SCRIPT_EXTENSION);
 }
 
 /** The repository ID of a script given its path under the scripts root, e.g. `manual/example/a.groovy`. */
@@ -97,19 +101,4 @@ export function scriptRootLabels(roots: string[]): string[] {
     tail++;
   }
   return parts.map((segments) => segments.slice(head, segments.length - tail).join('/'));
-}
-
-/** Checks a new script name given as a path under its type folder, e.g. `example/ACME-1_hello`; `undefined` when valid. */
-export function validateScriptName(name: string): string | undefined {
-  const base = name.trim().replace(/\.groovy$/, '');
-  if (base === '') {
-    return 'Enter a name.';
-  }
-  if (base.startsWith('/') || base.endsWith('/')) {
-    return 'Use a path relative to the type folder, e.g. example/hello.';
-  }
-  if (!/^[\w.\-/]+$/.test(base) || base.split('/').some((part) => part === '' || part === '.' || part === '..')) {
-    return 'Use letters, digits, dots, dashes, underscores and slashes only.';
-  }
-  return undefined;
 }

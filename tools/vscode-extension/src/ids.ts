@@ -16,7 +16,7 @@ export const COMMANDS = {
   checkConnection: 'acm.checkConnection',
   refreshExecutions: 'acm.refreshExecutions',
   refreshScripts: 'acm.refreshScripts',
-  refreshProjectScripts: 'acm.refreshProjectScripts',
+  refreshProjectContent: 'acm.refreshProjectContent',
   filterExecutions: 'acm.filterExecutions',
   clearExecutionsFilter: 'acm.clearExecutionsFilter',
   filterExecutionsByScript: 'acm.filterExecutionsByScript',
@@ -26,10 +26,11 @@ export const COMMANDS = {
   runProjectScript: 'acm.runProjectScript',
   newProjectScript: 'acm.newProjectScript',
   newProjectScriptOfType: 'acm.newProjectScriptOfType',
-  renameProjectScript: 'acm.renameProjectScript',
-  duplicateProjectScript: 'acm.duplicateProjectScript',
-  deleteProjectScript: 'acm.deleteProjectScript',
-  revealProjectScript: 'acm.revealProjectScript',
+  newProjectSnippet: 'acm.newProjectSnippet',
+  renameProjectFile: 'acm.renameProjectFile',
+  duplicateProjectFile: 'acm.duplicateProjectFile',
+  deleteProjectFile: 'acm.deleteProjectFile',
+  revealProjectFile: 'acm.revealProjectFile',
   newScript: 'acm.newScript',
   downloadOutputs: 'acm.downloadOutputs',
   copyMcpSetup: 'acm.copyMcpSetup',
@@ -39,7 +40,7 @@ export const COMMANDS = {
 } as const;
 
 export const VIEWS = {
-  projectScripts: 'acm.projectScripts',
+  projectContent: 'acm.projectContent',
   scripts: 'acm.scripts',
   executions: 'acm.executions',
 } as const;
@@ -49,7 +50,7 @@ export const CONTEXT = {
   hasInstance: 'acm.hasInstance',
   canRunWithoutHistory: 'acm.canRunWithoutHistory',
   executionsFiltered: 'acm.executionsFiltered',
-  hasScriptsRoot: 'acm.hasScriptsRoot',
+  hasProjectContent: 'acm.hasProjectContent',
 } as const;
 
 /** Setting keys relative to the `acm` section. */
@@ -78,9 +79,11 @@ export const ITEMS = {
   execution: 'execution',
   executionPending: 'execution.pending',
   projectRoot: 'projectRoot',
-  projectType: 'projectType',
+  projectScriptType: 'projectGroup.scriptType',
+  projectSnippets: 'projectGroup.snippets',
+  projectSnippet: 'projectFile.snippet',
   script: (type: string) => `script.${type.toLowerCase()}`,
-  projectScript: (type: string) => `projectScript.${type.toLowerCase()}`,
+  projectScript: (type: string) => `projectFile.script.${type.toLowerCase()}`,
 } as const;
 
 export const MCP_PROVIDER_ID = NAMESPACE;
