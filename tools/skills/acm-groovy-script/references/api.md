@@ -16,6 +16,9 @@ Getters can be used as Groovy properties, e.g. `context.id` for `context.getId()
 | extension | `void prepareRun(…)` | yes |
 | extension | `void completeRun(…)` | yes |
 | extension | `void prepareMock(…)` | no |
+| mock | `boolean request(…)` | yes |
+| mock | `void respond(…)` | yes |
+| mock | `void fail(…)` | no |
 
 ## Variables
 

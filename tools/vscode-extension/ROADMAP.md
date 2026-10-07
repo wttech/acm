@@ -20,9 +20,9 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 
 ### Editing
 
-- [~] **Completion.** Lifecycle methods as snippets, script variables, and the methods of each variable (`repo.`, `acl.`, `inputs.`, …) from the API generated from the ACM source. Next: chained calls (`repo.get(…).`), options inside input and output closures; dynamic suggestions from `assist-code` (Java classes, variables, snippets, JCR paths in strings).
+- [~] **Completion.** Lifecycle methods as snippets, chosen by the script type from the file's path (content, extension, mock), script variables, and the methods of each variable (`repo.`, `acl.`, `inputs.`, …) from the API generated from the ACM source. Next: chained calls (`repo.get(…).`), options inside input and output closures; dynamic suggestions from `assist-code` (Java classes, variables, snippets, JCR paths in strings).
 - [~] **Inline docs.** Hover for lifecycle methods, variables and their methods. Next: Java classes from `assist-code`, links to ACM docs.
-- [~] **Validation.** On save of scripts declaring `doRun()`, compile-check on the active instance (`execute-code`, `mode=parse`) and show errors as diagnostics with line and column; missing or misspelled lifecycle methods are reported by ACM. Next: local checks without an instance.
+- [~] **Validation.** On save of scripts declaring `doRun()`, compile-check on the active instance (`execute-code`, `mode=parse`) and show errors as diagnostics with line and column; missing or misspelled lifecycle methods are reported by ACM. Next: local checks without an instance; extension and mock scripts, which the parse mode checks as content scripts.
 - [x] **CodeLens.** `Run` above `doRun`; validation runs on save and inputs are asked for on run, so no other lenses.
 - [~] **Snippets.** `acmdoc` inserts the script documentation header. Next: snippets from the instance (`snippet`).
 - [x] **New script.** `File > New File... > ACM Script` opens a documented script from the skill's templates (minimal, migration, ACL, report, scheduled cleanup, extension hooks, console, mock).

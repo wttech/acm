@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { BINDINGS, LIFECYCLE_METHODS, bindingMembers, type CatalogEntry } from '@acm/shared';
+import { BINDINGS, bindingMembers, lifecycleMethodsFor, scriptTypeOfPath, type CatalogEntry } from '@acm/shared';
 import { GROOVY_SELECTOR } from '../groovy';
 
 // TODO: merge with dynamic suggestions from ACM_API.assistCode (classes, variables, snippets, JCR paths).
@@ -15,7 +15,9 @@ export function registerCompletion(context: vscode.ExtensionContext): void {
             return bindingMembers(receiver).map((entry) => toItem(entry, vscode.CompletionItemKind.Method));
           }
           return [
-            ...LIFECYCLE_METHODS.map((entry) => toItem(entry, vscode.CompletionItemKind.Snippet)),
+            ...lifecycleMethodsFor(scriptTypeOfPath(document.uri.path)).map((entry) =>
+              toItem(entry, vscode.CompletionItemKind.Snippet),
+            ),
             ...BINDINGS.map((entry) => toItem(entry, vscode.CompletionItemKind.Variable)),
           ];
         },

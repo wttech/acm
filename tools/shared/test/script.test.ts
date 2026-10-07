@@ -1,8 +1,34 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { PACKAGE_SCRIPT_ROOT, enabledScriptTypes, scriptRootLabels, scriptRootsOf } from '../src/domain/script.ts';
+import {
+  PACKAGE_SCRIPT_ROOT,
+  enabledScriptTypes,
+  scriptRootLabels,
+  scriptRootsOf,
+  scriptTypeOfPath,
+} from '../src/domain/script.ts';
 
 const content = (module: string) => `/w/${module}/src/main/content${PACKAGE_SCRIPT_ROOT}`;
+
+describe('scriptTypeOfPath', () => {
+  it('reads the type from a file in a content package', () => {
+    assert.equal(scriptTypeOfPath(`${content('ui.content')}/mock/acme/a.groovy`), 'MOCK');
+    assert.equal(scriptTypeOfPath(`${content('ui.content')}/extension/main.groovy`), 'EXTENSION');
+  });
+
+  it('reads the type from a repository ID', () => {
+    assert.equal(scriptTypeOfPath('/conf/acm/settings/script/automatic/acme/a.groovy'), 'AUTOMATIC');
+  });
+
+  it('normalizes Windows separators', () => {
+    assert.equal(scriptTypeOfPath('C:\\w\\jcr_root\\conf\\acm\\settings\\script\\manual\\a.groovy'), 'MANUAL');
+  });
+
+  it('has no type outside the scripts root or for an unknown folder', () => {
+    assert.equal(scriptTypeOfPath('/w/scratch.groovy'), undefined);
+    assert.equal(scriptTypeOfPath('/conf/acm/settings/script/other/a.groovy'), undefined);
+  });
+});
 
 describe('enabledScriptTypes', () => {
   it('hides Mock while the mock feature is off', () => {

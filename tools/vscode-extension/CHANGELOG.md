@@ -7,6 +7,7 @@
 - Project Scripts selects a script in the tree after it is created, duplicated or renamed.
 - New setting `acm.mock.mode` (`auto`, `enabled`, `disabled`): Mock scripts are hidden from the views and from the script and template pickers unless the active instance has its Mock HTTP Filter enabled (the ACM default is off) or the setting forces them on.
 - Project Scripts has a refresh button that rescans the workspace for scripts folders, for changes the file watcher does not report (e.g. a module added or removed as a whole folder).
+- Completion and hover know the methods of extension scripts (`prepareRun`, `completeRun`, `prepareMock`) and mock scripts (`request`, `respond`, `fail`), with snippets, and offer the ones of the script's type, taken from its path under `conf/acm/settings/script`. Other files keep the manual and automatic script methods.
 
 ## 0.1.2
 

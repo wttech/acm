@@ -41,6 +41,13 @@ export function scriptTypeOf(id: string): ScriptType | undefined {
   return SCRIPT_TYPES.find((candidate) => candidate === type);
 }
 
+/** The type of a script given the path of its file or its repository ID; `undefined` outside the scripts root. */
+export function scriptTypeOfPath(filePath: string): ScriptType | undefined {
+  const normalized = filePath.replace(/\\/g, '/');
+  const index = normalized.lastIndexOf(SCRIPT_ROOT);
+  return index < 0 ? undefined : scriptTypeOf(normalized.slice(index + SCRIPT_ROOT.length));
+}
+
 /** The name ACM shows for a script: its path under the type folder, without the extension. */
 export function scriptLabel(id: string): string {
   const relative = id.startsWith(SCRIPT_ROOT) ? id.slice(SCRIPT_ROOT.length) : id;

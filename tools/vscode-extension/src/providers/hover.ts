@@ -2,7 +2,9 @@ import * as vscode from 'vscode';
 import { BINDINGS, LIFECYCLE_METHODS, bindingMembers, type CatalogEntry } from '@acm/shared';
 import { GROOVY_SELECTOR } from '../groovy';
 
-const ENTRIES = new Map<string, CatalogEntry>([...LIFECYCLE_METHODS, ...BINDINGS].map((entry) => [entry.name, entry]));
+const ENTRIES = new Map<string, CatalogEntry>(
+  [...Object.values(LIFECYCLE_METHODS).flat(), ...BINDINGS].map((entry) => [entry.name, entry]),
+);
 
 // TODO: Java classes via ACM_API.assistCode.
 export function registerHover(context: vscode.ExtensionContext): void {

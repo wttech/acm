@@ -169,6 +169,18 @@ function parseLifecycle(fqn) {
   );
 }
 
+// Mock methods are required per mock type; the regular mock needs the ones its `isMethodRequired` names.
+function parseMockLifecycle(fqn) {
+  const cls = parseClass(fqn);
+  const required = [...(/case REGULAR:\s*return ([^;]+);/.exec(cls.src)?.[1] ?? '').matchAll(/Method\.(\w+)/g)].map((m) => m[1]);
+  return [...cls.src.matchAll(/^\s+([A-Z_]+)\("(\w+)",\s*"([\w.]+)",\s*(\d+)\)/gm)].map(([, constant, name, returns, paramCount]) => ({
+    name,
+    returns,
+    required: required.includes(constant),
+    paramCount: Number(paramCount),
+  }));
+}
+
 // Script DSL methods are the ones taking a configuration closure, e.g. inputs.string('name') { ... }.
 function parseDsl(fqn) {
   const cls = parseClass(fqn);
@@ -220,6 +232,7 @@ const api = {
   lifecycle: {
     content: parseLifecycle(`${CODE}.script.ContentScriptSyntax`),
     extension: parseLifecycle(`${CODE}.script.ExtensionScriptSyntax`),
+    mock: parseMockLifecycle(`${CODE}.script.MockScriptSyntax`),
   },
   bindings,
   inputs,
