@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { ACM_API, AcmHttpError } from '@acm/shared';
+import { ACM_API, AcmHttpError, describeUnhealthy, type HealthStatus } from '@acm/shared';
 import { getActiveInstance, getClient, getSettings } from './instances';
 
 interface State {
-  healthStatus?: { healthy: boolean; issues?: Array<{ message?: string }> };
+  healthStatus?: HealthStatus;
   permissions?: { features?: Record<string, boolean> };
 }
 
@@ -61,10 +61,7 @@ export async function refreshHealth(): Promise<void> {
         const res = await client.request<State>('GET', ACM_API.state);
         const health = res.data?.healthStatus;
         noHistory = res.data?.permissions?.features?.['console.execute.nohistory'] === true;
-        if (health && !health.healthy) {
-          const issues = (health.issues ?? []).map((issue) => issue.message).filter(Boolean);
-          result = `ACM is not healthy${issues.length ? `: ${issues.join('; ')}` : ''}. Automatic scripts wait until it is.`;
-        }
+        result = describeUnhealthy(health);
       } catch (e) {
         result = e instanceof AcmHttpError ? e.message : 'Instance is not reachable.';
         noAccess = e instanceof AcmHttpError && e.httpStatus === 401;

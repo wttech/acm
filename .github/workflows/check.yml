@@ -153,5 +153,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: acm-vscode-extension
-          path: tools/vscode-extension/*.vsix
+          path: tools/vscode-extension/dist/*.vsix
           retention-days: 14

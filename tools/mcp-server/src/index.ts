@@ -95,6 +95,9 @@ import {
   SKILL_ESSENTIALS,
   SKILL_NAME,
   summarizeExecution,
+  describeUnhealthy,
+  type HealthStatus,
+  waitForExecution,
 } from "@acm/shared";
 
 /* ============================================================================
@@ -217,10 +220,6 @@ const client = new AcmClient({
  * ACM operations
  * ========================================================================== */
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
 /* ============================================================================
  * MCP server & tools
  * ========================================================================== */
@@ -266,14 +265,15 @@ server.registerTool(
   {
     title: "ACM health & state",
     description:
-      "Check connectivity, authentication and ACM instance state (health checks, queued executions, instance info). Call this first to verify the setup. Returns the raw state from /apps/acm/api/state.json.",
+      "Check connectivity, authentication and the state ACM reports for the instance (health check result, queued executions, instance info). Call this first to verify the setup; an unhealthy instance is flagged with a warning because running scripts on it may be unsafe. Returns the raw state from /apps/acm/api/state.json.",
     inputSchema: {},
   },
   async () => {
     try {
-      const res = await client.request<unknown>("GET", "/apps/acm/api/state.json");
+      const res = await client.request<{ healthStatus?: HealthStatus }>("GET", "/apps/acm/api/state.json");
+      const warning = describeUnhealthy(res.data?.healthStatus);
       return textResult(
-        `${targetInfo()}\n\nACM state (healthy connection):\n${JSON.stringify(res.data, null, 2)}`
+        `${targetInfo()}\n\n${warning ? `WARNING: ${warning}\n\n` : ""}ACM state:\n${JSON.stringify(res.data, null, 2)}`
       );
     } catch (e) {
       return errorResult(e);
@@ -369,16 +369,12 @@ server.registerTool(
         );
       }
 
-      const deadline = Date.now() + (waitMs ?? config.runTimeoutMs);
-      while (isPending(execution.status) && Date.now() < deadline) {
-        await sleep(config.pollIntervalMs);
-        const polled = await fetchExecutionById(client, execution.id);
-        if (polled) execution = polled;
-      }
+      const wait = waitMs ?? config.runTimeoutMs;
+      execution = await waitForExecution(client, execution, { intervalMs: config.pollIntervalMs, timeoutMs: wait });
 
       if (isPending(execution.status)) {
         return textResult(
-          `Execution still ${execution.status} after ${waitMs ?? config.runTimeoutMs} ms.\nExecution ID: ${execution.id}\nUse acm_get_execution with this ID to check progress, or acm_abort_execution to stop it.`
+          `Execution still ${execution.status} after ${wait} ms.\nExecution ID: ${execution.id}\nUse acm_get_execution with this ID to check progress, or acm_abort_execution to stop it.`
         );
       }
 

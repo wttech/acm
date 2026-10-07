@@ -57,5 +57,7 @@ Log only what has value; ACM runs on busy instances and is called by editors and
 - The [ACM Groovy scripting skill](tools/skills/acm-groovy-script/SKILL.md) is the single source of guidance for agents writing scripts. Its `## Essentials` section is sent as MCP server instructions; the `## ` sections of `references/patterns.md` are the templates of `ACM: New Script`.
 - Stored scripts start with a documentation header: a `/* */` block with YAML frontmatter and a Markdown description, followed by a blank line.
 - Docs describe processes and contracts (command, environment variables, prompts for agents), not other tools' config files, locations or UI; those change and the tools' own agents know them. Link vendor documentation only where no process can be described.
+- Keep UI and logic apart: anything that does not need `vscode` (queries, filters, polling, formatting) lives in `tools/shared` and is used by both tools; the extension only wires it to views, commands and prompts.
+- Never build query strings or SQL from request values without escaping them; a JCR-SQL2 string literal escapes `'` as `''` (see `ExecutionQuery`).
 - The VS Code extension uses native APIs only (settings, secret storage, tree views, output channels, MCP server definition provider) and bundles the MCP server from `tools/mcp-server/src`.
 - Release workflows are triggered by tags (`v*`, `mcp-server-v*`, `vscode-extension-v*`); npm trusted publishing is bound to the workflow file name, so do not rename release workflows.

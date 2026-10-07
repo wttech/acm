@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { ACM_API, CONSOLE_CODE_ID, type AcmClient } from '@acm/shared';
+import { ACM_API, type AcmClient } from '@acm/shared';
 
 interface InputDefinition {
   name: string;
@@ -15,9 +15,12 @@ interface InputDefinition {
 const CANCELLED = Symbol('cancelled');
 
 /** Resolves inputs declared in `describeRun()` and asks for their values; `undefined` when cancelled. */
-export async function promptInputs(client: AcmClient, content: string): Promise<Record<string, unknown> | undefined> {
+export async function promptInputs(
+  client: AcmClient,
+  code: { id: string; content?: string },
+): Promise<Record<string, unknown> | undefined> {
   const res = await client.request<{ inputs?: Record<string, InputDefinition> }>('POST', ACM_API.describeCode, {
-    code: { id: CONSOLE_CODE_ID, content },
+    code,
   });
   const inputs = Object.values(res.data?.inputs ?? {});
   const values: Record<string, unknown> = {};
@@ -63,8 +66,11 @@ async function promptInput(client: AcmClient, input: InputDefinition, title: str
       );
       return text === undefined ? CANCELLED : text.trim() === '' ? null : Number(text);
     }
+    case 'TEXT': {
+      const text = await showTextEditor(input, title);
+      return text === undefined ? CANCELLED : text;
+    }
     case 'STRING':
-    case 'TEXT':
     case 'PATH':
     case 'COLOR':
     case 'DATE':
@@ -119,6 +125,44 @@ function showInput(
     validateInput: (text) =>
       input.required && text.trim() === '' ? 'Value is required.' : validate?.(text),
   });
+}
+
+/** Input boxes are single-line, so multi-line text is edited in an editor and confirmed with a picker. */
+async function showTextEditor(input: InputDefinition, title: string): Promise<string | undefined> {
+  const value = input.value;
+  const doc = await vscode.workspace.openTextDocument({
+    language: 'plaintext',
+    content: value === undefined || value === null ? '' : String(value),
+  });
+  await vscode.window.showTextDocument(doc, { preview: false });
+  try {
+    for (;;) {
+      const picked = await vscode.window.showQuickPick(
+        [
+          { label: '$(check) Confirm', description: 'Use the text from the editor', confirm: true, alwaysShow: true },
+          { label: '$(close) Cancel', confirm: false, alwaysShow: true },
+        ],
+        {
+          title,
+          placeHolder: [input.description, 'Edit the text in the editor, then confirm'].filter(Boolean).join(' - '),
+          ignoreFocusOut: true,
+        },
+      );
+      if (!picked?.confirm) {
+        return undefined;
+      }
+      const text = doc.getText();
+      if (!input.required || text.trim() !== '') {
+        return text;
+      }
+      vscode.window.showWarningMessage(`${title}: value is required.`);
+    }
+  } finally {
+    if (!doc.isClosed) {
+      await vscode.window.showTextDocument(doc, { preview: false });
+      await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
+    }
+  }
 }
 
 /** Uploads files to ACM's temporary storage; file inputs take the returned repository paths. */

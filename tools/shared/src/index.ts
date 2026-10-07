@@ -4,6 +4,7 @@ export * from './api/client';
 export * from './api/operations';
 export * from './domain/code';
 export * from './domain/execution';
+export * from './domain/health';
 export * from './catalog/api';
 export * from './catalog/entries';
 export * from './skill';

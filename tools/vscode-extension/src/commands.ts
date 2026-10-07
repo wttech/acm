@@ -3,18 +3,17 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import {
   ACM_API,
-  AcmHttpError,
   CONSOLE_CODE_ID,
   fetchConsoleOutput,
-  fetchExecutionById,
   isFailed,
-  isPending,
   normalizeGroovy,
   SCRIPT_TEMPLATES,
+  waitForExecution,
   type Execution,
   type ExecutionListOutput,
   type QueueOutput,
 } from '@acm/shared';
+import { registerCommand as register, showError } from './errors';
 import { promptInputs } from './inputs';
 import {
   confirmRun,
@@ -30,7 +29,7 @@ import {
 } from './instances';
 import { validateDocument } from './providers/diagnostics';
 import { refreshHealth, setRunning } from './status';
-import { executionUri, type Views } from './views';
+import { executionUri, storedScriptId, type Views } from './views';
 
 interface ExecutionNode {
   instance: AcmInstance;
@@ -49,11 +48,10 @@ let running: (AcmTarget & { executionId: string }) | undefined;
 
 export function registerCommands(context: vscode.ExtensionContext, views: Views): void {
   output = vscode.window.createOutputChannel('ACM');
-  const register = (command: string, handler: (...args: never[]) => Promise<unknown>) =>
-    vscode.commands.registerCommand(command, (...args: unknown[]) => handler(...(args as never[])).catch(showError));
   context.subscriptions.push(
     output,
     register('acm.run', () => run(false, views)),
+    register('acm.runScript', (node?: { script?: { id: string } }) => runStored(node?.script?.id, views)),
     register('acm.runSelection', () => run(true, views)),
     register('acm.runWithoutHistory', () => run(true, views, false)),
     register('acm.validate', validate),
@@ -78,9 +76,49 @@ async function newScript(): Promise<void> {
   }
 }
 
-async function run(selectionOnly: boolean, views: Views, history = true): Promise<void> {
+async function runStored(scriptId: string | undefined, views: Views): Promise<void> {
+  if (scriptId) {
+    await run(false, views, true, scriptId);
+  }
+}
+
+interface RunSource {
+  code: { id: string; content?: string };
+  label: string;
+  selection: boolean;
+  hasInputs: boolean;
+}
+
+function storedSource(scriptId: string): RunSource {
+  return { code: { id: scriptId }, label: path.posix.basename(scriptId), selection: false, hasInputs: true };
+}
+
+/** Stored scripts run by ID so their executions are recorded under the script; other editors run as console code. */
+function runSource(selectionOnly: boolean, scriptId?: string): RunSource | undefined {
+  if (scriptId) {
+    return storedSource(scriptId);
+  }
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
+    return undefined;
+  }
+  const selection = selectionOnly && !editor.selection.isEmpty ? editor.selection : undefined;
+  const storedId = selection ? undefined : storedScriptId(editor.document.uri);
+  if (storedId) {
+    return storedSource(storedId);
+  }
+  const content = normalizeGroovy(editor.document.getText(selection));
+  return {
+    code: { id: CONSOLE_CODE_ID, content },
+    label: path.basename(editor.document.fileName),
+    selection: !!selection,
+    hasInputs: /\bdescribeRun\s*\(/.test(content),
+  };
+}
+
+async function run(selectionOnly: boolean, views: Views, history = true, scriptId?: string): Promise<void> {
+  const source = runSource(selectionOnly, scriptId);
+  if (!source) {
     vscode.window.showWarningMessage('ACM: Open a Groovy script to run.');
     return;
   }
@@ -93,17 +131,15 @@ async function run(selectionOnly: boolean, views: Views, history = true): Promis
     return;
   }
   const { instance, client } = target;
-  const selection = selectionOnly && !editor.selection.isEmpty ? editor.selection : undefined;
-  const content = normalizeGroovy(editor.document.getText(selection));
-  const inputs = /\bdescribeRun\s*\(/.test(content) ? await promptInputs(client, content) : {};
+  const { code, label } = source;
+  const inputs = source.hasInputs ? await promptInputs(client, code) : {};
   if (!inputs) {
     return;
   }
-  const label = path.basename(editor.document.fileName);
 
   output.show(true);
   output.appendLine(
-    `Running ${label}${selection ? ' (selection)' : ''} on ${instance.name} (${instance.url})${history ? '' : ' without history'}`,
+    `Running ${label}${source.selection ? ' (selection)' : ''} on ${instance.name} (${instance.url})${history ? '' : ' without history'}`,
   );
   const inputValues = Object.keys(inputs).length > 0 ? inputs : undefined;
   if (!history) {
@@ -116,7 +152,7 @@ async function run(selectionOnly: boolean, views: Views, history = true): Promis
           client.request<Execution>(
             'POST',
             ACM_API.executeCode,
-            { mode: 'RUN', history: false, code: { id: CONSOLE_CODE_ID, content }, inputs: inputValues },
+            { mode: 'RUN', history: false, code, inputs: inputValues },
             true,
             timeout,
           ),
@@ -134,13 +170,14 @@ async function run(selectionOnly: boolean, views: Views, history = true): Promis
     return;
   }
   const res = await client.request<QueueOutput>('POST', ACM_API.queueCode, {
-    code: { id: CONSOLE_CODE_ID, content },
+    code,
     inputs: inputValues,
   });
-  let execution = res.data?.executions?.[0];
-  if (!execution) {
+  const queued = res.data?.executions?.[0];
+  if (!queued) {
     throw new Error(`Queued, but no execution returned: ${res.message}`);
   }
+  let execution: Execution = queued;
   const executionId = execution.id;
 
   running = { ...target, executionId };
@@ -152,12 +189,13 @@ async function run(selectionOnly: boolean, views: Views, history = true): Promis
       { location: vscode.ProgressLocation.Notification, title: `ACM: Script ${label} on ${instance.name}`, cancellable: true },
       async (progress, token) => {
         token.onCancellationRequested(() => abort(views).catch(showError));
-        while (isPending(execution!.status)) {
-          progress.report({ message: execution!.status.toLowerCase() });
-          await new Promise((resolve) => setTimeout(resolve, getSettings().runPollInterval));
-          execution = (await fetchExecutionById(client, executionId)) ?? execution;
-          printed = append(execution!.output, printed);
-        }
+        execution = await waitForExecution(client, execution, {
+          intervalMs: getSettings().runPollInterval,
+          onPoll: (current) => {
+            progress.report({ message: current.status.toLowerCase() });
+            printed = append(current.output, printed);
+          },
+        });
       },
     );
     append((await fetchConsoleOutput(client, executionId)) ?? execution.output, printed);
@@ -321,15 +359,4 @@ async function checkConnection(): Promise<void> {
   vscode.window.showInformationMessage(
     `ACM: Connected to "${target.instance.name}" (${target.instance.url}) using ${target.client.authDescription}.`,
   );
-}
-
-function showError(error: unknown): void {
-  const message = `ACM: ${error instanceof Error ? error.message : String(error)}`;
-  if (error instanceof AcmHttpError && error.httpStatus === 401) {
-    vscode.window.showErrorMessage(message, 'Set Credentials').then((action) => {
-      if (action) vscode.commands.executeCommand('acm.setCredentials');
-    });
-  } else {
-    vscode.window.showErrorMessage(message);
-  }
 }

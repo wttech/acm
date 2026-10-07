@@ -62,7 +62,7 @@ Keep the credential out of files that are committed. Most clients can reference 
 
 ### 3. Check the connection
 
-Ask the agent to call `acm_health`. It reports the target instance, the auth mode, and the ACM instance state.
+Ask the agent to call `acm_health`. It reports the target instance, the auth mode, and the instance state as ACM reports it.
 
 ### Optional environment variables
 
@@ -79,7 +79,7 @@ Ask the agent to call `acm_health`. It reports the target instance, the auth mod
 
 | Tool | Description |
 |---|---|
-| `acm_health` | Check connectivity, auth and ACM instance state (`/apps/acm/api/state.json`). Call it first. |
+| `acm_health` | Check connectivity, auth and the instance state ACM reports (`/apps/acm/api/state.json`), with a warning when ACM's health check finds the instance unhealthy. Call it first. |
 | `acm_validate_code` | Compile-check Groovy without running it (`mode=parse`). Returns compile errors with line and column. Never recorded in execution history. |
 | `acm_run_code` | Queue Groovy for execution, poll until it finishes or times out, and return the status and full console output. Supports `inputs` for scripts with `describeRun()`. With `history: false` it runs synchronously and is not recorded in history (see below). |
 | `acm_get_execution` | Get the status, inputs, error and console output of an execution by ID, whether queued, running or archived. |

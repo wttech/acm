@@ -111,6 +111,30 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "acm.filterExecutions",
+        "title": "Filter Executions...",
+        "category": "ACM",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "acm.clearExecutionsFilter",
+        "title": "Clear Executions Filter",
+        "category": "ACM",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "acm.filterExecutionsByScript",
+        "title": "Show Executions",
+        "category": "ACM",
+        "icon": "$(history)"
+      },
+      {
+        "command": "acm.runScript",
+        "title": "Run Stored Script",
+        "category": "ACM",
+        "icon": "$(play)"
+      },
+      {
         "command": "acm.compareScript",
         "title": "Compare with Local File",
         "category": "ACM",
@@ -193,6 +217,24 @@
         ]
       }
     ],
+    "languages": [
+      {
+        "id": "acm-log",
+        "aliases": [
+          "ACM Log"
+        ],
+        "extensions": [
+          ".acmlog"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "acm-log",
+        "scopeName": "source.acm-log",
+        "path": "./syntaxes/acm-log.tmLanguage.json"
+      }
+    ],
     "snippets": [
       {
         "language": "groovy",
@@ -209,6 +251,14 @@
         {
           "command": "acm.runWithoutHistory",
           "when": "acm.canRunWithoutHistory"
+        },
+        {
+          "command": "acm.runScript",
+          "when": "false"
+        },
+        {
+          "command": "acm.filterExecutionsByScript",
+          "when": "false"
         },
         {
           "command": "acm.compareScript",
@@ -231,9 +281,19 @@
           "group": "inline"
         },
         {
+          "command": "acm.runScript",
+          "when": "view == acm.scripts && viewItem == script.manual",
+          "group": "inline@1"
+        },
+        {
+          "command": "acm.filterExecutionsByScript",
+          "when": "view == acm.scripts && viewItem =~ /^script\\./",
+          "group": "inline@2"
+        },
+        {
           "command": "acm.compareScript",
-          "when": "view == acm.scripts && viewItem == script",
-          "group": "inline"
+          "when": "view == acm.scripts && viewItem =~ /^script\\./",
+          "group": "navigation"
         }
       ],
       "editor/title": [
@@ -257,9 +317,19 @@
       ],
       "view/title": [
         {
+          "command": "acm.filterExecutions",
+          "when": "view == acm.executions",
+          "group": "navigation@1"
+        },
+        {
+          "command": "acm.clearExecutionsFilter",
+          "when": "view == acm.executions && acm.executionsFiltered",
+          "group": "navigation@2"
+        },
+        {
           "command": "acm.refreshExecutions",
           "when": "view == acm.executions",
-          "group": "navigation"
+          "group": "navigation@3"
         },
         {
           "command": "acm.refreshScripts",
@@ -378,12 +448,14 @@
     "views": {
       "acm": [
         {
-          "id": "acm.executions",
-          "name": "Executions"
+          "id": "acm.scripts",
+          "name": "Scripts",
+          "icon": "$(file-code)"
         },
         {
-          "id": "acm.scripts",
-          "name": "Scripts"
+          "id": "acm.executions",
+          "name": "Executions",
+          "icon": "$(history)"
         }
       ]
     },
@@ -413,7 +485,7 @@
     "pretest": "node esbuild.mjs",
     "test": "vscode-test",
     "vscode:prepublish": "node esbuild.mjs --production",
-    "package": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\" && vsce package --no-dependencies"
+    "package": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\" && vsce package --no-dependencies --out dist/"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -422,7 +494,7 @@
     "@types/vscode": "~1.101.0",
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.1.0",
-    "@vscode/vsce": "^3.6.0",
+    "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.25.0",
     "eslint": "^9.39.5",
     "ovsx": "^1.2.0",
