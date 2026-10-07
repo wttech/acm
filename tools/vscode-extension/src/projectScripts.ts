@@ -7,7 +7,6 @@ import {
   PACKAGE_SCRIPT_ROOT,
   SCRIPT_ROOT,
   SCRIPT_TYPE_INFO,
-  SCRIPT_TYPES,
   scriptIdOf,
   scriptLabel,
   scriptRootLabels,
@@ -25,8 +24,6 @@ import { scriptUri } from './views';
 
 const ROOT_GLOB = `**${PACKAGE_SCRIPT_ROOT}/**`;
 const IGNORED_GLOB = '**/{node_modules,target,.git}/**';
-// Types that always show, so a new script can be added to an empty one.
-const ALWAYS_SHOWN: ScriptType[] = ['MANUAL', 'AUTOMATIC'];
 
 interface LocalScript {
   uri: vscode.Uri;
@@ -103,11 +100,14 @@ async function listScripts(root: vscode.Uri): Promise<LocalScript[]> {
     .sort((a, b) => scriptLabel(a.id).localeCompare(scriptLabel(b.id)));
 }
 
+/** Every enabled type is listed, also when empty or without a folder yet, so a script can be added to it. */
 function typeNodes(root: vscode.Uri, scripts: LocalScript[]): Node[] {
-  return SCRIPT_TYPES.flatMap((type) => {
-    const ofType = scripts.filter((script) => script.type === type);
-    return ofType.length > 0 || ALWAYS_SHOWN.includes(type) ? [{ kind: 'type' as const, root, type, scripts: ofType }] : [];
-  });
+  return enabledScriptTypes({ mock: isMockEnabled() }).map((type) => ({
+    kind: 'type',
+    root,
+    type,
+    scripts: scripts.filter((script) => script.type === type),
+  }));
 }
 
 class ProjectScriptsProvider implements vscode.TreeDataProvider<Node> {

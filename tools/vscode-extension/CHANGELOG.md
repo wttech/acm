@@ -4,7 +4,7 @@
 
 - Project Scripts lists every scripts folder of the workspace side by side, each named by the part of its path that tells it apart from the others, instead of asking to pick one. The setting `acm.scripts.root` became the list `acm.scripts.roots`, and `ACM: Select Scripts Folder` is gone.
 - `New Project Script` from the Project Scripts title always asks for the folder (when there are several) and the type, instead of using the selected item. Script types have readable names and a short description of what they are for, in the type picker and in the tooltips of the Project Scripts and Instance Scripts views.
-- Project Scripts selects a script in the tree after it is created, duplicated or renamed.
+- Project Scripts selects a script in the tree after it is created, duplicated or renamed. Every script type is listed, also when empty or without a folder in the project yet (Mock only when enabled), so scripts of any type can be added from the view.
 - New setting `acm.mock.mode` (`auto`, `enabled`, `disabled`): Mock scripts are hidden from the views and from the script and template pickers unless the active instance has its Mock HTTP Filter enabled (the ACM default is off) or the setting forces them on.
 - Project Scripts has a refresh button that rescans the workspace for scripts folders, for changes the file watcher does not report (e.g. a module added or removed as a whole folder).
 - Completion and hover know the methods of extension scripts (`prepareRun`, `completeRun`, `prepareMock`) and mock scripts (`request`, `respond`, `fail`), with snippets, and offer the ones of the script's type, taken from its path under `conf/acm/settings/script`. Other files keep the manual and automatic script methods.
