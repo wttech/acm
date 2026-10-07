@@ -8,7 +8,6 @@ import {
   fetchExecutionById,
   fetchExecutions,
   isExecutionFiltered,
-  isFailed,
   isPending,
   SCRIPT_ROOT,
   SCRIPT_TYPES,
@@ -17,6 +16,7 @@ import {
   type AcmClient,
   type Execution,
   type ExecutionFilter,
+  type ExecutionStatus,
   type ScriptType,
 } from '@acm/shared';
 import { registerCommand } from './errors';
@@ -158,13 +158,14 @@ class ExecutionsProvider extends AcmTreeProvider {
     const item = new vscode.TreeItem(executableLabel(executableIdOf(execution)));
     const started = execution.startDate ? new Date(execution.startDate) : undefined;
     item.description = [
-      execution.status,
       started && !isNaN(started.getTime()) ? started.toLocaleString() : execution.startDate,
       execution.userId,
     ]
       .filter(Boolean)
       .join(' · ');
-    item.tooltip = `${execution.id}\n${item.description}${execution.duration !== undefined ? `\n${execution.duration} ms` : ''}`;
+    item.tooltip = [execution.id, [execution.status, item.description].join(' · '), execution.duration !== undefined && `${execution.duration} ms`]
+      .filter(Boolean)
+      .join('\n');
     item.iconPath = statusIcon(execution.status);
     item.contextValue = isPending(execution.status) ? ITEMS.executionPending : ITEMS.execution;
     item.command = { title: 'Open', command: 'vscode.open', arguments: [executionUri(instance, execution.id)] };
@@ -231,20 +232,30 @@ function executableLabel(id: string | undefined): string {
   return id?.startsWith(SCRIPT_ROOT) ? id.slice(SCRIPT_ROOT.length) : (id ?? '?');
 }
 
+const GREEN = 'testing.iconPassed';
+const RED = 'testing.iconFailed';
+const YELLOW = 'problemsWarningIcon.foreground';
+const BLUE = 'problemsInfoIcon.foreground';
+
+/** Icons and colors of the status badges in the ACM UI, so a status reads the same in both. */
+const STATUS_ICONS: Record<ExecutionStatus, [icon: string, color?: string]> = {
+  SUCCEEDED: ['pass', GREEN],
+  FAILED: ['error', RED],
+  ABORTED: ['circle-slash', RED],
+  LOCKED: ['lock', YELLOW],
+  QUEUED: ['clock', YELLOW],
+  ACTIVE: ['sync~spin', BLUE],
+  PARSING: ['sync~spin', BLUE],
+  CHECKING: ['sync~spin', BLUE],
+  RUNNING: ['sync~spin', BLUE],
+  STOPPING: ['sync~spin', BLUE],
+  STOPPED: ['debug-pause'],
+  SKIPPED: ['debug-pause'],
+};
+
 function statusIcon(status: string): vscode.ThemeIcon {
-  if (isPending(status)) {
-    return new vscode.ThemeIcon('sync~spin');
-  }
-  switch (status.toUpperCase()) {
-    case 'SUCCEEDED':
-      return new vscode.ThemeIcon('pass', new vscode.ThemeColor('testing.iconPassed'));
-    case 'SKIPPED':
-      return new vscode.ThemeIcon('debug-step-over');
-    default:
-      return isFailed(status)
-        ? new vscode.ThemeIcon('error', new vscode.ThemeColor('testing.iconFailed'))
-        : new vscode.ThemeIcon('circle-outline');
-  }
+  const [icon, color] = STATUS_ICONS[status.toUpperCase() as ExecutionStatus] ?? ['circle-outline'];
+  return new vscode.ThemeIcon(icon, color ? new vscode.ThemeColor(color) : undefined);
 }
 
 export interface Views {
