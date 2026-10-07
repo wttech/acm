@@ -2,7 +2,7 @@
   "name": "acm",
   "displayName": "AEM Content Manager (ACM)",
   "description": "Write, validate and run AEM Content Manager (ACM) Groovy scripts from VS Code.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "publisher": "wppes",
   "author": "WPP Enterprise Solutions",
@@ -150,29 +150,45 @@
             "id": "connect",
             "title": "Connect to AEM",
             "description": "A local AEM SDK at http://localhost:4502 with admin/admin works out of the box. For other instances, add them to the acm.instances setting and set their credentials.\n[Check Connection](command:acm.checkConnection)\n[Add Instance](command:workbench.action.openSettings?%5B%22acm.instances%22%5D)\n[Set Credentials](command:acm.setCredentials)",
-            "media": { "markdown": "media/walkthrough/connect.md" },
-            "completionEvents": ["onCommand:acm.checkConnection"]
+            "media": {
+              "markdown": "media/walkthrough/connect.md"
+            },
+            "completionEvents": [
+              "onCommand:acm.checkConnection"
+            ]
           },
           {
             "id": "write",
             "title": "Write a script",
             "description": "Start from a documented template: content migration, ACL setup, report, scheduled cleanup and more. Completion and docs cover the whole ACM script API.\n[New ACM Script](command:acm.newScript)",
-            "media": { "markdown": "media/walkthrough/write.md" },
-            "completionEvents": ["onCommand:acm.newScript"]
+            "media": {
+              "markdown": "media/walkthrough/write.md"
+            },
+            "completionEvents": [
+              "onCommand:acm.newScript"
+            ]
           },
           {
             "id": "run",
             "title": "Run it",
             "description": "Run the script on the active instance. Inputs are asked for, the console output streams into the ACM output channel, and the run lands in the Executions view.\n[Run Script](command:acm.run)",
-            "media": { "markdown": "media/walkthrough/run.md" },
-            "completionEvents": ["onCommand:acm.run"]
+            "media": {
+              "markdown": "media/walkthrough/run.md"
+            },
+            "completionEvents": [
+              "onCommand:acm.run"
+            ]
           },
           {
             "id": "agent",
             "title": "Let an agent help",
             "description": "In agent mode, Copilot knows how to write ACM scripts and can validate and run them on the active instance through the bundled ACM MCP server. You approve each run.\n[Open Chat](command:workbench.action.chat.open)",
-            "media": { "markdown": "media/walkthrough/agent.md" },
-            "completionEvents": ["onCommand:workbench.action.chat.open"]
+            "media": {
+              "markdown": "media/walkthrough/agent.md"
+            },
+            "completionEvents": [
+              "onCommand:workbench.action.chat.open"
+            ]
           }
         ]
       }
