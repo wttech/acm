@@ -75,18 +75,9 @@ Timings apply to the bundled MCP server too.
 - VS Code 1.101 or later (or a compatible editor).
 - ACM installed on the instance, and a user with access to the ACM API and the console feature. See [ACM permissions](https://github.com/wttech/acm#tools-access-configuration).
 
-## Development
+## Contributing
 
-```shell
-cd tools/vscode-extension
-npm install
-npm run watch                                      # rebuild on change
-code --extensionDevelopmentPath="$PWD" ../..       # editor with the extension loaded
-npm run check                                      # what CI runs: typecheck, lint, manifest, test, package
-npm run package                                    # builds dist/acm-<version>.vsix
-```
-
-Shared ACM code lives in [tools/shared](https://github.com/wttech/acm/tree/main/tools/shared) and is bundled in as `@acm/shared`; see the [tools overview](https://github.com/wttech/acm/blob/main/tools/README.md) and the [roadmap](https://github.com/wttech/acm/blob/main/tools/vscode-extension/ROADMAP.md).
+To build, check and release the extension, see the [development guide](https://github.com/wttech/acm/blob/main/tools/vscode-extension/DEVELOPMENT.md) and the [roadmap](https://github.com/wttech/acm/blob/main/tools/vscode-extension/ROADMAP.md).
 
 ## License
 

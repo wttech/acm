@@ -4,7 +4,7 @@ Rules for AI agents (and humans) changing this repository. Keep them short; exte
 
 ## Repository
 
-- AEM Content Manager (ACM): Maven multi-module AEM project (`core`, `ui.apps`, `ui.config`, `ui.content`, `ui.frontend`, `all`, ...), and TypeScript tools in `tools/` (see [tools/README.md](tools/README.md)).
+- AEM Content Manager (ACM): Maven multi-module AEM project (`core`, `ui.apps`, `ui.config`, `ui.content`, `ui.frontend`, `all`, ...), and TypeScript tools in `tools/` (see [tools/README.md](tools/README.md) and [DEVELOPMENT.md](DEVELOPMENT.md)).
 - ACM must work the same on AEM 6.5 on-premise, AMS and AEM as a Cloud Service, on Java 8, 11 and 21. Use only Java 8 language features and APIs, and nothing specific to one AEM flavour.
 - Build: `sh mvnw clean install` (Spotless with Palantir Java Format applies formatting). Local AEM: `sh taskw setup`, deploy: `sh taskw develop:all`.
 - Tools: `npm install`, then `npm run build`, `npm run typecheck`, `npm run lint` and `npm test` in `tools/mcp-server` or `tools/vscode-extension`.
