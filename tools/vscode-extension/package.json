@@ -199,6 +199,21 @@
         "command": "acm.copyMcpSetup",
         "title": "Copy MCP Setup Prompt",
         "category": "ACM"
+      },
+      {
+        "command": "acm.openUi",
+        "title": "Open ACM in Browser",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.openScriptInUi",
+        "title": "Open in ACM",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.openExecutionInUi",
+        "title": "Open in ACM",
+        "category": "ACM"
       }
     ],
     "mcpServerDefinitionProviders": [
@@ -216,7 +231,7 @@
           {
             "id": "connect",
             "title": "Connect to AEM",
-            "description": "A local AEM SDK at http://localhost:4502 with admin/admin works out of the box. For other instances, add them to the acm.instances setting and set their credentials.\n[Check Connection](command:acm.checkConnection)\n[Add Instance](command:workbench.action.openSettings?%5B%22acm.instances%22%5D)\n[Set Credentials](command:acm.setCredentials)",
+            "description": "A local AEM SDK at http://localhost:4502 with admin/admin works out of the box. For other instances, add them to the acm.instances setting and set their credentials.\n[Check Connection](command:acm.checkConnection)\n[Open ACM](command:acm.openUi)\n[Add Instance](command:workbench.action.openSettings?%5B%22acm.instances%22%5D)\n[Set Credentials](command:acm.setCredentials)",
             "media": {
               "markdown": "media/walkthrough/connect.md"
             },
@@ -332,6 +347,14 @@
           "when": "false"
         },
         {
+          "command": "acm.openScriptInUi",
+          "when": "false"
+        },
+        {
+          "command": "acm.openExecutionInUi",
+          "when": "false"
+        },
+        {
           "command": "acm.downloadOutputs",
           "when": "false"
         }
@@ -346,6 +369,16 @@
           "command": "acm.abort",
           "when": "view == acm.executions && viewItem == execution.pending",
           "group": "inline"
+        },
+        {
+          "command": "acm.openExecutionInUi",
+          "when": "view == acm.executions && viewItem =~ /^execution/",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.openScriptInUi",
+          "when": "view == acm.scripts && viewItem =~ /^script\\./",
+          "group": "navigation@1"
         },
         {
           "command": "acm.runScript",

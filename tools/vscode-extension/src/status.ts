@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { ACM_API, ACM_FEATURE, AcmHttpError, describeUnhealthy, type HealthStatus } from '@acm/shared';
+import { openUiLink } from './browser';
 import { COMMANDS, CONTEXT, NAMESPACE } from './ids';
 import { getActiveInstance, getClient, getSettings } from './instances';
 
@@ -91,13 +92,15 @@ function updateStatus(): void {
     item.command = COMMANDS.selectInstance;
   } else {
     item.text = `${problem ? '$(warning)' : '$(server)'} ACM: ${instance.name}`;
-    item.tooltip = [
-      `${instance.url}${instance.readonly ? ' (read-only)' : ''}`,
-      problem,
-      unauthorized ? 'Click to set credentials.' : 'Click to switch.',
-    ]
-      .filter(Boolean)
-      .join('\n');
+    const tooltip = new vscode.MarkdownString();
+    tooltip.isTrusted = { enabledCommands: [COMMANDS.openUi] };
+    tooltip.appendText(`${instance.url}${instance.readonly ? ' (read-only)' : ''}`);
+    if (problem) {
+      tooltip.appendMarkdown('\n\n').appendText(problem);
+    }
+    tooltip.appendMarkdown(`\n\n[Open ACM](${openUiLink('home')}) \u00b7 `);
+    tooltip.appendText(unauthorized ? 'Click to set credentials.' : 'Click to switch.');
+    item.tooltip = tooltip;
     item.backgroundColor = problem ? new vscode.ThemeColor('statusBarItem.warningBackground') : undefined;
     item.command = unauthorized ? COMMANDS.setCredentials : COMMANDS.selectInstance;
   }

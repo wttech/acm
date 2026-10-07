@@ -32,6 +32,9 @@ export const COMMANDS = {
   newScript: 'acm.newScript',
   downloadOutputs: 'acm.downloadOutputs',
   copyMcpSetup: 'acm.copyMcpSetup',
+  openUi: 'acm.openUi',
+  openScriptInUi: 'acm.openScriptInUi',
+  openExecutionInUi: 'acm.openExecutionInUi',
 } as const;
 
 export const VIEWS = {

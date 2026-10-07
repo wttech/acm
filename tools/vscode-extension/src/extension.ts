@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { registerBrowser } from './browser';
 import { registerCommands } from './commands';
 import { initInstances } from './instances';
 import { registerMcp } from './mcp';
@@ -15,6 +16,7 @@ export function activate(context: vscode.ExtensionContext): void {
   registerStatus(context);
   const views = registerViews(context);
   registerProjectScripts(context);
+  registerBrowser(context);
   registerCommands(context, views);
   registerCompletion(context);
   registerHover(context);

@@ -17,7 +17,7 @@ Works with AEM as a Cloud Service, AEM 6.5 and AMS, wherever ACM is installed.
 - **Code completion and docs** for the whole ACM script API (`repo`, `acl`, `inputs`, `outputs`, `conditions`, …), generated from the ACM source.
 - **Documented templates.** `File > New File... > ACM Script` starts from a template: content migration, ACL setup, CSV report, scheduled cleanup, console code or HTTP mock. Type `acmdoc` to add the documentation header shown in the ACM UI.
 - **Project, instance and execution views.** *Project Scripts* lists the scripts of the project's content package (found automatically or set in `acm.scripts.root`) and creates new ones from templates with a right click on a type, with duplicate, rename, delete and reveal in Explorer next to run and compare; *Instance Scripts* lists what is deployed, named and grouped like in the ACM UI; *Executions* browses the history with logs and downloadable outputs and filters it by script or status. Compare a script with its counterpart on the other side from the context menu.
-- **Instance status** in the status bar: switch instances in one click, see at a glance when one is unreachable, unauthorized or unhealthy.
+- **Instance status** in the status bar: switch instances in one click, see at a glance when one is unreachable, unauthorized or unhealthy. Its tooltip opens the ACM web UI, and a script or execution opens in ACM from its context menu (`ACM: Open ACM in Browser` picks any page).
 - **AI agents.** Copilot gets the ACM scripting skill and the ACM MCP server for the active instance, registered automatically; other tools set up the same server from one copied prompt (see below).
 
 ## AI agents
