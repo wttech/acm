@@ -195,6 +195,20 @@ async function requireRoot(): Promise<vscode.Uri | undefined> {
   return provider.roots.root;
 }
 
+/** A new file location for a script name under its type folder; fails when it escapes the folder or is taken. */
+async function freeScriptFile(root: vscode.Uri, type: ScriptType, name: string): Promise<vscode.Uri> {
+  const folder = vscode.Uri.joinPath(root, type.toLowerCase());
+  const file = vscode.Uri.joinPath(folder, `${name.trim().replace(/\.groovy$/, '')}.groovy`);
+  if (!file.path.startsWith(`${folder.path}/`)) {
+    throw new Error(`Script path "${name}" is outside the ${type.toLowerCase()} folder.`);
+  }
+  if (await fileExists(file)) {
+    throw new Error(`Script ${vscode.workspace.asRelativePath(file)} already exists.`);
+  }
+  await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(file, '..'));
+  return file;
+}
+
 async function newScript(node?: Node): Promise<void> {
   const root = await requireRoot();
   if (!root) {
@@ -227,15 +241,7 @@ async function newScript(node?: Node): Promise<void> {
   if (name === undefined) {
     return;
   }
-  const folder = vscode.Uri.joinPath(root, type.toLowerCase());
-  const file = vscode.Uri.joinPath(folder, `${name.trim().replace(/\.groovy$/, '')}.groovy`);
-  if (!file.path.startsWith(`${folder.path}/`)) {
-    throw new Error(`Script path "${name}" is outside the ${type.toLowerCase()} folder.`);
-  }
-  if (await fileExists(file)) {
-    throw new Error(`Script ${vscode.workspace.asRelativePath(file)} already exists.`);
-  }
-  await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(file, '..'));
+  const file = await freeScriptFile(root, type, name);
   await vscode.workspace.fs.writeFile(file, new TextEncoder().encode(template.candidate.code));
   await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(file));
   await provider.refresh();
@@ -245,6 +251,76 @@ async function runScript(node?: Node): Promise<void> {
   if (node?.kind === 'script') {
     await vscode.window.showTextDocument(node.script.uri);
     await vscode.commands.executeCommand('acm.run');
+  }
+}
+
+async function renameScript(node?: Node): Promise<void> {
+  const root = provider.roots.root;
+  if (node?.kind !== 'script' || !root) {
+    return;
+  }
+  const { id, uri, type } = node.script;
+  const folder = vscode.Uri.joinPath(root, type.toLowerCase());
+  const current = uri.path.slice(folder.path.length + 1).replace(/\.groovy$/, '');
+  const name = await vscode.window.showInputBox({
+    title: `Rename ${scriptLabel(id)}`,
+    prompt: 'Name or path under the type folder',
+    value: current,
+    validateInput: validateScriptName,
+  });
+  if (name === undefined || name.trim().replace(/\.groovy$/, '') === current) {
+    return;
+  }
+  const target = await freeScriptFile(root, type, name);
+  const edit = new vscode.WorkspaceEdit();
+  edit.renameFile(uri, target);
+  if (!(await vscode.workspace.applyEdit(edit))) {
+    throw new Error(`Cannot rename ${vscode.workspace.asRelativePath(uri)}.`);
+  }
+  await provider.refresh();
+}
+
+async function duplicateScript(node?: Node): Promise<void> {
+  const root = provider.roots.root;
+  if (node?.kind !== 'script' || !root) {
+    return;
+  }
+  const { id, uri, type } = node.script;
+  const folder = vscode.Uri.joinPath(root, type.toLowerCase());
+  const current = uri.path.slice(folder.path.length + 1).replace(/\.groovy$/, '');
+  const name = await vscode.window.showInputBox({
+    title: `Duplicate ${scriptLabel(id)}`,
+    prompt: 'Name or path of the copy under the type folder',
+    value: `${current}_copy`,
+    validateInput: validateScriptName,
+  });
+  if (name === undefined) {
+    return;
+  }
+  const target = await freeScriptFile(root, type, name);
+  await vscode.workspace.fs.copy(uri, target);
+  await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(target));
+  await provider.refresh();
+}
+
+async function deleteScript(node?: Node): Promise<void> {
+  if (node?.kind !== 'script') {
+    return;
+  }
+  const action = await vscode.window.showWarningMessage(
+    `Delete ${scriptLabel(node.script.id)}?`,
+    { modal: true, detail: 'The file is moved to the trash. A copy deployed to an instance is not affected.' },
+    'Delete',
+  );
+  if (action) {
+    await vscode.workspace.fs.delete(node.script.uri, { useTrash: true });
+    await provider.refresh();
+  }
+}
+
+async function revealScript(node?: Node): Promise<void> {
+  if (node?.kind === 'script') {
+    await vscode.commands.executeCommand('revealInExplorer', node.script.uri);
   }
 }
 
@@ -345,6 +421,10 @@ export function registerProjectScripts(context: vscode.ExtensionContext): void {
     registerCommand('acm.selectScriptsRoot', selectRoot),
     registerCommand('acm.newProjectScript', newScript),
     registerCommand('acm.runProjectScript', runScript),
+    registerCommand('acm.renameProjectScript', renameScript),
+    registerCommand('acm.duplicateProjectScript', duplicateScript),
+    registerCommand('acm.deleteProjectScript', deleteScript),
+    registerCommand('acm.revealProjectScript', revealScript),
     registerCommand('acm.compareProjectScript', compareProjectScript),
     registerCommand('acm.compareScript', compareInstanceScript),
   );

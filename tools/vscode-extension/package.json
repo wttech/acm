@@ -159,6 +159,26 @@
         "icon": "$(add)"
       },
       {
+        "command": "acm.renameProjectScript",
+        "title": "Rename...",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.duplicateProjectScript",
+        "title": "Duplicate...",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.deleteProjectScript",
+        "title": "Delete",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.revealProjectScript",
+        "title": "Reveal in Explorer",
+        "category": "ACM"
+      },
+      {
         "command": "acm.selectScriptsRoot",
         "title": "Select Scripts Folder",
         "category": "ACM"
@@ -296,6 +316,22 @@
           "when": "false"
         },
         {
+          "command": "acm.renameProjectScript",
+          "when": "false"
+        },
+        {
+          "command": "acm.duplicateProjectScript",
+          "when": "false"
+        },
+        {
+          "command": "acm.deleteProjectScript",
+          "when": "false"
+        },
+        {
+          "command": "acm.revealProjectScript",
+          "when": "false"
+        },
+        {
           "command": "acm.downloadOutputs",
           "when": "false"
         }
@@ -335,6 +371,26 @@
           "command": "acm.compareProjectScript",
           "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
           "group": "navigation"
+        },
+        {
+          "command": "acm.revealProjectScript",
+          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.duplicateProjectScript",
+          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "group": "modification@1"
+        },
+        {
+          "command": "acm.renameProjectScript",
+          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "group": "modification@2"
+        },
+        {
+          "command": "acm.deleteProjectScript",
+          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "group": "modification@3"
         },
         {
           "command": "acm.newProjectScript",
