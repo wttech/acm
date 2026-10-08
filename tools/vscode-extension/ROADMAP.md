@@ -15,24 +15,24 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 ### Running
 
 - [x] **Ad-hoc execution.** `ACM: Run Script` / `Run Selection` queues code (`queue-code`), polls until done and streams console output to an output channel. Status bar shows the running execution; `ACM: Abort Execution` or cancelling the progress aborts it. `ACM: Run Without History` (`execute-code`, `history: false`) is offered only with ACM's `console/execute/nohistory` feature.
-- [~] **Inputs form.** Before running a script with `describeRun()`, inputs are resolved (`describe-code`) and asked for with quick picks, input boxes and file pickers (uploaded via `file`). Next: a webview form.
+- [x] **Inputs editor.** Before running a script with `describeRun()`, inputs are resolved (`describe-code`) and edited together in a validated JSON document; files are selected and uploaded via `file` first.
 - [x] **Instance guardrails.** `readonly` instances block running; any non-local instance asks for confirmation before running.
 
 ### Editing
 
-- [~] **Completion.** Lifecycle methods as snippets, script variables, and the methods of each variable (`repo.`, `acl.`, `inputs.`, …) from the API generated from the ACM source. Next: chained calls (`repo.get(…).`), options inside input and output closures; dynamic suggestions from `assist-code` (Java classes, variables, snippets, JCR paths in strings).
+- [~] **Completion.** Lifecycle methods as snippets, chosen by the script type from the file's path (content, extension, mock), script variables, and the methods of each variable (`repo.`, `acl.`, `inputs.`, …) from the API generated from the ACM source. Next: chained calls (`repo.get(…).`), options inside input and output closures; dynamic suggestions from `assist-code` (Java classes, variables, snippets, JCR paths in strings).
 - [~] **Inline docs.** Hover for lifecycle methods, variables and their methods. Next: Java classes from `assist-code`, links to ACM docs.
-- [~] **Validation.** On save of scripts declaring `doRun()`, compile-check on the active instance (`execute-code`, `mode=parse`) and show errors as diagnostics with line and column; missing or misspelled lifecycle methods are reported by ACM. Next: local checks without an instance.
+- [~] **Validation.** On save of scripts declaring `doRun()`, compile-check on the active instance (`execute-code`, `mode=parse`) and show errors as diagnostics with line and column; missing or misspelled lifecycle methods are reported by ACM. Next: local checks without an instance; extension and mock scripts, which the parse mode checks as content scripts.
 - [x] **CodeLens.** `Run` above `doRun`; validation runs on save and inputs are asked for on run, so no other lenses.
 - [~] **Snippets.** `acmdoc` inserts the script documentation header. Next: snippets from the instance (`snippet`).
-- [x] **New script.** `File > New File... > ACM Script` opens a documented script from the skill's templates (minimal, migration, ACL, report, scheduled cleanup, extension hooks, console, mock).
+- [x] **New script.** `File > New File... > ACM Script` opens a documented script from the skill's templates (minimal, migration, ACL, CSV and XLS export and import, scheduled cleanup, extension hooks, console, mock).
 - [ ] **JCR path links.** Ctrl+click on `/content/...` or `/conf/...` opens CRXDE or Sites on the active instance.
 
 ### Browsing
 
 - [x] **Executions view.** History and queue (`execution`), console output as a read-only document, abort, download of outputs and the ZIP archive (`execution-output`).
 - [x] **Scripts view.** Scripts stored on the instance (`script`), open read-only, diff with the local file.
-- [x] **Project Scripts view.** Scripts of the content package in the workspace, New Project Script from templates, run and diff with the instance.
+- [x] **Project Content view.** Scripts and snippets of the content packages in the workspace, New Project Content and New Snippet from templates, run and diff with the instance.
 - [x] **Instances.** Status bar switcher for the active instance with its health (`state`, every minute); `ACM: Check Connection`.
 
 ### AI

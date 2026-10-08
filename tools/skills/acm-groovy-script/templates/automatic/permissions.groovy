@@ -4,11 +4,13 @@ version: '1.0'
 category: security
 tags: ['acl']
 ---
-Creates the ACME service user and authors group with their permissions. Re-applied whenever this script changes.
+Sets up users, groups and permissions.
+
+Creates the ACME service user and authors group with their permissions. Re-applied whenever this script changes, on every instance; limit it in `canRun()`, e.g. with `conditions.isInstanceAuthor()`, if needed.
 */
 
 boolean canRun() {
-    return conditions.changed() && conditions.isInstanceAuthor()
+    return conditions.changed()
 }
 
 void doRun() {

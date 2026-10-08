@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { ACM_API, type AcmClient } from '@acm/shared';
+import { CONTEXT } from './ids';
 
 interface InputDefinition {
   name: string;
@@ -14,155 +15,269 @@ interface InputDefinition {
 
 const CANCELLED = Symbol('cancelled');
 
+interface InputSession {
+  doc: vscode.TextDocument;
+  inputs: InputDefinition[];
+  diagnostics: vscode.DiagnosticCollection;
+  complete: (values?: Record<string, unknown>) => void;
+}
+
+// Keyed by document URI, so several scripts can have their inputs edited at the same time.
+const inputSessions = new Map<string, InputSession>();
+
+function updateEditingInputsContext(): Thenable<unknown> {
+  const active = vscode.window.activeTextEditor?.document.uri.toString();
+  return vscode.commands.executeCommand('setContext', CONTEXT.editingInputs, !!active && inputSessions.has(active));
+}
+
 /** Resolves inputs declared in `describeRun()` and asks for their values; `undefined` when cancelled. */
 export async function promptInputs(
   client: AcmClient,
   code: { id: string; content?: string },
+  label?: string,
 ): Promise<Record<string, unknown> | undefined> {
   const res = await client.request<{ inputs?: Record<string, InputDefinition> }>('POST', ACM_API.describeCode, {
     code,
   });
   const inputs = Object.values(res.data?.inputs ?? {});
-  const values: Record<string, unknown> = {};
-  for (const [index, input] of inputs.entries()) {
-    const value = await promptInput(client, input, `${input.label || input.name} (${index + 1}/${inputs.length})`);
+  if (!inputs.length) {
+    return {};
+  }
+  const values = Object.fromEntries(inputs.map((input) => [input.name, initialValue(input)]));
+  for (const input of inputs.filter(({ type }) => type === 'FILE' || type === 'MULTIFILE')) {
+    const value = await promptFiles(client, input);
     if (value === CANCELLED) {
       return undefined;
     }
     values[input.name] = value;
   }
-  return values;
+  return showInputsEditor(inputs, values, label);
 }
 
-async function promptInput(client: AcmClient, input: InputDefinition, title: string): Promise<unknown> {
-  const prompt = input.description || undefined;
-  switch (input.type) {
-    case 'BOOL': {
-      const items = input.value ? ['true', 'false'] : ['false', 'true'];
-      const picked = await vscode.window.showQuickPick(items, { title, placeHolder: prompt, ignoreFocusOut: true });
-      return picked === undefined ? CANCELLED : picked === 'true';
-    }
-    case 'SELECT': {
-      const items = optionItems(input);
-      items.sort((a, b) => Number(b.value === input.value) - Number(a.value === input.value));
-      const picked = await vscode.window.showQuickPick(items, { title, placeHolder: prompt, ignoreFocusOut: true });
-      return picked === undefined ? CANCELLED : picked.value;
-    }
-    case 'MULTISELECT': {
-      const selected = Array.isArray(input.value) ? input.value : [];
-      const items = optionItems(input).map((item) => ({ ...item, picked: selected.includes(item.value) }));
-      const picked = await vscode.window.showQuickPick(items, {
-        title,
-        placeHolder: prompt,
-        canPickMany: true,
-        ignoreFocusOut: true,
-      });
-      return picked === undefined ? CANCELLED : picked.map((item) => item.value);
-    }
-    case 'INTEGER':
-    case 'DECIMAL': {
-      const text = await showInput(input, title, (value) =>
-        value.trim() === '' || Number.isFinite(Number(value)) ? undefined : 'Enter a number.',
-      );
-      return text === undefined ? CANCELLED : text.trim() === '' ? null : Number(text);
-    }
-    case 'TEXT': {
-      const text = await showTextEditor(input, title);
-      return text === undefined ? CANCELLED : text;
-    }
-    case 'STRING':
-    case 'PATH':
-    case 'COLOR':
-    case 'DATE':
-    case 'TIME':
-    case 'DATETIME': {
-      const text = await showInput(input, title);
-      return text === undefined ? CANCELLED : text;
-    }
-    case 'FILE':
-    case 'MULTIFILE': {
-      const multiple = input.type === 'MULTIFILE';
-      const files = await vscode.window.showOpenDialog({ title, canSelectMany: multiple, openLabel: 'Upload' });
-      if (!files) {
-        return input.required ? CANCELLED : multiple ? [] : null;
-      }
-      const paths = await uploadFiles(client, files);
-      return multiple ? paths : paths[0];
-    }
-    default: {
-      const text = await showInput(input, `${title} (JSON)`, (value) => {
-        try {
-          JSON.parse(value || 'null');
-          return undefined;
-        } catch {
-          return 'Enter valid JSON.';
-        }
-      });
-      return text === undefined ? CANCELLED : JSON.parse(text || 'null');
+async function promptFiles(client: AcmClient, input: InputDefinition): Promise<unknown> {
+  const multiple = input.type === 'MULTIFILE';
+  const label = input.label || input.name;
+  const files = await vscode.window.showOpenDialog({
+    title: label,
+    canSelectMany: multiple,
+    openLabel: `Upload for '${label}'`,
+  });
+  if (!files) {
+    return input.required ? CANCELLED : multiple ? [] : null;
+  }
+  const paths = await uploadFiles(client, files);
+  return multiple ? paths : paths[0];
+}
+
+/** Untitled documents are identified by their URI, so a second input editor with the same title would reuse the first. */
+function uniqueUntitledUri(title: string): vscode.Uri {
+  const open = new Set(
+    vscode.workspace.textDocuments.filter((doc) => doc.uri.scheme === 'untitled').map((doc) => doc.uri.path),
+  );
+  const base = vscode.Uri.file(title).path;
+  if (!open.has(base)) {
+    return vscode.Uri.file(title).with({ scheme: 'untitled' });
+  }
+  const extensionIndex = title.lastIndexOf('.json');
+  for (let n = 2; ; n++) {
+    const candidate = `${title.slice(0, extensionIndex)} (${n}).json`;
+    if (!open.has(vscode.Uri.file(candidate).path)) {
+      return vscode.Uri.file(candidate).with({ scheme: 'untitled' });
     }
   }
 }
 
-function optionItems(input: InputDefinition): Array<vscode.QuickPickItem & { value: unknown }> {
-  return Object.entries(input.options ?? {}).map(([label, value]) => ({
-    label,
-    description: String(value) === label ? undefined : String(value),
-    value,
-  }));
-}
-
-function showInput(
-  input: InputDefinition,
-  title: string,
-  validate?: (value: string) => string | undefined,
-): Thenable<string | undefined> {
-  const value = input.value;
-  return vscode.window.showInputBox({
-    title,
-    prompt: input.description || undefined,
-    value: value === undefined || value === null ? '' : typeof value === 'string' ? value : JSON.stringify(value),
-    ignoreFocusOut: true,
-    validateInput: (text) =>
-      input.required && text.trim() === '' ? 'Value is required.' : validate?.(text),
+async function showInputsEditor(
+  inputs: InputDefinition[],
+  initialValues: Record<string, unknown>,
+  label?: string,
+): Promise<Record<string, unknown> | undefined> {
+  const uri = uniqueUntitledUri(label ? `${label} — inputs.json` : 'inputs.json');
+  const doc = await vscode.workspace.openTextDocument(uri);
+  const editor = await vscode.window.showTextDocument(doc, { preview: false });
+  await editor.edit((editBuilder) => {
+    editBuilder.insert(new vscode.Position(0, 0), JSON.stringify(initialValues, null, 2));
   });
-}
-
-/** Input boxes are single-line, so multi-line text is edited in an editor and confirmed with a picker. */
-async function showTextEditor(input: InputDefinition, title: string): Promise<string | undefined> {
-  const value = input.value;
-  const doc = await vscode.workspace.openTextDocument({
-    language: 'plaintext',
-    content: value === undefined || value === null ? '' : String(value),
-  });
-  await vscode.window.showTextDocument(doc, { preview: false });
+  const diagnostics = vscode.languages.createDiagnosticCollection('acmInputs');
+  const key = doc.uri.toString();
+  const disposables: vscode.Disposable[] = [];
   try {
-    for (;;) {
-      const picked = await vscode.window.showQuickPick(
-        [
-          { label: '$(check) Confirm', description: 'Use the text from the editor', confirm: true, alwaysShow: true },
-          { label: '$(close) Cancel', confirm: false, alwaysShow: true },
-        ],
-        {
-          title,
-          placeHolder: [input.description, 'Edit the text in the editor, then confirm'].filter(Boolean).join(' - '),
-          ignoreFocusOut: true,
-        },
+    return await new Promise<Record<string, unknown> | undefined>((resolve) => {
+      const complete = (values?: Record<string, unknown>) => resolve(values);
+      inputSessions.set(key, { doc, inputs, diagnostics, complete });
+      disposables.push(
+        vscode.window.onDidChangeActiveTextEditor(updateEditingInputsContext),
+        vscode.workspace.onDidCloseTextDocument((closed) => closed === doc && complete()),
       );
-      if (!picked?.confirm) {
-        return undefined;
-      }
-      const text = doc.getText();
-      if (!input.required || text.trim() !== '') {
-        return text;
-      }
-      vscode.window.showWarningMessage(`${title}: value is required.`);
-    }
+      void updateEditingInputsContext();
+    });
   } finally {
+    inputSessions.delete(key);
+    disposables.forEach((disposable) => disposable.dispose());
+    await updateEditingInputsContext();
+    diagnostics.dispose();
     if (!doc.isClosed) {
       await vscode.window.showTextDocument(doc, { preview: false });
       await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
     }
   }
+}
+
+/** Hovering a key shows its label, description, type and whether it is required, read from the matching session. */
+export function registerInputsHover(context: vscode.ExtensionContext): void {
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: 'untitled', language: 'json' },
+      {
+        provideHover(document, position) {
+          const session = inputSessions.get(document.uri.toString());
+          if (!session) {
+            return undefined;
+          }
+          const line = document.lineAt(position.line).text;
+          const match = /^(\s*)"([^"]+)"\s*:/.exec(line);
+          if (!match) {
+            return undefined;
+          }
+          const keyStart = match[1].length;
+          const keyEnd = keyStart + match[2].length + 2;
+          if (position.character < keyStart || position.character > keyEnd) {
+            return undefined;
+          }
+          const input = session.inputs.find(({ name }) => name === match[2]);
+          if (!input) {
+            return undefined;
+          }
+          const markdown = new vscode.MarkdownString();
+          if (input.label && input.label !== input.name) {
+            markdown.appendMarkdown(`**${input.label}**\n\n`);
+          }
+          if (input.description) {
+            markdown.appendMarkdown(`${input.description}\n\n`);
+          }
+          markdown.appendMarkdown(`*${input.type}, ${input.required === false ? 'optional' : 'required'}*`);
+          return new vscode.Hover(markdown, new vscode.Range(position.line, keyStart, position.line, keyEnd));
+        },
+      },
+    ),
+  );
+}
+
+export async function confirmInputs(): Promise<void> {
+  const active = vscode.window.activeTextEditor?.document;
+  const session = active && inputSessions.get(active.uri.toString());
+  if (!session) {
+    return;
+  }
+  const result = parseInputs(session.doc, session.inputs);
+  session.diagnostics.set(session.doc.uri, result.diagnostics);
+  if (result.values) {
+    session.complete(result.values);
+  } else {
+    vscode.window.showWarningMessage('ACM: Fix the script input errors before running.');
+  }
+}
+
+function parseInputs(
+  doc: vscode.TextDocument,
+  inputs: InputDefinition[],
+): { values?: Record<string, unknown>; diagnostics: vscode.Diagnostic[] } {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(doc.getText());
+  } catch (error) {
+    return { diagnostics: [diagnostic(doc, error instanceof Error ? error.message : 'Enter valid JSON.')] };
+  }
+  if (!isObject(parsed)) {
+    return { diagnostics: [diagnostic(doc, 'Script inputs must be a JSON object.')] };
+  }
+  const definitions = new Map(inputs.map((input) => [input.name, input]));
+  const diagnostics: vscode.Diagnostic[] = [];
+  for (const name of Object.keys(parsed)) {
+    if (!definitions.has(name)) {
+      diagnostics.push(diagnostic(doc, `Unknown script input "${name}".`, name));
+    }
+  }
+  for (const input of inputs) {
+    const value = parsed[input.name];
+    const message = validateInput(input, value, Object.prototype.hasOwnProperty.call(parsed, input.name));
+    if (message) {
+      diagnostics.push(diagnostic(doc, `${input.label || input.name}: ${message}`, input.name));
+    }
+  }
+  return diagnostics.length ? { diagnostics } : { values: parsed, diagnostics };
+}
+
+function initialValue(input: InputDefinition): unknown {
+  if (input.type === 'NUMBER_RANGE' && isObject(input.value)) {
+    return [input.value.start ?? null, input.value.end ?? null];
+  }
+  return input.value ?? null;
+}
+
+function validateInput(input: InputDefinition, value: unknown, present: boolean): string | undefined {
+  if (!present || value === null || value === '') {
+    return input.required ? 'Value is required.' : undefined;
+  }
+  switch (input.type) {
+    case 'BOOL':
+      return typeof value === 'boolean' ? undefined : 'Enter a boolean.';
+    case 'INTEGER':
+      return typeof value === 'number' && Number.isInteger(value) ? undefined : 'Enter an integer.';
+    case 'DECIMAL':
+      return typeof value === 'number' && Number.isFinite(value) ? undefined : 'Enter a number.';
+    case 'MULTISELECT':
+      return Array.isArray(value) &&
+        value.every((item) => Object.values(input.options ?? {}).some((option) => Object.is(option, item)))
+        ? undefined
+        : 'Enter an array containing only available values.';
+    case 'MULTIFILE':
+      return Array.isArray(value) && value.every((item) => typeof item === 'string')
+        ? undefined
+        : 'Enter an array of strings.';
+    case 'MAP':
+      return isObject(value) ? undefined : 'Enter an object.';
+    case 'KEY_VALUE_LIST':
+      return isObject(value) || Array.isArray(value) ? undefined : 'Enter an object or an array.';
+    case 'NUMBER_RANGE':
+      return Array.isArray(value) &&
+        value.length === 2 &&
+        value.every((item) => item === null || (typeof item === 'number' && Number.isFinite(item)))
+        ? undefined
+        : 'Enter an array of two numbers or null bounds.';
+    case 'SELECT':
+      return Object.values(input.options ?? {}).some((option) => Object.is(option, value))
+        ? undefined
+        : 'Choose one of the available values.';
+    case 'STRING':
+    case 'TEXT':
+    case 'PATH':
+    case 'COLOR':
+    case 'DATE':
+    case 'TIME':
+    case 'DATETIME':
+    case 'FILE':
+      return typeof value === 'string' ? undefined : 'Enter a string.';
+    default:
+      return undefined;
+  }
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function diagnostic(doc: vscode.TextDocument, message: string, name?: string): vscode.Diagnostic {
+  const text = doc.getText();
+  const key = name ? JSON.stringify(name) : undefined;
+  const start = key ? text.indexOf(key) : -1;
+  const range =
+    start >= 0 && key
+      ? new vscode.Range(doc.positionAt(start), doc.positionAt(start + key.length))
+      : new vscode.Range(doc.positionAt(0), doc.positionAt(text.length));
+  const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Error);
+  diagnostic.source = 'ACM';
+  return diagnostic;
 }
 
 /** Uploads files to ACM's temporary storage; file inputs take the returned repository paths. */

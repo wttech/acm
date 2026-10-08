@@ -3,6 +3,7 @@ import {
   ACM_API,
   AcmHttpError,
   EXECUTION_STATUSES,
+  enabledScriptTypes,
   executableIdOf,
   fetchConsoleOutput,
   fetchExecutionById,
@@ -10,7 +11,7 @@ import {
   isExecutionFiltered,
   isPending,
   SCRIPT_ROOT,
-  SCRIPT_TYPES,
+  SCRIPT_TYPE_INFO,
   scriptLabel,
   summarizeExecution,
   type AcmClient,
@@ -32,6 +33,7 @@ import {
   settingId,
 } from './ids';
 import { getActiveInstance, getClient, getInstances, getSettings, type AcmInstance } from './instances';
+import { isMockEnabled, onDidChangeMock } from './mock';
 
 const SCHEME = DOCUMENTS.scheme;
 
@@ -184,7 +186,7 @@ class ScriptsProvider extends AcmTreeProvider {
       return [];
     }
     const results = await Promise.allSettled(
-      SCRIPT_TYPES.map(async (type) => ({
+      enabledScriptTypes({ mock: isMockEnabled() }).map(async (type) => ({
         type,
         scripts: (await client.request<{ list?: Script[] }>('GET', `${ACM_API.script}?type=${type}`)).data?.list ?? [],
       })),
@@ -204,10 +206,8 @@ class ScriptsProvider extends AcmTreeProvider {
   getTreeItem(node: Node): vscode.TreeItem {
     switch (node.kind) {
       case 'scriptType': {
-        const item = new vscode.TreeItem(
-          node.type.charAt(0) + node.type.slice(1).toLowerCase(),
-          vscode.TreeItemCollapsibleState.Expanded,
-        );
+        const item = new vscode.TreeItem(SCRIPT_TYPE_INFO[node.type].label, vscode.TreeItemCollapsibleState.Expanded);
+        item.tooltip = SCRIPT_TYPE_INFO[node.type].description;
         item.id = `scripts.${node.type}`;
         item.description = String(node.scripts.length);
         item.iconPath = vscode.ThemeIcon.Folder;
@@ -283,6 +283,7 @@ export function registerViews(context: vscode.ExtensionContext): Views {
     scriptsView,
     vscode.commands.registerCommand(COMMANDS.refreshExecutions, () => executions.refresh()),
     vscode.commands.registerCommand(COMMANDS.refreshScripts, () => scripts.refresh()),
+    onDidChangeMock(() => scripts.refresh()),
     registerCommand(COMMANDS.filterExecutions, async () => {
       const filter = await pickExecutionFilter(executions.filter);
       if (filter) {

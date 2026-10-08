@@ -2,7 +2,7 @@
   "name": "acm",
   "displayName": "AEM Content Manager (ACM)",
   "description": "Write, validate and run AEM Content Manager (ACM) Groovy scripts from VS Code. The ACM MCP server for AI agents is registered automatically.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "publisher": "wppes",
   "author": "WPP Enterprise Solutions",
@@ -67,6 +67,12 @@
         "enablement": "acm.canRunWithoutHistory"
       },
       {
+        "command": "acm.runWithInputs",
+        "title": "Run with These Inputs",
+        "category": "ACM",
+        "icon": "$(play)"
+      },
+      {
         "command": "acm.validate",
         "title": "Validate Script",
         "category": "ACM",
@@ -89,6 +95,30 @@
         "category": "ACM"
       },
       {
+        "command": "acm.openSettings",
+        "title": "Open Settings",
+        "category": "ACM",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "acm.openProjectContentSettings",
+        "title": "Configure Project Content",
+        "category": "ACM",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "acm.openInstanceSettings",
+        "title": "Configure Instances",
+        "category": "ACM",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "acm.openExecutionsSettings",
+        "title": "Configure Executions",
+        "category": "ACM",
+        "icon": "$(gear)"
+      },
+      {
         "command": "acm.setCredentials",
         "title": "Set Credentials",
         "category": "ACM"
@@ -107,6 +137,12 @@
       {
         "command": "acm.refreshScripts",
         "title": "Refresh Scripts",
+        "category": "ACM",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "acm.refreshProjectContent",
+        "title": "Refresh Project Content",
         "category": "ACM",
         "icon": "$(refresh)"
       },
@@ -153,34 +189,39 @@
         "icon": "$(play)"
       },
       {
-        "command": "acm.newProjectScript",
-        "title": "New Project Script...",
+        "command": "acm.newProjectContent",
+        "title": "New Project Content...",
         "category": "ACM",
         "icon": "$(add)"
       },
       {
-        "command": "acm.renameProjectScript",
+        "command": "acm.newProjectScriptOfType",
+        "title": "New Script...",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.newProjectSnippet",
+        "title": "New Snippet...",
+        "category": "ACM"
+      },
+      {
+        "command": "acm.renameProjectFile",
         "title": "Rename...",
         "category": "ACM"
       },
       {
-        "command": "acm.duplicateProjectScript",
+        "command": "acm.duplicateProjectFile",
         "title": "Duplicate...",
         "category": "ACM"
       },
       {
-        "command": "acm.deleteProjectScript",
+        "command": "acm.deleteProjectFile",
         "title": "Delete",
         "category": "ACM"
       },
       {
-        "command": "acm.revealProjectScript",
+        "command": "acm.revealProjectFile",
         "title": "Reveal in Explorer",
-        "category": "ACM"
-      },
-      {
-        "command": "acm.selectScriptsRoot",
-        "title": "Select Scripts Folder",
         "category": "ACM"
       },
       {
@@ -242,7 +283,7 @@
           {
             "id": "write",
             "title": "Write a script",
-            "description": "Start from a documented template: content migration, ACL setup, report, scheduled cleanup and more. Completion and docs cover the whole ACM script API.\n[New ACM Script](command:acm.newScript)",
+            "description": "Start from a documented template: content migration, ACL setup, CSV and Excel export and import, scheduled cleanup and more. Completion and docs cover the whole ACM script API.\n[New ACM Script](command:acm.newScript)",
             "media": {
               "markdown": "media/walkthrough/write.md"
             },
@@ -311,6 +352,22 @@
           "when": "acm.canRunWithoutHistory"
         },
         {
+          "command": "acm.runWithInputs",
+          "when": "false"
+        },
+        {
+          "command": "acm.openProjectContentSettings",
+          "when": "false"
+        },
+        {
+          "command": "acm.openInstanceSettings",
+          "when": "false"
+        },
+        {
+          "command": "acm.openExecutionsSettings",
+          "when": "false"
+        },
+        {
           "command": "acm.runScript",
           "when": "false"
         },
@@ -331,19 +388,27 @@
           "when": "false"
         },
         {
-          "command": "acm.renameProjectScript",
+          "command": "acm.newProjectScriptOfType",
           "when": "false"
         },
         {
-          "command": "acm.duplicateProjectScript",
+          "command": "acm.newProjectSnippet",
           "when": "false"
         },
         {
-          "command": "acm.deleteProjectScript",
+          "command": "acm.renameProjectFile",
           "when": "false"
         },
         {
-          "command": "acm.revealProjectScript",
+          "command": "acm.duplicateProjectFile",
+          "when": "false"
+        },
+        {
+          "command": "acm.deleteProjectFile",
+          "when": "false"
+        },
+        {
+          "command": "acm.revealProjectFile",
           "when": "false"
         },
         {
@@ -397,37 +462,42 @@
         },
         {
           "command": "acm.runProjectScript",
-          "when": "view == acm.projectScripts && viewItem == projectScript.manual",
+          "when": "view == acm.projectContent && viewItem == projectFile.script.manual",
           "group": "inline"
         },
         {
           "command": "acm.compareProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\.script\\./",
           "group": "navigation"
         },
         {
-          "command": "acm.revealProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "command": "acm.revealProjectFile",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./",
           "group": "navigation"
         },
         {
-          "command": "acm.duplicateProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "command": "acm.duplicateProjectFile",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./",
           "group": "modification@1"
         },
         {
-          "command": "acm.renameProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "command": "acm.renameProjectFile",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./",
           "group": "modification@2"
         },
         {
-          "command": "acm.deleteProjectScript",
-          "when": "view == acm.projectScripts && viewItem =~ /^projectScript\\./",
+          "command": "acm.deleteProjectFile",
+          "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./",
           "group": "modification@3"
         },
         {
-          "command": "acm.newProjectScript",
-          "when": "view == acm.projectScripts && viewItem == projectType",
+          "command": "acm.newProjectScriptOfType",
+          "when": "view == acm.projectContent && viewItem == projectGroup.scriptType",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.newProjectSnippet",
+          "when": "view == acm.projectContent && viewItem == projectGroup.snippets",
           "group": "navigation"
         }
       ],
@@ -435,6 +505,11 @@
         {
           "command": "acm.run",
           "when": "editorLangId == groovy",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.runWithInputs",
+          "when": "acm.editingInputs",
           "group": "navigation"
         }
       ],
@@ -472,12 +547,40 @@
           "group": "navigation"
         },
         {
-          "command": "acm.newProjectScript",
-          "when": "view == acm.projectScripts",
-          "group": "navigation"
+          "command": "acm.newProjectContent",
+          "when": "view == acm.projectContent",
+          "group": "navigation@1"
+        },
+        {
+          "command": "acm.refreshProjectContent",
+          "when": "view == acm.projectContent",
+          "group": "navigation@2"
+        },
+        {
+          "command": "acm.openProjectContentSettings",
+          "when": "view == acm.projectContent",
+          "group": "navigation@99"
+        },
+        {
+          "command": "acm.openInstanceSettings",
+          "when": "view == acm.scripts",
+          "group": "navigation@99"
+        },
+        {
+          "command": "acm.openExecutionsSettings",
+          "when": "view == acm.executions",
+          "group": "navigation@99"
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "acm.runWithInputs",
+        "key": "ctrl+s",
+        "mac": "cmd+s",
+        "when": "acm.editingInputs"
+      }
+    ],
     "configuration": {
       "title": "ACM",
       "properties": {
@@ -574,10 +677,30 @@
           "maximum": 1000,
           "description": "Number of past executions shown in the Executions view."
         },
-        "acm.scripts.root": {
+        "acm.mock.mode": {
           "type": "string",
-          "default": "",
-          "markdownDescription": "Folder with the project's ACM scripts, usually a content package's `jcr_root/conf/acm/settings/script`, relative to the workspace folder (or absolute). Project Scripts and `New Project Script...` use it. Empty finds it from the scripts already in the workspace and asks when there are several."
+          "default": "auto",
+          "enum": [
+            "auto",
+            "enabled",
+            "disabled"
+          ],
+          "enumDescriptions": [
+            "Show Mock scripts when the active instance has its Mock HTTP Filter enabled. Hidden when the instance is not reachable.",
+            "Always show Mock scripts.",
+            "Never show Mock scripts."
+          ],
+          "markdownDescription": "Whether Mock scripts, which simulate third-party HTTP services, are shown in the views and offered when creating scripts. On an instance they only run when the *AEM Content Manager - Mock HTTP Filter* OSGi configuration is enabled, which it is not by default."
+        },
+        "acm.scripts.roots": {
+          "type": "array",
+          "default": [],
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "markdownDescription": "Folders with the project's ACM scripts, usually content packages `jcr_root/conf/acm/settings/script`, relative to the workspace folder (or absolute). Project Content and `New Project Content...` use them. Empty finds them from the scripts already in the workspace."
         }
       }
     },
@@ -593,10 +716,10 @@
     "views": {
       "acm": [
         {
-          "id": "acm.projectScripts",
-          "name": "Project Scripts",
+          "id": "acm.projectContent",
+          "name": "Project Content",
           "icon": "$(folder-library)",
-          "when": "acm.hasScriptsRoot"
+          "when": "acm.hasProjectContent"
         },
         {
           "id": "acm.scripts",

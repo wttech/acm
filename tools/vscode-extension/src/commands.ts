@@ -4,18 +4,18 @@ import * as vscode from 'vscode';
 import {
   ACM_API,
   CONSOLE_CODE_ID,
+  enabledTemplates,
   fetchConsoleOutput,
   isFailed,
   normalizeGroovy,
-  SCRIPT_TEMPLATES,
   waitForExecution,
   type Execution,
   type ExecutionListOutput,
   type QueueOutput,
 } from '@acm/shared';
 import { registerCommand as register, showError } from './errors';
-import { COMMANDS, DISPLAY_NAME, SETTINGS, settingId } from './ids';
-import { promptInputs } from './inputs';
+import { COMMANDS, DISPLAY_NAME, SETTINGS, settingId, type SettingKey } from './ids';
+import { confirmInputs, promptInputs } from './inputs';
 import {
   confirmRun,
   getActiveInstance,
@@ -28,6 +28,7 @@ import {
   type AcmInstance,
   type AcmTarget,
 } from './instances';
+import { isMockEnabled } from './mock';
 import { validateDocument } from './providers/diagnostics';
 import { refreshHealth, setRunning } from './status';
 import { executionUri, storedScript, type Views } from './views';
@@ -57,11 +58,18 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
     ),
     register(COMMANDS.runSelection, () => run(true, views)),
     register(COMMANDS.runWithoutHistory, () => run(true, views, false)),
+    register(COMMANDS.runWithInputs, confirmInputs),
     register(COMMANDS.validate, validate),
     register(COMMANDS.describe, describe),
     register(COMMANDS.abort, (node?: ExecutionNode) => abort(views, node)),
     register(COMMANDS.downloadOutputs, (node?: ExecutionNode) => downloadOutputs(node)),
     register(COMMANDS.selectInstance, selectInstance),
+    register(COMMANDS.openSettings, () =>
+      vscode.commands.executeCommand('workbench.action.openSettings', '@ext:wppes.acm'),
+    ),
+    register(COMMANDS.openProjectContentSettings, () => openSetting(SETTINGS.scriptsRoots)),
+    register(COMMANDS.openInstanceSettings, () => openSetting(SETTINGS.instances)),
+    register(COMMANDS.openExecutionsSettings, () => openSetting(SETTINGS.executionsLimit)),
     register(COMMANDS.setCredentials, setCredentialsCommand),
     register(COMMANDS.checkConnection, checkConnection),
     register(COMMANDS.newScript, newScript),
@@ -70,7 +78,7 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
 
 async function newScript(): Promise<void> {
   const picked = await vscode.window.showQuickPick(
-    SCRIPT_TEMPLATES.map((template) => ({
+    enabledTemplates({ mock: isMockEnabled() }).map((template) => ({
       label: template.name,
       description: template.target.toLowerCase(),
       detail: template.description,
@@ -161,7 +169,7 @@ async function run(selectionOnly: boolean, views: Views, history = true, script?
   }
   const { instance, client } = target;
   const { code, label } = source;
-  const inputs = source.hasInputs ? await promptInputs(client, code) : {};
+  const inputs = source.hasInputs ? await promptInputs(client, code, label) : {};
   if (!inputs) {
     return;
   }
@@ -362,6 +370,10 @@ async function abort(views: Views, node?: { instance: AcmInstance; execution: Ex
   await client.request('DELETE', `${ACM_API.queueCode}?executionId=${encodeURIComponent(executionId)}`);
   vscode.window.setStatusBarMessage(`ACM: Abort requested for ${executionId}`, 5000);
   views.refreshExecutions();
+}
+
+function openSetting(setting: SettingKey): Thenable<unknown> {
+  return vscode.commands.executeCommand('workbench.action.openSettings', settingId(setting));
 }
 
 async function selectInstance(): Promise<void> {

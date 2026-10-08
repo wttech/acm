@@ -45,6 +45,26 @@
         "required": false,
         "paramCount": 1
       }
+    ],
+    "mock": [
+      {
+        "name": "request",
+        "returns": "boolean",
+        "required": true,
+        "paramCount": 1
+      },
+      {
+        "name": "respond",
+        "returns": "void",
+        "required": true,
+        "paramCount": 2
+      },
+      {
+        "name": "fail",
+        "returns": "void",
+        "required": false,
+        "paramCount": 3
+      }
     ]
   },
   "bindings": [

@@ -44,7 +44,7 @@ export interface ApiDsl {
 }
 
 export interface ScriptApi {
-  lifecycle: { content: ApiLifecycleMethod[]; extension: ApiLifecycleMethod[] };
+  lifecycle: { content: ApiLifecycleMethod[]; extension: ApiLifecycleMethod[]; mock: ApiLifecycleMethod[] };
   bindings: ApiBinding[];
   inputs: ApiDsl[];
   outputs: ApiDsl[];

@@ -8,14 +8,20 @@ export const COMMANDS = {
   run: 'acm.run',
   runSelection: 'acm.runSelection',
   runWithoutHistory: 'acm.runWithoutHistory',
+  runWithInputs: 'acm.runWithInputs',
   validate: 'acm.validate',
   describe: 'acm.describe',
   abort: 'acm.abort',
   selectInstance: 'acm.selectInstance',
+  openSettings: 'acm.openSettings',
+  openProjectContentSettings: 'acm.openProjectContentSettings',
+  openInstanceSettings: 'acm.openInstanceSettings',
+  openExecutionsSettings: 'acm.openExecutionsSettings',
   setCredentials: 'acm.setCredentials',
   checkConnection: 'acm.checkConnection',
   refreshExecutions: 'acm.refreshExecutions',
   refreshScripts: 'acm.refreshScripts',
+  refreshProjectContent: 'acm.refreshProjectContent',
   filterExecutions: 'acm.filterExecutions',
   clearExecutionsFilter: 'acm.clearExecutionsFilter',
   filterExecutionsByScript: 'acm.filterExecutionsByScript',
@@ -23,12 +29,13 @@ export const COMMANDS = {
   compareScript: 'acm.compareScript',
   compareProjectScript: 'acm.compareProjectScript',
   runProjectScript: 'acm.runProjectScript',
-  newProjectScript: 'acm.newProjectScript',
-  renameProjectScript: 'acm.renameProjectScript',
-  duplicateProjectScript: 'acm.duplicateProjectScript',
-  deleteProjectScript: 'acm.deleteProjectScript',
-  revealProjectScript: 'acm.revealProjectScript',
-  selectScriptsRoot: 'acm.selectScriptsRoot',
+  newProjectContent: 'acm.newProjectContent',
+  newProjectScriptOfType: 'acm.newProjectScriptOfType',
+  newProjectSnippet: 'acm.newProjectSnippet',
+  renameProjectFile: 'acm.renameProjectFile',
+  duplicateProjectFile: 'acm.duplicateProjectFile',
+  deleteProjectFile: 'acm.deleteProjectFile',
+  revealProjectFile: 'acm.revealProjectFile',
   newScript: 'acm.newScript',
   downloadOutputs: 'acm.downloadOutputs',
   copyMcpSetup: 'acm.copyMcpSetup',
@@ -38,7 +45,7 @@ export const COMMANDS = {
 } as const;
 
 export const VIEWS = {
-  projectScripts: 'acm.projectScripts',
+  projectContent: 'acm.projectContent',
   scripts: 'acm.scripts',
   executions: 'acm.executions',
 } as const;
@@ -48,7 +55,8 @@ export const CONTEXT = {
   hasInstance: 'acm.hasInstance',
   canRunWithoutHistory: 'acm.canRunWithoutHistory',
   executionsFiltered: 'acm.executionsFiltered',
-  hasScriptsRoot: 'acm.hasScriptsRoot',
+  hasProjectContent: 'acm.hasProjectContent',
+  editingInputs: 'acm.editingInputs',
 } as const;
 
 /** Setting keys relative to the `acm` section. */
@@ -62,7 +70,8 @@ export const SETTINGS = {
   runPollInterval: 'run.pollInterval',
   healthInterval: 'health.interval',
   executionsLimit: 'executions.limit',
-  scriptsRoot: 'scripts.root',
+  scriptsRoots: 'scripts.roots',
+  mockMode: 'mock.mode',
 } as const;
 
 export type SettingKey = (typeof SETTINGS)[keyof typeof SETTINGS];
@@ -75,17 +84,15 @@ export function settingId(key: SettingKey): string {
 export const ITEMS = {
   execution: 'execution',
   executionPending: 'execution.pending',
-  projectType: 'projectType',
+  projectRoot: 'projectRoot',
+  projectScriptType: 'projectGroup.scriptType',
+  projectSnippets: 'projectGroup.snippets',
+  projectSnippet: 'projectFile.snippet',
   script: (type: string) => `script.${type.toLowerCase()}`,
-  projectScript: (type: string) => `projectScript.${type.toLowerCase()}`,
+  projectScript: (type: string) => `projectFile.script.${type.toLowerCase()}`,
 } as const;
 
 export const MCP_PROVIDER_ID = NAMESPACE;
-
-/** Keys of the per-workspace state the extension remembers. */
-export const STATE_KEYS = {
-  scriptsRoot: 'acm.scriptsRoot',
-} as const;
 
 /** Read-only documents of the `acm:` scheme: `acm://<authority>/...?<instance name>`. */
 export const DOCUMENTS = {

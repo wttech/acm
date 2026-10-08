@@ -5,11 +5,13 @@ author: jane.doe@acme.com
 category: setup
 tags: ['config']
 ---
-Describe what the script sets up. Re-applied whenever this script changes.
+Applies a setup once and again whenever the script changes.
+
+Describe what the script sets up.
 */
 
 boolean canRun() {
-    return conditions.changed() && conditions.isInstanceAuthor()
+    return conditions.changed()
 }
 
 void doRun() {

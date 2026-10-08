@@ -4,7 +4,9 @@ version: '1.0'
 category: report
 tags: ['assets']
 ---
-Exports path, title and format of all assets below a root path as CSV.
+Exports data as a downloadable CSV file, e.g. for reports and audits.
+
+Exports path, title and format of all assets below a root path.
 */
 
 void describeRun() {

@@ -4,5 +4,5 @@
         "**/node": true
     },
     "java.configuration.updateBuildConfiguration": "interactive",
-    "acm.activeInstance": "local"
+    "acm.activeInstance": "author"
 }

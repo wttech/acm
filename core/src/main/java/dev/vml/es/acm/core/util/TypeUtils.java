@@ -20,6 +20,9 @@ public final class TypeUtils {
      */
     @SuppressWarnings("unchecked")
     public static <T> Optional<T> convert(Object value, Class<T> type, boolean fallback) {
+        if (type.isInstance(value)) {
+            return Optional.of(type.cast(value));
+        }
         if (type.isArray()) {
             Object array = convertToArray(value, type.getComponentType(), fallback);
             return Optional.ofNullable((T) array);

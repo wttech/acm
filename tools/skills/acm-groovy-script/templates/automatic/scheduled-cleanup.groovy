@@ -4,6 +4,8 @@ version: '1.0'
 schedule: Daily at 3:00
 category: maintenance
 ---
+Removes outdated data on a schedule.
+
 Deletes temporary data older than 7 days.
 */
 
@@ -14,7 +16,7 @@ def scheduleRun() {
 }
 
 boolean canRun() {
-    return conditions.always() && conditions.isInstanceAuthor()
+    return conditions.always()
 }
 
 void doRun() {
