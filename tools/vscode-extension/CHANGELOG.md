@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.3
+## 0.9.1
 
 - Script inputs are edited together in a JSON document named after the script and run with its play button or `Ctrl/Cmd+S`, so values can be reviewed and changed in any order; file inputs are selected and uploaded first. Several scripts can have their inputs edited at the same time, and hovering a key shows its label, description, type and whether it is required.
 - Each ACM view links directly to its related settings (project roots, instances or execution limit); the instance picker clearly identifies authentication, read-only and active state and links to instance settings; the Marketplace icon uses a transparent background.
