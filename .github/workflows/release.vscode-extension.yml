@@ -10,8 +10,38 @@ defaults:
     working-directory: tools/vscode-extension
 
 jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/vscode-extension/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check Manifest
+        run: npm run check:manifest
+
+      - name: Test
+        run: xvfb-run -a npm test
+
   release:
     name: Release
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -41,9 +71,6 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-
-      - name: Type Check
-        run: npm run typecheck
 
       - name: Package
         run: npm run package
