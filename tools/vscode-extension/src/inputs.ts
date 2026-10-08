@@ -123,6 +123,46 @@ async function showInputsEditor(
   }
 }
 
+/** Hovering a key shows its label, description, type and whether it is required, read from the matching session. */
+export function registerInputsHover(context: vscode.ExtensionContext): void {
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: 'untitled', language: 'json' },
+      {
+        provideHover(document, position) {
+          const session = inputSessions.get(document.uri.toString());
+          if (!session) {
+            return undefined;
+          }
+          const line = document.lineAt(position.line).text;
+          const match = /^(\s*)"([^"]+)"\s*:/.exec(line);
+          if (!match) {
+            return undefined;
+          }
+          const keyStart = match[1].length;
+          const keyEnd = keyStart + match[2].length + 2;
+          if (position.character < keyStart || position.character > keyEnd) {
+            return undefined;
+          }
+          const input = session.inputs.find(({ name }) => name === match[2]);
+          if (!input) {
+            return undefined;
+          }
+          const markdown = new vscode.MarkdownString();
+          if (input.label && input.label !== input.name) {
+            markdown.appendMarkdown(`**${input.label}**\n\n`);
+          }
+          if (input.description) {
+            markdown.appendMarkdown(`${input.description}\n\n`);
+          }
+          markdown.appendMarkdown(`*${input.type}, ${input.required === false ? 'optional' : 'required'}*`);
+          return new vscode.Hover(markdown, new vscode.Range(position.line, keyStart, position.line, keyEnd));
+        },
+      },
+    ),
+  );
+}
+
 export async function confirmInputs(): Promise<void> {
   const active = vscode.window.activeTextEditor?.document;
   const session = active && inputSessions.get(active.uri.toString());

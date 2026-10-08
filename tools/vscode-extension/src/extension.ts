@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { registerBrowser } from './browser';
 import { registerCommands } from './commands';
+import { registerInputsHover } from './inputs';
 import { initInstances } from './instances';
 import { registerMcp } from './mcp';
 import { registerCodeLens } from './providers/codelens';
@@ -22,6 +23,7 @@ export function activate(context: vscode.ExtensionContext): void {
   registerCommands(context, views);
   registerCompletion(context);
   registerHover(context);
+  registerInputsHover(context);
   registerCodeLens(context);
   registerDiagnostics(context);
   registerMcp(context);
