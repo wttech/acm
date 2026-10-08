@@ -59,7 +59,8 @@ public class Activator {
                 .forEach(resource -> activate(resource.getPath()));
     }
 
-    public void replicate(ReplicationActionType replicationActionType, boolean synchronous, int chunkSize, String... paths) {
+    public void replicate(
+            ReplicationActionType replicationActionType, boolean synchronous, int chunkSize, String... paths) {
         List<List<String>> chunks = chunk(paths, chunkSize);
         ReplicationOptions options = new ReplicationOptions();
         options.setSynchronous(synchronous);
@@ -68,12 +69,20 @@ public class Activator {
             for (List<String> chunk : chunks) {
                 replicator.replicate(session, replicationActionType, chunk.toArray(new String[] {}), options);
                 counter++;
-                LOG.debug("Replicated chunk {} of {} ({} paths). Replication action: {}. Synchronous: {}.",
-                    counter, chunks.size(), chunk.size(), replicationActionType, synchronous);
+                LOG.info(
+                        "Replicated chunk {} of {} ({} paths). Replication action: {}. Synchronous: {}.",
+                        counter,
+                        chunks.size(),
+                        chunk.size(),
+                        replicationActionType,
+                        synchronous);
             }
         } catch (ReplicationException e) {
-            throw new AcmException(String.format("Cannot '%s' chunk %d of %d. Paths '%s'",
-                replicationActionType, counter + 1, chunks.size(), chunks.get(counter)), e);
+            throw new AcmException(
+                    String.format(
+                            "Cannot '%s' chunk %d of %d. Paths '%s'",
+                            replicationActionType, counter + 1, chunks.size(), chunks.get(counter)),
+                    e);
         }
     }
 

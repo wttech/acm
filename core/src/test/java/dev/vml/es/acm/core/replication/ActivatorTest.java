@@ -57,7 +57,8 @@ class ActivatorTest {
         activator.replicate(ReplicationActionType.DEACTIVATE, false, 2, "/a", "/b", "/c");
 
         assertEquals(
-                Arrays.asList(Arrays.asList("/a", "/b"), Arrays.asList("/c")), replicatedChunks(ReplicationActionType.DEACTIVATE, 2));
+                Arrays.asList(Arrays.asList("/a", "/b"), Arrays.asList("/c")),
+                replicatedChunks(ReplicationActionType.DEACTIVATE, 2));
     }
 
     @Test

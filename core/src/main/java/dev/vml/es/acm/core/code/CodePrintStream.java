@@ -25,7 +25,8 @@ public class CodePrintStream extends PrintStream {
 
     public static final String LOGGER_NAME_ACL = "dev.vml.es.acm.core.acl";
     public static final String LOGGER_NAME_REPO = "dev.vml.es.acm.core.repo";
-    public static final String[] LOGGER_NAMES = {LOGGER_NAME_ACL, LOGGER_NAME_REPO};
+    public static final String LOGGER_NAME_REPLICATION = "dev.vml.es.acm.core.replication";
+    public static final String[] LOGGER_NAMES = {LOGGER_NAME_ACL, LOGGER_NAME_REPO, LOGGER_NAME_REPLICATION};
 
     // have to match pattern in 'monaco/log.ts'
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
