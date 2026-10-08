@@ -15,7 +15,7 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 ### Running
 
 - [x] **Ad-hoc execution.** `ACM: Run Script` / `Run Selection` queues code (`queue-code`), polls until done and streams console output to an output channel. Status bar shows the running execution; `ACM: Abort Execution` or cancelling the progress aborts it. `ACM: Run Without History` (`execute-code`, `history: false`) is offered only with ACM's `console/execute/nohistory` feature.
-- [~] **Inputs form.** Before running a script with `describeRun()`, inputs are resolved (`describe-code`) and asked for with quick picks, input boxes and file pickers (uploaded via `file`). Next: a webview form.
+- [x] **Inputs editor.** Before running a script with `describeRun()`, inputs are resolved (`describe-code`) and edited together in a validated JSON document; files are selected and uploaded via `file` first.
 - [x] **Instance guardrails.** `readonly` instances block running; any non-local instance asks for confirmation before running.
 
 ### Editing

@@ -15,7 +15,7 @@ import {
 } from '@acm/shared';
 import { registerCommand as register, showError } from './errors';
 import { COMMANDS, DISPLAY_NAME, SETTINGS, settingId } from './ids';
-import { promptInputs } from './inputs';
+import { confirmInputs, promptInputs } from './inputs';
 import {
   confirmRun,
   getActiveInstance,
@@ -58,6 +58,7 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
     ),
     register(COMMANDS.runSelection, () => run(true, views)),
     register(COMMANDS.runWithoutHistory, () => run(true, views, false)),
+    register(COMMANDS.runWithInputs, confirmInputs),
     register(COMMANDS.validate, validate),
     register(COMMANDS.describe, describe),
     register(COMMANDS.abort, (node?: ExecutionNode) => abort(views, node)),

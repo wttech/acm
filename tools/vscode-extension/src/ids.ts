@@ -8,6 +8,7 @@ export const COMMANDS = {
   run: 'acm.run',
   runSelection: 'acm.runSelection',
   runWithoutHistory: 'acm.runWithoutHistory',
+  runWithInputs: 'acm.runWithInputs',
   validate: 'acm.validate',
   describe: 'acm.describe',
   abort: 'acm.abort',
@@ -51,6 +52,7 @@ export const CONTEXT = {
   canRunWithoutHistory: 'acm.canRunWithoutHistory',
   executionsFiltered: 'acm.executionsFiltered',
   hasProjectContent: 'acm.hasProjectContent',
+  editingInputs: 'acm.editingInputs',
 } as const;
 
 /** Setting keys relative to the `acm` section. */

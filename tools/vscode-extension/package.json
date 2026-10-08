@@ -67,6 +67,12 @@
         "enablement": "acm.canRunWithoutHistory"
       },
       {
+        "command": "acm.runWithInputs",
+        "title": "Run with These Inputs",
+        "category": "ACM",
+        "icon": "$(play)"
+      },
+      {
         "command": "acm.validate",
         "title": "Validate Script",
         "category": "ACM",
@@ -322,6 +328,10 @@
           "when": "acm.canRunWithoutHistory"
         },
         {
+          "command": "acm.runWithInputs",
+          "when": "false"
+        },
+        {
           "command": "acm.runScript",
           "when": "false"
         },
@@ -459,6 +469,11 @@
         {
           "command": "acm.run",
           "when": "editorLangId == groovy",
+          "group": "navigation"
+        },
+        {
+          "command": "acm.runWithInputs",
+          "when": "acm.editingInputs",
           "group": "navigation"
         }
       ],

@@ -79,17 +79,25 @@ export async function pickInstance(placeHolder = 'Select ACM instance'): Promise
     return undefined;
   }
   const active = getActiveInstance();
-  const picked = await vscode.window.showQuickPick(
-    instances.map((instance) => ({
+  const items: Array<vscode.QuickPickItem & { instance?: AcmInstance; configure?: boolean }> = instances.map(
+    (instance) => ({
       label: instance.name,
       description: instance.url,
       detail: [instance.authMode, instance.readonly ? 'read-only' : undefined, instance === active ? 'active' : undefined]
         .filter(Boolean)
         .join(' · '),
       instance,
-    })),
-    { placeHolder },
+    }),
   );
+  items.push(
+    { label: '', kind: vscode.QuickPickItemKind.Separator },
+    { label: '$(gear) Configure Instances...', detail: `Open ${settingId(SETTINGS.instances)} in Settings`, configure: true },
+  );
+  const picked = await vscode.window.showQuickPick(items, { placeHolder });
+  if (picked?.configure) {
+    await vscode.commands.executeCommand('workbench.action.openSettings', settingId(SETTINGS.instances));
+    return undefined;
+  }
   return picked?.instance;
 }
 
