@@ -1,0 +1,23 @@
+group: Activator
+name: activator_replicate
+content: |
+  activator.replicate(ReplicationActionType.${1:ACTIVATE}, ${2:false}, ${3:100}, ${4:paths})
+documentation: |
+  Replicate many paths in chunks, one replication call per chunk instead of one per path.
+
+  Arguments: action type (`ACTIVATE`, `DEACTIVATE`, `DELETE`), whether to replicate synchronously, chunk size, and paths.
+  Requires `import com.day.cq.replication.ReplicationActionType`.
+
+  On AEM as a Cloud Service keep the chunk size at 100 or less: 500 paths is the hard limit and fails with an error,
+  and the content of one chunk must stay under 10 MB (binaries excluded).
+  Chunks are replicated one by one, so a failure leaves the earlier chunks replicated.
+
+  For example:
+  ```groovy
+  import com.day.cq.replication.ReplicationActionType
+
+  void doRun() {
+    def paths = repo.get("/content/acme/en").query("cq:Page").map { it.path }.toList()
+    activator.replicate(ReplicationActionType.ACTIVATE, false, 100, paths as String[])
+  }
+  ```

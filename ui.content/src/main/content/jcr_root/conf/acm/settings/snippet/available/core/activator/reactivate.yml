@@ -1,0 +1,11 @@
+group: Activator
+name: activator_reactivate
+content: |
+  activator.reactivate("${1:path}")
+documentation: |
+  Deactivate and then activate a single resource, e.g. to clear a stale published version.
+
+  For example:
+  ```groovy
+  activator.reactivate("/content/acme/en")
+  ```

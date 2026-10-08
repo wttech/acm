@@ -1,0 +1,11 @@
+group: Activator
+name: activator_activate
+content: |
+  activator.activate("${1:path}")
+documentation: |
+  Activate (publish) a single resource.
+
+  For example:
+  ```groovy
+  activator.activate("/content/acme/en")
+  ```
