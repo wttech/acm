@@ -28,6 +28,7 @@ let inputSession: InputSession | undefined;
 export async function promptInputs(
   client: AcmClient,
   code: { id: string; content?: string },
+  label?: string,
 ): Promise<Record<string, unknown> | undefined> {
   const res = await client.request<{ inputs?: Record<string, InputDefinition> }>('POST', ACM_API.describeCode, {
     code,
@@ -44,7 +45,7 @@ export async function promptInputs(
     }
     values[input.name] = value;
   }
-  return showInputsEditor(inputs, values);
+  return showInputsEditor(inputs, values, label);
 }
 
 async function promptFiles(client: AcmClient, input: InputDefinition): Promise<unknown> {
@@ -65,14 +66,17 @@ async function promptFiles(client: AcmClient, input: InputDefinition): Promise<u
 async function showInputsEditor(
   inputs: InputDefinition[],
   initialValues: Record<string, unknown>,
+  label?: string,
 ): Promise<Record<string, unknown> | undefined> {
-  const doc = await vscode.workspace.openTextDocument({
-    language: 'json',
-    content: JSON.stringify(initialValues, null, 2),
+  const title = label ? `${label} — inputs.json` : 'inputs.json';
+  const uri = vscode.Uri.file(title).with({ scheme: 'untitled' });
+  const doc = await vscode.workspace.openTextDocument(uri);
+  const editor = await vscode.window.showTextDocument(doc, { preview: false });
+  await editor.edit((editBuilder) => {
+    editBuilder.insert(new vscode.Position(0, 0), JSON.stringify(initialValues, null, 2));
   });
   const diagnostics = vscode.languages.createDiagnosticCollection('acmInputs');
   const disposables: vscode.Disposable[] = [];
-  await vscode.window.showTextDocument(doc, { preview: false });
   try {
     return await new Promise<Record<string, unknown> | undefined>((resolve) => {
       const complete = (values?: Record<string, unknown>) => resolve(values);

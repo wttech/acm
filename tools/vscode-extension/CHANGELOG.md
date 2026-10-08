@@ -2,7 +2,7 @@
 
 ## 0.1.3
 
-- Script inputs are edited together in a validated JSON document and run with its play button, so values can be reviewed and changed in any order; file inputs are selected and uploaded first.
+- Script inputs are edited together in a JSON document named after the script and run with its play button, so values can be reviewed and changed in any order; file inputs are selected and uploaded first.
 - Each ACM view links directly to its related settings (project roots, instances or execution limit); the instance picker clearly identifies authentication, read-only and active state and links to instance settings; the Marketplace icon uses a transparent background.
 - The *Project Scripts* view is now *Project Content*, as it lists the scripts and the ACM snippets (`conf/acm/settings/snippet/available`, next to the scripts folder, in a *Snippets* group) of the project. `New Snippet...` creates a YAML snippet from a template, and snippets can be renamed, duplicated, deleted and revealed like scripts. The command `ACM: Refresh Project Scripts` became `ACM: Refresh Project Content`.
 - Project Content lists every scripts folder of the workspace side by side, each named by the part of its path that tells it apart from the others, instead of asking to pick one. The setting `acm.scripts.root` became the list `acm.scripts.roots`, and `ACM: Select Scripts Folder` is gone.

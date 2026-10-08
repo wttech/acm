@@ -169,7 +169,7 @@ async function run(selectionOnly: boolean, views: Views, history = true, script?
   }
   const { instance, client } = target;
   const { code, label } = source;
-  const inputs = source.hasInputs ? await promptInputs(client, code) : {};
+  const inputs = source.hasInputs ? await promptInputs(client, code, label) : {};
   if (!inputs) {
     return;
   }
