@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { SCRIPT_TYPE_INFO } from '@acm/shared';
 import { CONTEXT, ITEMS, VIEWS } from '../ids';
 import {
   filesIn,
   listFiles,
+  sectionInfo,
   sectionKey,
   sectionOf,
   sections,
@@ -28,16 +28,10 @@ export function scriptOf(node?: Node): ProjectScript | undefined {
 }
 
 function describeSection(section: Section): { label: string; tooltip: string; icon: vscode.ThemeIcon; contextValue: string } {
-  if (section.kind === 'scriptType') {
-    const { label, description } = SCRIPT_TYPE_INFO[section.scriptType];
-    return { label, tooltip: description, icon: vscode.ThemeIcon.Folder, contextValue: ITEMS.projectScriptType };
-  }
-  return {
-    label: 'Snippets',
-    tooltip: 'Code templates offered in the ACM Console and the Snippets page: YAML files in conf/acm/settings/snippet/available.',
-    icon: new vscode.ThemeIcon('symbol-snippet'),
-    contextValue: ITEMS.projectSnippets,
-  };
+  const { label, description } = sectionInfo(section);
+  return section.kind === 'scriptType'
+    ? { label, tooltip: description, icon: vscode.ThemeIcon.Folder, contextValue: ITEMS.projectScriptType }
+    : { label, tooltip: description, icon: new vscode.ThemeIcon('symbol-snippet'), contextValue: ITEMS.projectSnippets };
 }
 
 function groups(root: vscode.Uri, files: ProjectFile[]): Node[] {

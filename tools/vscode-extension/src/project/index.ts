@@ -6,7 +6,7 @@ import type { AcmInstance } from '../instances';
 import { onDidChangeMock } from '../mock';
 import { compareInstanceScript, compareProjectScript } from './compare';
 import { affectsProject } from './files';
-import { createScript, createSnippet, deleteFile, duplicateFile, renameFile } from './operations';
+import { createContent, createScript, createSnippet, deleteFile, duplicateFile, renameFile } from './operations';
 import { requireRoot } from './roots';
 import { ProjectTree, fileOf, scriptOf, type Node } from './tree';
 
@@ -47,10 +47,10 @@ export function registerProjectContent(context: vscode.ExtensionContext): void {
     }),
     registerCommand(COMMANDS.refreshProjectContent, () => tree.refresh()),
     // From the view title or the palette VS Code passes the selected item, so the argument is ignored and the root is asked.
-    registerCommand(COMMANDS.newProjectScript, async () => {
+    registerCommand(COMMANDS.newProjectContent, async () => {
       const root = await requireRoot(tree.roots);
       if (root) {
-        await refreshAndReveal(await createScript(root));
+        await refreshAndReveal(await createContent(root));
       }
     }),
     registerCommand(COMMANDS.newProjectScriptOfType, async (node?: Node) => {

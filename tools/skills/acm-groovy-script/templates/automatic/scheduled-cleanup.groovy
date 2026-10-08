@@ -16,7 +16,7 @@ def scheduleRun() {
 }
 
 boolean canRun() {
-    return conditions.always() && conditions.isInstanceAuthor()
+    return conditions.always()
 }
 
 void doRun() {

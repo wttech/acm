@@ -24,7 +24,7 @@ export const COMMANDS = {
   compareScript: 'acm.compareScript',
   compareProjectScript: 'acm.compareProjectScript',
   runProjectScript: 'acm.runProjectScript',
-  newProjectScript: 'acm.newProjectScript',
+  newProjectContent: 'acm.newProjectContent',
   newProjectScriptOfType: 'acm.newProjectScriptOfType',
   newProjectSnippet: 'acm.newProjectSnippet',
   renameProjectFile: 'acm.renameProjectFile',

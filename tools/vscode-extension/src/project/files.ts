@@ -3,6 +3,8 @@ import {
   PACKAGE_SCRIPT_ROOT,
   SCRIPT_EXTENSION,
   SNIPPET_EXTENSION,
+  SNIPPET_INFO,
+  SCRIPT_TYPE_INFO,
   enabledScriptTypes,
   scriptIdOf,
   scriptLabel,
@@ -62,6 +64,11 @@ export function sectionOf(file: ProjectFile): Section {
 
 export function sectionKey(section: Section): string {
   return section.kind === 'scriptType' ? section.scriptType : 'SNIPPETS';
+}
+
+/** The name and the purpose of a section, as shown to the user. */
+export function sectionInfo(section: Section): { label: string; description: string } {
+  return section.kind === 'scriptType' ? SCRIPT_TYPE_INFO[section.scriptType] : SNIPPET_INFO;
 }
 
 export function filesIn(files: ProjectFile[], section: Section): ProjectFile[] {

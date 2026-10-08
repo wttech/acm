@@ -11,7 +11,7 @@ Describe what the script sets up.
 */
 
 boolean canRun() {
-    return conditions.changed() && conditions.isInstanceAuthor()
+    return conditions.changed()
 }
 
 void doRun() {

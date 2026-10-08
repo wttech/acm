@@ -1,17 +1,14 @@
 import * as vscode from 'vscode';
 import {
   SCRIPT_EXTENSION,
-  SCRIPT_TYPE_INFO,
   SNIPPET_EXTENSION,
-  enabledScriptTypes,
   snippetTemplate,
   stripExtension,
   templatesFor,
   validateRelativeName,
   type ScriptType,
 } from '@acm/shared';
-import { isMockEnabled } from '../mock';
-import { snippetsFolder, scriptFolder, type ProjectFile } from './files';
+import { scriptFolder, sectionInfo, sections, snippetsFolder, type ProjectFile } from './files';
 
 function fileExists(uri: vscode.Uri): Thenable<boolean> {
   return vscode.workspace.fs.stat(uri).then(
@@ -38,24 +35,26 @@ async function writeAndOpen(file: vscode.Uri, content: string): Promise<void> {
   await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(file));
 }
 
-async function pickScriptType(): Promise<ScriptType | undefined> {
+/** Creates a script or a snippet, asking what kind first; returns the new file, `undefined` when cancelled. */
+export async function createContent(root: vscode.Uri): Promise<vscode.Uri | undefined> {
   const picked = await vscode.window.showQuickPick(
-    enabledScriptTypes({ mock: isMockEnabled() }).map((type) => ({
-      label: SCRIPT_TYPE_INFO[type].label,
-      detail: SCRIPT_TYPE_INFO[type].description,
-      type,
+    sections().map((section) => ({
+      label: sectionInfo(section).label,
+      detail: sectionInfo(section).description,
+      section,
     })),
-    { title: 'New ACM Script', placeHolder: 'Script type', matchOnDetail: true },
+    { title: 'New ACM Content', placeHolder: 'Content type', matchOnDetail: true },
   );
-  return picked?.type;
-}
-
-/** Creates a script from a template, asking for what is not given; returns the new file, `undefined` when cancelled. */
-export async function createScript(root: vscode.Uri, knownType?: ScriptType): Promise<vscode.Uri | undefined> {
-  const type = knownType ?? (await pickScriptType());
-  if (!type) {
+  if (!picked) {
     return undefined;
   }
+  return picked.section.kind === 'scriptType'
+    ? createScript(root, picked.section.scriptType)
+    : createSnippet(root);
+}
+
+/** Creates a script of the type from a template; returns the new file, `undefined` when cancelled. */
+export async function createScript(root: vscode.Uri, type: ScriptType): Promise<vscode.Uri | undefined> {
   const template = await vscode.window.showQuickPick(
     templatesFor(type).map((candidate) => ({ label: candidate.name, detail: candidate.description, candidate })),
     { title: `New ${type.toLowerCase()} script`, placeHolder: 'Select ACM script template', matchOnDetail: true },

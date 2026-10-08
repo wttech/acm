@@ -101,7 +101,7 @@ Creates the folder structure the ACME project expects. Re-applied whenever this 
 */
 
 boolean canRun() {
-    return conditions.changed() && conditions.isInstanceAuthor()
+    return conditions.changed()
 }
 
 void doRun() {
