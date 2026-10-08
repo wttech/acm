@@ -10881,7 +10881,7 @@
               "name": "chunkSize"
             },
             {
-              "type": "String...",
+              "type": "Collection<String>",
               "name": "paths"
             }
           ]

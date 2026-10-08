@@ -11,6 +11,7 @@ import com.day.cq.replication.ReplicationOptions;
 import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.AcmException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.jcr.Session;
@@ -37,15 +38,15 @@ class ActivatorTest {
     }
 
     @Test
-    void shouldReplicateNothingWithoutPaths() throws ReplicationException {
-        activator.replicate(ReplicationActionType.ACTIVATE, false, 2);
+    void shouldReplicateNothingWithoutPaths() {
+        activator.replicate(ReplicationActionType.ACTIVATE, false, 2, Collections.emptyList());
 
         verifyNoInteractions(replicator);
     }
 
     @Test
     void shouldReplicateInFullChunks() throws ReplicationException {
-        activator.replicate(ReplicationActionType.ACTIVATE, false, 2, "/a", "/b", "/c", "/d");
+        activator.replicate(ReplicationActionType.ACTIVATE, false, 2, Arrays.asList("/a", "/b", "/c", "/d"));
 
         assertEquals(
                 Arrays.asList(Arrays.asList("/a", "/b"), Arrays.asList("/c", "/d")),
@@ -54,7 +55,7 @@ class ActivatorTest {
 
     @Test
     void shouldReplicateRemainderInLastChunk() throws ReplicationException {
-        activator.replicate(ReplicationActionType.DEACTIVATE, false, 2, "/a", "/b", "/c");
+        activator.replicate(ReplicationActionType.DEACTIVATE, false, 2, Arrays.asList("/a", "/b", "/c"));
 
         assertEquals(
                 Arrays.asList(Arrays.asList("/a", "/b"), Arrays.asList("/c")),
@@ -63,14 +64,14 @@ class ActivatorTest {
 
     @Test
     void shouldReplicateInOneChunkWhenChunkSizeExceedsPaths() throws ReplicationException {
-        activator.replicate(ReplicationActionType.ACTIVATE, false, 50, "/a", "/b");
+        activator.replicate(ReplicationActionType.ACTIVATE, false, 50, Arrays.asList("/a", "/b"));
 
         assertEquals(Arrays.asList(Arrays.asList("/a", "/b")), replicatedChunks(ReplicationActionType.ACTIVATE, 1));
     }
 
     @Test
     void shouldPassSynchronousOption() throws ReplicationException {
-        activator.replicate(ReplicationActionType.ACTIVATE, true, 1, "/a", "/b");
+        activator.replicate(ReplicationActionType.ACTIVATE, true, 1, Arrays.asList("/a", "/b"));
 
         ArgumentCaptor<ReplicationOptions> options = ArgumentCaptor.forClass(ReplicationOptions.class);
         verify(replicator, times(2))
@@ -80,7 +81,16 @@ class ActivatorTest {
 
     @Test
     void shouldRejectChunkSizeLessThanOne() {
-        assertThrows(AcmException.class, () -> activator.replicate(ReplicationActionType.ACTIVATE, false, 0, "/a"));
+        assertThrows(
+                AcmException.class,
+                () -> activator.replicate(ReplicationActionType.ACTIVATE, false, 0, Arrays.asList("/a")));
+
+        verifyNoInteractions(replicator);
+    }
+
+    @Test
+    void shouldRejectNullPaths() {
+        assertThrows(AcmException.class, () -> activator.replicate(ReplicationActionType.ACTIVATE, false, 2, null));
 
         verifyNoInteractions(replicator);
     }
@@ -95,11 +105,12 @@ class ActivatorTest {
 
         AcmException e = assertThrows(
                 AcmException.class,
-                () -> activator.replicate(ReplicationActionType.ACTIVATE, false, 2, "/a", "/b", "/c", "/d", "/e"));
+                () -> activator.replicate(
+                        ReplicationActionType.ACTIVATE, false, 2, Arrays.asList("/a", "/b", "/c", "/d", "/e")));
 
         assertSame(cause, e.getCause());
         assertTrue(e.getMessage().contains("chunk 2 of 3"), e.getMessage());
-        assertTrue(e.getMessage().contains("[/c, /d]"), e.getMessage());
+        assertTrue(e.getMessage().contains("'/c'"), e.getMessage());
         assertEquals(
                 Arrays.asList(Arrays.asList("/a", "/b"), Arrays.asList("/c", "/d")),
                 replicatedChunks(ReplicationActionType.ACTIVATE, 2));

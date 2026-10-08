@@ -7,7 +7,8 @@ import com.day.cq.replication.Replicator;
 import dev.vml.es.acm.core.AcmException;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.util.ResourceSpliterator;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -60,7 +61,7 @@ public class Activator {
     }
 
     public void replicate(
-            ReplicationActionType replicationActionType, boolean synchronous, int chunkSize, String... paths) {
+            ReplicationActionType replicationActionType, boolean synchronous, int chunkSize, Collection<String> paths) {
         List<List<String>> chunks = chunk(paths, chunkSize);
         ReplicationOptions options = new ReplicationOptions();
         options.setSynchronous(synchronous);
@@ -78,10 +79,11 @@ public class Activator {
                         synchronous);
             }
         } catch (ReplicationException e) {
+            List<String> failedChunk = chunks.get(counter);
             throw new AcmException(
                     String.format(
-                            "Cannot '%s' chunk %d of %d. Paths '%s'",
-                            replicationActionType, counter + 1, chunks.size(), chunks.get(counter)),
+                            "Cannot '%s' chunk %d of %d. First path (of %d paths): '%s'",
+                            replicationActionType, counter + 1, chunks.size(), failedChunk.size(), failedChunk.get(0)),
                     e);
         }
     }
@@ -113,13 +115,13 @@ public class Activator {
         }
     }
 
-    private static List<List<String>> chunk(String[] array, int chunkSize) {
-        if (chunkSize < 1) {
-            throw new AcmException("Replication chunk size can't be less than 1!");
+    private static List<List<String>> chunk(Collection<String> paths, int chunkSize) {
+        if (paths == null || chunkSize < 1) {
+            throw new AcmException("Replication paths must be set and chunk size can't be less than 1!");
         }
-        return IntStream.range(0, (array.length + chunkSize - 1) / chunkSize)
-                .mapToObj(i -> Arrays.asList(
-                        Arrays.copyOfRange(array, i * chunkSize, Math.min((i + 1) * chunkSize, array.length))))
+        List<String> list = new ArrayList<>(paths);
+        return IntStream.range(0, (list.size() + chunkSize - 1) / chunkSize)
+                .mapToObj(i -> list.subList(i * chunkSize, Math.min((i + 1) * chunkSize, list.size())))
                 .collect(Collectors.toList());
     }
 }
