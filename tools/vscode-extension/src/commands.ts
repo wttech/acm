@@ -14,7 +14,7 @@ import {
   type QueueOutput,
 } from '@acm/shared';
 import { registerCommand as register, showError } from './errors';
-import { COMMANDS, DISPLAY_NAME, SETTINGS, settingId } from './ids';
+import { COMMANDS, DISPLAY_NAME, SETTINGS, settingId, type SettingKey } from './ids';
 import { confirmInputs, promptInputs } from './inputs';
 import {
   confirmRun,
@@ -67,6 +67,9 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
     register(COMMANDS.openSettings, () =>
       vscode.commands.executeCommand('workbench.action.openSettings', '@ext:wppes.acm'),
     ),
+    register(COMMANDS.openProjectContentSettings, () => openSetting(SETTINGS.scriptsRoots)),
+    register(COMMANDS.openInstanceSettings, () => openSetting(SETTINGS.instances)),
+    register(COMMANDS.openExecutionsSettings, () => openSetting(SETTINGS.executionsLimit)),
     register(COMMANDS.setCredentials, setCredentialsCommand),
     register(COMMANDS.checkConnection, checkConnection),
     register(COMMANDS.newScript, newScript),
@@ -367,6 +370,10 @@ async function abort(views: Views, node?: { instance: AcmInstance; execution: Ex
   await client.request('DELETE', `${ACM_API.queueCode}?executionId=${encodeURIComponent(executionId)}`);
   vscode.window.setStatusBarMessage(`ACM: Abort requested for ${executionId}`, 5000);
   views.refreshExecutions();
+}
+
+function openSetting(setting: SettingKey): Thenable<unknown> {
+  return vscode.commands.executeCommand('workbench.action.openSettings', settingId(setting));
 }
 
 async function selectInstance(): Promise<void> {

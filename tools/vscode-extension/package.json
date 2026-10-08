@@ -101,6 +101,24 @@
         "icon": "$(gear)"
       },
       {
+        "command": "acm.openProjectContentSettings",
+        "title": "Configure Project Content",
+        "category": "ACM",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "acm.openInstanceSettings",
+        "title": "Configure Instances",
+        "category": "ACM",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "acm.openExecutionsSettings",
+        "title": "Configure Executions",
+        "category": "ACM",
+        "icon": "$(gear)"
+      },
+      {
         "command": "acm.setCredentials",
         "title": "Set Credentials",
         "category": "ACM"
@@ -338,6 +356,18 @@
           "when": "false"
         },
         {
+          "command": "acm.openProjectContentSettings",
+          "when": "false"
+        },
+        {
+          "command": "acm.openInstanceSettings",
+          "when": "false"
+        },
+        {
+          "command": "acm.openExecutionsSettings",
+          "when": "false"
+        },
+        {
           "command": "acm.runScript",
           "when": "false"
         },
@@ -527,8 +557,18 @@
           "group": "navigation@2"
         },
         {
-          "command": "acm.openSettings",
-          "when": "view == acm.projectContent || view == acm.scripts || view == acm.executions",
+          "command": "acm.openProjectContentSettings",
+          "when": "view == acm.projectContent",
+          "group": "navigation@99"
+        },
+        {
+          "command": "acm.openInstanceSettings",
+          "when": "view == acm.scripts",
+          "group": "navigation@99"
+        },
+        {
+          "command": "acm.openExecutionsSettings",
+          "when": "view == acm.executions",
           "group": "navigation@99"
         }
       ]
