@@ -26,6 +26,7 @@
     <modules>
         <module>all</module>
         <module>min</module>
+        <module>api.aem</module>
         <module>core</module>
         <module>ui.apps</module>
         <module>ui.apps.structure</module>
@@ -344,6 +345,9 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                     <extensions>true</extensions>
                     <configuration>
                         <skipPublishing>${maven.deploy.skip}</skipPublishing>
+                        <excludeArtifacts>
+                            <artifact>acm.api.aem</artifact>
+                        </excludeArtifacts>
                         <publishingServerId>central</publishingServerId>
                         <autoPublish>true</autoPublish>
                         <waitUntil>validated</waitUntil>
@@ -829,13 +833,6 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                 <groupId>javax.jcr</groupId>
                 <artifactId>jcr</artifactId>
                 <version>2.0</version>
-                <scope>provided</scope>
-            </dependency>
-            <!-- Taglibs -->
-            <dependency>
-                <groupId>com.day.cq.wcm</groupId>
-                <artifactId>cq-wcm-taglib</artifactId>
-                <version>5.7.4</version>
                 <scope>provided</scope>
             </dependency>
             <!-- Groovy -->

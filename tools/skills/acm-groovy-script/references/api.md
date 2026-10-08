@@ -1950,6 +1950,7 @@ Optional<String> normalizeClassName(String fileName)
 void activate(String path)
 void deactivate(String path)
 void activateTree(String path)
+void replicate(ReplicationActionType replicationActionType, boolean synchronous, int chunkSize, Collection<String> paths)
 void reactivate(String path)
 void reactivateTree(String path)
 ```

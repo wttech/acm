@@ -125,6 +125,7 @@ println repo.get('/content/acme/en').property('jcr:content/jcr:title', String)
 - Queries and traversals return single-use `Stream`s. Iterate with `forEach { }`, or call `.toList()` to reuse the result.
 - `acl` permissions are set in closures: `allow { path = '/content/acme'; permissions = ['jcr:read'] }`. Group members are added on the group: `group.addMember(user)`.
 - `conditions.always()` in an automatic script runs it on every boot or schedule tick. Use it only when that is intended.
+- To replicate many paths, call `activator.replicate(ReplicationActionType.ACTIVATE, false, 100, paths)` instead of `activate` per path; import `com.day.cq.replication.ReplicationActionType`. On AEM as a Cloud Service keep `chunkSize` at 100 or less: 500 paths is the hard limit and fails with an error, and the content of one chunk must stay under 10 MB (binaries excluded). Chunks are replicated one by one, so a failure leaves the earlier chunks replicated.
 
 ## References
 
