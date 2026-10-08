@@ -22,7 +22,13 @@ interface InputSession {
   complete: (values?: Record<string, unknown>) => void;
 }
 
-let inputSession: InputSession | undefined;
+// Keyed by document URI, so several scripts can have their inputs edited at the same time.
+const inputSessions = new Map<string, InputSession>();
+
+function updateEditingInputsContext(): Thenable<unknown> {
+  const active = vscode.window.activeTextEditor?.document.uri.toString();
+  return vscode.commands.executeCommand('setContext', CONTEXT.editingInputs, !!active && inputSessions.has(active));
+}
 
 /** Resolves inputs declared in `describeRun()` and asks for their values; `undefined` when cancelled. */
 export async function promptInputs(
@@ -63,36 +69,52 @@ async function promptFiles(client: AcmClient, input: InputDefinition): Promise<u
   return multiple ? paths : paths[0];
 }
 
+/** Untitled documents are identified by their URI, so a second input editor with the same title would reuse the first. */
+function uniqueUntitledUri(title: string): vscode.Uri {
+  const open = new Set(
+    vscode.workspace.textDocuments.filter((doc) => doc.uri.scheme === 'untitled').map((doc) => doc.uri.path),
+  );
+  const base = vscode.Uri.file(title).path;
+  if (!open.has(base)) {
+    return vscode.Uri.file(title).with({ scheme: 'untitled' });
+  }
+  const extensionIndex = title.lastIndexOf('.json');
+  for (let n = 2; ; n++) {
+    const candidate = `${title.slice(0, extensionIndex)} (${n}).json`;
+    if (!open.has(vscode.Uri.file(candidate).path)) {
+      return vscode.Uri.file(candidate).with({ scheme: 'untitled' });
+    }
+  }
+}
+
 async function showInputsEditor(
   inputs: InputDefinition[],
   initialValues: Record<string, unknown>,
   label?: string,
 ): Promise<Record<string, unknown> | undefined> {
-  const title = label ? `${label} — inputs.json` : 'inputs.json';
-  const uri = vscode.Uri.file(title).with({ scheme: 'untitled' });
+  const uri = uniqueUntitledUri(label ? `${label} — inputs.json` : 'inputs.json');
   const doc = await vscode.workspace.openTextDocument(uri);
   const editor = await vscode.window.showTextDocument(doc, { preview: false });
   await editor.edit((editBuilder) => {
     editBuilder.insert(new vscode.Position(0, 0), JSON.stringify(initialValues, null, 2));
   });
   const diagnostics = vscode.languages.createDiagnosticCollection('acmInputs');
+  const key = doc.uri.toString();
   const disposables: vscode.Disposable[] = [];
   try {
     return await new Promise<Record<string, unknown> | undefined>((resolve) => {
       const complete = (values?: Record<string, unknown>) => resolve(values);
-      inputSession = { doc, inputs, diagnostics, complete };
-      const updateContext = () =>
-        vscode.commands.executeCommand('setContext', CONTEXT.editingInputs, vscode.window.activeTextEditor?.document === doc);
+      inputSessions.set(key, { doc, inputs, diagnostics, complete });
       disposables.push(
-        vscode.window.onDidChangeActiveTextEditor(updateContext),
+        vscode.window.onDidChangeActiveTextEditor(updateEditingInputsContext),
         vscode.workspace.onDidCloseTextDocument((closed) => closed === doc && complete()),
       );
-      void updateContext();
+      void updateEditingInputsContext();
     });
   } finally {
-    inputSession = undefined;
+    inputSessions.delete(key);
     disposables.forEach((disposable) => disposable.dispose());
-    await vscode.commands.executeCommand('setContext', CONTEXT.editingInputs, false);
+    await updateEditingInputsContext();
     diagnostics.dispose();
     if (!doc.isClosed) {
       await vscode.window.showTextDocument(doc, { preview: false });
@@ -102,8 +124,9 @@ async function showInputsEditor(
 }
 
 export async function confirmInputs(): Promise<void> {
-  const session = inputSession;
-  if (!session || vscode.window.activeTextEditor?.document !== session.doc) {
+  const active = vscode.window.activeTextEditor?.document;
+  const session = active && inputSessions.get(active.uri.toString());
+  if (!session) {
     return;
   }
   const result = parseInputs(session.doc, session.inputs);
