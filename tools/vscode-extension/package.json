@@ -573,6 +573,14 @@
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "acm.runWithInputs",
+        "key": "ctrl+s",
+        "mac": "cmd+s",
+        "when": "acm.editingInputs"
+      }
+    ],
     "configuration": {
       "title": "ACM",
       "properties": {
