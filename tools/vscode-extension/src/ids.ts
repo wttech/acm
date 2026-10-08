@@ -13,6 +13,7 @@ export const COMMANDS = {
   describe: 'acm.describe',
   abort: 'acm.abort',
   selectInstance: 'acm.selectInstance',
+  openSettings: 'acm.openSettings',
   setCredentials: 'acm.setCredentials',
   checkConnection: 'acm.checkConnection',
   refreshExecutions: 'acm.refreshExecutions',

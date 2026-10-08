@@ -95,6 +95,12 @@
         "category": "ACM"
       },
       {
+        "command": "acm.openSettings",
+        "title": "Open Settings",
+        "category": "ACM",
+        "icon": "$(gear)"
+      },
+      {
         "command": "acm.setCredentials",
         "title": "Set Credentials",
         "category": "ACM"
@@ -519,6 +525,11 @@
           "command": "acm.refreshProjectContent",
           "when": "view == acm.projectContent",
           "group": "navigation@2"
+        },
+        {
+          "command": "acm.openSettings",
+          "when": "view == acm.projectContent || view == acm.scripts || view == acm.executions",
+          "group": "navigation@99"
         }
       ]
     },
@@ -641,7 +652,7 @@
             "type": "string",
             "minLength": 1
           },
-          "markdownDescription": "Folders with the project's ACM scripts, usually content packages' `jcr_root/conf/acm/settings/script`, relative to the workspace folder (or absolute). Project Content and `New Project Content...` use them. Empty finds them from the scripts already in the workspace."
+          "markdownDescription": "Folders with the project's ACM scripts, usually content packages `jcr_root/conf/acm/settings/script`, relative to the workspace folder (or absolute). Project Content and `New Project Content...` use them. Empty finds them from the scripts already in the workspace."
         }
       }
     },

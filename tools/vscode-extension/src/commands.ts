@@ -64,6 +64,9 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
     register(COMMANDS.abort, (node?: ExecutionNode) => abort(views, node)),
     register(COMMANDS.downloadOutputs, (node?: ExecutionNode) => downloadOutputs(node)),
     register(COMMANDS.selectInstance, selectInstance),
+    register(COMMANDS.openSettings, () =>
+      vscode.commands.executeCommand('workbench.action.openSettings', '@ext:wppes.acm'),
+    ),
     register(COMMANDS.setCredentials, setCredentialsCommand),
     register(COMMANDS.checkConnection, checkConnection),
     register(COMMANDS.newScript, newScript),
