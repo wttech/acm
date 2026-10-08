@@ -3,6 +3,8 @@
 version: '1.0'
 category: mock
 ---
+Simulates a third-party HTTP endpoint with a fixed response.
+
 Simulates the ACME product API for test environments by answering `GET /mock/acme/products` with JSON. Needs the mock filter enabled.
 */
 

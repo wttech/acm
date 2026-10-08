@@ -4,6 +4,8 @@ version: '1.0'
 category: security
 tags: ['acl']
 ---
+Sets up users, groups and permissions.
+
 Creates the ACME service user and authors group with their permissions. Re-applied whenever this script changes.
 */
 

@@ -4,6 +4,8 @@ version: '1.0'
 category: security
 tags: ['acl']
 ---
+Sets up users, groups and permissions on demand.
+
 Creates the ACME service user and authors group with their permissions. Run on demand; safe to repeat.
 */
 

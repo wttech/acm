@@ -9,7 +9,10 @@ import extensionHooks from '../../skills/acm-groovy-script/templates/extension/h
 import manualContentMigration from '../../skills/acm-groovy-script/templates/manual/content-migration.groovy';
 import manualMinimal from '../../skills/acm-groovy-script/templates/manual/minimal.groovy';
 import manualPermissions from '../../skills/acm-groovy-script/templates/manual/permissions.groovy';
-import manualReportCsv from '../../skills/acm-groovy-script/templates/manual/report-csv.groovy';
+import manualExportCsv from '../../skills/acm-groovy-script/templates/manual/export-csv.groovy';
+import manualExportXls from '../../skills/acm-groovy-script/templates/manual/export-xls.groovy';
+import manualImportCsv from '../../skills/acm-groovy-script/templates/manual/import-csv.groovy';
+import manualImportXls from '../../skills/acm-groovy-script/templates/manual/import-xls.groovy';
 import mockHttpEndpoint from '../../skills/acm-groovy-script/templates/mock/http-endpoint.groovy';
 import { SCRIPT_TYPES, type ScriptFeatures } from './domain/script';
 
@@ -72,12 +75,18 @@ export interface ScriptTemplate {
   code: string;
 }
 
+// File names of templates are words joined by dashes; these are written in capitals in template names.
+const ACRONYMS = new Set(['csv', 'xls', 'http']);
+
 // esbuild cannot import a folder, so every template file is listed here.
 const TEMPLATE_FILES: Record<string, string> = {
   'templates/manual/minimal.groovy': manualMinimal,
   'templates/manual/content-migration.groovy': manualContentMigration,
   'templates/manual/permissions.groovy': manualPermissions,
-  'templates/manual/report-csv.groovy': manualReportCsv,
+  'templates/manual/export-csv.groovy': manualExportCsv,
+  'templates/manual/export-xls.groovy': manualExportXls,
+  'templates/manual/import-csv.groovy': manualImportCsv,
+  'templates/manual/import-xls.groovy': manualImportXls,
   'templates/automatic/minimal.groovy': automaticMinimal,
   'templates/automatic/permissions.groovy': automaticPermissions,
   'templates/automatic/scheduled-cleanup.groovy': automaticScheduledCleanup,
@@ -96,11 +105,15 @@ function templateOf(path: string, code: string): ScriptTemplate {
   if (!header) {
     throw new Error(`Template ${path} must start with a documentation header.`);
   }
-  const words = file.replace(/\.groovy$/, '').replace(/-/g, ' ');
+  const name = file
+    .replace(/\.groovy$/, '')
+    .split('-')
+    .map((word) => (ACRONYMS.has(word) ? word.toUpperCase() : word))
+    .join(' ');
   return {
     path,
     target,
-    name: words.charAt(0).toUpperCase() + words.slice(1),
+    name: name.charAt(0).toUpperCase() + name.slice(1),
     description: (header.split('\n\n')[0] ?? header).replace(/\n/g, ' '),
     code,
   };

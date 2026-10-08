@@ -253,7 +253,7 @@
           {
             "id": "write",
             "title": "Write a script",
-            "description": "Start from a documented template: content migration, ACL setup, report, scheduled cleanup and more. Completion and docs cover the whole ACM script API.\n[New ACM Script](command:acm.newScript)",
+            "description": "Start from a documented template: content migration, ACL setup, CSV and Excel export and import, scheduled cleanup and more. Completion and docs cover the whole ACM script API.\n[New ACM Script](command:acm.newScript)",
             "media": {
               "markdown": "media/walkthrough/write.md"
             },

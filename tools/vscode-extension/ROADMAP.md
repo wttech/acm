@@ -25,7 +25,7 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 - [~] **Validation.** On save of scripts declaring `doRun()`, compile-check on the active instance (`execute-code`, `mode=parse`) and show errors as diagnostics with line and column; missing or misspelled lifecycle methods are reported by ACM. Next: local checks without an instance; extension and mock scripts, which the parse mode checks as content scripts.
 - [x] **CodeLens.** `Run` above `doRun`; validation runs on save and inputs are asked for on run, so no other lenses.
 - [~] **Snippets.** `acmdoc` inserts the script documentation header. Next: snippets from the instance (`snippet`).
-- [x] **New script.** `File > New File... > ACM Script` opens a documented script from the skill's templates (minimal, migration, ACL, report, scheduled cleanup, extension hooks, console, mock).
+- [x] **New script.** `File > New File... > ACM Script` opens a documented script from the skill's templates (minimal, migration, ACL, CSV and XLS export and import, scheduled cleanup, extension hooks, console, mock).
 - [ ] **JCR path links.** Ctrl+click on `/content/...` or `/conf/...` opens CRXDE or Sites on the active instance.
 
 ### Browsing
