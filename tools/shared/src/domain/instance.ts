@@ -26,6 +26,18 @@ export function resolveActive(instances: AcmInstance[], activeName?: string): Ac
   return enabled.find((instance) => instance.name === activeName) ?? (enabled.length === 1 ? enabled[0] : undefined);
 }
 
+/** Explains why `acm.activeInstance` selects nothing (typo, disabled instance); `undefined` when it is fine or unset. */
+export function activeInstanceProblem(instances: AcmInstance[], activeName?: string): string | undefined {
+  if (!activeName) {
+    return undefined;
+  }
+  const found = instances.find((instance) => instance.name === activeName);
+  if (!found) {
+    return `acm.activeInstance "${activeName}" matches no instance (configured: ${instances.map((instance) => instance.name).join(', ')}).`;
+  }
+  return found.enabled === false ? `acm.activeInstance "${activeName}" is disabled.` : undefined;
+}
+
 const enabledNames = (instances: AcmInstance[]) =>
   enabledInstances(instances)
     .map((instance) => instance.name)
@@ -54,7 +66,8 @@ export function resolveInstance(
   if (active) {
     return active;
   }
-  throw new Error(`No active ACM instance. Pass "instance" with one of: ${enabledNames(instances)}.`);
+  const problem = activeInstanceProblem(instances, activeName);
+  throw new Error(`No active ACM instance${problem ? ` (${problem})` : ''}. Pass "instance" with one of: ${enabledNames(instances)}.`);
 }
 
 export function isLocalUrl(url: string): boolean {

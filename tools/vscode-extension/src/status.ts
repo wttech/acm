@@ -1,8 +1,15 @@
 import * as vscode from 'vscode';
-import { ACM_API, ACM_FEATURE, AcmHttpError, describeUnhealthy, type HealthStatus } from '@acm/shared';
+import {
+  ACM_API,
+  ACM_FEATURE,
+  AcmHttpError,
+  activeInstanceProblem,
+  describeUnhealthy,
+  type HealthStatus,
+} from '@acm/shared';
 import { openUiLink } from './browser';
-import { COMMANDS, CONTEXT, NAMESPACE } from './ids';
-import { getActiveInstance, getClient, getSettings } from './instances';
+import { COMMANDS, CONTEXT, NAMESPACE, SETTINGS } from './ids';
+import { getActiveInstance, getClient, getInstances, getSettings, readSetting } from './instances';
 import { reportInstanceMock } from './mock';
 
 interface StatePermissions {
@@ -115,17 +122,20 @@ function updateStatus(): void {
     return;
   }
   abortItem.hide();
+  const selection = activeInstanceProblem(getInstances(), readSetting<string>(SETTINGS.activeInstance) || undefined);
   if (!instance) {
-    item.text = '$(server) ACM: no instance';
-    item.tooltip = 'Select ACM instance';
+    item.text = `${selection ? '$(warning)' : '$(server)'} ACM: no instance`;
+    item.tooltip = `${selection ? `${selection}\n\n` : ''}Select ACM instance`;
     item.command = COMMANDS.selectInstance;
   } else {
-    item.text = `${problem ? '$(warning)' : '$(server)'} ACM: ${instance.name}`;
+    item.text = `${problem || selection ? '$(warning)' : '$(server)'} ACM: ${instance.name}`;
     const tooltip = new vscode.MarkdownString();
     tooltip.isTrusted = { enabledCommands: [COMMANDS.openUi] };
     tooltip.appendText(`${instance.url}${instance.readonly ? ' (read-only)' : ''}`);
-    if (problem) {
-      tooltip.appendMarkdown('\n\n').appendText(problem);
+    for (const warning of [selection, problem]) {
+      if (warning) {
+        tooltip.appendMarkdown('\n\n').appendText(warning);
+      }
     }
     tooltip.appendMarkdown(`\n\n[Open ACM](${openUiLink('home')}) \u00b7 `);
     tooltip.appendText(unauthorized ? 'Click to set credentials.' : 'Click to switch.');

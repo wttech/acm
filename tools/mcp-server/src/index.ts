@@ -87,6 +87,7 @@ import {
   type AcmAuth,
   AcmClient,
   type AcmInstance,
+  activeInstanceProblem,
   CONSOLE_CODE_ID,
   MCP_ENV,
   type Execution,
@@ -180,6 +181,11 @@ if (configPath && process.platform !== "win32") {
   } catch {
     // ignore — the file read itself already succeeded
   }
+}
+
+const activeProblem = activeInstanceProblem(config.instances, config.activeInstance);
+if (activeProblem) {
+  console.error(`[acm-mcp] ${activeProblem} Tools use the only enabled instance, or need "instance" when several are enabled.`);
 }
 
 /** The instance's secret: a literal, an env var, or a file re-read on every call. */
@@ -353,7 +359,7 @@ server.registerTool(
         ` | credentials: ${hasSecret ? "configured" : "MISSING"}`
       );
     });
-    return textResult(`Instances (${lines.length}):\n${lines.join("\n")}`);
+    return textResult(`${activeProblem ? `WARNING: ${activeProblem}\n\n` : ""}Instances (${lines.length}):\n${lines.join("\n")}`);
   }
 );
 

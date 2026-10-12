@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { CONFIG_KEYS, configKey, parseConfig } from '../src/api/config.ts';
 import {
+  activeInstanceProblem,
   defaultSecret,
   enabledInstances,
   resolveActive,
@@ -109,6 +110,25 @@ describe('resolveActive / enabledInstances', () => {
   it('asks the user to pick when the active one is disabled and several remain', () => {
     const all = [instance({ enabled: false }), instance({ name: 'two', url: 'http://x' }), instance({ name: 'three', url: 'http://y' })];
     assert.equal(resolveActive(all, 'one'), undefined);
+  });
+});
+
+describe('activeInstanceProblem', () => {
+  const all = [instance({ enabled: false }), instance({ name: 'two', url: 'http://x' })];
+
+  it('is silent when unset or valid', () => {
+    assert.equal(activeInstanceProblem(all, undefined), undefined);
+    assert.equal(activeInstanceProblem(all, 'two'), undefined);
+  });
+
+  it('names typos and disabled instances', () => {
+    assert.match(activeInstanceProblem(all, 'tow')!, /matches no instance.*one, two/);
+    assert.match(activeInstanceProblem(all, 'one')!, /disabled/);
+  });
+
+  it('is part of the error when several instances need a choice', () => {
+    const three = [...all, instance({ name: 'three', url: 'http://y' })];
+    assert.throws(() => resolveInstance(three, 'one'), /disabled.*Pass "instance"/);
   });
 });
 

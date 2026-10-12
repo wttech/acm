@@ -112,6 +112,8 @@ Tools act on exactly one instance, chosen like this:
 3. otherwise the only enabled instance, when just one is configured;
 4. otherwise the call fails with the list of enabled names, so nothing runs on the wrong instance by accident.
 
+If `acm.activeInstance` names an unknown or disabled instance (a typo, say), the server warns on stderr at startup and `acm_list_instances` repeats the warning, so the agent can tell you; the rules above then apply as if it were unset.
+
 `acm_list_instances` shows which instance is active and which have credentials. Write tools (`acm_run_code`, `acm_abort_execution`, `acm_describe_inputs`) always act on exactly one instance — there is deliberately no run-everywhere call. To compare instances (e.g. author vs publish drift), run the same read-only code on each and diff the results; the bundled scripting guide covers the pattern. This needs ACM reachable on both sides, which works on local, on-premise and AMS (direct publish URL) — an AEMaaCS publish is not reachable.
 
 ## Tools
