@@ -84,16 +84,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Entra ID via OIDC (workload identity federation); no stored token.
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          allow-no-subscriptions: true
-
+      # Trusted publishing: the Marketplace exchanges the workflow's OIDC token for a short-lived credential.
       - name: Publish to VS Code Marketplace
-        run: npx vsce publish --azure-credential --packagePath "dist/acm-${VERSION}.vsix"
+        run: npx vsce publish --oidc --packagePath "dist/acm-${VERSION}.vsix"
 
       # Trusted publishing: Open VSX exchanges the workflow's OIDC token for a short-lived token.
       - name: Publish to Open VSX
