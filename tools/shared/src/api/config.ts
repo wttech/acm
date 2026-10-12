@@ -56,13 +56,11 @@ function readConfig(doc: unknown): AcmConfig {
   if (duplicate) {
     throw new Error(`duplicate instance name "${duplicate.name}"`);
   }
+  // An empty string is the extension's "none selected" default, so a pasted settings block stays valid.
+  const active = root[configKey(CONFIG_KEYS.activeInstance)];
   return {
     instances,
-    activeInstance: asText(
-      root[configKey(CONFIG_KEYS.activeInstance)],
-      `"${configKey(CONFIG_KEYS.activeInstance)}"`,
-      false,
-    ),
+    activeInstance: asText(active === '' ? undefined : active, `"${configKey(CONFIG_KEYS.activeInstance)}"`, false),
     httpTimeoutMs: readMs(root, CONFIG_KEYS.httpTimeout, CONFIG_DEFAULTS.httpTimeoutMs),
     runTimeoutMs: readMs(root, CONFIG_KEYS.runTimeout, CONFIG_DEFAULTS.runTimeoutMs),
     runPollIntervalMs: readMs(root, CONFIG_KEYS.runPollInterval, CONFIG_DEFAULTS.runPollIntervalMs),

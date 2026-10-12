@@ -77,7 +77,7 @@ The `login-token` cookie expires after about 12 hours; use `secret: { "file": "p
 `secret` is the bearer token, the `login-token` cookie (value or `name=value`) or the basic-auth password, given as:
 
 - a literal — convenient for development. Keep the config file readable only by you (`chmod 600`); the server warns when it is not.
-- `{ "env": "NAME" }` — read from an environment variable when the server starts.
+- `{ "env": "NAME" }` — read from an environment variable of the server process. Nothing is written to the config file.
 - `{ "file": "path" }` — `~` is expanded and a relative path resolves against the config file. Re-read on **every** request, so refreshing a token on disk needs no restart. A missing or empty file fails only that instance.
 
 Basic auth with user `admin` on a local URL defaults to password `admin`, so the local SDK needs no secret at all.

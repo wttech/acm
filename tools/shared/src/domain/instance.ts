@@ -20,13 +20,10 @@ export function enabledInstances(instances: AcmInstance[]): AcmInstance[] {
   return instances.filter((instance) => instance.enabled !== false);
 }
 
-/** The active enabled instance, or the only one; `undefined` when the user must pick. */
+/** The active enabled instance, else the only enabled one; `undefined` when the user must pick. */
 export function resolveActive(instances: AcmInstance[], activeName?: string): AcmInstance | undefined {
   const enabled = enabledInstances(instances);
-  if (activeName) {
-    return enabled.find((instance) => instance.name === activeName);
-  }
-  return enabled.length === 1 ? enabled[0] : undefined;
+  return enabled.find((instance) => instance.name === activeName) ?? (enabled.length === 1 ? enabled[0] : undefined);
 }
 
 const enabledNames = (instances: AcmInstance[]) =>

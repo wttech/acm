@@ -43,6 +43,10 @@ describe('parseConfig', () => {
     assert.equal(config.httpTimeoutMs, 5000);
   });
 
+  it('treats an empty active instance as unset', () => {
+    assert.equal(parseConfig(doc([instance()], { [configKey(CONFIG_KEYS.activeInstance)]: '' })).activeInstance, undefined);
+  });
+
   it('accepts all secret forms', () => {
     const config = parseConfig(
       doc([
@@ -94,8 +98,17 @@ describe('resolveActive / enabledInstances', () => {
   it('never returns a disabled instance', () => {
     const all = [instance({ enabled: false }), instance({ name: 'two', url: 'http://x' })];
     assert.equal(enabledInstances(all).length, 1);
-    assert.equal(resolveActive(all, 'one'), undefined);
     assert.equal(resolveActive(all, 'two')?.name, 'two');
+  });
+
+  it('falls back to the only enabled instance when the active one is disabled', () => {
+    const all = [instance({ enabled: false }), instance({ name: 'two', url: 'http://x' })];
+    assert.equal(resolveActive(all, 'one')?.name, 'two');
+  });
+
+  it('asks the user to pick when the active one is disabled and several remain', () => {
+    const all = [instance({ enabled: false }), instance({ name: 'two', url: 'http://x' }), instance({ name: 'three', url: 'http://y' })];
+    assert.equal(resolveActive(all, 'one'), undefined);
   });
 });
 

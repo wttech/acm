@@ -13,24 +13,39 @@ import {
 
 const README = 'https://github.com/wttech/acm/blob/main/tools/mcp-server/README.md';
 
-const secretEnv = (name: string) => `ACM_SECRET_${name.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+/** One environment variable per instance; names that sanitize alike get the index, so a secret never reaches another instance. */
+function secretEnvs(instances: AcmInstance[]): Map<string, string> {
+  const envs = new Map<string, string>();
+  const taken = new Set<string>();
+  instances.forEach((instance, index) => {
+    const base = `ACM_SECRET_${instance.name.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+    const env = taken.has(base) ? `${base}_${index}` : base;
+    taken.add(env);
+    envs.set(instance.name, env);
+  });
+  return envs;
+}
 
-const instanceEntry = (instance: AcmInstance, withSecretRef: boolean) => ({
+const instanceEntry = (instance: AcmInstance, secretEnv?: string) => ({
   name: instance.name,
   url: instance.url,
   authMode: instance.authMode,
   ...(instance.user ? { user: instance.user } : {}),
   ...(instance.readonly ? { readonly: true } : {}),
   ...(instance.enabled === false ? { enabled: false } : {}),
-  ...(withSecretRef ? { secret: { env: secretEnv(instance.name) } } : {}),
+  ...(secretEnv ? { secret: { env: secretEnv } } : {}),
 });
 
 /** The config document the bundled MCP server reads; secrets are env references resolved at server start. */
 function configDoc(instances: AcmInstance[], secrets: Map<string, string>): Record<string, unknown> {
   const settings = getSettings();
+  const envs = secretEnvs(instances);
+  const active = getActiveInstance()?.name;
   return {
-    [configKey(CONFIG_KEYS.instances)]: instances.map((instance) => instanceEntry(instance, secrets.has(instance.name))),
-    [configKey(CONFIG_KEYS.activeInstance)]: getActiveInstance()?.name ?? '',
+    [configKey(CONFIG_KEYS.instances)]: instances.map((instance) =>
+      instanceEntry(instance, secrets.has(instance.name) ? envs.get(instance.name) : undefined),
+    ),
+    ...(active ? { [configKey(CONFIG_KEYS.activeInstance)]: active } : {}),
     [configKey(CONFIG_KEYS.httpTimeout)]: settings.httpTimeout,
     [configKey(CONFIG_KEYS.runTimeout)]: settings.runTimeout,
     [configKey(CONFIG_KEYS.runPollInterval)]: settings.runPollInterval,
@@ -47,8 +62,8 @@ function exportableConfig(): Record<string, unknown> {
 }
 
 /** Any AI tool knows where it keeps its MCP configuration, so the prompt describes what to register, not where. */
-function setupPrompt(instances: AcmInstance[]): string {
-  const vars = instances.map((instance) => secretEnv(instance.name)).join(', ');
+function setupPrompt(): string {
+  const vars = [...secretEnvs(getInstances()).values()].join(', ');
   return [
     "Add the ACM (AEM Content Manager) MCP server to this tool's MCP configuration.",
     '',
@@ -114,10 +129,11 @@ export function registerMcp(context: vscode.ExtensionContext): void {
           secrets.set(instance.name, secret);
         }
       }
+      const envs = secretEnvs(instances);
       server.env = {
         ...server.env,
         [MCP_ENV.config]: JSON.stringify(configDoc(instances, secrets)),
-        ...Object.fromEntries([...secrets.keys()].map((name) => [secretEnv(name), secrets.get(name)!])),
+        ...Object.fromEntries([...secrets].map(([name, secret]) => [envs.get(name)!, secret])),
       };
       return server;
     },
@@ -130,7 +146,7 @@ export function registerMcp(context: vscode.ExtensionContext): void {
       const instances = getEnabledInstances();
       const list = instances.length > 0 ? instances : [await pickInstance()].filter((i): i is AcmInstance => !!i);
       if (list.length > 0) {
-        await vscode.env.clipboard.writeText(setupPrompt(list));
+        await vscode.env.clipboard.writeText(setupPrompt());
         vscode.window.showInformationMessage(
           `ACM: MCP setup prompt for ${list.map((instance) => `"${instance.name}"`).join(', ')} copied. Paste it into your AI agent; it contains no secrets.`,
         );

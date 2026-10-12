@@ -123,8 +123,9 @@ println repo.get('/content/acme/en').property('jcr:content/jcr:title', String)
 When the MCP server has several enabled instances, the same read-only code run on each of them answers "did author and publish drift apart?". Keep it safe: `history=false` (console code, needs `console/execute/nohistory` or run with history), no writes, and a deterministic output format so the diff is meaningful.
 
 ```groovy
-def path = '/conf/acm/settings/script'
-repo.get(path).query('cq:Page', '').forEach { r -> context.checkAborted(); println r.path }
+def paths = []
+repo.query('/conf/acm/settings/script', 'nt:file').forEach { r -> context.checkAborted(); paths << r.path }
+paths.sort().each { println it }
 ```
 
 or compare stored scripts with `acm_list_scripts` + `acm_get_script` per instance and last executions of automatic scripts with `acm_list_executions`. To compare content or ACLs, print sorted properties/ACEs of a path with `repo.get(path)` / `acl` (see [the API reference](references/api.md)).
