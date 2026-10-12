@@ -19,6 +19,7 @@ This skill covers writing those scripts and running them safely.
 - **Logging.** `log.*` for anything worth keeping (start, summary, errors), `out.*` for console-only progress, `println` only for throwaway output.
 - **Prefer ACM services** (`repo`, `acl`, `formatter`, `notifier`) over raw JCR, Sling or Jackrabbit APIs.
 - **With ACM MCP tools:** validate with `acm_validate_code` before every run, run with `dryRun` left on first, read the output, and only then run for real. Use `history=false` for read-only iterations while developing; it needs ACM's `console/execute/nohistory` permission, so on `403` run with history instead.
+- **Instances.** When several AEM instances are configured, every tool takes an `instance` argument; `acm_list_instances` shows the names and which is active. Confirm with the user before writing to an instance other than the active one.
 - **Do exactly what was asked.** If paths, scope, run frequency or instance type are unclear, ask before writing code.
 
 ## Workflow
@@ -116,6 +117,19 @@ Console code can skip the methods entirely:
 ```groovy
 println repo.get('/content/acme/en').property('jcr:content/jcr:title', String)
 ```
+
+## Comparing instances
+
+When the MCP server has several enabled instances, the same read-only code run on each of them answers "did author and publish drift apart?". Keep it safe: `history=false` (console code, needs `console/execute/nohistory` or run with history), no writes, and a deterministic output format so the diff is meaningful.
+
+```groovy
+def path = '/conf/acm/settings/script'
+repo.get(path).query('cq:Page', '').forEach { r -> context.checkAborted(); println r.path }
+```
+
+or compare stored scripts with `acm_list_scripts` + `acm_get_script` per instance and last executions of automatic scripts with `acm_list_executions`. To compare content or ACLs, print sorted properties/ACEs of a path with `repo.get(path)` / `acl` (see [the API reference](references/api.md)).
+
+This needs ACM reachable on both instances: local SDKs, on-premise and AMS (direct publish URL) work; an AEMaaCS publish is not reachable through the dispatcher, so author↔publish comparison there is not possible.
 
 ## Common mistakes
 

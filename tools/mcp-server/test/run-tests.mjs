@@ -3,7 +3,7 @@
  * End-to-end test for the ACM MCP server (built dist/index.js).
  *
  * Spawns the real MCP server over stdio (exactly like Claude Desktop would),
- * pointed at the mock ACM backend (test/mock-acm.mjs), and drives it through
+ * pointed at mock ACM backends (test/mock-acm.mjs), and drives it through
  * the MCP SDK client: handshake, tool listing, and every tool call.
  *
  * Usage:  node test/mock-acm.mjs &   (or let this script spawn it)
@@ -11,15 +11,18 @@
  */
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
 const PORT = 45102;
+const PORT2 = 45103;
 const BASE_URL = `http://localhost:${PORT}`;
+const BASE_URL2 = `http://localhost:${PORT2}`;
 const SERVER_PATH = new URL("../dist/index.js", import.meta.url).pathname;
+const MOCK_PATH = new URL("./mock-acm.mjs", import.meta.url).pathname;
 
 let passed = 0;
 let failed = 0;
@@ -40,11 +43,16 @@ function text(result) {
   return (result.content || []).map((c) => c.text ?? "").join("\n");
 }
 
-async function connect(env) {
+const basic = (name, url, extra = {}) => ({ name, url, authMode: "basic", user: "admin", secret: "admin", ...extra });
+
+const config = (instances, extra = {}) =>
+  JSON.stringify({ "acm.instances": instances, "acm.run.pollInterval": 100, ...extra });
+
+async function connect(configJson, env = {}) {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: [SERVER_PATH],
-    env: { ...process.env, ...env },
+    env: { ...process.env, ACM_CONFIG: configJson, ...env },
     stderr: "pipe",
   });
   const client = new Client({ name: "acm-test-client", version: "1.0.0" });
@@ -52,27 +60,37 @@ async function connect(env) {
   return client;
 }
 
-async function main() {
-  // -- start mock ACM backend ------------------------------------------------
-  const mock = spawn("node", [new URL("./mock-acm.mjs", import.meta.url).pathname], {
+function spawnMock(port, id) {
+  const mock = spawn("node", [MOCK_PATH], {
     stdio: ["ignore", "pipe", "inherit"],
+    env: { ...process.env, PORT: String(port), MOCK_ID: id },
   });
-  await new Promise((resolve, reject) => {
-    mock.stdout.on("data", (d) => d.toString().includes("listening") && resolve());
+  return new Promise((resolvePromise, reject) => {
+    mock.stdout.on("data", (d) => d.toString().includes("listening") && resolvePromise(mock));
     mock.on("exit", (c) => reject(new Error(`mock exited early (${c})`)));
     setTimeout(() => reject(new Error("mock did not start in 5s")), 5000);
   });
-  console.log("mock ACM backend up\n");
+}
+
+async function main() {
+  // -- start mock ACM backends ----------------------------------------------
+  const mocks = await Promise.all([spawnMock(PORT, "mock-one"), spawnMock(PORT2, "mock-two")]);
+  console.log("mock ACM backends up\n");
 
   try {
-    /* ====================== basic auth, read-write mode ==================== */
-    console.log("— connect (basic auth) + MCP handshake");
-    const client = await connect({
-      AEM_BASE_URL: BASE_URL,
-      AEM_USER: "admin",
-      AEM_PASSWORD: "admin",
-      ACM_POLL_INTERVAL_MS: "100",
-    });
+    /* ================== two instances, "one" active ======================== */
+    console.log("— connect (two instances, basic auth) + MCP handshake");
+    const client = await connect(
+      config(
+        [
+          basic("one", BASE_URL),
+          basic("two", BASE_URL2),
+          basic("ro", BASE_URL, { readonly: true }),
+          basic("off", BASE_URL, { enabled: false }),
+        ],
+        { "acm.activeInstance": "one" }
+      )
+    );
     check("MCP handshake (initialize) succeeded", true);
 
     const tools = await client.listTools();
@@ -86,12 +104,13 @@ async function main() {
       "acm_get_script",
       "acm_health",
       "acm_list_executions",
+      "acm_list_instances",
       "acm_list_scripts",
       "acm_run_code",
       "acm_validate_code",
     ];
     check(
-      `tools/list returns all 10 tools`,
+      `tools/list returns all 11 tools`,
       JSON.stringify(toolNames) === JSON.stringify(expected),
       `got: ${toolNames.join(",")}`
     );
@@ -122,10 +141,19 @@ async function main() {
       client.getInstructions()?.includes("context.checkAborted()")
     );
 
-    console.log("\n— acm_health");
-    let r = await client.callTool({ name: "acm_health", arguments: {} });
-    check("health returns the ACM state without a warning when healthy", !r.isError && text(r).includes("ACM state:") && !text(r).includes("WARNING"), text(r));
-    check("health includes target info", text(r).includes(BASE_URL));
+    console.log("\n— acm_list_instances");
+    let r = await client.callTool({ name: "acm_list_instances", arguments: {} });
+    check("lists enabled instances with the active one marked", !r.isError && /one \(active\)/.test(text(r)) && text(r).includes("two"), text(r));
+    check("marks the read-only instance", text(r).includes("ro") && /ro.*read-only/.test(text(r)), text(r));
+    check("hides the disabled instance", !text(r).includes("off"), text(r));
+
+    console.log("\n— acm_health (all instances)");
+    r = await client.callTool({ name: "acm_health", arguments: {} });
+    check("health without instance checks both instances", text(r).includes(BASE_URL) && text(r).includes(BASE_URL2), text(r));
+    check("health shows each instance's own state", text(r).includes("mock-one") && text(r).includes("mock-two"), text(r));
+    check("health shows the read-only banner", text(r).includes("READ-ONLY MODE"), text(r));
+    r = await client.callTool({ name: "acm_health", arguments: { instance: "two" } });
+    check("health on a named instance only", text(r).includes("mock-two") && !text(r).includes("mock-one"), text(r));
 
     console.log("\n— acm_validate_code");
     r = await client.callTool({
@@ -147,8 +175,26 @@ async function main() {
     });
     check("run reaches SUCCEEDED", !r.isError && text(r).includes("SUCCEEDED"), text(r));
     check("run returns console output", text(r).includes("hello from mock ACM"), text(r));
+    check("run names the active instance", text(r).includes("Instance: one"), text(r));
     const runId = text(r).match(/Execution ID: (\S+)/)?.[1];
     check("run returns execution id", !!runId);
+
+    console.log("\n— acm_run_code (instance argument)");
+    r = await client.callTool({
+      name: "acm_run_code",
+      arguments: { code: 'println "second instance"', instance: "two" },
+    });
+    check("run on the named instance", !r.isError && text(r).includes("Instance: two"), text(r));
+    r = await client.callTool({
+      name: "acm_run_code",
+      arguments: { code: 'println "x"', instance: "off" },
+    });
+    check("disabled instance is rejected", r.isError === true && text(r).includes("off") && text(r).includes("one"), text(r));
+    r = await client.callTool({
+      name: "acm_run_code",
+      arguments: { code: 'println "x"', instance: "nope" },
+    });
+    check("unknown instance is rejected", r.isError === true && text(r).includes("nope"), text(r));
 
     console.log("\n— acm_run_code (runtime failure)");
     r = await client.callTool({
@@ -249,15 +295,45 @@ async function main() {
     });
     check("missing output -> not found error", r.isError === true, text(r));
 
+    console.log("\n— readonly instance");
+    r = await client.callTool({ name: "acm_run_code", arguments: { code: 'println "x"', instance: "ro" } });
+    check("readonly blocks acm_run_code", r.isError === true && text(r).includes("BLOCKED"), text(r));
+    r = await client.callTool({ name: "acm_run_code", arguments: { code: 'println "x"', history: false, instance: "ro" } });
+    check("readonly blocks acm_run_code without history", r.isError === true && text(r).includes("BLOCKED"), text(r));
+    r = await client.callTool({ name: "acm_abort_execution", arguments: { executionId: "x", instance: "ro" } });
+    check("readonly blocks acm_abort_execution", r.isError === true && text(r).includes("BLOCKED"), text(r));
+    r = await client.callTool({ name: "acm_describe_inputs", arguments: { code: "void describeRun() {}", instance: "ro" } });
+    check("readonly blocks acm_describe_inputs", r.isError === true && text(r).includes("BLOCKED"), text(r));
+    r = await client.callTool({ name: "acm_validate_code", arguments: { code: 'println "x"', instance: "ro" } });
+    check("readonly still allows validation", !r.isError && text(r).includes("compiles"), text(r));
+
     await client.close();
+
+    /* ====================== no active instance ============================ */
+    console.log("\n— several enabled instances, no active one");
+    const noActiveClient = await connect(config([basic("one", BASE_URL), basic("two", BASE_URL2)]));
+    r = await noActiveClient.callTool({ name: "acm_run_code", arguments: { code: 'println "x"' } });
+    check(
+      "calls without instance are rejected listing names",
+      r.isError === true && text(r).includes('"instance"') && text(r).includes("one") && text(r).includes("two"),
+      text(r)
+    );
+    r = await noActiveClient.callTool({ name: "acm_run_code", arguments: { code: 'println "x"', instance: "two" } });
+    check("naming the instance still works", !r.isError && text(r).includes("Instance: two"), text(r));
+    await noActiveClient.close();
+
+    /* ====================== single instance, implicit default ============== */
+    console.log("\n— a single instance is the default, no secret needed for local admin");
+    const singleClient = await connect(config([{ name: "local", url: BASE_URL, authMode: "basic", user: "admin" }]));
+    r = await singleClient.callTool({ name: "acm_health", arguments: {} });
+    check("local admin defaults to admin/admin and needs no instance arg", !r.isError && text(r).includes("mock-one"), text(r));
+    await singleClient.close();
 
     /* ====================== cookie auth + CSRF ============================ */
     console.log("\n— cookie auth mode (login-token + CSRF)");
-    const cookieClient = await connect({
-      AEM_BASE_URL: BASE_URL,
-      AEM_COOKIE: "mock-login-token", // bare value: server should prefix login-token=
-      ACM_POLL_INTERVAL_MS: "100",
-    });
+    const cookieClient = await connect(
+      config([{ name: "cookie", url: BASE_URL, authMode: "cookie", secret: "mock-login-token" }])
+    );
     r = await cookieClient.callTool({ name: "acm_health", arguments: {} });
     check("cookie auth: health ok", !r.isError, text(r));
     r = await cookieClient.callTool({
@@ -267,10 +343,9 @@ async function main() {
     check("cookie auth: POST with CSRF token succeeds", !r.isError && text(r).includes("SUCCEEDED"), text(r));
     await cookieClient.close();
 
-    const slowCsrfClient = await connect({
-      AEM_BASE_URL: BASE_URL,
-      AEM_COOKIE: "mock-login-token-slow-csrf",
-    });
+    const slowCsrfClient = await connect(
+      config([{ name: "cookie", url: BASE_URL, authMode: "cookie", secret: "mock-login-token-slow-csrf" }])
+    );
     const started = Date.now();
     r = await slowCsrfClient.callTool({
       name: "acm_run_code",
@@ -284,75 +359,84 @@ async function main() {
     );
     await slowCsrfClient.close();
 
-    /* ====================== cookie file =================================== */
-    console.log("\n— cookie file (AEM_COOKIE_FILE)");
+    /* ====================== secret forms: env, file, missing =============== */
+    console.log("\n— secret forms");
+    const envClient = await connect(
+      config([{ name: "env", url: BASE_URL, authMode: "basic", user: "admin", secret: { env: "ACM_TEST_SECRET" } }]),
+      { ACM_TEST_SECRET: "admin" }
+    );
+    r = await envClient.callTool({ name: "acm_health", arguments: {} });
+    check("secret from an env var works", !r.isError, text(r));
+    r = await envClient.callTool({ name: "acm_list_instances", arguments: {} });
+    check("instance shows credentials configured", text(r).includes("credentials: configured"), text(r));
+    await envClient.close();
+
+    const noSecretClient = await connect(config([basic("remote", "http://unreachable.example.com:9999", { secret: undefined })]));
+    r = await noSecretClient.callTool({ name: "acm_list_instances", arguments: {} });
+    check("instance without a secret shows MISSING credentials", text(r).includes("credentials: MISSING"), text(r));
+    await noSecretClient.close();
+
     const tokenFile = join(tmpdir(), `acm-test-token-${process.pid}`);
     writeFileSync(tokenFile, "stale-login-token\n");
-    const fileClient = await connect({
-      AEM_BASE_URL: BASE_URL,
-      AEM_COOKIE_FILE: tokenFile,
-      ACM_POLL_INTERVAL_MS: "100",
-    });
+    const fileClient = await connect(
+      config([{ name: "cookie", url: BASE_URL, authMode: "cookie", secret: { file: tokenFile } }])
+    );
     r = await fileClient.callTool({ name: "acm_health", arguments: {} });
-    check("cookie file: stale token is rejected", r.isError === true, text(r));
+    check("secret file: stale token is rejected", r.isError === true, text(r));
 
     // The point of the file: refresh it under a running server, no restart.
     writeFileSync(tokenFile, "mock-login-token\n");
     r = await fileClient.callTool({ name: "acm_health", arguments: {} });
-    check("cookie file: refreshed token picked up without a restart", !r.isError, text(r));
+    check("secret file: refreshed token picked up without a restart", !r.isError, text(r));
 
     r = await fileClient.callTool({
       name: "acm_run_code",
       arguments: { code: 'println "cookie file run"' },
     });
     check(
-      "cookie file: POST with a CSRF token succeeds after a refresh",
+      "secret file: POST with a CSRF token succeeds after a refresh",
       !r.isError && text(r).includes("SUCCEEDED"),
       text(r)
     );
     await fileClient.close();
     rmSync(tokenFile, { force: true });
 
-    const fallbackClient = await connect({
-      AEM_BASE_URL: BASE_URL,
-      AEM_COOKIE: "mock-login-token",
-      AEM_COOKIE_FILE: join(tmpdir(), `acm-test-absent-${process.pid}`),
-      ACM_POLL_INTERVAL_MS: "100",
-    });
-    r = await fallbackClient.callTool({ name: "acm_health", arguments: {} });
-    check("cookie file: an unreadable file falls back to AEM_COOKIE", !r.isError, text(r));
-    await fallbackClient.close();
-
-    const emptyFileClient = await connect({
-      AEM_BASE_URL: BASE_URL,
-      AEM_COOKIE_FILE: join(tmpdir(), `acm-test-never-written-${process.pid}`),
-      ACM_POLL_INTERVAL_MS: "100",
-    });
+    const absentFile = join(tmpdir(), `acm-test-never-written-${process.pid}`);
+    const emptyFileClient = await connect(
+      config([{ name: "cookie", url: BASE_URL, authMode: "cookie", secret: { file: absentFile } }])
+    );
     r = await emptyFileClient.callTool({ name: "acm_health", arguments: {} });
     check(
-      "cookie file: a file that does not exist yet names itself in the error",
+      "secret file: a file that does not exist names itself in the error",
       r.isError === true && text(r).includes("acm-test-never-written"),
       text(r)
     );
     await emptyFileClient.close();
 
+    /* ====================== config file source ============================= */
+    console.log("\n— ACM_CONFIG_FILE");
+    const fileConfig = join(tmpdir(), `acm-test-config-${process.pid}.json`);
+    writeFileSync(fileConfig, config([basic("file", BASE_URL)]));
+    const fileConfigClient = await connect("", { ACM_CONFIG: "", ACM_CONFIG_FILE: fileConfig });
+    r = await fileConfigClient.callTool({ name: "acm_health", arguments: {} });
+    check("config read from a file works", !r.isError && text(r).includes("mock-one"), text(r));
+    await fileConfigClient.close();
+    rmSync(fileConfig, { force: true });
+
     /* ====================== bearer auth ==================================== */
     console.log("\n— bearer auth mode");
-    const bearerClient = await connect({
-      AEM_BASE_URL: BASE_URL,
-      AEM_TOKEN: "mock-bearer-token",
-      ACM_POLL_INTERVAL_MS: "100",
-    });
+    const bearerClient = await connect(
+      config([{ name: "bearer", url: BASE_URL, authMode: "bearer", secret: "mock-bearer-token" }])
+    );
     r = await bearerClient.callTool({ name: "acm_health", arguments: {} });
     check("bearer auth: health ok", !r.isError, text(r));
     await bearerClient.close();
 
     /* ====================== bad credentials ================================ */
     console.log("\n— bad credentials");
-    const badClient = await connect({
-      AEM_BASE_URL: BASE_URL,
-      AEM_TOKEN: "wrong-token",
-    });
+    const badClient = await connect(
+      config([{ name: "bearer", url: BASE_URL, authMode: "bearer", secret: "wrong-token" }])
+    );
     r = await badClient.callTool({ name: "acm_health", arguments: {} });
     check(
       "401 produces actionable message (Developer Console hint)",
@@ -361,29 +445,19 @@ async function main() {
     );
     await badClient.close();
 
-    /* ====================== read-only mode ================================ */
-    console.log("\n— ACM_READONLY mode");
-    const roClient = await connect({
-      AEM_BASE_URL: BASE_URL,
-      AEM_USER: "admin",
-      AEM_PASSWORD: "admin",
-      ACM_READONLY: "true",
-    });
-    r = await roClient.callTool({ name: "acm_run_code", arguments: { code: 'println "x"' } });
-    check("readonly blocks acm_run_code", r.isError === true && text(r).includes("BLOCKED"), text(r));
-    r = await roClient.callTool({ name: "acm_run_code", arguments: { code: 'println "x"', history: false } });
-    check("readonly blocks acm_run_code without history", r.isError === true && text(r).includes("BLOCKED"), text(r));
-    r = await roClient.callTool({ name: "acm_abort_execution", arguments: { executionId: "x" } });
-    check("readonly blocks acm_abort_execution", r.isError === true && text(r).includes("BLOCKED"), text(r));
-    r = await roClient.callTool({ name: "acm_describe_inputs", arguments: { code: "void describeRun() {}" } });
-    check("readonly blocks acm_describe_inputs", r.isError === true && text(r).includes("BLOCKED"), text(r));
-    r = await roClient.callTool({ name: "acm_validate_code", arguments: { code: 'println "x"' } });
-    check("readonly still allows validation", !r.isError && text(r).includes("compiles"), text(r));
-    r = await roClient.callTool({ name: "acm_health", arguments: {} });
-    check("readonly: health shows READ-ONLY MODE banner", text(r).includes("READ-ONLY MODE"), text(r));
-    await roClient.close();
+    /* ====================== no config at all =============================== */
+    console.log("\n— no config");
+    const env = { ...process.env };
+    delete env.ACM_CONFIG;
+    delete env.ACM_CONFIG_FILE;
+    const noConfig = spawnSync(process.execPath, [SERVER_PATH], { env, encoding: "utf8", timeout: 20000 });
+    check(
+      "missing config exits with a clear message",
+      (noConfig.status ?? 1) !== 0 && /ACM_CONFIG_FILE or ACM_CONFIG is required/.test(noConfig.stderr),
+      noConfig.stderr.slice(0, 300)
+    );
   } finally {
-    mock.kill();
+    for (const mock of mocks) mock.kill();
     await sleep(100);
   }
 

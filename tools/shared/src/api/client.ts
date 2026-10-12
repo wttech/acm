@@ -1,16 +1,29 @@
 import { GRANITE_CSRF_TOKEN } from './paths';
 import type { ApiResponse } from './response';
 
-export type AcmAuth =
-  | { mode: 'bearer'; token: string }
-  // Called on every request, so a refreshed cookie is picked up without restarting.
-  | { mode: 'cookie'; cookie: () => string | undefined }
-  | { mode: 'basic'; user: string; password: string };
+export interface BearerAuth {
+  mode: 'bearer';
+  token: string | (() => string | undefined);
+}
+
+/** Called on every request, so a refreshed cookie is picked up without restarting. */
+export interface CookieAuth {
+  mode: 'cookie';
+  cookie: () => string | undefined;
+}
+
+export interface BasicAuth {
+  mode: 'basic';
+  user: string;
+  password: string | (() => string | undefined);
+}
+
+export type AcmAuth = BearerAuth | CookieAuth | BasicAuth;
 
 /** Tool-specific hints, e.g. which environment variable or setting to fix. */
 export interface AcmClientMessages {
   unauthorized?: string;
-  missingCookie?: string;
+  missingSecret?: string;
 }
 
 export interface AcmConnection {
@@ -21,6 +34,20 @@ export interface AcmConnection {
 }
 
 export type HttpMethod = 'GET' | 'POST' | 'DELETE';
+
+/** A GET response kept as text, for execution output download. */
+export interface RawTextResponse {
+  status: number;
+  contentType: string;
+  text: string;
+}
+
+/** A GET response kept as bytes, for binary execution outputs. */
+export interface RawBytesResponse {
+  status: number;
+  contentType: string;
+  bytes: Uint8Array;
+}
 
 export class AcmHttpError extends Error {
   constructor(
@@ -77,21 +104,26 @@ export class AcmClient {
       Referer: this.baseUrl + '/',
     };
     const auth = this.connection.auth;
+    const missing = this.connection.messages?.missingSecret ?? 'No credentials configured.';
     switch (auth.mode) {
-      case 'bearer':
-        h['Authorization'] = `Bearer ${auth.token}`;
+      case 'bearer': {
+        const token = typeof auth.token === 'function' ? auth.token() : auth.token;
+        if (!token) throw new AcmHttpError(401, missing);
+        h['Authorization'] = `Bearer ${token}`;
         break;
+      }
       case 'cookie': {
         const cookie = auth.cookie();
-        if (!cookie) {
-          throw new AcmHttpError(401, this.connection.messages?.missingCookie ?? 'No login-token cookie configured.');
-        }
+        if (!cookie) throw new AcmHttpError(401, missing);
         h['Cookie'] = cookie;
         break;
       }
-      case 'basic':
-        h['Authorization'] = 'Basic ' + base64(`${auth.user}:${auth.password}`);
+      case 'basic': {
+        const password = typeof auth.password === 'function' ? auth.password() : auth.password;
+        if (password === undefined || password === '') throw new AcmHttpError(401, missing);
+        h['Authorization'] = 'Basic ' + base64(`${auth.user}:${password}`);
         break;
+      }
     }
     return h;
   }
@@ -211,7 +243,7 @@ export class AcmClient {
   }
 
   /** GET that returns the raw body as text (for execution output download). */
-  async requestRaw(path: string): Promise<{ status: number; contentType: string; text: string }> {
+  async requestRaw(path: string): Promise<RawTextResponse> {
     const res = await this.rawFetch(path, { method: 'GET', headers: this.baseHeaders() });
     const text = await res.text();
     if (res.status === 401 || res.status === 403) {
@@ -221,7 +253,7 @@ export class AcmClient {
   }
 
   /** GET that returns the raw body as bytes (for binary execution outputs). */
-  async requestBytes(path: string): Promise<{ status: number; contentType: string; bytes: Uint8Array }> {
+  async requestBytes(path: string): Promise<RawBytesResponse> {
     const res = await this.rawFetch(path, { method: 'GET', headers: this.baseHeaders() });
     const bytes = new Uint8Array(await res.arrayBuffer());
     if (res.status === 401 || res.status === 403) {

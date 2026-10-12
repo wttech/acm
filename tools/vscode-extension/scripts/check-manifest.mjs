@@ -1,10 +1,19 @@
 // Fails when the identifiers in src/ids.ts and the contributions in package.json drift apart.
 import { readFileSync } from 'node:fs';
-import { transform } from 'esbuild';
+import { build } from 'esbuild';
 
 const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
-const source = readFileSync(new URL('../src/ids.ts', import.meta.url), 'utf8');
-const { code } = await transform(source, { loader: 'ts', format: 'esm' });
+const bundled = await build({
+  entryPoints: [new URL('../src/ids.ts', import.meta.url).pathname],
+  bundle: true,
+  write: false,
+  format: 'esm',
+  platform: 'node',
+  external: ['vscode'],
+  loader: { '.md': 'text', '.groovy': 'text' },
+  logLevel: 'silent',
+});
+const code = bundled.outputFiles[0].text;
 const ids = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
 
 const contributes = manifest.contributes;

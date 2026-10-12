@@ -1,53 +1,92 @@
 import * as vscode from 'vscode';
-import { MCP_ENV } from '@acm/shared';
+import { CONFIG_KEYS, MCP_ENV, configKey, type AcmInstance } from '@acm/shared';
 import { COMMANDS, MCP_PROVIDER_ID, NAMESPACE, SETTINGS } from './ids';
-import { getActiveInstance, getSecret, getSettings, pickInstance, readSetting, type AcmInstance } from './instances';
-
-const SECRET_ENV: Record<AcmInstance['authMode'], string> = {
-  bearer: MCP_ENV.token,
-  cookie: MCP_ENV.cookie,
-  basic: MCP_ENV.password,
-};
+import {
+  getActiveInstance,
+  getEnabledInstances,
+  getInstances,
+  getSecret,
+  getSettings,
+  pickInstance,
+  readSetting,
+} from './instances';
 
 const README = 'https://github.com/wttech/acm/blob/main/tools/mcp-server/README.md';
 
+const secretEnv = (name: string) => `ACM_SECRET_${name.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+
+const instanceEntry = (instance: AcmInstance, withSecretRef: boolean) => ({
+  name: instance.name,
+  url: instance.url,
+  authMode: instance.authMode,
+  ...(instance.user ? { user: instance.user } : {}),
+  ...(instance.readonly ? { readonly: true } : {}),
+  ...(instance.enabled === false ? { enabled: false } : {}),
+  ...(withSecretRef ? { secret: { env: secretEnv(instance.name) } } : {}),
+});
+
+/** The config document the bundled MCP server reads; secrets are env references resolved at server start. */
+function configDoc(instances: AcmInstance[], secrets: Map<string, string>): Record<string, unknown> {
+  const settings = getSettings();
+  return {
+    [configKey(CONFIG_KEYS.instances)]: instances.map((instance) => instanceEntry(instance, secrets.has(instance.name))),
+    [configKey(CONFIG_KEYS.activeInstance)]: getActiveInstance()?.name ?? '',
+    [configKey(CONFIG_KEYS.httpTimeout)]: settings.httpTimeout,
+    [configKey(CONFIG_KEYS.runTimeout)]: settings.runTimeout,
+    [configKey(CONFIG_KEYS.runPollInterval)]: settings.runPollInterval,
+  };
+}
+
+/** The doc the user exports: every configured instance, with env refs as placeholders for the secrets to fill in. */
+function exportableConfig(): Record<string, unknown> {
+  const all = getInstances();
+  return configDoc(
+    all,
+    new Map(all.map((instance) => [instance.name, ''])),
+  );
+}
+
 /** Any AI tool knows where it keeps its MCP configuration, so the prompt describes what to register, not where. */
-function setupPrompt(instance: AcmInstance): string {
-  const env = [
-    `${MCP_ENV.baseUrl}=${instance.url}`,
-    `${MCP_ENV.auth}=${instance.authMode}`,
-    ...(instance.user ? [`${MCP_ENV.user}=${instance.user}`] : []),
-    `${MCP_ENV.readonly}=${instance.readonly ? 'true' : 'false'}`,
-  ];
+function setupPrompt(instances: AcmInstance[]): string {
+  const vars = instances.map((instance) => secretEnv(instance.name)).join(', ');
   return [
     "Add the ACM (AEM Content Manager) MCP server to this tool's MCP configuration.",
     '',
     '- Transport: stdio. Command: npx. Arguments: -y @wppes/acm-mcp-server (needs Node.js 22+).',
-    `- Environment variables: ${env.join(', ')}.`,
-    `- The secret for auth mode ${instance.authMode} goes into ${SECRET_ENV[instance.authMode]}. Never write its value into a file that may be committed and do not ask me to paste it here: reference an environment variable or this tool's secret mechanism, and tell me where to put the value.`,
+    `- Environment variable: ${MCP_ENV.configFile}, pointing at a JSON file with this content:`,
+    '',
+    JSON.stringify(exportableConfig(), null, 2),
+    '',
+    `- Each "secret" references an environment variable (${vars}). Put the values in this tool's secret mechanism or export them before starting the server; never write them into the file or ask me to paste them here.`,
     "- Find in this tool's documentation where MCP servers are configured (user or project level) and in which format.",
-    `- All variables: ${README}`,
-    '- When done, verify the connection by calling the acm_health tool.',
+    `- Config format: ${README}`,
+    `- When done, verify the connection by calling the acm_list_instances and acm_health tools.`,
   ].join('\n');
 }
 
-/** Registers the bundled ACM MCP server for the active instance, so agents get ACM tools without setup. */
+const hash = (s: string) => {
+  let h = 5381;
+  for (const c of s) h = (h * 33) ^ c.charCodeAt(0);
+  return (h >>> 0).toString(36);
+};
+
+/** Registers the bundled ACM MCP server for all enabled instances, so agents get ACM tools without setup. */
 export function registerMcp(context: vscode.ExtensionContext): void {
   const changed = new vscode.EventEmitter<void>();
-  const servers = new Map<string, AcmInstance>();
+  const servers = new Map<string, AcmInstance[]>();
   const version = (context.extension.packageJSON as { version: string }).version;
 
   const provider: vscode.McpServerDefinitionProvider<vscode.McpStdioServerDefinition> = {
     onDidChangeMcpServerDefinitions: changed.event,
     provideMcpServerDefinitions() {
       servers.clear();
-      const instance = getActiveInstance();
-      if (!instance || !readSetting<boolean>(SETTINGS.mcpEnabled)) {
+      const instances = getEnabledInstances();
+      if (instances.length === 0 || !readSetting<boolean>(SETTINGS.mcpEnabled)) {
         return [];
       }
-      const label = `ACM (${instance.name})`;
-      const settings = getSettings();
-      servers.set(label, instance);
+      const label = 'ACM';
+      servers.set(label, instances);
+      const doc = JSON.stringify(configDoc(instances, new Map()));
       // The editor's own Node.js runs the server, so users need no Node.js install.
       return [
         new vscode.McpStdioServerDefinition(
@@ -55,27 +94,31 @@ export function registerMcp(context: vscode.ExtensionContext): void {
           process.execPath,
           [context.asAbsolutePath('dist/mcp-server.mjs')],
           {
-            [MCP_ENV.baseUrl]: instance.url,
-            [MCP_ENV.auth]: instance.authMode,
-            [MCP_ENV.user]: instance.user ?? null,
-            [MCP_ENV.readonly]: instance.readonly ? 'true' : 'false',
-            [MCP_ENV.runTimeout]: settings.runTimeout,
-            [MCP_ENV.pollInterval]: settings.runPollInterval,
-            [MCP_ENV.httpTimeout]: settings.httpTimeout,
-            [MCP_ENV.unauthorizedMessage]: `401 Unauthorized on ACM instance "${instance.name}": the credentials are invalid or expired. Ask the user to run "ACM: Set Credentials" in VS Code, then restart this MCP server.`,
+            [MCP_ENV.config]: doc,
+            [MCP_ENV.unauthorizedMessage]: `401 Unauthorized on ACM instance "{instance}": the credentials are invalid or expired. Ask the user to run "ACM: Set Credentials" in VS Code, then restart this MCP server.`,
           },
-          `${version}+${instance.name}`,
+          `${version}+${hash(doc)}`,
         ),
       ];
     },
     // Secrets are added only when the server starts, never listed with the definition.
     async resolveMcpServerDefinition(server) {
-      const instance = servers.get(server.label);
-      const secret = instance && (await getSecret(instance));
-      if (!instance || !secret) {
+      const instances = servers.get(server.label);
+      if (!instances) {
         return undefined;
       }
-      server.env = { ...server.env, [SECRET_ENV[instance.authMode]]: secret };
+      const secrets = new Map<string, string>();
+      for (const instance of instances) {
+        const secret = await getSecret(instance, false);
+        if (secret) {
+          secrets.set(instance.name, secret);
+        }
+      }
+      server.env = {
+        ...server.env,
+        [MCP_ENV.config]: JSON.stringify(configDoc(instances, secrets)),
+        ...Object.fromEntries([...secrets.keys()].map((name) => [secretEnv(name), secrets.get(name)!])),
+      };
       return server;
     },
   };
@@ -84,12 +127,34 @@ export function registerMcp(context: vscode.ExtensionContext): void {
     changed,
     vscode.lm.registerMcpServerDefinitionProvider(MCP_PROVIDER_ID, provider),
     vscode.commands.registerCommand(COMMANDS.copyMcpSetup, async () => {
-      const instance = getActiveInstance() ?? (await pickInstance());
-      if (instance) {
-        await vscode.env.clipboard.writeText(setupPrompt(instance));
+      const instances = getEnabledInstances();
+      const list = instances.length > 0 ? instances : [await pickInstance()].filter((i): i is AcmInstance => !!i);
+      if (list.length > 0) {
+        await vscode.env.clipboard.writeText(setupPrompt(list));
         vscode.window.showInformationMessage(
-          `ACM: MCP setup prompt for "${instance.name}" copied. Paste it into your AI agent; it contains no secrets.`,
+          `ACM: MCP setup prompt for ${list.map((instance) => `"${instance.name}"`).join(', ')} copied. Paste it into your AI agent; it contains no secrets.`,
         );
+      }
+    }),
+    vscode.commands.registerCommand(COMMANDS.exportMcpConfig, async () => {
+      const instances = getInstances();
+      if (instances.length === 0) {
+        vscode.window.showWarningMessage('ACM: No instances configured.');
+        return;
+      }
+      const target = await vscode.window.showSaveDialog({ filters: { 'ACM config': ['json'] } });
+      if (!target) {
+        return;
+      }
+      const doc = exportableConfig();
+      await vscode.workspace.fs.writeFile(target, new TextEncoder().encode(JSON.stringify(doc, null, 2) + '\n'));
+      const action = await vscode.window.showInformationMessage(
+        `ACM: Exported ${instances.length} instance(s) without secrets. ` +
+          `Fill in "secret" (literal, { "env": "NAME" } or { "file": "path" }) and point ${MCP_ENV.configFile} at this file.`,
+        'Open',
+      );
+      if (action) {
+        await vscode.commands.executeCommand('vscode.open', target);
       }
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {

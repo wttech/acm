@@ -16,7 +16,7 @@ suite('Extension', () => {
       timeout: 20000,
     });
     // Without configuration the server stops right after loading all its modules.
-    assert.match(result.stderr, /AEM_BASE_URL is required/);
+    assert.match(result.stderr, /ACM_CONFIG_FILE or ACM_CONFIG is required/);
   });
 
   test('registers commands', async () => {

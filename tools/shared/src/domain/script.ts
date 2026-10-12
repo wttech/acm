@@ -8,8 +8,14 @@ export const SCRIPT_TYPES = ['MANUAL', 'AUTOMATIC', 'EXTENSION', 'MOCK'] as cons
 
 export type ScriptType = (typeof SCRIPT_TYPES)[number];
 
+/** The name and purpose of a catalogue item kind, as shown to the user. */
+export interface DisplayInfo {
+  label: string;
+  description: string;
+}
+
 /** What a user sees of a script type: its name and what scripts of it are for. */
-export const SCRIPT_TYPE_INFO: Record<ScriptType, { label: string; description: string }> = {
+export const SCRIPT_TYPE_INFO: Record<ScriptType, DisplayInfo> = {
   MANUAL: {
     label: 'Manual',
     description: 'Run on demand by a user, often with inputs. For migrations, reports and one-off fixes.',

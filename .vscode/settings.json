@@ -1,4 +1,7 @@
 {
+    "json.schemaDownload.trustedDomains": {
+        "static.modelcontextprotocol.io": true
+    },
     "search.exclude": {
         "**/aem/home": true,
         "**/node": true

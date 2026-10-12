@@ -9,8 +9,14 @@ export interface CatalogEntry {
   deprecated?: boolean;
 }
 
-// Prose and snippets only; names and return types come from the generated API. Snippet parameters are untyped to need no imports.
-const LIFECYCLE_DOCS: Record<string, { docs: string; snippet: string; params?: string }> = {
+/** Hand-written docs and snippet text for a lifecycle method; names and return types come from the generated API. Snippet parameters are untyped to need no imports. */
+interface LifecycleDoc {
+  docs: string;
+  snippet: string;
+  params?: string;
+}
+
+const LIFECYCLE_DOCS: Record<string, LifecycleDoc> = {
   describeRun: {
     docs: 'Declares inputs, e.g. `inputs.string(\'name\')`, and per-script settings such as `context.lockTimeout`.',
     snippet: 'void describeRun() {\n\t$0\n}',

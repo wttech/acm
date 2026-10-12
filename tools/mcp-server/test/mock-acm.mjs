@@ -146,7 +146,7 @@ const server = http.createServer(async (req, res) => {
       queuedExecutions: [...executions.values()]
         .filter((e) => ["QUEUED", "RUNNING"].includes(e.exec.status))
         .map((e) => e.exec.id),
-      instanceSettings: { id: "mock-aem", timezone: "UTC" },
+      instanceSettings: { id: process.env.MOCK_ID || "mock-aem", timezone: "UTC" },
     });
   }
 

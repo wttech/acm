@@ -5,14 +5,29 @@ import { COMMANDS, CONTEXT, NAMESPACE } from './ids';
 import { getActiveInstance, getClient, getSettings } from './instances';
 import { reportInstanceMock } from './mock';
 
+interface StatePermissions {
+  features?: Record<string, boolean>;
+}
+
+interface MockStatus {
+  enabled?: boolean;
+}
+
 interface State {
   healthStatus?: HealthStatus;
-  permissions?: { features?: Record<string, boolean> };
-  mockStatus?: { enabled?: boolean };
+  permissions?: StatePermissions;
+  mockStatus?: MockStatus;
+}
+
+/** The execution currently running, shown in the status bar with its own abort item. */
+interface RunningExecution {
+  executionId: string;
+  instance: string;
 }
 
 let item: vscode.StatusBarItem;
-let running: string | undefined;
+let abortItem: vscode.StatusBarItem;
+let running: RunningExecution | undefined;
 let problem: string | undefined;
 let unauthorized = false;
 let healthCheck = 0;
@@ -20,8 +35,10 @@ let healthTimer: ReturnType<typeof setInterval> | undefined;
 
 export function registerStatus(context: vscode.ExtensionContext): void {
   item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
+  abortItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
   context.subscriptions.push(
     item,
+    abortItem,
     { dispose: () => clearInterval(healthTimer) },
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration(NAMESPACE)) {
@@ -43,8 +60,8 @@ function scheduleHealth(): void {
   healthTimer = interval > 0 ? setInterval(() => void refreshHealth(), interval) : undefined;
 }
 
-export function setRunning(executionId: string | undefined): void {
-  running = executionId;
+export function setRunning(executionId: string | undefined, instanceName?: string): void {
+  running = executionId ? { executionId, instance: instanceName ?? '' } : undefined;
   updateStatus();
 }
 
@@ -88,10 +105,17 @@ function updateStatus(): void {
   vscode.commands.executeCommand('setContext', CONTEXT.hasInstance, !!instance);
   item.backgroundColor = undefined;
   if (running) {
-    item.text = `$(sync~spin) ACM: ${instance?.name ?? ''}`;
-    item.tooltip = `Running execution ${running}. Click to abort.`;
-    item.command = COMMANDS.abort;
-  } else if (!instance) {
+    item.text = `$(sync~spin) ACM: ${running.instance}`;
+    item.tooltip = `Running execution ${running.executionId} on ${running.instance}. Click to switch instance.`;
+    item.command = COMMANDS.selectInstance;
+    abortItem.text = '$(debug-stop) Abort';
+    abortItem.tooltip = `Abort execution ${running.executionId} on ${running.instance}`;
+    abortItem.command = COMMANDS.abort;
+    abortItem.show();
+    return;
+  }
+  abortItem.hide();
+  if (!instance) {
     item.text = '$(server) ACM: no instance';
     item.tooltip = 'Select ACM instance';
     item.command = COMMANDS.selectInstance;

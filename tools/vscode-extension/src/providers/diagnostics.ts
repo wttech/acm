@@ -5,8 +5,15 @@ import { getActiveInstance, getClient, readSetting } from '../instances';
 
 const ACM_SCRIPT = /\bvoid\s+doRun\s*\(/;
 const COMPILE_ERROR = /^(?:\S+: \d+: )?(.*?)\s*@ line (\d+), column (\d+)\.?\s*$/gm;
+
+/** Lines and columns normalizeGroovy added before the user's text, to subtract from compile errors. */
+interface TextOffset {
+  line: number;
+  column: number;
+}
+
 // normalizeGroovy() puts a bare snippet 5 lines down, indented by 4 spaces.
-const WRAP_OFFSET = { line: 5, column: 4 };
+const WRAP_OFFSET: TextOffset = { line: 5, column: 4 };
 
 let diagnostics: vscode.DiagnosticCollection;
 
@@ -39,7 +46,7 @@ export async function validateDocument(document: vscode.TextDocument, client: Ac
   const version = document.version;
   const text = document.getText();
   const content = normalizeGroovy(text);
-  const offset = content === text ? { line: 0, column: 0 } : WRAP_OFFSET;
+  const offset: TextOffset = content === text ? { line: 0, column: 0 } : WRAP_OFFSET;
   const res = await client.request<Execution>('POST', ACM_API.executeCode, {
     mode: 'parse',
     code: { id: CONSOLE_CODE_ID, content },
@@ -55,7 +62,7 @@ export async function validateDocument(document: vscode.TextDocument, client: Ac
 function toDiagnostics(
   document: vscode.TextDocument,
   error: string,
-  offset: { line: number; column: number },
+  offset: TextOffset,
 ): vscode.Diagnostic[] {
   const result: vscode.Diagnostic[] = [];
   for (const [, message, line, column] of error.matchAll(COMPILE_ERROR)) {

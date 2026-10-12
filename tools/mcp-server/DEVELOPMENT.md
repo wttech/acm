@@ -15,16 +15,16 @@ npm run check     # what CI runs: builds, then runs the end-to-end tests
 - `test/mock-acm.mjs` emulates the ACM servlets under `/apps/acm/api/*`: the response envelope, all three auth modes, Granite CSRF, and a QUEUED → RUNNING → SUCCEEDED lifecycle, so the polling loop is really exercised.
 - `test/run-tests.mjs` drives the server with the MCP SDK client: handshake, tool listing and every tool call.
 
-To try the server against a real instance, run `test/smoke.mjs`. It calls `acm_health` and runs one harmless `println`. It reads connection settings from a `.env` file, which is git-ignored. The server itself never reads `.env`.
+To try the server against a real instance, run `test/smoke.mjs`. It calls `acm_list_instances`, `acm_health` and runs one harmless `println`. It reads `ACM_CONFIG_FILE` or `ACM_CONFIG` from a `.env` file, which is git-ignored. The server itself never reads `.env`.
 
 ```bash
-cp .env.example .env     # set AEM_BASE_URL and ONE auth option
+cp .env.example .env     # set ACM_CONFIG_FILE (or ACM_CONFIG)
 npm run smoke
 ```
 
 To run a local build from an MCP client, point it at `node /path/to/acm/tools/mcp-server/dist/index.js` instead of `npx`.
 
-API paths, environment variable names and the behaviour shared with the VS Code extension live in [tools/shared](../shared); see the [tools development guide](../DEVELOPMENT.md).
+API paths, the config document model (instance keys, parsing, the active-instance rule) and environment variable names shared with the VS Code extension live in [tools/shared](../shared); see the [tools development guide](../DEVELOPMENT.md).
 
 ## Releasing
 

@@ -31,12 +31,7 @@ import {
 import { isMockEnabled } from './mock';
 import { validateDocument } from './providers/diagnostics';
 import { refreshHealth, setRunning } from './status';
-import { executionUri, storedScript, type Views } from './views';
-
-interface ExecutionNode {
-  instance: AcmInstance;
-  execution: Execution;
-}
+import { executionUri, storedScript, type InstanceExecution, type Views } from './views';
 
 interface OutputInfo {
   name: string;
@@ -45,8 +40,13 @@ interface OutputInfo {
   downloadName?: string;
 }
 
+/** A target with the execution it launched, kept while the run is in flight. */
+interface RunningTarget extends AcmTarget {
+  executionId: string;
+}
+
 let output: vscode.OutputChannel;
-let running: (AcmTarget & { executionId: string }) | undefined;
+let running: RunningTarget | undefined;
 
 export function registerCommands(context: vscode.ExtensionContext, views: Views): void {
   output = vscode.window.createOutputChannel(DISPLAY_NAME);
@@ -61,8 +61,8 @@ export function registerCommands(context: vscode.ExtensionContext, views: Views)
     register(COMMANDS.runWithInputs, confirmInputs),
     register(COMMANDS.validate, validate),
     register(COMMANDS.describe, describe),
-    register(COMMANDS.abort, (node?: ExecutionNode) => abort(views, node)),
-    register(COMMANDS.downloadOutputs, (node?: ExecutionNode) => downloadOutputs(node)),
+    register(COMMANDS.abort, (node?: InstanceExecution) => abort(views, node)),
+    register(COMMANDS.downloadOutputs, (node?: InstanceExecution) => downloadOutputs(node)),
     register(COMMANDS.selectInstance, selectInstance),
     register(COMMANDS.openSettings, () =>
       vscode.commands.executeCommand('workbench.action.openSettings', '@ext:wppes.acm'),
@@ -218,7 +218,7 @@ async function run(selectionOnly: boolean, views: Views, history = true, script?
   const executionId = execution.id;
 
   running = { ...target, executionId };
-  setRunning(executionId);
+  setRunning(executionId, instance.name);
   views.refreshExecutions();
   try {
     let printed = 0;
@@ -274,7 +274,7 @@ function report(label: string, execution: Execution, instance: AcmInstance, reco
   }
 }
 
-async function downloadOutputs(node?: ExecutionNode): Promise<void> {
+async function downloadOutputs(node?: InstanceExecution): Promise<void> {
   if (!node) {
     return;
   }
@@ -352,7 +352,7 @@ async function describe(): Promise<void> {
   output.show(true);
 }
 
-async function abort(views: Views, node?: { instance: AcmInstance; execution: Execution }): Promise<void> {
+async function abort(views: Views, node?: InstanceExecution): Promise<void> {
   const instance = node?.instance ?? running?.instance;
   const executionId = node?.execution.id ?? running?.executionId;
   if (!instance || !executionId) {

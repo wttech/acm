@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.2
+
+- **Breaking:** the bundled MCP server is configured by a JSON document (`ACM_CONFIG_FILE` path or `ACM_CONFIG` inline) using the same `acm.*` keys as the extension settings; the old `AEM_*` and `ACM_READONLY`/`ACM_*_TIMEOUT_MS` environment variables are gone. Instance secrets are a literal, `{ "env": "NAME" }` or `{ "file": "path" }` per instance.
+- The bundled MCP server now covers **all enabled instances**, not just the active one: every tool takes an optional `instance` argument, `acm_list_instances` shows what is configured, and `acm.activeInstance` picks the default. Agents can run the same read-only code on several instances to compare them (e.g. author vs publish on local or on-premise).
+- Instances have an `enabled` flag (default `true`), toggled with the eye button in the instance picker; disabled instances are hidden from pickers, views and the MCP server, e.g. to park prod temporarily.
+- New command `ACM: Export MCP Config` writes the configured instances as an MCP config file for other agents, without secrets.
+- While a script runs, clicking the status bar switches the instance again; aborting moved to a separate Abort button next to it.
+
 ## 0.9.1
 
 - Script inputs are edited together in a JSON document named after the script and run with its play button or `Ctrl/Cmd+S`, so values can be reviewed and changed in any order; file inputs are selected and uploaded first. Several scripts can have their inputs edited at the same time, and hovering a key shows its label, description, type and whether it is required.
