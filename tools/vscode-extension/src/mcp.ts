@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { CONFIG_KEYS, MCP_ENV, configKey, type AcmInstance } from '@acm/shared';
+import { CONFIG_KEYS, MCP_ENV, configKey, defaultSecret, type AcmInstance } from '@acm/shared';
 import { COMMANDS, MCP_PROVIDER_ID, NAMESPACE, SETTINGS } from './ids';
 import {
   getActiveInstance,
@@ -52,30 +52,34 @@ function configDoc(instances: AcmInstance[], secrets: Map<string, string>): Reco
   };
 }
 
+/** Instances that need a secret from the user; a local `admin` falls back to the default password, so it needs none. */
+const needsSecret = (instance: AcmInstance) => !defaultSecret(instance);
+
 /** The doc the user exports: every configured instance, with env refs as placeholders for the secrets to fill in. */
 function exportableConfig(): Record<string, unknown> {
   const all = getInstances();
-  return configDoc(
-    all,
-    new Map(all.map((instance) => [instance.name, ''])),
-  );
+  return configDoc(all, new Map(all.filter(needsSecret).map((instance) => [instance.name, ''])));
 }
 
-/** Any AI tool knows where it keeps its MCP configuration, so the prompt describes what to register, not where. */
+/** Concrete steps with the config inline, so an agent writes no extra file and decides nothing beyond its own MCP registration. */
 function setupPrompt(): string {
-  const vars = [...secretEnvs(getInstances()).values()].join(', ');
+  const all = getInstances();
+  const envs = secretEnvs(all);
+  const vars = all.filter(needsSecret).map((instance) => envs.get(instance.name)!);
   return [
-    "Add the ACM (AEM Content Manager) MCP server to this tool's MCP configuration.",
+    'Set up the ACM (AEM Content Manager) MCP server in this tool.',
     '',
-    '- Transport: stdio. Command: npx. Arguments: -y @wppes/acm-mcp-server (needs Node.js 22+).',
-    `- Environment variable: ${MCP_ENV.configFile}, pointing at a JSON file with this content:`,
+    `1. Register an MCP server named "acm" at user level, not in a project file that gets committed: transport stdio, command npx, arguments -y @wppes/acm-mcp-server (needs Node.js 22+), environment variable ${MCP_ENV.config} with exactly this single-line JSON as its value (it contains no secrets):`,
     '',
-    JSON.stringify(exportableConfig(), null, 2),
+    JSON.stringify(exportableConfig()),
     '',
-    `- Each "secret" references an environment variable (${vars}). Put the values in this tool's secret mechanism or export them before starting the server; never write them into the file or ask me to paste them here.`,
-    "- Find in this tool's documentation where MCP servers are configured (user or project level) and in which format.",
-    `- Config format: ${README}`,
-    `- When done, verify the connection by calling the acm_list_instances and acm_health tools.`,
+    `   Use this tool's own documentation for where and how MCP servers are registered.`,
+    vars.length > 0
+      ? `2. The "secret" entries refer to environment variables (${vars.join(', ')}) that the server inherits from the process that starts it. Do not look up or set their values yourself and do not ask me to paste them: tell me which variables to define and where, then continue.`
+      : '2. No secrets are needed: local admin instances use the default credentials.',
+    '3. Reload the MCP servers if this tool requires it, then call acm_list_instances and acm_health to verify.',
+    '',
+    `To change instances later, edit that JSON in the registration. Config format: ${README}`,
   ].join('\n');
 }
 
@@ -148,7 +152,7 @@ export function registerMcp(context: vscode.ExtensionContext): void {
       if (list.length > 0) {
         await vscode.env.clipboard.writeText(setupPrompt());
         vscode.window.showInformationMessage(
-          `ACM: MCP setup prompt for ${list.map((instance) => `"${instance.name}"`).join(', ')} copied. Paste it into your AI agent; it contains no secrets.`,
+          'ACM: Setup prompt copied (no secrets in it). Paste it into an AI tool outside VS Code, e.g. Claude Code, Cursor or Devin; agents inside VS Code already get ACM from this extension.',
         );
       }
     }),

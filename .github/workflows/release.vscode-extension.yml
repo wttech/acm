@@ -45,9 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      VSCE_PAT: ${{ secrets.VSCE_PAT }}
-      OVSX_PAT: ${{ secrets.OVSX_PAT }}
+      id-token: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -86,11 +84,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Skipped until the publisher tokens are configured as repository secrets.
-      - name: Publish to VS Code Marketplace
-        if: env.VSCE_PAT != ''
-        run: npx vsce publish --packagePath "dist/acm-${VERSION}.vsix"
+      # Entra ID via OIDC (workload identity federation); no stored token.
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
 
+      - name: Publish to VS Code Marketplace
+        run: npx vsce publish --azure-credential --packagePath "dist/acm-${VERSION}.vsix"
+
+      # Trusted publishing: Open VSX exchanges the workflow's OIDC token for a short-lived token.
       - name: Publish to Open VSX
-        if: env.OVSX_PAT != ''
-        run: npx ovsx publish "dist/acm-${VERSION}.vsix"
+        run: npx ovsx publish --trusted-publishing "dist/acm-${VERSION}.vsix"

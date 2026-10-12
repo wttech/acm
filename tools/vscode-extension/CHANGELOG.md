@@ -7,6 +7,7 @@
 - Instances have an `enabled` flag (default `true`), toggled with the eye button in the instance picker; disabled instances are hidden from pickers, views and the MCP server, e.g. to park prod temporarily.
 - New command `ACM: Export MCP Config` writes the configured instances as an MCP config file for other agents, without secrets.
 - While a script runs, clicking the status bar switches the instance again; aborting moved to a separate Abort button next to it.
+- The status bar tooltip has one layout for every state: instance and URL, a status section (healthy, unstable with the worst issues by severity and category, not reachable, credentials required), the running execution with an Abort link, and quick actions (open ACM, check connection or set credentials, switch instance). Unreachable instances turn the item red.
 
 ## 0.9.1
 
