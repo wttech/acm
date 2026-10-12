@@ -27,7 +27,15 @@ export function scriptOf(node?: Node): ProjectScript | undefined {
   return file?.kind === 'script' ? file : undefined;
 }
 
-function describeSection(section: Section): { label: string; tooltip: string; icon: vscode.ThemeIcon; contextValue: string } {
+/** How a section renders in the tree: label, hover text, icon and view-item context. */
+interface SectionPresentation {
+  label: string;
+  tooltip: string;
+  icon: vscode.ThemeIcon;
+  contextValue: string;
+}
+
+function describeSection(section: Section): SectionPresentation {
   const { label, description } = sectionInfo(section);
   return section.kind === 'scriptType'
     ? { label, tooltip: description, icon: vscode.ThemeIcon.Folder, contextValue: ITEMS.projectScriptType }

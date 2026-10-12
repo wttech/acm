@@ -872,4 +872,4 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for building, running locally and releasing
 
 ## License
 
-**AEM Content Manager** is licensed under the [Apache License, Version 2.0 (the "License")](https://www.apache.org/licenses/LICENSE-2.0.txt)
+**AEM Content Manager** is licensed under the [Apache License, Version 2.0 (the "License")](https://www.apache.org/licenses/LICENSE-2.0.txt). It is provided "as is", without warranty of any kind; use it at your own risk (see sections 7 and 8 of the License).

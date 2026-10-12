@@ -242,6 +242,11 @@
         "category": "ACM"
       },
       {
+        "command": "acm.exportMcpConfig",
+        "title": "Export MCP Config...",
+        "category": "ACM"
+      },
+      {
         "command": "acm.openUi",
         "title": "Open ACM in Browser",
         "category": "ACM"
@@ -627,6 +632,11 @@
                 "type": "boolean",
                 "default": false,
                 "description": "Block running code on this instance. Non-local instances ask for confirmation before running."
+              },
+              "enabled": {
+                "type": "boolean",
+                "default": true,
+                "description": "Disabled instances are hidden from pickers, views and the MCP server."
               }
             }
           }
@@ -634,7 +644,7 @@
         "acm.activeInstance": {
           "type": "string",
           "default": "",
-          "description": "Name of the instance used by commands. Defaults to the only instance when just one is configured."
+          "description": "Name of the instance used by commands. Defaults to the only enabled instance when just one is configured."
         },
         "acm.validateOnSave": {
           "type": "boolean",
@@ -644,7 +654,7 @@
         "acm.mcp.enabled": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Offer the bundled ACM MCP server for the active instance to agents (e.g. Copilot agent mode). Credentials come from secret storage; `readonly` instances get a read-only server."
+          "markdownDescription": "Offer the bundled ACM MCP server for the enabled instances to agents (e.g. Copilot agent mode). Credentials come from secret storage; `readonly` instances get a read-only server."
         },
         "acm.http.timeout": {
           "type": "integer",

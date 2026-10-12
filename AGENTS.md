@@ -22,10 +22,10 @@ Rules for AI agents (and humans) changing this repository. Keep them short; exte
 
 ## Configuration
 
-- Everything users may need to tune is explicit and documented: OSGi configuration in ACM, settings in the VS Code extension (`package.json` `contributes.configuration`), environment variables in the MCP server (its README table).
+- Everything users may need to tune is explicit and documented: OSGi configuration in ACM, settings in the VS Code extension (`package.json` `contributes.configuration`), the config document and environment variables of the MCP server (its README).
 - No hidden constants for timeouts, intervals or limits. Use sensible defaults and say in the description what the value bounds and what happens when it is exceeded.
 - The VS Code extension passes its settings to the bundled MCP server, so both behave the same.
-- Secrets never go to settings, files or logs: VS Code secret storage in the extension, environment variables in the MCP server.
+- Secrets never go to settings or logs: VS Code secret storage in the extension (it never writes them to files). The MCP server reads them from its config document — a literal, `{ "env": "NAME" }` or `{ "file": "path" }` per instance — and warns when a file holding literals is readable by others.
 
 ## Security
 

@@ -20,43 +20,16 @@
       },
       "environmentVariables": [
         {
-          "name": "AEM_BASE_URL",
-          "description": "AEM author URL, e.g. https://author-pXXXX-eYYYY.adobeaemcloud.com or http://localhost:4502",
+          "name": "ACM_CONFIG_FILE",
+          "description": "Path to the ACM config document: the acm.instances list (with per-instance authMode, secret, readonly, enabled), acm.activeInstance and timing keys, same keys as the VS Code extension settings",
           "isRequired": true,
-          "format": "string"
-        },
-        {
-          "name": "AEM_TOKEN",
-          "description": "Bearer token, e.g. an AEMaaCS local development token from the Developer Console",
-          "isSecret": true,
-          "format": "string"
-        },
-        {
-          "name": "AEM_COOKIE",
-          "description": "Value of the AEM login-token cookie from a browser session",
-          "isSecret": true,
-          "format": "string"
-        },
-        {
-          "name": "AEM_COOKIE_FILE",
-          "description": "Path to a file holding the login-token value, re-read on every request",
           "format": "filepath"
         },
         {
-          "name": "AEM_USER",
-          "description": "Basic auth user, for a local AEM SDK",
-          "format": "string"
-        },
-        {
-          "name": "AEM_PASSWORD",
-          "description": "Basic auth password, for a local AEM SDK",
+          "name": "ACM_CONFIG",
+          "description": "The same config document inline instead of a file; takes precedence over ACM_CONFIG_FILE",
           "isSecret": true,
           "format": "string"
-        },
-        {
-          "name": "ACM_READONLY",
-          "description": "Set to true to block the tools that run code. A guardrail against accidental runs, not a security boundary",
-          "format": "boolean"
         }
       ]
     }

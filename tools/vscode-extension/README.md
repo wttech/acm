@@ -1,6 +1,6 @@
 # AEM Content Manager (ACM) for VS Code
 
-Write, validate and run [AEM Content Manager (ACM)](https://github.com/wttech/acm) Groovy scripts on Adobe Experience Manager without leaving the editor. The ACM MCP server is registered automatically for the active instance, so AI agents can validate and run scripts, follow executions and read outputs on your AEM right after installing, with no configuration.
+Write, validate and run [AEM Content Manager (ACM)](https://github.com/wttech/acm) Groovy scripts on Adobe Experience Manager without leaving the editor. The ACM MCP server is registered automatically for the enabled instances, so AI agents can validate and run scripts, follow executions and read outputs on your AEM right after installing, with no configuration.
 
 Using another AI tool or editor? Run **ACM: Copy MCP Setup Prompt** and paste it into the agent: it sets up the same MCP server by itself.
 
@@ -17,19 +17,19 @@ Works with AEM as a Cloud Service, AEM 6.5 and AMS, wherever ACM is installed.
 - **Code completion and docs** for the whole ACM script API (`repo`, `acl`, `inputs`, `outputs`, `conditions`, …), generated from the ACM source. Lifecycle methods follow the script type: `canRun`/`doRun` for manual and automatic scripts, `prepareRun`/`completeRun` for extension scripts, `request`/`respond` for mock scripts.
 - **Documented templates.** `File > New File... > ACM Script` starts from a template: content migration, ACL setup, CSV and Excel export and import, scheduled cleanup, console code or HTTP mock. Type `acmdoc` to add the documentation header shown in the ACM UI.
 - **Project, instance and execution views.** *Project Content* lists the scripts and ACM snippets of the project's content packages (found automatically or set in `acm.scripts.roots`; several packages are listed side by side) and creates new ones from templates, with duplicate, rename, delete and reveal in Explorer next to run and compare; *Instance Scripts* lists what is deployed, named and grouped like in the ACM UI; *Executions* browses the history with logs and downloadable outputs and filters it by script or status. Compare a script with its counterpart on the other side from the context menu.
-- **Instance status** in the status bar: switch instances or open their settings in one click, while each view links to its related settings; see at a glance when an instance is unreachable, unauthorized or unhealthy. Its tooltip opens the ACM web UI, and a script or execution opens in ACM from its context menu (`ACM: Open ACM in Browser` picks any page).
-- **AI agents.** Copilot gets the ACM scripting skill and the ACM MCP server for the active instance, registered automatically; other tools set up the same server from one copied prompt (see below).
+- **Instance status** in the status bar: switch instances or open their settings in one click, while each view links to its related settings; see at a glance when an instance is unreachable, unauthorized or unhealthy. While a script runs, a separate Abort button appears next to it. The instance picker also enables or disables instances (`enabled` hides one from every tool, e.g. to park prod temporarily). Its tooltip shows the instance health (listing issues when it is unstable), the running execution with an Abort link and quick actions, and opens the ACM web UI, and a script or execution opens in ACM from its context menu (`ACM: Open ACM in Browser` picks any page).
+- **AI agents.** Copilot gets the ACM scripting skill and the ACM MCP server for all enabled instances, registered automatically; other tools set up the same server from one copied prompt or an exported config file (see below).
 
 ## AI agents
 
 The extension contributes:
 
 - the [ACM Groovy scripting skill](https://github.com/wttech/acm/blob/main/tools/skills/acm-groovy-script/SKILL.md), so agents write scripts with the real ACM API, dry runs, abort checks and documentation;
-- the [ACM MCP server](https://github.com/wttech/acm/tree/main/tools/mcp-server) for the active instance, so agents in agent mode can validate and run scripts, follow executions and read outputs.
+- the [ACM MCP server](https://github.com/wttech/acm/tree/main/tools/mcp-server) for all enabled instances, so agents in agent mode can validate and run scripts, follow executions and read outputs — and compare one instance against another.
 
-The MCP server is bundled and runs on the editor's own Node.js; credentials come from VS Code secret storage, never from `mcp.json` or other files. Switching the instance in the status bar switches the server, and a `readonly` instance gets a read-only server. Turn it off with `acm.mcp.enabled`.
+The MCP server is bundled and runs on the editor's own Node.js; credentials come from VS Code secret storage, never from `mcp.json` or other files. `acm.activeInstance` picks the default instance (tools accept an `instance` argument for the others), a `readonly` instance is read-only for the agent too, and a disabled instance is not visible to it. Turn it off with `acm.mcp.enabled`.
 
-For tools that do not pick up MCP servers contributed by extensions (Claude Code, Cursor, Devin, …) run **ACM: Copy MCP Setup Prompt** and paste it into the agent. It describes what to register for the active instance, and the agent knows where its tool keeps MCP configuration. The prompt contains no secrets. It uses the standalone [`@wppes/acm-mcp-server`](https://www.npmjs.com/package/@wppes/acm-mcp-server) package, which needs Node.js 22 or later.
+For tools that do not pick up MCP servers contributed by extensions (Claude Code, Cursor, Devin, …) run **ACM: Copy MCP Setup Prompt** and paste it into the agent, or **ACM: Export MCP Config** to write the same instances as a config file for `ACM_CONFIG_FILE` (without secrets, which stay in secret storage). The prompt lists concrete steps (register the server with your instances as inline `ACM_CONFIG`, verify) and the agent knows where its tool keeps MCP configuration; a local `admin` instance needs no secret, other instances reference environment variables that you define for the tool. The prompt is a snapshot: after changing instances, run it again or edit the JSON in the registration. If several tools should share one configuration, export it once to a file and point each of them at it with `ACM_CONFIG_FILE`. Both use the standalone [`@wppes/acm-mcp-server`](https://www.npmjs.com/package/@wppes/acm-mcp-server) package, which needs Node.js 22 or later.
 
 > Agents run code with your AEM permissions. Prefer `readonly` instances or a user with limited ACM permissions outside local development, and review tool calls before approving them.
 
@@ -40,11 +40,12 @@ Instances live in settings, typically the workspace's `.vscode/settings.json`, s
 ```json
 "acm.instances": [
   { "name": "author", "url": "http://localhost:4502", "authMode": "basic", "user": "admin" },
-  { "name": "dev", "url": "https://author-pXXXX-eYYYY.adobeaemcloud.com", "authMode": "bearer", "readonly": true }
+  { "name": "dev", "url": "https://author-pXXXX-eYYYY.adobeaemcloud.com", "authMode": "bearer", "readonly": true },
+  { "name": "prod", "url": "https://author.example.com", "authMode": "cookie", "enabled": false }
 ]
 ```
 
-Run `ACM: Select Instance` (or click the status bar) to switch, and `ACM: Set Credentials` to enter the secret:
+Run `ACM: Select Instance` (or click the status bar) to switch, and `ACM: Set Credentials` to enter the secret. The picker's eye button toggles `enabled` per instance:
 
 | `authMode` | Secret | Typical use |
 |---|---|---|
@@ -58,8 +59,8 @@ Guardrails: running on a `readonly` instance is blocked, and running on any non-
 
 | Setting | Default | Description |
 |---|---|---|
-| `acm.instances` | local `author` | AEM instances with ACM installed. |
-| `acm.activeInstance` | | Instance used by commands; the only instance when just one is configured. |
+| `acm.instances` | local `author` | AEM instances with ACM installed. `readonly` blocks running code on an instance; `enabled` (default `true`) hides it from pickers, views and the MCP server. |
+| `acm.activeInstance` | | Instance used by commands; defaults to the only enabled instance. |
 | `acm.validateOnSave` | `true` | Compile-check scripts declaring `doRun()` when saved. |
 | `acm.mcp.enabled` | `true` | Offer the bundled ACM MCP server to agents. |
 | `acm.mock.mode` | `auto` | Show Mock scripts: `auto` when the active instance has its Mock HTTP Filter enabled (off by default in ACM), `enabled` always, `disabled` never. |
@@ -83,4 +84,4 @@ To build, check and release the extension, see the [development guide](https://g
 
 ## License
 
-[Apache License 2.0](https://github.com/wttech/acm/blob/main/LICENSE)
+[Apache License 2.0](https://github.com/wttech/acm/blob/main/LICENSE). Provided "as is", without warranty of any kind; use it at your own risk (see sections 7 and 8 of the license).

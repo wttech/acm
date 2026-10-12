@@ -43,9 +43,21 @@ export interface Script {
   content?: string;
 }
 
+/** An execution together with the instance it ran on. */
+export interface InstanceExecution {
+  instance: AcmInstance;
+  execution: Execution;
+}
+
+/** A stored script opened as a document, with the instance to read it from. */
+export interface StoredScriptRef {
+  id: string;
+  instance: string;
+}
+
 type Node =
   | { kind: 'message'; label: string; icon: string; command?: vscode.Command }
-  | { kind: 'execution'; instance: AcmInstance; execution: Execution }
+  | ({ kind: 'execution' } & InstanceExecution)
   | { kind: 'scriptType'; type: ScriptType; scripts: Script[] }
   | { kind: 'script'; instance: AcmInstance; script: Script; type: ScriptType };
 
@@ -57,7 +69,7 @@ export function scriptUri(instance: AcmInstance, scriptId: string): vscode.Uri {
   return vscode.Uri.from({ scheme: SCHEME, authority: DOCUMENTS.script, path: scriptId, query: instance.name });
 }
 
-export function storedScript(uri: vscode.Uri): { id: string; instance: string } | undefined {
+export function storedScript(uri: vscode.Uri): StoredScriptRef | undefined {
   return uri.scheme === SCHEME && uri.authority === DOCUMENTS.script ? { id: uri.path, instance: uri.query } : undefined;
 }
 

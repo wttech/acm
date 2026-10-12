@@ -1,9 +1,10 @@
 import { stripExtension } from './name';
+import type { DisplayInfo } from './script';
 
 export const SNIPPET_EXTENSION = '.yml';
 
 /** What a user sees of snippets: their name and what they are for. */
-export const SNIPPET_INFO = {
+export const SNIPPET_INFO: DisplayInfo = {
   label: 'Snippets',
   description: 'Code templates offered in the ACM Console and on the Snippets page, to insert into scripts.',
 };

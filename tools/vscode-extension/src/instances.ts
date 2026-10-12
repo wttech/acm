@@ -1,14 +1,17 @@
 import * as vscode from 'vscode';
-import { AcmClient, normalizeCookie, type AcmAuth } from '@acm/shared';
+import {
+  AcmClient,
+  normalizeCookie,
+  defaultSecret,
+  enabledInstances,
+  isLocalUrl,
+  resolveActive,
+  type AcmAuth,
+  type AcmInstance,
+} from '@acm/shared';
 import { NAMESPACE, SETTINGS, settingId, type SettingKey } from './ids';
 
-export interface AcmInstance {
-  name: string;
-  url: string;
-  authMode: 'bearer' | 'cookie' | 'basic';
-  user?: string;
-  readonly?: boolean;
-}
+export type { AcmInstance };
 
 export interface AcmTarget {
   instance: AcmInstance;
@@ -21,8 +24,15 @@ const SECRET_LABELS: Record<AcmInstance['authMode'], string> = {
   basic: 'password',
 };
 
+/** A memoized client with the secret and timeout it was built from, so changes rebuild it. */
+interface ClientEntry {
+  secret: string;
+  timeout: number;
+  client: AcmClient;
+}
+
 let secrets: vscode.SecretStorage;
-const clients = new Map<string, { secret: string; timeout: number; client: AcmClient }>();
+const clients = new Map<string, ClientEntry>();
 
 /** Reads a setting; its default comes from package.json, so no fallback is repeated in code. */
 export function readSetting<T>(key: SettingKey): T {
@@ -56,10 +66,12 @@ export function getInstances(): AcmInstance[] {
   return readSetting<AcmInstance[]>(SETTINGS.instances);
 }
 
+export function getEnabledInstances(): AcmInstance[] {
+  return enabledInstances(getInstances());
+}
+
 export function getActiveInstance(): AcmInstance | undefined {
-  const instances = getInstances();
-  const name = readSetting<string>(SETTINGS.activeInstance);
-  return instances.find((instance) => instance.name === name) ?? (instances.length === 1 ? instances[0] : undefined);
+  return resolveActive(getInstances(), readSetting<string>(SETTINGS.activeInstance) || undefined);
 }
 
 export async function setActiveInstance(name: string): Promise<void> {
@@ -69,40 +81,100 @@ export async function setActiveInstance(name: string): Promise<void> {
   await vscode.workspace.getConfiguration(NAMESPACE).update(SETTINGS.activeInstance, name, target);
 }
 
-export async function pickInstance(placeHolder = 'Select ACM instance'): Promise<AcmInstance | undefined> {
+/** Flips `enabled` on the instance at the configuration level the list is defined in. */
+async function setInstanceEnabled(name: string, enabled: boolean): Promise<void> {
+  const config = vscode.workspace.getConfiguration(NAMESPACE);
+  const inspected = config.inspect<AcmInstance[]>(SETTINGS.instances);
+  const [list, target] = inspected?.workspaceFolderValue
+    ? [inspected.workspaceFolderValue, vscode.ConfigurationTarget.WorkspaceFolder]
+    : inspected?.workspaceValue
+      ? [inspected.workspaceValue, vscode.ConfigurationTarget.Workspace]
+      : [inspected?.globalValue ?? [], vscode.ConfigurationTarget.Global];
+  await config.update(
+    SETTINGS.instances,
+    list.map((instance) => (instance.name === name ? { ...instance, enabled } : instance)),
+    target,
+  );
+}
+
+interface InstanceItem extends vscode.QuickPickItem {
+  instance?: AcmInstance;
+  configure?: boolean;
+}
+
+export function pickInstance(placeHolder = 'Select ACM instance'): Promise<AcmInstance | undefined> {
   const instances = getInstances();
   if (instances.length === 0) {
-    const action = await vscode.window.showWarningMessage('ACM: No instances configured.', 'Open Settings');
-    if (action) {
-      await vscode.commands.executeCommand('workbench.action.openSettings', settingId(SETTINGS.instances));
-    }
-    return undefined;
+    void vscode.window
+      .showWarningMessage('ACM: No instances configured.', 'Open Settings')
+      .then((action) => action && vscode.commands.executeCommand('workbench.action.openSettings', settingId(SETTINGS.instances)));
+    return Promise.resolve(undefined);
   }
-  const active = getActiveInstance();
-  const items: Array<vscode.QuickPickItem & { instance?: AcmInstance; configure?: boolean }> = instances.map(
-    (instance) => ({
+  return new Promise((resolve) => {
+    const picker = vscode.window.createQuickPick<InstanceItem>();
+    const item = (instance: AcmInstance, active?: AcmInstance): InstanceItem => ({
       label: `$(server) ${instance.name}`,
       description: instance.url,
       detail: [
         `${instance.authMode[0].toUpperCase()}${instance.authMode.slice(1)} authentication`,
         instance.readonly ? 'Read-only' : undefined,
         instance.name === active?.name ? 'Active instance' : undefined,
+        instance.enabled === false ? 'Disabled' : undefined,
       ]
         .filter(Boolean)
         .join(' · '),
+      buttons: [
+        {
+          iconPath: new vscode.ThemeIcon(instance.enabled === false ? 'eye-closed' : 'eye'),
+          tooltip: instance.enabled === false ? 'Enable instance' : 'Disable instance',
+        },
+      ],
       instance,
-    }),
-  );
-  items.push(
-    { label: '', kind: vscode.QuickPickItemKind.Separator },
-    { label: '$(gear) Configure Instances...', detail: 'Edit configured ACM instances', configure: true },
-  );
-  const picked = await vscode.window.showQuickPick(items, { placeHolder });
-  if (picked?.configure) {
-    await vscode.commands.executeCommand('workbench.action.openSettings', settingId(SETTINGS.instances));
-    return undefined;
-  }
-  return picked?.instance;
+    });
+    const buildItems = (): InstanceItem[] => {
+      const all = getInstances();
+      const enabled = enabledInstances(all);
+      const active = resolveActive(all, readSetting<string>(SETTINGS.activeInstance) || undefined);
+      return [
+        ...enabled.map((instance) => item(instance, active)),
+        ...all
+          .filter((instance) => instance.enabled === false)
+          .map((instance) => item(instance, active)),
+        { label: '', kind: vscode.QuickPickItemKind.Separator },
+        { label: '$(gear) Configure Instances...', detail: 'Edit configured ACM instances', configure: true },
+      ];
+    };
+    picker.items = buildItems();
+    picker.placeholder = placeHolder;
+    picker.onDidTriggerItemButton(async ({ item: picked }) => {
+      if (picked.instance) {
+        await setInstanceEnabled(picked.instance.name, picked.instance.enabled === false);
+        picker.items = buildItems();
+      }
+    });
+    picker.onDidAccept(() => {
+      const picked = picker.selectedItems[0];
+      if (picked?.configure) {
+        picker.hide();
+        void vscode.commands.executeCommand('workbench.action.openSettings', settingId(SETTINGS.instances));
+        return;
+      }
+      if (!picked?.instance) {
+        return;
+      }
+      if (picked.instance.enabled === false) {
+        picker.placeholder = `"${picked.instance.name}" is disabled — enable it with the eye button first.`;
+        return;
+      }
+      picker.hide();
+      resolve(picked.instance);
+    });
+    picker.onDidHide(() => {
+      picker.dispose();
+      resolve(undefined);
+    });
+    picker.show();
+  });
 }
 
 // Keyed by URL, auth mode and user too, so a secret is never sent to a host or as a principal it was not entered for.
@@ -192,7 +264,7 @@ export async function confirmRun(instance: AcmInstance, action: string): Promise
     vscode.window.showErrorMessage(`ACM: Instance "${instance.name}" is read-only, ${action.toLowerCase()} is blocked.`);
     return false;
   }
-  if (isLocal(instance.url)) {
+  if (isLocalUrl(instance.url)) {
     return true;
   }
   const answer = await vscode.window.showWarningMessage(
@@ -201,17 +273,4 @@ export async function confirmRun(instance: AcmInstance, action: string): Promise
     'Continue',
   );
   return answer === 'Continue';
-}
-
-function isLocal(url: string): boolean {
-  try {
-    return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(url).hostname);
-  } catch {
-    return false;
-  }
-}
-
-// AEM SDK out of the box: admin/admin, only ever for local instances.
-function defaultSecret(instance: AcmInstance): string | undefined {
-  return instance.authMode === 'basic' && instance.user === 'admin' && isLocal(instance.url) ? 'admin' : undefined;
 }

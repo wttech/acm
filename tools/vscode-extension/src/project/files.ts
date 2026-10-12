@@ -10,6 +10,7 @@ import {
   scriptLabel,
   scriptTypeOf,
   stripExtension,
+  type DisplayInfo,
   type ScriptType,
 } from '@acm/shared';
 import { isMockEnabled } from '../mock';
@@ -67,7 +68,7 @@ export function sectionKey(section: Section): string {
 }
 
 /** The name and the purpose of a section, as shown to the user. */
-export function sectionInfo(section: Section): { label: string; description: string } {
+export function sectionInfo(section: Section): DisplayInfo {
   return section.kind === 'scriptType' ? SCRIPT_TYPE_INFO[section.scriptType] : SNIPPET_INFO;
 }
 

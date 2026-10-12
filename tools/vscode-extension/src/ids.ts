@@ -1,5 +1,7 @@
+import { CONFIG_KEYS, CONFIG_NAMESPACE } from '@acm/shared';
+
 /** Identifiers shared with package.json; `npm run check:manifest` fails when the two drift apart. */
-export const NAMESPACE = 'acm';
+export const NAMESPACE = CONFIG_NAMESPACE;
 
 /** The name users see for output channels and diagnostics. */
 export const DISPLAY_NAME = 'ACM';
@@ -39,6 +41,7 @@ export const COMMANDS = {
   newScript: 'acm.newScript',
   downloadOutputs: 'acm.downloadOutputs',
   copyMcpSetup: 'acm.copyMcpSetup',
+  exportMcpConfig: 'acm.exportMcpConfig',
   openUi: 'acm.openUi',
   openScriptInUi: 'acm.openScriptInUi',
   openExecutionInUi: 'acm.openExecutionInUi',
@@ -59,15 +62,15 @@ export const CONTEXT = {
   editingInputs: 'acm.editingInputs',
 } as const;
 
-/** Setting keys relative to the `acm` section. */
+/** Setting keys relative to the `acm` section; instance and timing keys are shared with the MCP config document. */
 export const SETTINGS = {
-  instances: 'instances',
-  activeInstance: 'activeInstance',
+  instances: CONFIG_KEYS.instances,
+  activeInstance: CONFIG_KEYS.activeInstance,
   validateOnSave: 'validateOnSave',
   mcpEnabled: 'mcp.enabled',
-  httpTimeout: 'http.timeout',
-  runTimeout: 'run.timeout',
-  runPollInterval: 'run.pollInterval',
+  httpTimeout: CONFIG_KEYS.httpTimeout,
+  runTimeout: CONFIG_KEYS.runTimeout,
+  runPollInterval: CONFIG_KEYS.runPollInterval,
   healthInterval: 'health.interval',
   executionsLimit: 'executions.limit',
   scriptsRoots: 'scripts.roots',

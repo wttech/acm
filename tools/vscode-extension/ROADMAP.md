@@ -48,5 +48,5 @@ Status: `[x]` done, `[~]` stub or partial, `[ ]` not started.
 ## Distribution
 
 - [x] `.vsix` on GitHub Releases, installed with `Extensions: Install from VSIX...`.
-- [~] VS Code Marketplace (`vsce publish`) under the `wppes` publisher: workflow ready, needs the publisher and the `VSCE_PAT` secret.
-- [~] Open VSX (`ovsx publish`) for Cursor, Windsurf and VSCodium: workflow ready, needs the `wppes` namespace and the `OVSX_PAT` secret.
+- [~] VS Code Marketplace (`vsce publish`) under the `wppes` publisher: workflow ready, publishes through Entra ID (OIDC), no token.
+- [~] Open VSX (`ovsx publish`) for Cursor, Windsurf and VSCodium: workflow ready, publishes through trusted publishing, no token.

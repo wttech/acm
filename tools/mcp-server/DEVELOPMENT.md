@@ -15,16 +15,26 @@ npm run check     # what CI runs: builds, then runs the end-to-end tests
 - `test/mock-acm.mjs` emulates the ACM servlets under `/apps/acm/api/*`: the response envelope, all three auth modes, Granite CSRF, and a QUEUED → RUNNING → SUCCEEDED lifecycle, so the polling loop is really exercised.
 - `test/run-tests.mjs` drives the server with the MCP SDK client: handshake, tool listing and every tool call.
 
-To try the server against a real instance, run `test/smoke.mjs`. It calls `acm_health` and runs one harmless `println`. It reads connection settings from a `.env` file, which is git-ignored. The server itself never reads `.env`.
+To try the server against a real instance, run `test/smoke.mjs`. It calls `acm_list_instances`, `acm_health` and runs one harmless `println`. It reads `ACM_CONFIG_FILE` or `ACM_CONFIG` from a `.env` file, which is git-ignored. The server itself never reads `.env`.
 
 ```bash
-cp .env.example .env     # set AEM_BASE_URL and ONE auth option
+cp .env.example .env     # set ACM_CONFIG_FILE (or ACM_CONFIG)
 npm run smoke
 ```
 
-To run a local build from an MCP client, point it at `node /path/to/acm/tools/mcp-server/dist/index.js` instead of `npx`.
+### Running a local build from an MCP client
 
-API paths, environment variable names and the behaviour shared with the VS Code extension live in [tools/shared](../shared); see the [tools development guide](../DEVELOPMENT.md).
+Build once with `npm run build` (rebuild after each change), then register the server with these values instead of the published package:
+
+| Setting | Value |
+|---|---|
+| Command | `node` |
+| Arguments | the absolute path of `tools/mcp-server/dist/index.js` (no `-y`, no package name) |
+| Environment | `ACM_CONFIG` or `ACM_CONFIG_FILE`, as in the [README](README.md#setup) |
+
+Do this whenever the change is not released yet: `npx -y @wppes/acm-mcp-server` downloads the last published version, which does not know the new configuration and exits at startup, so the client reports `connection closed: initialize response`. The same applies to the prompt of **ACM: Copy MCP Setup Prompt**, which always names the published package; edit the command and arguments the agent writes. The VS Code extension runs its own bundled build (`npm run build` in [tools/vscode-extension](../vscode-extension), launched with **Run Extension**) and does not need this.
+
+API paths, the config document model (instance keys, parsing, the active-instance rule) and environment variable names shared with the VS Code extension live in [tools/shared](../shared); see the [tools development guide](../DEVELOPMENT.md).
 
 ## Releasing
 
