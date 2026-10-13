@@ -9,12 +9,12 @@
     "subfolder": "tools/mcp-server"
   },
   "websiteUrl": "https://github.com/wttech/acm/tree/main/tools/mcp-server",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@wppes/acm-mcp-server",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "transport": {
         "type": "stdio"
       },
