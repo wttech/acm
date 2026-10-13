@@ -30,24 +30,24 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # https://central.sonatype.org/publish/requirements/#sign-files-with-gpgpgp
       - name: Import GPG Key
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: 8
           distribution: temurin
 
       # https://central.sonatype.org/publish/publish-portal-maven/#credentials
       - name: Setup Maven Settings
-        uses: s4u/maven-settings-action@v2
+        uses: s4u/maven-settings-action@v4
         with:
           servers: |
             [
@@ -59,7 +59,7 @@ jobs:
             ]
 
       - name: Setup Maven Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         if: always()
         with:
           path: ~/.m2/repository
