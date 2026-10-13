@@ -11,6 +11,7 @@ import {
   isExecutionFiltered,
   isPending,
   SCRIPT_ROOT,
+  SCRIPT_TYPE_ICONS,
   SCRIPT_TYPE_INFO,
   scriptLabel,
   summarizeExecution,
@@ -218,11 +219,11 @@ class ScriptsProvider extends AcmTreeProvider {
   getTreeItem(node: Node): vscode.TreeItem {
     switch (node.kind) {
       case 'scriptType': {
-        const item = new vscode.TreeItem(SCRIPT_TYPE_INFO[node.type].label, vscode.TreeItemCollapsibleState.Expanded);
+        const item = new vscode.TreeItem(SCRIPT_TYPE_INFO[node.type].label, vscode.TreeItemCollapsibleState.Collapsed);
         item.tooltip = SCRIPT_TYPE_INFO[node.type].description;
         item.id = `scripts.${node.type}`;
         item.description = String(node.scripts.length);
-        item.iconPath = vscode.ThemeIcon.Folder;
+        item.iconPath = new vscode.ThemeIcon(SCRIPT_TYPE_ICONS[node.type]);
         return item;
       }
       case 'script': {

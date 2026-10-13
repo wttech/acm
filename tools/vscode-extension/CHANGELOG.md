@@ -2,7 +2,9 @@
 
 ## 0.9.8
 
-- `ACM: Download Outputs` (the cloud button on an execution) sent `console`/`archive` as the output name instead of the `acm-console`/`acm-archive` IDs the server expects, so both always failed with HTTP 404; the MCP server's `acm_get_output_file` had the same mismatch for those two names.
+- `ACM: Download Outputs` (the cloud button on an execution) sent `console`/`archive` as the output name instead of the `acm-console`/`acm-archive` IDs the server expects, so both always failed with HTTP 404; the MCP server's `acm_get_output_file` had the same mismatch for those two names. The same wrong name made `fetchConsoleOutput` always fail silently, so the `.acmlog` document, the `Run Script` output channel and the MCP server's execution results fell back to the truncated console output of the execution list instead of the full log.
+- Project Content and Instance Scripts expand the script type and snippets groups by default no longer; only their root (a content package, or the instance itself) starts expanded, so opening a project with many scripts does not dump every file in the tree at once.
+- Manual, Automatic and Extension script type folders each have their own icon instead of sharing a plain folder icon.
 
 ## 0.9.2
 

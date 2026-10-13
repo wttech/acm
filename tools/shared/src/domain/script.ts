@@ -34,6 +34,14 @@ export const SCRIPT_TYPE_INFO: Record<ScriptType, DisplayInfo> = {
   },
 };
 
+/** Codicon ID shown for each script type in the tree views. */
+export const SCRIPT_TYPE_ICONS: Record<ScriptType, string> = {
+  MANUAL: 'play-circle',
+  AUTOMATIC: 'sync',
+  EXTENSION: 'plug',
+  MOCK: 'radio-tower',
+};
+
 /** Optional ACM features whose script types stay hidden while the feature is off. */
 export interface ScriptFeatures {
   mock: boolean;

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { SCRIPT_TYPE_ICONS } from '@acm/shared';
 import { CONTEXT, ITEMS, VIEWS } from '../ids';
 import {
   filesIn,
@@ -38,7 +39,12 @@ interface SectionPresentation {
 function describeSection(section: Section): SectionPresentation {
   const { label, description } = sectionInfo(section);
   return section.kind === 'scriptType'
-    ? { label, tooltip: description, icon: vscode.ThemeIcon.Folder, contextValue: ITEMS.projectScriptType }
+    ? {
+        label,
+        tooltip: description,
+        icon: new vscode.ThemeIcon(SCRIPT_TYPE_ICONS[section.scriptType]),
+        contextValue: ITEMS.projectScriptType,
+      }
     : { label, tooltip: description, icon: new vscode.ThemeIcon('symbol-snippet'), contextValue: ITEMS.projectSnippets };
 }
 
@@ -113,7 +119,7 @@ export class ProjectTree implements vscode.TreeDataProvider<Node> {
       }
       case 'group': {
         const { label, tooltip, icon, contextValue } = describeSection(node.section);
-        const item = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Expanded);
+        const item = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Collapsed);
         item.id = `project.${node.root.toString()}.${sectionKey(node.section)}`;
         item.description = String(node.files.length);
         item.tooltip = tooltip;
