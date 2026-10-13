@@ -102,6 +102,7 @@ import {
   isPending,
   normalizeCookie,
   normalizeGroovy,
+  OUTPUT_NAMES,
   parseConfig,
   resolveActive,
   resolveInstance,
@@ -778,9 +779,11 @@ server.registerTool(
     const target = pickTarget(name);
     if ("error" in target) return target.error;
     const { instance, client } = target;
+    const resolvedName =
+      outputName === "console" ? OUTPUT_NAMES.console : outputName === "archive" ? OUTPUT_NAMES.archive : outputName;
     try {
       const r = await client.requestRaw(
-        `${ACM_API.executionOutput}?executionId=${encodeURIComponent(executionId)}&name=${encodeURIComponent(outputName)}`
+        `${ACM_API.executionOutput}?executionId=${encodeURIComponent(executionId)}&name=${encodeURIComponent(resolvedName)}`
       );
       if (r.status === 404)
         return instanceResult(instance, `Output '${outputName}' not found for execution '${executionId}'.`, true);

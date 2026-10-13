@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.8
+
+- `ACM: Download Outputs` (the cloud button on an execution) sent `console`/`archive` as the output name instead of the `acm-console`/`acm-archive` IDs the server expects, so both always failed with HTTP 404; the MCP server's `acm_get_output_file` had the same mismatch for those two names.
+
 ## 0.9.2
 
 - **Breaking:** the bundled MCP server is configured by a JSON document (`ACM_CONFIG_FILE` path or `ACM_CONFIG` inline) using the same `acm.*` keys as the extension settings; the old `AEM_*` and `ACM_READONLY`/`ACM_*_TIMEOUT_MS` environment variables are gone. Instance secrets are a literal, `{ "env": "NAME" }` or `{ "file": "path" }` per instance.

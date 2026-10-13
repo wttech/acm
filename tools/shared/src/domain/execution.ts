@@ -38,6 +38,12 @@ export interface ExecutionListOutput {
   [key: string]: unknown;
 }
 
+/** Predefined execution output names recognized by `ExecutionOutputServlet` (`acm.core.servlet.output.ExecutionOutput.Name`). */
+export const OUTPUT_NAMES = {
+  archive: 'acm-archive',
+  console: 'acm-console',
+} as const;
+
 export const EXECUTION_STATUSES: readonly ExecutionStatus[] = [
   'QUEUED',
   'ACTIVE',

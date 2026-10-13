@@ -8,6 +8,7 @@ import {
   fetchConsoleOutput,
   isFailed,
   normalizeGroovy,
+  OUTPUT_NAMES,
   waitForExecution,
   type Execution,
   type ExecutionListOutput,
@@ -292,11 +293,11 @@ async function downloadOutputs(node?: InstanceExecution): Promise<void> {
         const fileName = o.type === 'TEXT' ? `${o.name}.md` : o.downloadName || o.name;
         return { label: o.label || o.name, description: fileName, name: o.name, fileName };
       }),
-      { label: 'Console', description: 'console.log', name: 'console', fileName: 'console.log' },
+      { label: 'Console', description: 'console.log', name: OUTPUT_NAMES.console, fileName: 'console.log' },
       {
         label: 'All outputs',
         description: 'ZIP archive with the console and all outputs',
-        name: 'archive',
+        name: OUTPUT_NAMES.archive,
         fileName: `execution-${execution.id.replace(/\//g, '-')}.outputs.zip`,
       },
     ],
