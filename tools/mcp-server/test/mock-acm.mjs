@@ -226,7 +226,7 @@ const server = http.createServer(async (req, res) => {
       res.end("Output not found (mock)");
       return;
     }
-    if (name === "console") {
+    if (name === "acm-console") {
       res.writeHead(200, { "Content-Type": "text/plain" });
       res.end(entry.consoleOutput);
       return;
