@@ -73,6 +73,7 @@ export const SETTINGS = {
   runPollInterval: CONFIG_KEYS.runPollInterval,
   healthInterval: 'health.interval',
   executionsLimit: 'executions.limit',
+  executionsRefreshInterval: 'executions.refreshInterval',
   scriptsRoots: 'scripts.roots',
   mockMode: 'mock.mode',
 } as const;

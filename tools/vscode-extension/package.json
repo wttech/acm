@@ -698,6 +698,12 @@
           "maximum": 1000,
           "description": "Number of past executions shown in the Executions view."
         },
+        "acm.executions.refreshInterval": {
+          "type": "integer",
+          "default": 10000,
+          "minimum": 0,
+          "markdownDescription": "How often the Executions view reloads, in milliseconds, so runs started elsewhere (MCP server, ACM UI, other users) appear. Reloads only while the view is visible and the window is focused, never overlap, and pause after an error until the next manual refresh, which also restarts the countdown. Each reload queries the execution history on AEM, so raise it for large histories or busy instances. `0` reloads only on Refresh and after runs from the editor."
+        },
         "acm.mock.mode": {
           "type": "string",
           "default": "auto",

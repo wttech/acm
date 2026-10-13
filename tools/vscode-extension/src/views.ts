@@ -150,6 +150,13 @@ abstract class AcmTreeProvider implements vscode.TreeDataProvider<Node> {
 
 class ExecutionsProvider extends AcmTreeProvider {
   filter: ExecutionFilter = { statuses: [] };
+  private loading = false;
+  private failed = false;
+
+  /** Periodic reloads skip while one is in flight and after a failure, until a manual one succeeds. */
+  get canAutoRefresh(): boolean {
+    return !this.loading && !this.failed;
+  }
 
   describeFilter(): string | undefined {
     const { executableId, statuses } = this.filter;
@@ -157,12 +164,21 @@ class ExecutionsProvider extends AcmTreeProvider {
   }
 
   protected async fetch(instance: AcmInstance, client: AcmClient): Promise<Node[]> {
-    const executions = await fetchExecutions(client, getSettings().executionsLimit, this.filter);
-    if (executions.length === 0) {
-      const label = isExecutionFiltered(this.filter) ? 'No executions match the filter' : 'No executions yet';
-      return [{ kind: 'message', label, icon: 'info' }];
+    this.loading = true;
+    try {
+      const executions = await fetchExecutions(client, getSettings().executionsLimit, this.filter);
+      this.failed = false;
+      if (executions.length === 0) {
+        const label = isExecutionFiltered(this.filter) ? 'No executions match the filter' : 'No executions yet';
+        return [{ kind: 'message', label, icon: 'info' }];
+      }
+      return executions.map((execution) => ({ kind: 'execution', instance, execution }));
+    } catch (e) {
+      this.failed = true;
+      throw e;
+    } finally {
+      this.loading = false;
     }
-    return executions.map((execution) => ({ kind: 'execution', instance, execution }));
   }
 
   getTreeItem(node: Node): vscode.TreeItem {
@@ -171,6 +187,7 @@ class ExecutionsProvider extends AcmTreeProvider {
     }
     const { execution, instance } = node;
     const item = new vscode.TreeItem(executableLabel(executableIdOf(execution)));
+    item.id = `executions.${execution.id}`;
     const started = execution.startDate ? new Date(execution.startDate) : undefined;
     item.description = [
       started && !isNaN(started.getTime()) ? started.toLocaleString() : execution.startDate,
@@ -284,6 +301,20 @@ export function registerViews(context: vscode.ExtensionContext): Views {
     scriptsView.description = getActiveInstance()?.name;
   };
   describeScripts();
+  let refreshTimer: ReturnType<typeof setInterval> | undefined;
+  const scheduleRefresh = () => {
+    clearInterval(refreshTimer);
+    const interval = getSettings().executionsRefreshInterval;
+    refreshTimer =
+      executionsView.visible && interval > 0
+        ? setInterval(() => {
+            if (vscode.window.state.focused && executions.canAutoRefresh) {
+              executions.refresh();
+            }
+          }, interval)
+        : undefined;
+  };
+  scheduleRefresh();
   const applyFilter = (filter: ExecutionFilter) => {
     executions.filter = filter;
     executionsView.description = executions.describeFilter();
@@ -294,7 +325,12 @@ export function registerViews(context: vscode.ExtensionContext): Views {
     vscode.workspace.registerTextDocumentContentProvider(SCHEME, new ContentProvider()),
     executionsView,
     scriptsView,
-    vscode.commands.registerCommand(COMMANDS.refreshExecutions, () => executions.refresh()),
+    { dispose: () => clearInterval(refreshTimer) },
+    executionsView.onDidChangeVisibility(scheduleRefresh),
+    vscode.commands.registerCommand(COMMANDS.refreshExecutions, () => {
+      scheduleRefresh();
+      executions.refresh();
+    }),
     vscode.commands.registerCommand(COMMANDS.refreshScripts, () => scripts.refresh()),
     onDidChangeMock(() => scripts.refresh()),
     registerCommand(COMMANDS.filterExecutions, async () => {
@@ -316,6 +352,7 @@ export function registerViews(context: vscode.ExtensionContext): Views {
       }
       if (event.affectsConfiguration(NAMESPACE)) {
         describeScripts();
+        scheduleRefresh();
         executions.refresh();
         scripts.refresh();
       }

@@ -4,6 +4,7 @@
 
 - Project Content: `Delete` and `F2` now delete and rename the focused file, like the context menu actions already did.
 - The outcome of `Run Script` is always a notification (with `Show Output` and `Open Execution`), also on success, instead of a short status bar message; the status bar shows only the state of the instance.
+- The Executions view reloads every `acm.executions.refreshInterval` (default 10 s) while it is visible and the window is focused, so runs started by agents through the MCP server, in the ACM UI or by other users appear without pressing Refresh. Reloads never overlap and pause after an error (e.g. wrong credentials) until the next manual refresh; Refresh stays available and restarts the countdown; `0` turns reloads off. Executions keep their selection across reloads.
 
 ## 0.9.8
 

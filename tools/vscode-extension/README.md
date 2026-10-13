@@ -70,6 +70,7 @@ Guardrails: running on a `readonly` instance is blocked, and running on any non-
 | `acm.run.pollInterval` | `1000` | How often a queued run is checked, in ms. |
 | `acm.health.interval` | `60000` | How often the status bar checks the instance, in ms; `0` only on changes. |
 | `acm.executions.limit` | `50` | Past executions shown in the Executions view. |
+| `acm.executions.refreshInterval` | `10000` | How often the Executions view reloads while visible and the window is focused, in ms; pauses after an error until a manual refresh. Each reload queries the history on AEM; `0` only on Refresh and after runs from the editor. |
 
 Timings apply to the bundled MCP server too.
 

@@ -46,6 +46,7 @@ export interface AcmSettings {
   runPollInterval: number;
   healthInterval: number;
   executionsLimit: number;
+  executionsRefreshInterval: number;
 }
 
 export function getSettings(): AcmSettings {
@@ -55,6 +56,7 @@ export function getSettings(): AcmSettings {
     runPollInterval: readSetting<number>(SETTINGS.runPollInterval),
     healthInterval: readSetting<number>(SETTINGS.healthInterval),
     executionsLimit: readSetting<number>(SETTINGS.executionsLimit),
+    executionsRefreshInterval: readSetting<number>(SETTINGS.executionsRefreshInterval),
   };
 }
 

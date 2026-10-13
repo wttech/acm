@@ -11,6 +11,11 @@
     <indexRules jcr:primaryType="nt:unstructured">
         <nt:base jcr:primaryType="nt:unstructured">
             <properties jcr:primaryType="nt:unstructured">
+                <resourceType
+                    jcr:primaryType="nt:unstructured"
+                    name="sling:resourceType"
+                    propertyIndex="{Boolean}true"
+                />
                 <id
                     jcr:primaryType="nt:unstructured"
                     name="id"
@@ -37,6 +42,8 @@
                     name="startDate"
                     nodeScopeIndex="{Boolean}true"
                     propertyIndex="{Boolean}true"
+                    ordered="{Boolean}true"
+                    type="Date"
                     index="{Boolean}true"
                 />
                 <endDate
