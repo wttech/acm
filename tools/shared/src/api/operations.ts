@@ -6,7 +6,7 @@ import type {
   ExecutionListOutput,
   QueueOutput,
 } from '../domain/execution';
-import { executionFilterParams, isPending, matchesExecutionFilter } from '../domain/execution';
+import { executionFilterParams, isPending, matchesExecutionFilter, OUTPUT_NAMES } from '../domain/execution';
 
 /** Lists executions still queued or running, then history (newest first); the filter applies before the history limit. */
 export async function fetchExecutions(
@@ -53,7 +53,7 @@ export async function fetchExecutionById(client: AcmClient, executionId: string)
 export async function fetchConsoleOutput(client: AcmClient, executionId: string): Promise<string | null> {
   try {
     const r = await client.requestRaw(
-      `${ACM_API.executionOutput}?executionId=${encodeURIComponent(executionId)}&name=console`,
+      `${ACM_API.executionOutput}?executionId=${encodeURIComponent(executionId)}&name=${OUTPUT_NAMES.console}`,
     );
     return r.status === 200 ? r.text : null;
   } catch {
