@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.9
+
+- Project Content: `Delete` and `F2` now delete and rename the focused file, like the context menu actions already did.
+- The outcome of `Run Script` is always a notification (with `Show Output` and `Open Execution`), also on success, instead of a short status bar message; the status bar shows only the state of the instance.
+
 ## 0.9.8
 
 - `ACM: Download Outputs` (the cloud button on an execution) sent `console`/`archive` as the output name instead of the `acm-console`/`acm-archive` IDs the server expects, so both always failed with HTTP 404; the MCP server's `acm_get_output_file` had the same mismatch for those two names. The same wrong name made `fetchConsoleOutput` always fail silently, so the `.acmlog` document, the `Run Script` output channel and the MCP server's execution results fell back to the truncated console output of the execution list instead of the full log.

@@ -261,18 +261,16 @@ function report(label: string, execution: Execution, instance: AcmInstance, reco
   output.appendLine(
     `\n${status}${execution.duration !== undefined ? ` in ${execution.duration} ms` : ''}${recorded ? ` (execution ${execution.id})` : ' (not recorded in history)'}\n`,
   );
-  const open = () => vscode.commands.executeCommand('vscode.open', executionUri(instance, execution.id));
-  if (isFailed(status)) {
-    const actions = recorded ? ['Show Output', 'Open Execution'] : ['Show Output'];
-    vscode.window.showErrorMessage(`ACM: ${label} ${status}.`, ...actions).then((action) => {
-      if (action === 'Show Output') output.show();
-      if (action === 'Open Execution') open();
-    });
-  } else if (status === 'SKIPPED') {
+  if (status === 'SKIPPED') {
     vscode.window.showInformationMessage(`ACM: ${label} SKIPPED, canRun() returned false.`);
-  } else {
-    vscode.window.setStatusBarMessage(`$(pass) ACM: ${label} ${status}`, 5000);
+    return;
   }
+  const actions = recorded ? ['Show Output', 'Open Execution'] : ['Show Output'];
+  const show = isFailed(status) ? vscode.window.showErrorMessage : vscode.window.showInformationMessage;
+  show(`ACM: ${label} ${status}.`, ...actions).then((action) => {
+    if (action === 'Show Output') output.show();
+    if (action === 'Open Execution') vscode.commands.executeCommand('vscode.open', executionUri(instance, execution.id));
+  });
 }
 
 async function downloadOutputs(node?: InstanceExecution): Promise<void> {
@@ -369,7 +367,7 @@ async function abort(views: Views, node?: InstanceExecution): Promise<void> {
     return;
   }
   await client.request('DELETE', `${ACM_API.queueCode}?executionId=${encodeURIComponent(executionId)}`);
-  vscode.window.setStatusBarMessage(`ACM: Abort requested for ${executionId}`, 5000);
+  vscode.window.showInformationMessage(`ACM: Abort requested for ${executionId}.`);
   views.refreshExecutions();
 }
 

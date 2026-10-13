@@ -584,6 +584,17 @@
         "key": "ctrl+s",
         "mac": "cmd+s",
         "when": "acm.editingInputs"
+      },
+      {
+        "command": "acm.renameProjectFile",
+        "key": "F2",
+        "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./"
+      },
+      {
+        "command": "acm.deleteProjectFile",
+        "key": "delete",
+        "mac": "cmd+backspace",
+        "when": "view == acm.projectContent && viewItem =~ /^projectFile\\./"
       }
     ],
     "configuration": {
