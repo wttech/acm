@@ -73,7 +73,9 @@ public class Executor implements EventListener {
         @AttributeDefinition(
                 name = "Log Printing Names",
                 description = "Additional loggers to print logs from (class names or package names)")
-        String[] logPrintingNames() default {CodePrintStream.LOGGER_NAME_ACL, CodePrintStream.LOGGER_NAME_REPO};
+        String[] logPrintingNames() default {
+            CodePrintStream.LOGGER_NAME_ACL, CodePrintStream.LOGGER_NAME_REPO, CodePrintStream.LOGGER_NAME_REPLICATION
+        };
 
         @AttributeDefinition(
                 name = "Log Printing Timestamps",
