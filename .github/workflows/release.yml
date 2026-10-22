@@ -47,7 +47,7 @@ jobs:
 
       # https://central.sonatype.org/publish/publish-portal-maven/#credentials
       - name: Setup Maven Settings
-        uses: s4u/maven-settings-action@v4
+        uses: s4u/maven-settings-action@v4.0.0
         with:
           servers: |
             [
