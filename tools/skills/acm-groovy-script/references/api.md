@@ -166,6 +166,7 @@ AclUser user(User user)
 AclGroup group(Group group)
 AclAuthorizable authorizable(Authorizable authorizable)
 AclChecker getChecker()
+AclContext getContext()
 ```
 
 ### AclChecker
@@ -204,6 +205,28 @@ boolean include(String groupId, String memberId)
 boolean notExists(String id)
 boolean password(String id, String password)
 boolean property(String id, String relPath, String value)
+```
+
+### AclContext
+
+`dev.vml.es.acm.core.acl.AclContext`
+
+```groovy
+Logger getLogger()
+void setLogger(Logger logger)
+ResourceResolver getResourceResolver()
+AuthorizableManager getAuthorizableManager()
+PermissionsManager getPermissionsManager()
+boolean isCompositeNodeStore()
+AclUser determineUser(User user)
+AclUser determineUser(String id)
+AclUser determineUser(AclUser user, String id)
+AclGroup determineGroup(Group group)
+AclGroup determineGroup(String id)
+AclGroup determineGroup(AclGroup group, String id)
+AclAuthorizable determineAuthorizable(AclAuthorizable authorizable, String id)
+AclAuthorizable determineAuthorizable(Authorizable authorizable)
+String determineId(AclAuthorizable authorizable, String id)
 ```
 
 ### AclAuthorizable
@@ -688,6 +711,40 @@ AclAuthorizable getAuthorizable()
 void setAuthorizable(AclAuthorizable authorizable)
 String getAuthorizableId()
 void setAuthorizableId(String authorizableId)
+```
+
+### AuthorizableManager
+
+`dev.vml.es.acm.core.acl.utils.AuthorizableManager`
+
+```groovy
+User createUser(String id, String password, String path)
+Group createGroup(String id, String path, String externalId)
+User createSystemUser(String id, String path)
+void updateUser(User user, String password, Map<String, String> properties)
+void updateGroup(Group group, Map<String, String> properties)
+void deleteAuthorizable(Authorizable authorizable)
+boolean addMember(Group group, Authorizable member)
+boolean removeMember(Group group, Authorizable member)
+Authorizable getAuthorizable(String id)
+T getAuthorizable(String id, Class<T> clazz)
+User getUser(String id)
+Group getGroup(String id)
+boolean testPassword(User user, String password)
+void changePassword(User user, String password)
+List<String> getProperty(Authorizable authorizable, String relPath)
+void setProperty(Authorizable authorizable, String relPath, String value)
+boolean removeProperty(Authorizable authorizable, String relPath)
+```
+
+### PermissionsManager
+
+`dev.vml.es.acm.core.acl.utils.PermissionsManager`
+
+```groovy
+void apply(Authorizable authorizable, String path, List<String> permissions, Map<String, Object> restrictions, boolean allow)
+boolean clear(Authorizable authorizable, String path, boolean strict)
+boolean check(Authorizable authorizable, String path, List<String> permissions, Map<String, Object> restrictions, boolean allow)
 ```
 
 ### CodeContext
@@ -1989,6 +2046,7 @@ void setAutoCommit(boolean autoCommit)
 boolean isQuiet()
 void setQuiet(boolean quiet)
 Logger getLogger()
+void setLogger(Logger logger)
 void autoCommit(boolean enabled)
 void commit()
 void commit(String context)

@@ -19,6 +19,8 @@ public class Repo implements CommitPolicy {
 
     private static final Logger LOG = LoggerFactory.getLogger(Repo.class);
 
+    private Logger logger = LOG;
+
     private final ResourceResolver resourceResolver;
 
     private final Session session;
@@ -62,7 +64,11 @@ public class Repo implements CommitPolicy {
     }
 
     public Logger getLogger() {
-        return quiet ? NOPLogger.NOP_LOGGER : LOG;
+        return quiet ? NOPLogger.NOP_LOGGER : logger;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger != null ? logger : LOG;
     }
 
     public void autoCommit(boolean enabled) {

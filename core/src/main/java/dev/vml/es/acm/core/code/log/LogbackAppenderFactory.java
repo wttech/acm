@@ -4,7 +4,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,35 +21,62 @@ class LogbackAppenderFactory {
     private static final String LOGBACK_LOGGING_EVENT = "ch.qos.logback.classic.spi.ILoggingEvent";
 
     private final ClassLoader classLoader;
+    private final Object loggerContext;
     private final Class<?> loggerContextClass;
     private final Class<?> appenderClass;
     private final Class<?> contextClass;
     private final Class<?> eventClass;
 
-    LogbackAppenderFactory(ClassLoader classLoader) throws ClassNotFoundException {
+    LogbackAppenderFactory(ClassLoader classLoader, Object loggerContext) throws ClassNotFoundException {
         this.classLoader = classLoader;
         this.loggerContextClass = classLoader.loadClass(LOGBACK_LOGGER_CONTEXT);
+        if (loggerContext == null || !loggerContextClass.isInstance(loggerContext)) {
+            throw new IllegalStateException("SLF4J is not using Logback");
+        }
+        this.loggerContext = loggerContext;
         this.appenderClass = classLoader.loadClass(LOGBACK_APPENDER);
         this.contextClass = classLoader.loadClass(LOGBACK_CONTEXT);
         this.eventClass = classLoader.loadClass(LOGBACK_LOGGING_EVENT);
     }
 
-    Object attach(String name, Consumer<LogMessage> listener, List<String> loggerNames)
+    Attachment attach(String name, Consumer<LogMessage> listener, List<String> loggerNames)
             throws ReflectiveOperationException {
         Object appender = createAppender(name, listener, loggerNames);
+        List<String> targetLoggers = resolveTargetLoggers(loggerNames);
         List<String> attached = new ArrayList<>();
         try {
-            Object loggerContext = getLoggerContext();
             initAppender(appender, loggerContext);
-            for (String loggerName : loggerNames) {
+            for (String loggerName : targetLoggers) {
                 addAppenderToLogger(loggerContext, appender, loggerName);
                 attached.add(loggerName);
             }
-            return appender;
+            return new Attachment(appender, attached);
         } catch (ReflectiveOperationException e) {
             detach(appender, attached);
             throw e;
         }
+    }
+
+    private List<String> resolveTargetLoggers(List<String> loggerNames) {
+        Set<String> targets = new LinkedHashSet<>(loggerNames);
+        try {
+            List<?> existingLoggers =
+                    (List<?>) loggerContextClass.getMethod("getLoggerList").invoke(loggerContext);
+            if (existingLoggers != null) {
+                for (Object logger : existingLoggers) {
+                    String existingName =
+                            (String) logger.getClass().getMethod("getName").invoke(logger);
+                    Boolean additive =
+                            (Boolean) logger.getClass().getMethod("isAdditive").invoke(logger);
+                    if (Boolean.FALSE.equals(additive) && matchesPrefix(existingName, loggerNames)) {
+                        targets.add(existingName);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.debug("Cannot inspect existing loggers for non-additive children", e);
+        }
+        return new ArrayList<>(targets);
     }
 
     void detach(Object appender, List<String> loggerNames) {
@@ -56,7 +85,6 @@ class LogbackAppenderFactory {
         }
         try {
             if (loggerNames != null) {
-                Object loggerContext = getLoggerContext();
                 for (String loggerName : loggerNames) {
                     try {
                         detachAppenderFromLogger(loggerContext, appender, loggerName);
@@ -65,8 +93,6 @@ class LogbackAppenderFactory {
                     }
                 }
             }
-        } catch (Exception e) {
-            LOG.warn("Failed to obtain logger context for detach", e);
         } finally {
             try {
                 stopAppender(appender);
@@ -84,20 +110,12 @@ class LogbackAppenderFactory {
     }
 
     private void initAppender(Object appender, Object loggerContext) throws ReflectiveOperationException {
-        appender.getClass().getMethod("setContext", contextClass).invoke(appender, loggerContext);
-        appender.getClass().getMethod("start").invoke(appender);
+        appenderClass.getMethod("setContext", contextClass).invoke(appender, loggerContext);
+        appenderClass.getMethod("start").invoke(appender);
     }
 
     private void stopAppender(Object appender) throws ReflectiveOperationException {
-        appender.getClass().getMethod("stop").invoke(appender);
-    }
-
-    private Object getLoggerContext() {
-        Object ctx = org.slf4j.LoggerFactory.getILoggerFactory();
-        if (ctx == null || !loggerContextClass.isInstance(ctx)) {
-            throw new IllegalStateException("SLF4J is not using Logback");
-        }
-        return ctx;
+        appenderClass.getMethod("stop").invoke(appender);
     }
 
     private void addAppenderToLogger(Object loggerContext, Object appender, String loggerName)
@@ -112,6 +130,36 @@ class LogbackAppenderFactory {
         logger.getClass().getMethod("detachAppender", appenderClass).invoke(logger, appender);
     }
 
+    private static boolean matchesPrefix(String loggerName, List<String> loggerPrefixes) {
+        if (loggerName == null || loggerPrefixes == null) {
+            return false;
+        }
+        for (String prefix : loggerPrefixes) {
+            if (prefix != null && loggerName.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    class Attachment {
+        private final Object appender;
+        private final List<String> attachedLoggers;
+
+        Attachment(Object appender, List<String> attachedLoggers) {
+            this.appender = appender;
+            this.attachedLoggers = attachedLoggers;
+        }
+
+        List<String> getAttachedLoggers() {
+            return attachedLoggers;
+        }
+
+        void detach() {
+            LogbackAppenderFactory.this.detach(appender, attachedLoggers);
+        }
+    }
+
     private static class AppenderHandler implements InvocationHandler {
 
         private final String appenderName;
@@ -119,7 +167,8 @@ class LogbackAppenderFactory {
         private final Consumer<LogMessage> listener;
         private final List<String> loggerPrefixes;
         private String name;
-        private boolean started;
+        private boolean started = true;
+        private volatile Object lastEvent;
 
         AppenderHandler(String name, Class<?> eventClass, Consumer<LogMessage> listener, List<String> loggerPrefixes) {
             this.appenderName = name;
@@ -166,9 +215,13 @@ class LogbackAppenderFactory {
 
         private void processEvent(Object event) {
             try {
+                if (event == lastEvent) {
+                    return;
+                }
+                lastEvent = event;
                 String loggerName =
                         (String) eventClass.getMethod("getLoggerName").invoke(event);
-                if (!matchesPrefix(loggerName)) {
+                if (!matchesPrefix(loggerName, loggerPrefixes)) {
                     return;
                 }
                 String message =
@@ -177,21 +230,9 @@ class LogbackAppenderFactory {
                 Long ts = (Long) eventClass.getMethod("getTimeStamp").invoke(event);
                 listener.accept(
                         new LogMessage(loggerName, level, message, ts != null ? ts : System.currentTimeMillis()));
-            } catch (Exception ignored) {
-                // Never disrupt logging
+            } catch (Exception e) {
+                LOG.trace("Failed to process log event", e);
             }
-        }
-
-        private boolean matchesPrefix(String loggerName) {
-            if (loggerName == null) {
-                return false;
-            }
-            for (String prefix : loggerPrefixes) {
-                if (prefix != null && loggerName.startsWith(prefix)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         private Object defaultValue(Class<?> type) {
