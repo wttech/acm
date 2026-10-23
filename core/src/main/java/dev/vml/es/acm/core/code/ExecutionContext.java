@@ -221,11 +221,14 @@ public class ExecutionContext implements AutoCloseable {
     }
 
     private void customizeBinding() {
-        codeContext.getRepo().setLogger(printStream.bridgeLogger(codeContext.getRepo().getLogger()));
+        codeContext
+                .getRepo()
+                .setLogger(printStream.bridgeLogger(codeContext.getRepo().getLogger()));
         codeContext
                 .getAcl()
                 .getContext()
-                .setLogger(printStream.bridgeLogger(codeContext.getAcl().getContext().getLogger()));
+                .setLogger(printStream.bridgeLogger(
+                        codeContext.getAcl().getContext().getLogger()));
 
         Binding binding = getCodeContext().getBinding();
 

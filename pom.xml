@@ -71,6 +71,8 @@
         <vault.user>admin</vault.user>
         <vault.password>admin</vault.password>
         <bnd.version>5.1.2</bnd.version>
+        <spotless.version>2.30.0</spotless.version>
+        <palantir.java.format.version>1.1.0</palantir.java.format.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.deploy.skip>false</maven.deploy.skip>
@@ -203,7 +205,7 @@
                 <plugin>
                     <groupId>com.diffplug.spotless</groupId>
                     <artifactId>spotless-maven-plugin</artifactId>
-                    <version>2.30.0</version>
+                    <version>${spotless.version}</version>
                 </plugin>
                 <!-- Maven Clean Plugin -->
                 <plugin>
@@ -687,6 +689,25 @@ Private-Package: com.fasterxml.jackson.datatype.jsr310
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>java11-spotless</id>
+            <activation>
+                <jdk>[11,17)</jdk>
+            </activation>
+            <properties>
+                <palantir.java.format.version>2.28.0</palantir.java.format.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>java17plus-spotless</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <properties>
+                <spotless.version>2.43.0</spotless.version>
+                <palantir.java.format.version>2.39.0</palantir.java.format.version>
+            </properties>
         </profile>
     </profiles>
     <!-- ====================================================================== -->

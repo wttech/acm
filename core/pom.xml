@@ -95,7 +95,9 @@ DynamicImport-Package: *
                             <include>src/main/java/**/*.java</include>
                             <include>src/test/java/**/*.java</include>
                         </includes>
-                        <palantirJavaFormat/>
+                        <palantirJavaFormat>
+                            <version>${palantir.java.format.version}</version>
+                        </palantirJavaFormat>
                         <importOrder/>
                         <removeUnusedImports/>
                         <formatAnnotations/>

@@ -238,9 +238,9 @@ vendor:
   # AEM source files
   quickstart:
     # Quickstart JAR or SDK ZIP
-    dist_file: "/Users/krystian.panek/Projects/library/aem/cq-quickstart-6.6.3.jar"
+    dist_file: "aem/home/lib/{aem-sdk,cq-quickstart}-*.{zip,jar}"
     # Quickstart License properties file
-    license_file: "/Users/krystian.panek/Projects/library/aem/license.properties"
+    license_file: "aem/home/lib/license.properties"
 
   # Oak Run tool options (offline instance management)
   oak_run:

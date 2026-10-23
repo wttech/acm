@@ -89,9 +89,8 @@ public class CodePrintStream extends PrintStream {
     private void updateInterceptor() {
         detachInterceptor();
         if (!loggerNames.isEmpty() && logInterceptorManager != null) {
-            String[] externalLoggers = loggerNames.stream()
-                    .filter(name -> !isBridgedLogger(name))
-                    .toArray(String[]::new);
+            String[] externalLoggers =
+                    loggerNames.stream().filter(name -> !isBridgedLogger(name)).toArray(String[]::new);
             if (externalLoggers.length > 0) {
                 interceptorHandle = logInterceptorManager.attach(this::handleLogMessage, externalLoggers);
             }
