@@ -23,7 +23,9 @@ import org.slf4j.LoggerFactory;
 
 public class AclContext {
 
-    private final Logger logger;
+    private static final Logger LOG = LoggerFactory.getLogger(AclContext.class);
+
+    private Logger logger = LOG;
 
     private final ResourceResolver resourceResolver;
 
@@ -37,7 +39,6 @@ public class AclContext {
 
     public AclContext(ResourceResolver resourceResolver, CommitPolicy commitPolicy) {
         try {
-            this.logger = LoggerFactory.getLogger(AclContext.class);
             JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
             AccessControlManager accessControlManager = session.getAccessControlManager();
@@ -52,6 +53,10 @@ public class AclContext {
 
     public Logger getLogger() {
         return logger;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger != null ? logger : LOG;
     }
 
     public ResourceResolver getResourceResolver() {

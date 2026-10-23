@@ -668,4 +668,8 @@ public class Acl {
     public AclChecker getChecker() {
         return checker;
     }
+
+    public AclContext getContext() {
+        return context;
+    }
 }

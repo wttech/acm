@@ -1262,6 +1262,11 @@
           "name": "getChecker",
           "returns": "AclChecker",
           "params": []
+        },
+        {
+          "name": "getContext",
+          "returns": "AclContext",
+          "params": []
         }
       ]
     },
@@ -1667,6 +1672,152 @@
             {
               "type": "String",
               "name": "value"
+            }
+          ]
+        }
+      ]
+    },
+    "dev.vml.es.acm.core.acl.AclContext": {
+      "name": "AclContext",
+      "methods": [
+        {
+          "name": "getLogger",
+          "returns": "Logger",
+          "params": []
+        },
+        {
+          "name": "setLogger",
+          "returns": "void",
+          "params": [
+            {
+              "type": "Logger",
+              "name": "logger"
+            }
+          ]
+        },
+        {
+          "name": "getResourceResolver",
+          "returns": "ResourceResolver",
+          "params": []
+        },
+        {
+          "name": "getAuthorizableManager",
+          "returns": "AuthorizableManager",
+          "params": []
+        },
+        {
+          "name": "getPermissionsManager",
+          "returns": "PermissionsManager",
+          "params": []
+        },
+        {
+          "name": "isCompositeNodeStore",
+          "returns": "boolean",
+          "params": []
+        },
+        {
+          "name": "determineUser",
+          "returns": "AclUser",
+          "params": [
+            {
+              "type": "User",
+              "name": "user"
+            }
+          ]
+        },
+        {
+          "name": "determineUser",
+          "returns": "AclUser",
+          "params": [
+            {
+              "type": "String",
+              "name": "id"
+            }
+          ]
+        },
+        {
+          "name": "determineUser",
+          "returns": "AclUser",
+          "params": [
+            {
+              "type": "AclUser",
+              "name": "user"
+            },
+            {
+              "type": "String",
+              "name": "id"
+            }
+          ]
+        },
+        {
+          "name": "determineGroup",
+          "returns": "AclGroup",
+          "params": [
+            {
+              "type": "Group",
+              "name": "group"
+            }
+          ]
+        },
+        {
+          "name": "determineGroup",
+          "returns": "AclGroup",
+          "params": [
+            {
+              "type": "String",
+              "name": "id"
+            }
+          ]
+        },
+        {
+          "name": "determineGroup",
+          "returns": "AclGroup",
+          "params": [
+            {
+              "type": "AclGroup",
+              "name": "group"
+            },
+            {
+              "type": "String",
+              "name": "id"
+            }
+          ]
+        },
+        {
+          "name": "determineAuthorizable",
+          "returns": "AclAuthorizable",
+          "params": [
+            {
+              "type": "AclAuthorizable",
+              "name": "authorizable"
+            },
+            {
+              "type": "String",
+              "name": "id"
+            }
+          ]
+        },
+        {
+          "name": "determineAuthorizable",
+          "returns": "AclAuthorizable",
+          "params": [
+            {
+              "type": "Authorizable",
+              "name": "authorizable"
+            }
+          ]
+        },
+        {
+          "name": "determineId",
+          "returns": "String",
+          "params": [
+            {
+              "type": "AclAuthorizable",
+              "name": "authorizable"
+            },
+            {
+              "type": "String",
+              "name": "id"
             }
           ]
         }
@@ -4023,6 +4174,324 @@
             {
               "type": "String",
               "name": "authorizableId"
+            }
+          ]
+        }
+      ]
+    },
+    "dev.vml.es.acm.core.acl.utils.AuthorizableManager": {
+      "name": "AuthorizableManager",
+      "methods": [
+        {
+          "name": "createUser",
+          "returns": "User",
+          "params": [
+            {
+              "type": "String",
+              "name": "id"
+            },
+            {
+              "type": "String",
+              "name": "password"
+            },
+            {
+              "type": "String",
+              "name": "path"
+            }
+          ]
+        },
+        {
+          "name": "createGroup",
+          "returns": "Group",
+          "params": [
+            {
+              "type": "String",
+              "name": "id"
+            },
+            {
+              "type": "String",
+              "name": "path"
+            },
+            {
+              "type": "String",
+              "name": "externalId"
+            }
+          ]
+        },
+        {
+          "name": "createSystemUser",
+          "returns": "User",
+          "params": [
+            {
+              "type": "String",
+              "name": "id"
+            },
+            {
+              "type": "String",
+              "name": "path"
+            }
+          ]
+        },
+        {
+          "name": "updateUser",
+          "returns": "void",
+          "params": [
+            {
+              "type": "User",
+              "name": "user"
+            },
+            {
+              "type": "String",
+              "name": "password"
+            },
+            {
+              "type": "Map<String, String>",
+              "name": "properties"
+            }
+          ]
+        },
+        {
+          "name": "updateGroup",
+          "returns": "void",
+          "params": [
+            {
+              "type": "Group",
+              "name": "group"
+            },
+            {
+              "type": "Map<String, String>",
+              "name": "properties"
+            }
+          ]
+        },
+        {
+          "name": "deleteAuthorizable",
+          "returns": "void",
+          "params": [
+            {
+              "type": "Authorizable",
+              "name": "authorizable"
+            }
+          ]
+        },
+        {
+          "name": "addMember",
+          "returns": "boolean",
+          "params": [
+            {
+              "type": "Group",
+              "name": "group"
+            },
+            {
+              "type": "Authorizable",
+              "name": "member"
+            }
+          ]
+        },
+        {
+          "name": "removeMember",
+          "returns": "boolean",
+          "params": [
+            {
+              "type": "Group",
+              "name": "group"
+            },
+            {
+              "type": "Authorizable",
+              "name": "member"
+            }
+          ]
+        },
+        {
+          "name": "getAuthorizable",
+          "returns": "Authorizable",
+          "params": [
+            {
+              "type": "String",
+              "name": "id"
+            }
+          ]
+        },
+        {
+          "name": "getAuthorizable",
+          "returns": "T",
+          "params": [
+            {
+              "type": "String",
+              "name": "id"
+            },
+            {
+              "type": "Class<T>",
+              "name": "clazz"
+            }
+          ]
+        },
+        {
+          "name": "getUser",
+          "returns": "User",
+          "params": [
+            {
+              "type": "String",
+              "name": "id"
+            }
+          ]
+        },
+        {
+          "name": "getGroup",
+          "returns": "Group",
+          "params": [
+            {
+              "type": "String",
+              "name": "id"
+            }
+          ]
+        },
+        {
+          "name": "testPassword",
+          "returns": "boolean",
+          "params": [
+            {
+              "type": "User",
+              "name": "user"
+            },
+            {
+              "type": "String",
+              "name": "password"
+            }
+          ]
+        },
+        {
+          "name": "changePassword",
+          "returns": "void",
+          "params": [
+            {
+              "type": "User",
+              "name": "user"
+            },
+            {
+              "type": "String",
+              "name": "password"
+            }
+          ]
+        },
+        {
+          "name": "getProperty",
+          "returns": "List<String>",
+          "params": [
+            {
+              "type": "Authorizable",
+              "name": "authorizable"
+            },
+            {
+              "type": "String",
+              "name": "relPath"
+            }
+          ]
+        },
+        {
+          "name": "setProperty",
+          "returns": "void",
+          "params": [
+            {
+              "type": "Authorizable",
+              "name": "authorizable"
+            },
+            {
+              "type": "String",
+              "name": "relPath"
+            },
+            {
+              "type": "String",
+              "name": "value"
+            }
+          ]
+        },
+        {
+          "name": "removeProperty",
+          "returns": "boolean",
+          "params": [
+            {
+              "type": "Authorizable",
+              "name": "authorizable"
+            },
+            {
+              "type": "String",
+              "name": "relPath"
+            }
+          ]
+        }
+      ]
+    },
+    "dev.vml.es.acm.core.acl.utils.PermissionsManager": {
+      "name": "PermissionsManager",
+      "methods": [
+        {
+          "name": "apply",
+          "returns": "void",
+          "params": [
+            {
+              "type": "Authorizable",
+              "name": "authorizable"
+            },
+            {
+              "type": "String",
+              "name": "path"
+            },
+            {
+              "type": "List<String>",
+              "name": "permissions"
+            },
+            {
+              "type": "Map<String, Object>",
+              "name": "restrictions"
+            },
+            {
+              "type": "boolean",
+              "name": "allow"
+            }
+          ]
+        },
+        {
+          "name": "clear",
+          "returns": "boolean",
+          "params": [
+            {
+              "type": "Authorizable",
+              "name": "authorizable"
+            },
+            {
+              "type": "String",
+              "name": "path"
+            },
+            {
+              "type": "boolean",
+              "name": "strict"
+            }
+          ]
+        },
+        {
+          "name": "check",
+          "returns": "boolean",
+          "params": [
+            {
+              "type": "Authorizable",
+              "name": "authorizable"
+            },
+            {
+              "type": "String",
+              "name": "path"
+            },
+            {
+              "type": "List<String>",
+              "name": "permissions"
+            },
+            {
+              "type": "Map<String, Object>",
+              "name": "restrictions"
+            },
+            {
+              "type": "boolean",
+              "name": "allow"
             }
           ]
         }
@@ -11022,6 +11491,16 @@
           "name": "getLogger",
           "returns": "Logger",
           "params": []
+        },
+        {
+          "name": "setLogger",
+          "returns": "void",
+          "params": [
+            {
+              "type": "Logger",
+              "name": "logger"
+            }
+          ]
         },
         {
           "name": "autoCommit",

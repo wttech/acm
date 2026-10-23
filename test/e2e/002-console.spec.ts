@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded, expectToHaveMultilineText } from './utils/expect'
+import { expectCompilationSucceeded, expectExecutionProgressBarSucceeded } from './utils/expect'
 import { readFromCodeEditor, writeToCodeEditor } from './utils/editor';
 import { attachScreenshot } from './utils/page';
   
@@ -16,6 +16,7 @@ test.describe('Console', () => {
 
         void doRun() {
             println "Hello World!"
+            log.info "Hello Logs!"
         }
     `);
     await expectCompilationSucceeded(page);
@@ -27,9 +28,8 @@ test.describe('Console', () => {
     await expectExecutionProgressBarSucceeded(page);
     
     const output = await readFromCodeEditor(page, 'Console Output');
-    expectToHaveMultilineText(output, `
-        Hello World!
-    `);
+    expect(output).toContain('Hello World!');
+    expect(output).toContain('[INFO] Hello Logs!');
     await attachScreenshot(page, testInfo, 'Console Output');
   });
 });

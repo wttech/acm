@@ -55,16 +55,27 @@ jobs:
           retention-days: 3
 
   test:
-    name: 'Test ACM Package'
+    name: 'Test ACM Package (AEM ${{ matrix.aem }})'
     runs-on: ubuntu-latest
     needs: build
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - aem: '6.5.0'
+            quickstart_prefix: 'cq-quickstart-6.5.0.jar'
+            java_download_url: 'https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u432-b06/OpenJDK8U-jdk_x64_linux_hotspot_8u432b06.tar.gz'
+          - aem: '6.6.x'
+            quickstart_prefix: 'cq-quickstart-6.6.'
+            java_download_url: 'https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35/OpenJDK21U-jdk_x64_linux_hotspot_21_35.tar.gz'
     permissions:
       contents: read
       actions: read
       checks: write
     env:
       AEM_OUTPUT_LOG_MODE: none
+      AEM_VENDOR_JAVA_DOWNLOAD_URL: ${{ matrix.java_download_url }}
       FORCE_COLOR: 1
     steps:
       - name: Checkout Code
@@ -110,7 +121,13 @@ jobs:
           echo "Preparing AEM instance"
           echo "AEM_PUBLISH_ACTIVE=false" >> .env
           mkdir -p aem/home/lib
-          aws s3 cp --no-progress --only-show-errors s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/cq-quickstart-6.5.0.jar aem/home/lib/cq-quickstart-6.5.0.jar
+          JAR_FILE=$(aws s3 ls "s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/${{ matrix.quickstart_prefix }}" | awk '{print $4}' | sort -V | tail -n 1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "::error::No AEM quickstart matching '${{ matrix.quickstart_prefix }}' found in S3!"
+            exit 1
+          fi
+          echo "Downloading AEM quickstart '$JAR_FILE'"
+          aws s3 cp --no-progress --only-show-errors "s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/$JAR_FILE" "aem/home/lib/$JAR_FILE"
           aws s3 cp --no-progress --only-show-errors s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/license.properties aem/home/lib/license.properties
           echo "Prepared AEM instance"
           echo "Launching AEM instance"
@@ -141,6 +158,6 @@ jobs:
         uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: acm-playwright-report
+          name: acm-playwright-report-${{ matrix.aem }}
           path: ./test/e2e/playwright-report/
           retention-days: 30

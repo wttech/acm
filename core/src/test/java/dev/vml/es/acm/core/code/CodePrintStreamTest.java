@@ -1,9 +1,19 @@
 package dev.vml.es.acm.core.code;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.vml.es.acm.core.code.log.LogInterceptor;
+import dev.vml.es.acm.core.code.log.LogInterceptorManager;
+import dev.vml.es.acm.core.code.log.LogMessage;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class CodePrintStreamTest {
 
@@ -79,5 +89,65 @@ class CodePrintStreamTest {
         assertTrue(output.contains("[WARN] Warn message"));
         assertTrue(output.contains("[DEBUG] Debug message"));
         assertTrue(output.contains("[SUCCESS] Success message"));
+    }
+
+    @Test
+    void shouldBridgeSelfAndRecommendedLoggersWithoutInterceptor() {
+        List<String> interceptedLoggers = new ArrayList<>();
+        LogInterceptorManager manager = new LogInterceptorManager() {
+            @Override
+            public LogInterceptor.Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
+                interceptedLoggers.addAll(Arrays.asList(loggerNames));
+                return () -> {};
+            }
+        };
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (CodePrintStream out = new CodePrintStream(outputStream, "console|1", manager)) {
+            Logger repoLogger = out.bridgeLogger(LoggerFactory.getLogger(CodePrintStream.LOGGER_NAME_REPO));
+            out.fromSelfLogger();
+            out.fromRecommendedLoggers();
+
+            out.getLogger().info("Self message {}", 1);
+            repoLogger.info("Repo message {}", 2);
+        }
+
+        assertTrue(interceptedLoggers.isEmpty());
+        String output = outputStream.toString();
+        assertTrue(output.contains("[INFO] Self message 1"));
+        assertTrue(output.contains("[INFO] Repo message 2"));
+    }
+
+    @Test
+    void shouldKeepOutputEmptyWhenLogPrintingNotEnabled() {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (CodePrintStream out = new CodePrintStream(outputStream, "console|1", null)) {
+            Logger repoLogger = out.bridgeLogger(LoggerFactory.getLogger(CodePrintStream.LOGGER_NAME_REPO));
+            out.getLogger().info("Should not be printed");
+            repoLogger.info("Should not be printed either");
+        }
+
+        assertEquals("", outputStream.toString());
+    }
+
+    @Test
+    void shouldAttachInterceptorOnlyForExternalLoggers() {
+        List<String> interceptedLoggers = new ArrayList<>();
+        LogInterceptorManager manager = new LogInterceptorManager() {
+            @Override
+            public LogInterceptor.Handle attach(Consumer<LogMessage> listener, String... loggerNames) {
+                interceptedLoggers.addAll(Arrays.asList(loggerNames));
+                return () -> {};
+            }
+        };
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (CodePrintStream out = new CodePrintStream(outputStream, "console|1", manager)) {
+            out.fromSelfLogger();
+            out.fromRecommendedLoggers();
+            out.fromLogger("com.acme.custom");
+        }
+
+        assertEquals(Arrays.asList("com.acme.custom"), interceptedLoggers);
     }
 }

@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.code;
 
 import dev.vml.es.acm.core.AcmException;
+import dev.vml.es.acm.core.code.log.CodePrintLogger;
 import dev.vml.es.acm.core.code.log.LogInterceptor;
 import dev.vml.es.acm.core.code.log.LogInterceptorManager;
 import dev.vml.es.acm.core.code.log.LogMessage;
@@ -36,6 +37,8 @@ public class CodePrintStream extends PrintStream {
 
     private final Set<String> loggerNames;
 
+    private final Set<String> bridgedLoggerNames;
+
     private boolean loggerTimestamps;
 
     private LogInterceptor.Handle interceptorHandle;
@@ -51,17 +54,30 @@ public class CodePrintStream extends PrintStream {
 
         this.logInterceptorManager = logInterceptorManager;
         this.loggerNames = new HashSet<>();
+        this.bridgedLoggerNames = new HashSet<>();
         this.loggerTimestamps = true;
-        this.logger = LoggerFactory.getLogger(id);
+        this.logger = bridgeLogger(LoggerFactory.getLogger(id));
         this.printerTimestamps = true;
+    }
+
+    Logger bridgeLogger(Logger delegate) {
+        bridgedLoggerNames.add(delegate.getName());
+        return new CodePrintLogger(delegate, this::handleLogMessage);
+    }
+
+    private boolean isBridgedLogger(String loggerName) {
+        return LOGGER_NAME_ACL.equals(loggerName)
+                || LOGGER_NAME_REPO.equals(loggerName)
+                || bridgedLoggerNames.contains(loggerName);
     }
 
     public void fromLogger(String loggerName) {
         if (StringUtils.isBlank(loggerName)) {
             throw new AcmException("Logger name cannot be blank!");
         }
-        loggerNames.add(loggerName);
-        updateInterceptor();
+        if (loggerNames.add(loggerName.trim())) {
+            updateInterceptor();
+        }
     }
 
     @Override
@@ -73,8 +89,11 @@ public class CodePrintStream extends PrintStream {
     private void updateInterceptor() {
         detachInterceptor();
         if (!loggerNames.isEmpty() && logInterceptorManager != null) {
-            interceptorHandle =
-                    logInterceptorManager.attach(this::handleLogMessage, loggerNames.toArray(new String[0]));
+            String[] externalLoggers =
+                    loggerNames.stream().filter(name -> !isBridgedLogger(name)).toArray(String[]::new);
+            if (externalLoggers.length > 0) {
+                interceptorHandle = logInterceptorManager.attach(this::handleLogMessage, externalLoggers);
+            }
         }
     }
 
@@ -134,13 +153,24 @@ public class CodePrintStream extends PrintStream {
     }
 
     public void fromLoggers(String... loggerNames) {
+        if (loggerNames == null) {
+            return;
+        }
+        boolean changed = false;
         for (String loggerName : loggerNames) {
-            fromLogger(loggerName);
+            if (StringUtils.isNotBlank(loggerName) && this.loggerNames.add(loggerName.trim())) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            updateInterceptor();
         }
     }
 
     public void fromLoggers(List<String> loggerNames) {
-        loggerNames.forEach(this::fromLogger);
+        if (loggerNames != null) {
+            fromLoggers(loggerNames.toArray(new String[0]));
+        }
     }
 
     public void setPrinterTimestamps(boolean flag) {

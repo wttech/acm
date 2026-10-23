@@ -3,9 +3,7 @@ package dev.vml.es.acm.core.code.log;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import org.apache.sling.commons.classloader.DynamicClassLoaderManager;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +13,6 @@ public class LogbackLogInterceptor implements LogInterceptor {
     private static final Logger LOG = LoggerFactory.getLogger(LogbackLogInterceptor.class);
 
     private static final String APPENDER_NAME = "ACM-LogbackLogInterceptor";
-
-    @Reference
-    private DynamicClassLoaderManager classLoaderManager;
 
     @Override
     public boolean isAvailable() {
@@ -36,9 +31,9 @@ public class LogbackLogInterceptor implements LogInterceptor {
         }
         try {
             List<String> loggerList = Arrays.asList(loggerNames);
-            Object appender = factory.attach(APPENDER_NAME, listener, loggerList);
-            LOG.debug("Attached appender to loggers: {}", loggerList);
-            return () -> factory.detach(appender, loggerList);
+            LogbackAppenderFactory.Attachment attachment = factory.attach(APPENDER_NAME, listener, loggerList);
+            LOG.debug("Attached appender to loggers: {}", attachment.getAttachedLoggers());
+            return attachment::detach;
         } catch (Exception e) {
             LOG.error("Failed to attach log interceptor", e);
             return () -> {};
@@ -46,16 +41,22 @@ public class LogbackLogInterceptor implements LogInterceptor {
     }
 
     private LogbackAppenderFactory getFactory() {
-        if (classLoaderManager == null) {
-            return null;
-        }
         try {
-            ClassLoader cl = classLoaderManager.getDynamicClassLoader();
-            if (cl == null) {
+            Object loggerContext = LoggerFactory.getILoggerFactory();
+            if (loggerContext == null) {
+                LOG.debug("Cannot obtain SLF4J ILoggerFactory");
                 return null;
             }
-            return new LogbackAppenderFactory(cl);
+            ClassLoader cl = loggerContext.getClass().getClassLoader();
+            if (cl == null) {
+                LOG.debug(
+                        "SLF4J ILoggerFactory '{}' has no class loader",
+                        loggerContext.getClass().getName());
+                return null;
+            }
+            return new LogbackAppenderFactory(cl, loggerContext);
         } catch (Exception e) {
+            LOG.debug("Logback log interceptor is not available", e);
             return null;
         }
     }
