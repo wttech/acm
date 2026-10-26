@@ -477,11 +477,13 @@ public class Acl {
                 context.determineAuthorizable(options.getAuthorizable(), options.getAuthorizableId());
         if (authorizable == null) {
             String authorizableId = context.determineId(options.getAuthorizable(), options.getAuthorizableId());
+            String strictSuffix = options.isStrict() ? " in strict mode" : "";
             context.getLogger()
                     .info(
-                            "Skipped clearing permissions for authorizable '{}' at path '{}' (authorizable not found)",
+                            "Skipped clearing permissions for authorizable '{}' at path '{}'{} (authorizable not found)",
                             authorizableId,
-                            options.getPath());
+                            options.getPath(),
+                            strictSuffix);
             return;
         }
         authorizable.clear(options);
@@ -548,10 +550,11 @@ public class Acl {
             String actionDescription = allow ? "allow permissions" : "deny permissions";
             context.getLogger()
                     .info(
-                            "Skipped setting {} for authorizable '{}' at path '{}' (authorizable not found)",
+                            "Skipped setting {} for authorizable '{}' at path '{}'{} (authorizable not found)",
                             actionDescription,
                             authorizableId,
-                            options.getPath());
+                            options.getPath(),
+                            options.determineGlobSuffix());
             return;
         }
         if (allow) {

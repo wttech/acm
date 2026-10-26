@@ -419,6 +419,7 @@ void skipIfPathMissing()
 void failIfPathMissing()
 List<String> determineAllPermissions()
 Map<String, Object> determineAllRestrictions()
+String determineGlobSuffix()
 ```
 
 ### RemovePropertyOptions
@@ -521,6 +522,7 @@ void restriction(String name, String value)
 void restriction(String name, List<String> values)
 List<String> determineAllPermissions()
 Map<String, Object> determineAllRestrictions()
+String determineGlobSuffix()
 String getId()
 void setId(String id)
 ```

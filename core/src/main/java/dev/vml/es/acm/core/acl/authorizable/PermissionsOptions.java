@@ -117,6 +117,14 @@ public class PermissionsOptions {
         return allRestrictions;
     }
 
+    public String determineGlobSuffix() {
+        if (glob == null) {
+            return "";
+        }
+        String description = GLOB_STRICT_EFFECTIVE.equals(glob) ? "STRICT" : glob;
+        return String.format(" with glob '%s'", description);
+    }
+
     public enum Mode {
         FAIL,
         SKIP

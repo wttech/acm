@@ -242,12 +242,14 @@ public class AclChecker {
                         options.determineAllPermissions(),
                         options.determineAllRestrictions(),
                         allow);
+        String actionDescription = allow ? "allow permissions" : "deny permissions";
         context.getLogger()
                 .info(
-                        "Checked permissions for authorizable '{}' at path '{}' with allow '{}' [{}]",
+                        "Checked {} for authorizable '{}' at path '{}'{} [{}]",
+                        actionDescription,
                         id,
                         path,
-                        allow,
+                        options.determineGlobSuffix(),
                         result);
         return result;
     }

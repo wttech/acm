@@ -146,28 +146,36 @@ public class AclAuthorizable {
     }
 
     public void clear(String path, boolean strict) {
+        String strictSuffix = strict ? " in strict mode" : "";
         if (context.isCompositeNodeStore() && isAppsOrLibsPath(path)) {
             context.getLogger()
                     .info(
-                            "Skipped clearing permissions for authorizable '{}' at path '{}' (composite node store)",
+                            "Skipped clearing permissions for authorizable '{}' at path '{}'{} (composite node store)",
                             id,
-                            path);
+                            path,
+                            strictSuffix);
             return;
         }
         if (context.getResourceResolver().getResource(path) == null) {
             context.getLogger()
-                    .info("Skipped clearing permissions for authorizable '{}' at path '{}' (path not found)", id, path);
+                    .info(
+                            "Skipped clearing permissions for authorizable '{}' at path '{}'{} (path not found)",
+                            id,
+                            path,
+                            strictSuffix);
             return;
         }
         boolean changed = context.getPermissionsManager().clear(authorizable, path, strict);
         if (changed) {
-            context.getLogger().info("Cleared permissions for authorizable '{}' at path '{}'", id, path);
+            context.getLogger()
+                    .info("Cleared permissions for authorizable '{}' at path '{}'{}", id, path, strictSuffix);
         } else {
             context.getLogger()
                     .info(
-                            "Skipped clearing permissions for authorizable '{}' at path '{}' (no permissions to clear)",
+                            "Skipped clearing permissions for authorizable '{}' at path '{}'{} (no permissions to clear)",
                             id,
-                            path);
+                            path,
+                            strictSuffix);
         }
     }
 
@@ -184,15 +192,17 @@ public class AclAuthorizable {
         List<String> permissions = options.determineAllPermissions();
         Map<String, Object> restrictions = options.determineAllRestrictions();
         PermissionsOptions.Mode mode = options.getMode();
+        String actionDescription = allow ? "allow permissions" : "deny permissions";
+        String globSuffix = options.determineGlobSuffix();
 
         if (context.isCompositeNodeStore() && isAppsOrLibsPath(path)) {
-            String actionDescription = allow ? "allow permissions" : "deny permissions";
             context.getLogger()
                     .info(
-                            "Skipped setting {} for authorizable '{}' at path '{}' (composite node store)",
+                            "Skipped setting {} for authorizable '{}' at path '{}'{} (composite node store)",
                             actionDescription,
                             id,
-                            path);
+                            path,
+                            globSuffix);
             return;
         }
 
@@ -201,28 +211,28 @@ public class AclAuthorizable {
                 throw new AclException(String.format(
                         "Cannot apply permissions for authorizable '%s' at path '%s'! (path not found)", id, path));
             }
-            String actionDescription = allow ? "allow permissions" : "deny permissions";
             context.getLogger()
                     .info(
-                            "Skipped setting {} for authorizable '{}' at path '{}' (path not found)",
+                            "Skipped setting {} for authorizable '{}' at path '{}'{} (path not found)",
                             actionDescription,
                             id,
-                            path);
+                            path,
+                            globSuffix);
             return;
         }
 
         if (context.getPermissionsManager().check(authorizable, path, permissions, restrictions, allow)) {
-            String actionDescription = allow ? "allow permissions" : "deny permissions";
             context.getLogger()
                     .info(
-                            "Skipped setting {} for authorizable '{}' at path '{}' (already set)",
+                            "Skipped setting {} for authorizable '{}' at path '{}'{} (already set)",
                             actionDescription,
                             id,
-                            path);
+                            path,
+                            globSuffix);
         } else {
             context.getPermissionsManager().apply(authorizable, path, permissions, restrictions, allow);
-            String actionDescription = allow ? "allow permissions" : "deny permissions";
-            context.getLogger().info("Applied {} for authorizable '{}' at path '{}'", actionDescription, id, path);
+            context.getLogger()
+                    .info("Applied {} for authorizable '{}' at path '{}'{}", actionDescription, id, path, globSuffix);
         }
     }
 
