@@ -1,0 +1,6 @@
+group: OSGi
+name: osgi_crypto_protect
+content: |
+  osgi.getService(com.adobe.granite.crypto.CryptoSupport.class).protect("${1:plainText}")
+documentation: |
+  Encrypt text with CryptoSupport and get the <code>{...}</code> value accepted by <code>acl.createUser</code> and <code>acl.setPassword</code>.

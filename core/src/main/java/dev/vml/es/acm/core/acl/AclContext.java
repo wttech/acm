@@ -1,9 +1,11 @@
 package dev.vml.es.acm.core.acl;
 
+import com.adobe.granite.crypto.CryptoSupport;
 import dev.vml.es.acm.core.acl.authorizable.AclAuthorizable;
 import dev.vml.es.acm.core.acl.authorizable.AclGroup;
 import dev.vml.es.acm.core.acl.authorizable.AclUser;
 import dev.vml.es.acm.core.acl.utils.AuthorizableManager;
+import dev.vml.es.acm.core.acl.utils.CryptoDecryptor;
 import dev.vml.es.acm.core.acl.utils.PermissionsManager;
 import dev.vml.es.acm.core.repo.CommitPolicy;
 import dev.vml.es.acm.core.repo.Repo;
@@ -33,18 +35,16 @@ public class AclContext {
 
     private final PermissionsManager permissionsManager;
 
-    public AclContext(ResourceResolver resourceResolver) {
-        this(resourceResolver, CommitPolicy.of(resourceResolver, true));
-    }
-
-    public AclContext(ResourceResolver resourceResolver, CommitPolicy commitPolicy) {
+    public AclContext(ResourceResolver resourceResolver, CommitPolicy commitPolicy, CryptoSupport cryptoSupport) {
         try {
             JackrabbitSession session = (JackrabbitSession) resourceResolver.adaptTo(Session.class);
             UserManager userManager = session.getUserManager();
             AccessControlManager accessControlManager = session.getAccessControlManager();
             ValueFactory valueFactory = session.getValueFactory();
+            CryptoDecryptor cryptoDecryptor = new CryptoDecryptor(cryptoSupport);
             this.resourceResolver = resourceResolver;
-            this.authorizableManager = new AuthorizableManager(session, userManager, valueFactory, commitPolicy);
+            this.authorizableManager =
+                    new AuthorizableManager(session, userManager, valueFactory, commitPolicy, cryptoDecryptor);
             this.permissionsManager = new PermissionsManager(session, accessControlManager, valueFactory, commitPolicy);
         } catch (RepositoryException e) {
             throw new AclException("Cannot access repository while obtaining ACL context!", e);

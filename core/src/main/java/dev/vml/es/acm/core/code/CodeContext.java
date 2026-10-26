@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import com.adobe.granite.crypto.CryptoSupport;
 import dev.vml.es.acm.core.acl.Acl;
 import dev.vml.es.acm.core.code.script.ExtensionScript;
 import dev.vml.es.acm.core.format.Formatter;
@@ -46,7 +47,7 @@ public class CodeContext {
 
         this.log = LoggerFactory.getLogger(getClass());
         this.repo = new Repo(resourceResolver);
-        this.acl = new Acl(resourceResolver, repo);
+        this.acl = new Acl(resourceResolver, repo, osgiContext.getService(CryptoSupport.class));
         this.activator = new Activator(resourceResolver, osgiContext);
         this.formatter = new Formatter();
         this.notifier = osgiContext.getService(NotificationManager.class);
