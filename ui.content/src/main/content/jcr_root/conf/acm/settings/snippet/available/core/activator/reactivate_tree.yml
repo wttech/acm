@@ -1,0 +1,12 @@
+group: Activator
+name: activator_reactivate_tree
+content: |
+  activator.reactivateTree("${1:path}")
+documentation: |
+  Deactivate a resource and then activate it with all its descendants that are hierarchy nodes, one by one.
+  Descendants removed on author since the last activation disappear from publish.
+
+  For example:
+  ```groovy
+  activator.reactivateTree("/content/acme/en")
+  ```
