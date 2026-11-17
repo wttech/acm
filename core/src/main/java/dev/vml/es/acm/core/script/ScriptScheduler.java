@@ -9,6 +9,7 @@ import dev.vml.es.acm.core.event.EventListener;
 import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.instance.HealthChecker;
 import dev.vml.es.acm.core.instance.HealthStatus;
+import dev.vml.es.acm.core.instance.ShutdownSafety;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
@@ -134,6 +135,9 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     @Reference
     private ExecutionQueue executionQueue;
 
+    @Reference
+    private ShutdownSafety shutdownSafety;
+
     private Config config;
 
     @Activate
@@ -248,11 +252,17 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private void bootJob() {
         LOG.info("Automatic scripts booting - job started");
-        unscheduleScripts();
+        boolean keepCronUntilHealthy = shutdownSafety.isEnabled();
+        if (!keepCronUntilHealthy) {
+            unscheduleScripts();
+        }
         if (awaitInstanceHealthy(
                 "Automatic scripts queueing and scheduling",
                 config.healthCheckRetryCountBoot(),
                 config.healthCheckRetryInterval())) {
+            if (keepCronUntilHealthy) {
+                unscheduleScripts();
+            }
             queueAndScheduleScripts();
         }
         LOG.info("Automatic scripts booting - job finished");
