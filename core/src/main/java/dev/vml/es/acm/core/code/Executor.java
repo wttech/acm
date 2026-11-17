@@ -9,6 +9,7 @@ import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.format.TemplateFormatter;
 import dev.vml.es.acm.core.gui.SpaSettings;
 import dev.vml.es.acm.core.instance.InstanceSettings;
+import dev.vml.es.acm.core.instance.ShutdownSafety;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
@@ -127,6 +128,9 @@ public class Executor implements EventListener {
     @Reference
     private SpaSettings spaSettings;
 
+    @Reference
+    private ShutdownSafety shutdownSafety;
+
     private Config config;
 
     @Activate
@@ -199,6 +203,7 @@ public class Executor implements EventListener {
                 new ExecutionContext(id, userId, mode, this, executable, inputs, codeContext, codeOutput);
         result.setDebug(config.debug());
         result.setHistory(config.history());
+        result.setAbortOnShutdown(shutdownSafety.isAbortOnShutdown());
         return result;
     }
 
@@ -292,20 +297,30 @@ public class Executor implements EventListener {
                 }
                 contentScript.run();
 
+                if (sawShutdown(context)) {
+                    return abortedByShutdown(context, execution, null);
+                }
                 if (!healthChecking) {
                     LOG.info("Execution succeeded '{}'", context.getId());
                 }
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
                 if (locking) {
-                    useLocker(resolverFactory, l -> l.unlock(lockName));
+                    releaseLock(context, lockName);
                 }
             }
         } catch (AbortException e) {
+            if (sawShutdown(context)) {
+                return abortedByShutdown(context, execution, e);
+            }
             LOG.warn("Execution aborted gracefully '{}'", context.getId());
             execution.error(e);
             return execution.end(ExecutionStatus.ABORTED);
         } catch (Throwable e) {
+            if (sawShutdown(context)) {
+                // Any error after the script saw the shutdown is part of that shutdown.
+                return abortedByShutdown(context, execution, e);
+            }
             if ((e.getCause() != null && e.getCause() instanceof InterruptedException)) {
                 LOG.warn("Execution aborted forcefully '{}'", context.getId());
                 execution.error(e);
@@ -320,6 +335,30 @@ public class Executor implements EventListener {
                 execution.error(e);
                 return execution.end(ExecutionStatus.FAILED);
             }
+        }
+    }
+
+    private boolean sawShutdown(ExecutionContext context) {
+        return context.getAbortCause() == AbortCause.INSTANCE_SHUTDOWN;
+    }
+
+    private ContextualExecution abortedByShutdown(
+            ExecutionContext context, ContextualExecution.Builder execution, Throwable error) {
+        AbortCause shutdown = AbortCause.INSTANCE_SHUTDOWN;
+        LOG.warn("{} '{}'", shutdown.getMessage(), context.getId());
+        execution.error(error != null ? error : new AbortException(shutdown));
+        return execution.end(ExecutionStatus.ABORTED);
+    }
+
+    private void releaseLock(ExecutionContext context, String lockName) {
+        if (!sawShutdown(context)) {
+            useLocker(resolverFactory, l -> l.unlock(lockName));
+            return;
+        }
+        try {
+            useLocker(resolverFactory, l -> l.unlock(lockName));
+        } catch (Exception e) { // the repository is stopping; keep the shutdown result, the lock expires by timeout
+            LOG.warn("Execution lock cannot be released '{}': {}", context.getId(), e.getMessage());
         }
     }
 

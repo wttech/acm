@@ -747,6 +747,16 @@ boolean clear(Authorizable authorizable, String path, boolean strict)
 boolean check(Authorizable authorizable, String path, List<String> permissions, Map<String, Object> restrictions, boolean allow)
 ```
 
+### AbortCause
+
+`dev.vml.es.acm.core.code.AbortCause`
+
+Values: `INSTANCE_SHUTDOWN`
+
+```groovy
+String getMessage()
+```
+
 ### CodeContext
 
 `dev.vml.es.acm.core.code.CodeContext`
@@ -895,6 +905,7 @@ InputValues getInputs()
 OutputValues getOutputs()
 String getInstance()
 Executable getExecutable()
+AbortCause getAbortCause() // Set when the system aborted the run (e.g. instance shutdown); null otherwise, also for a user abort.
 ```
 
 ### ExecutionContext
@@ -923,6 +934,7 @@ boolean isSkipped()
 void setSkipped(boolean skipped)
 Duration getLockTimeout()
 void setLockTimeout(Object lockTimeout)
+AbortCause getAbortCause()
 boolean isAborted()
 void abort()
 void checkAborted()

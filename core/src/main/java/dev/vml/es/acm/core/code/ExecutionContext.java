@@ -46,6 +46,10 @@ public class ExecutionContext implements AutoCloseable {
 
     private Duration lockTimeout = null;
 
+    private boolean abortOnShutdown = false;
+
+    private AbortCause abortCause;
+
     private final Inputs inputs;
 
     private InputValues inputValues;
@@ -183,14 +187,48 @@ public class ExecutionContext implements AutoCloseable {
         this.lockTimeout = DurationUtils.toDuration(lockTimeout);
     }
 
+    boolean isAbortOnShutdown() {
+        return abortOnShutdown;
+    }
+
+    void setAbortOnShutdown(boolean abortOnShutdown) {
+        this.abortOnShutdown = abortOnShutdown;
+    }
+
+    public AbortCause getAbortCause() {
+        return abortCause;
+    }
+
     public boolean isAborted() {
-        return getCodeContext()
-                .getOsgiContext()
-                .getService(ExecutionQueue.class)
-                .isStoppingOrStopped(getId());
+        if (!abortOnShutdown) {
+            return getCodeContext()
+                    .getOsgiContext()
+                    .getService(ExecutionQueue.class)
+                    .isStoppingOrStopped(getId());
+        }
+        ExecutionQueue queue = findExecutionQueue();
+        if (queue == null) {
+            abortCause = AbortCause.INSTANCE_SHUTDOWN;
+            return true;
+        }
+        return queue.isStoppingOrStopped(getId());
+    }
+
+    private ExecutionQueue findExecutionQueue() {
+        try {
+            return getCodeContext()
+                    .getOsgiContext()
+                    .findService(ExecutionQueue.class)
+                    .orElse(null);
+        } catch (NullPointerException | IllegalStateException e) {
+            return null; // the bundle context is null or invalid while ACM or the instance is stopping
+        }
     }
 
     public void abort() {
+        if (abortCause == AbortCause.INSTANCE_SHUTDOWN) {
+            throw new AbortException(abortCause);
+        }
         throw new AbortException("Execution aborted gracefully!");
     }
 

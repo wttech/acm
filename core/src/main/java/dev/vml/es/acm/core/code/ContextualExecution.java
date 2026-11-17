@@ -102,6 +102,11 @@ public class ContextualExecution implements Execution {
     }
 
     @Override
+    public AbortCause getAbortCause() {
+        return context.getAbortCause();
+    }
+
+    @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("id", getId())

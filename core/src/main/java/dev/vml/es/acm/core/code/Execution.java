@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.code;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -32,4 +33,10 @@ public interface Execution extends Serializable {
     String getInstance();
 
     Executable getExecutable();
+
+    /** Set when the system aborted the run (e.g. instance shutdown); null otherwise, also for a user abort. */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    default AbortCause getAbortCause() {
+        return null;
+    }
 }
