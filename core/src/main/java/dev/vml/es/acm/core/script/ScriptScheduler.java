@@ -24,13 +24,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
+import org.apache.sling.discovery.ClusterView;
+import org.apache.sling.discovery.InstanceDescription;
+import org.apache.sling.discovery.TopologyEvent;
+import org.apache.sling.discovery.TopologyEventListener;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobBuilder;
 import org.apache.sling.event.jobs.JobManager;
@@ -44,7 +50,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-        service = {ScriptScheduler.class, ResourceChangeListener.class, EventListener.class, JobConsumer.class},
+        service = {
+            ScriptScheduler.class,
+            ResourceChangeListener.class,
+            EventListener.class,
+            JobConsumer.class,
+            TopologyEventListener.class
+        },
         immediate = true,
         property = {
             ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
@@ -54,7 +66,7 @@ import org.slf4j.LoggerFactory;
             JobConsumer.PROPERTY_TOPICS + "=" + ScriptScheduler.JOB_TOPIC
         })
 @Designate(ocd = ScriptScheduler.Config.class)
-public class ScriptScheduler implements ResourceChangeListener, EventListener, JobConsumer {
+public class ScriptScheduler implements ResourceChangeListener, EventListener, JobConsumer, TopologyEventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScriptScheduler.class);
 
@@ -172,6 +184,37 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     }
 
     @Override
+    public void handleTopologyEvent(TopologyEvent event) {
+        try {
+            if (shutdownSafety.isEnabled() && instanceLeftAndLocalIsLeader(event) && checkInstanceReady()) {
+                bootWhenInstanceLeft();
+            }
+        } catch (RuntimeException e) {
+            // other topology listeners share the delivery thread
+            LOG.warn("Automatic scripts booting on instance left failed: {}", e.toString());
+        }
+    }
+
+    private boolean instanceLeftAndLocalIsLeader(TopologyEvent event) {
+        if (event.getType() != TopologyEvent.Type.TOPOLOGY_CHANGED) {
+            return false;
+        }
+        InstanceDescription local = event.getNewView().getLocalInstance();
+        if (!local.isLeader()) {
+            return false;
+        }
+        Set<String> remaining = slingIds(local.getClusterView());
+        return slingIds(event.getOldView().getLocalInstance().getClusterView()).stream()
+                .anyMatch(slingId -> !remaining.contains(slingId));
+    }
+
+    private Set<String> slingIds(ClusterView cluster) {
+        return cluster.getInstances().stream()
+                .map(InstanceDescription::getSlingId)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
     public void onEvent(Event event) {
         EventType eventType = EventType.of(event.getName()).orElse(null);
         if (eventType == EventType.SCRIPT_SCHEDULER_BOOT) {
@@ -199,6 +242,13 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         unscheduleBoot();
         scheduleBoot();
         LOG.info("Automatic scripts booting on script changes - job scheduled");
+    }
+
+    private void bootWhenInstanceLeft() {
+        LOG.info("Automatic scripts booting on instance left - job scheduling");
+        unscheduleBoot();
+        scheduleBoot();
+        LOG.info("Automatic scripts booting on instance left - job scheduled");
     }
 
     @SuppressWarnings("unchecked")

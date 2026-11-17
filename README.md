@@ -747,6 +747,8 @@ With the configuration enabled, a run that finds the execution queue gone (the i
 
 With the configuration enabled, a boot of automatic scripts removes the cron schedules only after the instance is healthy, right before it schedules them again. If the instance does not become healthy in time, the existing cron schedules stay and keep firing, instead of being removed until the next boot.
 
+With the configuration enabled, when another instance leaves the cluster (e.g. an old pod during a rolling deployment), the leader of the remaining instances boots automatic scripts again, so a script stopped by the shutdown runs again on an instance that is still running, without waiting for the next deployment. `canRun()` decides as on every boot. On a single instance nothing ever leaves the cluster, so this never happens there.
+
 Example file `dev.vml.es.acm.core.instance.ShutdownSafety.cfg.json` in a project's OSGi configuration folder:
 
 ```json

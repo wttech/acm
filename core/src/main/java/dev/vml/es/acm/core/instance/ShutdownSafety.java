@@ -19,11 +19,11 @@ public class ShutdownSafety {
 
         @AttributeDefinition(
                 name = "Enabled",
-                description =
-                        "When on, a run that finds the execution queue unavailable (the instance or ACM is"
-                                + " stopping) ends as ABORTED with the cause INSTANCE_SHUTDOWN instead of FAILED; scripts"
-                                + " notice it on their next abort check. A boot removes the cron schedules only after the"
-                                + " instance is healthy, right before it schedules them again. When off, ACM behaves as before.")
+                description = "When on, a run that finds the execution queue unavailable (the instance or ACM is"
+                        + " stopping) ends as ABORTED with the cause INSTANCE_SHUTDOWN instead of FAILED; scripts"
+                        + " notice it on their next abort check. A boot removes the cron schedules only after the"
+                        + " instance is healthy, right before it schedules them again. When another instance leaves the"
+                        + " cluster, the leader boots automatic scripts again. When off, ACM behaves as before.")
         boolean enabled() default false;
     }
 
