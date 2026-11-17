@@ -203,7 +203,7 @@ public class Executor implements EventListener {
                 new ExecutionContext(id, userId, mode, this, executable, inputs, codeContext, codeOutput);
         result.setDebug(config.debug());
         result.setHistory(config.history());
-        result.setAbortOnShutdown(shutdownSafety.isAbortOnShutdown());
+        result.setAbortOnShutdown(shutdownSafety.isEnabled());
         return result;
     }
 

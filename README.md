@@ -743,7 +743,7 @@ The effective timeout is resolved by precedence: value set in the script's `desc
 
 During a rolling deployment (e.g. pods replaced on AEM as a Cloud Service), an automatic script may start on an instance that is about to stop. The OSGi configuration *AEM Content Manager - Instance Shutdown Safety* (`dev.vml.es.acm.core.instance.ShutdownSafety`) controls how ACM behaves then. It is off by default; while it is off, nothing changes.
 
-With the configuration enabled (`abortOnShutdown` is on by default), a run that finds the execution queue gone (the instance or ACM is stopping) ends as `ABORTED` with `abortCause` set to `INSTANCE_SHUTDOWN` in its history entry, instead of `FAILED` with a technical error. This also applies when the script returns by itself after `context.aborted` became true. A failing lock release during the shutdown no longer replaces that result. The script notices the shutdown on its next abort check, so long-running scripts should call `context.checkAborted()` in their loops (see [Abortable example](#abortable-example)).
+With the configuration enabled, a run that finds the execution queue gone (the instance or ACM is stopping) ends as `ABORTED` with `abortCause` set to `INSTANCE_SHUTDOWN` in its history entry, instead of `FAILED` with a technical error. This also applies when the script returns by itself after `context.aborted` became true. A failing lock release during the shutdown no longer replaces that result. The script notices the shutdown on its next abort check, so long-running scripts should call `context.checkAborted()` in their loops (see [Abortable example](#abortable-example)).
 
 Example file `dev.vml.es.acm.core.instance.ShutdownSafety.cfg.json` in a project's OSGi configuration folder:
 

@@ -19,15 +19,10 @@ public class ShutdownSafety {
 
         @AttributeDefinition(
                 name = "Enabled",
-                description = "Main switch. When off, ACM behaves as before and the options below have no effect.")
+                description = "When on, a run that finds the execution queue unavailable (the instance or ACM is"
+                        + " stopping) ends as ABORTED with the cause INSTANCE_SHUTDOWN instead of FAILED; scripts"
+                        + " notice it on their next abort check. When off, ACM behaves as before.")
         boolean enabled() default false;
-
-        @AttributeDefinition(
-                name = "Abort On Shutdown",
-                description = "When the execution queue is no longer available (the instance or ACM is stopping),"
-                        + " end the running execution as ABORTED with the cause INSTANCE_SHUTDOWN instead of FAILED."
-                        + " Scripts notice it on their next abort check.")
-        boolean abortOnShutdown() default true;
     }
 
     private volatile Config config;
@@ -38,7 +33,7 @@ public class ShutdownSafety {
         this.config = config;
     }
 
-    public boolean isAbortOnShutdown() {
-        return config.enabled() && config.abortOnShutdown();
+    public boolean isEnabled() {
+        return config.enabled();
     }
 }
