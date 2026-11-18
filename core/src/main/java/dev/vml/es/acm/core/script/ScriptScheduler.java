@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -186,8 +187,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     @Override
     public void handleTopologyEvent(TopologyEvent event) {
         try {
-            if (shutdownSafety.isEnabled() && instanceLeftAndLocalIsLeader(event) && checkInstanceReady()) {
-                bootWhenInstanceLeft();
+            if (shutdownSafety.isBootOnInstanceLeft() && event.getType() == TopologyEvent.Type.TOPOLOGY_CHANGED) {
+                handleInstancesLeft(event);
             }
         } catch (RuntimeException e) {
             // other topology listeners share the delivery thread
@@ -195,17 +196,30 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         }
     }
 
-    private boolean instanceLeftAndLocalIsLeader(TopologyEvent event) {
-        if (event.getType() != TopologyEvent.Type.TOPOLOGY_CHANGED) {
-            return false;
+    private void handleInstancesLeft(TopologyEvent event) {
+        Set<String> leftInstances = findLeftInstances(event);
+        if (leftInstances.isEmpty()) {
+            return;
         }
-        InstanceDescription local = event.getNewView().getLocalInstance();
-        if (!local.isLeader()) {
-            return false;
+        if (!event.getNewView().getLocalInstance().isLeader()) {
+            LOG.info("Instances left the cluster: {} - local instance is not leader, nothing to do", leftInstances);
+            return;
         }
-        Set<String> remaining = slingIds(local.getClusterView());
+        if (!checkInstanceReady()) {
+            LOG.info(
+                    "Instances left the cluster: {} - local instance is leader but not ready, nothing to do",
+                    leftInstances);
+            return;
+        }
+        LOG.info("Instances left the cluster: {} - local instance is leader, booting automatic scripts", leftInstances);
+        bootWhenInstanceLeft();
+    }
+
+    private Set<String> findLeftInstances(TopologyEvent event) {
+        Set<String> remaining = slingIds(event.getNewView().getLocalInstance().getClusterView());
         return slingIds(event.getOldView().getLocalInstance().getClusterView()).stream()
-                .anyMatch(slingId -> !remaining.contains(slingId));
+                .filter(slingId -> !remaining.contains(slingId))
+                .collect(Collectors.toCollection(TreeSet::new));
     }
 
     private Set<String> slingIds(ClusterView cluster) {
@@ -302,7 +316,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private void bootJob() {
         LOG.info("Automatic scripts booting - job started");
-        boolean keepCronUntilHealthy = shutdownSafety.isEnabled();
+        boolean keepCronUntilHealthy = shutdownSafety.isKeepCronUntilHealthy();
         if (!keepCronUntilHealthy) {
             unscheduleScripts();
         }

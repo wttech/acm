@@ -741,18 +741,22 @@ The effective timeout is resolved by precedence: value set in the script's `desc
 
 #### Instance shutdown safety
 
-During a rolling deployment (e.g. pods replaced on AEM as a Cloud Service), an automatic script may start on an instance that is about to stop. The OSGi configuration *AEM Content Manager - Instance Shutdown Safety* (`dev.vml.es.acm.core.instance.ShutdownSafety`) controls how ACM behaves then. It is off by default; while it is off, nothing changes.
+During a rolling deployment (e.g. pods replaced on AEM as a Cloud Service), an automatic script may start on an instance that is about to stop. The OSGi configuration *AEM Content Manager - Instance Shutdown Safety* (`dev.vml.es.acm.core.instance.ShutdownSafety`) controls how ACM behaves then. It has one option per behaviour below, each off by default; with all options off, nothing changes.
 
-With the configuration enabled, a run that finds the execution queue gone (the instance or ACM is stopping) ends as `ABORTED` with `abortCause` set to `INSTANCE_SHUTDOWN` in its history entry, instead of `FAILED` with a technical error. This also applies when the script returns by itself after `context.aborted` became true. A failing lock release during the shutdown no longer replaces that result. The script notices the shutdown on its next abort check, so long-running scripts should call `context.checkAborted()` in their loops (see [Abortable example](#abortable-example)).
+With `abortOnShutdown` on, a run that finds the execution queue gone (the instance or ACM is stopping) ends as `ABORTED` with `abortCause` set to `INSTANCE_SHUTDOWN` in its history entry, instead of `FAILED` with a technical error. This also applies when the script returns by itself after `context.aborted` became true. A failing lock release during the shutdown no longer replaces that result. The script notices the shutdown on its next abort check, so long-running scripts should call `context.checkAborted()` in their loops (see [Abortable example](#abortable-example)).
 
-With the configuration enabled, a boot of automatic scripts removes the cron schedules only after the instance is healthy, right before it schedules them again. If the instance does not become healthy in time, the existing cron schedules stay and keep firing, instead of being removed until the next boot.
+With `keepCronUntilHealthy` on, a boot of automatic scripts removes the cron schedules only after the instance is healthy, right before it schedules them again. If the instance does not become healthy in time, the existing cron schedules stay and keep firing, instead of being removed until the next boot.
 
-With the configuration enabled, when another instance leaves the cluster (e.g. an old pod during a rolling deployment), the leader of the remaining instances boots automatic scripts again, so a script stopped by the shutdown runs again on an instance that is still running, without waiting for the next deployment. `canRun()` decides as on every boot. On a single instance nothing ever leaves the cluster, so this never happens there.
+With `bootOnInstanceLeft` on, when another instance leaves the cluster (e.g. an old pod during a rolling deployment), the leader of the remaining instances boots automatic scripts again, so a script stopped by the shutdown runs again on an instance that is still running, without waiting for the next deployment. `canRun()` decides as on every boot. Every instance logs which instances left and whether it boots automatic scripts or does nothing (not the leader, or not ready yet). Turn on `keepCronUntilHealthy` together with it, so these extra boots do not remove the cron schedules while the instance is unhealthy. On a single instance nothing ever leaves the cluster, so this never happens there.
 
 Example file `dev.vml.es.acm.core.instance.ShutdownSafety.cfg.json` in a project's OSGi configuration folder:
 
 ```json
-{ "enabled": true }
+{
+  "abortOnShutdown": true,
+  "keepCronUntilHealthy": true,
+  "bootOnInstanceLeft": true
+}
 ```
 
 ### History

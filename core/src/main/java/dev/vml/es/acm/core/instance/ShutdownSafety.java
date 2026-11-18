@@ -14,17 +14,30 @@ public class ShutdownSafety {
     @ObjectClassDefinition(
             name = "AEM Content Manager - Instance Shutdown Safety",
             description = "Controls how ACM behaves when an instance is shutting down,"
-                    + " e.g. when a pod is replaced during a rolling deployment. Off by default.")
+                    + " e.g. when a pod is replaced during a rolling deployment. Every option is off by default.")
     public @interface Config {
 
         @AttributeDefinition(
-                name = "Enabled",
+                name = "Abort On Shutdown",
                 description = "When on, a run that finds the execution queue unavailable (the instance or ACM is"
                         + " stopping) ends as ABORTED with the cause INSTANCE_SHUTDOWN instead of FAILED; scripts"
-                        + " notice it on their next abort check. A boot removes the cron schedules only after the"
-                        + " instance is healthy, right before it schedules them again. When another instance leaves the"
-                        + " cluster, the leader boots automatic scripts again. When off, ACM behaves as before.")
-        boolean enabled() default false;
+                        + " notice it on their next abort check.")
+        boolean abortOnShutdown() default false;
+
+        @AttributeDefinition(
+                name = "Keep Cron Until Healthy",
+                description = "When on, a boot removes the cron schedules only after the instance is healthy, right"
+                        + " before it schedules them again. If the instance never gets healthy, the schedules stay.")
+        boolean keepCronUntilHealthy() default false;
+
+        @AttributeDefinition(
+                name = "Boot On Instance Left",
+                description =
+                        "When on, the leader boots automatic scripts again when another instance leaves the"
+                                + " cluster, so a script stopped by a shutdown can run again on an instance that is still"
+                                + " running. Every instance logs which instances left. Turn on 'Keep Cron Until Healthy'"
+                                + " too, so these extra boots do not remove the cron schedules while the instance is unhealthy.")
+        boolean bootOnInstanceLeft() default false;
     }
 
     private volatile Config config;
@@ -35,7 +48,15 @@ public class ShutdownSafety {
         this.config = config;
     }
 
-    public boolean isEnabled() {
-        return config.enabled();
+    public boolean isAbortOnShutdown() {
+        return config.abortOnShutdown();
+    }
+
+    public boolean isKeepCronUntilHealthy() {
+        return config.keepCronUntilHealthy();
+    }
+
+    public boolean isBootOnInstanceLeft() {
+        return config.bootOnInstanceLeft();
     }
 }

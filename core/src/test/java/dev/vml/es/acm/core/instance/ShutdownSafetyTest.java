@@ -13,26 +13,57 @@ class ShutdownSafetyTest {
     private final BundleContext bundleContext = MockOsgi.newBundleContext();
 
     @Test
-    void shouldBeOffByDefault() {
+    void shouldHaveAllTogglesOffByDefault() {
         ShutdownSafety shutdownSafety = activate(Collections.emptyMap());
 
-        assertFalse(shutdownSafety.isEnabled());
+        assertFalse(shutdownSafety.isAbortOnShutdown());
+        assertFalse(shutdownSafety.isKeepCronUntilHealthy());
+        assertFalse(shutdownSafety.isBootOnInstanceLeft());
     }
 
     @Test
-    void shouldBeOnWhenEnabled() {
+    void shouldTurnOnOnlyAbortOnShutdown() {
+        ShutdownSafety shutdownSafety = activate(Collections.singletonMap("abortOnShutdown", true));
+
+        assertTrue(shutdownSafety.isAbortOnShutdown());
+        assertFalse(shutdownSafety.isKeepCronUntilHealthy());
+        assertFalse(shutdownSafety.isBootOnInstanceLeft());
+    }
+
+    @Test
+    void shouldTurnOnOnlyKeepCronUntilHealthy() {
+        ShutdownSafety shutdownSafety = activate(Collections.singletonMap("keepCronUntilHealthy", true));
+
+        assertFalse(shutdownSafety.isAbortOnShutdown());
+        assertTrue(shutdownSafety.isKeepCronUntilHealthy());
+        assertFalse(shutdownSafety.isBootOnInstanceLeft());
+    }
+
+    @Test
+    void shouldTurnOnOnlyBootOnInstanceLeft() {
+        ShutdownSafety shutdownSafety = activate(Collections.singletonMap("bootOnInstanceLeft", true));
+
+        assertFalse(shutdownSafety.isAbortOnShutdown());
+        assertFalse(shutdownSafety.isKeepCronUntilHealthy());
+        assertTrue(shutdownSafety.isBootOnInstanceLeft());
+    }
+
+    @Test
+    void shouldIgnoreFormerMainSwitch() {
         ShutdownSafety shutdownSafety = activate(Collections.singletonMap("enabled", true));
 
-        assertTrue(shutdownSafety.isEnabled());
+        assertFalse(shutdownSafety.isAbortOnShutdown());
+        assertFalse(shutdownSafety.isKeepCronUntilHealthy());
+        assertFalse(shutdownSafety.isBootOnInstanceLeft());
     }
 
     @Test
     void shouldFollowConfigurationChangesWithoutRestart() {
         ShutdownSafety shutdownSafety = activate(Collections.emptyMap());
 
-        MockOsgi.modified(shutdownSafety, bundleContext, Collections.singletonMap("enabled", true));
+        MockOsgi.modified(shutdownSafety, bundleContext, Collections.singletonMap("bootOnInstanceLeft", true));
 
-        assertTrue(shutdownSafety.isEnabled());
+        assertTrue(shutdownSafety.isBootOnInstanceLeft());
     }
 
     private ShutdownSafety activate(Map<String, Object> props) {

@@ -10,6 +10,7 @@ import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import dev.vml.es.acm.core.script.ScriptType;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -96,10 +97,23 @@ class ExecutorTest {
     }
 
     @Test
-    void shouldFailWithoutCauseWhenSwitchIsOffAndQueueIsGone() {
+    void shouldFailWithoutCauseWhenToggleIsOffAndQueueIsGone() {
         queueIsGone();
 
         Execution execution = run(false, "void doRun() { context.checkAborted() }");
+
+        assertEquals(ExecutionStatus.FAILED, execution.getStatus());
+        assertNull(execution.getAbortCause());
+    }
+
+    @Test
+    void shouldFailWithoutCauseWhenOnlyOtherTogglesAreOnAndQueueIsGone() {
+        queueIsGone();
+        Map<String, Object> otherToggles = new HashMap<>();
+        otherToggles.put("keepCronUntilHealthy", true);
+        otherToggles.put("bootOnInstanceLeft", true);
+
+        Execution execution = run(createExecutor(otherToggles), "void doRun() { context.checkAborted() }");
 
         assertEquals(ExecutionStatus.FAILED, execution.getStatus());
         assertNull(execution.getAbortCause());
@@ -131,7 +145,7 @@ class ExecutorTest {
     }
 
     @Test
-    void shouldFailWhenUnlockFailsAndSwitchIsOff() {
+    void shouldFailWhenUnlockFailsAndToggleIsOff() {
         failingResolverCall = UNLOCK_CALL;
 
         Execution execution = run(false, "void doRun() { }");
@@ -141,7 +155,7 @@ class ExecutorTest {
     }
 
     @Test
-    void shouldTakeSwitchSnapshotWhenCreatingContext() throws Exception {
+    void shouldTakeToggleSnapshotWhenCreatingContext() throws Exception {
         Executor executor = createExecutor(true);
 
         ExecutionContext context = createContext(executor, "void doRun() { }");
@@ -149,8 +163,8 @@ class ExecutorTest {
         assertTrue(context.isAbortOnShutdown());
     }
 
-    private Execution run(boolean enabled, String doRun) {
-        return run(createExecutor(enabled), doRun);
+    private Execution run(boolean abortOnShutdown, String doRun) {
+        return run(createExecutor(abortOnShutdown), doRun);
     }
 
     private Execution run(Executor executor, String doRun) {
@@ -178,9 +192,13 @@ class ExecutorTest {
                 new CodeOutputMemory());
     }
 
-    private Executor createExecutor(boolean enabled) {
+    private Executor createExecutor(boolean abortOnShutdown) {
+        return createExecutor(Collections.singletonMap("abortOnShutdown", abortOnShutdown));
+    }
+
+    private Executor createExecutor(Map<String, Object> toggles) {
         ShutdownSafety shutdownSafety = new ShutdownSafety();
-        MockOsgi.activate(shutdownSafety, bundleContext, Collections.singletonMap("enabled", enabled));
+        MockOsgi.activate(shutdownSafety, bundleContext, toggles);
 
         bundleContext.registerService(ResourceResolverFactory.class, countingRepository(), null);
         bundleContext.registerService(OsgiContext.class, osgiContext, null);

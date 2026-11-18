@@ -45,9 +45,13 @@ import org.apache.sling.event.jobs.ScheduledJobInfo;
 import org.apache.sling.testing.mock.osgi.MockOsgi;
 import org.apache.sling.testing.mock.sling.MockSling;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.osgi.framework.BundleContext;
+import org.slf4j.helpers.MessageFormatter;
+import uk.org.lidalia.slf4jext.Level;
+import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
 class ScriptSchedulerTest {
 
@@ -64,6 +68,10 @@ class ScriptSchedulerTest {
     private static final String OTHER_INSTANCE = "other-instance";
 
     private static final String OTHER_CLUSTER_INSTANCE = "other-cluster-instance";
+
+    private static final String KEEP_CRON_UNTIL_HEALTHY = "keepCronUntilHealthy";
+
+    private static final String BOOT_ON_INSTANCE_LEFT = "bootOnInstanceLeft";
 
     private final BundleContext bundleContext = MockOsgi.newBundleContext();
 
@@ -86,9 +94,14 @@ class ScriptSchedulerTest {
     private final ResourceResolverFactory repository = MockSling.newResourceResolverFactory(
             ResourceResolverType.RESOURCERESOLVER_MOCK, MockOsgi.newBundleContext());
 
+    @AfterEach
+    void clearLogs() {
+        TestLoggerFactory.clear();
+    }
+
     @Test
     void shouldKeepCronSchedulesWhenInstanceStaysUnhealthy() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
         instanceStaysUnhealthy();
 
         scheduler.process(bootJob());
@@ -98,7 +111,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldRemoveCronSchedulesOnlyAfterInstanceIsHealthy() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
         instanceIsHealthy();
 
         scheduler.process(bootJob());
@@ -109,8 +122,8 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldRemoveCronSchedulesBeforeHealthWaitWhenSwitchIsOff() throws Exception {
-        ScriptScheduler scheduler = createScheduler(false);
+    void shouldRemoveCronSchedulesBeforeHealthWaitWhenToggleIsOff() throws Exception {
+        ScriptScheduler scheduler = createScheduler();
         instanceIsHealthy();
 
         scheduler.process(bootJob());
@@ -121,8 +134,8 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldRemoveCronSchedulesWhenSwitchIsOffAndInstanceStaysUnhealthy() throws Exception {
-        ScriptScheduler scheduler = createScheduler(false);
+    void shouldRemoveCronSchedulesWhenToggleIsOffAndInstanceStaysUnhealthy() throws Exception {
+        ScriptScheduler scheduler = createScheduler();
         instanceStaysUnhealthy();
 
         scheduler.process(bootJob());
@@ -132,7 +145,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldScheduleCronScriptsAgainRightAfterRemovingThem() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
         instanceIsHealthy();
         cronScriptExists();
 
@@ -147,10 +160,10 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldKeepSwitchValueForWholeBootWhenConfigurationChangesDuringHealthWait() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+    void shouldKeepToggleValueForWholeBootWhenConfigurationChangesDuringHealthWait() throws Exception {
+        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
         when(healthChecker.checkStatus()).thenAnswer(invocation -> {
-            MockOsgi.modified(shutdownSafety, bundleContext, Collections.singletonMap("enabled", false));
+            MockOsgi.modified(shutdownSafety, bundleContext, Collections.singletonMap(KEEP_CRON_UNTIL_HEALTHY, false));
             return new HealthStatus(Collections.emptyList(), true);
         });
 
@@ -164,7 +177,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldQueueBootScriptOnFirstBootAndSkipItOnTheNextOne() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
         instanceIsHealthy();
         bootScriptCanRun();
 
@@ -176,7 +189,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldScheduleBootWhenInstanceLeftAndLocalIsLeader() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -187,7 +200,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldReplacePendingBootWhenInstanceLeft() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
         clearInvocations(pendingBootSchedule);
 
@@ -201,7 +214,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenLocalIsNotLeader() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -213,7 +226,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenInstanceOnlyJoined() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -225,7 +238,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenInstancesAreTheSame() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -237,7 +250,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenOnlyPropertiesChanged() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(new TopologyEvent(
@@ -250,7 +263,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenInstanceOfAnotherClusterLeft() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
         TopologyView viewWithOtherCluster = view(LOCAL_INSTANCE, true, LOCAL_INSTANCE);
         withOtherClusterInstance(viewWithOtherCluster);
@@ -262,8 +275,8 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldNotScheduleBootWhenSwitchIsOff() throws Exception {
-        ScriptScheduler scheduler = createScheduler(false);
+    void shouldNotScheduleBootWhenToggleIsOff() throws Exception {
+        ScriptScheduler scheduler = createScheduler();
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -275,9 +288,36 @@ class ScriptSchedulerTest {
     @Test
     void shouldNotScheduleBootWhenInstanceIsNotReady() throws Exception {
         when(instanceInfo.getType()).thenReturn(InstanceType.CLOUD_CONTAINER);
-        ScriptScheduler scheduler = createScheduler(true, repositoryWithoutCompositeNodeStore());
+        ScriptScheduler scheduler = createScheduler(repositoryWithoutCompositeNodeStore(), BOOT_ON_INSTANCE_LEFT);
         JobBuilder.ScheduleBuilder newBootSchedule =
                 jobManager.createJob(ScriptScheduler.JOB_TOPIC).schedule();
+
+        scheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+
+        verify(newBootSchedule, never()).add();
+        assertEquals(
+                Collections.singletonList("Instances left the cluster: [" + LEFT_INSTANCE
+                        + "] - local instance is leader but not ready, nothing to do"),
+                leftInstancesLogs());
+    }
+
+    @Test
+    void shouldRemoveCronSchedulesBeforeHealthWaitWhenOnlyBootOnInstanceLeftIsOn() throws Exception {
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        instanceIsHealthy();
+
+        scheduler.process(bootJob());
+
+        InOrder order = inOrder(healthChecker, existingCronSchedule);
+        order.verify(existingCronSchedule).unschedule();
+        order.verify(healthChecker).checkStatus();
+    }
+
+    @Test
+    void shouldNotScheduleBootWhenOnlyKeepCronUntilHealthyIsOn() throws Exception {
+        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
+        JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
                 view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
@@ -286,8 +326,82 @@ class ScriptSchedulerTest {
     }
 
     @Test
+    void shouldLogLeftInstancesWhenLocalIsLeader() throws Exception {
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+
+        scheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+
+        assertEquals(
+                Collections.singletonList("Instances left the cluster: [" + LEFT_INSTANCE
+                        + "] - local instance is leader, booting automatic scripts"),
+                leftInstancesLogs());
+    }
+
+    @Test
+    void shouldLogAllLeftInstancesSortedInOneLine() throws Exception {
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+
+        scheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, OTHER_INSTANCE, LEFT_INSTANCE),
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+
+        assertEquals(
+                Collections.singletonList("Instances left the cluster: [" + LEFT_INSTANCE + ", " + OTHER_INSTANCE
+                        + "] - local instance is leader, booting automatic scripts"),
+                leftInstancesLogs());
+    }
+
+    @Test
+    void shouldLogLeftInstancesWhenLocalIsNotLeader() throws Exception {
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+
+        scheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, false, LEADER_INSTANCE, LOCAL_INSTANCE, LEFT_INSTANCE),
+                view(LOCAL_INSTANCE, false, LEADER_INSTANCE, LOCAL_INSTANCE)));
+
+        assertEquals(
+                Collections.singletonList("Instances left the cluster: [" + LEFT_INSTANCE
+                        + "] - local instance is not leader, nothing to do"),
+                leftInstancesLogs());
+    }
+
+    @Test
+    void shouldNotLogLeftInstancesWhenToggleIsOff() throws Exception {
+        ScriptScheduler scheduler = createScheduler();
+
+        scheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+
+        assertTrue(leftInstancesLogs().isEmpty());
+    }
+
+    @Test
+    void shouldNotLogLeftInstancesWhenInstanceOnlyJoined() throws Exception {
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+
+        scheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE),
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, JOINED_INSTANCE)));
+
+        assertTrue(leftInstancesLogs().isEmpty());
+    }
+
+    @Test
+    void shouldNotLogLeftInstancesWhenInstanceOfAnotherClusterLeft() throws Exception {
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        TopologyView viewWithOtherCluster = view(LOCAL_INSTANCE, true, LOCAL_INSTANCE);
+        withOtherClusterInstance(viewWithOtherCluster);
+
+        scheduler.handleTopologyEvent(
+                instanceChanged(viewWithOtherCluster, view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+
+        assertTrue(leftInstancesLogs().isEmpty());
+    }
+
+    @Test
     void shouldNotFailTopologyEventWhenSchedulingFails() throws Exception {
-        ScriptScheduler scheduler = createScheduler(true);
+        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
         when(jobManager.createJob(anyString())).thenThrow(new IllegalStateException("Repository is closing"));
         TopologyEvent instanceLeft = instanceChanged(
                 view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE));
@@ -295,12 +409,15 @@ class ScriptSchedulerTest {
         assertDoesNotThrow(() -> scheduler.handleTopologyEvent(instanceLeft));
     }
 
-    private ScriptScheduler createScheduler(boolean enabled) throws Exception {
-        return createScheduler(enabled, repositoryWithAutomaticScriptsFolder());
+    private ScriptScheduler createScheduler(String... togglesOn) throws Exception {
+        return createScheduler(repositoryWithAutomaticScriptsFolder(), togglesOn);
     }
 
-    private ScriptScheduler createScheduler(boolean enabled, ResourceResolverFactory resolverFactory) throws Exception {
-        MockOsgi.activate(shutdownSafety, bundleContext, Collections.singletonMap("enabled", enabled));
+    private ScriptScheduler createScheduler(ResourceResolverFactory resolverFactory, String... togglesOn)
+            throws Exception {
+        Map<String, Object> toggles = new HashMap<>();
+        Arrays.stream(togglesOn).forEach(toggle -> toggles.put(toggle, true));
+        MockOsgi.activate(shutdownSafety, bundleContext, toggles);
 
         bundleContext.registerService(ResourceResolverFactory.class, resolverFactory, null);
         bundleContext.registerService(InstanceInfo.class, instanceInfo, null);
@@ -446,5 +563,16 @@ class ScriptSchedulerTest {
         when(job.getProperty(ScriptScheduler.JOB_PROP_TYPE, String.class))
                 .thenReturn(ScriptScheduler.JobType.BOOT.name());
         return job;
+    }
+
+    /** INFO lines about instances that left the cluster, formatted as they appear in the log. */
+    private List<String> leftInstancesLogs() {
+        return TestLoggerFactory.getTestLogger(ScriptScheduler.class).getLoggingEvents().stream()
+                .filter(event -> event.getLevel() == Level.INFO)
+                .map(event -> MessageFormatter.arrayFormat(
+                                event.getMessage(), event.getArguments().toArray())
+                        .getMessage())
+                .filter(message -> message.startsWith("Instances left the cluster"))
+                .collect(Collectors.toList());
     }
 }
