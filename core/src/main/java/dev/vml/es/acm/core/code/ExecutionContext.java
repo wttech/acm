@@ -7,6 +7,8 @@ import dev.vml.es.acm.core.util.DurationUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import groovy.lang.Binding;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -48,7 +50,17 @@ public class ExecutionContext implements AutoCloseable {
 
     private boolean abortOnShutdown = false;
 
-    private AbortCause abortCause;
+    private final AtomicReference<AbortCause> abortCause = new AtomicReference<>();
+
+    private volatile boolean lockLost;
+
+    private volatile boolean lockConfirmationRequired;
+
+    private volatile long lockConfirmedNanoTime;
+
+    private volatile long lockStopMillis;
+
+    private volatile boolean takenOverByLaterAttempt;
 
     private final Inputs inputs;
 
@@ -196,10 +208,21 @@ public class ExecutionContext implements AutoCloseable {
     }
 
     public AbortCause getAbortCause() {
-        return abortCause;
+        return abortCause.get();
     }
 
     public boolean isAborted() {
+        if (isStoppedByQueue()) {
+            return true;
+        }
+        if (isLockLostOrUnconfirmed()) {
+            stoppedForLock();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isStoppedByQueue() {
         if (!abortOnShutdown) {
             return getCodeContext()
                     .getOsgiContext()
@@ -208,7 +231,7 @@ public class ExecutionContext implements AutoCloseable {
         }
         ExecutionQueue queue = findExecutionQueue();
         if (queue == null) {
-            abortCause = AbortCause.INSTANCE_SHUTDOWN;
+            abortCause.set(AbortCause.INSTANCE_SHUTDOWN);
             return true;
         }
         return queue.isStoppingOrStopped(getId());
@@ -221,15 +244,62 @@ public class ExecutionContext implements AutoCloseable {
                     .findService(ExecutionQueue.class)
                     .orElse(null);
         } catch (NullPointerException | IllegalStateException e) {
-            return null; // the bundle context is null or invalid while ACM or the instance is stopping
+            return null; // the bundle context is gone while ACM or the instance stops
         }
     }
 
     public void abort() {
-        if (abortCause == AbortCause.INSTANCE_SHUTDOWN) {
-            throw new AbortException(abortCause);
+        if (abortCause.get() == AbortCause.INSTANCE_SHUTDOWN) {
+            throw new AbortException(AbortCause.INSTANCE_SHUTDOWN);
+        }
+        if (abortCause.get() == AbortCause.EXECUTION_LOCK_LOST || isLockLostOrUnconfirmed()) {
+            stoppedForLock();
+            throw new AbortException(abortCause.get());
         }
         throw new AbortException("Execution aborted gracefully!");
+    }
+
+    /** A later attempt of the same execution reports the result, so this run reports nothing. */
+    void stopForLaterAttempt() {
+        takenOverByLaterAttempt = true;
+        stopForLostLock();
+    }
+
+    boolean isTakenOverByLaterAttempt() {
+        return takenOverByLaterAttempt;
+    }
+
+    void requireLockConfirmation(long stopMillis, long confirmedNanoTime) {
+        lockStopMillis = stopMillis;
+        confirmLockHeldAt(confirmedNanoTime);
+        lockConfirmationRequired = true;
+    }
+
+    void stopForLostLock() {
+        lockLost = true;
+        stoppedForLock();
+    }
+
+    /** A script told to stop ends aborted, even if it returns by itself. */
+    private void stoppedForLock() {
+        abortCause.compareAndSet(null, AbortCause.EXECUTION_LOCK_LOST); // a shutdown cause wins
+    }
+
+    /** Uses System.nanoTime(), so a change of the system clock does not stop the script. */
+    void confirmLockHeldAt(long nanoTime) {
+        lockConfirmedNanoTime = nanoTime;
+    }
+
+    private boolean isLockLostOrUnconfirmed() {
+        return lockLost || isLockConfirmationTooOld();
+    }
+
+    private boolean isLockConfirmationTooOld() {
+        return lockConfirmationRequired && millisSinceLockConfirmed() > lockStopMillis;
+    }
+
+    private long millisSinceLockConfirmed() {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - lockConfirmedNanoTime);
     }
 
     public void checkAborted() throws AbortException {

@@ -751,7 +751,7 @@ boolean check(Authorizable authorizable, String path, List<String> permissions, 
 
 `dev.vml.es.acm.core.code.AbortCause`
 
-Values: `INSTANCE_SHUTDOWN`
+Values: `INSTANCE_SHUTDOWN`, `EXECUTION_LOCK_LOST`
 
 ```groovy
 String getMessage()
@@ -905,7 +905,7 @@ InputValues getInputs()
 OutputValues getOutputs()
 String getInstance()
 Executable getExecutable()
-AbortCause getAbortCause() // Set when the system aborted the run (e.g. instance shutdown); null otherwise, also for a user abort.
+AbortCause getAbortCause() // Set only when the system aborted the run, e.g. at an instance shutdown. Null for a user abort.
 ```
 
 ### ExecutionContext

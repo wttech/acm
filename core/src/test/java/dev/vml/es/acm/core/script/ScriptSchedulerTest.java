@@ -494,7 +494,7 @@ class ScriptSchedulerTest {
         return new TopologyEvent(TopologyEvent.Type.TOPOLOGY_CHANGED, viewBefore, viewAfter);
     }
 
-    /** Topology view whose local cluster holds the given instances; the local instance is leader when asked. */
+    /** Topology view with the given instances in the local cluster. The local instance can be the leader. */
     private TopologyView view(String localSlingId, boolean localIsLeader, String... clusterSlingIds) {
         ClusterView cluster = mock(ClusterView.class);
         List<InstanceDescription> instances = Arrays.stream(clusterSlingIds)

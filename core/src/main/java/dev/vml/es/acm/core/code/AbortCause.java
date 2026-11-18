@@ -4,7 +4,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum AbortCause {
-    INSTANCE_SHUTDOWN("Execution aborted, execution queue is unavailable (instance or ACM is stopping)");
+    INSTANCE_SHUTDOWN("Execution aborted, execution queue is unavailable (instance or ACM is stopping)"),
+    EXECUTION_LOCK_LOST("Execution aborted, its execution lock is held by another run or could not be confirmed");
 
     private final String message;
 

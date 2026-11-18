@@ -19,6 +19,7 @@ class ShutdownSafetyTest {
         assertFalse(shutdownSafety.isAbortOnShutdown());
         assertFalse(shutdownSafety.isKeepCronUntilHealthy());
         assertFalse(shutdownSafety.isBootOnInstanceLeft());
+        assertFalse(shutdownSafety.isRerunKilledExecution());
     }
 
     @Test
@@ -28,6 +29,7 @@ class ShutdownSafetyTest {
         assertTrue(shutdownSafety.isAbortOnShutdown());
         assertFalse(shutdownSafety.isKeepCronUntilHealthy());
         assertFalse(shutdownSafety.isBootOnInstanceLeft());
+        assertFalse(shutdownSafety.isRerunKilledExecution());
     }
 
     @Test
@@ -37,6 +39,7 @@ class ShutdownSafetyTest {
         assertFalse(shutdownSafety.isAbortOnShutdown());
         assertTrue(shutdownSafety.isKeepCronUntilHealthy());
         assertFalse(shutdownSafety.isBootOnInstanceLeft());
+        assertFalse(shutdownSafety.isRerunKilledExecution());
     }
 
     @Test
@@ -46,6 +49,38 @@ class ShutdownSafetyTest {
         assertFalse(shutdownSafety.isAbortOnShutdown());
         assertFalse(shutdownSafety.isKeepCronUntilHealthy());
         assertTrue(shutdownSafety.isBootOnInstanceLeft());
+        assertFalse(shutdownSafety.isRerunKilledExecution());
+    }
+
+    @Test
+    void shouldTurnOnOnlyRerunKilledExecution() {
+        ShutdownSafety shutdownSafety = activate(Collections.singletonMap("rerunKilledExecution", true));
+
+        assertFalse(shutdownSafety.isAbortOnShutdown());
+        assertFalse(shutdownSafety.isKeepCronUntilHealthy());
+        assertFalse(shutdownSafety.isBootOnInstanceLeft());
+        assertTrue(shutdownSafety.isRerunKilledExecution());
+    }
+
+    @Test
+    void shouldTreatRunAsKilledAfterThirtySecondsWithoutRefreshByDefault() {
+        ShutdownSafety shutdownSafety = activate(Collections.emptyMap());
+
+        assertEquals(30_000L, shutdownSafety.getRerunKilledExecutionAliveTimeout());
+    }
+
+    @Test
+    void shouldUseConfiguredAliveTimeout() {
+        ShutdownSafety shutdownSafety = activate(Collections.singletonMap("rerunKilledExecutionAliveTimeout", 60_000L));
+
+        assertEquals(60_000L, shutdownSafety.getRerunKilledExecutionAliveTimeout());
+    }
+
+    @Test
+    void shouldRaiseTooShortAliveTimeoutToMinimum() {
+        ShutdownSafety shutdownSafety = activate(Collections.singletonMap("rerunKilledExecutionAliveTimeout", 1_000L));
+
+        assertEquals(6_000L, shutdownSafety.getRerunKilledExecutionAliveTimeout());
     }
 
     @Test
@@ -55,6 +90,7 @@ class ShutdownSafetyTest {
         assertFalse(shutdownSafety.isAbortOnShutdown());
         assertFalse(shutdownSafety.isKeepCronUntilHealthy());
         assertFalse(shutdownSafety.isBootOnInstanceLeft());
+        assertFalse(shutdownSafety.isRerunKilledExecution());
     }
 
     @Test

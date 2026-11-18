@@ -741,7 +741,7 @@ The effective timeout is resolved by precedence: value set in the script's `desc
 
 #### Instance shutdown safety
 
-During a rolling deployment (e.g. pods replaced on AEM as a Cloud Service), an automatic script may start on an instance that is about to stop. The OSGi configuration *AEM Content Manager - Instance Shutdown Safety* (`dev.vml.es.acm.core.instance.ShutdownSafety`) controls how ACM behaves then. It has one option per behaviour below, each off by default; with all options off, nothing changes.
+During a rolling deployment (e.g. pods replaced on AEM as a Cloud Service), an automatic script may start on an instance that is about to stop. The OSGi configuration *AEM Content Manager - Instance Shutdown Safety* (`dev.vml.es.acm.core.instance.ShutdownSafety`) controls how ACM behaves then. It has one option per behaviour below, and each is off by default. With all options off, nothing changes.
 
 With `abortOnShutdown` on, a run that finds the execution queue gone (the instance or ACM is stopping) ends as `ABORTED` with `abortCause` set to `INSTANCE_SHUTDOWN` in its history entry, instead of `FAILED` with a technical error. This also applies when the script returns by itself after `context.aborted` became true. A failing lock release during the shutdown no longer replaces that result. The script notices the shutdown on its next abort check, so long-running scripts should call `context.checkAborted()` in their loops (see [Abortable example](#abortable-example)).
 
@@ -749,13 +749,19 @@ With `keepCronUntilHealthy` on, a boot of automatic scripts removes the cron sch
 
 With `bootOnInstanceLeft` on, when another instance leaves the cluster (e.g. an old pod during a rolling deployment), the leader of the remaining instances boots automatic scripts again, so a script stopped by the shutdown runs again on an instance that is still running, without waiting for the next deployment. `canRun()` decides as on every boot. Every instance logs which instances left and whether it boots automatic scripts or does nothing (not the leader, or not ready yet). Turn on `keepCronUntilHealthy` together with it, so these extra boots do not remove the cron schedules while the instance is unhealthy. On a single instance nothing ever leaves the cluster, so this never happens there.
 
+With `rerunKilledExecution` on, automatic scripts get an execution lock that also stores the execution ID. Other scripts and console code keep the usual lock. Sometimes an instance is killed while an automatic script runs (e.g. out of memory). Then Sling delivers the unfinished job again, after the restart or on another instance of the cluster. The run finds its own lock and runs the script again from the start, but only once. After a second kill, the lock waits for the lock timeout. Scripts must be safe to repeat.
+
+The setting `rerunKilledExecutionAliveTimeout` (30 seconds by default, minimum 6 seconds) controls the timing. While an automatic script runs, ACM refreshes a time on its lock every 1/6 of it (5 seconds). So a job that Sling moves while its first run still works stays locked. Each attempt releases only its own lock. The refresh can fail for 2/3 of the timeout (20 seconds), or another run can hold the lock. In both cases, the next abort check (`context.checkAborted()` or `context.aborted`) stops the script. The run then ends `ABORTED` with the cause `EXECUTION_LOCK_LOST`. A script without abort checks cannot be stopped this way. Another delivery may take over the lock only after the whole timeout without a refresh. The timeout is stored on each lock, so instances with different settings judge a lock the same way. The last third of the timeout must be longer than the clock difference between instances. Oak documents in-sync clocks as a condition for its own cluster view, with differences far below its lease time. When a later attempt takes over, the earlier attempt saves no history entry and sends no notification, because the later attempt reports the result. Other runs and the boot see the lock as before.
+
 Example file `dev.vml.es.acm.core.instance.ShutdownSafety.cfg.json` in a project's OSGi configuration folder:
 
 ```json
 {
   "abortOnShutdown": true,
   "keepCronUntilHealthy": true,
-  "bootOnInstanceLeft": true
+  "bootOnInstanceLeft": true,
+  "rerunKilledExecution": true,
+  "rerunKilledExecutionAliveTimeout": 30000
 }
 ```
 

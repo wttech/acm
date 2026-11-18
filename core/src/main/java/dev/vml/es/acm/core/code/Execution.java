@@ -34,7 +34,7 @@ public interface Execution extends Serializable {
 
     Executable getExecutable();
 
-    /** Set when the system aborted the run (e.g. instance shutdown); null otherwise, also for a user abort. */
+    /** Set only when the system aborted the run, e.g. at an instance shutdown. Null for a user abort. */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     default AbortCause getAbortCause() {
         return null;

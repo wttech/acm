@@ -13,9 +13,9 @@ import dev.vml.es.acm.core.instance.ShutdownSafety;
 import dev.vml.es.acm.core.notification.NotificationManager;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.OsgiContext;
-import dev.vml.es.acm.core.repo.LockInfo;
 import dev.vml.es.acm.core.repo.Locker;
 import dev.vml.es.acm.core.script.ScriptRepository;
+import dev.vml.es.acm.core.script.ScriptType;
 import dev.vml.es.acm.core.state.Permissions;
 import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.DurationUtils;
@@ -23,7 +23,6 @@ import dev.vml.es.acm.core.util.ResolverUtils;
 import dev.vml.es.acm.core.util.StringUtil;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -234,9 +233,15 @@ public class Executor implements EventListener {
         context.getCodeContext().prepareRun(context);
         ContextualExecution execution = executeInternal(context);
         if (context.getMode() == ExecutionMode.RUN) {
-            handleHistory(execution);
-            handleNotifications(execution);
-            context.getCodeContext().completeRun(execution);
+            if (context.isTakenOverByLaterAttempt()) {
+                LOG.warn(
+                        "Execution '{}' was taken over by its later attempt, which reports the result",
+                        context.getId());
+            } else {
+                handleHistory(execution);
+                handleNotifications(execution);
+                context.getCodeContext().completeRun(execution);
+            }
         }
         return execution;
     }
@@ -270,25 +275,13 @@ public class Executor implements EventListener {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            boolean locking = !healthChecking;
-            String lockName = executableLockName(context);
-            if (locking) {
-                LockInfo lockInfo = queryLocker(resolverFactory, l -> l.readLock(lockName));
-                if (lockInfo != null && !lockInfo.isExpired()) {
-                    LOG.warn(
-                            "Execution locked '{}' by another run of '{}' since {} (expires {})",
-                            context.getId(),
-                            context.getExecutable().getId(),
-                            formatLockTime(lockInfo.getLockedAt()),
-                            formatLockTime(lockInfo.getLockedUntil()));
-                    return execution.end(ExecutionStatus.LOCKED);
-                }
+            RunLock runLock = createRunLock(context, healthChecking);
+            if (!runLock.enter()) {
+                return execution.end(ExecutionStatus.LOCKED);
             }
 
             try {
-                if (locking) {
-                    useLocker(resolverFactory, l -> l.lock(lockName, lockTimeout(context)));
-                }
+                runLock.hold();
                 context.notifyStatus(ExecutionStatus.RUNNING);
                 if (!healthChecking && config.logPrintingEnabled()) {
                     context.getOut().fromSelfLogger();
@@ -300,14 +293,15 @@ public class Executor implements EventListener {
                 if (sawShutdown(context)) {
                     return abortedByShutdown(context, execution, null);
                 }
+                if (context.getAbortCause() == AbortCause.EXECUTION_LOCK_LOST || !runLock.isHeld()) {
+                    return abortedByLostLock(context, execution);
+                }
                 if (!healthChecking) {
                     LOG.info("Execution succeeded '{}'", context.getId());
                 }
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                if (locking) {
-                    releaseLock(context, lockName);
-                }
+                releaseLock(context, runLock);
             }
         } catch (AbortException e) {
             if (sawShutdown(context)) {
@@ -318,7 +312,7 @@ public class Executor implements EventListener {
             return execution.end(ExecutionStatus.ABORTED);
         } catch (Throwable e) {
             if (sawShutdown(context)) {
-                // Any error after the script saw the shutdown is part of that shutdown.
+                // An error after the script saw the shutdown is part of that shutdown.
                 return abortedByShutdown(context, execution, e);
             }
             if ((e.getCause() != null && e.getCause() instanceof InterruptedException)) {
@@ -350,14 +344,40 @@ public class Executor implements EventListener {
         return execution.end(ExecutionStatus.ABORTED);
     }
 
-    private void releaseLock(ExecutionContext context, String lockName) {
+    private RunLock createRunLock(ExecutionContext context, boolean healthChecking) {
+        if (healthChecking) {
+            return RunLock.NONE;
+        }
+        String lockName = executableLockName(context);
+        Duration ttl = lockTimeout(context);
+        return rerunsKilledExecution(context)
+                ? new OwnedRunLock(
+                        resolverFactory, context, lockName, ttl, shutdownSafety.getRerunKilledExecutionAliveTimeout())
+                : new LockerRunLock(resolverFactory, context, lockName, ttl);
+    }
+
+    /** Only automatic scripts can run again after a kill. */
+    private boolean rerunsKilledExecution(ExecutionContext context) {
+        return shutdownSafety.isRerunKilledExecution()
+                && ScriptType.byPath(context.getExecutable().getId()).orElse(null) == ScriptType.AUTOMATIC;
+    }
+
+    private ContextualExecution abortedByLostLock(ExecutionContext context, ContextualExecution.Builder execution) {
+        context.stopForLostLock();
+        AbortCause lockLost = AbortCause.EXECUTION_LOCK_LOST;
+        LOG.warn("{} '{}'", lockLost.getMessage(), context.getId());
+        execution.error(new AbortException(lockLost));
+        return execution.end(ExecutionStatus.ABORTED);
+    }
+
+    private void releaseLock(ExecutionContext context, RunLock runLock) {
         if (!sawShutdown(context)) {
-            useLocker(resolverFactory, l -> l.unlock(lockName));
+            runLock.release();
             return;
         }
         try {
-            useLocker(resolverFactory, l -> l.unlock(lockName));
-        } catch (Exception e) { // the repository is stopping; keep the shutdown result, the lock expires by timeout
+            runLock.release();
+        } catch (Exception e) { // the repository stops: keep the shutdown result, the lock expires by timeout
             LOG.warn("Execution lock cannot be released '{}': {}", context.getId(), e.getMessage());
         }
     }
@@ -373,10 +393,6 @@ public class Executor implements EventListener {
             return context.getLockTimeout();
         }
         return DurationUtils.toDuration(config.lockTimeout());
-    }
-
-    private String formatLockTime(Calendar calendar) {
-        return calendar != null ? DateUtils.humanFormat().format(calendar.getTime()) : "never";
     }
 
     private void handleHistory(ContextualExecution execution) {

@@ -5,9 +5,12 @@ import static org.mockito.Mockito.*;
 
 import dev.vml.es.acm.core.osgi.OsgiContext;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class ExecutionContextTest {
+
+    private static final long STOP_AFTER_UNCONFIRMED_MILLIS = 20_000L;
 
     private final OsgiContext osgiContext = mock(OsgiContext.class);
 
@@ -69,6 +72,81 @@ class ExecutionContextTest {
 
         assertNull(exception.getAbortCause());
         assertNull(context.getAbortCause());
+    }
+
+    @Test
+    void shouldAbortWithLockLostCauseWhenLockIsHeldByAnotherRun() {
+        when(osgiContext.findService(ExecutionQueue.class)).thenReturn(Optional.of(queue));
+        ExecutionContext context = createContext(true);
+
+        context.stopForLostLock();
+
+        AbortException exception = assertThrows(AbortException.class, context::checkAborted);
+        assertEquals(AbortCause.EXECUTION_LOCK_LOST, exception.getAbortCause());
+        assertEquals(AbortCause.EXECUTION_LOCK_LOST, context.getAbortCause());
+    }
+
+    @Test
+    void shouldRememberTakeoverByLaterAttempt() {
+        when(osgiContext.findService(ExecutionQueue.class)).thenReturn(Optional.of(queue));
+        ExecutionContext context = createContext(true);
+
+        context.stopForLaterAttempt();
+
+        assertTrue(context.isTakenOverByLaterAttempt());
+        AbortException exception = assertThrows(AbortException.class, context::checkAborted);
+        assertEquals(AbortCause.EXECUTION_LOCK_LOST, exception.getAbortCause());
+    }
+
+    @Test
+    void shouldAbortWhenLockWasNotConfirmedBeforeOthersMayTreatRunAsKilled() {
+        when(osgiContext.findService(ExecutionQueue.class)).thenReturn(Optional.of(queue));
+        ExecutionContext context = createContext(true);
+
+        context.requireLockConfirmation(
+                STOP_AFTER_UNCONFIRMED_MILLIS, nanoTimeMillisAgo(STOP_AFTER_UNCONFIRMED_MILLIS + 1_000L));
+
+        assertTrue(context.isAborted());
+    }
+
+    @Test
+    void shouldContinueWhileLockIsConfirmed() {
+        when(osgiContext.findService(ExecutionQueue.class)).thenReturn(Optional.of(queue));
+        ExecutionContext context = createContext(true);
+
+        context.requireLockConfirmation(
+                STOP_AFTER_UNCONFIRMED_MILLIS, nanoTimeMillisAgo(STOP_AFTER_UNCONFIRMED_MILLIS / 4));
+
+        assertFalse(context.isAborted());
+    }
+
+    @Test
+    void shouldContinueAgainWhenLateBeatConfirmsLock() {
+        when(osgiContext.findService(ExecutionQueue.class)).thenReturn(Optional.of(queue));
+        ExecutionContext context = createContext(true);
+        context.requireLockConfirmation(
+                STOP_AFTER_UNCONFIRMED_MILLIS, nanoTimeMillisAgo(STOP_AFTER_UNCONFIRMED_MILLIS + 1_000L));
+        context.isAborted();
+
+        context.confirmLockHeldAt(System.nanoTime());
+
+        assertFalse(context.isAborted());
+    }
+
+    @Test
+    void shouldReportShutdownBeforeUnconfirmedLock() {
+        when(osgiContext.findService(ExecutionQueue.class)).thenReturn(Optional.empty());
+        ExecutionContext context = createContext(true);
+        context.requireLockConfirmation(
+                STOP_AFTER_UNCONFIRMED_MILLIS, nanoTimeMillisAgo(STOP_AFTER_UNCONFIRMED_MILLIS + 1_000L));
+
+        AbortException exception = assertThrows(AbortException.class, context::checkAborted);
+
+        assertEquals(AbortCause.INSTANCE_SHUTDOWN, exception.getAbortCause());
+    }
+
+    private long nanoTimeMillisAgo(long millis) {
+        return System.nanoTime() - TimeUnit.MILLISECONDS.toNanos(millis);
     }
 
     private ExecutionContext createContext(boolean abortOnShutdown) {
