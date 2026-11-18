@@ -14,9 +14,10 @@ import org.slf4j.LoggerFactory;
 public class ShutdownSafety {
 
     @ObjectClassDefinition(
-            name = "AEM Content Manager - Instance Shutdown Safety",
-            description = "Controls how ACM behaves when an instance is shutting down,"
-                    + " e.g. when a pod is replaced during a rolling deployment. Every option is off by default.")
+            name = "AEM Content Manager - Instance Shutdown Safety (experimental)",
+            description = "Experimental. Controls how ACM behaves when an instance is shutting down,"
+                    + " e.g. when a pod is replaced during a rolling deployment. Every option is off by default."
+                    + " Turn options on one by one, first on a test environment.")
     public @interface Config {
 
         @AttributeDefinition(
