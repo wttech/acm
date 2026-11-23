@@ -741,29 +741,23 @@ The effective timeout is resolved by precedence: value set in the script's `desc
 
 #### Instance shutdown safety
 
-**Experimental.** These options change how ACM handles locks, cron schedules and runs when instances stop or are killed. They are off by default. Turn them on one by one, first on a test environment, and watch the logs. Automatic scripts must be safe to run twice: with `rerunKilledExecution`, a script that was cut by a killed instance runs again from the start. If the script itself kills the instance (for example by running out of memory), running it again can kill a second instance before the attempt limit stops it. Only automatic scripts started by ACM run again. Scripts run directly through `Executor.execute(...)`, from a console or from other tools, never do.
+**Experimental.** During a rolling deployment (e.g. pods replaced on AEM as a Cloud Service), an automatic script may start on an instance that is about to stop, or be cut when that instance stops. With `enabled` set in the OSGi configuration *AEM Content Manager - Instance Shutdown Safety (experimental)* (`dev.vml.es.acm.core.instance.ShutdownSafety`), such a script runs again once on an instance that keeps running. It is off by default; try it first on a test environment.
 
-During a rolling deployment (e.g. pods replaced on AEM as a Cloud Service), an automatic script may start on an instance that is about to stop. The OSGi configuration *AEM Content Manager - Instance Shutdown Safety (experimental)* (`dev.vml.es.acm.core.instance.ShutdownSafety`) controls how ACM behaves then. It has one option per behaviour below, and each is off by default. With all options off, nothing changes.
+When enabled:
 
-With `abortOnShutdown` on, a run that finds the execution queue gone (the instance or ACM is stopping) ends as `ABORTED` with `abortCause` set to `INSTANCE_SHUTDOWN` in its history entry, instead of `FAILED` with a technical error. This also applies when the script returns by itself after `context.aborted` became true. A failing lock release during the shutdown no longer replaces that result. The script notices the shutdown on its next abort check, so long-running scripts should call `context.checkAborted()` in their loops (see [Abortable example](#abortable-example)).
+- **Lock** — an automatic script gets a lock that knows its run and its instance. When that instance is killed, the unfinished script runs again under its own lock instead of waiting for the lock timeout. When the instance stops while the script runs, another instance takes the lock over. `lockAttemptLimit` (default 3) limits how many times a script may start under the same lock, and `lockAliveTimeout` (default 30 seconds) is how long a run may stay silent before it counts as dead. A run on another instance that is still in the cluster never counts as dead.
+- **Boot after an instance left** — when another instance leaves the cluster, the leader boots automatic scripts again, so a script stopped by the shutdown runs again without waiting for the next deployment. This boot starts 30 seconds later (or after the scheduler's boot delay when that is longer), once Sling has moved the queued jobs of the instance that left.
+- **Boot waits on a stopping instance** — a boot waits while an AEM health check tagged with one of `healthCheckTags` (default `systemhealth`) is `CRITICAL`, and while the file `shutdownMarkerFile` exists. AEM as a Cloud Service turns `systemhealth` `CRITICAL` on a stopping pod and creates `/var/run/aem/shutdown` shortly before (the file is not documented by Adobe). Empty values turn these waits off.
 
-With `keepCronUntilHealthy` on, a boot of automatic scripts removes the cron schedules only after the instance is healthy, right before it schedules them again. If the instance does not become healthy in time, the existing cron schedules stay and keep firing, instead of being removed until the next boot.
-
-With `bootOnInstanceLeft` on, when another instance leaves the cluster (e.g. an old pod during a rolling deployment), the leader of the remaining instances boots automatic scripts again, so a script stopped by the shutdown runs again on an instance that is still running, without waiting for the next deployment. `canRun()` decides as on every boot. Every instance logs which instances left and whether it boots automatic scripts or does nothing (not the leader, or not ready yet). Turn on `keepCronUntilHealthy` together with it, so these extra boots do not remove the cron schedules while the instance is unhealthy. On a single instance nothing ever leaves the cluster, so this never happens there.
-
-With `rerunKilledExecution` on, automatic scripts get an execution lock that also stores the execution ID. Other scripts and console code keep the usual lock. Sometimes an instance is killed while an automatic script runs (e.g. out of memory). Then Sling delivers the unfinished job again, after the restart or on another instance of the cluster. The run finds its own lock and runs the script again from the start, but only once. After a second kill, the lock waits for the lock timeout. Scripts must be safe to repeat.
-
-The setting `rerunKilledExecutionAliveTimeout` (30 seconds by default, minimum 6 seconds) controls the timing. While an automatic script runs, ACM refreshes a time on its lock every 1/6 of it (5 seconds). So a job that Sling moves while its first run still works stays locked. Each attempt releases only its own lock. The refresh can fail for 2/3 of the timeout (20 seconds), or another run can hold the lock. In both cases, the next abort check (`context.checkAborted()` or `context.aborted`) stops the script. The run then ends `ABORTED` with the cause `EXECUTION_LOCK_LOST`. A script without abort checks cannot be stopped this way. Another delivery may take over the lock only after the whole timeout without a refresh. The timeout is stored on each lock, so instances with different settings judge a lock the same way. The last third of the timeout must be longer than the clock difference between instances. Oak documents in-sync clocks as a condition for its own cluster view, with differences far below its lease time. When a later attempt takes over, the earlier attempt saves no history entry and sends no notification, because the later attempt reports the result. Other runs and the boot see the lock as before.
-
-Example file `dev.vml.es.acm.core.instance.ShutdownSafety.cfg.json` in a project's OSGi configuration folder:
+Example file `dev.vml.es.acm.core.instance.ShutdownSafety.cfg.json` for AEM as a Cloud Service:
 
 ```json
 {
-  "abortOnShutdown": true,
-  "keepCronUntilHealthy": true,
-  "bootOnInstanceLeft": true,
-  "rerunKilledExecution": true,
-  "rerunKilledExecutionAliveTimeout": 30000
+  "enabled": true,
+  "healthCheckTags": ["systemhealth"],
+  "shutdownMarkerFile": "/var/run/aem/shutdown",
+  "lockAliveTimeout": 30000,
+  "lockAttemptLimit": 3
 }
 ```
 

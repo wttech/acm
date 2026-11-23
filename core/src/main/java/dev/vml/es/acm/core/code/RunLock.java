@@ -30,4 +30,19 @@ interface RunLock {
     boolean isHeld();
 
     void release();
+
+    /** True when a later attempt of the same execution took the lock and reports the result instead. */
+    default boolean isTakenOverByLaterAttempt() {
+        return false;
+    }
+
+    /** True when the run did not start because an earlier attempt of the same execution already saved its result. */
+    default boolean isResultSavedBefore() {
+        return false;
+    }
+
+    /** True when the run could not release its lock, so Sling must keep the job as a trace for a later takeover. */
+    default boolean isLeftBehind() {
+        return false;
+    }
 }

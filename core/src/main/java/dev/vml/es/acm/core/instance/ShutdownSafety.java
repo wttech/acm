@@ -1,5 +1,6 @@
 package dev.vml.es.acm.core.instance;
 
+import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -15,59 +16,48 @@ public class ShutdownSafety {
 
     @ObjectClassDefinition(
             name = "AEM Content Manager - Instance Shutdown Safety (experimental)",
-            description = "Experimental. Controls how ACM behaves when an instance is shutting down,"
-                    + " e.g. when a pod is replaced during a rolling deployment. Every option is off by default."
-                    + " Turn options on one by one, first on a test environment.")
+            description = "Experimental. Lets an automatic script stopped by an instance shutdown (e.g. a pod replaced"
+                    + " during a rolling deployment) run again once on an instance that keeps running.")
     public @interface Config {
 
         @AttributeDefinition(
-                name = "Abort On Shutdown",
-                description = "When on, a run that finds the execution queue unavailable (the instance or ACM is"
-                        + " stopping) ends as ABORTED with the cause INSTANCE_SHUTDOWN instead of FAILED. Scripts"
-                        + " notice it on their next abort check.")
-        boolean abortOnShutdown() default false;
+                name = "Enabled",
+                description = "Automatic scripts get a lock that another instance can take over once the instance"
+                        + " running them is gone. When an instance leaves the cluster, the leader boots automatic"
+                        + " scripts again 30 seconds later (or after the boot delay when that is longer). A boot"
+                        + " waits while the instance is shutting down (see below).")
+        boolean enabled() default false;
 
         @AttributeDefinition(
-                name = "Keep Cron Until Healthy",
-                description = "When on, a boot removes the cron schedules only after the instance is healthy, right"
-                        + " before it schedules them again. If the instance never gets healthy, the schedules stay.")
-        boolean keepCronUntilHealthy() default false;
+                name = "Health Check Tags",
+                description = "A boot waits while a health check with one of these tags is CRITICAL. AEM as a Cloud"
+                        + " Service uses 'systemhealth'. Empty turns the wait off.")
+        String[] healthCheckTags() default {"systemhealth"};
 
         @AttributeDefinition(
-                name = "Boot On Instance Left",
-                description =
-                        "When on, the leader boots automatic scripts again when another instance leaves the"
-                                + " cluster, so a script stopped by a shutdown can run again on an instance that is still"
-                                + " running. Every instance logs which instances left. Turn on 'Keep Cron Until Healthy'"
-                                + " too, so these extra boots do not remove the cron schedules while the instance is unhealthy.")
-        boolean bootOnInstanceLeft() default false;
+                name = "Shutdown Marker File",
+                description = "A boot waits while this file exists. AEM as a Cloud Service uses"
+                        + " '/var/run/aem/shutdown'. Empty turns the check off.")
+        String shutdownMarkerFile() default "";
 
         @AttributeDefinition(
-                name = "Rerun Killed Execution",
-                description = "When on, the execution lock of an automatic script stores the ID of its run and a time"
-                        + " the run refreshes while it works. When an instance is killed and Sling delivers the"
-                        + " unfinished job again (after a restart, or on another instance of the cluster), the script"
-                        + " runs again once under its own lock instead of waiting for the lock timeout. A run that"
-                        + " cannot refresh its lock for too long, or whose lock is held by another run, stops at its"
-                        + " next abort check and ends as aborted. The times come from the alive timeout below."
-                        + " Other scripts keep the usual lock.")
-        boolean rerunKilledExecution() default false;
+                name = "Lock Alive Timeout",
+                description = "Time in milliseconds a run may stay silent before it counts as dead. A run on another"
+                        + " instance that is still in the cluster never counts as dead. Minimum 6000.")
+        long lockAliveTimeout() default 30_000L;
 
         @AttributeDefinition(
-                name = "Rerun Killed Execution Alive Timeout",
-                description = "Time in milliseconds without a refresh after which a job delivered again treats the"
-                        + " earlier run of an automatic script as killed and runs it again. The run refreshes its lock"
-                        + " every 1/6 of this time. After 2/3 of it without a successful refresh, the script stops at"
-                        + " its next abort check and ends as aborted. The last 1/3 must be longer than the clock"
-                        + " difference between instances. A lower value runs again sooner after a kill, but writes"
-                        + " more often and stops a healthy script sooner when the repository is slow. Minimum 6000."
-                        + " A lower value is raised to the minimum. The value is stored on each lock.")
-        long rerunKilledExecutionAliveTimeout() default 30_000L;
+                name = "Lock Attempt Limit",
+                description = "How many times an automatic script may start under the same lock, the first run"
+                        + " included. Minimum 2.")
+        long lockAttemptLimit() default 3L;
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(ShutdownSafety.class);
 
-    public static final long MIN_RERUN_KILLED_EXECUTION_ALIVE_TIMEOUT = 6_000L;
+    public static final long MIN_LOCK_ALIVE_TIMEOUT = 6_000L;
+
+    public static final long MIN_LOCK_ATTEMPT_LIMIT = 2L;
 
     private volatile Config config;
 
@@ -75,31 +65,46 @@ public class ShutdownSafety {
     @Modified
     protected void activate(Config config) {
         this.config = config;
-        if (config.rerunKilledExecutionAliveTimeout() < MIN_RERUN_KILLED_EXECUTION_ALIVE_TIMEOUT) {
+        if (config.lockAliveTimeout() < MIN_LOCK_ALIVE_TIMEOUT) {
             LOG.warn(
-                    "Rerun killed execution alive timeout {} ms is too short. Using the minimum of {} ms.",
-                    config.rerunKilledExecutionAliveTimeout(),
-                    MIN_RERUN_KILLED_EXECUTION_ALIVE_TIMEOUT);
+                    "Lock alive timeout {} ms is too short. Using the minimum of {} ms.",
+                    config.lockAliveTimeout(),
+                    MIN_LOCK_ALIVE_TIMEOUT);
+        }
+        if (config.lockAttemptLimit() < MIN_LOCK_ATTEMPT_LIMIT) {
+            LOG.warn(
+                    "Lock attempt limit {} is too low. Using the minimum of {}.",
+                    config.lockAttemptLimit(),
+                    MIN_LOCK_ATTEMPT_LIMIT);
         }
     }
 
-    public boolean isAbortOnShutdown() {
-        return config.abortOnShutdown();
+    public boolean isEnabled() {
+        return config.enabled();
     }
 
-    public boolean isKeepCronUntilHealthy() {
-        return config.keepCronUntilHealthy();
+    public String[] getHealthCheckTags() {
+        return config.healthCheckTags();
     }
 
-    public boolean isBootOnInstanceLeft() {
-        return config.bootOnInstanceLeft();
+    /** An instance that is about to stop must not start boot scripts. */
+    public ShutdownMarkerFile.State checkShutdownMarkerFile() {
+        String markerFile = getShutdownMarkerFile();
+        if (!isEnabled() || markerFile.isEmpty()) {
+            return ShutdownMarkerFile.State.ABSENT;
+        }
+        return new ShutdownMarkerFile(markerFile).check();
     }
 
-    public boolean isRerunKilledExecution() {
-        return config.rerunKilledExecution();
+    public String getShutdownMarkerFile() {
+        return StringUtils.trimToEmpty(config.shutdownMarkerFile());
     }
 
-    public long getRerunKilledExecutionAliveTimeout() {
-        return Math.max(MIN_RERUN_KILLED_EXECUTION_ALIVE_TIMEOUT, config.rerunKilledExecutionAliveTimeout());
+    public long getLockAliveTimeout() {
+        return Math.max(MIN_LOCK_ALIVE_TIMEOUT, config.lockAliveTimeout());
+    }
+
+    public long getLockAttemptLimit() {
+        return Math.max(MIN_LOCK_ATTEMPT_LIMIT, config.lockAttemptLimit());
     }
 }

@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.code;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import dev.vml.es.acm.core.AcmException;
@@ -38,9 +39,24 @@ class ExecutionLockTest {
 
     private static final long ALIVE_TIMEOUT = 30_000L;
 
+    private static final long ATTEMPT_LIMIT = 2L;
+
+    private static final String LOCAL_INSTANCE = "local-instance";
+
+    private static final String GONE_INSTANCE = "gone-instance";
+
+    private static final String OWNER_INSTANCE = "owner-instance";
+
+    private static final String FASTER_EXECUTION = "2026/11/18/11/41/job_3";
+
     private final ResourceResolver resolver = newResolver();
 
-    private final ExecutionLock ownLock = new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT);
+    private final LockOwnerPresence presence = mock(LockOwnerPresence.class);
+
+    private final LockOwnerJob ownerJob = mock(LockOwnerJob.class);
+
+    private final ExecutionLock ownLock =
+            new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
 
     @Test
     void shouldCreateLockWithExecutionIdFirstAttemptAndAliveTime() {
@@ -53,16 +69,8 @@ class ExecutionLockTest {
     }
 
     @Test
-    void shouldDeriveRefreshIntervalAndStopLimitFromAliveTimeout() {
+    void shouldDeriveRefreshIntervalFromAliveTimeout() {
         assertEquals(5_000L, ownLock.getAliveIntervalMillis());
-        assertEquals(20_000L, ownLock.getAliveStopMillis());
-    }
-
-    @Test
-    void shouldKeepStopLimitPositiveForVeryLongAliveTimeout() {
-        ExecutionLock lockWithVeryLongTimeout = new ExecutionLock(LOCK_NAME, OWN_EXECUTION, Long.MAX_VALUE);
-
-        assertTrue(lockWithVeryLongTimeout.getAliveStopMillis() > 0);
     }
 
     @Test
@@ -101,10 +109,12 @@ class ExecutionLockTest {
 
     @Test
     void shouldNoteTakeoverByLaterAttemptOfSameExecution() throws Exception {
-        ExecutionLock pausedFirstAttempt = new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT);
+        ExecutionLock pausedFirstAttempt =
+                new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
         pausedFirstAttempt.create(resolver, LOCK_TIMEOUT);
         aliveTimeMovedBack(ONE_MINUTE);
-        ExecutionLock secondAttempt = new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT);
+        ExecutionLock secondAttempt =
+                new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
         secondAttempt.reenter(resolver, LOCK_TIMEOUT);
 
         assertFalse(pausedFirstAttempt.signalAlive(resolver));
@@ -125,24 +135,12 @@ class ExecutionLockTest {
     }
 
     @Test
-    void shouldRememberWhenAliveTimeWasWrittenOnCreate() {
-        long beforeWrite = System.nanoTime();
-
-        ownLock.create(resolver, LOCK_TIMEOUT);
-
-        assertTrue(ownLock.getAliveWrittenNanoTime() >= beforeWrite);
-        assertTrue(ownLock.getAliveWrittenNanoTime() <= System.nanoTime());
-    }
-
-    @Test
-    void shouldRememberAttemptAndWriteTimeOnReentry() throws Exception {
+    void shouldRememberAttemptOnReentry() throws Exception {
         lockWrittenBy(OWN_EXECUTION, 1L, ONE_MINUTE);
-        long beforeWrite = System.nanoTime();
 
         ownLock.reenter(resolver, LOCK_TIMEOUT);
 
         assertEquals(2L, ownLock.getAttempt());
-        assertTrue(ownLock.getAliveWrittenNanoTime() >= beforeWrite);
     }
 
     @Test
@@ -229,18 +227,18 @@ class ExecutionLockTest {
     }
 
     @Test
-    void shouldReenterOwnLockLeftByKilledRun() throws Exception {
-        Calendar killedRunLockedUntil = lockWrittenBy(OWN_EXECUTION, 1L, ONE_MINUTE);
+    void shouldReenterOwnLockLeftByDeadRun() throws Exception {
+        Calendar deadRunLockedUntil = lockWrittenBy(OWN_EXECUTION, 1L, ONE_MINUTE);
 
-        Calendar killedRunLockedAt = lockNode().get("locked", Calendar.class);
+        Calendar deadRunLockedAt = lockNode().get("locked", Calendar.class);
 
-        assertEquals(ExecutionLock.State.OWN_LEFT_BY_KILLED_RUN, ownLock.read(resolver));
+        assertEquals(ExecutionLock.State.OWN_LEFT_BY_DEAD_RUN, ownLock.read(resolver));
         assertTrue(ownLock.reenter(resolver, LOCK_TIMEOUT));
 
         ValueMap lockNode = lockNode();
         assertEquals(2L, lockNode.get("attempt", Long.class));
-        assertTrue(lockNode.get("lockedUntil", Calendar.class).after(killedRunLockedUntil));
-        assertEquals(killedRunLockedAt, lockNode.get("locked", Calendar.class));
+        assertTrue(lockNode.get("lockedUntil", Calendar.class).after(deadRunLockedUntil));
+        assertEquals(deadRunLockedAt, lockNode.get("locked", Calendar.class));
         assertEquals(ExecutionLock.State.OWN_ATTEMPT_LIMIT_REACHED, ownLock.read(resolver));
     }
 
@@ -259,10 +257,12 @@ class ExecutionLockTest {
     }
 
     @Test
-    void shouldRefuseSecondReentryOfSameKilledAttempt() throws Exception {
+    void shouldRefuseSecondReentryOfSameDeadAttempt() throws Exception {
         lockWrittenBy(OWN_EXECUTION, 1L, ONE_MINUTE);
-        ExecutionLock firstDelivery = new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT);
-        ExecutionLock secondDelivery = new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT);
+        ExecutionLock firstDelivery =
+                new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
+        ExecutionLock secondDelivery =
+                new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
 
         assertTrue(firstDelivery.reenter(resolver, LOCK_TIMEOUT));
         assertFalse(secondDelivery.reenter(resolver, LOCK_TIMEOUT));
@@ -271,10 +271,12 @@ class ExecutionLockTest {
 
     @Test
     void shouldNotReleaseLockOfLaterAttemptOfSameExecution() throws Exception {
-        ExecutionLock pausedFirstAttempt = new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT);
+        ExecutionLock pausedFirstAttempt =
+                new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
         pausedFirstAttempt.create(resolver, LOCK_TIMEOUT);
         aliveTimeMovedBack(ONE_MINUTE);
-        ExecutionLock secondAttempt = new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT);
+        ExecutionLock secondAttempt =
+                new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
         secondAttempt.reenter(resolver, LOCK_TIMEOUT);
 
         assertFalse(pausedFirstAttempt.release(resolver));
@@ -283,10 +285,12 @@ class ExecutionLockTest {
 
     @Test
     void shouldNotRefreshAliveTimeOfLaterAttemptOfSameExecution() throws Exception {
-        ExecutionLock pausedFirstAttempt = new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT);
+        ExecutionLock pausedFirstAttempt =
+                new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
         pausedFirstAttempt.create(resolver, LOCK_TIMEOUT);
         aliveTimeMovedBack(ONE_MINUTE);
-        new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT).reenter(resolver, LOCK_TIMEOUT);
+        new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob)
+                .reenter(resolver, LOCK_TIMEOUT);
         aliveTimeMovedBack(ONE_MINUTE);
 
         assertFalse(pausedFirstAttempt.signalAlive(resolver));
@@ -305,6 +309,13 @@ class ExecutionLockTest {
     @Test
     void shouldRefuseOwnLockWithoutAttempt() throws Exception {
         lockWrittenBy(OWN_EXECUTION, null, ONE_MINUTE);
+
+        assertEquals(ExecutionLock.State.OWN_ATTEMPT_LIMIT_REACHED, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldRefuseOwnLockWithAttemptBelowOne() throws Exception {
+        lockWrittenBy(OWN_EXECUTION, 0L, ONE_MINUTE);
 
         assertEquals(ExecutionLock.State.OWN_ATTEMPT_LIMIT_REACHED, ownLock.read(resolver));
     }
@@ -376,6 +387,215 @@ class ExecutionLockTest {
         assertEquals(ExecutionLock.State.OWN_RUN_STILL_ALIVE, ownLock.read(resolver));
     }
 
+    @Test
+    void shouldStoreSlingIdOnLockOnCreate() {
+        when(presence.localSlingId()).thenReturn(LOCAL_INSTANCE);
+
+        ownLock.create(resolver, LOCK_TIMEOUT);
+
+        assertEquals(LOCAL_INSTANCE, lockNode().get("slingId", String.class));
+    }
+
+    @Test
+    void shouldStoreNoSlingIdWhenLocalInstanceIsUnknown() {
+        ownLock.create(resolver, LOCK_TIMEOUT);
+
+        assertFalse(lockNode().containsKey("slingId"));
+    }
+
+    @Test
+    void shouldStoreSlingIdOfNewOwnerOnReentry() throws Exception {
+        lockWrittenBy(OWN_EXECUTION, 1L, ONE_MINUTE);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.localSlingId()).thenReturn(LOCAL_INSTANCE);
+
+        ownLock.reenter(resolver, LOCK_TIMEOUT);
+
+        assertEquals(LOCAL_INSTANCE, lockNode().get("slingId", String.class));
+    }
+
+    @Test
+    void shouldReadLockOfAnotherExecutionAsLeftByGoneInstanceWhenOwnerLeftCluster() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, 0L);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+
+        assertEquals(ExecutionLock.State.LEFT_BY_GONE_INSTANCE, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldReadLockOfAnotherExecutionAsOtherRunWhenOwnerIsInCluster() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, ONE_MINUTE);
+        lockOwnedBy(OWNER_INSTANCE);
+
+        assertEquals(ExecutionLock.State.OTHER_RUN, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldReadLockOfGoneInstanceAsOtherRunWhenAttemptLimitIsReached() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, ATTEMPT_LIMIT, ONE_MINUTE);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+
+        assertEquals(ExecutionLock.State.OTHER_RUN, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldReadLockOfGoneInstanceAsOtherRunWhenAttemptIsBelowOne() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, -100L, ONE_MINUTE);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+
+        assertEquals(ExecutionLock.State.OTHER_RUN, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldReadLockOfGoneInstanceAsOtherRunWhileItsJobAwaitsDelivery() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, ONE_MINUTE);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+        when(ownerJob.isAwaitingDelivery(eq(OTHER_EXECUTION))).thenReturn(true);
+
+        assertEquals(ExecutionLock.State.OTHER_RUN, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldRefuseTakeoverWhenJobOfGoneInstanceAwaitsDeliveryAtWriteTime() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, ONE_MINUTE);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+        assertEquals(ExecutionLock.State.LEFT_BY_GONE_INSTANCE, ownLock.read(resolver));
+        when(ownerJob.isAwaitingDelivery(eq(OTHER_EXECUTION))).thenReturn(true);
+
+        assertFalse(ownLock.takeOver(resolver, LOCK_TIMEOUT));
+        assertEquals(OTHER_EXECUTION, lockNode().get("executionId", String.class));
+    }
+
+    @Test
+    void shouldNotAskSlingForJobWhenOwnerIsInCluster() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, ONE_MINUTE);
+        lockOwnedBy(OWNER_INSTANCE);
+
+        ownLock.read(resolver);
+
+        verifyNoInteractions(ownerJob);
+    }
+
+    @Test
+    void shouldNotAskSlingForJobWhenAttemptLimitIsReached() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, ATTEMPT_LIMIT, ONE_MINUTE);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+
+        ownLock.read(resolver);
+
+        verifyNoInteractions(ownerJob);
+    }
+
+    @Test
+    void shouldRunAgainUnderOwnLockOfGoneInstanceWhileItsJobIsDelivered() throws Exception {
+        lockWrittenBy(OWN_EXECUTION, 1L, 0L);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+        when(ownerJob.isAwaitingDelivery(eq(OWN_EXECUTION))).thenReturn(true);
+
+        assertEquals(ExecutionLock.State.OWN_LEFT_BY_DEAD_RUN, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldRefuseReentryWhenLockDisappearsBeforeItIsWritten() throws Exception {
+        lockWrittenBy(OWN_EXECUTION, 1L, ONE_MINUTE);
+
+        assertFalse(ownLock.reenter(resolverLosingLockAfterCheck(), LOCK_TIMEOUT));
+    }
+
+    @Test
+    void shouldRefuseTakeoverWhenLockDisappearsBeforeItIsWritten() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, 0L);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+
+        assertFalse(ownLock.takeOver(resolverLosingLockAfterCheck(), LOCK_TIMEOUT));
+    }
+
+    @Test
+    void shouldTakeOverLockOfGoneInstanceWithNextAttemptAndOwnIds() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, 0L);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+        when(presence.localSlingId()).thenReturn(LOCAL_INSTANCE);
+
+        assertTrue(ownLock.takeOver(resolver, LOCK_TIMEOUT));
+
+        ValueMap lockNode = lockNode();
+        assertEquals(OWN_EXECUTION, lockNode.get("executionId", String.class));
+        assertEquals(2L, lockNode.get("attempt", Long.class));
+        assertEquals(LOCAL_INSTANCE, lockNode.get("slingId", String.class));
+        assertTrue(ownLock.isHeld(resolver));
+    }
+
+    @Test
+    void shouldRefuseTakeoverWhenOwnerIsBackInClusterAtWriteTime() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, 0L);
+        lockOwnedBy(OWNER_INSTANCE);
+
+        assertFalse(ownLock.takeOver(resolver, LOCK_TIMEOUT));
+
+        assertEquals(OTHER_EXECUTION, lockNode().get("executionId", String.class));
+    }
+
+    @Test
+    void shouldReadOwnLockAsLeftByDeadRunWhenOwnerLeftClusterAlthoughAliveIsFresh() throws Exception {
+        lockWrittenBy(OWN_EXECUTION, 1L, 0L);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+
+        assertEquals(ExecutionLock.State.OWN_LEFT_BY_DEAD_RUN, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldReadOwnLockAsStillAliveWhileOwnerInstanceIsInClusterAlthoughAliveIsOld() throws Exception {
+        lockWrittenBy(OWN_EXECUTION, 1L, ONE_MINUTE);
+        lockOwnedBy(OWNER_INSTANCE);
+        when(presence.isOtherInstanceInCluster(OWNER_INSTANCE)).thenReturn(true);
+
+        assertEquals(ExecutionLock.State.OWN_RUN_STILL_ALIVE, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldReadOwnLockAsStillAliveWhenOwnerIsInClusterAndAliveIsFresh() throws Exception {
+        lockWrittenBy(OWN_EXECUTION, 1L, 0L);
+        lockOwnedBy(OWNER_INSTANCE);
+
+        assertEquals(ExecutionLock.State.OWN_RUN_STILL_ALIVE, ownLock.read(resolver));
+    }
+
+    @Test
+    void shouldRefuseTakeoverWhenCommitFails() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, 0L);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+
+        assertFalse(ownLock.takeOver(resolverFailingCommits(1), LOCK_TIMEOUT));
+
+        assertEquals(0L, ownLock.getAttempt());
+    }
+
+    @Test
+    void shouldRefuseTakeoverWhenAnotherRunTookTheLockFirst() throws Exception {
+        lockWrittenBy(OTHER_EXECUTION, 1L, 0L);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+        when(presence.localSlingId()).thenReturn(LOCAL_INSTANCE);
+        ExecutionLock fasterRun =
+                new ExecutionLock(LOCK_NAME, FASTER_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
+        assertTrue(fasterRun.takeOver(resolver, LOCK_TIMEOUT));
+
+        assertFalse(ownLock.takeOver(resolver, LOCK_TIMEOUT));
+
+        assertEquals(FASTER_EXECUTION, lockNode().get("executionId", String.class));
+    }
+
     /** Lock node left by a run of the given execution. Returns the end of the lock. */
     private Calendar lockWrittenBy(String executionId, Long attempt, long aliveMillisAgo) throws PersistenceException {
         Calendar lockedAt = Calendar.getInstance();
@@ -398,6 +618,11 @@ class ExecutionLockTest {
         return lockedUntil;
     }
 
+    private void lockOwnedBy(String slingId) throws PersistenceException {
+        lockNodeChange().put("slingId", slingId);
+        resolver.commit();
+    }
+
     private void expiredLockWrittenBy(String executionId) throws PersistenceException {
         lockWrittenBy(executionId, 2L, ONE_MINUTE);
         Resource lock = resolver.getResource(Locker.ROOT + "/" + LOCK_NAME);
@@ -417,6 +642,16 @@ class ExecutionLockTest {
     }
 
     /** The same repository, but the first commits fail like during a write conflict. */
+    /** Another run deletes the lock right after this run checked its state. */
+    private ResourceResolver resolverLosingLockAfterCheck() {
+        ResourceResolver losing = spy(resolver);
+        AtomicInteger lockReads = new AtomicInteger();
+        doAnswer(invocation -> lockReads.incrementAndGet() == 1 ? invocation.callRealMethod() : null)
+                .when(losing)
+                .getResource(Locker.ROOT + "/" + LOCK_NAME);
+        return losing;
+    }
+
     private ResourceResolver resolverFailingCommits(int failingCommits) throws PersistenceException {
         ResourceResolver failing = spy(resolver);
         AtomicInteger commits = new AtomicInteger();

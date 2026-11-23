@@ -7,8 +7,6 @@ import dev.vml.es.acm.core.util.DurationUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
 import groovy.lang.Binding;
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -48,19 +46,9 @@ public class ExecutionContext implements AutoCloseable {
 
     private Duration lockTimeout = null;
 
-    private boolean abortOnShutdown = false;
-
-    private final AtomicReference<AbortCause> abortCause = new AtomicReference<>();
+    static final String LOCK_LOST_MESSAGE = "Execution aborted, its execution lock is held by another run";
 
     private volatile boolean lockLost;
-
-    private volatile boolean lockConfirmationRequired;
-
-    private volatile long lockConfirmedNanoTime;
-
-    private volatile long lockStopMillis;
-
-    private volatile boolean takenOverByLaterAttempt;
 
     private final Inputs inputs;
 
@@ -199,107 +187,27 @@ public class ExecutionContext implements AutoCloseable {
         this.lockTimeout = DurationUtils.toDuration(lockTimeout);
     }
 
-    boolean isAbortOnShutdown() {
-        return abortOnShutdown;
-    }
-
-    void setAbortOnShutdown(boolean abortOnShutdown) {
-        this.abortOnShutdown = abortOnShutdown;
-    }
-
-    public AbortCause getAbortCause() {
-        return abortCause.get();
-    }
-
     public boolean isAborted() {
-        if (isStoppedByQueue()) {
+        if (getCodeContext().getOsgiContext().getService(ExecutionQueue.class).isStoppingOrStopped(getId())) {
             return true;
         }
-        if (isLockLostOrUnconfirmed()) {
-            stoppedForLock();
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isStoppedByQueue() {
-        if (!abortOnShutdown) {
-            return getCodeContext()
-                    .getOsgiContext()
-                    .getService(ExecutionQueue.class)
-                    .isStoppingOrStopped(getId());
-        }
-        ExecutionQueue queue = findExecutionQueue();
-        if (queue == null) {
-            abortCause.set(AbortCause.INSTANCE_SHUTDOWN);
-            return true;
-        }
-        return queue.isStoppingOrStopped(getId());
-    }
-
-    private ExecutionQueue findExecutionQueue() {
-        try {
-            return getCodeContext()
-                    .getOsgiContext()
-                    .findService(ExecutionQueue.class)
-                    .orElse(null);
-        } catch (NullPointerException | IllegalStateException e) {
-            return null; // the bundle context is gone while ACM or the instance stops
-        }
+        return lockLost;
     }
 
     public void abort() {
-        if (abortCause.get() == AbortCause.INSTANCE_SHUTDOWN) {
-            throw new AbortException(AbortCause.INSTANCE_SHUTDOWN);
-        }
-        if (abortCause.get() == AbortCause.EXECUTION_LOCK_LOST || isLockLostOrUnconfirmed()) {
-            stoppedForLock();
-            throw new AbortException(abortCause.get());
+        if (lockLost) {
+            throw new AbortException(LOCK_LOST_MESSAGE);
         }
         throw new AbortException("Execution aborted gracefully!");
     }
 
-    /** A later attempt of the same execution reports the result, so this run reports nothing. */
-    void stopForLaterAttempt() {
-        takenOverByLaterAttempt = true;
-        stopForLostLock();
-    }
-
-    boolean isTakenOverByLaterAttempt() {
-        return takenOverByLaterAttempt;
-    }
-
-    void requireLockConfirmation(long stopMillis, long confirmedNanoTime) {
-        lockStopMillis = stopMillis;
-        confirmLockHeldAt(confirmedNanoTime);
-        lockConfirmationRequired = true;
-    }
-
+    /** A script told to stop ends aborted, even if it returns by itself. */
     void stopForLostLock() {
         lockLost = true;
-        stoppedForLock();
     }
 
-    /** A script told to stop ends aborted, even if it returns by itself. */
-    private void stoppedForLock() {
-        abortCause.compareAndSet(null, AbortCause.EXECUTION_LOCK_LOST); // a shutdown cause wins
-    }
-
-    /** Uses System.nanoTime(), so a change of the system clock does not stop the script. */
-    void confirmLockHeldAt(long nanoTime) {
-        lockConfirmedNanoTime = nanoTime;
-    }
-
-    private boolean isLockLostOrUnconfirmed() {
-        return lockLost || isLockConfirmationTooOld();
-    }
-
-    private boolean isLockConfirmationTooOld() {
-        return lockConfirmationRequired && millisSinceLockConfirmed() > lockStopMillis;
-    }
-
-    private long millisSinceLockConfirmed() {
-        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - lockConfirmedNanoTime);
+    boolean isLockLost() {
+        return lockLost;
     }
 
     public void checkAborted() throws AbortException {

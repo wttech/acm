@@ -17,6 +17,8 @@ class LockHeartbeat implements Runnable {
 
     private boolean lockLost;
 
+    private volatile boolean stopped;
+
     private boolean failing;
 
     LockHeartbeat(ResourceResolverFactory resolverFactory, ExecutionLock lock, ExecutionContext context) {
@@ -28,11 +30,15 @@ class LockHeartbeat implements Runnable {
     private void stopForLostLock() {
         if (lock.isTakenOverByLaterAttempt()) {
             LOG.warn("Execution '{}' was taken over by its later attempt. Stopping it.", context.getId());
-            context.stopForLaterAttempt();
         } else {
             LOG.warn("Execution '{}' lost its execution lock to another run. Stopping it.", context.getId());
-            context.stopForLostLock();
         }
+        context.stopForLostLock();
+    }
+
+    /** The run releases its lock next, so a beat still running must not report the lock as lost. */
+    void stop() {
+        stopped = true;
     }
 
     @Override
@@ -41,12 +47,12 @@ class LockHeartbeat implements Runnable {
             return;
         }
         try {
-            long beatNanoTime = System.nanoTime();
             boolean held = ResolverUtils.queryContentResolver(resolverFactory, null, lock::signalAlive);
             failing = false;
-            if (held) {
-                context.confirmLockHeldAt(beatNanoTime);
-            } else {
+            if (stopped) {
+                return;
+            }
+            if (!held) {
                 lockLost = true;
                 stopForLostLock();
             }

@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,32 +15,43 @@ class OwnedRunLock implements RunLock {
 
     private static final Logger LOG = LoggerFactory.getLogger(OwnedRunLock.class);
 
-    private static final long HEARTBEAT_STOP_TIMEOUT_SECONDS = 5;
-
     private final ResourceResolverFactory resolverFactory;
 
     private final ExecutionContext context;
 
     private final ExecutionLock lock;
 
-    private final Duration ttl;
+    /** Read when the lock is written: a script sets its lock timeout in describeRun(). */
+    private final Supplier<Duration> ttl;
 
     private ScheduledExecutorService heartbeat;
+
+    private LockHeartbeat heartbeatTask;
+
+    private boolean entered;
+
+    private boolean resultSavedBefore;
+
+    private boolean leftBehind;
 
     OwnedRunLock(
             ResourceResolverFactory resolverFactory,
             ExecutionContext context,
-            String lockName,
-            Duration ttl,
-            long aliveTimeoutMillis) {
+            ExecutionLock lock,
+            Supplier<Duration> ttl) {
         this.resolverFactory = resolverFactory;
         this.context = context;
-        this.lock = new ExecutionLock(lockName, context.getId(), aliveTimeoutMillis);
+        this.lock = lock;
         this.ttl = ttl;
     }
 
     @Override
     public boolean enter() {
+        entered = enterByState();
+        return entered;
+    }
+
+    private boolean enterByState() {
         ExecutionLock.State state = ResolverUtils.queryContentResolver(resolverFactory, null, lock::read);
         switch (state) {
             case FREE:
@@ -47,46 +59,47 @@ class OwnedRunLock implements RunLock {
             case OTHER_RUN:
                 logLockedByAnotherRun();
                 return false;
-            case OWN_LEFT_BY_KILLED_RUN:
+            case LEFT_BY_GONE_INSTANCE:
+                return takeOverLockOfGoneInstance();
+            case OWN_LEFT_BY_DEAD_RUN:
                 return runAgainUnderOwnLock();
             case OWN_RUN_STILL_ALIVE:
                 logLockedByOwnEarlierRun("earlier run still alive");
                 return false;
             case OWN_ATTEMPT_LIMIT_REACHED:
             default:
-                logLockedByOwnEarlierRun(String.format(
-                        "attempt limit reached (%d of %d)", ExecutionLock.ATTEMPT_LIMIT, ExecutionLock.ATTEMPT_LIMIT));
+                logLockedByOwnEarlierRun(String.format("attempt limit reached (limit %d)", lock.getAttemptLimit()));
                 return false;
         }
     }
 
     @Override
     public boolean isHeld() {
-        boolean held = ResolverUtils.queryContentResolver(resolverFactory, null, lock::isHeld);
-        stopForLaterAttemptIfTakenOver();
-        return held;
+        return ResolverUtils.queryContentResolver(resolverFactory, null, lock::isHeld);
     }
 
     @Override
     public void hold() {
-        context.requireLockConfirmation(lock.getAliveStopMillis(), lock.getAliveWrittenNanoTime());
         heartbeat = Executors.newSingleThreadScheduledExecutor(runnable -> {
             Thread thread = new Thread(runnable, "ACM execution lock heartbeat " + context.getId());
             thread.setDaemon(true);
             return thread;
         });
+        heartbeatTask = new LockHeartbeat(resolverFactory, lock, context);
         heartbeat.scheduleWithFixedDelay(
-                new LockHeartbeat(resolverFactory, lock, context),
-                lock.getAliveIntervalMillis(),
-                lock.getAliveIntervalMillis(),
-                TimeUnit.MILLISECONDS);
+                heartbeatTask, lock.getAliveIntervalMillis(), lock.getAliveIntervalMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void release() {
         stopHeartbeat();
-        boolean released = ResolverUtils.queryContentResolver(resolverFactory, null, lock::release);
-        stopForLaterAttemptIfTakenOver();
+        boolean released;
+        try {
+            released = ResolverUtils.queryContentResolver(resolverFactory, null, lock::release);
+        } catch (Throwable e) { // an error must not let the Sling job end as succeeded
+            leftBehind = true;
+            throw e;
+        }
         if (!released) {
             LOG.warn(
                     "Execution lock of '{}' not released by '{}': it is gone or held by another run",
@@ -95,14 +108,27 @@ class OwnedRunLock implements RunLock {
         }
     }
 
-    private void stopForLaterAttemptIfTakenOver() {
-        if (lock.isTakenOverByLaterAttempt()) {
-            context.stopForLaterAttempt();
-        }
+    /** A later attempt may have saved its result and released the lock before this run noticed. */
+    @Override
+    public boolean isTakenOverByLaterAttempt() {
+        return entered && (lock.isTakenOverByLaterAttempt() || isResultSaved());
+    }
+
+    @Override
+    public boolean isLeftBehind() {
+        return leftBehind;
+    }
+
+    @Override
+    public boolean isResultSavedBefore() {
+        return resultSavedBefore;
     }
 
     private boolean createLock() {
-        boolean created = ResolverUtils.queryContentResolver(resolverFactory, null, r -> lock.create(r, ttl));
+        if (refuseWhenEarlierRunSavedResult()) {
+            return false;
+        }
+        boolean created = ResolverUtils.queryContentResolver(resolverFactory, null, r -> lock.create(r, ttl.get()));
         if (!created) {
             logLockedByAnotherRun();
         }
@@ -110,11 +136,10 @@ class OwnedRunLock implements RunLock {
     }
 
     private boolean runAgainUnderOwnLock() {
-        if (isResultOfEarlierRunSaved()) {
-            logLockedByOwnEarlierRun("earlier run already saved a result");
+        if (refuseWhenEarlierRunSavedResult()) {
             return false;
         }
-        boolean reentered = ResolverUtils.queryContentResolver(resolverFactory, null, r -> lock.reenter(r, ttl));
+        boolean reentered = ResolverUtils.queryContentResolver(resolverFactory, null, r -> lock.reenter(r, ttl.get()));
         if (!reentered) {
             LOG.warn(
                     "Execution locked '{}': its lock of '{}' changed while it tried to run again",
@@ -123,28 +148,52 @@ class OwnedRunLock implements RunLock {
             return false;
         }
         LOG.warn(
-                "Execution '{}' runs again under its own lock of '{}' left by a killed run (attempt {} of {})",
+                "Execution '{}' runs again under its own lock of '{}' left by a dead run (attempt {} of {})",
                 context.getId(),
                 context.getExecutable().getId(),
                 lock.getAttempt(),
-                ExecutionLock.ATTEMPT_LIMIT);
-        deleteOutputOfKilledRun();
+                lock.getAttemptLimit());
+        deleteOutputOfDeadRun();
         return true;
     }
 
-    private boolean isResultOfEarlierRunSaved() {
+    private boolean takeOverLockOfGoneInstance() {
+        boolean taken = ResolverUtils.queryContentResolver(resolverFactory, null, r -> lock.takeOver(r, ttl.get()));
+        if (!taken) {
+            logLockedByAnotherRun();
+            return false;
+        }
+        LOG.warn(
+                "Execution '{}' takes over the lock of '{}' left by an instance that left the cluster (attempt {} of {})",
+                context.getId(),
+                context.getExecutable().getId(),
+                lock.getAttempt(),
+                lock.getAttemptLimit());
+        return true;
+    }
+
+    private boolean refuseWhenEarlierRunSavedResult() {
+        if (!isResultSaved()) {
+            return false;
+        }
+        resultSavedBefore = true;
+        logLockedByOwnEarlierRun("earlier run already saved a result");
+        return true;
+    }
+
+    private boolean isResultSaved() {
         return ResolverUtils.queryContentResolver(
                 resolverFactory, null, r -> new ExecutionHistory(r).contains(context.getId()));
     }
 
     /** A failed delete must not stop the run. Old output only looks untidy. */
-    private void deleteOutputOfKilledRun() {
+    private void deleteOutputOfDeadRun() {
         try {
             ResolverUtils.useContentResolver(resolverFactory, null, r -> Repo.quiet(r)
                     .get(ExecutionContext.varPath(context.getId()))
                     .delete());
         } catch (RuntimeException e) {
-            LOG.warn("Output of the killed run of '{}' cannot be deleted: {}", context.getId(), e.toString());
+            LOG.warn("Output of the dead run of '{}' cannot be deleted: {}", context.getId(), e.toString());
         }
     }
 
@@ -163,13 +212,15 @@ class OwnedRunLock implements RunLock {
                 context.getExecutable().getId());
     }
 
+    /** Waits at most one beat interval; a slower beat reports nothing after the stop. */
     private void stopHeartbeat() {
         if (heartbeat == null) {
             return;
         }
+        heartbeatTask.stop();
         heartbeat.shutdown();
         try {
-            heartbeat.awaitTermination(HEARTBEAT_STOP_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            heartbeat.awaitTermination(lock.getAliveIntervalMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

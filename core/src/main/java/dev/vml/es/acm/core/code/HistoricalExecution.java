@@ -42,8 +42,6 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
 
     private final OutputValues outputs;
 
-    private final AbortCause abortCause;
-
     public HistoricalExecution(Resource resource) {
         try {
             ValueMap props = resource.getValueMap();
@@ -59,8 +57,6 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             this.inputs = JsonUtils.read(props.get("inputs", InputStream.class), InputValues.class);
             this.outputs = JsonUtils.read(props.get("outputs", InputStream.class), OutputValues.class);
             this.instance = props.get("instance", String.class);
-            this.abortCause =
-                    AbortCause.of(props.get("abortCause", String.class)).orElse(null);
 
             this.executable =
                     new Code(props.get("executableId", String.class), props.get("executableContent", String.class));
@@ -85,11 +81,6 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
             props.put("inputs", JsonUtils.writeToStream(execution.getInputs()));
             props.put("outputs", JsonUtils.writeToStream(execution.getOutputs()));
             props.put("instance", execution.getInstance());
-            props.put(
-                    "abortCause",
-                    execution.getAbortCause() != null
-                            ? execution.getAbortCause().name()
-                            : null);
 
             props.put("executableId", execution.getExecutable().getId());
             props.put("executableContent", execution.getExecutable().getContent());
@@ -113,11 +104,6 @@ public class HistoricalExecution implements Execution, Comparable<HistoricalExec
 
     public static Optional<HistoricalExecution> from(Resource resource) {
         return Optional.ofNullable(resource).filter(HistoricalExecution::check).map(HistoricalExecution::new);
-    }
-
-    @Override
-    public AbortCause getAbortCause() {
-        return abortCause;
     }
 
     @Override

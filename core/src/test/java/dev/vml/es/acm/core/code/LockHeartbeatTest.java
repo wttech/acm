@@ -1,8 +1,7 @@
 package dev.vml.es.acm.core.code;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import dev.vml.es.acm.core.repo.Locker;
@@ -16,8 +15,10 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.testing.mock.osgi.MockOsgi;
 import org.apache.sling.testing.mock.sling.MockSling;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import uk.org.lidalia.slf4jext.Level;
+import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
 class LockHeartbeatTest {
 
@@ -27,25 +28,28 @@ class LockHeartbeatTest {
 
     private static final long ALIVE_TIMEOUT = 30_000L;
 
+    private static final long ATTEMPT_LIMIT = 2L;
+
     private final ResourceResolverFactory repository = MockSling.newResourceResolverFactory(
             ResourceResolverType.RESOURCERESOLVER_MOCK, MockOsgi.newBundleContext());
 
     private final ExecutionContext context = mock(ExecutionContext.class);
 
-    private final ExecutionLock lock = new ExecutionLock(LOCK_NAME, EXECUTION_ID, ALIVE_TIMEOUT);
+    private final ExecutionLock lock = new ExecutionLock(
+            LOCK_NAME, EXECUTION_ID, ALIVE_TIMEOUT, ATTEMPT_LIMIT, new LockOwnerPresence(null), new LockOwnerJob(null));
+
+    @AfterEach
+    void clearLogs() {
+        TestLoggerFactory.clear();
+    }
 
     @Test
-    void shouldConfirmLockWithTimeTakenBeforeTheWrite() throws Exception {
+    void shouldKeepRunWhenLockIsOwn() throws Exception {
         lockHeld();
         LockHeartbeat heartbeat = new LockHeartbeat(repository, lock, context);
-        long beforeBeat = System.nanoTime();
 
         heartbeat.run();
 
-        ArgumentCaptor<Long> confirmedAt = ArgumentCaptor.forClass(Long.class);
-        verify(context).confirmLockHeldAt(confirmedAt.capture());
-        assertTrue(confirmedAt.getValue() >= beforeBeat);
-        assertTrue(confirmedAt.getValue() <= System.nanoTime());
         verify(context, never()).stopForLostLock();
     }
 
@@ -67,18 +71,44 @@ class LockHeartbeatTest {
 
         heartbeat.run();
 
-        verify(context).stopForLaterAttempt();
+        verify(context).stopForLostLock();
+    }
+
+    @Test
+    void shouldNotStopRunWhenReleaseStartsDuringBeat() throws Exception {
+        lockHeld();
+        LockHeartbeat[] heartbeat = new LockHeartbeat[1];
+        heartbeat[0] = new LockHeartbeat(releasingDuringBeat(heartbeat), lock, context);
+
+        heartbeat[0].run();
+
         verify(context, never()).stopForLostLock();
     }
 
     @Test
-    void shouldNotConfirmLockWhenAliveTimeCannotBeWritten() throws Exception {
+    void shouldNotStopRunWhenAliveTimeCannotBeWritten() throws Exception {
         LockHeartbeat heartbeat = new LockHeartbeat(failingRepository(), lock, context);
 
         heartbeat.run();
 
-        verify(context, never()).confirmLockHeldAt(anyLong());
         verify(context, never()).stopForLostLock();
+    }
+
+    @Test
+    void shouldWarnOnceWhenAliveTimeCannotBeWrittenRepeatedly() throws Exception {
+        LockHeartbeat heartbeat = new LockHeartbeat(failingRepository(), lock, context);
+
+        heartbeat.run();
+        heartbeat.run();
+
+        assertEquals(1, keptAliveFailureWarnings());
+    }
+
+    private long keptAliveFailureWarnings() {
+        return TestLoggerFactory.getTestLogger(LockHeartbeat.class).getLoggingEvents().stream()
+                .filter(event -> event.getLevel() == Level.WARN)
+                .filter(event -> event.getMessage().contains("cannot be kept alive"))
+                .count();
     }
 
     private void laterAttemptTookOver() throws Exception {
@@ -91,6 +121,19 @@ class LockHeartbeatTest {
 
     private void lockHeld() throws LoginException {
         lock.create(repository.getServiceResourceResolver(Collections.emptyMap()), Duration.ofHours(1));
+    }
+
+    /** The run stops the heartbeat and releases its lock while a beat waits for the repository. */
+    @SuppressWarnings("unchecked")
+    private ResourceResolverFactory releasingDuringBeat(LockHeartbeat[] heartbeat) throws LoginException {
+        ResourceResolverFactory releasing = mock(ResourceResolverFactory.class);
+        when(releasing.getServiceResourceResolver(any(Map.class))).thenAnswer(invocation -> {
+            heartbeat[0].stop();
+            ResourceResolver resolver = repository.getServiceResourceResolver(Collections.emptyMap());
+            lock.release(resolver);
+            return repository.getServiceResourceResolver(Collections.emptyMap());
+        });
+        return releasing;
     }
 
     @SuppressWarnings("unchecked")

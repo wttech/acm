@@ -4497,20 +4497,6 @@
         }
       ]
     },
-    "dev.vml.es.acm.core.code.AbortCause": {
-      "name": "AbortCause",
-      "values": [
-        "INSTANCE_SHUTDOWN",
-        "EXECUTION_LOCK_LOST"
-      ],
-      "methods": [
-        {
-          "name": "getMessage",
-          "returns": "String",
-          "params": []
-        }
-      ]
-    },
     "dev.vml.es.acm.core.code.CodeContext": {
       "name": "CodeContext",
       "methods": [
@@ -5214,12 +5200,6 @@
           "name": "getExecutable",
           "returns": "Executable",
           "params": []
-        },
-        {
-          "name": "getAbortCause",
-          "returns": "AbortCause",
-          "params": [],
-          "doc": "Set only when the system aborted the run, e.g. at an instance shutdown. Null for a user abort."
         }
       ]
     },
@@ -5356,11 +5336,6 @@
               "name": "lockTimeout"
             }
           ]
-        },
-        {
-          "name": "getAbortCause",
-          "returns": "AbortCause",
-          "params": []
         },
         {
           "name": "isAborted",

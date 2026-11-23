@@ -9,6 +9,8 @@ import java.time.Duration;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.ModifiableValueMap;
@@ -20,10 +22,6 @@ import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 class ExecutionLock {
 
-    static final long ATTEMPT_LIMIT = 2;
-
-    private static final int RETRY_COUNT = 5;
-
     private static final String EXECUTION_ID_PROP = "executionId";
 
     private static final String ATTEMPT_PROP = "attempt";
@@ -32,10 +30,13 @@ class ExecutionLock {
 
     private static final String ALIVE_TIMEOUT_PROP = "aliveTimeout";
 
+    private static final String SLING_ID_PROP = "slingId";
+
     enum State {
         FREE,
         OTHER_RUN,
-        OWN_LEFT_BY_KILLED_RUN,
+        LEFT_BY_GONE_INSTANCE,
+        OWN_LEFT_BY_DEAD_RUN,
         OWN_RUN_STILL_ALIVE,
         OWN_ATTEMPT_LIMIT_REACHED
     }
@@ -46,25 +47,33 @@ class ExecutionLock {
 
     private long attempt;
 
-    private long aliveWrittenNanoTime;
-
     private final long aliveTimeoutMillis;
+
+    private final long attemptLimit;
 
     private volatile boolean takenOverByLaterAttempt;
 
-    ExecutionLock(String lockName, String executionId, long aliveTimeoutMillis) {
+    private final LockOwnerPresence ownerPresence;
+
+    private final LockOwnerJob ownerJob;
+
+    ExecutionLock(
+            String lockName,
+            String executionId,
+            long aliveTimeoutMillis,
+            long attemptLimit,
+            LockOwnerPresence ownerPresence,
+            LockOwnerJob ownerJob) {
         this.path = Locker.ROOT + "/" + lockName;
         this.executionId = executionId;
         this.aliveTimeoutMillis = aliveTimeoutMillis;
+        this.attemptLimit = attemptLimit;
+        this.ownerPresence = ownerPresence;
+        this.ownerJob = ownerJob;
     }
 
     long getAliveIntervalMillis() {
         return aliveTimeoutMillis / 6;
-    }
-
-    /** The run stops itself before another delivery may take over. */
-    long getAliveStopMillis() {
-        return aliveTimeoutMillis / 3 * 2;
     }
 
     /** Stays true once seen, also after the later attempt released the lock. */
@@ -76,8 +85,8 @@ class ExecutionLock {
         return attempt;
     }
 
-    long getAliveWrittenNanoTime() {
-        return aliveWrittenNanoTime;
+    long getAttemptLimit() {
+        return attemptLimit;
     }
 
     State read(ResourceResolver resolver) {
@@ -87,20 +96,20 @@ class ExecutionLock {
         }
         ValueMap props = lock.getValueMap();
         if (!StringUtils.equals(executionId, props.get(EXECUTION_ID_PROP, String.class))) {
-            return State.OTHER_RUN;
+            return isLeftByGoneInstance(props) ? State.LEFT_BY_GONE_INSTANCE : State.OTHER_RUN;
         }
-        if (props.get(ATTEMPT_PROP, ATTEMPT_LIMIT) >= ATTEMPT_LIMIT) {
+        if (isAttemptLimitReached(props)) {
             return State.OWN_ATTEMPT_LIMIT_REACHED;
         }
-        if (isAlive(props)) {
+        if (!hasOwnerLeftCluster(props) && (isAlive(props) || isOwnerOtherInstanceInCluster(props))) {
             return State.OWN_RUN_STILL_ALIVE;
         }
-        return State.OWN_LEFT_BY_KILLED_RUN;
+        return State.OWN_LEFT_BY_DEAD_RUN;
     }
 
     boolean create(ResourceResolver resolver, Duration ttl) {
         PersistenceException lastError = null;
-        for (int retry = 0; retry < RETRY_COUNT; retry++) {
+        for (int retry = 0; retry < Locker.RETRY_COUNT; retry++) {
             try {
                 return tryCreate(resolver, ttl);
             } catch (PersistenceException e) {
@@ -117,34 +126,75 @@ class ExecutionLock {
             return false;
         }
         deleteInactiveLock(resolver, current);
-        long writeNanoTime = System.nanoTime();
         resolver.create(lockFolder(resolver), lockNodeName(), firstAttemptProperties(ttl));
         resolver.commit();
-        holdAttempt(1, writeNanoTime);
+        holdAttempt(1);
         return true;
     }
 
-    /** Reads the lock again, because it may have changed since enter() read it. */
     boolean reenter(ResourceResolver resolver, Duration ttl) {
-        if (read(resolver) != State.OWN_LEFT_BY_KILLED_RUN) {
+        return writeNextAttemptIfStill(State.OWN_LEFT_BY_DEAD_RUN, resolver, ttl);
+    }
+
+    boolean takeOver(ResourceResolver resolver, Duration ttl) {
+        return writeNextAttemptIfStill(State.LEFT_BY_GONE_INSTANCE, resolver, ttl);
+    }
+
+    /** Reads the lock again, because the owner may be back or another run may have changed it since enter(). */
+    private boolean writeNextAttemptIfStill(State expected, ResourceResolver resolver, Duration ttl) {
+        if (read(resolver) != expected) {
             return false;
         }
-        long writeNanoTime = System.nanoTime();
-        long nextAttempt = writeNextAttempt(resolver, ttl);
+        Optional<ModifiableValueMap> props = findModifiableLock(resolver);
+        if (!props.isPresent()) {
+            return false; // another run removed the lock
+        }
+        long nextAttempt = writeNextAttempt(props.get(), ttl);
         try {
             resolver.commit();
         } catch (PersistenceException e) {
             resolver.revert();
-            return false; // another delivery changed the lock
+            return false; // another run changed the lock
         }
-        holdAttempt(nextAttempt, writeNanoTime);
+        holdAttempt(nextAttempt);
         return true;
     }
 
-    private long writeNextAttempt(ResourceResolver resolver, Duration ttl) {
-        ModifiableValueMap props = resolver.getResource(path).adaptTo(ModifiableValueMap.class);
-        long nextAttempt = props.get(ATTEMPT_PROP, ATTEMPT_LIMIT) + 1;
+    /**
+     * The attempt count goes on, so the attempt limit also stops a script that kills each instance it runs on.
+     * A job that Sling still holds runs again under its own lock, so no other run may take it over.
+     */
+    private boolean isLeftByGoneInstance(ValueMap props) {
+        return !isAttemptLimitReached(props)
+                && hasOwnerLeftCluster(props)
+                && !ownerJob.isAwaitingDelivery(props.get(EXECUTION_ID_PROP, String.class));
+    }
+
+    /** An attempt below one was not written by ACM, so it must not open more attempts. */
+    private boolean isAttemptLimitReached(ValueMap props) {
+        long attempt = props.get(ATTEMPT_PROP, attemptLimit);
+        return attempt < 1 || attempt >= attemptLimit;
+    }
+
+    /** A stopping instance stops refreshing its lock long before it leaves, while its script may still run. */
+    private boolean isOwnerOtherInstanceInCluster(ValueMap props) {
+        return ownerPresence.isOtherInstanceInCluster(props.get(SLING_ID_PROP, String.class));
+    }
+
+    /** An instance gone from the cluster can no longer write, so its run is over even if it refreshed lately. */
+    private boolean hasOwnerLeftCluster(ValueMap props) {
+        return ownerPresence.hasLeftCluster(props.get(SLING_ID_PROP, String.class));
+    }
+
+    private Optional<ModifiableValueMap> findModifiableLock(ResourceResolver resolver) {
+        return Optional.ofNullable(resolver.getResource(path)).map(lock -> lock.adaptTo(ModifiableValueMap.class));
+    }
+
+    private long writeNextAttempt(ModifiableValueMap props, Duration ttl) {
+        long nextAttempt = props.get(ATTEMPT_PROP, attemptLimit) + 1;
+        props.put(EXECUTION_ID_PROP, executionId);
         props.put(ATTEMPT_PROP, nextAttempt);
+        putSlingId(props);
         props.put(ALIVE_PROP, Calendar.getInstance());
         props.put(ALIVE_TIMEOUT_PROP, aliveTimeoutMillis);
         putLockedUntil(props, ttl);
@@ -156,7 +206,7 @@ class ExecutionLock {
         if (!isHeld(lock)) {
             return false;
         }
-        lock.adaptTo(ModifiableValueMap.class).put(ALIVE_PROP, Calendar.getInstance());
+        Objects.requireNonNull(lock.adaptTo(ModifiableValueMap.class)).put(ALIVE_PROP, Calendar.getInstance());
         try {
             resolver.commit();
         } catch (PersistenceException e) {
@@ -168,7 +218,7 @@ class ExecutionLock {
 
     boolean release(ResourceResolver resolver) {
         PersistenceException lastError = null;
-        for (int retry = 0; retry < RETRY_COUNT; retry++) {
+        for (int retry = 0; retry < Locker.RETRY_COUNT; retry++) {
             Resource lock = resolver.getResource(path);
             if (!isHeld(lock)) {
                 return false;
@@ -207,9 +257,8 @@ class ExecutionLock {
     }
 
     /** Called only after the lock write is committed. */
-    private void holdAttempt(long heldAttempt, long writeNanoTime) {
+    private void holdAttempt(long heldAttempt) {
         attempt = heldAttempt;
-        aliveWrittenNanoTime = writeNanoTime;
     }
 
     private void deleteInactiveLock(ResourceResolver resolver, Resource lock) throws PersistenceException {
@@ -235,6 +284,7 @@ class ExecutionLock {
         putLockedUntil(props, ttl);
         props.put(EXECUTION_ID_PROP, executionId);
         props.put(ATTEMPT_PROP, 1L);
+        putSlingId(props);
         props.put(ALIVE_PROP, now);
         props.put(ALIVE_TIMEOUT_PROP, aliveTimeoutMillis);
         return props;
@@ -271,7 +321,17 @@ class ExecutionLock {
         return alive == null
                 || storedTimeout == null
                 || System.currentTimeMillis() - alive.getTimeInMillis()
-                        < Math.max(ShutdownSafety.MIN_RERUN_KILLED_EXECUTION_ALIVE_TIMEOUT, storedTimeout);
+                        < Math.max(ShutdownSafety.MIN_LOCK_ALIVE_TIMEOUT, storedTimeout);
+    }
+
+    /** A lock without the owner is never taken over by another run. */
+    private void putSlingId(Map<String, Object> props) {
+        String slingId = ownerPresence.localSlingId();
+        if (slingId == null) {
+            props.remove(SLING_ID_PROP);
+        } else {
+            props.put(SLING_ID_PROP, slingId);
+        }
     }
 
     private void putLockedUntil(Map<String, Object> props, Duration ttl) {

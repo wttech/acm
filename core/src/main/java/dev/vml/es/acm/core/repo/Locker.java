@@ -29,7 +29,7 @@ public class Locker {
 
     public static final String LOCKED_UNTIL_PROP = "lockedUntil";
 
-    private static final int RETRY_COUNT = 5;
+    public static final int RETRY_COUNT = 5;
 
     private final ResourceResolver resolver;
 

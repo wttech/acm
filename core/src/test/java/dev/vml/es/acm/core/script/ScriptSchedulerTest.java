@@ -13,15 +13,24 @@ import dev.vml.es.acm.core.code.ScheduleResult;
 import dev.vml.es.acm.core.code.schedule.BootSchedule;
 import dev.vml.es.acm.core.code.schedule.CronSchedule;
 import dev.vml.es.acm.core.instance.HealthChecker;
+import dev.vml.es.acm.core.instance.HealthIssue;
+import dev.vml.es.acm.core.instance.HealthIssueCategory;
+import dev.vml.es.acm.core.instance.HealthIssueSeverity;
 import dev.vml.es.acm.core.instance.HealthStatus;
 import dev.vml.es.acm.core.instance.ShutdownSafety;
+import dev.vml.es.acm.core.instance.TaggedHealthChecks;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.InstanceType;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +55,10 @@ import org.apache.sling.testing.mock.osgi.MockOsgi;
 import org.apache.sling.testing.mock.sling.MockSling;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.osgi.framework.BundleContext;
 import org.slf4j.helpers.MessageFormatter;
@@ -69,9 +81,12 @@ class ScriptSchedulerTest {
 
     private static final String OTHER_CLUSTER_INSTANCE = "other-cluster-instance";
 
-    private static final String KEEP_CRON_UNTIL_HEALTHY = "keepCronUntilHealthy";
+    private static final String ENABLED = "enabled";
 
-    private static final String BOOT_ON_INSTANCE_LEFT = "bootOnInstanceLeft";
+    private static final String SHUTDOWN_MARKER_FILE = "shutdownMarkerFile";
+
+    @TempDir
+    Path tempDir;
 
     private final BundleContext bundleContext = MockOsgi.newBundleContext();
 
@@ -80,6 +95,8 @@ class ScriptSchedulerTest {
     private final JobManager jobManager = mock(JobManager.class, RETURNS_DEEP_STUBS);
 
     private final HealthChecker healthChecker = mock(HealthChecker.class);
+
+    private final TaggedHealthChecks taggedHealthChecks = mock(TaggedHealthChecks.class);
 
     private final ScheduledJobInfo existingCronSchedule = mock(ScheduledJobInfo.class);
 
@@ -100,8 +117,262 @@ class ScriptSchedulerTest {
     }
 
     @Test
+    void shouldNotQueueBootScriptsWhileTaggedHealthCheckIsCritical() throws Exception {
+        taggedHealthCheckIsCritical();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue, never()).submit(any(), any());
+    }
+
+    @Test
+    void shouldQueueBootScriptsWhenNoTaggedHealthCheckIsCritical() throws Exception {
+        bundleContext.registerService(TaggedHealthChecks.class, taggedHealthChecks, null);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+    }
+
+    @Test
+    void shouldQueueBootScriptsWhenTaggedHealthChecksAreNotAvailable() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+    }
+
+    @Test
+    void shouldIgnoreTaggedHealthChecksWhenShutdownSafetyIsDisabled() throws Exception {
+        taggedHealthCheckIsCritical();
+        ScriptScheduler scheduler = createScheduler();
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+        verifyNoInteractions(taggedHealthChecks);
+    }
+
+    @Test
+    void shouldQueueCronScriptWhileTaggedHealthCheckIsCritical() throws Exception {
+        taggedHealthCheckIsCritical();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(cronJob(ScriptType.AUTOMATIC.root() + "/boot" + Script.EXTENSION));
+
+        verify(executionQueue).submit(any(), any());
+        verifyNoInteractions(taggedHealthChecks);
+    }
+
+    @Test
+    void shouldNotCheckHealthWhenSchedulerIsAlreadyDeactivatedAndShutdownSafetyIsEnabled() throws Exception {
+        ScriptScheduler deactivatedScheduler = createScheduler(ENABLED);
+        MockOsgi.deactivate(deactivatedScheduler, bundleContext);
+
+        deactivatedScheduler.process(bootJob());
+
+        verify(healthChecker, never()).checkStatus();
+    }
+
+    @Test
+    void shouldNotQueueBootScriptsWhenTaggedHealthChecksCannotBeRead() throws Exception {
+        when(taggedHealthChecks.findCriticalIssues(any())).thenThrow(new IllegalStateException("Executor stopping"));
+        bundleContext.registerService(TaggedHealthChecks.class, taggedHealthChecks, null);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue, never()).submit(any(), any());
+    }
+
+    @Test
+    void shouldNotGateBootWhenHealthCheckTagsAreEmpty() throws Exception {
+        taggedHealthCheckIsCritical();
+        Map<String, Object> gateWithoutTags = new HashMap<>();
+        gateWithoutTags.put(ENABLED, true);
+        gateWithoutTags.put("healthCheckTags", new String[0]);
+        ScriptScheduler scheduler = createScheduler();
+        MockOsgi.modified(shutdownSafety, bundleContext, gateWithoutTags);
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+        verifyNoInteractions(taggedHealthChecks);
+    }
+
+    @Test
+    void shouldLogMissingHealthCheckServiceOnce() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        instanceIsHealthy();
+
+        scheduler.process(bootJob());
+        scheduler.process(bootJob());
+
+        assertEquals(
+                1,
+                infoLogs("Health check wait on boot has no effect: no health check service")
+                        .size());
+    }
+
+    @Test
+    void shouldStopWaitingForHealthyInstanceWhenSchedulerIsDeactivatedAndShutdownSafetyIsEnabled() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        MockOsgi.modified(scheduler, bundleContext, bootHealthWait(5L));
+        when(healthChecker.checkStatus()).thenAnswer(invocation -> {
+            MockOsgi.deactivate(scheduler, bundleContext);
+            return new HealthStatus(Collections.emptyList(), false);
+        });
+
+        scheduler.process(bootJob());
+
+        verify(healthChecker, times(1)).checkStatus();
+    }
+
+    @Test
+    void shouldNotQueueBootScriptsWhenSchedulerIsDeactivatedDuringHealthyCheckAndShutdownSafetyIsEnabled()
+            throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        bootScriptCanRun();
+        when(healthChecker.checkStatus()).thenAnswer(invocation -> {
+            MockOsgi.deactivate(scheduler, bundleContext);
+            return new HealthStatus(Collections.emptyList(), true);
+        });
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue, never()).submit(any(), any());
+    }
+
+    @Test
+    void shouldKeepWaitingForHealthyInstanceAfterDeactivationWhenShutdownSafetyIsDisabled() throws Exception {
+        ScriptScheduler scheduler = createScheduler();
+        MockOsgi.modified(scheduler, bundleContext, bootHealthWait(5L));
+        when(healthChecker.checkStatus()).thenAnswer(invocation -> {
+            MockOsgi.deactivate(scheduler, bundleContext);
+            return new HealthStatus(Collections.emptyList(), false);
+        });
+
+        scheduler.process(bootJob());
+
+        verify(healthChecker, times(5)).checkStatus();
+    }
+
+    @Test
+    void shouldQueueBootScriptsAfterDeactivationDuringHealthyCheckWhenShutdownSafetyIsDisabled() throws Exception {
+        ScriptScheduler scheduler = createScheduler();
+        bootScriptCanRun();
+        when(healthChecker.checkStatus()).thenAnswer(invocation -> {
+            MockOsgi.deactivate(scheduler, bundleContext);
+            return new HealthStatus(Collections.emptyList(), true);
+        });
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+    }
+
+    @Test
+    void shouldCheckHealthAfterDeactivationWhenShutdownSafetyIsDisabled() throws Exception {
+        ScriptScheduler deactivatedScheduler = createScheduler();
+        MockOsgi.deactivate(deactivatedScheduler, bundleContext);
+        instanceIsHealthy();
+
+        deactivatedScheduler.process(bootJob());
+
+        verify(healthChecker).checkStatus();
+    }
+
+    @Test
+    void shouldKeepWaitingForHealthyInstanceAfterDeactivationOnCronRun() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        MockOsgi.modified(scheduler, bundleContext, cronHealthWait(3L));
+        when(healthChecker.checkStatus()).thenAnswer(invocation -> {
+            MockOsgi.deactivate(scheduler, bundleContext);
+            return new HealthStatus(Collections.emptyList(), false);
+        });
+
+        scheduler.process(cronJob(ScriptType.AUTOMATIC.root() + "/cron" + Script.EXTENSION));
+
+        verify(healthChecker, times(3)).checkStatus();
+    }
+
+    @Test
+    void shouldKeepStopWhenDeactivatedForWholeBootWhenConfigurationChangesDuringHealthWait() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        MockOsgi.modified(scheduler, bundleContext, bootHealthWait(5L));
+        when(healthChecker.checkStatus()).thenAnswer(invocation -> {
+            MockOsgi.modified(shutdownSafety, bundleContext, Collections.emptyMap());
+            MockOsgi.deactivate(scheduler, bundleContext);
+            return new HealthStatus(Collections.emptyList(), false);
+        });
+
+        scheduler.process(bootJob());
+
+        verify(healthChecker, times(1)).checkStatus();
+    }
+
+    @Test
+    void shouldStopWaitingForHealthyInstanceWhenBootIsInterruptedAndShutdownSafetyIsDisabled() throws Exception {
+        ScriptScheduler scheduler = createScheduler();
+        instanceStaysUnhealthy();
+
+        boolean interruptKept = assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+            Thread.currentThread().interrupt();
+            scheduler.process(bootJob());
+            return Thread.interrupted();
+        });
+
+        assertTrue(interruptKept);
+    }
+
+    @Test
+    void shouldStopWaitingForHealthyInstanceWhenBootIsInterrupted() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        instanceStaysUnhealthy();
+
+        boolean interruptKept = assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+            Thread.currentThread().interrupt();
+            scheduler.process(bootJob());
+            return Thread.interrupted();
+        });
+
+        assertTrue(interruptKept);
+    }
+
+    @Test
+    void shouldKeepCronSchedulesWhenBootIsInterrupted() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        instanceStaysUnhealthy();
+
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+            Thread.currentThread().interrupt();
+            scheduler.process(bootJob());
+            Thread.interrupted();
+        });
+
+        verify(existingCronSchedule, never()).unschedule();
+    }
+
+    @Test
     void shouldKeepCronSchedulesWhenInstanceStaysUnhealthy() throws Exception {
-        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         instanceStaysUnhealthy();
 
         scheduler.process(bootJob());
@@ -111,7 +382,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldRemoveCronSchedulesOnlyAfterInstanceIsHealthy() throws Exception {
-        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         instanceIsHealthy();
 
         scheduler.process(bootJob());
@@ -122,7 +393,7 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldRemoveCronSchedulesBeforeHealthWaitWhenToggleIsOff() throws Exception {
+    void shouldRemoveCronSchedulesBeforeHealthWaitWhenShutdownSafetyIsDisabled() throws Exception {
         ScriptScheduler scheduler = createScheduler();
         instanceIsHealthy();
 
@@ -134,7 +405,7 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldRemoveCronSchedulesWhenToggleIsOffAndInstanceStaysUnhealthy() throws Exception {
+    void shouldRemoveCronSchedulesWhenShutdownSafetyIsDisabledAndInstanceStaysUnhealthy() throws Exception {
         ScriptScheduler scheduler = createScheduler();
         instanceStaysUnhealthy();
 
@@ -145,7 +416,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldScheduleCronScriptsAgainRightAfterRemovingThem() throws Exception {
-        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         instanceIsHealthy();
         cronScriptExists();
 
@@ -160,10 +431,10 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldKeepToggleValueForWholeBootWhenConfigurationChangesDuringHealthWait() throws Exception {
-        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
+    void shouldKeepEnabledValueForWholeBootWhenConfigurationChangesDuringHealthWait() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         when(healthChecker.checkStatus()).thenAnswer(invocation -> {
-            MockOsgi.modified(shutdownSafety, bundleContext, Collections.singletonMap(KEEP_CRON_UNTIL_HEALTHY, false));
+            MockOsgi.modified(shutdownSafety, bundleContext, Collections.singletonMap(ENABLED, false));
             return new HealthStatus(Collections.emptyList(), true);
         });
 
@@ -177,7 +448,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldQueueBootScriptOnFirstBootAndSkipItOnTheNextOne() throws Exception {
-        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         instanceIsHealthy();
         bootScriptCanRun();
 
@@ -188,8 +459,44 @@ class ScriptSchedulerTest {
     }
 
     @Test
+    void shouldScheduleBootAfterInstanceLeftOnlyOnceSlingMovedTheJobsOfThatInstance() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
+        long instanceLeftAt = System.currentTimeMillis();
+
+        scheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+
+        assertTrue(scheduledBootTime(newBootSchedule) >= instanceLeftAt + 30_000L);
+    }
+
+    @Test
+    void shouldScheduleBootAfterInstanceLeftAfterLongerBootDelay() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        MockOsgi.modified(scheduler, bundleContext, Collections.singletonMap("bootDelay", 60_000L));
+        JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
+        long instanceLeftAt = System.currentTimeMillis();
+
+        scheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+
+        assertTrue(scheduledBootTime(newBootSchedule) >= instanceLeftAt + 60_000L);
+    }
+
+    @Test
+    void shouldScheduleBootOnDemandAfterBootDelay() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
+        long requestedAt = System.currentTimeMillis();
+
+        scheduler.bootOnDemand();
+
+        assertTrue(scheduledBootTime(newBootSchedule) < requestedAt + 30_000L);
+    }
+
+    @Test
     void shouldScheduleBootWhenInstanceLeftAndLocalIsLeader() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -199,8 +506,20 @@ class ScriptSchedulerTest {
     }
 
     @Test
+    void shouldIgnoreInstanceLeftAfterDeactivation() throws Exception {
+        ScriptScheduler deactivatedScheduler = createScheduler(ENABLED);
+        MockOsgi.deactivate(deactivatedScheduler, bundleContext);
+        JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
+
+        deactivatedScheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+
+        verify(newBootSchedule, never()).add();
+    }
+
+    @Test
     void shouldReplacePendingBootWhenInstanceLeft() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
         clearInvocations(pendingBootSchedule);
 
@@ -214,7 +533,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenLocalIsNotLeader() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -226,7 +545,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenInstanceOnlyJoined() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -238,7 +557,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenInstancesAreTheSame() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -250,7 +569,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenOnlyPropertiesChanged() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
         scheduler.handleTopologyEvent(new TopologyEvent(
@@ -263,7 +582,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotScheduleBootWhenInstanceOfAnotherClusterLeft() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
         TopologyView viewWithOtherCluster = view(LOCAL_INSTANCE, true, LOCAL_INSTANCE);
         withOtherClusterInstance(viewWithOtherCluster);
@@ -275,7 +594,7 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldNotScheduleBootWhenToggleIsOff() throws Exception {
+    void shouldNotScheduleBootWhenShutdownSafetyIsDisabled() throws Exception {
         ScriptScheduler scheduler = createScheduler();
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
 
@@ -288,7 +607,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldNotScheduleBootWhenInstanceIsNotReady() throws Exception {
         when(instanceInfo.getType()).thenReturn(InstanceType.CLOUD_CONTAINER);
-        ScriptScheduler scheduler = createScheduler(repositoryWithoutCompositeNodeStore(), BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(repositoryWithoutCompositeNodeStore(), ENABLED);
         JobBuilder.ScheduleBuilder newBootSchedule =
                 jobManager.createJob(ScriptScheduler.JOB_TOPIC).schedule();
 
@@ -303,31 +622,8 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldRemoveCronSchedulesBeforeHealthWaitWhenOnlyBootOnInstanceLeftIsOn() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
-        instanceIsHealthy();
-
-        scheduler.process(bootJob());
-
-        InOrder order = inOrder(healthChecker, existingCronSchedule);
-        order.verify(existingCronSchedule).unschedule();
-        order.verify(healthChecker).checkStatus();
-    }
-
-    @Test
-    void shouldNotScheduleBootWhenOnlyKeepCronUntilHealthyIsOn() throws Exception {
-        ScriptScheduler scheduler = createScheduler(KEEP_CRON_UNTIL_HEALTHY);
-        JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
-
-        scheduler.handleTopologyEvent(instanceChanged(
-                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
-
-        verify(newBootSchedule, never()).add();
-    }
-
-    @Test
     void shouldLogLeftInstancesWhenLocalIsLeader() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
 
         scheduler.handleTopologyEvent(instanceChanged(
                 view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
@@ -340,7 +636,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldLogAllLeftInstancesSortedInOneLine() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
 
         scheduler.handleTopologyEvent(instanceChanged(
                 view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, OTHER_INSTANCE, LEFT_INSTANCE),
@@ -354,7 +650,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldLogLeftInstancesWhenLocalIsNotLeader() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
 
         scheduler.handleTopologyEvent(instanceChanged(
                 view(LOCAL_INSTANCE, false, LEADER_INSTANCE, LOCAL_INSTANCE, LEFT_INSTANCE),
@@ -367,7 +663,7 @@ class ScriptSchedulerTest {
     }
 
     @Test
-    void shouldNotLogLeftInstancesWhenToggleIsOff() throws Exception {
+    void shouldNotLogLeftInstancesWhenShutdownSafetyIsDisabled() throws Exception {
         ScriptScheduler scheduler = createScheduler();
 
         scheduler.handleTopologyEvent(instanceChanged(
@@ -378,7 +674,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotLogLeftInstancesWhenInstanceOnlyJoined() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
 
         scheduler.handleTopologyEvent(instanceChanged(
                 view(LOCAL_INSTANCE, true, LOCAL_INSTANCE),
@@ -389,7 +685,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldNotLogLeftInstancesWhenInstanceOfAnotherClusterLeft() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         TopologyView viewWithOtherCluster = view(LOCAL_INSTANCE, true, LOCAL_INSTANCE);
         withOtherClusterInstance(viewWithOtherCluster);
 
@@ -400,8 +696,242 @@ class ScriptSchedulerTest {
     }
 
     @Test
+    void shouldNotQueueBootScriptsWhileShutdownMarkerFileExists() throws Exception {
+        Path marker = existingShutdownMarkerFile();
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(marker.toString());
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue, never()).submit(any(), any());
+    }
+
+    @Test
+    void shouldQueueBootScriptsWhenShutdownMarkerFileIsMissing() throws Exception {
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(tempDir.resolve("shutdown").toString());
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+    }
+
+    @Test
+    void shouldQueueBootScriptsWhenShutdownMarkerFolderIsMissing() throws Exception {
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(tempDir.resolve("run/aem/shutdown").toString());
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+    }
+
+    @Test
+    void shouldNotWatchShutdownMarkerFileWhenItIsNotSet() throws Exception {
+        existingShutdownMarkerFile();
+        ScriptScheduler scheduler = createScheduler();
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+    }
+
+    @Test
+    void shouldNotQueueBootScriptsWhileShutdownMarkerFileExistsAndHealthCheckTagsAreEmpty() throws Exception {
+        bundleContext.registerService(TaggedHealthChecks.class, taggedHealthChecks, null);
+        Path marker = existingShutdownMarkerFile();
+        ScriptScheduler scheduler = createScheduler();
+        Map<String, Object> markerWithoutTags = new HashMap<>();
+        markerWithoutTags.put(ENABLED, true);
+        markerWithoutTags.put("healthCheckTags", new String[0]);
+        markerWithoutTags.put(SHUTDOWN_MARKER_FILE, marker.toString());
+        MockOsgi.modified(shutdownSafety, bundleContext, markerWithoutTags);
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue, never()).submit(any(), any());
+    }
+
+    @Test
+    void shouldNotCheckInstanceHealthWhileShutdownMarkerFileExists() throws Exception {
+        Path marker = existingShutdownMarkerFile();
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(marker.toString());
+
+        scheduler.process(bootJob());
+
+        verify(healthChecker, never()).checkStatus();
+    }
+
+    @Test
+    void shouldQueueCronScriptWhileShutdownMarkerFileExists() throws Exception {
+        Path marker = existingShutdownMarkerFile();
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(marker.toString());
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(cronJob(ScriptType.AUTOMATIC.root() + "/boot" + Script.EXTENSION));
+
+        verify(executionQueue).submit(any(), any());
+    }
+
+    @Test
+    void shouldQueueBootScriptsAgainOnceShutdownMarkerFileIsRemoved() throws Exception {
+        Path marker = existingShutdownMarkerFile();
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(marker.toString());
+        instanceIsHealthy();
+        bootScriptCanRun();
+        scheduler.process(bootJob());
+
+        Files.delete(marker);
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+    }
+
+    @Test
+    void shouldKeepCronSchedulesWhileShutdownMarkerFileExists() throws Exception {
+        Path marker = existingShutdownMarkerFile();
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(marker.toString());
+
+        scheduler.process(bootJob());
+
+        verify(existingCronSchedule, never()).unschedule();
+    }
+
+    @Test
+    void shouldNameShutdownMarkerFileWhenBootIsPaused() throws Exception {
+        Path marker = existingShutdownMarkerFile();
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(marker.toString());
+
+        scheduler.process(bootJob());
+
+        assertFalse(warnLogs("Automatic scripts queueing and scheduling paused").isEmpty());
+        assertTrue(warnLogs("Automatic scripts queueing and scheduling paused").stream()
+                .allMatch(message -> message.contains("Shutdown marker file exists: " + marker)));
+    }
+
+    @Test
+    void shouldNotQueueBootScriptWhenShutdownMarkerFileAppearsAfterHealthCheck() throws Exception {
+        Path marker = tempDir.resolve("shutdown");
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(marker.toString());
+        instanceIsHealthy();
+        bootScriptCanRun();
+        Execution succeeded = executor.check(null);
+        when(executor.check(any())).thenAnswer(invocation -> {
+            if (!Files.exists(marker)) {
+                Files.createFile(marker);
+            }
+            return succeeded;
+        });
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue, never()).submit(any(), any());
+    }
+
+    @Test
+    void shouldWarnOnceWhenShutdownMarkerFileStopsBootScriptBeforeQueue() throws Exception {
+        Path marker = tempDir.resolve("shutdown");
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(marker.toString());
+        instanceIsHealthy();
+        bootScriptCanRun();
+        Execution succeeded = executor.check(null);
+        when(executor.check(any())).thenAnswer(invocation -> {
+            if (!Files.exists(marker)) {
+                Files.createFile(marker);
+            }
+            return succeeded;
+        });
+
+        scheduler.process(bootJob());
+
+        assertEquals(
+                1,
+                warnLogs("Boot script '" + ScriptType.AUTOMATIC.root() + "/boot" + Script.EXTENSION
+                                + "' not queued - Shutdown marker file exists: " + marker)
+                        .size());
+    }
+
+    @Test
+    void shouldQueueBootScriptOnNextBootWhenShutdownMarkerFileStoppedItBeforeQueue() throws Exception {
+        Path marker = tempDir.resolve("shutdown");
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(marker.toString());
+        instanceIsHealthy();
+        bootScriptCanRun();
+        Execution succeeded = executor.check(null);
+        when(executor.check(any())).thenAnswer(invocation -> {
+            Files.createFile(marker);
+            return succeeded;
+        });
+        scheduler.process(bootJob());
+
+        Files.delete(marker);
+        doReturn(succeeded).when(executor).check(any());
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+    }
+
+    @Test
+    void shouldQueueBootScriptsAndWarnOnceWhenShutdownMarkerFileCannotBeChecked() throws Exception {
+        Assumptions.assumeFalse(File.separatorChar == '\\', "POSIX permissions only");
+        Assumptions.assumeFalse("root".equals(System.getProperty("user.name")), "root reads every folder");
+        Path closedFolder = Files.createDirectory(tempDir.resolve("closed"));
+        Path markerInClosedFolder = closedFolder.resolve("shutdown");
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(markerInClosedFolder.toString());
+        instanceIsHealthy();
+        bootScriptCanRun();
+        closedFolder.toFile().setExecutable(false, false);
+        try {
+            scheduler.process(bootJob());
+        } finally {
+            closedFolder.toFile().setExecutable(true, false);
+        }
+
+        verify(executionQueue).submit(any(), any());
+        assertEquals(
+                Collections.singletonList("Shutdown marker file cannot be checked: " + markerInClosedFolder),
+                warnLogs("Shutdown marker file"));
+    }
+
+    @Test
+    void shouldQueueBootScriptsAndWarnOnceWhenShutdownMarkerFilePathIsInvalid() throws Exception {
+        String invalidMarkerPath = "/var/run/aem/shut\u0000down";
+        ScriptScheduler scheduler = createScheduler();
+        watchShutdownMarkerFile(invalidMarkerPath);
+        instanceIsHealthy();
+        bootScriptCanRun();
+
+        scheduler.process(bootJob());
+
+        verify(executionQueue).submit(any(), any());
+        assertEquals(
+                Collections.singletonList("Shutdown marker file cannot be checked: " + invalidMarkerPath),
+                warnLogs("Shutdown marker file"));
+    }
+
+    @Test
     void shouldNotFailTopologyEventWhenSchedulingFails() throws Exception {
-        ScriptScheduler scheduler = createScheduler(BOOT_ON_INSTANCE_LEFT);
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         when(jobManager.createJob(anyString())).thenThrow(new IllegalStateException("Repository is closing"));
         TopologyEvent instanceLeft = instanceChanged(
                 view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE));
@@ -409,15 +939,15 @@ class ScriptSchedulerTest {
         assertDoesNotThrow(() -> scheduler.handleTopologyEvent(instanceLeft));
     }
 
-    private ScriptScheduler createScheduler(String... togglesOn) throws Exception {
-        return createScheduler(repositoryWithAutomaticScriptsFolder(), togglesOn);
+    private ScriptScheduler createScheduler(String... enabledSettings) throws Exception {
+        return createScheduler(repositoryWithAutomaticScriptsFolder(), enabledSettings);
     }
 
-    private ScriptScheduler createScheduler(ResourceResolverFactory resolverFactory, String... togglesOn)
+    private ScriptScheduler createScheduler(ResourceResolverFactory resolverFactory, String... enabledSettings)
             throws Exception {
-        Map<String, Object> toggles = new HashMap<>();
-        Arrays.stream(togglesOn).forEach(toggle -> toggles.put(toggle, true));
-        MockOsgi.activate(shutdownSafety, bundleContext, toggles);
+        Map<String, Object> shutdownSafetyConfig = new HashMap<>();
+        Arrays.stream(enabledSettings).forEach(setting -> shutdownSafetyConfig.put(setting, true));
+        MockOsgi.activate(shutdownSafety, bundleContext, shutdownSafetyConfig);
 
         bundleContext.registerService(ResourceResolverFactory.class, resolverFactory, null);
         bundleContext.registerService(InstanceInfo.class, instanceInfo, null);
@@ -452,6 +982,12 @@ class ScriptSchedulerTest {
                 jobManager.createJob(ScriptScheduler.JOB_TOPIC).schedule();
         clearInvocations(newBootSchedule);
         return newBootSchedule;
+    }
+
+    private long scheduledBootTime(JobBuilder.ScheduleBuilder bootSchedule) {
+        ArgumentCaptor<Date> bootTime = ArgumentCaptor.forClass(Date.class);
+        verify(bootSchedule).at(bootTime.capture());
+        return bootTime.getValue().getTime();
     }
 
     /** A cloud container whose repository is not a composite node store yet is not ready for booting. */
@@ -558,11 +1094,72 @@ class ScriptSchedulerTest {
         when(healthChecker.checkStatus()).thenReturn(new HealthStatus(Collections.emptyList(), false));
     }
 
+    private void taggedHealthCheckIsCritical() {
+        when(taggedHealthChecks.findCriticalIssues(any()))
+                .thenReturn(Collections.singletonList(new HealthIssue(
+                        HealthIssueSeverity.CRITICAL, HealthIssueCategory.INSTANCE, "Required paths check", null)));
+        bundleContext.registerService(TaggedHealthChecks.class, taggedHealthChecks, null);
+    }
+
+    private Map<String, Object> bootHealthWait(long retryCount) {
+        Map<String, Object> config = new HashMap<>();
+        config.put("healthCheckRetryCountBoot", retryCount);
+        config.put("healthCheckRetryInterval", 1L);
+        return config;
+    }
+
+    private Map<String, Object> cronHealthWait(long retryCount) {
+        Map<String, Object> config = new HashMap<>();
+        config.put("healthCheckRetryCountCron", retryCount);
+        config.put("healthCheckRetryInterval", 1L);
+        return config;
+    }
+
+    private Job cronJob(String scriptPath) {
+        Job job = mock(Job.class);
+        when(job.getProperty(ScriptScheduler.JOB_PROP_TYPE, String.class))
+                .thenReturn(ScriptScheduler.JobType.CRON.name());
+        when(job.getProperty(ScriptScheduler.JOB_PROP_SCRIPT_PATH, String.class))
+                .thenReturn(scriptPath);
+        return job;
+    }
+
     private Job bootJob() {
         Job job = mock(Job.class);
         when(job.getProperty(ScriptScheduler.JOB_PROP_TYPE, String.class))
                 .thenReturn(ScriptScheduler.JobType.BOOT.name());
         return job;
+    }
+
+    private Path existingShutdownMarkerFile() throws Exception {
+        return Files.createFile(tempDir.resolve("shutdown"));
+    }
+
+    private void watchShutdownMarkerFile(String path) {
+        Map<String, Object> enabledWithMarker = new HashMap<>();
+        enabledWithMarker.put(ENABLED, true);
+        enabledWithMarker.put(SHUTDOWN_MARKER_FILE, path);
+        MockOsgi.modified(shutdownSafety, bundleContext, enabledWithMarker);
+    }
+
+    private List<String> warnLogs(String prefix) {
+        return TestLoggerFactory.getTestLogger(ScriptScheduler.class).getLoggingEvents().stream()
+                .filter(event -> event.getLevel() == Level.WARN)
+                .map(event -> MessageFormatter.arrayFormat(
+                                event.getMessage(), event.getArguments().toArray())
+                        .getMessage())
+                .filter(message -> message.startsWith(prefix))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> infoLogs(String prefix) {
+        return TestLoggerFactory.getTestLogger(ScriptScheduler.class).getLoggingEvents().stream()
+                .filter(event -> event.getLevel() == Level.INFO)
+                .map(event -> MessageFormatter.arrayFormat(
+                                event.getMessage(), event.getArguments().toArray())
+                        .getMessage())
+                .filter(message -> message.startsWith(prefix))
+                .collect(Collectors.toList());
     }
 
     /** INFO lines about instances that left the cluster, formatted as they appear in the log. */

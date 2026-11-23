@@ -29,11 +29,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.discovery.DiscoveryService;
+import org.apache.sling.event.jobs.JobManager;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
@@ -130,6 +133,20 @@ public class Executor implements EventListener {
     @Reference
     private ShutdownSafety shutdownSafety;
 
+    /** Optional: without it no lock is ever taken over from an instance that left the cluster. */
+    @Reference(
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            policyOption = ReferencePolicyOption.GREEDY)
+    private volatile DiscoveryService discoveryService;
+
+    /** Optional: without it no lock is ever taken over from an instance that left the cluster. */
+    @Reference(
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            policyOption = ReferencePolicyOption.GREEDY)
+    private volatile JobManager jobManager;
+
     private Config config;
 
     @Activate
@@ -202,7 +219,6 @@ public class Executor implements EventListener {
                 new ExecutionContext(id, userId, mode, this, executable, inputs, codeContext, codeOutput);
         result.setDebug(config.debug());
         result.setHistory(config.history());
-        result.setAbortOnShutdown(shutdownSafety.isAbortOnShutdown());
         return result;
     }
 
@@ -231,25 +247,40 @@ public class Executor implements EventListener {
 
     public Execution execute(ExecutionContext context) throws AcmException {
         context.getCodeContext().prepareRun(context);
-        ContextualExecution execution = executeInternal(context);
+        RunLock runLock = createRunLock(context);
+        ContextualExecution execution = executeInternal(context, runLock);
         if (context.getMode() == ExecutionMode.RUN) {
-            if (context.isTakenOverByLaterAttempt()) {
+            if (runLock.isTakenOverByLaterAttempt()) {
                 LOG.warn(
                         "Execution '{}' was taken over by its later attempt, which reports the result",
                         context.getId());
+                // the decision is read from the repository, which scripts can write, so leave a trace
+                ExecutionAudit.info("Code run not reported, its later attempt reports the result", context, execution);
             } else {
-                handleHistory(execution);
+                if (!runLock.isResultSavedBefore()) {
+                    handleHistory(execution);
+                }
                 handleNotifications(execution);
                 context.getCodeContext().completeRun(execution);
             }
         }
+        if (runLock.isLeftBehind()) {
+            // a succeeded Sling job is deleted, and a later boot takes over the lock only when the job ended otherwise
+            LOG.warn(
+                    "Execution lock of '{}' is left behind by '{}', reporting the job as failed",
+                    context.getExecutable().getId(),
+                    context.getId());
+            throw new AcmException(String.format(
+                    "Execution lock of '%s' is left behind by '%s'",
+                    context.getExecutable().getId(), context.getId()));
+        }
         return execution;
     }
 
-    private ContextualExecution executeInternal(ExecutionContext context) {
+    private ContextualExecution executeInternal(ExecutionContext context, RunLock runLock) {
         ContextualExecution.Builder execution = new ContextualExecution.Builder(context).start();
 
-        boolean healthChecking = ExecutionId.HEALTH_CHECK.equals(context.getId());
+        boolean healthChecking = isHealthChecking(context);
         if ((!healthChecking && context.isSkipped())) {
             return execution.end(ExecutionStatus.SKIPPED);
         }
@@ -275,7 +306,6 @@ public class Executor implements EventListener {
                 return execution.end(ExecutionStatus.SUCCEEDED);
             }
 
-            RunLock runLock = createRunLock(context, healthChecking);
             if (!runLock.enter()) {
                 return execution.end(ExecutionStatus.LOCKED);
             }
@@ -290,30 +320,23 @@ public class Executor implements EventListener {
                 }
                 contentScript.run();
 
-                if (sawShutdown(context)) {
-                    return abortedByShutdown(context, execution, null);
-                }
-                if (context.getAbortCause() == AbortCause.EXECUTION_LOCK_LOST || !runLock.isHeld()) {
-                    return abortedByLostLock(context, execution);
+                if (context.isLockLost() || !runLock.isHeld()) {
+                    return abortedByLostLock(context, execution, null);
                 }
                 if (!healthChecking) {
                     LOG.info("Execution succeeded '{}'", context.getId());
                 }
                 return execution.end(ExecutionStatus.SUCCEEDED);
             } finally {
-                releaseLock(context, runLock);
+                runLock.release();
             }
         } catch (AbortException e) {
-            if (sawShutdown(context)) {
-                return abortedByShutdown(context, execution, e);
-            }
             LOG.warn("Execution aborted gracefully '{}'", context.getId());
             execution.error(e);
             return execution.end(ExecutionStatus.ABORTED);
         } catch (Throwable e) {
-            if (sawShutdown(context)) {
-                // An error after the script saw the shutdown is part of that shutdown.
-                return abortedByShutdown(context, execution, e);
+            if (context.isLockLost()) {
+                return abortedByLostLock(context, execution, e);
             }
             if ((e.getCause() != null && e.getCause() instanceof InterruptedException)) {
                 LOG.warn("Execution aborted forcefully '{}'", context.getId());
@@ -332,54 +355,34 @@ public class Executor implements EventListener {
         }
     }
 
-    private boolean sawShutdown(ExecutionContext context) {
-        return context.getAbortCause() == AbortCause.INSTANCE_SHUTDOWN;
+    private boolean isHealthChecking(ExecutionContext context) {
+        return ExecutionId.HEALTH_CHECK.equals(context.getId());
     }
 
-    private ContextualExecution abortedByShutdown(
-            ExecutionContext context, ContextualExecution.Builder execution, Throwable error) {
-        AbortCause shutdown = AbortCause.INSTANCE_SHUTDOWN;
-        LOG.warn("{} '{}'", shutdown.getMessage(), context.getId());
-        execution.error(error != null ? error : new AbortException(shutdown));
-        return execution.end(ExecutionStatus.ABORTED);
-    }
-
-    private RunLock createRunLock(ExecutionContext context, boolean healthChecking) {
-        if (healthChecking) {
+    /** Only creates the lock; the run enters it after its checks. */
+    private RunLock createRunLock(ExecutionContext context) {
+        if (isHealthChecking(context)) {
             return RunLock.NONE;
         }
         String lockName = executableLockName(context);
-        Duration ttl = lockTimeout(context);
-        return rerunsKilledExecution(context)
-                ? new OwnedRunLock(
-                        resolverFactory, context, lockName, ttl, shutdownSafety.getRerunKilledExecutionAliveTimeout())
+        Supplier<Duration> ttl = () -> lockTimeout(context);
+        return takesOverDeadLock(context)
+                ? new OwnedRunLock(resolverFactory, context, ownedExecutionLock(context), ttl)
                 : new LockerRunLock(resolverFactory, context, lockName, ttl);
     }
 
     /** Only automatic scripts can run again after a kill. */
-    private boolean rerunsKilledExecution(ExecutionContext context) {
-        return shutdownSafety.isRerunKilledExecution()
+    private boolean takesOverDeadLock(ExecutionContext context) {
+        return shutdownSafety.isEnabled()
                 && ScriptType.byPath(context.getExecutable().getId()).orElse(null) == ScriptType.AUTOMATIC;
     }
 
-    private ContextualExecution abortedByLostLock(ExecutionContext context, ContextualExecution.Builder execution) {
+    private ContextualExecution abortedByLostLock(
+            ExecutionContext context, ContextualExecution.Builder execution, Throwable error) {
         context.stopForLostLock();
-        AbortCause lockLost = AbortCause.EXECUTION_LOCK_LOST;
-        LOG.warn("{} '{}'", lockLost.getMessage(), context.getId());
-        execution.error(new AbortException(lockLost));
+        LOG.warn("{} '{}'", ExecutionContext.LOCK_LOST_MESSAGE, context.getId());
+        execution.error(new AbortException(ExecutionContext.LOCK_LOST_MESSAGE, error));
         return execution.end(ExecutionStatus.ABORTED);
-    }
-
-    private void releaseLock(ExecutionContext context, RunLock runLock) {
-        if (!sawShutdown(context)) {
-            runLock.release();
-            return;
-        }
-        try {
-            runLock.release();
-        } catch (Exception e) { // the repository stops: keep the shutdown result, the lock expires by timeout
-            LOG.warn("Execution lock cannot be released '{}': {}", context.getId(), e.getMessage());
-        }
     }
 
     private String executableLockName(ExecutionContext context) {
@@ -500,7 +503,27 @@ public class Executor implements EventListener {
     }
 
     public boolean isLocked(ExecutionContext context) {
+        if (takesOverDeadLock(context) && isLockLeftByGoneInstance(context)) {
+            return false;
+        }
         return queryLocker(resolverFactory, l -> l.isLocked(executableLockName(context)));
+    }
+
+    /** The run takes such a lock over, so a boot must not skip the script because of it. */
+    private boolean isLockLeftByGoneInstance(ExecutionContext context) {
+        ExecutionLock lock = ownedExecutionLock(context);
+        return ResolverUtils.queryContentResolver(resolverFactory, null, lock::read)
+                == ExecutionLock.State.LEFT_BY_GONE_INSTANCE;
+    }
+
+    private ExecutionLock ownedExecutionLock(ExecutionContext context) {
+        return new ExecutionLock(
+                executableLockName(context),
+                context.getId(),
+                shutdownSafety.getLockAliveTimeout(),
+                shutdownSafety.getLockAttemptLimit(),
+                new LockOwnerPresence(discoveryService),
+                new LockOwnerJob(jobManager));
     }
 
     private <T> T queryLocker(ResourceResolverFactory resolverFactory, Function<Locker, T> consumer) {
