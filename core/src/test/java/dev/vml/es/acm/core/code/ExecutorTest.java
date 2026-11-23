@@ -70,6 +70,8 @@ class ExecutorTest {
 
     private static final String EXECUTION_ID_OF_DEAD_RUN = "2026/11/18/10/02/job_7";
 
+    private static final String ANOTHER_RUN_EXECUTION_ID = "2026/11/18/11/40/job_2";
+
     private static final String LOCAL_INSTANCE = "local-instance";
 
     private static final String GONE_INSTANCE = "gone-instance";
@@ -183,7 +185,7 @@ class ExecutorTest {
     }
 
     @Test
-    void shouldReportFailureToSlingWhenLockIsLeftBehindAndShutdownSafetyIsEnabled() throws Exception {
+    void shouldThrowAndWarnWhenLockIsLeftBehindAndShutdownSafetyIsEnabled() throws Exception {
         queueIsRunning(false);
         lockReleaseFails();
         Executor executor = createExecutor(shutdownSafetyEnabled());
@@ -192,10 +194,11 @@ class ExecutorTest {
         AcmException failure = assertThrows(AcmException.class, () -> executor.execute(context));
         assertTrue(failure.getMessage().contains("is left behind"));
         assertNotNull(lockResource(SCRIPT_LOCK));
+        assertLeftBehindWarnings();
     }
 
     @Test
-    void shouldReportFailureToSlingWhenLockReleaseFailsWithError() throws Exception {
+    void shouldThrowAndWarnWhenLockReleaseFailsWithError() throws Exception {
         queueIsRunning(false);
         lockReleaseFailsWithError();
         Executor executor = createExecutor(shutdownSafetyEnabled());
@@ -203,6 +206,7 @@ class ExecutorTest {
 
         AcmException failure = assertThrows(AcmException.class, () -> executor.execute(context));
         assertTrue(failure.getMessage().contains("is left behind"));
+        assertLeftBehindWarnings();
     }
 
     @Test
@@ -215,6 +219,36 @@ class ExecutorTest {
 
         assertThrows(AcmException.class, () -> executor.execute(context));
         assertNotNull(historyEntry(EXECUTION_ID));
+    }
+
+    @Test
+    void shouldSaveSucceededScriptAsSucceededWhenLockIsLeftBehind() throws Exception {
+        queueIsRunning(false);
+        lockReleaseFails();
+        Executor executor = createExecutor(shutdownSafetyEnabled());
+        ExecutionContext context = createContext(executor, "boolean canRun() { true }\nvoid doRun() { }");
+        context.setNotifications(false);
+
+        assertThrows(AcmException.class, () -> executor.execute(context));
+        assertEquals(
+                ExecutionStatus.SUCCEEDED.name(),
+                historyEntry(EXECUTION_ID).getValueMap().get("status", String.class));
+    }
+
+    @Test
+    void shouldSaveScriptErrorNotReleaseErrorWhenLockIsLeftBehind() throws Exception {
+        queueIsRunning(false);
+        lockReleaseFailsWithError();
+        Executor executor = createExecutor(shutdownSafetyEnabled());
+        ExecutionContext context = createContext(
+                executor,
+                "boolean canRun() { true }\nvoid doRun() { throw new IllegalStateException('script broke') }");
+        context.setNotifications(false);
+
+        assertThrows(AcmException.class, () -> executor.execute(context));
+        ValueMap historyEntry = historyEntry(EXECUTION_ID).getValueMap();
+        assertEquals(ExecutionStatus.FAILED.name(), historyEntry.get("status", String.class));
+        assertTrue(historyEntry.get("error", String.class).contains("script broke"));
     }
 
     @Test
@@ -249,7 +283,7 @@ class ExecutorTest {
     @Test
     void shouldRunAgainWhenOwnLockWasLeftByDeadRun() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
 
         Execution execution = run(createExecutor(shutdownSafetyEnabled()), "void doRun() { }");
 
@@ -280,7 +314,7 @@ class ExecutorTest {
     @Test
     void shouldRunAgainWhenCleaningOutputLeftoversFails() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
         outputChunkExists(ExecutionContext.varPath(EXECUTION_ID) + "/output/chunk9");
         failingDeleteBelow(ExecutionContext.varPath(EXECUTION_ID));
 
@@ -305,13 +339,13 @@ class ExecutorTest {
     @Test
     void shouldAbortWhenAnotherRunHoldsTheLockWhenScriptEnds() throws Exception {
         queueIsRunning(false);
-        duringRun = context -> lockReplacedBy(SCRIPT_LOCK, "2026/11/18/11/40/job_2");
+        duringRun = context -> lockReplacedBy(SCRIPT_LOCK, ANOTHER_RUN_EXECUTION_ID);
 
         Execution execution = run(createExecutor(shutdownSafetyEnabled()), "void doRun() { duringRun.run() }");
 
         assertEquals(ExecutionStatus.ABORTED, execution.getStatus());
         assertTrue(abortedForLostLock(execution));
-        assertEquals("2026/11/18/11/40/job_2", scriptLockNode(SCRIPT_LOCK).get("executionId", String.class));
+        assertEquals(ANOTHER_RUN_EXECUTION_ID, scriptLockNode(SCRIPT_LOCK).get("executionId", String.class));
     }
 
     @Test
@@ -462,13 +496,31 @@ class ExecutorTest {
         Execution execution = assertDoesNotThrow(() -> executor.execute(context));
 
         assertEquals(ExecutionStatus.LOCKED, execution.getStatus());
+        assertFalse(historyEntry(EXECUTION_ID).getValueMap().containsKey("status"));
+    }
+
+    @Test
+    void shouldSaveResultOfRunWhenItsRedeliveredAttemptIsRefusedInDebugMode() throws Exception {
+        queueIsRunning(false);
+        Executor executor = createExecutor(shutdownSafetyEnabled());
+        duringRun = context -> redeliveredAttemptIsRefusedInDebugMode(executor);
+        ExecutionContext firstAttempt =
+                createContext(executor, "boolean canRun() { true }\nvoid doRun() { duringRun.run() }");
+        firstAttempt.setNotifications(false);
+        firstAttempt.setDebug(true);
+
+        executor.execute(firstAttempt);
+
+        assertEquals(
+                ExecutionStatus.SUCCEEDED.name(),
+                historyEntry(EXECUTION_ID).getValueMap().get("status", String.class));
     }
 
     @Test
     void shouldSendNotificationWhenAnotherRunTookTheLock() throws Exception {
         queueIsRunning(false);
         notifierIsConfigured();
-        duringRun = context -> lockReplacedBy(SCRIPT_LOCK, "2026/11/18/11/40/job_2");
+        duringRun = context -> lockReplacedBy(SCRIPT_LOCK, ANOTHER_RUN_EXECUTION_ID);
 
         runWithHistoryAndNotifications(createExecutor(shutdownSafetyEnabled()), "void doRun() { duringRun.run() }");
 
@@ -478,7 +530,7 @@ class ExecutorTest {
     @Test
     void shouldSaveAbortedHistoryWhenAnotherRunTookTheLock() throws Exception {
         queueIsRunning(false);
-        duringRun = context -> lockReplacedBy(SCRIPT_LOCK, "2026/11/18/11/40/job_2");
+        duringRun = context -> lockReplacedBy(SCRIPT_LOCK, ANOTHER_RUN_EXECUTION_ID);
 
         Execution execution =
                 runWithHistory(createExecutor(shutdownSafetyEnabled()), "void doRun() { duringRun.run() }");
@@ -490,7 +542,7 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenOwnLockWasLeftAndShutdownSafetyIsDisabled() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
 
         Execution execution = run("void doRun() { }");
 
@@ -500,7 +552,7 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenOwnLockWasAlreadyReentered() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 2L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 2L, ONE_MINUTE);
 
         Execution execution = run(createExecutor(shutdownSafetyEnabled()), "void doRun() { }");
 
@@ -510,7 +562,7 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenConfiguredAttemptLimitIsReached() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 3L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 3L, ONE_MINUTE);
         Map<String, Object> shutdownSafetyConfig = shutdownSafetyEnabled();
         shutdownSafetyConfig.put("lockAttemptLimit", 3L);
 
@@ -522,7 +574,7 @@ class ExecutorTest {
     @Test
     void shouldRunThirdAttemptWhenAttemptLimitAllowsIt() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 2L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 2L, ONE_MINUTE);
         Map<String, Object> shutdownSafetyConfig = shutdownSafetyEnabled();
         shutdownSafetyConfig.put("lockAttemptLimit", 3L);
 
@@ -534,7 +586,7 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenEarlierRunIsStillAlive() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, 0L);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, 0L);
 
         Execution execution = run(createExecutor(shutdownSafetyEnabled()), "void doRun() { }");
 
@@ -544,7 +596,7 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenLockBelongsToAnotherExecution() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, "2026/11/18/11/40/job_2", 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, ANOTHER_RUN_EXECUTION_ID, 1L, ONE_MINUTE);
 
         Execution execution = run(createExecutor(shutdownSafetyEnabled()), "void doRun() { }");
 
@@ -575,7 +627,7 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenHistoryHasEntryOfThisExecution() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
         historyEntryExists(EXECUTION_ID);
 
         Execution execution = run(createExecutor(shutdownSafetyEnabled()), "void doRun() { }");
@@ -586,7 +638,7 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenScriptIsNotAutomatic() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(MANUAL_SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
+        lockHeldBy(MANUAL_SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
 
         Execution execution = run(createExecutor(shutdownSafetyEnabled()), "void doRun() { }", MANUAL_SCRIPT_ID);
 
@@ -596,7 +648,7 @@ class ExecutorTest {
     @Test
     void shouldDeleteOutputLeftoversWhenRunningAgain() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
         String deadRunOutputChunk = ExecutionContext.varPath(EXECUTION_ID) + "/output/chunk9";
         outputChunkExists(deadRunOutputChunk);
 
@@ -608,7 +660,7 @@ class ExecutorTest {
     @Test
     void shouldKeepCountedAttemptWhenReleaseFails() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
         lockReleaseFails();
 
         runLeavingLockBehind(createExecutor(shutdownSafetyEnabled()), "void doRun() { }");
@@ -619,7 +671,7 @@ class ExecutorTest {
     @Test
     void shouldReportFailureAndKeepOwnLockWhenQueueIsGoneAndReleaseFails() throws Exception {
         queueIsGone();
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
         lockReleaseFails();
 
         runLeavingLockBehind(createExecutor(shutdownSafetyEnabled()), "void doRun() { context.checkAborted() }");
@@ -630,16 +682,16 @@ class ExecutorTest {
 
     @Test
     void shouldReportLockedToBootCheckWhileOwnLockExists() throws Exception {
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, ONE_MINUTE);
         Executor executor = createExecutor(shutdownSafetyEnabled());
 
         assertTrue(executor.isLocked(createContext(executor, "void doRun() { }")));
     }
 
     @Test
-    void shouldRunUnderLockLeftByInstanceThatLeftClusterWhenItsJobIsGone() throws Exception {
+    void shouldRunUnderLockLeftByInstanceThatLeftClusterWhenItsJobHasFinished() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
         lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE);
         jobOfDeadRunIs(Job.JobState.GIVEN_UP);
@@ -654,7 +706,7 @@ class ExecutorTest {
     @Test
     void shouldRunAgainWhenOwnerOfOwnLockLeftClusterAlthoughAliveIsFresh() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 1L, 0L);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 1L, 0L);
         lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE);
 
@@ -666,9 +718,10 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenLockOfInstanceThatLeftClusterReachedAttemptLimit() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 2L, 0L);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 2L, 0L);
         lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE);
+        jobOfDeadRunIs(Job.JobState.GIVEN_UP);
 
         Execution execution = run(createExecutor(shutdownSafetyEnabled()), "void doRun() { }");
 
@@ -678,9 +731,10 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenOwnerInstanceIsStillInCluster() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, ONE_MINUTE);
         lockOwnedBy(SCRIPT_LOCK, OWNER_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE, OWNER_INSTANCE);
+        jobOfDeadRunIs(Job.JobState.GIVEN_UP);
 
         Execution execution = run(createExecutor(shutdownSafetyEnabled()), "void doRun() { }");
 
@@ -690,9 +744,10 @@ class ExecutorTest {
     @Test
     void shouldStayLockedWhenOwnerInstanceLeftClusterAndShutdownSafetyIsDisabled() throws Exception {
         queueIsRunning(false);
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, ONE_MINUTE);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, ONE_MINUTE);
         lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE);
+        jobOfDeadRunIs(Job.JobState.GIVEN_UP);
 
         Execution execution = run(createExecutor(Collections.emptyMap()), "void doRun() { }");
 
@@ -702,7 +757,7 @@ class ExecutorTest {
 
     @Test
     void shouldReportLockedToBootCheckWhenJobOfInstanceThatLeftClusterCannotBeFound() throws Exception {
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
         lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE);
         bundleContext.registerService(JobManager.class, jobManager, null);
@@ -713,7 +768,7 @@ class ExecutorTest {
 
     @Test
     void shouldReportLockedToBootCheckForLockOfInstanceThatLeftClusterWithoutJobManager() throws Exception {
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
         lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE);
         Executor executor = createExecutor(shutdownSafetyEnabled());
@@ -723,7 +778,7 @@ class ExecutorTest {
 
     @Test
     void shouldReportLockedToBootCheckWhileJobOfInstanceThatLeftClusterAwaitsDelivery() throws Exception {
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
         lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE);
         jobOfDeadRunIs(Job.JobState.ACTIVE);
@@ -734,7 +789,7 @@ class ExecutorTest {
 
     @Test
     void shouldReportNotLockedToBootCheckWhenJobOfInstanceThatLeftClusterWasCancelled() throws Exception {
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
         lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE);
         jobOfDeadRunIs(Job.JobState.GIVEN_UP);
@@ -745,12 +800,51 @@ class ExecutorTest {
 
     @Test
     void shouldReportLockedToBootCheckWhenLockOfInstanceThatLeftClusterReachedAttemptLimit() throws Exception {
-        lockLeftBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 2L, 0L);
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 2L, 0L);
         lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
         clusterWithInstances(LOCAL_INSTANCE);
+        jobOfDeadRunIs(Job.JobState.GIVEN_UP);
         Executor executor = createExecutor(shutdownSafetyEnabled());
 
         assertTrue(executor.isLocked(createContext(executor, "void doRun() { }")));
+    }
+
+    @Test
+    void shouldReportLockedToBootCheckForLockOfInstanceThatLeftClusterWhenShutdownSafetyIsDisabled() throws Exception {
+        lockHeldBy(SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
+        lockOwnedBy(SCRIPT_LOCK, GONE_INSTANCE);
+        clusterWithInstances(LOCAL_INSTANCE);
+        jobOfDeadRunIs(Job.JobState.GIVEN_UP);
+        Executor executor = createExecutor(Collections.emptyMap());
+
+        assertTrue(executor.isLocked(createContext(executor, "void doRun() { }")));
+    }
+
+    @Test
+    void shouldReportLockedToBootCheckForLockOfInstanceThatLeftClusterWhenScriptIsManual() throws Exception {
+        lockHeldBy(MANUAL_SCRIPT_LOCK, EXECUTION_ID_OF_DEAD_RUN, 1L, 0L);
+        lockOwnedBy(MANUAL_SCRIPT_LOCK, GONE_INSTANCE);
+        clusterWithInstances(LOCAL_INSTANCE);
+        jobOfDeadRunIs(Job.JobState.GIVEN_UP);
+        Executor executor = createExecutor(shutdownSafetyEnabled());
+
+        assertTrue(executor.isLocked(createContext(executor, "void doRun() { }", MANUAL_SCRIPT_ID)));
+    }
+
+    @Test
+    void shouldRunHealthCheckWithoutTouchingScriptLockWhenShutdownSafetyIsEnabled() throws Exception {
+        queueIsRunning(false);
+        lockHeldBy(SCRIPT_LOCK, ANOTHER_RUN_EXECUTION_ID, 1L, 0L);
+        Executor executor = createExecutor(shutdownSafetyEnabled());
+        ExecutionContext healthCheck = createContext(
+                executor, ExecutionId.HEALTH_CHECK, "boolean canRun() { true }\nvoid doRun() { }", SCRIPT_ID);
+        healthCheck.setHistory(false);
+        healthCheck.setNotifications(false);
+
+        Execution execution = executor.execute(healthCheck);
+
+        assertEquals(ExecutionStatus.SUCCEEDED, execution.getStatus());
+        assertEquals(ANOTHER_RUN_EXECUTION_ID, scriptLockNode(SCRIPT_LOCK).get("executionId", String.class));
     }
 
     @Test
@@ -809,7 +903,7 @@ class ExecutorTest {
             ResourceResolver resolver = repository.getServiceResourceResolver(Collections.emptyMap());
             resolver.delete(resolver.getResource(Locker.ROOT + "/" + SCRIPT_LOCK));
             resolver.commit();
-            lockLeftBy(SCRIPT_LOCK, EXECUTION_ID, 2L, 0L);
+            lockHeldBy(SCRIPT_LOCK, EXECUTION_ID, 2L, 0L);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
@@ -840,6 +934,31 @@ class ExecutorTest {
         return StringUtils.contains(execution.getError(), ExecutionContext.LOCK_LOST_MESSAGE);
     }
 
+    /** The two lines that tell operators why the Sling job of a finished run is reported as failed. */
+    private void assertLeftBehindWarnings() {
+        List<String> releaseWarnings = warnLines(OwnedRunLock.class, "Execution lock of");
+        assertEquals(1, releaseWarnings.size());
+        assertTrue(releaseWarnings
+                .get(0)
+                .startsWith(
+                        String.format("Execution lock of '%s' cannot be released by '%s': ", SCRIPT_ID, EXECUTION_ID)));
+        assertEquals(
+                Collections.singletonList(String.format(
+                        "Execution lock of '%s' is left behind by '%s', reporting the job as failed",
+                        SCRIPT_ID, EXECUTION_ID)),
+                warnLines(Executor.class, "Execution lock of"));
+    }
+
+    private List<String> warnLines(Class<?> loggerClass, String prefix) {
+        return TestLoggerFactory.getTestLogger(loggerClass).getLoggingEvents().stream()
+                .filter(event -> event.getLevel() == Level.WARN)
+                .map(event -> MessageFormatter.arrayFormat(
+                                event.getMessage(), event.getArguments().toArray())
+                        .getMessage())
+                .filter(message -> message.startsWith(prefix))
+                .collect(Collectors.toList());
+    }
+
     private List<String> notReportedAuditLines() {
         return TestLoggerFactory.getTestLogger(ExecutionAudit.LOGGER_NAME).getLoggingEvents().stream()
                 .filter(event -> event.getLevel() == Level.INFO)
@@ -866,11 +985,16 @@ class ExecutorTest {
     }
 
     private ExecutionContext createContext(Executor executor, String content, String scriptId) throws Exception {
+        return createContext(executor, EXECUTION_ID, content, scriptId);
+    }
+
+    private ExecutionContext createContext(Executor executor, String executionId, String content, String scriptId)
+            throws Exception {
         ResourceResolver resolver = scriptResolver();
         ResourceUtil.getOrCreateResource(
                 resolver, ScriptType.EXTENSION.root(), "nt:unstructured", "nt:unstructured", true);
         ExecutionContext context = executor.createContext(
-                EXECUTION_ID,
+                executionId,
                 "acm-content-service",
                 ExecutionMode.RUN,
                 executable(content, scriptId),
@@ -900,9 +1024,23 @@ class ExecutorTest {
         resolver.commit();
     }
 
+    /** Sling delivers the same job again while its first attempt still runs, so the new attempt is refused. */
+    private void redeliveredAttemptIsRefusedInDebugMode(Executor executor) {
+        try {
+            ExecutionContext redeliveredAttempt =
+                    createContext(executor, "boolean canRun() { true }\nvoid doRun() { }");
+            redeliveredAttempt.setNotifications(false);
+            redeliveredAttempt.setDebug(true);
+            assertEquals(
+                    ExecutionStatus.LOCKED, executor.execute(redeliveredAttempt).getStatus());
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     /** Another run took the lock and the heartbeat noticed it. */
     private void lockLostToAnotherRun(ExecutionContext context) {
-        lockReplacedBy(SCRIPT_LOCK, "2026/11/18/11/40/job_2");
+        lockReplacedBy(SCRIPT_LOCK, ANOTHER_RUN_EXECUTION_ID);
         context.stopForLostLock();
     }
 
@@ -1007,8 +1145,8 @@ class ExecutorTest {
         return shutdownSafetyConfig;
     }
 
-    /** Lock node left by a dead run of the given execution, with its last sign of life some time ago. */
-    private void lockLeftBy(String lockName, String executionId, long attempt, long aliveMillisAgo) throws Exception {
+    /** Lock node of the given execution, with its last sign of life the given time ago. */
+    private void lockHeldBy(String lockName, String executionId, long attempt, long aliveMillisAgo) throws Exception {
         Calendar lockedAt = Calendar.getInstance();
         lockedAt.add(Calendar.MINUTE, -5);
         Calendar lockedUntil = Calendar.getInstance();
@@ -1093,7 +1231,7 @@ class ExecutorTest {
             ResourceResolver resolver = repository.getServiceResourceResolver(Collections.emptyMap());
             resolver.delete(resolver.getResource(Locker.ROOT + "/" + lockName));
             resolver.commit();
-            lockLeftBy(lockName, executionId, 1L, 0L);
+            lockHeldBy(lockName, executionId, 1L, 0L);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

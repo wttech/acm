@@ -257,7 +257,7 @@ public class Executor implements EventListener {
                 // the decision is read from the repository, which scripts can write, so leave a trace
                 ExecutionAudit.info("Code run not reported, its later attempt reports the result", context, execution);
             } else {
-                if (!runLock.isResultSavedBefore()) {
+                if (!runLock.isRefusedByOwnEarlierRun()) {
                     handleHistory(execution);
                 }
                 handleNotifications(execution);

@@ -114,6 +114,34 @@ class ShutdownSafetyTest {
     }
 
     @Test
+    void shouldBootThirtySecondsAfterInstanceLeftByDefault() {
+        ShutdownSafety shutdownSafety = activate(Collections.emptyMap());
+
+        assertEquals(30_000L, shutdownSafety.getInstanceLeftBootDelay());
+    }
+
+    @Test
+    void shouldUseConfiguredInstanceLeftBootDelay() {
+        ShutdownSafety shutdownSafety = activate(Collections.singletonMap("instanceLeftBootDelay", 45_000L));
+
+        assertEquals(45_000L, shutdownSafety.getInstanceLeftBootDelay());
+    }
+
+    @Test
+    void shouldRaiseNegativeInstanceLeftBootDelayToZero() {
+        ShutdownSafety shutdownSafety = activate(Collections.singletonMap("instanceLeftBootDelay", -1L));
+
+        assertEquals(0L, shutdownSafety.getInstanceLeftBootDelay());
+    }
+
+    @Test
+    void shouldLowerTooLongInstanceLeftBootDelayToTwoMinutes() {
+        ShutdownSafety shutdownSafety = activate(Collections.singletonMap("instanceLeftBootDelay", Long.MAX_VALUE));
+
+        assertEquals(120_000L, shutdownSafety.getInstanceLeftBootDelay());
+    }
+
+    @Test
     void shouldAllowThreeAttemptsByDefault() {
         ShutdownSafety shutdownSafety = activate(Collections.emptyMap());
 

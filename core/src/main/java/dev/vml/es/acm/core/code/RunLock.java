@@ -36,8 +36,8 @@ interface RunLock {
         return false;
     }
 
-    /** True when the run did not start because an earlier attempt of the same execution already saved its result. */
-    default boolean isResultSavedBefore() {
+    /** True when an earlier attempt of the same execution refused the run, so the shared history entry is not this run's. */
+    default boolean isRefusedByOwnEarlierRun() {
         return false;
     }
 

@@ -745,9 +745,9 @@ The effective timeout is resolved by precedence: value set in the script's `desc
 
 When enabled:
 
-- **Lock** — an automatic script gets a lock that knows its run and its instance. When that instance is killed, the unfinished script runs again under its own lock instead of waiting for the lock timeout. When the instance stops while the script runs, another instance takes the lock over. `lockAttemptLimit` (default 3) limits how many times a script may start under the same lock, and `lockAliveTimeout` (default 30 seconds) is how long a run may stay silent before it counts as dead. A run on another instance that is still in the cluster never counts as dead.
-- **Boot after an instance left** — when another instance leaves the cluster, the leader boots automatic scripts again, so a script stopped by the shutdown runs again without waiting for the next deployment. This boot starts 30 seconds later (or after the scheduler's boot delay when that is longer), once Sling has moved the queued jobs of the instance that left.
-- **Boot waits on a stopping instance** — a boot waits while an AEM health check tagged with one of `healthCheckTags` (default `systemhealth`) is `CRITICAL`, and while the file `shutdownMarkerFile` exists. AEM as a Cloud Service turns `systemhealth` `CRITICAL` on a stopping pod and creates `/var/run/aem/shutdown` shortly before (the file is not documented by Adobe). Empty values turn these waits off.
+- **Lock** — an automatic script gets a lock that knows its run and its instance. When that instance is killed, the unfinished script runs again under its own lock instead of waiting for the lock timeout. When a stopping instance cannot release the lock, another instance takes it over once that instance has left the cluster. `lockAttemptLimit` (default 3) limits how many times a script may start under the same lock, and `lockAliveTimeout` (default 30 seconds) is how long a run may stay silent before it counts as dead; a running script refreshes its lock six times per timeout (every 5 seconds by default). A run on another instance that is still in the cluster never counts as dead. When a run outlives the lock timeout and another run of the same script takes over the expired lock, the older run is told to stop and ends `ABORTED`, so set the lock timeout above the longest run. Lock and history nodes under `/var/acm` decide whether a run is repeated or reported, so keep write access to `/var/acm` limited to administrators.
+- **Boot after an instance left** — when another instance leaves the cluster, the leader boots automatic scripts again, so a script stopped by the shutdown runs again without waiting for the next deployment. This boot waits `instanceLeftBootDelay` (default 30 seconds, at most 2 minutes, or the scheduler's boot delay when that is longer), so Sling has moved the queued jobs of the instance that left first.
+- **Boot waits on a stopping instance** — a boot waits while an AEM health check tagged with one of `healthCheckTags` (default `systemhealth`) is `CRITICAL`, and while the file `shutdownMarkerFile` (off by default) exists. AEM as a Cloud Service turns `systemhealth` `CRITICAL` on a stopping pod and creates `/var/run/aem/shutdown` shortly before (the file is not documented by Adobe). Empty values turn these waits off. The health check wait has no effect where the Felix Health Check API is missing (classic AEM 6.5). While waiting, the boot keeps the existing cron schedules instead of removing them first, so they still run when the instance never gets healthy.
 
 Example file `dev.vml.es.acm.core.instance.ShutdownSafety.cfg.json` for AEM as a Cloud Service:
 
@@ -757,7 +757,8 @@ Example file `dev.vml.es.acm.core.instance.ShutdownSafety.cfg.json` for AEM as a
   "healthCheckTags": ["systemhealth"],
   "shutdownMarkerFile": "/var/run/aem/shutdown",
   "lockAliveTimeout": 30000,
-  "lockAttemptLimit": 3
+  "lockAttemptLimit": 3,
+  "instanceLeftBootDelay": 30000
 }
 ```
 

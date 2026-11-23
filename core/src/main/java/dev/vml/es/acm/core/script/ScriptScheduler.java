@@ -79,12 +79,6 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private static final Logger LOG = LoggerFactory.getLogger(ScriptScheduler.class);
 
-    /**
-     * Sling moves the queued jobs of an instance that left about 10 seconds after the topology change.
-     * A boot at the same moment cannot see them in the queue yet and would queue the same scripts again.
-     */
-    private static final long INSTANCE_LEFT_BOOT_DELAY_MILLIS = 30_000L;
-
     public static final String JOB_TOPIC = "dev/vml/es/acm/ScriptScheduler";
 
     public static final String JOB_PROP_TYPE = "type";
@@ -172,6 +166,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     private volatile TaggedHealthChecks taggedHealthChecks;
 
     private volatile boolean taggedHealthChecksMissingLogged;
+
+    private boolean shutdownMarkerUncheckableLogged;
 
     private Config config;
 
@@ -288,7 +284,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     private void bootWhenInstanceLeft() {
         LOG.info("Automatic scripts booting on instance left - job scheduling");
         unscheduleBoot();
-        scheduleBoot(Math.max(config.bootDelay(), INSTANCE_LEFT_BOOT_DELAY_MILLIS));
+        scheduleBoot(Math.max(config.bootDelay(), shutdownSafety.getInstanceLeftBootDelay()));
         LOG.info("Automatic scripts booting on instance left - job scheduled");
     }
 
@@ -348,9 +344,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     private void bootJob() {
         LOG.info("Automatic scripts booting - job started");
         boolean shutdownSafe = shutdownSafety.isEnabled();
-        boolean keepCronUntilHealthy = shutdownSafe;
-        boolean stopWhenDeactivated = shutdownSafe;
-        if (!keepCronUntilHealthy) {
+        shutdownMarkerUncheckableLogged = false;
+        if (!shutdownSafe) {
             unscheduleScripts();
         }
         if (awaitInstanceHealthy(
@@ -358,8 +353,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
                 this::checkBootStatus,
                 config.healthCheckRetryCountBoot(),
                 config.healthCheckRetryInterval(),
-                stopWhenDeactivated)) {
-            if (keepCronUntilHealthy) {
+                shutdownSafe)) {
+            if (shutdownSafe) {
                 unscheduleScripts();
             }
             queueAndScheduleScripts();
@@ -553,7 +548,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, userId, new InputValues()));
     }
 
-    /** A pod that is shutting down turns its AEM health checks CRITICAL, so it starts no automatic scripts. */
+    /** The platform creates this file on a pod that is about to stop, before its health checks turn CRITICAL. */
     private HealthIssue shutdownMarkerExists() {
         return new HealthIssue(
                 HealthIssueSeverity.CRITICAL,
@@ -567,7 +562,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         if (shutdownMarker == ShutdownMarkerFile.State.EXISTS) {
             return new HealthStatus(Collections.singletonList(shutdownMarkerExists()), false);
         }
-        if (shutdownMarker == ShutdownMarkerFile.State.UNKNOWN) {
+        if (shutdownMarker == ShutdownMarkerFile.State.UNKNOWN && !shutdownMarkerUncheckableLogged) {
+            shutdownMarkerUncheckableLogged = true;
             LOG.warn("Shutdown marker file cannot be checked: {}", shutdownSafety.getShutdownMarkerFile());
         }
         HealthStatus status = healthChecker.checkStatus();

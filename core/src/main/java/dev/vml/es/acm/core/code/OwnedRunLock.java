@@ -30,7 +30,7 @@ class OwnedRunLock implements RunLock {
 
     private boolean entered;
 
-    private boolean resultSavedBefore;
+    private boolean refusedByOwnEarlierRun;
 
     private boolean leftBehind;
 
@@ -64,11 +64,11 @@ class OwnedRunLock implements RunLock {
             case OWN_LEFT_BY_DEAD_RUN:
                 return runAgainUnderOwnLock();
             case OWN_RUN_STILL_ALIVE:
-                logLockedByOwnEarlierRun("earlier run still alive");
+                refuseByOwnEarlierRun("earlier run still alive");
                 return false;
             case OWN_ATTEMPT_LIMIT_REACHED:
             default:
-                logLockedByOwnEarlierRun(String.format("attempt limit reached (limit %d)", lock.getAttemptLimit()));
+                refuseByOwnEarlierRun(String.format("attempt limit reached (limit %d)", lock.getAttemptLimit()));
                 return false;
         }
     }
@@ -96,9 +96,14 @@ class OwnedRunLock implements RunLock {
         boolean released;
         try {
             released = ResolverUtils.queryContentResolver(resolverFactory, null, lock::release);
-        } catch (Throwable e) { // an error must not let the Sling job end as succeeded
+        } catch (Throwable e) { // the run keeps its own result; Executor reports the left lock to Sling
             leftBehind = true;
-            throw e;
+            LOG.warn(
+                    "Execution lock of '{}' cannot be released by '{}': {}",
+                    context.getExecutable().getId(),
+                    context.getId(),
+                    e.toString());
+            return;
         }
         if (!released) {
             LOG.warn(
@@ -120,8 +125,8 @@ class OwnedRunLock implements RunLock {
     }
 
     @Override
-    public boolean isResultSavedBefore() {
-        return resultSavedBefore;
+    public boolean isRefusedByOwnEarlierRun() {
+        return refusedByOwnEarlierRun;
     }
 
     private boolean createLock() {
@@ -176,8 +181,7 @@ class OwnedRunLock implements RunLock {
         if (!isResultSaved()) {
             return false;
         }
-        resultSavedBefore = true;
-        logLockedByOwnEarlierRun("earlier run already saved a result");
+        refuseByOwnEarlierRun("earlier run already saved a result");
         return true;
     }
 
@@ -197,7 +201,8 @@ class OwnedRunLock implements RunLock {
         }
     }
 
-    private void logLockedByOwnEarlierRun(String reason) {
+    private void refuseByOwnEarlierRun(String reason) {
+        refusedByOwnEarlierRun = true;
         LOG.warn(
                 "Execution locked '{}' by its own earlier run of '{}': {}",
                 context.getId(),

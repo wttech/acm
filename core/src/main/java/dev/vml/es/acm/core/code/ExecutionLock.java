@@ -32,6 +32,9 @@ class ExecutionLock {
 
     private static final String SLING_ID_PROP = "slingId";
 
+    /** Several late refreshes must not make a live run look dead. */
+    private static final long ALIVE_REFRESHES_PER_TIMEOUT = 6L;
+
     enum State {
         FREE,
         OTHER_RUN,
@@ -73,7 +76,7 @@ class ExecutionLock {
     }
 
     long getAliveIntervalMillis() {
-        return aliveTimeoutMillis / 6;
+        return aliveTimeoutMillis / ALIVE_REFRESHES_PER_TIMEOUT;
     }
 
     /** Stays true once seen, also after the later attempt released the lock. */
@@ -203,6 +206,7 @@ class ExecutionLock {
 
     boolean signalAlive(ResourceResolver resolver) {
         Resource lock = resolver.getResource(path);
+        noteTakeoverByLaterAttempt(lock);
         if (!isHeld(lock)) {
             return false;
         }
@@ -220,6 +224,7 @@ class ExecutionLock {
         PersistenceException lastError = null;
         for (int retry = 0; retry < Locker.RETRY_COUNT; retry++) {
             Resource lock = resolver.getResource(path);
+            noteTakeoverByLaterAttempt(lock);
             if (!isHeld(lock)) {
                 return false;
             }
@@ -240,15 +245,22 @@ class ExecutionLock {
         return isHeld(resolver.getResource(path));
     }
 
+    /** Both attempts of a job have the same execution ID. The attempt number tells them apart. */
     private boolean isHeld(Resource lock) {
         if (lock == null) {
             return false;
         }
-        noteTakeoverByLaterAttempt(lock.getValueMap());
-        return isHeld(lock.getValueMap());
+        ValueMap props = lock.getValueMap();
+        return attempt > 0
+                && StringUtils.equals(executionId, props.get(EXECUTION_ID_PROP, String.class))
+                && attempt == props.get(ATTEMPT_PROP, 0L);
     }
 
-    private void noteTakeoverByLaterAttempt(ValueMap props) {
+    private void noteTakeoverByLaterAttempt(Resource lock) {
+        if (lock == null) {
+            return;
+        }
+        ValueMap props = lock.getValueMap();
         if (attempt > 0
                 && StringUtils.equals(executionId, props.get(EXECUTION_ID_PROP, String.class))
                 && props.get(ATTEMPT_PROP, 0L) > attempt) {
@@ -293,13 +305,6 @@ class ExecutionLock {
     private void discardChanges(ResourceResolver resolver) {
         resolver.revert();
         resolver.refresh();
-    }
-
-    /** Both attempts of a job have the same execution ID. The attempt number tells them apart. */
-    private boolean isHeld(ValueMap props) {
-        return attempt > 0
-                && StringUtils.equals(executionId, props.get(EXECUTION_ID_PROP, String.class))
-                && attempt == props.get(ATTEMPT_PROP, 0L);
     }
 
     /** Same rule as Locker. */

@@ -1,6 +1,7 @@
 package dev.vml.es.acm.core.code;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -72,6 +73,7 @@ class LockHeartbeatTest {
         heartbeat.run();
 
         verify(context).stopForLostLock();
+        assertTrue(lock.isTakenOverByLaterAttempt());
     }
 
     @Test
@@ -104,6 +106,29 @@ class LockHeartbeatTest {
         assertEquals(1, keptAliveFailureWarnings());
     }
 
+    @Test
+    void shouldNotWarnWhenBeatFailsAfterReleaseStarted() throws Exception {
+        lockHeld();
+        LockHeartbeat[] heartbeat = new LockHeartbeat[1];
+        heartbeat[0] = new LockHeartbeat(stoppingAndFailingDuringBeat(heartbeat), lock, context);
+
+        heartbeat[0].run();
+
+        assertEquals(0, keptAliveFailureWarnings());
+    }
+
+    @Test
+    void shouldWarnAgainWhenAliveTimeFailsAfterRecovery() throws Exception {
+        lockHeld();
+        LockHeartbeat heartbeat = new LockHeartbeat(repositoryFailingEveryOtherBeat(), lock, context);
+
+        heartbeat.run();
+        heartbeat.run();
+        heartbeat.run();
+
+        assertEquals(2, keptAliveFailureWarnings());
+    }
+
     private long keptAliveFailureWarnings() {
         return TestLoggerFactory.getTestLogger(LockHeartbeat.class).getLoggingEvents().stream()
                 .filter(event -> event.getLevel() == Level.WARN)
@@ -134,6 +159,28 @@ class LockHeartbeatTest {
             return repository.getServiceResourceResolver(Collections.emptyMap());
         });
         return releasing;
+    }
+
+    /** The run starts releasing its lock while a beat waits for a repository that is shutting down. */
+    @SuppressWarnings("unchecked")
+    private ResourceResolverFactory stoppingAndFailingDuringBeat(LockHeartbeat[] heartbeat) throws LoginException {
+        ResourceResolverFactory stopping = mock(ResourceResolverFactory.class);
+        when(stopping.getServiceResourceResolver(any(Map.class))).thenAnswer(invocation -> {
+            heartbeat[0].stop();
+            throw new LoginException("Repository stopping");
+        });
+        return stopping;
+    }
+
+    /** The first and third beats cannot reach the repository; the second one can. */
+    @SuppressWarnings("unchecked")
+    private ResourceResolverFactory repositoryFailingEveryOtherBeat() throws LoginException {
+        ResourceResolverFactory flaky = mock(ResourceResolverFactory.class);
+        when(flaky.getServiceResourceResolver(any(Map.class)))
+                .thenThrow(new LoginException("Repository busy"))
+                .thenAnswer(invocation -> repository.getServiceResourceResolver(Collections.emptyMap()))
+                .thenThrow(new LoginException("Repository busy"));
+        return flaky;
     }
 
     @SuppressWarnings("unchecked")

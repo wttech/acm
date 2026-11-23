@@ -57,7 +57,7 @@ class LockHeartbeat implements Runnable {
                 stopForLostLock();
             }
         } catch (Throwable e) { // an uncaught error would cancel all later beats
-            if (!failing) {
+            if (!failing && !stopped) {
                 LOG.warn("Execution lock of '{}' cannot be kept alive: {}", context.getId(), e.toString());
             }
             failing = true;

@@ -466,8 +466,10 @@ class ScriptSchedulerTest {
 
         scheduler.handleTopologyEvent(instanceChanged(
                 view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+        long handledAt = System.currentTimeMillis();
 
         assertTrue(scheduledBootTime(newBootSchedule) >= instanceLeftAt + 30_000L);
+        assertTrue(scheduledBootTime(newBootSchedule) <= handledAt + 30_000L);
     }
 
     @Test
@@ -479,12 +481,32 @@ class ScriptSchedulerTest {
 
         scheduler.handleTopologyEvent(instanceChanged(
                 view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+        long handledAt = System.currentTimeMillis();
 
         assertTrue(scheduledBootTime(newBootSchedule) >= instanceLeftAt + 60_000L);
+        assertTrue(scheduledBootTime(newBootSchedule) <= handledAt + 60_000L);
     }
 
     @Test
-    void shouldScheduleBootOnDemandAfterBootDelay() throws Exception {
+    void shouldScheduleBootAfterConfiguredInstanceLeftBootDelay() throws Exception {
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        Map<String, Object> enabledWithLongerDelay = new HashMap<>();
+        enabledWithLongerDelay.put(ENABLED, true);
+        enabledWithLongerDelay.put("instanceLeftBootDelay", 45_000L);
+        MockOsgi.modified(shutdownSafety, bundleContext, enabledWithLongerDelay);
+        JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
+        long instanceLeftAt = System.currentTimeMillis();
+
+        scheduler.handleTopologyEvent(instanceChanged(
+                view(LOCAL_INSTANCE, true, LOCAL_INSTANCE, LEFT_INSTANCE), view(LOCAL_INSTANCE, true, LOCAL_INSTANCE)));
+        long handledAt = System.currentTimeMillis();
+
+        assertTrue(scheduledBootTime(newBootSchedule) >= instanceLeftAt + 45_000L);
+        assertTrue(scheduledBootTime(newBootSchedule) <= handledAt + 45_000L);
+    }
+
+    @Test
+    void shouldNotApplyInstanceLeftDelayToBootOnDemand() throws Exception {
         ScriptScheduler scheduler = createScheduler(ENABLED);
         JobBuilder.ScheduleBuilder newBootSchedule = newBootScheduleAfterActivation();
         long requestedAt = System.currentTimeMillis();
@@ -698,7 +720,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldNotQueueBootScriptsWhileShutdownMarkerFileExists() throws Exception {
         Path marker = existingShutdownMarkerFile();
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(marker.toString());
         instanceIsHealthy();
         bootScriptCanRun();
@@ -710,7 +732,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldQueueBootScriptsWhenShutdownMarkerFileIsMissing() throws Exception {
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(tempDir.resolve("shutdown").toString());
         instanceIsHealthy();
         bootScriptCanRun();
@@ -722,7 +744,7 @@ class ScriptSchedulerTest {
 
     @Test
     void shouldQueueBootScriptsWhenShutdownMarkerFolderIsMissing() throws Exception {
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(tempDir.resolve("run/aem/shutdown").toString());
         instanceIsHealthy();
         bootScriptCanRun();
@@ -765,7 +787,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldNotCheckInstanceHealthWhileShutdownMarkerFileExists() throws Exception {
         Path marker = existingShutdownMarkerFile();
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(marker.toString());
 
         scheduler.process(bootJob());
@@ -776,7 +798,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldQueueCronScriptWhileShutdownMarkerFileExists() throws Exception {
         Path marker = existingShutdownMarkerFile();
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(marker.toString());
         instanceIsHealthy();
         bootScriptCanRun();
@@ -789,7 +811,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldQueueBootScriptsAgainOnceShutdownMarkerFileIsRemoved() throws Exception {
         Path marker = existingShutdownMarkerFile();
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(marker.toString());
         instanceIsHealthy();
         bootScriptCanRun();
@@ -804,7 +826,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldKeepCronSchedulesWhileShutdownMarkerFileExists() throws Exception {
         Path marker = existingShutdownMarkerFile();
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(marker.toString());
 
         scheduler.process(bootJob());
@@ -815,7 +837,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldNameShutdownMarkerFileWhenBootIsPaused() throws Exception {
         Path marker = existingShutdownMarkerFile();
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(marker.toString());
 
         scheduler.process(bootJob());
@@ -828,7 +850,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldNotQueueBootScriptWhenShutdownMarkerFileAppearsAfterHealthCheck() throws Exception {
         Path marker = tempDir.resolve("shutdown");
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(marker.toString());
         instanceIsHealthy();
         bootScriptCanRun();
@@ -848,7 +870,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldWarnOnceWhenShutdownMarkerFileStopsBootScriptBeforeQueue() throws Exception {
         Path marker = tempDir.resolve("shutdown");
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(marker.toString());
         instanceIsHealthy();
         bootScriptCanRun();
@@ -872,7 +894,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldQueueBootScriptOnNextBootWhenShutdownMarkerFileStoppedItBeforeQueue() throws Exception {
         Path marker = tempDir.resolve("shutdown");
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(marker.toString());
         instanceIsHealthy();
         bootScriptCanRun();
@@ -896,7 +918,7 @@ class ScriptSchedulerTest {
         Assumptions.assumeFalse("root".equals(System.getProperty("user.name")), "root reads every folder");
         Path closedFolder = Files.createDirectory(tempDir.resolve("closed"));
         Path markerInClosedFolder = closedFolder.resolve("shutdown");
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(markerInClosedFolder.toString());
         instanceIsHealthy();
         bootScriptCanRun();
@@ -916,7 +938,7 @@ class ScriptSchedulerTest {
     @Test
     void shouldQueueBootScriptsAndWarnOnceWhenShutdownMarkerFilePathIsInvalid() throws Exception {
         String invalidMarkerPath = "/var/run/aem/shut\u0000down";
-        ScriptScheduler scheduler = createScheduler();
+        ScriptScheduler scheduler = createScheduler(ENABLED);
         watchShutdownMarkerFile(invalidMarkerPath);
         instanceIsHealthy();
         bootScriptCanRun();
@@ -926,6 +948,27 @@ class ScriptSchedulerTest {
         verify(executionQueue).submit(any(), any());
         assertEquals(
                 Collections.singletonList("Shutdown marker file cannot be checked: " + invalidMarkerPath),
+                warnLogs("Shutdown marker file"));
+    }
+
+    @Test
+    void shouldWarnOncePerBootWhileShutdownMarkerFileCannotBeChecked() throws Exception {
+        String invalidMarkerPath = "/var/run/aem/shut\u0000down";
+        ScriptScheduler scheduler = createScheduler(ENABLED);
+        MockOsgi.modified(scheduler, bundleContext, bootHealthWait(5L));
+        watchShutdownMarkerFile(invalidMarkerPath);
+        when(healthChecker.checkStatus())
+                .thenReturn(new HealthStatus(Collections.emptyList(), false))
+                .thenReturn(new HealthStatus(Collections.emptyList(), false))
+                .thenReturn(new HealthStatus(Collections.emptyList(), true));
+
+        scheduler.process(bootJob());
+        scheduler.process(bootJob());
+
+        assertEquals(
+                Arrays.asList(
+                        "Shutdown marker file cannot be checked: " + invalidMarkerPath,
+                        "Shutdown marker file cannot be checked: " + invalidMarkerPath),
                 warnLogs("Shutdown marker file"));
     }
 

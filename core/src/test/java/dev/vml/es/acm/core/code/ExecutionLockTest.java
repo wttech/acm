@@ -124,13 +124,42 @@ class ExecutionLockTest {
     }
 
     @Test
+    void shouldNoteTakeoverByLaterAttemptWhenReleasing() throws Exception {
+        ExecutionLock pausedFirstAttempt =
+                new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
+        pausedFirstAttempt.create(resolver, LOCK_TIMEOUT);
+        aliveTimeMovedBack(ONE_MINUTE);
+        new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob)
+                .reenter(resolver, LOCK_TIMEOUT);
+
+        assertFalse(pausedFirstAttempt.release(resolver));
+
+        assertTrue(pausedFirstAttempt.isTakenOverByLaterAttempt());
+    }
+
+    @Test
+    void shouldOnlyReadLockWhenCheckingWhetherItIsHeld() throws Exception {
+        ExecutionLock pausedFirstAttempt =
+                new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob);
+        pausedFirstAttempt.create(resolver, LOCK_TIMEOUT);
+        aliveTimeMovedBack(ONE_MINUTE);
+        new ExecutionLock(LOCK_NAME, OWN_EXECUTION, ALIVE_TIMEOUT, ATTEMPT_LIMIT, presence, ownerJob)
+                .reenter(resolver, LOCK_TIMEOUT);
+
+        assertFalse(pausedFirstAttempt.isHeld(resolver));
+
+        assertFalse(pausedFirstAttempt.isTakenOverByLaterAttempt());
+    }
+
+    @Test
     void shouldNotNoteTakeoverWhenAnotherExecutionHoldsLock() throws Exception {
         ownLock.create(resolver, LOCK_TIMEOUT);
         lockNodeChange().put("executionId", OTHER_EXECUTION);
         lockNodeChange().put("attempt", 2L);
         resolver.commit();
 
-        assertFalse(ownLock.isHeld(resolver));
+        assertFalse(ownLock.signalAlive(resolver));
+        assertFalse(ownLock.release(resolver));
         assertFalse(ownLock.isTakenOverByLaterAttempt());
     }
 
@@ -297,6 +326,15 @@ class ExecutionLockTest {
         assertEquals(ExecutionLock.State.OWN_ATTEMPT_LIMIT_REACHED, ownLock.read(resolver));
         assertTrue(
                 lockNode().get("alive", Calendar.class).getTimeInMillis() < System.currentTimeMillis() - ALIVE_TIMEOUT);
+    }
+
+    @Test
+    void shouldRefuseOwnLockAtAttemptLimitAlthoughOwnerLeftCluster() throws Exception {
+        lockWrittenBy(OWN_EXECUTION, ATTEMPT_LIMIT, 0L);
+        lockOwnedBy(GONE_INSTANCE);
+        when(presence.hasLeftCluster(GONE_INSTANCE)).thenReturn(true);
+
+        assertEquals(ExecutionLock.State.OWN_ATTEMPT_LIMIT_REACHED, ownLock.read(resolver));
     }
 
     @Test
@@ -566,6 +604,7 @@ class ExecutionLockTest {
     void shouldReadOwnLockAsStillAliveWhenOwnerIsInClusterAndAliveIsFresh() throws Exception {
         lockWrittenBy(OWN_EXECUTION, 1L, 0L);
         lockOwnedBy(OWNER_INSTANCE);
+        when(presence.isOtherInstanceInCluster(OWNER_INSTANCE)).thenReturn(true);
 
         assertEquals(ExecutionLock.State.OWN_RUN_STILL_ALIVE, ownLock.read(resolver));
     }
@@ -641,7 +680,6 @@ class ExecutionLockTest {
                 true);
     }
 
-    /** The same repository, but the first commits fail like during a write conflict. */
     /** Another run deletes the lock right after this run checked its state. */
     private ResourceResolver resolverLosingLockAfterCheck() {
         ResourceResolver losing = spy(resolver);
@@ -652,6 +690,7 @@ class ExecutionLockTest {
         return losing;
     }
 
+    /** The same repository, but the first commits fail like during a write conflict. */
     private ResourceResolver resolverFailingCommits(int failingCommits) throws PersistenceException {
         ResourceResolver failing = spy(resolver);
         AtomicInteger commits = new AtomicInteger();
