@@ -46,6 +46,10 @@ public class ExecutionContext implements AutoCloseable {
 
     private Duration lockTimeout = null;
 
+    static final String LOCK_LOST_MESSAGE = "Execution aborted, its execution lock is held by another run";
+
+    private volatile boolean lockLost;
+
     private final Inputs inputs;
 
     private InputValues inputValues;
@@ -184,14 +188,26 @@ public class ExecutionContext implements AutoCloseable {
     }
 
     public boolean isAborted() {
-        return getCodeContext()
-                .getOsgiContext()
-                .getService(ExecutionQueue.class)
-                .isStoppingOrStopped(getId());
+        if (getCodeContext().getOsgiContext().getService(ExecutionQueue.class).isStoppingOrStopped(getId())) {
+            return true;
+        }
+        return lockLost;
     }
 
     public void abort() {
+        if (lockLost) {
+            throw new AbortException(LOCK_LOST_MESSAGE);
+        }
         throw new AbortException("Execution aborted gracefully!");
+    }
+
+    /** A script told to stop ends aborted, even if it returns by itself. */
+    void stopForLostLock() {
+        lockLost = true;
+    }
+
+    boolean isLockLost() {
+        return lockLost;
     }
 
     public void checkAborted() throws AbortException {

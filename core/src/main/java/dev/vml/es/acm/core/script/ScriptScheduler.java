@@ -8,13 +8,20 @@ import dev.vml.es.acm.core.event.Event;
 import dev.vml.es.acm.core.event.EventListener;
 import dev.vml.es.acm.core.event.EventType;
 import dev.vml.es.acm.core.instance.HealthChecker;
+import dev.vml.es.acm.core.instance.HealthIssue;
+import dev.vml.es.acm.core.instance.HealthIssueCategory;
+import dev.vml.es.acm.core.instance.HealthIssueSeverity;
 import dev.vml.es.acm.core.instance.HealthStatus;
+import dev.vml.es.acm.core.instance.ShutdownMarkerFile;
+import dev.vml.es.acm.core.instance.ShutdownSafety;
+import dev.vml.es.acm.core.instance.TaggedHealthChecks;
 import dev.vml.es.acm.core.osgi.InstanceInfo;
 import dev.vml.es.acm.core.osgi.InstanceType;
 import dev.vml.es.acm.core.repo.Repo;
 import dev.vml.es.acm.core.util.ChecksumUtils;
 import dev.vml.es.acm.core.util.DateUtils;
 import dev.vml.es.acm.core.util.ResolverUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,13 +30,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
+import org.apache.sling.discovery.ClusterView;
+import org.apache.sling.discovery.InstanceDescription;
+import org.apache.sling.discovery.TopologyEvent;
+import org.apache.sling.discovery.TopologyEventListener;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobBuilder;
 import org.apache.sling.event.jobs.JobManager;
@@ -43,7 +59,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(
-        service = {ScriptScheduler.class, ResourceChangeListener.class, EventListener.class, JobConsumer.class},
+        service = {
+            ScriptScheduler.class,
+            ResourceChangeListener.class,
+            EventListener.class,
+            JobConsumer.class,
+            TopologyEventListener.class
+        },
         immediate = true,
         property = {
             ResourceChangeListener.PATHS + "=glob:" + ScriptRepository.ROOT + "/automatic/**/*.groovy",
@@ -53,7 +75,7 @@ import org.slf4j.LoggerFactory;
             JobConsumer.PROPERTY_TOPICS + "=" + ScriptScheduler.JOB_TOPIC
         })
 @Designate(ocd = ScriptScheduler.Config.class)
-public class ScriptScheduler implements ResourceChangeListener, EventListener, JobConsumer {
+public class ScriptScheduler implements ResourceChangeListener, EventListener, JobConsumer, TopologyEventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScriptScheduler.class);
 
@@ -134,11 +156,28 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     @Reference
     private ExecutionQueue executionQueue;
 
+    @Reference
+    private ShutdownSafety shutdownSafety;
+
+    @Reference(
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            policyOption = ReferencePolicyOption.GREEDY)
+    private volatile TaggedHealthChecks taggedHealthChecks;
+
+    private volatile boolean taggedHealthChecksMissingLogged;
+
+    private boolean shutdownMarkerUncheckableLogged;
+
     private Config config;
+
+    /** Sling discovery may keep calling a deactivated instance after a restart of this bundle. */
+    private volatile boolean active;
 
     @Activate
     protected void activate(Config config) {
         this.config = config;
+        this.active = true;
 
         if (checkInstanceReady()) {
             bootWhenInstanceUp();
@@ -152,6 +191,7 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     @Deactivate
     protected void deactivate() {
+        active = false;
         if (!instanceInfo.isCluster()) {
             unscheduleBoot();
             unscheduleScripts();
@@ -165,6 +205,50 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         if (!changes.isEmpty() && checkInstanceReady()) {
             bootWhenScriptsChanged();
         }
+    }
+
+    @Override
+    public void handleTopologyEvent(TopologyEvent event) {
+        try {
+            if (active && shutdownSafety.isEnabled() && event.getType() == TopologyEvent.Type.TOPOLOGY_CHANGED) {
+                handleInstancesLeft(event);
+            }
+        } catch (RuntimeException e) {
+            // other topology listeners share the delivery thread
+            LOG.warn("Automatic scripts booting on instance left failed: {}", e.toString());
+        }
+    }
+
+    private void handleInstancesLeft(TopologyEvent event) {
+        Set<String> leftInstances = findLeftInstances(event);
+        if (leftInstances.isEmpty()) {
+            return;
+        }
+        if (!event.getNewView().getLocalInstance().isLeader()) {
+            LOG.info("Instances left the cluster: {} - local instance is not leader, nothing to do", leftInstances);
+            return;
+        }
+        if (!checkInstanceReady()) {
+            LOG.info(
+                    "Instances left the cluster: {} - local instance is leader but not ready, nothing to do",
+                    leftInstances);
+            return;
+        }
+        LOG.info("Instances left the cluster: {} - local instance is leader, booting automatic scripts", leftInstances);
+        bootWhenInstanceLeft();
+    }
+
+    private Set<String> findLeftInstances(TopologyEvent event) {
+        Set<String> remaining = slingIds(event.getNewView().getLocalInstance().getClusterView());
+        return slingIds(event.getOldView().getLocalInstance().getClusterView()).stream()
+                .filter(slingId -> !remaining.contains(slingId))
+                .collect(Collectors.toCollection(TreeSet::new));
+    }
+
+    private Set<String> slingIds(ClusterView cluster) {
+        return cluster.getInstances().stream()
+                .map(InstanceDescription::getSlingId)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -197,6 +281,13 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         LOG.info("Automatic scripts booting on script changes - job scheduled");
     }
 
+    private void bootWhenInstanceLeft() {
+        LOG.info("Automatic scripts booting on instance left - job scheduling");
+        unscheduleBoot();
+        scheduleBoot(Math.max(config.bootDelay(), shutdownSafety.getInstanceLeftBootDelay()));
+        LOG.info("Automatic scripts booting on instance left - job scheduled");
+    }
+
     @SuppressWarnings("unchecked")
     private void unscheduleBoot() {
         Collection<ScheduledJobInfo> jobInfos = jobManager.getScheduledJobs(
@@ -207,10 +298,14 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
     }
 
     private void scheduleBoot() {
+        scheduleBoot(config.bootDelay());
+    }
+
+    private void scheduleBoot(long delayMillis) {
         JobBuilder jobBuilder = jobManager.createJob(JOB_TOPIC);
         jobBuilder.properties(Collections.singletonMap(JOB_PROP_TYPE, JobType.BOOT.name()));
         JobBuilder.ScheduleBuilder scheduleBuilder = jobBuilder.schedule();
-        scheduleBuilder.at(new Date(System.currentTimeMillis() + config.bootDelay()));
+        scheduleBuilder.at(new Date(System.currentTimeMillis() + delayMillis));
         scheduleBuilder.add();
     }
 
@@ -248,11 +343,20 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private void bootJob() {
         LOG.info("Automatic scripts booting - job started");
-        unscheduleScripts();
+        boolean shutdownSafe = shutdownSafety.isEnabled();
+        shutdownMarkerUncheckableLogged = false;
+        if (!shutdownSafe) {
+            unscheduleScripts();
+        }
         if (awaitInstanceHealthy(
                 "Automatic scripts queueing and scheduling",
+                this::checkBootStatus,
                 config.healthCheckRetryCountBoot(),
-                config.healthCheckRetryInterval())) {
+                config.healthCheckRetryInterval(),
+                shutdownSafe)) {
+            if (shutdownSafe) {
+                unscheduleScripts();
+            }
             queueAndScheduleScripts();
         }
         LOG.info("Automatic scripts booting - job finished");
@@ -316,15 +420,27 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         String previousChecksum = bootedScripts.get(script.getId());
         if (previousChecksum == null || !StringUtils.equals(previousChecksum, checksum)) {
             if (checkScript(script, resourceResolver)) {
-                queueScript(script);
-                bootedScripts.put(script.getId(), checksum);
-                LOG.info("Boot script '{}' queued", script.getId());
+                queueBootScriptUnlessShuttingDown(script, checksum);
             } else {
                 LOG.info("Boot script '{}' not queued - check failed", script.getId());
             }
         } else {
             LOG.info("Boot script '{}' not queued - checksum unchanged", script.getId());
         }
+    }
+
+    /** The shutdown marker file may appear after the boot passed its health check. */
+    private void queueBootScriptUnlessShuttingDown(Script script, String checksum) {
+        if (shutdownSafety.checkShutdownMarkerFile() == ShutdownMarkerFile.State.EXISTS) {
+            LOG.warn(
+                    "Boot script '{}' not queued - {}",
+                    script.getId(),
+                    shutdownMarkerExists().getIssue());
+            return;
+        }
+        queueScript(script);
+        bootedScripts.put(script.getId(), checksum);
+        LOG.info("Boot script '{}' queued", script.getId());
     }
 
     private void scheduleCronScript(Script script, CronSchedule schedule) {
@@ -356,10 +472,14 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
 
     private void cronJob(String scriptPath) {
         LOG.info("Cron schedule script '{}' - job started", scriptPath);
+        // A waiting cron job keeps waiting, so Sling moves it to a running instance.
+        boolean stopWhenDeactivated = false;
         if (awaitInstanceHealthy(
                 String.format("Cron schedule script '%s' queueing", scriptPath),
+                healthChecker::checkStatus,
                 config.healthCheckRetryCountCron(),
-                config.healthCheckRetryInterval())) {
+                config.healthCheckRetryInterval(),
+                stopWhenDeactivated)) {
             try (ResourceResolver resourceResolver = ResolverUtils.contentResolver(resourceResolverFactory, null)) {
                 ScriptRepository scriptRepository = new ScriptRepository(resourceResolver);
                 Script script = scriptRepository.read(scriptPath).orElse(null);
@@ -428,10 +548,73 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
         executionQueue.submit(script, new ExecutionContextOptions(ExecutionMode.RUN, userId, new InputValues()));
     }
 
-    private boolean awaitInstanceHealthy(String operation, long retryMaxCount, long retryInterval) {
+    /** The platform creates this file on a pod that is about to stop, before its health checks turn CRITICAL. */
+    private HealthIssue shutdownMarkerExists() {
+        return new HealthIssue(
+                HealthIssueSeverity.CRITICAL,
+                HealthIssueCategory.INSTANCE,
+                "Shutdown marker file exists: " + shutdownSafety.getShutdownMarkerFile(),
+                null);
+    }
+
+    private HealthStatus checkBootStatus() {
+        ShutdownMarkerFile.State shutdownMarker = shutdownSafety.checkShutdownMarkerFile();
+        if (shutdownMarker == ShutdownMarkerFile.State.EXISTS) {
+            return new HealthStatus(Collections.singletonList(shutdownMarkerExists()), false);
+        }
+        if (shutdownMarker == ShutdownMarkerFile.State.UNKNOWN && !shutdownMarkerUncheckableLogged) {
+            shutdownMarkerUncheckableLogged = true;
+            LOG.warn("Shutdown marker file cannot be checked: {}", shutdownSafety.getShutdownMarkerFile());
+        }
+        HealthStatus status = healthChecker.checkStatus();
+        String[] tags = shutdownSafety.getHealthCheckTags();
+        if (!shutdownSafety.isEnabled() || ArrayUtils.isEmpty(tags)) {
+            return status;
+        }
+        TaggedHealthChecks checks = taggedHealthChecks;
+        if (checks == null) {
+            if (active && !taggedHealthChecksMissingLogged) {
+                taggedHealthChecksMissingLogged = true;
+                LOG.info("Health check wait on boot has no effect: no health check service (Felix Health Check API)"
+                        + " is available");
+            }
+            return status;
+        }
+        List<HealthIssue> criticalIssues = findCriticalIssues(checks, tags);
+        if (criticalIssues.isEmpty()) {
+            return status;
+        }
+        List<HealthIssue> issues = new ArrayList<>(status.getIssues());
+        issues.addAll(criticalIssues);
+        return new HealthStatus(issues, false);
+    }
+
+    /** Health checks that cannot be read count as unhealthy, like the ACM health checker does. */
+    private List<HealthIssue> findCriticalIssues(TaggedHealthChecks checks, String[] tags) {
+        try {
+            return checks.findCriticalIssues(tags);
+        } catch (RuntimeException e) {
+            return Collections.singletonList(new HealthIssue(
+                    HealthIssueSeverity.CRITICAL,
+                    HealthIssueCategory.INSTANCE,
+                    "Health checks cannot be read",
+                    e.toString()));
+        }
+    }
+
+    private boolean awaitInstanceHealthy(
+            String operation,
+            Supplier<HealthStatus> statusCheck,
+            long retryMaxCount,
+            long retryInterval,
+            boolean stopWhenDeactivated) {
         HealthStatus healthStatus = null;
         long retryCount = 0;
         while (healthStatus == null || !healthStatus.getHealthy()) {
+            if (stopWhenDeactivated && !active) {
+                LOG.info("{} stopped: ACM is stopping", operation);
+                return false;
+            }
             if (retryCount >= retryMaxCount) {
                 LOG.error(
                         "{} aborted due to unhealthy instance state after {} retries: {}",
@@ -440,7 +623,11 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
                         healthStatus);
                 return false;
             }
-            healthStatus = healthChecker.checkStatus();
+            healthStatus = statusCheck.get();
+            if (stopWhenDeactivated && !active) {
+                LOG.info("{} stopped: ACM is stopping", operation);
+                return false;
+            }
             if (healthStatus.getHealthy()) {
                 break;
             } else {
@@ -450,7 +637,8 @@ public class ScriptScheduler implements ResourceChangeListener, EventListener, J
                     retryCount++;
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    LOG.error("{} interrupted!", operation, e);
+                    LOG.warn("{} interrupted while waiting for a healthy instance", operation);
+                    return false;
                 }
             }
         }

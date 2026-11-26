@@ -25,11 +25,11 @@ public class Locker {
 
     private static final String RESOURCE_TYPE = JcrConstants.NT_UNSTRUCTURED;
 
-    private static final String LOCKED_PROP = "locked";
+    public static final String LOCKED_PROP = "locked";
 
-    private static final String LOCKED_UNTIL_PROP = "lockedUntil";
+    public static final String LOCKED_UNTIL_PROP = "lockedUntil";
 
-    private static final int RETRY_COUNT = 5;
+    public static final int RETRY_COUNT = 5;
 
     private final ResourceResolver resolver;
 
@@ -99,9 +99,8 @@ public class Locker {
                 Map<String, Object> props = new HashMap<>();
                 props.put(JcrConstants.JCR_PRIMARYTYPE, RESOURCE_TYPE);
                 props.put(LOCKED_PROP, Calendar.getInstance());
-                if (ttl != null && !ttl.isNegative() && !ttl.isZero()) {
-                    Calendar lockedUntil = Calendar.getInstance();
-                    lockedUntil.setTimeInMillis(lockedUntil.getTimeInMillis() + ttl.toMillis());
+                Calendar lockedUntil = lockedUntil(ttl);
+                if (lockedUntil != null) {
                     props.put(LOCKED_UNTIL_PROP, lockedUntil);
                 }
                 resolver.create(dirResource, nodeName, props);
@@ -123,6 +122,16 @@ public class Locker {
         }
         throw new AcmException(
                 String.format("Cannot create lock '%s' after %d retries!", name, RETRY_COUNT), exceptionLast);
+    }
+
+    /** Returns null when the lock never expires. */
+    public static Calendar lockedUntil(Duration ttl) {
+        if (ttl == null || ttl.isNegative() || ttl.isZero()) {
+            return null;
+        }
+        Calendar lockedUntil = Calendar.getInstance();
+        lockedUntil.setTimeInMillis(lockedUntil.getTimeInMillis() + ttl.toMillis());
+        return lockedUntil;
     }
 
     private Resource getOrCreateDir(String path) throws PersistenceException {
