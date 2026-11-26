@@ -1,17 +1,9 @@
 name: Test
 
+# AEM distributions come from S3, read through the GitHub OIDC role in the repository variables AWS_ROLE_ARN, AWS_REGION and AWS_S3_BUCKET_NAME.
 on:
   workflow_dispatch:
   workflow_call:
-    secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
-      AWS_REGION:
-        required: true
-      AWS_S3_BUCKET_NAME:
-        required: true
 
 jobs:
   build:
@@ -73,6 +65,7 @@ jobs:
       contents: read
       actions: read
       checks: write
+      id-token: write # assume the AWS role through GitHub OIDC
     env:
       AEM_OUTPUT_LOG_MODE: none
       AEM_VENDOR_JAVA_DOWNLOAD_URL: ${{ matrix.java_download_url }}
@@ -81,12 +74,27 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v7
       
+      - name: Check AWS variables
+        env:
+          AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_S3_BUCKET_NAME: ${{ vars.AWS_S3_BUCKET_NAME }}
+        run: |
+          missing=""
+          for name in AWS_ROLE_ARN AWS_REGION AWS_S3_BUCKET_NAME; do
+            eval "value=\${$name}"
+            [ -n "$value" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Repository variables missing:$missing. Set them to the AWS role (GitHub OIDC) and the S3 bucket holding the AEM distributions."
+            exit 1
+          fi
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
       
       - name: Setup NodeJS Runtime
         uses: actions/setup-node@v7
@@ -121,14 +129,14 @@ jobs:
           echo "Preparing AEM instance"
           echo "AEM_PUBLISH_ACTIVE=false" >> .env
           mkdir -p aem/home/lib
-          JAR_FILE=$(aws s3 ls "s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/${{ matrix.quickstart_prefix }}" | awk '{print $4}' | sort -V | tail -n 1)
+          JAR_FILE=$(aws s3 ls "s3://${{ vars.AWS_S3_BUCKET_NAME }}/aem/on-prem/${{ matrix.quickstart_prefix }}" | awk '{print $4}' | sort -V | tail -n 1)
           if [ -z "$JAR_FILE" ]; then
             echo "::error::No AEM quickstart matching '${{ matrix.quickstart_prefix }}' found in S3!"
             exit 1
           fi
           echo "Downloading AEM quickstart '$JAR_FILE'"
-          aws s3 cp --no-progress --only-show-errors "s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/$JAR_FILE" "aem/home/lib/$JAR_FILE"
-          aws s3 cp --no-progress --only-show-errors s3://${{ secrets.AWS_S3_BUCKET_NAME }}/aem/on-prem/license.properties aem/home/lib/license.properties
+          aws s3 cp --no-progress --only-show-errors "s3://${{ vars.AWS_S3_BUCKET_NAME }}/aem/on-prem/$JAR_FILE" "aem/home/lib/$JAR_FILE"
+          aws s3 cp --no-progress --only-show-errors s3://${{ vars.AWS_S3_BUCKET_NAME }}/aem/on-prem/license.properties aem/home/lib/license.properties
           echo "Prepared AEM instance"
           echo "Launching AEM instance"
           sh aemw instance launch
