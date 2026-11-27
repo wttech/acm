@@ -1,0 +1,14 @@
+group: Activator
+name: activator_activate_tree
+content: |
+  activator.activateTree("${1:path}")
+documentation: |
+  Activate (publish) a resource and all its descendants that are hierarchy nodes (pages, folders, files, assets), one by one.
+  Does nothing if the resource does not exist.
+
+  For many resources prefer `activator.replicate(...)`, which replicates them in chunks.
+
+  For example:
+  ```groovy
+  activator.activateTree("/content/acme/en")
+  ```

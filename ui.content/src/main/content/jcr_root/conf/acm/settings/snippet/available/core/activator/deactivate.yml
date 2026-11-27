@@ -1,0 +1,11 @@
+group: Activator
+name: activator_deactivate
+content: |
+  activator.deactivate("${1:path}")
+documentation: |
+  Deactivate (unpublish) a resource.
+
+  For example:
+  ```groovy
+  activator.deactivate("/content/acme/en/old-page")
+  ```

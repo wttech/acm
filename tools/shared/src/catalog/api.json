@@ -11334,6 +11334,28 @@
           ]
         },
         {
+          "name": "replicate",
+          "returns": "void",
+          "params": [
+            {
+              "type": "ReplicationActionType",
+              "name": "replicationActionType"
+            },
+            {
+              "type": "boolean",
+              "name": "synchronous"
+            },
+            {
+              "type": "int",
+              "name": "chunkSize"
+            },
+            {
+              "type": "Collection<String>",
+              "name": "paths"
+            }
+          ]
+        },
+        {
           "name": "reactivate",
           "returns": "void",
           "params": [
