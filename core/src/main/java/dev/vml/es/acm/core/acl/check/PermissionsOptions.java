@@ -106,4 +106,12 @@ public class PermissionsOptions extends AuthorizableOptions {
         }
         return allRestrictions;
     }
+
+    public String determineGlobSuffix() {
+        if (glob == null) {
+            return "";
+        }
+        String description = GLOB_STRICT_EFFECTIVE.equals(glob) ? "STRICT" : glob;
+        return String.format(" with glob '%s'", description);
+    }
 }

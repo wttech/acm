@@ -3041,6 +3041,11 @@
           "name": "determineAllRestrictions",
           "returns": "Map<String, Object>",
           "params": []
+        },
+        {
+          "name": "determineGlobSuffix",
+          "returns": "String",
+          "params": []
         }
       ]
     },
@@ -3432,6 +3437,11 @@
         {
           "name": "determineAllRestrictions",
           "returns": "Map<String, Object>",
+          "params": []
+        },
+        {
+          "name": "determineGlobSuffix",
+          "returns": "String",
           "params": []
         },
         {
