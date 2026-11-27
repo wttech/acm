@@ -30,12 +30,19 @@ public class AuthorizableManager {
 
     private final CommitPolicy commitPolicy;
 
+    private final CryptoDecryptor cryptoDecryptor;
+
     public AuthorizableManager(
-            JackrabbitSession session, UserManager userManager, ValueFactory valueFactory, CommitPolicy commitPolicy) {
+            JackrabbitSession session,
+            UserManager userManager,
+            ValueFactory valueFactory,
+            CommitPolicy commitPolicy,
+            CryptoDecryptor cryptoDecryptor) {
         this.session = session;
         this.userManager = userManager;
         this.valueFactory = valueFactory;
         this.commitPolicy = commitPolicy;
+        this.cryptoDecryptor = cryptoDecryptor;
     }
 
     public User createUser(String id, String password, String path) {
@@ -43,6 +50,8 @@ public class AuthorizableManager {
             Principal principal = () -> id;
             if (StringUtils.isEmpty(password)) {
                 password = PasswordUtils.generateRandomPassword();
+            } else {
+                password = decrypt(password);
             }
             User user = userManager.createUser(id, password, principal, path);
             save(String.format("creating user '%s'", id));
@@ -166,8 +175,9 @@ public class AuthorizableManager {
         String userId = null;
         try {
             userId = user.getID();
+            String plainPassword = decrypt(password);
             Repository repository = session.getRepository();
-            Credentials credentials = new SimpleCredentials(userId, password.toCharArray());
+            Credentials credentials = new SimpleCredentials(userId, plainPassword.toCharArray());
             repository.login(credentials).logout();
             return true;
         } catch (LoginException e) {
@@ -181,7 +191,7 @@ public class AuthorizableManager {
         String userId = null;
         try {
             userId = user.getID();
-            user.changePassword(password);
+            user.changePassword(decrypt(password));
             save(String.format("changing password for user '%s'", userId));
         } catch (RepositoryException e) {
             throw new AclException(String.format("Failed to set password for user '%s'", userId), e);
@@ -235,5 +245,9 @@ public class AuthorizableManager {
 
     private void save(String context) {
         commitPolicy.commit(context);
+    }
+
+    private String decrypt(String text) {
+        return cryptoDecryptor != null ? cryptoDecryptor.decrypt(text) : text;
     }
 }

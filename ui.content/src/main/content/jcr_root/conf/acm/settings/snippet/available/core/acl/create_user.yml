@@ -4,4 +4,5 @@ content: |
   acl.createUser { id = "${1:id}"; fullName = "${2:fullName}"; password = "${3:password}"; email = "${4:email}" }
 documentation: |
   Create or retrieve the user with the given ID, full name, password and email.<br>
-  The user will only be created if it does not already exist.
+  The user will only be created if it does not already exist.<br>
+  Only the <code>password</code> argument is automatically decrypted when wrapped in <code>{...}</code> using CryptoSupport. The encrypted value can be generated via <code>/system/console/crypto</code> (local/on-prem) or <code>cryptoSupport.protect(text)</code> (any AEM — see snippet <code>osgi_crypto_protect</code>). All other arguments remain unchanged.
